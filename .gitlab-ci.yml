@@ -1,0 +1,79 @@
+stages:
+  - build
+  - lint
+  - test
+  - deploy
+
+.pip-job:
+  image: gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+      - .cache/pip
+      - venv/
+  before_script:
+    - python -V
+    - pip install -e .
+
+.docker_login: &docker_login |
+  docker login -u _json_key --password-stdin https://gcr.io < ${GCP_SERVICE_ACCOUNT}
+
+linters:
+  extends: .pip-job
+  stage: lint
+  script:
+    - pip install -r requirements-dev.txt
+    - black --check PROJECT_NAME setup.py
+    - flake8 PROJECT_NAME setup.py
+    - mypy PROJECT_NAME
+
+test:
+  extends: .pip-job
+  stage: test
+  script:
+    - pip install -r requirements-dev.txt
+    - pytest --cov=PROJECT_NAME --cov-report=term-missing --junit-xml=test-results.xml -vv PROJECT_NAME
+    - coverage html --directory=coverage_html_report
+    - coverage report --fail-under=1
+  coverage: '/TOTAL.+ (\d+\.?\d+)%/'
+  artifacts:
+    name: "Test Results"
+    when: always
+    paths:
+      - ./test-results.xml
+      - ./coverage_html_report
+    reports:
+      junit: ./test-results.xml
+    expire_in: 1 day
+
+build_image:
+  image: gcr.io/instadeep/docker:19.03.8
+  stage: build
+  script:
+    - *docker_login
+    - docker build -t gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA .
+    - docker push gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA
+
+test_docs:
+  extends: .pip-job
+  stage: test
+  script:
+    - pip install -r requirements-dev.txt
+    - mkdocs build --verbose --site-dir docs_public
+  artifacts:
+    paths:
+      - docs_public
+
+pages:
+  extends: .pip-job
+  stage: deploy
+  script:
+    - pip install -r requirements-dev.txt
+    - mkdocs build --verbose
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+

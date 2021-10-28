@@ -1,0 +1,51 @@
+site_name: jumanji -- Documentation
+site_description: Documentation for jumanji
+site_author: InstaDeep Developers
+site_url: https://instadeep.gitlab.io/mkdocs
+site_dir: public
+repo_name: instadeep/templates/machine-learning-project
+repo_url: https://gitlab.com/instadeep/templates/machine-learning-project
+strict: false
+
+theme:
+  name: material
+  language: en
+  palette:
+    primary: light blue
+    accent: indigo
+  logo: PATH_TO_LOGO
+  favicon: PATH_TO_FAVICON
+  icon:
+    repo: fontawesome/brands/gitlab
+  font:
+    text: Avenir Next
+  features:
+    - navigation.tracking
+
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+      emoji_index: !!python/name:pymdownx.emoji.gemoji
+  - pymdownx.snippets:
+      base_path: jumanji
+  - toc:
+      permalink: "#"
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.superfences
+  - def_list
+
+plugins:
+  - search
+  - git-revision-date
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: true
+          selection:
+            filters:
+              - '!^test'
+nav:
+  - Home: index.md

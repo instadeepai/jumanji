@@ -1,0 +1,20 @@
+# All of these dependencies are pinned to specific versions to achieve reproducible builds (CI/Dev)
+black
+coverage
+flake8
+livereload
+mkdocs
+mkdocs-git-revision-date-plugin
+mkdocs-material
+mkdocstrings
+mypy
+pre-commit
+promise
+pymdown-extensions
+pytest
+pytest-cov
+pytest-mock
+pytest-parallel
+pytest-xdist
+pytype
+testfixtures
