@@ -1,12 +1,14 @@
 import logging
 import math
 import os
-from typing import List
+from typing import List, Optional, Tuple
 
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 from gym.spaces import Box, Dict
+from mujoco_py import MjViewer
+from numpy.typing import ArrayLike
 
 DESCRIPTORS_BOUNDS = {
     "min_x": -30.0,
@@ -25,7 +27,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
     given timestep.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._maze_exit = np.array([35, -25])
         self._logger = logging.getLogger(f"{__name__}.AntMazeEnvironment")
         self._best_performance = -math.inf
@@ -42,6 +44,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
                 "state_descriptor": Box(-np.inf, np.inf, (2,)),
             }
         )
+        self.viewer: Optional[MjViewer] = None
 
     @property
     def descriptors_min_values(self) -> List[float]:
@@ -58,7 +61,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
         """Descriptors names."""
         return ["x_pos", "y_pos"]
 
-    def reset(self):
+    def reset(self) -> dict:
         """Reset the environment to its initial state and returns an observation."""
         self.sim.reset()
         self.reset_model()
@@ -71,7 +74,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
 
         return obs_dict
 
-    def step(self, action: np.ndarray):
+    def step(self, action: ArrayLike) -> Tuple:
         self.do_simulation(action, self.frame_skip)
         distance_to_goal = np.sqrt(
             np.sum(np.square(self.data.qpos[:2] - self._maze_exit))
@@ -97,7 +100,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
             ),
         )
 
-    def _get_obs(self) -> np.ndarray:
+    def _get_obs(self) -> ArrayLike:
         qpos = self.data.qpos.flatten()
         qpos[:2] = (qpos[:2] - 5) / 70
         return np.concatenate(
@@ -107,7 +110,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
             ]
         )
 
-    def reset_model(self):
+    def reset_model(self) -> ArrayLike:
         qpos = self.init_qpos + self.np_random.uniform(
             size=self.model.nq, low=-0.1, high=0.1
         )
@@ -115,7 +118,10 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
         return self._get_obs()
 
-    def viewer_setup(self):
+    def viewer_setup(self) -> None:
+        if self.viewer is None:
+            return
+
         self.viewer.cam.distance = self.model.stat.extent * 0.8
         self.viewer.cam.elevation = -45
         self.viewer.cam.lookat[0] = 4.2

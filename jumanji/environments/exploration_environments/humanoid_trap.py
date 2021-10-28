@@ -1,11 +1,13 @@
 import os
-from typing import List
+from typing import List, Tuple, Any, Optional
 
 import mujoco_py
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 from gym.spaces import Box, Dict
+from mujoco_py import MjViewer
+from numpy.typing import ArrayLike
 
 DEFAULT_CAMERA_CONFIG = {
     "distance": 20.0,
@@ -19,7 +21,7 @@ DESCRIPTORS_CLIPPING = {
 }
 
 
-def clip_state_descriptor(state_descriptor):
+def clip_state_descriptor(state_descriptor: ArrayLike) -> ArrayLike:
     """Clip state descriptor to restrict the descriptor space."""
     clipped_state_descriptor = np.array(
         [
@@ -38,7 +40,7 @@ def clip_state_descriptor(state_descriptor):
     return clipped_state_descriptor
 
 
-def mass_center(model, sim):
+def mass_center(model: Any, sim: mujoco_py.MjSim) -> Any:
     mass = np.expand_dims(model.body_mass, 1)
     xpos = sim.data.xipos
     return (np.sum(mass * xpos, 0) / np.sum(mass))[0]
@@ -57,7 +59,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
     and right) and between [0;+inf] on the x-axis
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         local_path = os.path.dirname(__file__)
         xml_file = local_path + "/mujoco_assets/humanoid_trap.xml"
         mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
@@ -70,6 +72,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
                 "state_descriptor": Box(-np.inf, np.inf, (2,)),
             }
         )
+        self.viewer: Optional[MjViewer] = None
 
     @property
     def descriptors_min_values(self) -> List[float]:
@@ -86,7 +89,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         """Descriptors names."""
         return ["x_pos", "y_pos"]
 
-    def reset(self):
+    def reset(self) -> dict:
         """Reset the environment to its initial state and returns an observation."""
         self.sim.reset()
         self.reset_model()
@@ -99,7 +102,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         }
         return obs_dict
 
-    def step(self, action: np.ndarray):
+    def step(self, action: ArrayLike) -> Tuple:
         """
         Make an environment step and return the observation, reward and if the step
         marks the end of an episode.
@@ -140,7 +143,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             ),
         )
 
-    def _get_obs(self):
+    def _get_obs(self) -> ArrayLike:
         """
         Get an observation of the current state. Observation contains the agent position
         and velocity.
@@ -157,7 +160,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             ]
         )
 
-    def reset_model(self):
+    def reset_model(self) -> ArrayLike:
         """
         Reset the model with some stochasticity on its initial position and velocity.
         """
@@ -173,7 +176,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         )
         return self._get_obs()
 
-    def close(self):
+    def close(self) -> None:
         """
         Close viewer.
         """
@@ -181,7 +184,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             self.viewer.finish()
             self.viewer = None
 
-    def render(self, mode="human", width: int = 400, height: int = 400):
+    def render(self, mode: str = "human", width: int = 400, height: int = 400) -> Any:
         """
         Gym rendering function.
         """
@@ -195,7 +198,7 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         elif mode == "human":
             self._get_viewer(mode).render()
 
-    def _get_viewer(self, mode="human") -> mujoco_py.MjViewer:
+    def _get_viewer(self, mode: str = "human") -> mujoco_py.MjViewer:
         """
         Returns Mujoco viewer.
         """
@@ -207,8 +210,11 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             self.viewer_setup()
         return self.viewer
 
-    def viewer_setup(self):
+    def viewer_setup(self) -> None:
         """Setup the camera."""
+        if self.viewer is None:
+            return
+
         self.viewer.cam.distance = 14
         self.viewer.cam.elevation = -23.386441767692556
         self.viewer.cam.azimuth = 70

@@ -1,12 +1,16 @@
-from typing import List
+from typing import List, Tuple, Optional, Any
 
 import gym
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
+from mujoco_py import MjViewer
 
 # TODO: CLEAN THIS
+from numpy.typing import ArrayLike
+
+
 class PointMaze(gym.Env):
     def __init__(
         self,
@@ -30,6 +34,8 @@ class PointMaze(gym.Env):
         self._x_max = x_max
         self._y_min = y_min
         self._y_max = y_max
+
+        self.state = np.array([0, 0])
 
         self._low = np.array([self._x_min, self._y_min], dtype=np.float32)
         self._high = np.array([self._x_max, self._y_max], dtype=np.float32)
@@ -58,7 +64,7 @@ class PointMaze(gym.Env):
         self.zone_width_offset = self._x_min + zone_width_offset_from_x_min
         self.zone_height_offset = self._y_max + zone_height_offset_from_y_max
 
-        self.viewer = None
+        self.viewer: Optional[MjViewer] = None
 
         self._max_episode_steps = max_steps
 
@@ -93,11 +99,11 @@ class PointMaze(gym.Env):
         """Descriptors names."""
         return ["x_pos", "y_pos"]
 
-    def seed(self, seed=None):
+    def seed(self, seed: int = None) -> List:
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _in_zone(self, x_pos, y_pos):
+    def _in_zone(self, x_pos: ArrayLike, y_pos: ArrayLike) -> bool:
 
         zone_center_width, zone_center_height = (
             self.zone_width_offset,
@@ -118,7 +124,7 @@ class PointMaze(gym.Env):
 
         return False
 
-    def _sparse_reward(self, in_zone):
+    def _sparse_reward(self, in_zone: bool) -> float:
         if in_zone:
 
             if self.decay_reward:
@@ -130,7 +136,9 @@ class PointMaze(gym.Env):
 
         return reward
 
-    def _collision_lower_wall(self, y_pos, y_pos_old, x_pos, x_pos_old):
+    def _collision_lower_wall(
+        self, y_pos: float, y_pos_old: float, x_pos: float, x_pos_old: float
+    ) -> float:
         # From down
         if y_pos_old <= self.lower_wall_height_offset < y_pos:
             x_hitting_wall = (self.lower_wall_height_offset - y_pos_old) / (
@@ -156,7 +164,9 @@ class PointMaze(gym.Env):
 
         return y_pos
 
-    def _collision_upper_wall(self, y_pos, y_pos_old, x_pos, x_pos_old):
+    def _collision_upper_wall(
+        self, y_pos: float, y_pos_old: float, x_pos: float, x_pos_old: float
+    ) -> float:
         # From up
         if y_pos_old >= self.upper_wall_height_offset + self.wallheight > y_pos:
             x_hitting_wall = (self.upper_wall_height_offset - y_pos_old) / (
@@ -181,7 +191,7 @@ class PointMaze(gym.Env):
 
         return y_pos
 
-    def step(self, action: np.ndarray):
+    def step(self, action: np.ndarray) -> Tuple:
 
         # assert self.action_space.contains(action), "%r (%s) invalid" % (
         #     action,
@@ -216,7 +226,7 @@ class PointMaze(gym.Env):
         if self.step_count >= self._max_episode_steps:
             done = True
 
-        self.state = x_pos, y_pos
+        self.state = np.array([x_pos, y_pos])
 
         return (
             {
@@ -228,7 +238,7 @@ class PointMaze(gym.Env):
             {"in_zone": in_zone, "ind_zone": [0], "pos": [x_pos, y_pos]},
         )
 
-    def reset(self):
+    def reset(self) -> dict:
 
         x_start = self.np_random.uniform(low=self._x_min, high=self._x_max) / 10
         y_start = self.np_random.uniform(low=self._y_min, high=-0.7)
@@ -240,7 +250,7 @@ class PointMaze(gym.Env):
             "state_descriptor": np.array(self.state),
         }
 
-    def render(self, mode="human"):
+    def render(self, mode: str = "human") -> Any:
 
         screen_width = 600
         screen_height = 600
@@ -346,7 +356,7 @@ class PointMaze(gym.Env):
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
-    def close(self):
+    def close(self) -> None:
         if self.viewer:
             self.viewer.close()
             self.viewer = None
