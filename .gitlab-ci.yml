@@ -24,18 +24,18 @@ linters:
   stage: lint
   script:
     - pip install -r requirements-dev.txt
-    - black --check PROJECT_NAME setup.py
-    - flake8 PROJECT_NAME setup.py
-    - mypy PROJECT_NAME
+    - python -m black --check jumanji setup.py
+    - python -m flake8 jumanji setup.py
+    - python -m mypy jumanji
 
 test:
   extends: .pip-job
   stage: test
   script:
     - pip install -r requirements-dev.txt
-    - pytest --cov=PROJECT_NAME --cov-report=term-missing --junit-xml=test-results.xml -vv PROJECT_NAME
-    - coverage html --directory=coverage_html_report
-    - coverage report --fail-under=1
+    - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
+    - python -m coverage html --directory=coverage_html_report
+    - python -m coverage report --fail-under=1
   coverage: '/TOTAL.+ (\d+\.?\d+)%/'
   artifacts:
     name: "Test Results"
@@ -60,7 +60,7 @@ test_docs:
   stage: test
   script:
     - pip install -r requirements-dev.txt
-    - mkdocs build --verbose --site-dir docs_public
+    - python -m mkdocs build --verbose --site-dir docs_public
   artifacts:
     paths:
       - docs_public
@@ -70,7 +70,7 @@ pages:
   stage: deploy
   script:
     - pip install -r requirements-dev.txt
-    - mkdocs build --verbose
+    - python -m mkdocs build --verbose
   artifacts:
     paths:
       - public
