@@ -13,7 +13,7 @@ exclude =
     .eggs
 max-line-length=100
 import-order-style = google
-application-import-names = ridl
+application-import-names = jumanji
 doctests = True
 docstring-convention = google
 per-file-ignores = __init__.py:F401
