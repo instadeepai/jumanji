@@ -1,11 +1,11 @@
+import shlex
+from codecs import open
+from subprocess import check_call
 from typing import List
 
 import setuptools
-import shlex
-from codecs import open
 from setuptools import setup
 from setuptools.command.develop import develop
-from subprocess import check_call
 
 __version__ = "0.0.0"
 

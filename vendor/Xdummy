@@ -1,27 +1,27 @@
 #!/bin/sh
 # ----------------------------------------------------------------------
-#    Copyright (C) 2005-2011 Karl J. Runge <runge@karlrunge.com> 
+#    Copyright (C) 2005-2011 Karl J. Runge <runge@karlrunge.com>
 #    All rights reserved.
-# 
+#
 # This file is part of Xdummy.
-# 
+#
 # Xdummy is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or (at
 # your option) any later version.
-# 
+#
 # Xdummy is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Xdummy; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 # or see <http://www.gnu.org/licenses/>.
 # ----------------------------------------------------------------------
-# 
-# 
+#
+#
 # Xdummy: an LD_PRELOAD hack to run a stock Xorg(1) or XFree86(1) server
 # with the "dummy" video driver to make it avoid Linux VT switching, etc.
 #
@@ -93,7 +93,7 @@ $program:
     e.g:
 
         /usr/lib/xorg/modules/drivers/dummy_drv.so
-    
+
     some have it in a package named xserver-xorg-video-dummy you that
     need to install.
 
@@ -161,7 +161,7 @@ Root permission and x11vnc:
 		ALL ALL = NOPASSWD: /usr/local/bin/Xdummy
 
 	- use this little suid wrapper:
-/* 
+/*
  * xdummy.c
  *
    cc -o ./xdummy xdummy.c
@@ -180,9 +180,9 @@ int main (int argc, char *argv[]) {
 	char str[100];
 	sprintf(str, "XDUMMY_UID=%d", (int) getuid());
 	putenv(str);
-	setuid(0);  
+	setuid(0);
 	setgid(0);
-	execv("/usr/local/bin/Xdummy", argv); 
+	execv("/usr/local/bin/Xdummy", argv);
 	exit(1);
 	return 1;
 }
@@ -339,8 +339,8 @@ Notes:
     tcp ports.)
 
     If the display virtual terminal, VT, (e.g. vt9) is not given that
-    indicates $program should try to find a free one (or guess a high one.) 
-    
+    indicates $program should try to find a free one (or guess a high one.)
+
     This program is not completely secure WRT files in /tmp (but it tries
     to a good degree.)  Better is to use the -tmpdir option to supply a
     directory only writable by you.  Even better is to get rid of users
@@ -461,7 +461,7 @@ do
     if [ "X$1" = "X-config" -o "X$1" = "X-xf86config" ]; then
     	cmdline_config="$2"
     fi
-    case $1 in 
+    case $1 in
 	":"*)	disp=$1
                 ;;
 	"-install") install=1; runit=""
@@ -561,7 +561,7 @@ fi
 # Function to compile the LD_PRELOAD shared object:
 #
 make_so() {
-	# extract code embedded in this script into a tmp C file: 
+	# extract code embedded in this script into a tmp C file:
 	n1=`grep -n '^#code_begin' $0 | head -1 | awk -F: '{print $1}'`
 	n2=`grep -n '^#code_end'   $0 | head -1 | awk -F: '{print $1}'`
 	n1=`expr $n1 + 1`
@@ -804,7 +804,7 @@ if [ -e "$xserver_path" -a "X$root" = "X" -a "X$runit" != "X" ]; then
 			exit 1
 		fi
 		xserver=$new
-	fi 
+	fi
 fi
 
 # Work out display:
@@ -833,7 +833,7 @@ if [ "X$disp" = "X" -o "X$disp" = "X:" ]; then
 		else
 			disp=":$n"
 			warn "$program: auto-selected DISPLAY $disp"
-			break	
+			break
 		fi
 		n=`expr $n + 1`
 	done
@@ -894,7 +894,7 @@ tweak_config() {
     	d=`echo "$disp" | sed -e 's,/,,g' -e 's/:/_/g'`
 	config2="$config2$d"
     fi
-    
+
     # perl script to tweak the config file... add/delete options, etc.
     #
     env XDUMMY_GEOM=$geom \
@@ -1423,7 +1423,7 @@ static int changed_uid = 0;
 static int saw_fonts = 0;
 static int saw_lib_modules = 0;
 
-static time_t start = 0; 
+static time_t start = 0;
 
 void check_debug(void) {
 	if (debug < 0) {
@@ -1701,7 +1701,7 @@ sighandler_t signal(int signum, sighandler_t handler) {
 		if (debug) fprintf(stderr, "SIGNAL: skip SIGUSR1\n");
 		return SIG_DFL;
 	}
-	
+
 	return(real_signal(signum, handler));
 }
 
@@ -1817,7 +1817,7 @@ int iopl(int level) {
 	return 0;
 }
 
-#ifdef INTERPOSE_GETUID 
+#ifdef INTERPOSE_GETUID
 
 /*
  * we got things to work w/o pretending to be root.

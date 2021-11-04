@@ -94,10 +94,10 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
             obs_dict,
             reward,
             done,
-            dict(
-                x_position=xy_position[0],
-                y_position=xy_position[1],
-            ),
+            {
+                "x_position": xy_position[0],
+                "y_position": xy_position[1],
+            },
         )
 
     def _get_obs(self) -> ArrayLike:

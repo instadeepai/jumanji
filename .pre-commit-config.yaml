@@ -1,0 +1,53 @@
+default_stages: [ "commit", "commit-msg", "push" ]
+default_language_version:
+  python: python3.8
+
+
+repos:
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.8.0
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/ambv/black
+    rev: 21.5b1
+    hooks:
+      - id: black
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: debug-statements
+      - id: requirements-txt-fixer
+      - id: mixed-line-ending
+      - id: check-yaml
+        args: [ '--unsafe' ]
+      - id: trailing-whitespace
+
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        args:
+          - --max-line-length=100
+          - --max-cognitive-complexity=10
+          - --ignore=E266,E501,E731,W503
+        additional_dependencies:
+          - pep8-naming
+          - flake8-builtins
+          - flake8-comprehensions
+          - flake8-bugbear
+          - flake8-pytest-style
+          - flake8-cognitive-complexity
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+      - id: mypy
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v4.1.0
+    hooks:
+      - id: commitlint
+        stages: [ commit-msg ]
+        additional_dependencies: [ '@commitlint/config-conventional' ]
