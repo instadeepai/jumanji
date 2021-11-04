@@ -123,4 +123,3 @@
         <motor gear="25" joint="left_elbow" name="left_elbow"/>
     </actuator>
 </mujoco>
-

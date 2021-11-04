@@ -131,4 +131,3 @@ the "Meta-Learning Shared Hierarchies" paper: https://arxiv.org/abs/1710.09767 -
     <jointvel name='vel_ankle_4' joint='ankle_4' />
   </sensor>
 </mujoco>
-

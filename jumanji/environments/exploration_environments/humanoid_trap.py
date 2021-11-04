@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Any, Optional
+from typing import Any, List, Optional, Tuple
 
 import mujoco_py
 import numpy as np
@@ -133,14 +133,14 @@ class HumanoidTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             obs_dict,
             reward,
             done,
-            dict(
-                reward_linvel=lin_vel_cost,
-                reward_quadctrl=-quad_ctrl_cost,
-                reward_alive=alive_bonus,
-                reward_impact=-quad_impact_cost,
-                x_position=xy_position_after[0],
-                y_position=xy_position_after[1],
-            ),
+            {
+                "reward_linvel": lin_vel_cost,
+                "reward_quadctrl": -quad_ctrl_cost,
+                "reward_alive": alive_bonus,
+                "reward_impact": -quad_impact_cost,
+                "x_position": xy_position_after[0],
+                "y_position": xy_position_after[1],
+            },
         )
 
     def _get_obs(self) -> ArrayLike:

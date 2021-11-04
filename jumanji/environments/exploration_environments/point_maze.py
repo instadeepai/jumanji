@@ -1,10 +1,9 @@
-from typing import List, Tuple, Optional, Any
+from typing import Any, List, Optional, Tuple
 
 import gym
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
-
 from mujoco_py import MjViewer
 
 # TODO: CLEAN THIS

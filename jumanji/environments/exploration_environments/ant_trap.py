@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Tuple, Any
+from typing import Any, List, Optional, Tuple
 
 import mujoco_py
 import numpy as np
@@ -128,14 +128,14 @@ class AntTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             obs_dict,
             reward,
             done,
-            dict(
-                reward_forward=forward_reward,
-                reward_ctrl=-ctrl_cost,
-                reward_contact=-contact_cost,
-                reward_survive=survive_reward,
-                x_position=xy_position_after[0],
-                y_position=xy_position_after[1],
-            ),
+            {
+                "reward_forward": forward_reward,
+                "reward_ctrl": -ctrl_cost,
+                "reward_contact": -contact_cost,
+                "reward_survive": survive_reward,
+                "x_position": xy_position_after[0],
+                "y_position": xy_position_after[1],
+            },
         )
 
     def _get_obs(self) -> ArrayLike:
