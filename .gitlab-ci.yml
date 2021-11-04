@@ -33,6 +33,8 @@ test:
   stage: test
   script:
     - pip install -r requirements-dev.txt
+    - /usr/local/bin/Xdummy :1 &
+    - export DISPLAY=':1'
     - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
     - python -m coverage html --directory=coverage_html_report
     - python -m coverage report --fail-under=1
