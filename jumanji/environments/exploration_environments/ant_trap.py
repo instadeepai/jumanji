@@ -1,6 +1,7 @@
 import os
 from typing import Any, List, Optional, Tuple
 
+import glfw
 import mujoco_py
 import numpy as np
 from gym import utils
@@ -170,7 +171,7 @@ class AntTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         Close viewer.
         """
         if self.viewer is not None:
-            self.viewer.finish()
+            glfw.destroy_window(self.viewer.window)
             self.viewer = None
 
     def render(self, mode: str = "human", width: int = 400, height: int = 400) -> Any:

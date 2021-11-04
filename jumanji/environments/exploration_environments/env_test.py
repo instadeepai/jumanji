@@ -18,4 +18,6 @@ def test_env(env_cls: Type) -> None:
     steps = 0
     while not done and steps < horizon:
         _, _, done, _ = env.step(env.action_space.sample())
+        env.render()
         steps += 1
+    env.close()
