@@ -2,10 +2,10 @@ from typing import Type
 
 import pytest
 
-from jumanji.environments.exploration_environments.ant_maze import AntMaze
-from jumanji.environments.exploration_environments.ant_trap import AntTrap
-from jumanji.environments.exploration_environments.humanoid_trap import HumanoidTrap
-from jumanji.environments.exploration_environments.point_maze import PointMaze
+from jumanji.mujoco.ant_maze import AntMaze
+from jumanji.mujoco.ant_trap import AntTrap
+from jumanji.mujoco.humanoid_trap import HumanoidTrap
+from jumanji.mujoco.point_maze import PointMaze
 
 
 @pytest.mark.parametrize("env_cls", [AntMaze, AntTrap, HumanoidTrap, PointMaze])

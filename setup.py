@@ -38,7 +38,10 @@ setup(
     packages=setuptools.find_packages(),
     zip_safe=False,
     install_requires=read_requirements("./requirements.txt"),
-    extras_require={"dev": read_requirements("./requirements-dev.txt")},
+    extras_require={
+        "dev": read_requirements("./requirements-dev.txt"),
+        "mujoco": ["mujoco-py==2.0.2.13"],
+    },
     cmdclass={"develop": PostDevelopCommand},
     include_package_data=True,
 )
