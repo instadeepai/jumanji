@@ -3,6 +3,7 @@ stages:
   - lint
   - test
   - deploy
+  - publish
 
 .pip-job:
   image: gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA
@@ -78,3 +79,19 @@ pages:
       - public
   only:
     - main
+
+publish:
+  extends: .pip-job
+  stage: publish
+  only:
+    variables:
+      - $PUBLISH == "true"
+  script:
+    - pip install python-semantic-release twine
+    - rm -rf .git/hooks
+    - git config --global user.email $GITLAB_USER_EMAIL
+    - git config --global user.name "python-semantic-release"
+    - git tag -d $(git tag -l)
+    - semantic-release publish
+    - python setup.py sdist bdist_wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
