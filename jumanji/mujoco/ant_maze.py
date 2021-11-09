@@ -8,7 +8,6 @@ from gym import utils
 from gym.envs.mujoco import mujoco_env
 from gym.spaces import Box, Dict
 from mujoco_py import MjViewer
-from numpy.typing import ArrayLike
 
 DESCRIPTORS_BOUNDS = {
     "min_x": -30.0,
@@ -74,7 +73,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
 
         return obs_dict
 
-    def step(self, action: ArrayLike) -> Tuple:
+    def step(self, action: np.array) -> Tuple:
         self.do_simulation(action, self.frame_skip)
         distance_to_goal = np.sqrt(
             np.sum(np.square(self.data.qpos[:2] - self._maze_exit))
@@ -100,7 +99,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
             },
         )
 
-    def _get_obs(self) -> ArrayLike:
+    def _get_obs(self) -> np.array:
         qpos = self.data.qpos.flatten()
         qpos[:2] = (qpos[:2] - 5) / 70
         return np.concatenate(
@@ -110,7 +109,7 @@ class AntMaze(mujoco_env.MujocoEnv, utils.EzPickle):
             ]
         )
 
-    def reset_model(self) -> ArrayLike:
+    def reset_model(self) -> np.array:
         qpos = self.init_qpos + self.np_random.uniform(
             size=self.model.nq, low=-0.1, high=0.1
         )
