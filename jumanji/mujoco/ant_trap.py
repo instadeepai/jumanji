@@ -8,7 +8,6 @@ from gym import utils
 from gym.envs.mujoco import mujoco_env
 from gym.spaces import Box, Dict
 from mujoco_py import MjViewer
-from numpy.typing import ArrayLike
 
 DEFAULT_CAMERA_CONFIG = {
     "distance": 20.0,
@@ -22,7 +21,7 @@ DESCRIPTORS_CLIPPING = {
 }
 
 
-def clip_state_descriptor(state_descriptor: ArrayLike) -> ArrayLike:
+def clip_state_descriptor(state_descriptor: np.array) -> np.array:
     """Clip state descriptor to restrict the descriptor space."""
     clipped_state_descriptor = np.array(
         [
@@ -97,7 +96,7 @@ class AntTrap(mujoco_env.MujocoEnv, utils.EzPickle):
         }
         return obs_dict
 
-    def step(self, action: ArrayLike) -> Tuple:
+    def step(self, action: np.array) -> Tuple:
         """
         Make an environment step and return the observation, reward and if the step
         marks the end of an episode.
@@ -139,7 +138,7 @@ class AntTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             },
         )
 
-    def _get_obs(self) -> ArrayLike:
+    def _get_obs(self) -> np.array:
         """
         Get an observation of the current state. Observation contains the agent position
         and velocity.
@@ -155,7 +154,7 @@ class AntTrap(mujoco_env.MujocoEnv, utils.EzPickle):
             ]
         )
 
-    def reset_model(self) -> ArrayLike:
+    def reset_model(self) -> np.array:
         """
         Reset the model with some stochasticity on its initial position and velocity.
         """

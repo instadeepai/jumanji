@@ -6,9 +6,6 @@ from gym import spaces
 from gym.utils import seeding
 from mujoco_py import MjViewer
 
-# TODO: CLEAN THIS
-from numpy.typing import ArrayLike
-
 
 class PointMaze(gym.Env):
     def __init__(
@@ -102,7 +99,7 @@ class PointMaze(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _in_zone(self, x_pos: ArrayLike, y_pos: ArrayLike) -> bool:
+    def _in_zone(self, x_pos: np.array, y_pos: np.array) -> bool:
 
         zone_center_width, zone_center_height = (
             self.zone_width_offset,
