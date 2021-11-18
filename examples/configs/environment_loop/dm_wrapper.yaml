@@ -1,0 +1,4 @@
+cls: DeepMindEnvBenchmarkLoop
+wrappers: [DeepMindEnvWrapper]
+n_steps: null
+batch_size: null

@@ -1,4 +1,4 @@
-site_name: jumanji -- Documentation
+site_name: Jumanji docs
 site_description: Documentation for jumanji
 site_author: InstaDeep Developers
 site_url: https://instadeep.gitlab.io/mkdocs
@@ -49,3 +49,14 @@ plugins:
 
 nav:
   - Home: index.md
+  - API Reference:
+      - jax:
+          - environments:
+              - snake: api/jax/environments/snake.md
+          - jax_env: api/jax/env.md
+          - types: api/jax/types.md
+          - wrappers: api/jax/wrappers.md
+      - utils:
+          - deep_mind_env_benchmark_loop: api/utils/deep_mind_env_benchmark_loop.md
+          - jax_env_benchmark_loop: api/utils/jax_env_benchmark_loop.md
+          - jax_environment_loop: api/utils/jax_environment_loop.md
