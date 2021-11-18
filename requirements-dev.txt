@@ -5,6 +5,7 @@ flake8
 livereload
 mkdocs
 mkdocs-git-revision-date-plugin
+mkdocs-include-markdown-plugin
 mkdocs-material
 mkdocstrings
 mypy
