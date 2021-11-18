@@ -40,7 +40,7 @@ setup(
     install_requires=read_requirements("./requirements.txt"),
     extras_require={
         "dev": read_requirements("./requirements-dev.txt"),
-        "mujoco": ["mujoco-py==2.0.2.13"],
+        "mujoco": ["mujoco-py@git+https://github.com/openai/mujoco-py"],
     },
     cmdclass={"develop": PostDevelopCommand},
     include_package_data=True,

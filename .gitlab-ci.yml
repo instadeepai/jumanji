@@ -15,7 +15,6 @@ stages:
       - venv/
   before_script:
     - python -V
-    - pip install -e .[mujoco]
 
 .docker_login: &docker_login |
   docker login -u _json_key --password-stdin https://gcr.io < ${GCP_SERVICE_ACCOUNT}
