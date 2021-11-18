@@ -1,2 +1,7 @@
-gym==0.18.0
-numpy==1.19.5
+chex
+dm-env
+dm-haiku
+gym==0.18
+hydra-core~=1.1
+jax==0.2.21
+jaxlib
