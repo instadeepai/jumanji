@@ -24,18 +24,18 @@ class TestWrappers:
     def test_dm_env__step(self) -> None:
         """Validates step function of the wrapped environment."""
         timestep = self.fake_dm_env.reset()
-        action = self.fake_dm_env.action_spec.generate_value()
+        action = self.fake_dm_env.action_spec().generate_value()
         next_timestep = self.fake_dm_env.step(action)
         assert next_timestep != timestep
 
     def test_dm_env__observation_spec(self) -> None:
         """Validates observation_spec property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.observation_spec, specs.Array)
+        assert isinstance(self.fake_dm_env.observation_spec(), specs.Array)
 
     def test_dm_env__action_spec(self) -> None:
         """Validates action_spec property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.action_spec, specs.Array)
+        assert isinstance(self.fake_dm_env.action_spec(), specs.Array)
 
     def test_dm_env__unwrapped(self) -> None:
         """Validates unwrapped property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.unwrapped, JaxEnv)
+        assert isinstance(self.fake_dm_env.unwrapped(), JaxEnv)

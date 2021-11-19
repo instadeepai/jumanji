@@ -43,7 +43,7 @@ class JaxEnv(abc.ABC, Generic[State]):
                 as well as the timestep to be observed.
         """
 
-    @property
+    @abc.abstractmethod
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
 
@@ -52,7 +52,7 @@ class JaxEnv(abc.ABC, Generic[State]):
         """
         raise NotImplementedError
 
-    @property
+    @abc.abstractmethod
     def action_spec(self) -> specs.Array:
         """Returns the action spec.
 

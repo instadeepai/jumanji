@@ -30,7 +30,6 @@ class FakeJaxEnv(JaxEnv):
     def __init__(self, time_limit: int = 10):
         self.time_limit = time_limit
 
-    @property
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec. The observation is just a (useless) scalar here.
 
@@ -40,7 +39,6 @@ class FakeJaxEnv(JaxEnv):
 
         return specs.Array(shape=(), dtype=jnp.float32, name="observation")
 
-    @property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. The action is just one (useless) integer here.
 
