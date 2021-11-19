@@ -16,7 +16,15 @@ def _assert_is_jax_array_tree(tree_of_arrays: ArrayTree) -> None:
     is_array, _ = jax.tree_flatten(
         jax.tree_map(lambda x: isinstance(x, jnp.ndarray), tree_of_arrays)
     )
-    assert np.all(is_array)
+    assert np.all(is_array), "Tree is not a tree of jax arrays."
+
+
+def _assert_tree_is_finite(tree_of_arrays: ArrayTree) -> None:
+    """Checks that the `tree_of_arrays`is a tree of finite values (no NaN or inf)."""
+    nodes, _ = jax.tree_flatten(jax.tree_map(lambda x: jnp.isfinite(x), tree_of_arrays))
+    assert np.all(
+        [node.all() for node in nodes]
+    ), "Tree is not a tree of finite elements."
 
 
 @pytest.fixture
@@ -106,3 +114,26 @@ def test_update_head_pos() -> None:
         Position(3, 4),
     ]
     assert next_head_poss == updated_head_poss
+
+
+@pytest.mark.parametrize("snake_env", [()], indirect=True)
+def test_snake__no_nan(snake_env: Snake) -> None:
+    """Validates that no nan is encountered in either the state or the observation throughout an
+    episode. Checks both exiting from the top and right of the board as jax out-of-bounds indices
+    have different behaviors if positive or negative.
+    """
+    reset_fn = jax.jit(snake_env.reset)
+    step_fn = jax.jit(snake_env.step)
+    key = random.PRNGKey(0)
+    # Check exiting the board to the top
+    state, timestep = reset_fn(key)
+    _assert_tree_is_finite((state, timestep))
+    while not timestep.last():
+        state, timestep = step_fn(state, action=0)
+        _assert_tree_is_finite((state, timestep))
+    # Check exiting the board to the right
+    state, timestep = reset_fn(key)
+    _assert_tree_is_finite((state, timestep))
+    while not timestep.last():
+        state, timestep = step_fn(state, action=1)
+        _assert_tree_is_finite((state, timestep))

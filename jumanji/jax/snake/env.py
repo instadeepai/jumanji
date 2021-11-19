@@ -227,7 +227,7 @@ class Snake(JaxEnv):
                 next_head,
                 next_tail,
                 next_fruit,
-                next_body_state / (next_body_state.max()),
+                next_body_state / jnp.maximum(1, next_body_state.max()),
             ],
             dtype=jnp.float32,
         )
