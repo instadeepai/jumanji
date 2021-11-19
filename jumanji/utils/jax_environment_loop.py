@@ -53,8 +53,8 @@ class JaxEnvironmentLoop:
         ] = environment.step
         self.reset_fn: Callable[[PRNGKey], Tuple[State, TimeStep]] = environment.reset
         self.run_steps_jitted = jit(vmap(self._run_steps))
-        if not isinstance(environment.action_spec, specs.BoundedArray):
-            action_spec = environment.action_spec
+        if not isinstance(environment.action_spec(), specs.BoundedArray):
+            action_spec = environment.action_spec()
             raise TypeError(
                 f"action spec must be of type BoundedArray, got "
                 f"{action_spec} of type {type(action_spec)}."
@@ -73,9 +73,9 @@ class JaxEnvironmentLoop:
         """
         action = random.randint(
             key,
-            self._environment.action_spec.shape,
+            self._environment.action_spec().shape,
             0,
-            self._environment.action_spec._num_values,
+            self._environment.action_spec()._num_values,
         )
         return action
 

@@ -54,7 +54,6 @@ class Snake(JaxEnv):
         self.board_shape = (n_rows, n_cols)
         self.time_limit = time_limit
 
-    @property
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
 
@@ -63,7 +62,6 @@ class Snake(JaxEnv):
         """
         return specs.Array(shape=(5, *self.board_shape), dtype=jnp.float32)
 
-    @property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 

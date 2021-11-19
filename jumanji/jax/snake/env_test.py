@@ -55,7 +55,7 @@ def test_snake__step(snake_env: Snake) -> None:
     # Sample two different actions
     action1, action2 = random.choice(
         action_key,
-        jnp.arange(snake_env.action_spec._num_values),
+        jnp.arange(snake_env.action_spec()._num_values),
         shape=(2,),
         replace=False,
     )

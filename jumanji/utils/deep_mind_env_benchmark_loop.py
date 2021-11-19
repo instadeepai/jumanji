@@ -39,8 +39,8 @@ class DeepMindEnvBenchmarkLoop:
         self._rng = hk.PRNGSequence(seed)
         self.step_fn: Callable[[Action], dm_env.TimeStep] = environment.step
         self.reset_fn: Callable[[], dm_env.TimeStep] = environment.reset
-        if not isinstance(self._environment.action_spec, specs.BoundedArray):
-            action_spec = self._environment.action_spec
+        if not isinstance(self._environment.action_spec(), specs.BoundedArray):
+            action_spec = self._environment.action_spec()
             raise TypeError(
                 f"action spec must be of type BoundedArray, got "
                 f"{action_spec} of type {type(action_spec)}."
@@ -55,9 +55,9 @@ class DeepMindEnvBenchmarkLoop:
         """
         action = random.randint(
             next(self._rng),
-            self._environment.action_spec.shape,
+            self._environment.action_spec().shape,
             0,
-            self._environment.action_spec._num_values,
+            self._environment.action_spec()._num_values,
         )
         return action
 

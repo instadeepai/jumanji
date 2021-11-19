@@ -79,16 +79,13 @@ class DeepMindEnvWrapper(dm_env.Environment):
         self._state, timestep = self._jitted_step(self._state, action)
         return dm_env.TimeStep(**timestep)
 
-    @property
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec."""
-        return self._env.observation_spec
+        return self._env.observation_spec()
 
-    @property
     def action_spec(self) -> specs.Array:
         """Returns the action spec."""
-        return self._env.action_spec
+        return self._env.action_spec()
 
-    @property
     def unwrapped(self) -> JaxEnv:
         return self._env
