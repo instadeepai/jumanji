@@ -1,30 +1,13 @@
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
-from chex import ArrayTree
 from jax import random
 
+import jumanji.testing.utils as test_utils
 from jumanji.jax.snake import Snake, State
 from jumanji.jax.snake.types import Position
 from jumanji.jax.types import TimeStep
 from jumanji.utils import JaxEnvironmentLoop
-
-
-def _assert_is_jax_array_tree(tree_of_arrays: ArrayTree) -> None:
-    """Checks that the `tree_of_arrays`is a tree of jax arrays."""
-    is_array, _ = jax.tree_flatten(
-        jax.tree_map(lambda x: isinstance(x, jnp.ndarray), tree_of_arrays)
-    )
-    assert np.all(is_array), "Tree is not a tree of jax arrays."
-
-
-def _assert_tree_is_finite(tree_of_arrays: ArrayTree) -> None:
-    """Checks that the `tree_of_arrays`is a tree of finite values (no NaN or inf)."""
-    nodes, _ = jax.tree_flatten(jax.tree_map(lambda x: jnp.isfinite(x), tree_of_arrays))
-    assert np.all(
-        [node.all() for node in nodes]
-    ), "Tree is not a tree of finite elements."
 
 
 @pytest.fixture
@@ -46,7 +29,7 @@ def test_snake__reset(snake_env: Snake) -> None:
     assert state1.length == 1
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
-    _assert_is_jax_array_tree(state1)
+    test_utils.assert_is_jax_array_tree(state1)
     # Check random initialization
     assert state1.head_pos != state2.head_pos
     assert state1.fruit_pos != state2.fruit_pos
@@ -70,7 +53,7 @@ def test_snake__step(snake_env: Snake) -> None:
     new_state1, timestep1 = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
-    _assert_is_jax_array_tree(new_state1)
+    test_utils.assert_is_jax_array_tree(new_state1)
     # Check that the state has changed
     assert new_state1.step != state.step
     assert new_state1.head_pos != state.head_pos
@@ -127,13 +110,13 @@ def test_snake__no_nan(snake_env: Snake) -> None:
     key = random.PRNGKey(0)
     # Check exiting the board to the top
     state, timestep = reset_fn(key)
-    _assert_tree_is_finite((state, timestep))
+    test_utils.assert_tree_is_finite((state, timestep))
     while not timestep.last():
         state, timestep = step_fn(state, action=0)
-        _assert_tree_is_finite((state, timestep))
+        test_utils.assert_tree_is_finite((state, timestep))
     # Check exiting the board to the right
     state, timestep = reset_fn(key)
-    _assert_tree_is_finite((state, timestep))
+    test_utils.assert_tree_is_finite((state, timestep))
     while not timestep.last():
         state, timestep = step_fn(state, action=1)
-        _assert_tree_is_finite((state, timestep))
+        test_utils.assert_tree_is_finite((state, timestep))
