@@ -29,6 +29,9 @@ class DeepMindEnvWrapper(dm_env.Environment):
             self._env.step
         )
 
+    def __repr__(self) -> str:
+        return self._env.__repr__()
+
     def reset(self) -> dm_env.TimeStep:
         """Starts a new sequence and returns the first `TimeStep` of this sequence.
 

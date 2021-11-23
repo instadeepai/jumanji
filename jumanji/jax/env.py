@@ -18,6 +18,9 @@ class JaxEnv(abc.ABC, Generic[State]):
     The API is inspired by [brax](https://github.com/google/brax/blob/main/brax/envs/env.py).
     """
 
+    def __repr__(self) -> str:
+        return "Jax environment."
+
     @abc.abstractmethod
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
