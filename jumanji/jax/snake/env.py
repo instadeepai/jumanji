@@ -54,6 +54,16 @@ class Snake(JaxEnv):
         self.board_shape = (n_rows, n_cols)
         self.time_limit = time_limit
 
+    def __repr__(self) -> str:
+        return "\n".join(
+            [
+                "Snake environment:",
+                f" - n_rows: {self.n_rows}",
+                f" - n_cols: {self.n_cols}",
+                f" - time_limit: {self.time_limit}",
+            ]
+        )
+
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
 
