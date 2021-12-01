@@ -3,11 +3,11 @@ import jax.numpy as jnp
 import pytest
 from jax import random
 
-import jumanji.testing.utils as test_utils
 from jumanji.jax.swap import Swap
 from jumanji.jax.swap.types import State
 from jumanji.jax.types import TimeStep
 from jumanji.jax.wrappers import DeepMindEnvWrapper
+from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.utils import DeepMindEnvBenchmarkLoop, JaxEnvironmentLoop
 
 
@@ -34,7 +34,7 @@ def test_swap__reset(swap_env: Swap) -> None:
     assert not jnp.any(state1.key == state2.key)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
-    test_utils.assert_is_jax_array_tree(state1)
+    assert_is_jax_array_tree(state1)
 
 
 @pytest.mark.parametrize("swap_env", [()], indirect=True)
@@ -53,7 +53,7 @@ def test_swap__step(swap_env: Swap) -> None:
     new_state1, timestep1 = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
-    test_utils.assert_is_jax_array_tree(new_state1)
+    assert_is_jax_array_tree(new_state1)
     # Check that the state has changed
     assert new_state1.step_count == state.step_count + 1
     assert jnp.any(new_state1.agent_pos != state.agent_pos)
