@@ -11,7 +11,7 @@ from jumanji.jax.snake.types import Action, Position, State
 from jumanji.jax.types import TimeStep, restart, termination, transition
 
 
-class Snake(JaxEnv):
+class Snake(JaxEnv[State]):
     """
     A JAX implementation of the 'Snake' game.
 

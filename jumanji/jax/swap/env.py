@@ -10,7 +10,7 @@ from jumanji.jax.swap.types import Action, State
 from jumanji.jax.types import TimeStep, restart, transition, truncation
 
 
-class Swap(JaxEnv):
+class Swap(JaxEnv[State]):
     """
     A JAX implementation of the two-color toy problem described in (Flennerhag et al., 2021).
     The episode is reset every fixed number of periods.
