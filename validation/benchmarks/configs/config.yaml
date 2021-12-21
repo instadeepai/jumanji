@@ -1,0 +1,12 @@
+defaults:
+  - environment: fake_env
+  - environment_loop: dm_wrapper
+
+num_env_steps: null
+num_episodes: 10
+print_time_in_ms: True
+
+# Move output dir creation to tmp
+hydra:
+  run:
+    dir: /tmp

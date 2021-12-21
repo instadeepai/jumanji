@@ -1,6 +1,7 @@
 from typing import Any, Type, TypeVar
 
 import chex
+import jax
 import jax.numpy as jnp
 import numpy as np
 import tree as tree_lib
@@ -73,3 +74,12 @@ def assert_tree_with_leaves_of_type(input_tree: Any, leaf_type: Type) -> None:
 def assert_is_jax_array_tree(input_tree: chex.ArrayTree) -> None:
     """Asserts that the `input_tree` has leaves that are exclusively of type `jnp.ndarray`."""
     assert_tree_with_leaves_of_type(input_tree, jnp.ndarray)
+
+
+def has_at_least_rank(input_tree: chex.ArrayTree, rank: int) -> bool:
+    """Indicate if all leaves have a rank greater or equal to `rank`."""
+    has_rank_greater, _ = jax.tree_flatten(
+        jax.tree_map(lambda x: x.ndim >= rank, input_tree)
+    )
+    has_at_least_rank_result: bool = np.all(has_rank_greater)
+    return has_at_least_rank_result

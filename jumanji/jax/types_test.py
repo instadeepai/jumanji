@@ -3,7 +3,14 @@ import jax.numpy as jnp
 import pytest
 from jax import lax
 
-from jumanji.jax.types import TimeStep, restart, termination, transition, truncation
+from jumanji.jax.types import (
+    StepType,
+    TimeStep,
+    restart,
+    termination,
+    transition,
+    truncation,
+)
 
 
 def test_dm_env_timestep__not_jaxtype() -> None:
@@ -78,7 +85,7 @@ def test_timestep__restart() -> None:
     observation = jnp.ones(5, float)
     timestep = restart(observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is dm_env.StepType.FIRST
+    assert timestep.step_type is StepType.FIRST
     assert timestep.reward == 0.0
     assert timestep.discount == 1.0
 
@@ -89,7 +96,7 @@ def test_timestep__transition() -> None:
     reward = jnp.array(2.0)
     timestep = transition(reward, observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is dm_env.StepType.MID
+    assert timestep.step_type is StepType.MID
     assert timestep.reward == reward
     assert timestep.discount == 1.0
 
@@ -101,7 +108,7 @@ def test_timestep__truncation() -> None:
     discount = jnp.array(0.8)
     timestep = truncation(reward, observation, discount)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is dm_env.StepType.LAST
+    assert timestep.step_type is StepType.LAST
     assert timestep.reward == reward
     assert timestep.discount == discount
 
@@ -112,6 +119,34 @@ def test_timestep__termination() -> None:
     reward = jnp.array(2.0)
     timestep = termination(reward, observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is dm_env.StepType.LAST
+    assert timestep.step_type is StepType.LAST
     assert timestep.reward == reward
     assert timestep.discount == 0.0
+
+
+@pytest.mark.parametrize(
+    "step_type, is_first, is_mid, is_last",
+    [
+        (StepType.FIRST, True, False, False),
+        (StepType.MID, False, True, False),
+        (StepType.LAST, False, False, True),
+    ],
+)
+def test_step_type__helpers(
+    step_type: StepType, is_first: bool, is_mid: bool, is_last: bool
+) -> None:
+    """Test TimeStep and StepType methods first, mid and last."""
+    time_step = TimeStep(
+        reward=jnp.float32(0.0),
+        discount=jnp.float32(1.0),
+        observation=jnp.array(()),
+        step_type=step_type,
+    )
+    # TimeStep methods
+    assert time_step.first() is is_first
+    assert time_step.mid() is is_mid
+    assert time_step.last() is is_last
+    # StepType methods
+    assert time_step.step_type.first() is is_first
+    assert time_step.step_type.mid() is is_mid
+    assert time_step.step_type.last() is is_last

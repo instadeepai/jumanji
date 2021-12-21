@@ -90,7 +90,9 @@ class Swap(JaxEnv[State]):
             observation_spec: dm_env.specs object
         """
         return specs.Array(
-            shape=(3, 2, max(self.n_rows, self.n_cols)), dtype=jnp.float32
+            shape=(3, 2, max(self.n_rows, self.n_cols)),
+            dtype=jnp.float32,
+            name="observation",
         )
 
     def action_spec(self) -> specs.DiscreteArray:

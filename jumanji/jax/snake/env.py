@@ -70,7 +70,9 @@ class Snake(JaxEnv[State]):
         Returns:
             observation_spec: dm_env.specs object
         """
-        return specs.Array(shape=(5, *self.board_shape), dtype=jnp.float32)
+        return specs.Array(
+            shape=(5, *self.board_shape), dtype=jnp.float32, name="observation"
+        )
 
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].

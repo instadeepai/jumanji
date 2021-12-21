@@ -2,7 +2,7 @@
 IMAGE=jumanji
 DOCKER_RUN_FLAGS=--rm --volume $(PWD):/home/app/jumanji
 DOCKER_RUN=docker run $(DOCKER_RUN_FLAGS) $(IMAGE)
-TEST=jumanji examples
+TEST=jumanji examples validation
 
 # Makefile
 

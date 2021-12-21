@@ -51,7 +51,7 @@ class JaxEnv(abc.ABC, Generic[State]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: dm_env.specs object
+            observation_spec: a `dm_env.specs.Array` spec.
         """
         raise NotImplementedError
 
@@ -60,6 +60,28 @@ class JaxEnv(abc.ABC, Generic[State]):
         """Returns the action spec.
 
         Returns:
-            action_spec: dm_env.specs object
+            action_spec: a `dm_env.specs.Array` spec.
         """
         raise NotImplementedError
+
+    @staticmethod
+    def reward_spec() -> specs.Array:
+        """Describes the reward returned by the environment. By default, this is assumed to be a
+        single float.
+
+        Returns:
+            reward_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.Array(shape=(), dtype=float, name="reward")
+
+    @staticmethod
+    def discount_spec() -> specs.Array:
+        """Describes the discount returned by the environment. By default, this is assumed to be a
+        single float between 0 and 1.
+
+        Returns:
+            discount_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.BoundedArray(
+            shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount"
+        )

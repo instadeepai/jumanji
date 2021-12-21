@@ -24,7 +24,9 @@ linters:
   stage: lint
   script:
     - pip install -r requirements-dev.txt
-    - pre-commit run --all-files --verbose
+    - python -m black --check jumanji examples validation setup.py
+    - python -m flake8 jumanji examples validation setup.py
+    - python -m mypy jumanji examples validation
 
 test:
   extends: .pip-job

@@ -7,8 +7,9 @@ from jax import random
 from jumanji.jax.snake import Snake, State
 from jumanji.jax.snake.types import Position
 from jumanji.jax.types import TimeStep
+from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.utils import JaxEnvironmentLoop
+from validation.environment_loops import JaxEnvironmentLoop
 
 
 @pytest.fixture
@@ -77,10 +78,14 @@ def test_snake__step(snake_env: Snake) -> None:
 
 
 @pytest.mark.parametrize("snake_env", [()], indirect=True)
-def test_snake__does_not_smoke(snake_env: Snake) -> None:
+def test_snake__does_not_smoke(snake_env: Snake, capsys: pytest.CaptureFixture) -> None:
     """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
-    jax_environment_loop = JaxEnvironmentLoop(snake_env, n_steps=1, batch_size=2)
-    jax_environment_loop.run(num_steps=3, print_=False)
+    fake_agent = FakeAgent()
+    jax_environment_loop = JaxEnvironmentLoop(
+        snake_env, fake_agent, n_steps=1, batch_size=2
+    )
+    jax_environment_loop.run(num_steps=3)
+    assert capsys.readouterr().out
 
 
 def test_update_head_pos() -> None:

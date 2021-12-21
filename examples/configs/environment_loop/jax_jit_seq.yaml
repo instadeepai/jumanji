@@ -1,4 +1,0 @@
-cls: JaxEnvironmentLoop
-wrappers: []
-n_steps: 20
-batch_size: 10

@@ -33,6 +33,11 @@ def jax_and_numpy_tree() -> Dict:
     return {"leaf1": jnp.ones(10), "branch": {"leaf2": np.zeros(1)}}
 
 
+@pytest.fixture
+def jax_tree_batch() -> Dict:
+    return {"leaf1": jnp.ones((1, 10)), "branch": {"leaf2": jnp.zeros((1, 5))}}
+
+
 def test_is_equal_pytree(mixed_tree: Dict) -> None:
     """Test that `pytree_test_utils.is_equal_pytree` outputs `True` when two trees are the
     same (have the same leaves), or `False` if they are different (at least one leaf is different).
@@ -147,3 +152,17 @@ def test_assert_is_jax_array_tree(
         match=f"The tree has at least one " f"leaf that is not of type {jnp.ndarray}.",
     ):
         pytree_test_utils.assert_is_jax_array_tree(jax_and_numpy_tree)
+
+
+def test_has_at_least_rank(
+    jax_tree: Dict,
+    jax_tree_batch: Dict,
+) -> None:
+    """
+    Test that `pytree_test_utils.has_at_least_rank` correctly verifies the ranks of jax trees.
+    """
+    assert pytree_test_utils.has_at_least_rank(jax_tree, 1)
+    assert not pytree_test_utils.has_at_least_rank(jax_tree, 2)
+    assert pytree_test_utils.has_at_least_rank(jax_tree_batch, 1)
+    assert pytree_test_utils.has_at_least_rank(jax_tree_batch, 2)
+    assert not pytree_test_utils.has_at_least_rank(jax_tree_batch, 3)
