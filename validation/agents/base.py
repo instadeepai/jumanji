@@ -1,7 +1,7 @@
 import abc
 from typing import Dict, Tuple
 
-from chex import Array, ArrayTree, PRNGKey
+from chex import Array, PRNGKey
 
 from jumanji.jax.types import Action
 from validation.types import TrainingState, Transition
@@ -43,7 +43,7 @@ class Agent(abc.ABC):
     @abc.abstractmethod
     def sgd_step(
         self, training_state: TrainingState, batch_traj: Transition
-    ) -> Tuple[ArrayTree, Dict]:
+    ) -> Tuple[TrainingState, Dict]:
         """Computes an RL learning step.
 
         Args:
