@@ -29,6 +29,20 @@ class PostDevelopCommand(develop):
         develop.run(self)
 
 
+pcb_grid_requirements = [
+    "numpy",
+    "gym",
+    "ray",
+    "dm_tree",
+    "pandas",
+    "tabulate",
+    "scikit-image",
+    "requests",
+    "pygame",
+    "lz4",
+    "hiredis",
+]
+
 setup(
     name="jumanji",
     version=__version__,
@@ -40,6 +54,7 @@ setup(
     install_requires=read_requirements("./requirements.txt"),
     extras_require={
         "dev": read_requirements("./requirements-dev.txt"),
+        "pcb_grid": pcb_grid_requirements,
         "mujoco": ["mujoco-py@git+https://github.com/openai/mujoco-py"],
     },
     cmdclass={"develop": PostDevelopCommand},
