@@ -1,3 +1,4 @@
+import chex
 import jax
 import jax.numpy as jnp
 import pytest
@@ -83,8 +84,7 @@ def test_swap__step(swap_env: Swap) -> None:
 def test_swap__target_reached(swap_env: Swap) -> None:
     """Validates the effect of reaching a target."""
     step_fn = jax.jit(swap_env.step)
-    state_key, action_key = random.split(random.PRNGKey(0))
-    state, _ = swap_env.reset(state_key)
+    state, _ = swap_env.reset(random.PRNGKey(0))
     state.agent_pos = jnp.array((2, 2), int)
     state.blue_pos = jnp.array((2, 3), int)
     state.red_pos = jnp.array((3, 2), int)
@@ -123,10 +123,52 @@ def test_swap__episode_terminates(swap_env: Swap) -> None:
     """Validates that the episode terminates after swapping targets twice."""
     swap_env.swap_period = 5
     step_fn = jax.jit(swap_env.step)
-    state_key, action_key = random.split(random.PRNGKey(0))
-    state, timestep = swap_env.reset(state_key)
+    state, timestep = swap_env.reset(random.PRNGKey(0))
     while not timestep.last():
         state, timestep = step_fn(state, 0)
+
+
+def test_swap__agent_remains_on_the_board() -> None:
+    """Validates that the agent stays on the board whatever action it takes."""
+    n_rows, n_cols = 3, 5
+    swap_env = Swap(n_rows=n_rows, n_cols=n_cols)
+    step_fn = jax.jit(swap_env.step)
+    for action in range(4):
+        state, timestep = swap_env.reset(random.PRNGKey(0))
+        for _ in range(6):
+            state, timestep = step_fn(state, action)
+        assert jnp.all(state.agent_pos >= jnp.array((0, 0), int)) and jnp.all(
+            state.agent_pos <= jnp.array((n_rows, n_cols), int)
+        )
+
+
+def test_swap__item_sampling() -> None:
+    """Validates that both items are sampled correctly."""
+    swap_env = Swap(n_rows=2, n_cols=2)
+    reset_key, sample_key = random.split(random.PRNGKey(0))
+    state, timestep = swap_env.reset(reset_key)
+
+    @jax.jit
+    def sample_is_correct(key: chex.PRNGKey) -> chex.Array:
+        blue_key, red_key = random.split(key)
+        new_red_pos = swap_env._sample_pos(
+            agent_pos=state.agent_pos, item_pos=state.blue_pos, key=red_key
+        )
+        new_red_pos_is_good = jnp.logical_and(
+            jnp.any(new_red_pos != state.blue_pos),
+            jnp.any(new_red_pos != state.agent_pos),
+        )
+        new_blue_pos = swap_env._sample_pos(
+            agent_pos=state.agent_pos, item_pos=state.red_pos, key=blue_key
+        )
+        new_blue_pos_is_good = jnp.logical_and(
+            jnp.any(new_blue_pos != state.red_pos),
+            jnp.any(new_blue_pos != state.agent_pos),
+        )
+        return jnp.logical_and(new_red_pos_is_good, new_blue_pos_is_good)
+
+    keys = random.split(sample_key, 10)
+    assert jax.vmap(sample_is_correct)(keys).all()
 
 
 @pytest.mark.parametrize("swap_env", [()], indirect=True)

@@ -130,9 +130,15 @@ class Swap(JaxEnv[State]):
         )
         obs = jnp.array(
             [
-                nn.one_hot(state.agent_pos, max(self.n_rows, self.n_cols)),
-                nn.one_hot(state.blue_pos, max(self.n_rows, self.n_cols)),
-                nn.one_hot(state.red_pos, max(self.n_rows, self.n_cols)),
+                nn.one_hot(
+                    state.agent_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
+                nn.one_hot(
+                    state.blue_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
+                nn.one_hot(
+                    state.red_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
             ],
             dtype=jnp.float32,
         )
@@ -158,7 +164,7 @@ class Swap(JaxEnv[State]):
         timestep = self._state_to_timestep(state, reward)
         return state, timestep
 
-    def _update_state(self, state: State, action: Action) -> Tuple[State, float]:
+    def _update_state(self, state: State, action: Action) -> Tuple[State, Array]:
         """Update the environment state by taking an action.
 
         Args:
@@ -173,19 +179,19 @@ class Swap(JaxEnv[State]):
         next_key, sample_key = random.split(state.key)
 
         pos_min = jnp.array((0, 0), dtype=jnp.int32)
-        pos_max = jnp.array((self.n_rows, self.n_cols), dtype=jnp.int32)
+        pos_max = jnp.array((self.n_rows - 1, self.n_cols - 1), dtype=jnp.int32)
         pos_change_branches = [
             lambda row_col: jnp.clip(
-                jnp.array((row_col[0] - 1, row_col[1])), pos_min, pos_max
+                jnp.array((row_col[0] - 1, row_col[1]), int), pos_min, pos_max
             ),
             lambda row_col: jnp.clip(
-                jnp.array((row_col[0], row_col[1] + 1)), pos_min, pos_max
+                jnp.array((row_col[0], row_col[1] + 1), int), pos_min, pos_max
             ),
             lambda row_col: jnp.clip(
-                jnp.array((row_col[0] + 1, row_col[1])), pos_min, pos_max
+                jnp.array((row_col[0] + 1, row_col[1]), int), pos_min, pos_max
             ),
             lambda row_col: jnp.clip(
-                jnp.array((row_col[0], row_col[1] - 1)), pos_min, pos_max
+                jnp.array((row_col[0], row_col[1] - 1), int), pos_min, pos_max
             ),
         ]
         next_agent_pos = lax.switch(action, pos_change_branches, state.agent_pos)
@@ -236,7 +242,7 @@ class Swap(JaxEnv[State]):
         )
         return next_state, reward
 
-    def _state_to_timestep(self, state: State, reward: float) -> TimeStep:
+    def _state_to_timestep(self, state: State, reward: Array) -> TimeStep:
         """Maps an environment state to an observation. The reward is needed to output the timestep.
 
         Args:
@@ -249,9 +255,15 @@ class Swap(JaxEnv[State]):
         """
         next_obs = jnp.array(
             [
-                nn.one_hot(state.agent_pos, max(self.n_rows, self.n_cols)),
-                nn.one_hot(state.blue_pos, max(self.n_rows, self.n_cols)),
-                nn.one_hot(state.red_pos, max(self.n_rows, self.n_cols)),
+                nn.one_hot(
+                    state.agent_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
+                nn.one_hot(
+                    state.blue_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
+                nn.one_hot(
+                    state.red_pos, max(self.n_rows, self.n_cols), dtype=jnp.float32
+                ),
             ],
             dtype=jnp.float32,
         )
@@ -270,7 +282,7 @@ class Swap(JaxEnv[State]):
         Args:
             agent_pos: jax array (int) of shape (2,) representing the coordinates of the agent.
             item_pos: jax array (int) of shape (2,) representing the coordinates of the other
-                target to avoid to sample on the same location.
+                target to avoid sampling on the same location.
             key: random key used for the sampling operation.
 
         Returns:
@@ -278,8 +290,8 @@ class Swap(JaxEnv[State]):
 
         """
         free_slots = jnp.ones((self.n_rows, self.n_cols), float)
-        free_slots.at[tuple(agent_pos)].set(0.0)
-        free_slots.at[tuple(item_pos)].set(0.0)
+        free_slots = free_slots.at[tuple(agent_pos)].set(0.0)
+        free_slots = free_slots.at[tuple(item_pos)].set(0.0)
         pos_index = random.choice(
             key, jnp.arange(self.n_rows * self.n_cols), p=free_slots.flatten()
         )
