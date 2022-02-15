@@ -1,3 +1,5 @@
+.PHONY: build # in case we create file/dir with this name
+
 # variables
 IMAGE=jumanji
 DOCKER_RUN_FLAGS=--rm --volume $(PWD):/home/app/jumanji

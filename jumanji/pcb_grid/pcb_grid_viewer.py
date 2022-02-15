@@ -28,17 +28,18 @@ class PcbGridViewer:
 
         self.screen = pygame.display.set_mode((width, height))
         self.grid_unit = 20
-        self.xoff = (width - self.grid_unit * env.cols) / 2
-        self.yoff = (height - self.grid_unit * env.rows) / 2
+        self.xoff = (width - self.grid_unit * env.cols) // 2
+        self.yoff = (height - self.grid_unit * env.rows) // 2
 
         rnd = np.random.RandomState()
         rnd.seed(0)
-        self.palette: List[Tuple] = [
+        self.palette: List[Tuple[int, int, int]] = [
             (255, 255, 255),
             (255, 0, 0),
         ]
         for _ in range(100):
-            self.palette.append(tuple(rnd.randint(0, 192, 3)))
+            color = rnd.randint(0, 192, 3)
+            self.palette.append((color[0], color[1], color[2]))
 
     def render_with_mode(self, mode: str = "human") -> None:
         """
@@ -79,7 +80,7 @@ class PcbGridViewer:
 
         pygame.display.update()
 
-    def _draw_shape(self, rect: Tuple[float, float, float, float], value: int) -> None:
+    def _draw_shape(self, rect: Tuple[int, int, int, int], value: int) -> None:
         """
         Draw shape in the given rectangle using the given color value.
 
@@ -90,9 +91,8 @@ class PcbGridViewer:
         """
 
         color = self.palette[value if value < 2 else 2 + (value - 2) // 3]
-        color: Tuple[int, int, int] = (int(color[0]), int(color[1]), int(color[2]))
         if value > 1 and (value - TARGET) % 3 == 0:
-            pygame.draw.ellipse(self.screen, color, rect, 5)
+            pygame.draw.ellipse(self.screen, color, rect, width=5)
         else:
             pygame.draw.rect(self.screen, color, rect)
             if value > 1 and (value - HEAD) % 3 == 0:

@@ -23,7 +23,7 @@ linters:
   extends: .pip-job
   stage: lint
   script:
-    - pip install -r requirements-dev.txt
+    - pip install .[dev]
     - python -m black --check jumanji examples validation setup.py
     - python -m flake8 jumanji examples validation setup.py
     - python -m mypy jumanji examples validation
@@ -32,11 +32,10 @@ test:
   extends: .pip-job
   stage: test
   script:
-    - pip install -r requirements-dev.txt
-    - pip install .[pcb_grid]
+    - pip install .[dev,pcb_ray]
     - /usr/local/bin/Xdummy :1 &
     - export DISPLAY=':1'
-    - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
+    - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation
     - python -m coverage html --directory=coverage_html_report
     - python -m coverage report --fail-under=1
   coverage: '/TOTAL.+ (\d+\.?\d+)%/'
@@ -62,7 +61,7 @@ test_docs:
   extends: .pip-job
   stage: test
   script:
-    - pip install -r requirements-dev.txt
+    - pip install .[dev]
     - python -m mkdocs build --verbose --site-dir docs_public
   artifacts:
     paths:
@@ -72,7 +71,7 @@ pages:
   extends: .pip-job
   stage: deploy
   script:
-    - pip install -r requirements-dev.txt
+    - pip install .[dev]
     - python -m mkdocs build --verbose
   artifacts:
     paths:

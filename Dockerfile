@@ -42,9 +42,7 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 RUN pip install --upgrade --quiet pip setuptools
 
 COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements-dev.txt /tmp/requirements-dev.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt && rm -rf /tmp/*
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm -rf /tmp/*
 
 # working directory
 WORKDIR /home/app/jumanji
@@ -52,6 +50,7 @@ ENV PYTHONPATH=$PYTHONPATH:$PWD
 
 COPY . /home/app/jumanji
 
-RUN pip install -e .[mujoco]
+RUN pip install --no-cache-dir -e .[all]
+
 EXPOSE 6006
 ENTRYPOINT bash

@@ -10,10 +10,11 @@ from setuptools.command.develop import develop
 __version__ = "0.0.0"
 
 
-def read_requirements(file: str) -> List[str]:
+def read_requirements(*files: str) -> List[str]:
     """Returns content of given requirements file."""
     return [
         line
+        for file in files
         for line in open(file)
         if not (line.startswith("#") or line.startswith("--"))
     ]
@@ -29,19 +30,11 @@ class PostDevelopCommand(develop):
         develop.run(self)
 
 
-pcb_grid_requirements = [
-    "numpy",
-    "gym",
-    "ray",
-    "dm_tree",
-    "pandas",
-    "tabulate",
-    "scikit-image",
-    "requests",
-    "pygame",
-    "lz4",
-    "hiredis",
-]
+requirements_files = {
+    "dev": "./requirements-dev.txt",
+    "pcb_ray": "./requirements-pcb-ray.txt",
+    "mujoco": "./requirements-mujoco.txt",
+}
 
 setup(
     name="jumanji",
@@ -53,9 +46,10 @@ setup(
     zip_safe=False,
     install_requires=read_requirements("./requirements.txt"),
     extras_require={
-        "dev": read_requirements("./requirements-dev.txt"),
-        "pcb_grid": pcb_grid_requirements,
-        "mujoco": ["mujoco-py@git+https://github.com/openai/mujoco-py"],
+        "dev": read_requirements(requirements_files["dev"]),
+        "pcb_ray": read_requirements(requirements_files["pcb_ray"]),
+        "mujoco": read_requirements(requirements_files["mujoco"]),
+        "all": read_requirements(*list(requirements_files.values())),
     },
     cmdclass={"develop": PostDevelopCommand},
     include_package_data=True,
