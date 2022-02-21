@@ -24,9 +24,7 @@ linters:
   stage: lint
   script:
     - pip install .[dev]
-    - python -m black --check jumanji examples validation setup.py
-    - python -m flake8 jumanji examples validation setup.py
-    - python -m mypy jumanji examples validation
+    - pre-commit run --all-files --verbose
 
 test:
   extends: .pip-job
@@ -36,8 +34,8 @@ test:
     - /usr/local/bin/Xdummy :1 &
     - export DISPLAY=':1'
     - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation
-    - python -m coverage html --directory=coverage_html_report
-    - python -m coverage report --fail-under=1
+    - coverage html --directory=coverage_html_report
+    - coverage report --fail-under=1
   coverage: '/TOTAL.+ (\d+\.?\d+)%/'
   artifacts:
     name: "Test Results"
@@ -62,7 +60,7 @@ test_docs:
   stage: test
   script:
     - pip install .[dev]
-    - python -m mkdocs build --verbose --site-dir docs_public
+    - mkdocs build --verbose --site-dir docs_public
   artifacts:
     paths:
       - docs_public
@@ -72,7 +70,7 @@ pages:
   stage: deploy
   script:
     - pip install .[dev]
-    - python -m mkdocs build --verbose
+    - mkdocs build --verbose
   artifacts:
     paths:
       - public
