@@ -64,8 +64,7 @@ class JaxEnv(abc.ABC, Generic[State]):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def reward_spec() -> specs.Array:
+    def reward_spec(self) -> specs.Array:
         """Describes the reward returned by the environment. By default, this is assumed to be a
         single float.
 
@@ -74,8 +73,7 @@ class JaxEnv(abc.ABC, Generic[State]):
         """
         return specs.Array(shape=(), dtype=float, name="reward")
 
-    @staticmethod
-    def discount_spec() -> specs.Array:
+    def discount_spec(self) -> specs.Array:
         """Describes the discount returned by the environment. By default, this is assumed to be a
         single float between 0 and 1.
 
