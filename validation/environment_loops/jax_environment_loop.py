@@ -4,7 +4,7 @@ from typing import Callable, Dict, Generic, NamedTuple, Optional, Tuple
 import haiku as hk
 import jax
 import jax.numpy as jnp
-from chex import Array, PRNGKey
+from chex import PRNGKey
 from dm_env import specs
 from jax import lax, random
 
@@ -15,13 +15,13 @@ from validation.utils import loggers
 from validation.utils.timeit import TimeIt
 
 
-class ActingState(NamedTuple, Generic[State]):  # type: ignore
+class ActingState(NamedTuple, Generic[State]):
     """Container for data used during the acting in the environment."""
 
     state: State
     timestep: TimeStep
     key: PRNGKey
-    reset: Array
+    reset: jnp.bool_
     episode_count: jnp.int32
 
 
@@ -136,7 +136,10 @@ class JaxEnvironmentLoop:
             transition = Transition(
                 observation=timestep.observation,
                 action=-1
-                * jnp.ones(self._environment.action_spec().shape, dtype=jnp.int32),
+                * jnp.ones(
+                    self._environment.action_spec().shape,
+                    dtype=self._environment.action_spec().dtype,
+                ),
                 reward=timestep.reward,
                 discount=timestep.discount,
                 next_observation=next_timestep.observation,
@@ -203,7 +206,7 @@ class JaxEnvironmentLoop:
         self,
         acting_states: ActingState,
         training_state: TrainingState,
-    ) -> Tuple[Dict, Transition, TrainingState, Dict]:
+    ) -> Tuple[ActingState, Transition, TrainingState, Dict]:
         """Runs the acting in the environment to collect a batch of trajectories, and then takes
         a learning step.
 
