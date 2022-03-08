@@ -114,10 +114,6 @@ class PcbGridEnv(MultiAgentEnv):
 
         return observations, rewards, dones, {}
 
-    def close(self) -> None:
-        if self.viewer:
-            self.viewer.close()
-
     def _spawn_agent(self, agent_id: int) -> None:
         """
         Spawn a new agent with the given id in a random empty location in the grid.
