@@ -1,5 +1,5 @@
 import argparse
-from typing import Dict, Tuple
+from typing import Tuple
 
 import numpy as np
 
@@ -21,10 +21,6 @@ if __name__ == "__main__":
     env_viewer = PcbGridViewer(env, 1000, 1000)  # Viewer to render environment
     env.reset()
 
-    obs: Dict = {}
-    reward: Dict = {}
-    done: Dict = {}
-
     for _ in range(1000):
         actions = {agent_id: np.random.randint(1, 5) for agent_id in range(args.nets)}
         env_tuple: Tuple = env.step(actions)
@@ -33,5 +29,6 @@ if __name__ == "__main__":
         if done["__all__"]:
             env.reset()
             print("Done")
+    env_viewer.close()
 
     input("Finished. Press Enter to quit.")
