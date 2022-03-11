@@ -5,6 +5,8 @@ import jax.numpy as jnp
 import optax
 from chex import ArrayTree
 
+from jumanji.jax.types import Extra
+
 
 class Transition(NamedTuple):
     """Container for a transition."""
@@ -14,6 +16,7 @@ class Transition(NamedTuple):
     reward: ArrayTree
     discount: ArrayTree
     next_observation: ArrayTree
+    extra: Extra
 
 
 class TrainingState(NamedTuple):

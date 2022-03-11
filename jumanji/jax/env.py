@@ -1,14 +1,12 @@
 """Abstract environment class"""
 
 import abc
-from typing import Generic, Tuple, TypeVar
+from typing import Generic, Tuple
 
 from chex import PRNGKey
 from dm_env import specs
 
-from jumanji.jax.types import Action, TimeStep
-
-State = TypeVar("State")
+from jumanji.jax.types import Action, Extra, State, TimeStep
 
 
 class JaxEnv(abc.ABC, Generic[State]):
@@ -22,19 +20,20 @@ class JaxEnv(abc.ABC, Generic[State]):
         return "Jax environment."
 
     @abc.abstractmethod
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
         """Resets the environment to an initial state.
 
         Args:
             key: random key used to reset the environment.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the new state of the environment,
-                as well as the first timestep.
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -42,8 +41,9 @@ class JaxEnv(abc.ABC, Generic[State]):
             action: Array containing the action to take.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
-                as well as the timestep to be observed.
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
         """
 
     @abc.abstractmethod

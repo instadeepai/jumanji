@@ -8,8 +8,8 @@ from chex import PRNGKey
 from dm_env import specs
 from jax import lax, random
 
-from jumanji.jax.env import JaxEnv, State
-from jumanji.jax.types import Action, TimeStep
+from jumanji.jax.env import JaxEnv
+from jumanji.jax.types import Action, Extra, State, TimeStep
 from validation.agents import Agent, TrainingState, Transition
 from validation.utils import loggers
 from validation.utils.timeit import TimeIt
@@ -62,9 +62,11 @@ class JaxEnvironmentLoop:
         self._steps_per_epoch = self._n_steps * self._batch_size
         self._rng = hk.PRNGSequence(seed)
         self._step_fn: Callable[
-            [State, Action], Tuple[State, TimeStep]
+            [State, Action], Tuple[State, TimeStep, Extra]
         ] = environment.step
-        self._reset_fn: Callable[[PRNGKey], Tuple[State, TimeStep]] = environment.reset
+        self._reset_fn: Callable[
+            [PRNGKey], Tuple[State, TimeStep, Extra]
+        ] = environment.reset
         if not isinstance(environment.action_spec(), specs.BoundedArray):
             action_spec = environment.action_spec()
             raise TypeError(
@@ -125,7 +127,7 @@ class JaxEnvironmentLoop:
             """Resets the environment because _acting_state['reset'] is True."""
             next_key, reset_key = random.split(_acting_state.key)
             timestep = _acting_state.timestep
-            next_state, next_timestep = self._reset_fn(reset_key)  # type: ignore
+            next_state, next_timestep, extra = self._reset_fn(reset_key)  # type: ignore
             next_acting_state = ActingState(
                 episode_count=_acting_state.episode_count + 1,
                 key=next_key,
@@ -143,6 +145,7 @@ class JaxEnvironmentLoop:
                 reward=timestep.reward,
                 discount=timestep.discount,
                 next_observation=next_timestep.observation,
+                extra=extra,
             )
             return next_acting_state, transition
 
@@ -155,7 +158,9 @@ class JaxEnvironmentLoop:
             action = self._agent.select_action(
                 training_state, timestep.observation, action_key
             )
-            next_state, next_timestep = self._step_fn(_acting_state.state, action)
+            next_state, next_timestep, extra = self._step_fn(
+                _acting_state.state, action
+            )
             next_acting_state = ActingState(
                 episode_count=_acting_state.episode_count,
                 key=next_key,
@@ -169,6 +174,7 @@ class JaxEnvironmentLoop:
                 reward=timestep.reward,
                 discount=timestep.discount,
                 next_observation=next_timestep.observation,
+                extra=extra,
             )
             return next_acting_state, transition
 
@@ -293,7 +299,7 @@ class JaxEnvironmentLoop:
         episode_count, step_count = 0, 0
         training_state = self._agent.init_training_state(next(self._rng))
         keys = random.split(next(self._rng), self._batch_size)
-        states, timesteps = jax.vmap(self._reset_fn)(keys)
+        states, timesteps, _ = jax.vmap(self._reset_fn)(keys)
         acting_states = ActingState(
             episode_count=jnp.zeros((self._batch_size,), int),
             key=random.split(next(self._rng), self._batch_size),

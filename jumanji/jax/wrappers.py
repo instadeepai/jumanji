@@ -5,8 +5,8 @@ from chex import PRNGKey
 from dm_env import specs
 from jax import jit, random
 
-from jumanji.jax.env import JaxEnv, State
-from jumanji.jax.types import Action, TimeStep
+from jumanji.jax.env import JaxEnv
+from jumanji.jax.types import Action, Extra, State, TimeStep
 
 
 class DeepMindEnvWrapper(dm_env.Environment):
@@ -22,15 +22,15 @@ class DeepMindEnvWrapper(dm_env.Environment):
         self._env = env
         self._key = key or random.PRNGKey(0)
         self._state: Any
-        self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep]] = jit(
+        self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep, Extra]] = jit(
             self._env.reset
         )
-        self._jitted_step: Callable[[State, Action], Tuple[State, TimeStep]] = jit(
-            self._env.step
-        )
+        self._jitted_step: Callable[
+            [State, Action], Tuple[State, TimeStep, Extra]
+        ] = jit(self._env.step)
 
     def __repr__(self) -> str:
-        return self._env.__repr__()
+        return str(self._env.__repr__())
 
     def reset(self) -> dm_env.TimeStep:
         """Starts a new sequence and returns the first `TimeStep` of this sequence.
@@ -46,7 +46,7 @@ class DeepMindEnvWrapper(dm_env.Environment):
                 specification returned by `observation_spec()`.
         """
         reset_key, self._key = random.split(self._key)
-        self._state, timestep = self._jitted_reset(reset_key)
+        self._state, timestep, _ = self._jitted_reset(reset_key)
         return dm_env.restart(observation=timestep.observation)
 
     def step(self, action: Action) -> dm_env.TimeStep:
@@ -79,7 +79,7 @@ class DeepMindEnvWrapper(dm_env.Environment):
                     specification returned by `observation_spec()`.
         """
 
-        self._state, timestep = self._jitted_step(self._state, action)
+        self._state, timestep, _ = self._jitted_step(self._state, action)
         return dm_env.TimeStep(**timestep)
 
     def observation_spec(self) -> specs.Array:

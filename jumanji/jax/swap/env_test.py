@@ -25,8 +25,8 @@ def test_swap__reset(swap_env: Swap) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(swap_env.reset)
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
-    state1, timestep1 = reset_fn(key1)
-    state2, timestep2 = reset_fn(key2)
+    state1, timestep1, _ = reset_fn(key1)
+    state2, timestep2, _ = reset_fn(key2)
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step_count == 0
@@ -45,7 +45,7 @@ def test_swap__step(swap_env: Swap) -> None:
     """Validates the jitted step function of the environment."""
     step_fn = jax.jit(swap_env.step)
     state_key, action_key = random.split(random.PRNGKey(0))
-    state, timestep = swap_env.reset(state_key)
+    state, timestep, _ = swap_env.reset(state_key)
     # Sample two different actions
     action1, action2 = random.choice(
         action_key,
@@ -53,7 +53,7 @@ def test_swap__step(swap_env: Swap) -> None:
         shape=(2,),
         replace=False,
     )
-    new_state1, timestep1 = step_fn(state, action1)
+    new_state1, timestep1, _ = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(new_state1)
@@ -61,7 +61,7 @@ def test_swap__step(swap_env: Swap) -> None:
     assert new_state1.step_count == state.step_count + 1
     assert jnp.any(new_state1.agent_pos != state.agent_pos)
     # Check that two different actions lead to two different states
-    new_state2, timestep2 = step_fn(state, action2)
+    new_state2, timestep2, _ = step_fn(state, action2)
     assert jnp.any(new_state1.agent_pos != new_state2.agent_pos)
     # Check that the state update and timestep creation work as expected
     agent_pos = state.agent_pos
@@ -72,7 +72,7 @@ def test_swap__step(swap_env: Swap) -> None:
         3: jnp.array((agent_pos[0], agent_pos[1] - 1)),  # Left
     }
     for action, new_agent_pos in moves.items():
-        new_state, timestep = step_fn(state, action)
+        new_state, timestep, _ = step_fn(state, action)
         assert jnp.array_equal(new_state.agent_pos, new_agent_pos)
         assert jnp.array_equal(
             timestep.observation[0],
@@ -84,12 +84,12 @@ def test_swap__step(swap_env: Swap) -> None:
 def test_swap__target_reached(swap_env: Swap) -> None:
     """Validates the effect of reaching a target."""
     step_fn = jax.jit(swap_env.step)
-    state, _ = swap_env.reset(random.PRNGKey(0))
+    state, *_ = swap_env.reset(random.PRNGKey(0))
     state.agent_pos = jnp.array((2, 2), int)
     state.blue_pos = jnp.array((2, 3), int)
     state.red_pos = jnp.array((3, 2), int)
-    new_state_blue, timestep_blue = step_fn(state, 1)  # blue target is on the right
-    new_state_red, timestep_red = step_fn(state, 2)  # red target is below
+    new_state_blue, timestep_blue, _ = step_fn(state, 1)  # blue target is on the right
+    new_state_red, timestep_red, _ = step_fn(state, 2)  # red target is below
     # Reaching blue target
     assert jnp.array_equal(new_state_blue.agent_pos, state.blue_pos)
     assert timestep_blue.reward == 1
@@ -104,8 +104,8 @@ def test_swap__target_reached(swap_env: Swap) -> None:
     # After 100_000 steps, the targets are flipped.
     swap_env.swap_period = 100_000
     state.step_count = 100_000
-    new_state_blue, timestep_blue = step_fn(state, 1)  # blue target is on the right
-    new_state_red, timestep_red = step_fn(state, 2)  # red target is below
+    new_state_blue, timestep_blue, _ = step_fn(state, 1)  # blue target is on the right
+    new_state_red, timestep_red, _ = step_fn(state, 2)  # red target is below
     # Reaching blue target
     assert jnp.array_equal(new_state_blue.agent_pos, state.blue_pos)
     assert timestep_blue.reward == -1
@@ -123,9 +123,9 @@ def test_swap__episode_terminates(swap_env: Swap) -> None:
     """Validates that the episode terminates after swapping targets twice."""
     swap_env.swap_period = 5
     step_fn = jax.jit(swap_env.step)
-    state, timestep = swap_env.reset(random.PRNGKey(0))
+    state, timestep, _ = swap_env.reset(random.PRNGKey(0))
     while not timestep.last():
-        state, timestep = step_fn(state, 0)
+        state, timestep, _ = step_fn(state, 0)
 
 
 def test_swap__agent_remains_on_the_board() -> None:
@@ -134,9 +134,9 @@ def test_swap__agent_remains_on_the_board() -> None:
     swap_env = Swap(n_rows=n_rows, n_cols=n_cols)
     step_fn = jax.jit(swap_env.step)
     for action in range(4):
-        state, timestep = swap_env.reset(random.PRNGKey(0))
+        state, timestep, _ = swap_env.reset(random.PRNGKey(0))
         for _ in range(6):
-            state, timestep = step_fn(state, action)
+            state, timestep, _ = step_fn(state, action)
         assert jnp.all(state.agent_pos >= jnp.array((0, 0), int)) and jnp.all(
             state.agent_pos <= jnp.array((n_rows, n_cols), int)
         )
@@ -146,7 +146,7 @@ def test_swap__item_sampling() -> None:
     """Validates that both items are sampled correctly."""
     swap_env = Swap(n_rows=2, n_cols=2)
     reset_key, sample_key = random.split(random.PRNGKey(0))
-    state, timestep = swap_env.reset(reset_key)
+    state, timestep, _ = swap_env.reset(reset_key)
 
     @jax.jit
     def sample_is_correct(key: chex.PRNGKey) -> chex.Array:

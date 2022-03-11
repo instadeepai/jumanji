@@ -54,7 +54,7 @@ def assert_trees_are_equal(tree1: MixedTypeTree, tree2: MixedTypeTree) -> None:
     ), "The trees differ in at least one leaf's value(s)."
 
 
-def is_tree_with_leaves_of_type(input_tree: Any, leaf_type: Type) -> bool:
+def is_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> bool:
     """Returns true if all leaves in the `input_tree` are of the specified `leaf_type`."""
     leaf_is_type_func = lambda leaf: isinstance(leaf, leaf_type)
     is_type_leaves = tree_lib.flatten(
@@ -64,16 +64,18 @@ def is_tree_with_leaves_of_type(input_tree: Any, leaf_type: Type) -> bool:
     return tree_leaves_are_all_of_type
 
 
-def assert_tree_with_leaves_of_type(input_tree: Any, leaf_type: Type) -> None:
+def assert_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> None:
     """Asserts that all leaves in the `input_tree` are of the specified `leaf_type`."""
     assert is_tree_with_leaves_of_type(
-        input_tree, leaf_type
-    ), f"The tree has at least one leaf that is not of type {leaf_type}."
+        input_tree, *leaf_type
+    ), "The tree has at least one leaf that is not of type {}.".format(
+        " or ".join([str(type_) for type_ in leaf_type])
+    )
 
 
 def assert_is_jax_array_tree(input_tree: chex.ArrayTree) -> None:
     """Asserts that the `input_tree` has leaves that are exclusively of type `jnp.ndarray`."""
-    assert_tree_with_leaves_of_type(input_tree, jnp.ndarray)
+    assert_tree_with_leaves_of_type(input_tree, jnp.ndarray, type(None))
 
 
 def has_at_least_rank(input_tree: chex.ArrayTree, rank: int) -> bool:

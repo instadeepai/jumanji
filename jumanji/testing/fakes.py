@@ -15,7 +15,7 @@ from jax import lax, random
 
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.specs import EnvironmentSpec
-from jumanji.jax.types import Action, TimeStep, restart, termination, transition
+from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
 from jumanji.jax.wrappers import DeepMindEnvWrapper
 from validation.agents import Agent, TrainingState, Transition
 
@@ -26,7 +26,7 @@ class FakeState:
     step: int
 
 
-class FakeJaxEnv(JaxEnv):
+class FakeJaxEnv(JaxEnv[FakeState]):
     """
     A fake environment that inherits from JaxEnv, for testing purposes.
     """
@@ -70,23 +70,26 @@ class FakeJaxEnv(JaxEnv):
             self.num_action_values, dtype=jnp.int32, name="action"
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
         """Resets the environment to an initial state: step number is 0.
 
         Args:
             key: random key used to reset the environment.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the new state of the environment,
-                as well as the first timestep.
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
         """
 
         state = FakeState(key=key, step=0)
         observation = jnp.array(self.observation_spec().generate_value())
         timestep = restart(observation=observation)
-        return state, timestep
+        return state, timestep, None
 
-    def step(self, state: FakeState, action: Action) -> Tuple[FakeState, TimeStep]:
+    def step(
+        self, state: FakeState, action: Action
+    ) -> Tuple[FakeState, TimeStep, Extra]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -94,8 +97,9 @@ class FakeJaxEnv(JaxEnv):
             action: array.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
-                as well as the timestep to be observed.
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
         """
         key, _ = random.split(state.key)
         next_step = state.step + 1
@@ -112,7 +116,7 @@ class FakeJaxEnv(JaxEnv):
             ),
             None,
         )
-        return next_state, timestep
+        return next_state, timestep, None
 
 
 """
@@ -138,8 +142,7 @@ class FakeAgent(Agent):
     def __init__(self, action_spec: Optional[specs.BoundedArray] = None) -> None:
         self._action_spec = action_spec or specs.DiscreteArray(1, name="action")
 
-    @staticmethod
-    def init_training_state(key: PRNGKey) -> TrainingState:
+    def init_training_state(self, key: PRNGKey) -> TrainingState:
         """Returns an initialized learning state."""
         training_state = TrainingState()
         return training_state
@@ -172,6 +175,7 @@ def fake_transition(env_spec: EnvironmentSpec) -> Transition:
         reward=jnp.array(env_spec.rewards.generate_value()),
         discount=jnp.array(env_spec.discounts.generate_value()),
         next_observation=jnp.array(env_spec.observations.generate_value()),
+        extra=None,
     )
 
 

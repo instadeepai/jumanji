@@ -6,8 +6,8 @@ from dm_env import specs
 from jax import lax, nn, random
 
 from jumanji.jax.env import JaxEnv
-from jumanji.jax.swap.types import Action, State
-from jumanji.jax.types import TimeStep, restart, transition, truncation
+from jumanji.jax.swap.types import State
+from jumanji.jax.types import Action, Extra, TimeStep, restart, transition, truncation
 
 
 class Swap(JaxEnv[State]):
@@ -103,15 +103,16 @@ class Swap(JaxEnv[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
         """Resets the environment.
 
         Args:
             key: random key used to reset the environment since it is stochastic.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the new state of the environment,
-                as well as the first timestep.
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
         """
         key, sample_key = random.split(key)
         pos_indices = random.choice(
@@ -143,9 +144,9 @@ class Swap(JaxEnv[State]):
             dtype=jnp.float32,
         )
         timestep = restart(observation=obs)
-        return state, timestep
+        return state, timestep, None
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -157,12 +158,13 @@ class Swap(JaxEnv[State]):
                 - 3 move to the left
 
         Returns:
-            State and TimeStep observed after executing the action.
-
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
         """
         state, reward = self._update_state(state, action)
         timestep = self._state_to_timestep(state, reward)
-        return state, timestep
+        return state, timestep, None
 
     def _update_state(self, state: State, action: Action) -> Tuple[State, Array]:
         """Update the environment state by taking an action.

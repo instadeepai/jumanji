@@ -8,8 +8,6 @@ else:
 
 from chex import Array, PRNGKey
 
-Action = Array
-
 
 @dataclass
 class State:

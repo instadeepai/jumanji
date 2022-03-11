@@ -9,8 +9,6 @@ else:
 import jax.numpy as jnp
 from chex import Array, PRNGKey
 
-Action = Array
-
 
 class Position(NamedTuple):
     row: Array

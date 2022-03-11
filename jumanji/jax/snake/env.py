@@ -7,8 +7,8 @@ from jax import lax, random
 
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.snake import utils as snake_utils
-from jumanji.jax.snake.types import Action, Position, State
-from jumanji.jax.types import TimeStep, restart, termination, transition
+from jumanji.jax.snake.types import Position, State
+from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
 
 
 class Snake(JaxEnv[State]):
@@ -82,15 +82,16 @@ class Snake(JaxEnv[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
         """Resets the environment.
 
         Args:
             key: random key used to reset the environment since it is stochastic.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the new state of the environment,
-                as well as the first timestep.
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
         """
         key, body_key, fruit_key = random.split(key, 3)
         body = jnp.zeros(self.board_shape, bool)
@@ -118,9 +119,9 @@ class Snake(JaxEnv[State]):
             step=jnp.int32(0),
         )
         timestep = restart(observation=obs)
-        return state, timestep
+        return state, timestep, None
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -132,12 +133,13 @@ class Snake(JaxEnv[State]):
                 - 3 move to the left
 
         Returns:
-            State and TimeStep observed after executing the action.
-
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
         """
         state, next_body_no_head, fruit_eaten = self._update_state(state, action)
         timestep = self._state_to_timestep(state, next_body_no_head, fruit_eaten)
-        return state, timestep
+        return state, timestep, None
 
     def _update_state(self, state: State, action: Action) -> Tuple[State, Array, Array]:
         """Update the environment state by taking an action.

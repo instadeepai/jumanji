@@ -23,8 +23,8 @@ def test_snake__reset(snake_env: Snake) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(snake_env.reset)
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
-    state1, timestep1 = reset_fn(key1)
-    state2, timestep2 = reset_fn(key2)
+    state1, timestep1, _ = reset_fn(key1)
+    state2, timestep2, _ = reset_fn(key2)
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step == 0
@@ -44,7 +44,7 @@ def test_snake__step(snake_env: Snake) -> None:
     """Validates the jitted step function of the environment."""
     step_fn = jax.jit(snake_env.step)
     state_key, action_key = random.split(random.PRNGKey(10))
-    state, timestep = snake_env.reset(state_key)
+    state, timestep, _ = snake_env.reset(state_key)
     # Sample two different actions
     action1, action2 = random.choice(
         action_key,
@@ -52,7 +52,7 @@ def test_snake__step(snake_env: Snake) -> None:
         shape=(2,),
         replace=False,
     )
-    new_state1, timestep1 = step_fn(state, action1)
+    new_state1, timestep1, _ = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(new_state1)
@@ -60,7 +60,7 @@ def test_snake__step(snake_env: Snake) -> None:
     assert new_state1.step != state.step
     assert new_state1.head_pos != state.head_pos
     # Check that two different actions lead to two different states
-    new_state2, timestep2 = step_fn(state, action2)
+    new_state2, timestep2, _ = step_fn(state, action2)
     assert new_state1.head_pos != new_state2.head_pos
     # Check that the state update and timestep creation work as expected
     row, col = tuple(state.head_pos)
@@ -72,7 +72,7 @@ def test_snake__step(snake_env: Snake) -> None:
         3: (Position(row, col - 1), body.at[(row, col - 1)].set(True)),  # Left
     }
     for action, (new_position, new_body) in moves.items():
-        new_state, timestep = step_fn(state, action)
+        new_state, timestep, _ = step_fn(state, action)
         assert new_state.head_pos == new_position
         assert jnp.all(timestep.observation[0] == new_body)
 
@@ -115,14 +115,14 @@ def test_snake__no_nan(snake_env: Snake) -> None:
     step_fn = jax.jit(snake_env.step)
     key = random.PRNGKey(0)
     # Check exiting the board to the top
-    state, timestep = reset_fn(key)
+    state, timestep, _ = reset_fn(key)
     chex.assert_tree_all_finite((state, timestep))
     while not timestep.last():
-        state, timestep = step_fn(state, action=0)
+        state, timestep, _ = step_fn(state, action=0)
         chex.assert_tree_all_finite((state, timestep))
     # Check exiting the board to the right
-    state, timestep = reset_fn(key)
+    state, timestep, _ = reset_fn(key)
     chex.assert_tree_all_finite((state, timestep))
     while not timestep.last():
-        state, timestep = step_fn(state, action=1)
+        state, timestep, _ = step_fn(state, action=1)
         chex.assert_tree_all_finite((state, timestep))
