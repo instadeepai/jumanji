@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Any, Callable, Tuple
 
 import haiku as hk
 from chex import PRNGKey
@@ -38,10 +38,10 @@ class JaxEnvBenchmarkLoop(BenchmarkLoop):
             )
         self._environment = environment
         self._rng = hk.PRNGSequence(seed)
-        self.step_fn: Callable[[State, Action], Tuple[State, TimeStep, Extra]] = jit(
+        self.step_fn: Callable[[State, Action], Tuple[Any, TimeStep, Extra]] = jit(
             environment.step
         )
-        self.reset_fn: Callable[[PRNGKey], Tuple[State, TimeStep, Extra]] = jit(
+        self.reset_fn: Callable[[PRNGKey], Tuple[Any, TimeStep, Extra]] = jit(
             environment.reset
         )
         if not isinstance(self._environment.action_spec(), specs.BoundedArray):
@@ -55,7 +55,7 @@ class JaxEnvBenchmarkLoop(BenchmarkLoop):
         """Calls jittable functions reset_fn and step_fn for the first time to
         compile them under jit. Returns the number of steps taken during compilation.
         """
-        state, *_ = self.reset_fn(next(self._rng))  # type: ignore
+        state, *_ = self.reset_fn(next(self._rng))
         action = self._random_action(
             key=next(self._rng), action_spec=self._environment.action_spec()
         )
@@ -66,7 +66,7 @@ class JaxEnvBenchmarkLoop(BenchmarkLoop):
     def _run_episode(self) -> int:
         """Runs one episode in the environment."""
         episode_steps = 0
-        state, timestep, _ = self.reset_fn(next(self._rng))  # type: ignore
+        state, timestep, _ = self.reset_fn(next(self._rng))
         while not timestep.last():
             action = self._random_action(
                 key=next(self._rng), action_spec=self._environment.action_spec()

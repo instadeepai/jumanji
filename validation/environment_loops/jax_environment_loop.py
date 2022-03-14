@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, Dict, Generic, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, Generic, NamedTuple, Optional, Tuple
 
 import haiku as hk
 import jax
@@ -62,10 +62,10 @@ class JaxEnvironmentLoop:
         self._steps_per_epoch = self._n_steps * self._batch_size
         self._rng = hk.PRNGSequence(seed)
         self._step_fn: Callable[
-            [State, Action], Tuple[State, TimeStep, Extra]
+            [State, Action], Tuple[Any, TimeStep, Extra]
         ] = environment.step
         self._reset_fn: Callable[
-            [PRNGKey], Tuple[State, TimeStep, Extra]
+            [PRNGKey], Tuple[Any, TimeStep, Extra]
         ] = environment.reset
         if not isinstance(environment.action_spec(), specs.BoundedArray):
             action_spec = environment.action_spec()
@@ -127,7 +127,7 @@ class JaxEnvironmentLoop:
             """Resets the environment because _acting_state['reset'] is True."""
             next_key, reset_key = random.split(_acting_state.key)
             timestep = _acting_state.timestep
-            next_state, next_timestep, extra = self._reset_fn(reset_key)  # type: ignore
+            next_state, next_timestep, extra = self._reset_fn(reset_key)
             next_acting_state = ActingState(
                 episode_count=_acting_state.episode_count + 1,
                 key=next_key,

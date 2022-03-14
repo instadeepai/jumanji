@@ -21,7 +21,7 @@ def test_dm_env_timestep__not_jaxtype() -> None:
     replacement of the custom implementation of TimeStep.
     """
 
-    def _get_termination_transition() -> dm_env.TimeStep:
+    def get_termination_transition() -> dm_env.TimeStep:
         """Returns either a termination or transition TimeStep."""
         return lax.select(
             True,
@@ -30,7 +30,7 @@ def test_dm_env_timestep__not_jaxtype() -> None:
         )
 
     try:
-        _ = _get_termination_transition()
+        _ = get_termination_transition()
         raise EnvironmentError(
             "dm_env.TimeStep now seems to be a Jax type, meaning it can replace "
             "custom implementation of TimeStep."
@@ -47,9 +47,9 @@ def test_timestep__jaxtype(done: bool) -> None:
     truncation nor restart, but rather makes sure that TimeStep is a Jax type.
     """
 
-    def _get_termination_transition() -> TimeStep:
+    def get_termination_transition() -> TimeStep:
         """Returns either a termination or transition TimeStep."""
-        return lax.cond(  # type: ignore
+        timestep_termination_transition: TimeStep = lax.cond(
             done,
             lambda _: termination(
                 reward=jnp.zeros((), float), observation=jnp.zeros((), float)
@@ -59,14 +59,15 @@ def test_timestep__jaxtype(done: bool) -> None:
             ),
             None,
         )
+        return timestep_termination_transition
 
-    timestep = _get_termination_transition()
+    timestep = get_termination_transition()
     assert isinstance(timestep, TimeStep)
     assert not isinstance(timestep, dm_env.TimeStep)
 
-    def _get_restart_truncation() -> TimeStep:
+    def get_restart_truncation() -> TimeStep:
         """Returns either a restart or truncation TimeStep."""
-        return lax.cond(  # type: ignore
+        timestep_restart_truncation: TimeStep = lax.cond(
             done,
             lambda _: restart(observation=jnp.zeros((), float)),
             lambda _: truncation(
@@ -74,8 +75,9 @@ def test_timestep__jaxtype(done: bool) -> None:
             ),
             None,
         )
+        return timestep_restart_truncation
 
-    timestep = _get_restart_truncation()
+    timestep = get_restart_truncation()
     assert isinstance(timestep, TimeStep)
     assert not isinstance(timestep, dm_env.TimeStep)
 

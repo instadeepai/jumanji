@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Type, Union
+from typing import Callable, List, Optional
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -21,8 +21,8 @@ WRAPPERS = {"DeepMindEnvWrapper": DeepMindEnvWrapper}
 
 def run_benchmark(
     env: JaxEnv,
-    env_loop_cls: Type[BenchmarkLoop],
-    env_wrappers: List = None,
+    env_loop_cls: Callable[[JaxEnv], BenchmarkLoop],
+    env_wrappers: Optional[List[Callable[[JaxEnv], JaxEnv]]] = None,
     num_episodes: Optional[int] = None,
     num_env_steps: Optional[int] = None,
     ms: bool = False,
@@ -46,12 +46,10 @@ def run_benchmark(
     if env_wrappers:
         for wrapper in env_wrappers:
             env = wrapper(env)
-    if issubclass(env_loop_cls, JaxEnvBenchmarkLoop) or issubclass(
-        env_loop_cls, DeepMindEnvBenchmarkLoop
+    if issubclass(
+        env_loop_cls, (JaxEnvBenchmarkLoop, DeepMindEnvBenchmarkLoop)  # type: ignore
     ):
-        env_loop: Union[  # type: ignore
-            JaxEnvBenchmarkLoop, DeepMindEnvBenchmarkLoop
-        ] = env_loop_cls(env)
+        env_loop = env_loop_cls(env)
     else:
         raise NotImplementedError
     env_loop.run(num_episodes=num_episodes, num_steps=num_env_steps, ms=ms)
@@ -68,7 +66,7 @@ def run(cfg: DictConfig) -> None:
     logging.info("Configs:\n{}".format(OmegaConf.to_yaml(cfg)))
     run_benchmark(
         env=hydra.utils.instantiate(cfg.environment),
-        env_loop_cls=ENV_LOOP_CLASSES[cfg.environment_loop.cls],  # type: ignore
+        env_loop_cls=ENV_LOOP_CLASSES[cfg.environment_loop.cls],
         env_wrappers=[
             WRAPPERS[wrapper_name] for wrapper_name in cfg.environment_loop.wrappers
         ],
