@@ -3,6 +3,7 @@
 # variables
 IMAGE=jumanji
 DOCKER_RUN_FLAGS=--rm --volume $(PWD):/home/app/jumanji
+DISPLAY_FLAGS=--volume /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$(DISPLAY)
 DOCKER_RUN=docker run $(DOCKER_RUN_FLAGS) $(IMAGE)
 TEST=jumanji examples validation
 
@@ -19,3 +20,6 @@ test: build
 
 bash: build
 	docker run -it $(DOCKER_RUN_FLAGS) $(IMAGE) bash
+
+bash_with_display: build
+	docker run -it $(DOCKER_RUN_FLAGS) $(DISPLAY_FLAGS) $(IMAGE) bash
