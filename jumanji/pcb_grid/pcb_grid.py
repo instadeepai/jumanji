@@ -26,8 +26,8 @@ class Agent:
     and target_position of each agent in the environment"""
 
     agent_id: int
-    position: tuple
-    target: tuple = (-1, -1)
+    position: Tuple[int, int]
+    target: Tuple[int, int] = (-1, -1)
 
     @property
     def done(self) -> bool:
@@ -45,7 +45,7 @@ class PcbGridEnv(MultiAgentEnv):
     rows: int
     cols: int
     num_agents: int
-    agents: list
+    agents: List[Agent]
     grid: np.ndarray
 
     def __init__(
@@ -153,7 +153,7 @@ class PcbGridEnv(MultiAgentEnv):
             for a in self.agents
         )
 
-    def _random_empty_position(self) -> Tuple:
+    def _random_empty_position(self) -> Tuple[int, int]:
         """
         Generate a random empty position in the grid.
 
@@ -163,7 +163,8 @@ class PcbGridEnv(MultiAgentEnv):
         empty = False
 
         while not empty:
-            pos = tuple(np.random.randint((0, 0), (self.rows, self.cols)))
+            row, col = np.random.randint((0, 0), (self.rows, self.cols))
+            pos = (row, col)
             empty = self.grid[pos] == EMPTY
 
         return pos
@@ -302,14 +303,21 @@ def move(position: Tuple[int, int], action: int) -> Tuple[int, int]:
     raise ValueError(f"unsupported action '{action}'")
 
 
-def _is_counter_clockwise(point_a: Tuple, point_b: Tuple, point_c: Tuple) -> bool:
+def _is_counter_clockwise(
+    point_a: Tuple[int, int], point_b: Tuple[int, int], point_c: Tuple[int, int]
+) -> bool:
     is_cc: bool = (point_c[1] - point_a[1]) * (point_b[0] - point_a[0]) > (
         point_b[1] - point_a[1]
     ) * (point_c[0] - point_a[0])
     return is_cc
 
 
-def _intersect(point_a: Tuple, point_b: Tuple, point_c: Tuple, point_d: Tuple) -> bool:
+def _intersect(
+    point_a: Tuple[int, int],
+    point_b: Tuple[int, int],
+    point_c: Tuple[int, int],
+    point_d: Tuple[int, int],
+) -> bool:
     """
     Check if line segments AB and CD intersect.
 
