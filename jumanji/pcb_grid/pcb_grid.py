@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 from gym import spaces
@@ -49,22 +49,39 @@ class PcbGridEnv(MultiAgentEnv):
     grid: np.ndarray
 
     def __init__(
-        self, rows: int, cols: int, num_agents: int, difficulty: str = "easy"
-    ) -> None:
-        """
-        A simple grid environment to test multi agent ideas fast.
+        self,
+        rows: int,
+        cols: int,
+        num_agents: int,
+        difficulty: str = "easy",
+        reward_per_timestep: Optional[float] = None,
+        reward_per_connected: float = 1.0,
+        reward_per_blocked: float = -1.0,
+    ):
+        """A simple grid environment that represents the PCB environment.
 
         Args:
             rows: grid height.
             cols: grid width.
             num_agents: number of agents in the grid.
             difficulty: hard or easy layouts. If hard, there is at least 1 overlap.
-
+            reward_per_timestep: a small negative reward provided to every agent at each timestep if
+                they do not connect and are not blocked. If None, a default value of
+                -1.0 / (rows + cols) is used.
+            reward_per_connected: reward given if the agent connects.
+            reward_per_blocked: reward given if an agent blocks itself.
         """
         self.rows = rows
         self.cols = cols
         self.num_agents = num_agents
         self.difficulty = difficulty.upper()
+        self.reward_per_timestep = (
+            reward_per_timestep
+            if reward_per_timestep is not None
+            else -1.0 / (rows + cols)
+        )
+        self.reward_per_connected = reward_per_connected
+        self.reward_per_blocked = reward_per_blocked
         self.action_space = spaces.Discrete(5)
         self.obs_ints = 2 + 3 * num_agents
         self.observation_space = spaces.Dict(
@@ -75,7 +92,12 @@ class PcbGridEnv(MultiAgentEnv):
                 ),
             }
         )
-        self.reward_range = (-1, 0)
+        rewards = [
+            self.reward_per_timestep,
+            self.reward_per_connected,
+            self.reward_per_blocked,
+        ]
+        self.reward_range = (min(rewards), max(rewards))
 
     def seed(self, seed: int) -> None:
         np.random.seed(seed)
@@ -101,14 +123,16 @@ class PcbGridEnv(MultiAgentEnv):
         dones = {
             agent_id: (
                 self.agents[agent_id].done
-                or self._is_agent_blocked(observations[agent_id]["action_mask"])
+                or is_agent_blocked(observations[agent_id]["action_mask"])
             )
             for agent_id in actions.keys()
         }
         dones["__all__"] = all(dones[agent_id] for agent_id in dones.keys())
 
         rewards = {
-            agent_id: 0.1 if self.agents[agent_id].done else -0.03
+            agent_id: self._agent_reward(
+                agent_id, observations[agent_id]["action_mask"]
+            )
             for agent_id in actions.keys()
         }
 
@@ -116,11 +140,10 @@ class PcbGridEnv(MultiAgentEnv):
 
     def _spawn_agent(self, agent_id: int) -> None:
         """
-        Spawn a new agent with the given id in a random empty location in the grid.
+        Spawns an agent in a random position and gives it the ID of agent_id.
 
         Args:
-            agent_id: ID of agent to spawn.
-
+            agent_id: ID of the agent to spawn.
         """
         agent = Agent(agent_id, self._random_empty_position())
         self.grid[agent.position] = HEAD + 3 * agent_id
@@ -168,6 +191,24 @@ class PcbGridEnv(MultiAgentEnv):
             empty = self.grid[pos] == EMPTY
 
         return pos
+
+    def _agent_reward(self, agent_id: int, action_mask: np.ndarray) -> float:
+        """
+        Calculated the reward of the agent with ID agent_id.
+
+        Args:
+            agent_id: ID of the agent to get the rewards for.
+            action_mask: the action mask of agent with ID agent_id.
+
+        Returns: the reward for the agent with ID agent_id.
+        """
+        agent = self.agents[agent_id]
+        if agent.done:
+            return self.reward_per_connected
+        elif is_agent_blocked(action_mask):
+            return self.reward_per_blocked
+        else:
+            return self.reward_per_timestep
 
     def _agent_observation(self, agent_id: int) -> dict:
         """
@@ -227,10 +268,6 @@ class PcbGridEnv(MultiAgentEnv):
         )
         return mask
 
-    @staticmethod
-    def _is_agent_blocked(action_mask: List) -> bool:
-        return all(not feasible for feasible in action_mask[1:])
-
     def _step_agent(self, agent_id: int, action: int) -> None:
         """
         Step the agent in the environment using the given action.
@@ -238,7 +275,6 @@ class PcbGridEnv(MultiAgentEnv):
         Args:
             agent_id: ID of the agent to step.
             action: Action to take.
-
         """
         if action == NOOP:
             return
@@ -335,3 +371,17 @@ def _intersect(
     ) and _is_counter_clockwise(point_a, point_b, point_c) != _is_counter_clockwise(
         point_a, point_b, point_d
     )
+
+
+def is_agent_blocked(action_mask: np.ndarray) -> bool:
+    """
+    Checks if an agent is blocked given its action mask.
+
+    Args:
+        action_mask: a boolean numpy array of legal actions.
+
+    Returns: True if any value (other than the first value) in the action_mask is True
+        otherwise False.
+
+    """
+    return not np.any(action_mask[1:])
