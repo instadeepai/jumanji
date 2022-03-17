@@ -39,18 +39,22 @@ RUN mkdir -p /root/.mujoco \
 ENV LD_LIBRARY_PATH /root/.mujoco/mujoco210/bin:${LD_LIBRARY_PATH}
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 
-RUN pip install --upgrade --quiet pip setuptools
-
 COPY ./requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm -rf /tmp/*
+COPY ./requirements-dev.txt /tmp/requirements-dev.txt
+COPY ./requirements-mujoco.txt /tmp/requirements-mujoco.txt
+COPY ./requirements-pcb-ray.txt /tmp/requirements-pcb-ray.txt
+
+RUN pip install --upgrade --quiet pip setuptools
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements.txt
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements-mujoco.txt
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements-pcb-ray.txt
+RUN rm -rf /tmp/*
 
 # working directory
 WORKDIR /home/app/jumanji
 ENV PYTHONPATH=$PYTHONPATH:$PWD
 
-COPY . /home/app/jumanji
-
-RUN pip install --no-cache-dir -e .[all]
-
 EXPOSE 6006
-ENTRYPOINT bash
+# Expose port for mkdocs serve
+EXPOSE 8000

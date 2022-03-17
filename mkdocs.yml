@@ -5,7 +5,9 @@ site_url: https://instadeep.gitlab.io/mkdocs
 site_dir: public
 repo_name: instadeep/templates/machine-learning-project
 repo_url: https://gitlab.com/instadeep/templates/machine-learning-project
-strict: false
+
+strict: false # Don't allow warnings during the build process
+dev_addr: '0.0.0.0:8000' # generate a warning when running in a docker container
 
 theme:
   name: material

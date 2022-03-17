@@ -23,3 +23,6 @@ bash: build
 
 bash_with_display: build
 	docker run -it $(DOCKER_RUN_FLAGS) $(DISPLAY_FLAGS) $(IMAGE) bash
+
+doc: build
+	docker run -it -p 8000:8000 $(DOCKER_RUN_FLAGS) $(IMAGE) mkdocs serve
