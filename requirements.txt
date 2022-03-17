@@ -5,5 +5,5 @@ gym==0.18
 hydra-core~=1.1
 jax==0.2.21
 jaxlib==0.1.69
-numpy==1.19.5
+numpy>=1.19.5
 optax==0.0.9
