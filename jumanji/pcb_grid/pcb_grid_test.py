@@ -3,7 +3,17 @@ from typing import Dict, Tuple
 import numpy as np
 import pytest
 
-from jumanji.pcb_grid.pcb_grid import DOWN, LEFT, RIGHT, UP, PcbGridEnv, move
+from jumanji.pcb_grid.pcb_grid import (
+    DOWN,
+    HEAD,
+    LEFT,
+    RIGHT,
+    SOURCE,
+    TARGET,
+    UP,
+    PcbGridEnv,
+    move,
+)
 
 num_agents = 4
 rows = 32
@@ -61,8 +71,8 @@ def test_pcb_grid__step(pcb_grid_env: PcbGridEnv) -> None:
     for agent_id in range(num_agents):
         initial_obs_agent = initial_obs[agent_id]["image"]
         obs_agent = obs[agent_id]["image"]
-        possibly_blocked_agent = not all(initial_obs[agent_id]["action_mask"])
-        assert not (initial_obs_agent == obs_agent).any() or possibly_blocked_agent
+        is_agent_blocked = not all(initial_obs[agent_id]["action_mask"][1:])
+        assert not (initial_obs_agent == obs_agent).all() or is_agent_blocked
 
 
 @pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
@@ -120,3 +130,27 @@ def test_pcb_grid__no_nan(pcb_grid_env: PcbGridEnv) -> None:
         assert isinstance(reward, Dict)
         assert isinstance(done, Dict)
         assert isinstance(extras, Dict)
+
+
+@pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
+def test_pcb_grid__agent_observations(pcb_grid_env: PcbGridEnv) -> None:
+    """Test that the agents always get the correct observations."""
+    pcb_grid_env.reset()
+    # do random actions to populate the board with wires
+    for _ in range(10):
+        actions = {agent_id: np.random.randint(1, 5) for agent_id in range(num_agents)}
+        obs, *_ = pcb_grid_env.step(actions)
+
+    agent_0_obs = obs[0]["image"]
+
+    # for each agent, check that the position of its SOURCE, HEAD and TARGET are the same
+    # from the perspective of agent 0 and from its own perspective
+    cell_types = [SOURCE, HEAD, TARGET]
+    for agent_id in range(num_agents):
+        curr_agent_obs = obs[agent_id]["image"]
+
+        for cell_type in cell_types:
+            assert np.all(
+                (agent_0_obs == cell_type + 3 * agent_id)
+                == (curr_agent_obs == cell_type)
+            )

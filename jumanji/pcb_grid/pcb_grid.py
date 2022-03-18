@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from gym import spaces
@@ -210,26 +210,37 @@ class PcbGridEnv(MultiAgentEnv):
         else:
             return self.reward_per_timestep
 
-    def _agent_observation(self, agent_id: int) -> dict:
+    def _agent_observation(self, agent_id: int) -> Dict[str, np.ndarray]:
         """
-        Get local observation for agent.
+        Rotates observations so that the observations of agent with ID agent_id have
+        values 2, 3 and 4.
 
         Args:
-            agent_id: ID of agent to get observation for.
+            agent_id: ID of the agent to get the observations for.
 
-        Returns: Dictionary of the observation.
-
+        Returns: observations in the perspective of agent with ID of agent_id and it's action mask.
         """
         obs = np.copy(self.grid)
         mask = self._get_action_mask(agent_id)
         if agent_id == 0:
             return {"image": obs, "action_mask": mask}
 
-        d = agent_id * 3
-        first_indices = np.where((obs >= 2) & (obs <= 4))
-        current_indices = np.where((obs >= 2 + d) & (obs <= 4 + d))
-        obs[first_indices] += d
-        obs[current_indices] -= d
+        zeros_mask = obs != 0  # to remove all zeros at the end
+        ones_mask = obs != 1  # to reset the ones back to zeros
+        ones_inds = obs == 1  # to increment the ones back to 1
+
+        # -= 2 to transform the observations such that the values related to agents lie between 0
+        # and self.obs_ints - 2 (0's and 1's, which aren't agent related, can be ignored)
+        obs -= 2
+        obs -= 3 * agent_id
+        obs %= self.obs_ints - 2  # max value of state ignoring the 0 and 1
+        # making space for the leading 0 and 1 (transforming the state back from the implicit -2 at
+        # the beginning)
+        obs += 2
+        obs *= zeros_mask  # adding back the zeros
+        obs *= ones_mask  # adding resetting the ones to zero
+        obs += ones_inds  # adding back the ones
+
         return {"image": obs, "action_mask": mask}
 
     def _get_action_mask(self, agent_id: int) -> List[int]:
@@ -244,10 +255,8 @@ class PcbGridEnv(MultiAgentEnv):
         """
 
         def _is_free_cell(x: int, y: int, target: int) -> bool:
-            is_free: bool = (
-                self.grid[agent_x, y] == EMPTY or self.grid[agent_x, y] == target
-            )
-            return is_free
+            cell: int = self.grid[x, y]
+            return cell == EMPTY or cell == target
 
         mask = [0] * 5
         mask[0] = 1
