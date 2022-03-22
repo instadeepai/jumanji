@@ -1,1 +1,2 @@
+gym[classic_control]==0.19.0
 mujoco-py==2.1.2.14
