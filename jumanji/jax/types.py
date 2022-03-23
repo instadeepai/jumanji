@@ -1,5 +1,5 @@
 import enum
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, Sequence, TypeVar
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -78,25 +78,31 @@ class TimeStep:
         return self.step_type == StepType.LAST
 
 
-def restart(observation: Array) -> TimeStep:
+def restart(observation: Array, shape: Sequence[int] = ()) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.FIRST`.
 
     Args:
         observation: array.
+        shape : optional parameter to specify the shape of the rewards and discounts.
+            Allows multi-agent environment compatibility. Defaults to () for
+            scalar reward and discount.
 
     Returns:
         TimeStep identified as a reset.
     """
     return TimeStep(
         step_type=StepType.FIRST,
-        reward=jnp.float32(0.0),
-        discount=jnp.float32(1.0),
+        reward=jnp.zeros(shape, dtype=float),
+        discount=jnp.ones(shape, dtype=float),
         observation=observation,
     )
 
 
 def transition(
-    reward: Array, observation: Array, discount: Optional[Array] = None
+    reward: Array,
+    observation: Array,
+    discount: Optional[Array] = None,
+    shape: Sequence[int] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.MID`.
 
@@ -104,11 +110,14 @@ def transition(
         reward: array.
         observation: array.
         discount: array.
+        shape : optional parameter to specify the shape of the rewards and discounts.
+            Allows multi-agent environment compatibility. Defaults to () for
+            scalar reward and discount.
 
     Returns:
         TimeStep identified as a transition.
     """
-    discount = discount or jnp.float32(1.0)
+    discount = discount if discount is not None else jnp.ones(shape, dtype=float)
     return TimeStep(
         step_type=StepType.MID,
         reward=reward,
@@ -117,12 +126,17 @@ def transition(
     )
 
 
-def termination(reward: Array, observation: Array) -> TimeStep:
+def termination(
+    reward: Array, observation: Array, shape: Sequence[int] = ()
+) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 
     Args:
         reward: array.
         observation: array.
+        shape : optional parameter to specify the shape of the rewards and discounts.
+            Allows multi-agent environment compatibility. Defaults to () for
+            scalar reward and discount.
 
     Returns:
         TimeStep identified as the termination of an episode.
@@ -130,13 +144,16 @@ def termination(reward: Array, observation: Array) -> TimeStep:
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,
-        discount=jnp.float32(0.0),
+        discount=jnp.zeros(shape, dtype=float),
         observation=observation,
     )
 
 
 def truncation(
-    reward: Array, observation: Array, discount: Optional[Array] = None
+    reward: Array,
+    observation: Array,
+    discount: Optional[Array] = None,
+    shape: Sequence[int] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 
@@ -144,11 +161,13 @@ def truncation(
         reward: array.
         observation: array.
         discount: array.
-
+        shape : optional parameter to specify the shape of the rewards and discounts.
+            Allows multi-agent environment compatibility. Defaults to () for
+            scalar reward and discount.
     Returns:
         TimeStep identified as the truncation of an episode.
     """
-    discount = discount or jnp.float32(1.0)
+    discount = discount if discount is not None else jnp.ones(shape, dtype=float)
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,

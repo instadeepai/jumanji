@@ -95,7 +95,7 @@ def test_timestep__restart() -> None:
 def test_timestep__transition() -> None:
     """Validates that transition function returns the desired TimeStep."""
     observation = jnp.ones(5, float)
-    reward = jnp.array(2.0)
+    reward = jnp.array(2.0, float)
     timestep = transition(reward, observation)
     assert jnp.all(timestep.observation == observation)
     assert timestep.step_type is StepType.MID
@@ -106,8 +106,8 @@ def test_timestep__transition() -> None:
 def test_timestep__truncation() -> None:
     """Validates that truncation function returns the desired TimeStep."""
     observation = jnp.ones(5, float)
-    reward = jnp.array(2.0)
-    discount = jnp.array(0.8)
+    reward = jnp.array(2.0, float)
+    discount = jnp.array(0.8, float)
     timestep = truncation(reward, observation, discount)
     assert jnp.all(timestep.observation == observation)
     assert timestep.step_type is StepType.LAST
@@ -118,12 +118,57 @@ def test_timestep__truncation() -> None:
 def test_timestep__termination() -> None:
     """Validates that termination function returns the desired TimeStep."""
     observation = jnp.ones(5, float)
-    reward = jnp.array(2.0)
+    reward = jnp.array(2.0, float)
     timestep = termination(reward, observation)
     assert jnp.all(timestep.observation == observation)
     assert timestep.step_type is StepType.LAST
     assert timestep.reward == reward
     assert timestep.discount == 0.0
+
+
+class TestMultiAgent:
+    num_agents = 3
+    observation = jnp.ones((num_agents, 5), float)
+    reward = jnp.arange(1, num_agents + 1, dtype=float)
+    discount = 0.8 * jnp.ones(num_agents, float)
+
+    def test_timestep__restart_multi_agent(self) -> None:
+        """Validates that restart function returns the desired TimeStep in the multi agent case."""
+        timestep = restart(self.observation, shape=(self.num_agents,))
+        assert jnp.all(timestep.observation == self.observation)
+        assert timestep.step_type is StepType.FIRST
+        assert jnp.all(timestep.reward == jnp.zeros((self.num_agents,), float))
+        assert jnp.all(timestep.discount == jnp.ones((self.num_agents,), float))
+
+    def test_timestep__transition_multi_agent(self) -> None:
+        """Validates that transition function returns the desired TimeStep in the multi agent case."""
+
+        timestep = transition(self.reward, self.observation, shape=(self.num_agents,))
+        assert jnp.all(timestep.observation == self.observation)
+        assert timestep.step_type is StepType.MID
+        assert jnp.all(timestep.reward == self.reward)
+        assert jnp.all(timestep.discount == jnp.ones((self.num_agents,), float))
+
+        timestep = transition(self.reward, self.observation, self.discount)
+        assert jnp.all(timestep.discount == self.discount)
+
+    def test_timestep__truncation_multi_agent(self) -> None:
+        """Validates that truncation function returns the desired TimeStep in the multi agent case."""
+
+        timestep = truncation(self.reward, self.observation, self.discount)
+        assert jnp.all(timestep.observation == self.observation)
+        assert timestep.step_type is StepType.LAST
+        assert jnp.all(timestep.reward == self.reward)
+        assert jnp.all(timestep.discount == self.discount)
+
+    def test_timestep__termination_multi_agent(self) -> None:
+        """Validates that termination function returns the desired TimeStep in the multi agent case."""
+
+        timestep = termination(self.reward, self.observation)
+        assert jnp.all(timestep.observation == self.observation)
+        assert timestep.step_type is StepType.LAST
+        assert jnp.all(timestep.reward == self.reward)
+        assert jnp.all(timestep.discount == jnp.zeros((self.num_agents,), float))
 
 
 @pytest.mark.parametrize(
