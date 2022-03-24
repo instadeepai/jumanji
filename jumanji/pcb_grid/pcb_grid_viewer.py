@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import pygame
 
-from jumanji.pcb_grid.pcb_grid import HEAD, TARGET, PcbGridEnv
+import jumanji.pcb_grid.pcb_grid as pcb_grid
 
 
 class PcbGridViewer:
@@ -12,24 +12,33 @@ class PcbGridViewer:
     Viewer class for the PCB grid environment.
     """
 
-    def __init__(self, env: PcbGridEnv, width: int, height: int) -> None:
+    def __init__(
+        self,
+        num_agents: int,
+        grid_rows: int,
+        grid_cols: int,
+        viewer_width: int,
+        viewer_height: int,
+        grid_unit: int = 20,
+    ) -> None:
         """
-        Create a PcbGridViewer instance.
+        Create a PcbGridViewer instance for rendering the PcbGridEnv.
 
         Args:
-            env: Environment to view.
-            width: Number of cells in width.
-            height: Number of cells in height.
+            num_agents: Number of agents in the environment.
+            grid_rows: Number of rows in the grid.
+            grid_cols: Number of cols in the grid.
+            viewer_width: Width of the viewer in pixels.
+            viewer_height: Height of the viewer in pixels.
+            grid_unit: the size of the grid squares in pixels.
 
         """
-        self.env = env
-
         pygame.init()
 
-        self.screen = pygame.display.set_mode((width, height))
-        self.grid_unit = 20
-        self.xoff = (width - self.grid_unit * env.cols) // 2
-        self.yoff = (height - self.grid_unit * env.rows) // 2
+        self.screen = pygame.display.set_mode((viewer_width, viewer_height))
+        self.grid_unit = grid_unit
+        self.xoff = (viewer_width - self.grid_unit * grid_cols) // 2
+        self.yoff = (viewer_height - self.grid_unit * grid_rows) // 2
 
         rnd = np.random.RandomState()
         rnd.seed(0)
@@ -37,48 +46,54 @@ class PcbGridViewer:
             (255, 255, 255),
             (255, 0, 0),
         ]
-        for _ in range(100):
+
+        for _ in range(num_agents):
             color = rnd.randint(0, 192, 3)
             self.palette.append((color[0], color[1], color[2]))
 
-    def render_with_mode(self, mode: str = "human") -> None:
-        """
-        Render the environment with a given mode,
-        which varies the speed at which the environment is rendered.
-
-        Args:
-            mode: Render mode. Options: ['human', 'fast']
-
-        """
-        self.render()
-
-        if mode == "human":
-            time.sleep(0.2)
-        elif mode == "fast":
-            time.sleep(0.01)
-        else:
-            raise ValueError(f"Render mode '{mode}' currently not supported")
-
-    def render(self) -> None:
+    def render(self, grid: np.ndarray, mode: str = "human") -> None:
         """
         Render the environment.
 
+        Args:
+            grid: the grid representing the PcbGridEnv to render.
+            mode: Render mode. Options: ['human', 'fast'].
+
         """
         self.screen.fill((255, 255, 255))
+        rows, cols = grid.shape
 
-        for row in range(self.env.rows):
-            for col in range(self.env.cols):
+        for row in range(rows):
+            for col in range(cols):
                 rect = (
                     self.xoff + col * self.grid_unit,
                     self.yoff + row * self.grid_unit,
                     self.grid_unit,
                     self.grid_unit,
                 )
-                value = self.env.grid[row, col]
+                value = grid[row, col]
 
                 self._draw_shape(rect, value)
 
         pygame.display.update()
+
+        self.maybe_sleep(mode)
+
+    @staticmethod
+    def maybe_sleep(mode: str) -> None:
+        """
+        Sleep function to make viewing easier if given human mode and fast if given fast mode.
+
+        Args:
+            mode: Render mode. Options: ['human', 'fast'].
+
+        """
+        if mode == "human":
+            time.sleep(0.2)
+        elif mode == "fast":
+            pass
+        else:
+            raise ValueError(f"Render mode '{mode}' currently not supported")
 
     def _draw_shape(self, rect: Tuple[int, int, int, int], value: int) -> None:
         """
@@ -91,11 +106,11 @@ class PcbGridViewer:
         """
 
         color = self.palette[value if value < 2 else 2 + (value - 2) // 3]
-        if value > 1 and (value - TARGET) % 3 == 0:
+        if value > 1 and (value - pcb_grid.TARGET) % 3 == 0:
             pygame.draw.ellipse(self.screen, color, rect, width=5)
         else:
             pygame.draw.rect(self.screen, color, rect)
-            if value > 1 and (value - HEAD) % 3 == 0:
+            if value > 1 and (value - pcb_grid.HEAD) % 3 == 0:
                 pygame.draw.rect(
                     self.screen,
                     (255, 255, 255),

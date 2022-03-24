@@ -2,6 +2,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 import pytest
+from pyvirtualdisplay import Display
 
 from jumanji.pcb_grid.pcb_grid import (
     DOWN,
@@ -18,6 +19,8 @@ from jumanji.pcb_grid.pcb_grid import (
 num_agents = 4
 rows = 32
 cols = 32
+width = 1000
+height = 1000
 difficulty = "easy"
 
 env_loop_iterations = 1000
@@ -29,6 +32,14 @@ def pcb_grid_env() -> PcbGridEnv:
     return PcbGridEnv(
         rows=rows, cols=cols, num_agents=num_agents, difficulty=difficulty
     )
+
+
+@pytest.fixture(scope="module")
+def display() -> Display:
+    """Creates a virtual display so that a GUI is not displayed during testing."""
+    display = Display(visible=False, size=(width, height))
+    yield display.start()
+    display.stop()
 
 
 @pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
@@ -73,6 +84,21 @@ def test_pcb_grid__step(pcb_grid_env: PcbGridEnv) -> None:
         obs_agent = obs[agent_id]["image"]
         is_agent_blocked = not all(initial_obs[agent_id]["action_mask"][1:])
         assert not (initial_obs_agent == obs_agent).all() or is_agent_blocked
+
+
+@pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
+def test_pcb_grid__render(pcb_grid_env: PcbGridEnv, display: Display) -> None:
+    """Validates that the render function of PcbGridEnv doesn't cause an error."""
+    pcb_grid_env.reset()
+    pcb_grid_env.render()
+
+
+@pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
+def test_pcb_grid__close(pcb_grid_env: PcbGridEnv, display: Display) -> None:
+    """Validates the close method of PcbGridEnv."""
+    pcb_grid_env.reset()
+    pcb_grid_env.render()
+    pcb_grid_env.close()
 
 
 @pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)

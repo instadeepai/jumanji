@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from pyvirtualdisplay import Display
 
@@ -21,7 +19,9 @@ class TestViewer:
     @pytest.fixture(scope="module")
     def viewer(self, env: PcbGridEnv) -> PcbGridViewer:
         """Creates a viewer for the PCB grid environment."""
-        return PcbGridViewer(env, self.width, self.height)
+        return PcbGridViewer(
+            env.num_agents, env.rows, env.cols, self.width, self.height
+        )
 
     @pytest.fixture(scope="module")
     def display(self) -> Display:
@@ -33,24 +33,22 @@ class TestViewer:
     def test_render(
         self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
     ) -> None:
-        """Tests that the PcbGridViewer.render() method does not throw an error."""
-        steps = 10
-
-        for _ in range(steps):
-            viewer.render()
-            env.step({0: random.randint(0, 4)})
-
-    def test_render_with_mode(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
-    ) -> None:
-        """Tests that the PcbGridViewer.render_with_mode() method only raises a `ValueError`
+        """Tests that the PcbGridViewer.render() method only raises a `ValueError`
         when given unsupported render modes.
         """
-        viewer.render_with_mode("human")
-        viewer.render_with_mode("fast")
+        viewer.render(env.grid, "human")
+        viewer.render(env.grid, "fast")
 
         with pytest.raises(ValueError):
-            viewer.render_with_mode("abcdefg")
+            viewer.render(env.grid, "abcdefg")
+
+    def test_maybe_sleep(self, viewer: PcbGridViewer) -> None:
+        """Tests that maybe_sleep throws a 'ValueError' when an unsupported mode is passed"""
+        viewer.maybe_sleep("human")
+        viewer.maybe_sleep("fast")
+
+        with pytest.raises(ValueError):
+            viewer.maybe_sleep("abcdefg")
 
     def test__draw_shape(
         self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer

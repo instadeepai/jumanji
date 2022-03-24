@@ -5,6 +5,8 @@ import numpy as np
 from gym import spaces
 from ray.rllib import MultiAgentEnv
 
+import jumanji.pcb_grid.pcb_grid_viewer as viewer
+
 EMPTY = 0
 OBSTACLE = 1
 SOURCE = 2
@@ -39,7 +41,7 @@ class PcbGridEnv(MultiAgentEnv):
     Simplified from full version for easy testing of multi-agent strategies"""
 
     metadata = {
-        "render.modes": ["human", "png", "rgb_array"],
+        "render.modes": ["human", "fast"],
         "video.frames_per_second": 2,
     }
     rows: int
@@ -47,6 +49,9 @@ class PcbGridEnv(MultiAgentEnv):
     num_agents: int
     agents: List[Agent]
     grid: np.ndarray
+
+    VIEWER_WIDTH = 1000
+    VIEWER_HEIGHT = 1000
 
     def __init__(
         self,
@@ -57,6 +62,7 @@ class PcbGridEnv(MultiAgentEnv):
         reward_per_timestep: Optional[float] = None,
         reward_per_connected: float = 1.0,
         reward_per_blocked: float = -1.0,
+        renderer: Optional[viewer.PcbGridViewer] = None,
     ):
         """A simple grid environment that represents the PCB environment.
 
@@ -70,11 +76,19 @@ class PcbGridEnv(MultiAgentEnv):
                 -1.0 / (rows + cols) is used.
             reward_per_connected: reward given if the agent connects.
             reward_per_blocked: reward given if an agent blocks itself.
+            renderer: an optional PcbGridViewer instance to render the environment, if left as None
+                a default viewer is created when render is called.
         """
         self.rows = rows
         self.cols = cols
         self.num_agents = num_agents
         self.difficulty = difficulty.upper()
+        if renderer:
+            assert isinstance(
+                renderer, viewer.PcbGridViewer
+            ), f"Expected a renderer of type 'PcbGridViewer', got {renderer} of type {type(renderer)}."
+        self.viewer = renderer
+
         self.reward_per_timestep = (
             reward_per_timestep
             if reward_per_timestep is not None
@@ -86,9 +100,9 @@ class PcbGridEnv(MultiAgentEnv):
         self.obs_ints = 2 + 3 * num_agents
         self.observation_space = spaces.Dict(
             {
-                "image": spaces.Box(0, self.obs_ints, (rows, cols), dtype=np.int),
+                "image": spaces.Box(0, self.obs_ints, (rows, cols), dtype=int),
                 "action_mask": spaces.Box(
-                    0, 1, shape=(self.action_space.n,), dtype=np.int
+                    0, 1, shape=(self.action_space.n,), dtype=int
                 ),
             }
         )
@@ -103,7 +117,7 @@ class PcbGridEnv(MultiAgentEnv):
         np.random.seed(seed)
 
     def reset(self) -> dict:
-        self.grid = np.zeros((self.rows, self.cols), dtype=np.int)
+        self.grid = np.zeros((self.rows, self.cols), dtype=int)
         self.agents = []
         for agent_id in range(self.num_agents):
             self._spawn_agent(agent_id)
@@ -333,6 +347,29 @@ class PcbGridEnv(MultiAgentEnv):
 
     def __repr__(self) -> str:
         return f"<PCBGridEnv(rows={self.rows}, cols={self.cols}, agents={self.num_agents})>"
+
+    def render(self, mode: str = "human") -> None:
+        """
+        Visualize the environment.
+
+        Args:
+            mode: how rendering is done, either 'human' or 'fast'.
+        """
+        if self.viewer is None:
+            self.viewer = viewer.PcbGridViewer(
+                self.num_agents,
+                self.rows,
+                self.cols,
+                self.VIEWER_WIDTH,
+                self.VIEWER_HEIGHT,
+            )
+
+        self.viewer.render(self.grid, mode)
+
+    def close(self) -> None:
+        """Cleanup environment viewer if it has been created."""
+        if self.viewer:
+            self.viewer.close()
 
 
 def move(position: Tuple[int, int], action: int) -> Tuple[int, int]:
