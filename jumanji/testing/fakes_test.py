@@ -11,6 +11,7 @@ from jumanji.jax.types import Action, TimeStep
 from validation.agents import TrainingState, Transition
 
 fake_jax_env = pytest.fixture(fakes.make_fake_jax_env)
+fake_multi_jax_env = pytest.fixture(fakes.make_fake_multi_jax_env)
 fake_dm_env = pytest.fixture(fakes.make_fake_dm_env)
 fake_agent = pytest.fixture(fakes.make_fake_agent)
 
@@ -40,6 +41,44 @@ def test_fake_jax_env__does_not_smoke(fake_jax_env: fakes.FakeJaxEnv) -> None:
     action = fake_jax_env.action_spec().generate_value()
     while not timestep.last():
         state, timestep, _ = fake_jax_env.step(state, action)
+
+
+@pytest.mark.parametrize("fake_multi_jax_env", [()], indirect=True)
+def test_fake_multi_jax_env__reset(fake_multi_jax_env: fakes.FakeMultiJaxEnv) -> None:
+    """Validates the reset of the fake multi agent jax environment."""
+    state, timestep, _ = fake_multi_jax_env.reset(random.PRNGKey(0))
+    assert isinstance(state, fakes.FakeState)
+    assert isinstance(timestep, TimeStep)
+    assert timestep.reward.shape == (fake_multi_jax_env.num_agents,)
+    assert timestep.discount.shape == (fake_multi_jax_env.num_agents,)
+    assert timestep.observation.shape[0] == fake_multi_jax_env.num_agents
+
+
+@pytest.mark.parametrize("fake_multi_jax_env", [()], indirect=True)
+def test_fake_multi_jax_env__step(fake_multi_jax_env: fakes.FakeMultiJaxEnv) -> None:
+    """Validates the step function of the fake multi agent jax environment."""
+    state, timestep, _ = fake_multi_jax_env.reset(random.PRNGKey(0))
+    action = fake_multi_jax_env.action_spec().generate_value()
+    assert action.shape[0] == fake_multi_jax_env.num_agents
+
+    next_state, timestep, _ = fake_multi_jax_env.step(state, action)
+    # Check that the step value is now different
+    assert state.step != next_state.step
+    assert timestep.reward.shape == (fake_multi_jax_env.num_agents,)
+    assert timestep.discount.shape == (fake_multi_jax_env.num_agents,)
+    assert timestep.observation.shape[0] == fake_multi_jax_env.num_agents
+
+
+@pytest.mark.parametrize("fake_multi_jax_env", [()], indirect=True)
+def test_fake_multi_jax_env__does_not_smoke(
+    fake_multi_jax_env: fakes.FakeMultiJaxEnv,
+) -> None:
+    """Validates the run of an episode in the fake multi agent jax environment. Check that it does not smoke."""
+    state, timestep, _ = fake_multi_jax_env.reset(random.PRNGKey(0))
+    action = fake_multi_jax_env.action_spec().generate_value()
+    assert action.shape[0] == fake_multi_jax_env.num_agents
+    while not timestep.last():
+        state, timestep, _ = fake_multi_jax_env.step(state, action)
 
 
 class TestFakeAgent:

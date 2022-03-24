@@ -119,6 +119,133 @@ class FakeJaxEnv(JaxEnv[FakeState]):
         return next_state, timestep, None
 
 
+class FakeMultiJaxEnv(JaxEnv[FakeState]):
+    """
+    A fake multi agent environment that inherits from JaxEnv, for testing purposes.
+    """
+
+    def __init__(
+        self,
+        num_agents: int = 5,
+        observation_shape: Tuple = (5, 5),
+        num_action_values: int = 1,
+        reward_per_step: float = 1.0,
+        time_limit: int = 10,
+    ):
+        """Initialize a fake multi agent jax environment.
+
+        Args:
+            num_agents : the number of agents present in the environment.
+            observation_shape: shape of the dummy observation. The leading
+                dimension should always be (num_agents, ...)
+            num_action_values: number of values in the bounded discrete action space.
+            reward_per_step: the reward given to each agent every timestep.
+            time_limit: horizon of an episode.
+        """
+        self.time_limit = time_limit
+        self.observation_shape = observation_shape
+        self.num_action_values = num_action_values
+        self.num_agents = num_agents
+        self.reward_per_step = reward_per_step
+        assert (
+            observation_shape[0] == num_agents
+        ), f"a leading dimension of size 'num_agents': {num_agents} is expected for the observation, got shape: {observation_shape}."
+
+    def observation_spec(self) -> specs.Array:
+        """Returns the observation spec.
+
+        Returns:
+            observation_spec: a `dm_env.specs.Array` spec.
+        """
+
+        return specs.Array(
+            shape=self.observation_shape, dtype=jnp.float_, name="observation"
+        )
+
+    def action_spec(self) -> specs.DiscreteArray:
+        """Returns the action spec.
+
+        Returns:
+            action_spec: a `dm_env.specs.Array` spec.
+        """
+
+        return specs.BoundedArray(
+            (self.num_agents,), jnp.int_, 0, self.num_action_values - 1
+        )
+
+    def reward_spec(self) -> specs.Array:
+        """Returns the reward spec.
+
+        Returns:
+            reward_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
+
+    def discount_spec(self) -> specs.Array:
+        """Describes the discount returned by the environment.
+
+        Returns:
+            discount_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.BoundedArray(
+            shape=(self.num_agents,),
+            dtype=jnp.float_,
+            minimum=0.0,
+            maximum=1.0,
+            name="discount",
+        )
+
+    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
+        """Resets the environment to an initial state: step number is 0.
+
+        Args:
+            key: random key used to reset the environment.
+
+        Returns:
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+
+        state = FakeState(key=key, step=0)
+        observation = jnp.zeros(self.observation_shape, float)
+        timestep = restart(observation=observation, shape=(self.num_agents,))
+        return state, timestep, None
+
+    def step(
+        self, state: FakeState, action: Action
+    ) -> Tuple[FakeState, TimeStep, Extra]:
+        """Steps into the environment by doing nothing but increasing the step number.
+
+        Args:
+            state: State containing a random key and a step number.
+            action: array.
+
+        Returns:
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+        key = random.split(state.key, 1).squeeze(0)
+        next_step = state.step + 1
+        next_state = FakeState(key=key, step=next_step)
+        timestep = lax.cond(
+            next_step >= self.time_limit,
+            lambda _: termination(
+                reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
+                observation=jnp.zeros(self.observation_shape, float),
+                shape=(self.num_agents,),
+            ),
+            lambda _: transition(
+                reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
+                observation=jnp.zeros(self.observation_shape, float),
+                shape=(self.num_agents,),
+            ),
+            None,
+        )
+        return next_state, timestep, None
+
+
 """
 Some common functions and classes that are used in testing throughout jumanji.
 """
@@ -127,6 +254,11 @@ Some common functions and classes that are used in testing throughout jumanji.
 def make_fake_jax_env(time_limit: int = 10) -> FakeJaxEnv:
     """Creates a fake jax environment."""
     return FakeJaxEnv(time_limit=time_limit)
+
+
+def make_fake_multi_jax_env(time_limit: int = 10) -> FakeMultiJaxEnv:
+    """Creates a fake multi agent jax environment."""
+    return FakeMultiJaxEnv(time_limit=time_limit)
 
 
 def make_fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
