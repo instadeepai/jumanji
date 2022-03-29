@@ -23,6 +23,7 @@ class ActingState(NamedTuple, Generic[State]):
     key: PRNGKey
     reset: jnp.bool_
     episode_count: jnp.int32
+    extra: Extra
 
 
 class JaxEnvironmentLoop:
@@ -134,6 +135,7 @@ class JaxEnvironmentLoop:
                 reset=jnp.array(False, dtype=bool),
                 state=next_state,
                 timestep=next_timestep,
+                extra=extra,
             )
             transition = Transition(
                 observation=timestep.observation,
@@ -156,7 +158,10 @@ class JaxEnvironmentLoop:
             next_key, action_key = random.split(_acting_state.key)
             timestep = _acting_state.timestep
             action = self._agent.select_action(
-                training_state, timestep.observation, action_key
+                training_state,
+                timestep.observation,
+                action_key,
+                extra=_acting_state.extra,
             )
             next_state, next_timestep, extra = self._step_fn(
                 _acting_state.state, action
@@ -167,6 +172,7 @@ class JaxEnvironmentLoop:
                 reset=next_timestep.last(),
                 state=next_state,
                 timestep=next_timestep,
+                extra=extra,
             )
             transition = Transition(
                 observation=timestep.observation,
@@ -299,13 +305,14 @@ class JaxEnvironmentLoop:
         episode_count, step_count = 0, 0
         training_state = self._agent.init_training_state(next(self._rng))
         keys = random.split(next(self._rng), self._batch_size)
-        states, timesteps, _ = jax.vmap(self._reset_fn)(keys)
+        states, timesteps, extra = jax.vmap(self._reset_fn)(keys)
         acting_states = ActingState(
             episode_count=jnp.zeros((self._batch_size,), int),
             key=random.split(next(self._rng), self._batch_size),
             reset=jnp.zeros((self._batch_size,), bool),
             state=states,
             timestep=timesteps,
+            extra=extra,
         )
         (
             acting_states,

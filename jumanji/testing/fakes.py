@@ -280,7 +280,11 @@ class FakeAgent(Agent):
         return training_state
 
     def select_action(
-        self, training_state: TrainingState, observation: Array, key: PRNGKey
+        self,
+        training_state: TrainingState,
+        observation: Array,
+        key: PRNGKey,
+        extra: Extra = None,
     ) -> Action:
         """Returns an action, here returns 0."""
         action = jnp.array(self._action_spec.generate_value())

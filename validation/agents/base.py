@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from chex import Array, PRNGKey
 
-from jumanji.jax.types import Action
+from jumanji.jax.types import Action, Extra
 from validation.types import TrainingState, Transition
 
 
@@ -25,7 +25,11 @@ class Agent(abc.ABC):
 
     @abc.abstractmethod
     def select_action(
-        self, training_state: TrainingState, observation: Array, key: PRNGKey
+        self,
+        training_state: TrainingState,
+        observation: Array,
+        key: PRNGKey,
+        extra: Extra = None,
     ) -> Action:
         """Select an action accounting for the current observation.
 
@@ -33,6 +37,8 @@ class Agent(abc.ABC):
             training_state: contains the parameters, optimizer state and counter.
             observation: jax array.
             key: random key to sample an action.
+            extra: optional field of type Extra containing additional information
+                about the environment.
 
         Returns:
             action.

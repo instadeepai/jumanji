@@ -5,7 +5,7 @@ from chex import Array, PRNGKey
 from dm_env import specs
 from jax import random
 
-from jumanji.jax.types import Action
+from jumanji.jax.types import Action, Extra
 from validation.agents.base import Agent
 from validation.types import TrainingState, Transition
 
@@ -36,7 +36,11 @@ class RandomAgent(Agent):
         return training_state
 
     def select_action(
-        self, training_state: TrainingState, observation: Array, key: PRNGKey
+        self,
+        training_state: TrainingState,
+        observation: Array,
+        key: PRNGKey,
+        extra: Extra = None,
     ) -> Action:
         """Select a random action for a specs.BoundedArray action space. Works for both discrete
         and continuous action spaces (under the condition that it is bounded).
@@ -45,6 +49,8 @@ class RandomAgent(Agent):
             training_state: contains the parameters, optimizer state and counter.
             observation: jax array.
             key: random key to sample an action.
+            extra: optional field of type Extra containing additional information
+                about the environment.
 
         Returns:
             action randomly selected in the discrete interval given by specs.BoundedArray.
