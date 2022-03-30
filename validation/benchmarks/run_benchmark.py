@@ -6,6 +6,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from jumanji.jax import JaxEnv
 from jumanji.jax.wrappers import DeepMindEnvWrapper
+from jumanji.pcb_grid.wrappers import DeepMindEnvWrapper as PcbGridDeepMindEnvWrapper
 from validation.benchmark_loops import (
     BenchmarkLoop,
     DeepMindEnvBenchmarkLoop,
@@ -16,7 +17,10 @@ ENV_LOOP_CLASSES = {
     "JaxEnvBenchmarkLoop": JaxEnvBenchmarkLoop,
     "DeepMindEnvBenchmarkLoop": DeepMindEnvBenchmarkLoop,
 }
-WRAPPERS = {"DeepMindEnvWrapper": DeepMindEnvWrapper}
+WRAPPERS = {
+    "DeepMindEnvWrapper": DeepMindEnvWrapper,
+    "PcbGridDeepMindEnvWrapper": PcbGridDeepMindEnvWrapper,
+}
 
 
 def run_benchmark(
@@ -68,7 +72,7 @@ def run(cfg: DictConfig) -> None:
         env=hydra.utils.instantiate(cfg.environment),
         env_loop_cls=ENV_LOOP_CLASSES[cfg.environment_loop.cls],
         env_wrappers=[
-            WRAPPERS[wrapper_name] for wrapper_name in cfg.environment_loop.wrappers
+            WRAPPERS[wrapper_name] for wrapper_name in cfg.environment_loop.wrappers  # type: ignore
         ],
         num_episodes=cfg.num_episodes,
         num_env_steps=cfg.num_env_steps,

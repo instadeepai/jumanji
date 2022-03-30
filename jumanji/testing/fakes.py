@@ -149,7 +149,8 @@ class FakeMultiJaxEnv(JaxEnv[FakeState]):
         self.reward_per_step = reward_per_step
         assert (
             observation_shape[0] == num_agents
-        ), f"a leading dimension of size 'num_agents': {num_agents} is expected for the observation, got shape: {observation_shape}."
+        ), f"""a leading dimension of size 'num_agents': {num_agents} is expected
+            for the observation, got shape: {observation_shape}."""
 
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
@@ -339,3 +340,32 @@ def batch_fake_traj(
         fake_transition(env_spec),
     )
     return batch_traj
+
+
+class FakeMultiAgent(FakeAgent):
+    """
+    An agent to select random correctly sized actions for the multi agent case.
+    For testing purposes.
+    """
+
+    def __init__(
+        self, action_spec: Optional[specs.BoundedArray] = None, num_agents: int = 1
+    ) -> None:
+        super().__init__(action_spec)
+        self._num_agents = num_agents
+
+    def select_action(
+        self,
+        training_state: TrainingState,
+        observation: Array,
+        key: PRNGKey,
+        extra: Extra = None,
+    ) -> jnp.ndarray:
+        """Randomly selects actions in the shape (num_agents,)."""
+        action = random.randint(
+            key,
+            (self._num_agents,),
+            self._action_spec.minimum,
+            self._action_spec.maximum,
+        )
+        return action

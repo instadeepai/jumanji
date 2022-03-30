@@ -50,7 +50,9 @@ class BenchmarkLoop(abc.ABC):
             action randomly selected in the discrete interval given by specs.BoundedArray.
 
         """
-        if np.issubdtype(action_spec.dtype, np.int32):
+        if np.issubdtype(action_spec.dtype, np.int32) or np.issubdtype(
+            action_spec.dtype, np.int64
+        ):
             action = random.randint(
                 key=key,
                 shape=action_spec.shape,
@@ -58,7 +60,9 @@ class BenchmarkLoop(abc.ABC):
                 maxval=action_spec.maximum + 1,
                 dtype=action_spec.dtype,
             )
-        elif np.issubdtype(action_spec.dtype, np.float32):
+        elif np.issubdtype(action_spec.dtype, np.float32) or np.issubdtype(
+            action_spec.dtype, np.float64
+        ):
             action = random.uniform(
                 key=key,
                 shape=action_spec.shape,

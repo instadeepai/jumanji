@@ -56,6 +56,7 @@ nav:
           - environments:
               - snake: api/jax/environments/snake.md
               - swap: api/jax/environments/swap.md
+              - pcb_grid: api/jax/environments/pcb_grid.md
           - jax_env: api/jax/env.md
           - types: api/jax/types.md
           - wrappers: api/jax/wrappers.md

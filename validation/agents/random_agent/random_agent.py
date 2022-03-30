@@ -56,7 +56,9 @@ class RandomAgent(Agent):
             action randomly selected in the discrete interval given by specs.BoundedArray.
 
         """
-        if np.issubdtype(self._action_spec.dtype, np.int32):
+        if np.issubdtype(self._action_spec.dtype, np.int32) or np.issubdtype(
+            self._action_spec.dtype, np.int64
+        ):
             action = random.randint(
                 key=key,
                 shape=self._action_spec.shape,
@@ -64,7 +66,9 @@ class RandomAgent(Agent):
                 maxval=self._action_spec.maximum + 1,
                 dtype=self._action_spec.dtype,
             )
-        elif np.issubdtype(self._action_spec.dtype, np.float32):
+        elif np.issubdtype(self._action_spec.dtype, np.float32) or np.issubdtype(
+            self._action_spec.dtype, np.float64
+        ):
             action = random.uniform(
                 key=key,
                 shape=self._action_spec.shape,

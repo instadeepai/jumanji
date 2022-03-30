@@ -1,5 +1,5 @@
 import enum
-from typing import TYPE_CHECKING, Any, Optional, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, Sequence, TypeVar, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -78,7 +78,7 @@ class TimeStep:
         return self.step_type == StepType.LAST
 
 
-def restart(observation: Array, shape: Sequence[int] = ()) -> TimeStep:
+def restart(observation: Array, shape: Union[int, Sequence[int]] = ()) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.FIRST`.
 
     Args:
@@ -102,7 +102,7 @@ def transition(
     reward: Array,
     observation: Array,
     discount: Optional[Array] = None,
-    shape: Sequence[int] = (),
+    shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.MID`.
 
@@ -127,7 +127,7 @@ def transition(
 
 
 def termination(
-    reward: Array, observation: Array, shape: Sequence[int] = ()
+    reward: Array, observation: Array, shape: Union[int, Sequence[int]] = ()
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 
@@ -153,7 +153,7 @@ def truncation(
     reward: Array,
     observation: Array,
     discount: Optional[Array] = None,
-    shape: Sequence[int] = (),
+    shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 

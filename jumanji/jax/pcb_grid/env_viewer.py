@@ -1,10 +1,12 @@
 import time
 from typing import List, Optional, Tuple
 
+import jax.numpy as jnp
 import numpy as np
 import pygame
+from chex import Array
 
-import jumanji.pcb_grid.pcb_grid as pcb_grid
+from jumanji.jax.pcb_grid.constants import HEAD, TARGET
 
 
 class PcbGridViewer:
@@ -31,7 +33,6 @@ class PcbGridViewer:
             viewer_width: Width of the viewer in pixels.
             viewer_height: Height of the viewer in pixels.
             grid_unit: the size of the grid squares in pixels.
-
         """
         pygame.init()
 
@@ -55,8 +56,8 @@ class PcbGridViewer:
             self.palette.append((color[0], color[1], color[2]))
 
     def render(
-        self, grid: np.ndarray, mode: str = "human", save_img: Optional[str] = None
-    ) -> np.ndarray:
+        self, grid: Array, mode: str = "human", save_img: Optional[str] = None
+    ) -> Array:
         """
         Render the environment.
 
@@ -80,17 +81,14 @@ class PcbGridViewer:
                     self.grid_unit,
                 )
                 value = grid[row, col]
-
                 self._draw_shape(rect, value)
 
         pygame.display.update()
-
         self.maybe_sleep(mode)
-
         if save_img:
             pygame.image.save(self.screen, save_img)
 
-        return np.array(pygame.surfarray.pixels3d(self.screen))
+        return jnp.array(pygame.surfarray.pixels3d(self.screen))
 
     @staticmethod
     def maybe_sleep(mode: str) -> None:
@@ -99,7 +97,6 @@ class PcbGridViewer:
 
         Args:
             mode: Render mode. Options: ['human', 'fast'].
-
         """
         if mode == "human":
             time.sleep(0.2)
@@ -117,13 +114,12 @@ class PcbGridViewer:
             value: Color value.
 
         """
-
         color = self.palette[value if value < 2 else 2 + (value - 2) // 3]
-        if value > 1 and (value - pcb_grid.TARGET) % 3 == 0:
+        if value > 1 and (value - TARGET) % 3 == 0:
             pygame.draw.ellipse(self.screen, color, rect, width=5)
         else:
             pygame.draw.rect(self.screen, color, rect)
-            if value > 1 and (value - pcb_grid.HEAD) % 3 == 0:
+            if value > 1 and (value - HEAD) % 3 == 0:
                 pygame.draw.rect(
                     self.screen,
                     (255, 255, 255),

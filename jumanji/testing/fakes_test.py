@@ -111,6 +111,28 @@ class TestFakeAgent:
         assert isinstance(new_training_state, TrainingState)
 
 
+class TestFakeMultiAgent:
+    fake_multi_jax_env = fakes.make_fake_multi_jax_env()
+    fake_multi_agent = fakes.FakeMultiAgent(
+        fake_multi_jax_env.action_spec(), fake_multi_jax_env.num_agents
+    )
+
+    def test_fake_multi_agent__init_training_state(self) -> TrainingState:
+        """Test and return the training state."""
+        key = random.PRNGKey(0)
+        training_state = self.fake_multi_agent.init_training_state(key)
+        return training_state
+
+    def test_fake_multi_agent__select_action(self) -> None:
+        """Check the dummy action selection."""
+        training_state = self.test_fake_multi_agent__init_training_state()
+        observation = jnp.zeros(self.fake_multi_jax_env.observation_shape, float)
+        key = random.PRNGKey(1)
+        action = self.fake_multi_agent.select_action(training_state, observation, key)
+        assert isinstance(action, Action)
+        assert action.shape[0] == self.fake_multi_jax_env.num_agents
+
+
 @pytest.mark.parametrize("fake_jax_env", [()], indirect=True)
 def test_fake_transition(fake_jax_env: fakes.FakeJaxEnv) -> None:
     """Check that the fake transition has one attribute (e.g. reward) that is of rank 0."""
