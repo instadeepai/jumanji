@@ -1,19 +1,24 @@
 from typing import Tuple
 
 import dm_env
+import jax
 import jax.numpy as jnp
 import jax.random as random
+import pytest
+from chex import assert_trees_all_equal
 from dm_env import specs
 
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.types import Extra, StepType, TimeStep
-from jumanji.jax.wrappers import DeepMindEnvWrapper, MultiToSingleJaxEnv
+from jumanji.jax.wrappers import DeepMindEnvWrapper, MultiToSingleJaxEnv, VmapWrapper
 from jumanji.testing.fakes import (
+    FakeJaxEnv,
     FakeState,
     make_fake_dm_env,
     make_fake_jax_env,
     make_fake_multi_jax_env,
 )
+from jumanji.testing.pytrees import assert_trees_are_different
 
 
 class TestDeepMindEnvWrapper:
@@ -129,5 +134,65 @@ class TestMultiToSingleJaxEnv:
     def test_multi_env__unwrapped(self) -> None:
         """Validates unwrapped property of the multi agent to single
         agent wrapped environment."""
-        assert isinstance(self.fake_multi_to_single_env.unwrapped(), JaxEnv)
+        assert isinstance(self.fake_multi_to_single_env.unwrapped, JaxEnv)
         assert self.fake_multi_to_single_env._env == self.fake_multi_jax_env
+
+
+class TestVmapWrapper:
+    @pytest.fixture
+    def fake_jax_env(self) -> FakeJaxEnv:
+        return make_fake_jax_env()
+
+    @pytest.fixture
+    def fake_vmap_jax_env(self, fake_jax_env: JaxEnv) -> VmapWrapper:
+        return VmapWrapper(fake_jax_env)
+
+    @pytest.fixture
+    def keys(self) -> random.PRNGKey:
+        return random.split(random.PRNGKey(0), num=5)
+
+    def test_vmap_wrapper__init(self, fake_jax_env: JaxEnv) -> None:
+        """Validates initialization of the vmap wrapper."""
+        vmap_env = VmapWrapper(fake_jax_env)
+        assert isinstance(vmap_env, JaxEnv)
+
+    def test_vmap_env__reset(
+        self, fake_vmap_jax_env: VmapWrapper, keys: random.PRNGKey
+    ) -> None:
+        """Validates reset function and timestep type of the vmap wrapped environment."""
+        _, timestep, _ = jax.jit(fake_vmap_jax_env.reset)(keys)
+
+        assert isinstance(timestep, TimeStep)
+        assert_trees_all_equal(timestep.step_type, StepType.FIRST)
+        assert timestep.observation.shape[0] == keys.shape[0]
+        assert timestep.reward.shape == (keys.shape[0],)
+        assert timestep.discount.shape == (keys.shape[0],)
+
+    def test_vmap_env__step(
+        self, fake_vmap_jax_env: VmapWrapper, keys: random.PRNGKey
+    ) -> None:
+        """Validates step function of the vmap environment."""
+        state, timestep, _ = fake_vmap_jax_env.reset(
+            keys
+        )  # type: Tuple[FakeState, TimeStep, Extra]
+        action = jax.vmap(lambda _: fake_vmap_jax_env.action_spec().generate_value())(
+            keys
+        )
+
+        state, next_timestep, _ = jax.jit(fake_vmap_jax_env.step)(
+            state, action
+        )  # type: Tuple[FakeState, TimeStep, Extra]
+
+        assert_trees_are_different(next_timestep, timestep)
+        assert_trees_all_equal(next_timestep.reward, 0)
+
+        assert next_timestep.reward.shape == (keys.shape[0],)
+        assert next_timestep.discount.shape == (keys.shape[0],)
+        assert next_timestep.observation.shape[0] == keys.shape[0]
+
+    def test_vmap_env__unwrapped(
+        self, fake_jax_env: JaxEnv, fake_vmap_jax_env: VmapWrapper
+    ) -> None:
+        """Validates unwrapped property of the vmap environment."""
+        assert isinstance(fake_vmap_jax_env.unwrapped, JaxEnv)
+        assert fake_vmap_jax_env._env == fake_jax_env

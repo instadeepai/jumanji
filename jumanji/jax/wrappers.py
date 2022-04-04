@@ -1,13 +1,16 @@
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, TypeVar
 
 import dm_env
+import jax
 import jax.numpy as jnp
 from chex import PRNGKey
 from dm_env import specs
 from jax import jit, random
 
-from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, State, TimeStep
+from jumanji.jax.env import JaxEnv, Wrapper
+from jumanji.jax.types import Action, Extra, TimeStep
+
+State = TypeVar("State")
 
 
 class DeepMindEnvWrapper(dm_env.Environment):
@@ -95,7 +98,7 @@ class DeepMindEnvWrapper(dm_env.Environment):
         return self._env
 
 
-class MultiToSingleJaxEnv(JaxEnv):
+class MultiToSingleJaxEnv(Wrapper):
     """A wrapper that converts a multi-agent JaxEnv to a single-agent JaxEnv."""
 
     def __init__(
@@ -113,12 +116,9 @@ class MultiToSingleJaxEnv(JaxEnv):
             discount_aggregator: a function to aggregate all agents discounts
                 into a single scalar value, e.g. max.
         """
-        self._env = env
+        super().__init__(env)
         self._reward_aggregator = reward_aggregator
         self._discount_aggregator = discount_aggregator
-
-    def __repr__(self) -> str:
-        return str(self._env.__repr__())
 
     def _aggregate_timestep(self, timestep: TimeStep) -> TimeStep:
         """Apply the reward and discount aggregator to a multi-agent
@@ -173,13 +173,47 @@ class MultiToSingleJaxEnv(JaxEnv):
         timestep = self._aggregate_timestep(timestep)
         return state, timestep, extra
 
-    def observation_spec(self) -> specs.Array:
-        """Returns the observation spec."""
-        return self._env.observation_spec()
 
-    def action_spec(self) -> specs.Array:
-        """Returns the action spec."""
-        return self._env.action_spec()
+class VmapWrapper(Wrapper):
+    """Vectorized Jax env."""
 
-    def unwrapped(self) -> JaxEnv:
-        return self._env
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+        """Resets the environment to an initial state.
+
+        The first dimension of the key will dictate the number of concurrent environments.
+
+        To obtain a key with the right first dimension, you may call `jax.random.split` on key
+        with the parameter `num` representing the number of concurrent environments.
+
+        Args:
+            key: random keys used to reset the environments where the first dimension is the number
+                of desired environments.
+
+        Returns:
+            state: State object corresponding to the new state of the environments,
+            timestep: TimeStep object corresponding the first timesteps returned by the
+                environments,
+            extra: metrics, default to None.
+        """
+        state, timestep, extra = jax.vmap(self._env.reset)(key)
+        return state, timestep, extra
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+        """Run one timestep of the environment's dynamics.
+
+        The first dimension of the state will dictate the number of concurrent environments.
+
+        See `VmapWrapper.reset` for more details on how to get a state of concurrent
+        environments.
+
+        Args:
+            state: State object containing the dynamics of the environments.
+            action: Array containing the actions to take.
+
+        Returns:
+            state: State object corresponding to the next states of the environments,
+            timestep: TimeStep object corresponding the timesteps returned by the environments,
+            extra: metrics, default to None.
+        """
+        state, timestep, extra = jax.vmap(self._env.step)(state, action)
+        return state, timestep, extra

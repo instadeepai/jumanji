@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, Dict, Generic, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, Generic, NamedTuple, Optional, Tuple, TypeVar
 
 import haiku as hk
 import jax
@@ -9,10 +9,12 @@ from dm_env import specs
 from jax import lax, random
 
 from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, State, TimeStep
+from jumanji.jax.types import Action, Extra, TimeStep
 from validation.agents import Agent, TrainingState, Transition
 from validation.utils import loggers
 from validation.utils.timeit import TimeIt
+
+State = TypeVar("State")
 
 
 class ActingState(NamedTuple, Generic[State]):

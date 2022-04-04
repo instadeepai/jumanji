@@ -1,12 +1,14 @@
 """Abstract environment class"""
 
 import abc
-from typing import Generic, Tuple
+from typing import Any, Generic, Tuple, TypeVar
 
 from chex import PRNGKey
 from dm_env import specs
 
-from jumanji.jax.types import Action, Extra, State, TimeStep
+from jumanji.jax.types import Action, Extra, TimeStep
+
+State = TypeVar("State")
 
 
 class JaxEnv(abc.ABC, Generic[State]):
@@ -83,3 +85,65 @@ class JaxEnv(abc.ABC, Generic[State]):
         return specs.BoundedArray(
             shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount"
         )
+
+    @property
+    def unwrapped(self) -> "JaxEnv":
+        return self
+
+
+class Wrapper(JaxEnv[State], Generic[State]):
+    """Wraps the environment to allow modular transformations.
+    Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
+    """
+
+    def __init__(self, env: JaxEnv):
+        super().__init__()
+        self._env = env
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({repr(self._env)})"
+
+    def __getattr__(self, name: str) -> Any:
+        if name == "__setstate__":
+            raise AttributeError(name)
+        return getattr(self._env, name)
+
+    @property
+    def unwrapped(self) -> JaxEnv:
+        """Returns the wrapped env."""
+        return self._env.unwrapped
+
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+        """Resets the environment to an initial state.
+
+        Args:
+            key: random key used to reset the environment.
+
+        Returns:
+            state: State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+        return self._env.reset(key)
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+        """Run one timestep of the environment's dynamics.
+
+        Args:
+            state: State object containing the dynamics of the environment.
+            action: Array containing the action to take.
+
+        Returns:
+            state: State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+        return self._env.step(state, action)
+
+    def observation_spec(self) -> specs.Array:
+        """Returns the observation spec."""
+        return self._env.observation_spec()
+
+    def action_spec(self) -> specs.Array:
+        """Returns the action spec."""
+        return self._env.action_spec()

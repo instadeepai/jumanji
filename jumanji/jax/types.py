@@ -1,5 +1,5 @@
 import enum
-from typing import TYPE_CHECKING, Any, Optional, Sequence, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -10,7 +10,6 @@ import jax.numpy as jnp
 from chex import Array
 
 Action = Array
-State = TypeVar("State")
 Extra = Optional[Any]
 
 

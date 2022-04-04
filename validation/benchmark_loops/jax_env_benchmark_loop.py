@@ -1,4 +1,4 @@
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Tuple, TypeVar
 
 import haiku as hk
 from chex import PRNGKey
@@ -6,8 +6,10 @@ from dm_env import specs
 from jax import jit
 
 from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, State, TimeStep
+from jumanji.jax.types import Action, Extra, TimeStep
 from validation.benchmark_loops.benchmark_loop import BenchmarkLoop
+
+State = TypeVar("State")
 
 
 class JaxEnvBenchmarkLoop(BenchmarkLoop):
