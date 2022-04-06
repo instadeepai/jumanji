@@ -1,8 +1,9 @@
 # Connect 4 Environment
 
-We provide here a Jax JIT-able implementation of the Connect 4 environment.
+![Connect four](../../../docs/img/connect4.png)
 
-The environment contains two agents competing against each other, playing turn by turn.
+We provide here a Jax JIT-able implementation of the _Connect Four_ game. The environment contains
+two agents competing against each other, playing turn by turn.
 
 The goal of each agent is to win by connecting 4 tokens horizontally, vertically or diagonally.
 If the board gets full before any of the two agents connects 4, it's a draw and the

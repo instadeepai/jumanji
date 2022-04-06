@@ -39,14 +39,13 @@ RUN mkdir -p /root/.mujoco \
 ENV LD_LIBRARY_PATH /root/.mujoco/mujoco210/bin:${LD_LIBRARY_PATH}
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 
-COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements-dev.txt /tmp/requirements-dev.txt
-COPY ./requirements-mujoco.txt /tmp/requirements-mujoco.txt
-COPY ./requirements-pcb-ray.txt /tmp/requirements-pcb-ray.txt
+# copy the requirements inside the docker image
+COPY ./requirements/* /tmp/
 
-RUN pip install --upgrade --quiet pip setuptools
+RUN pip install --upgrade --quiet pip setuptools wheel
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements.txt
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements-jax.txt
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements-mujoco.txt
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements-pcb-ray.txt
 RUN rm -rf /tmp/*

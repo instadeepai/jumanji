@@ -30,7 +30,7 @@ test:
   extends: .pip-job
   stage: test
   script:
-    - pip install .[dev,pcb_ray]
+    - pip install .[dev]
     - /usr/local/bin/Xdummy :1 &
     - export DISPLAY=':1'
     - pytest --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation

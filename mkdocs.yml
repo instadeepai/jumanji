@@ -1,9 +1,9 @@
 site_name: Jumanji docs
-site_description: Documentation for jumanji
+site_description: Documentation for Jumanji
 site_author: InstaDeep Developers
 site_url: https://instadeep.gitlab.io/mkdocs
 site_dir: public
-repo_name: instadeep/templates/machine-learning-project
+repo_name: instadeep/jumanji
 repo_url: https://gitlab.com/instadeep/templates/machine-learning-project
 
 strict: false # Don't allow warnings during the build process
@@ -57,6 +57,7 @@ nav:
               - snake: api/jax/environments/snake.md
               - swap: api/jax/environments/swap.md
               - pcb_grid: api/jax/environments/pcb_grid.md
+              - connect4: api/jax/environments/connect4.md
           - jax_env: api/jax/env.md
           - types: api/jax/types.md
           - wrappers: api/jax/wrappers.md
