@@ -307,7 +307,9 @@ class JaxEnvironmentLoop:
         episode_count, step_count = 0, 0
         training_state = self._agent.init_training_state(next(self._rng))
         keys = random.split(next(self._rng), self._batch_size)
-        states, timesteps, extra = jax.vmap(self._reset_fn)(keys)
+        # We have to jit the reset function for Brax environments otherwise arrays are assumed
+        # non traced which results in an error when using vmap.
+        states, timesteps, extra = jax.jit(jax.vmap(self._reset_fn))(keys)
         acting_states = ActingState(
             episode_count=jnp.zeros((self._batch_size,), int),
             key=random.split(next(self._rng), self._batch_size),

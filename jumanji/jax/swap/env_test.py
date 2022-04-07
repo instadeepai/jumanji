@@ -7,7 +7,7 @@ from jax import random
 from jumanji.jax.swap import Swap
 from jumanji.jax.swap.types import State
 from jumanji.jax.types import TimeStep
-from jumanji.jax.wrappers import DeepMindEnvWrapper
+from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
 from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from validation.benchmark_loops import DeepMindEnvBenchmarkLoop
@@ -181,7 +181,7 @@ def test_swap__does_not_smoke(swap_env: Swap, capsys: pytest.CaptureFixture) -> 
     )
     jax_environment_loop.run(num_steps=3)
     deep_mind_env_benchmark_loop = DeepMindEnvBenchmarkLoop(
-        DeepMindEnvWrapper(swap_env)
+        JaxEnvToDeepMindEnv(swap_env)
     )
     deep_mind_env_benchmark_loop.run(num_steps=3)
     assert capsys.readouterr().out

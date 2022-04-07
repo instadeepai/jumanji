@@ -55,7 +55,6 @@ class JaxEnv(abc.ABC, Generic[State]):
         Returns:
             observation_spec: a `dm_env.specs.Array` spec.
         """
-        raise NotImplementedError
 
     @abc.abstractmethod
     def action_spec(self) -> specs.Array:
@@ -64,7 +63,6 @@ class JaxEnv(abc.ABC, Generic[State]):
         Returns:
             action_spec: a `dm_env.specs.Array` spec.
         """
-        raise NotImplementedError
 
     def reward_spec(self) -> specs.Array:
         """Describes the reward returned by the environment. By default, this is assumed to be a

@@ -3,17 +3,19 @@ from typing import Any, Callable, Optional, Tuple, TypeVar
 import dm_env
 import jax
 import jax.numpy as jnp
+from brax.envs import Env as BraxEnv
+from brax.envs import State as BraxState
 from chex import PRNGKey
 from dm_env import specs
 from jax import jit, random
 
 from jumanji.jax.env import JaxEnv, Wrapper
-from jumanji.jax.types import Action, Extra, TimeStep
+from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
 
 State = TypeVar("State")
 
 
-class DeepMindEnvWrapper(dm_env.Environment):
+class JaxEnvToDeepMindEnv(dm_env.Environment):
     """A wrapper that converts JaxEnv to dm_env.Environment."""
 
     def __init__(self, env: JaxEnv, key: Optional[PRNGKey] = None):
@@ -94,6 +96,7 @@ class DeepMindEnvWrapper(dm_env.Environment):
         """Returns the action spec."""
         return self._env.action_spec()
 
+    @property
     def unwrapped(self) -> JaxEnv:
         return self._env
 
@@ -217,3 +220,86 @@ class VmapWrapper(Wrapper):
         """
         state, timestep, extra = jax.vmap(self._env.step)(state, action)
         return state, timestep, extra
+
+
+class BraxEnvToJaxEnv(JaxEnv):
+    """
+    A wrapper that converts a Brax environment to a JaxEnv for standardisation, use with the
+    JaxEnvironmentLoop and to augment the API (add timesteps, metrics...).
+    """
+
+    def __init__(self, brax_env: BraxEnv):
+        """Creates the JaxEnv wrapper for Brax environments.
+
+        Args:
+            brax_env: Brax Env object that is not wrapped by a ResetWrapper
+        """
+        self._env = brax_env
+
+    def reset(self, key: PRNGKey) -> Tuple[BraxState, TimeStep, Extra]:
+        """Resets the environment to an initial state.
+
+        Args:
+            key: random key used to reset the environment.
+
+        Returns:
+            state: Brax State object corresponding to the new state of the environment,
+            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+        state = self._env.reset(key)
+        timestep = restart(observation=state.obs)
+        extra = None
+        return state, timestep, extra
+
+    def step(self, state: BraxState, action: Action) -> Tuple[State, TimeStep, Extra]:
+        """Run one timestep of the environment's dynamics.
+
+        Args:
+            state: Brax State object containing the dynamics of the environment.
+            action: Array containing the action to take.
+
+        Returns:
+            state: Brax State object corresponding to the next state of the environment,
+            timestep: TimeStep object corresponding the timestep returned by the environment,
+            extra: metrics, default to None.
+        """
+        state = self._env.step(state, action)
+        timestep = jax.lax.cond(
+            state.done,
+            lambda _state: termination(reward=_state.reward, observation=_state.obs),
+            lambda _state: transition(reward=_state.reward, observation=_state.obs),
+            state,
+        )
+        extra = None
+        return state, timestep, extra
+
+    def observation_spec(self) -> specs.Array:
+        """Returns the observation spec.
+
+        Returns:
+            observation_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.Array(
+            shape=(self._env.observation_size,),
+            dtype=jnp.float_,
+            name="observation",
+        )
+
+    def action_spec(self) -> specs.Array:
+        """Returns the action spec.
+
+        Returns:
+            action_spec: a `dm_env.specs.Array` spec.
+        """
+        return specs.BoundedArray(
+            shape=(self._env.action_size,),
+            dtype=jnp.float_,
+            minimum=-1.0,
+            maximum=1.0,
+            name="action",
+        )
+
+    @property
+    def unwrapped(self) -> BraxEnv:
+        return self._env

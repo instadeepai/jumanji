@@ -1,4 +1,4 @@
 cls: DeepMindEnvBenchmarkLoop
-wrappers: [DeepMindEnvWrapper]
+wrappers: [JaxEnvToDeepMindEnv]
 n_steps: null
 batch_size: null

@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
+import brax.envs
 import dm_env
 import jax
 import jax.numpy as jnp
@@ -16,7 +17,7 @@ from jax import lax, random
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.specs import EnvironmentSpec
 from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
-from jumanji.jax.wrappers import DeepMindEnvWrapper
+from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
 from validation.agents import Agent, TrainingState, Transition
 
 
@@ -264,7 +265,12 @@ def make_fake_multi_jax_env(time_limit: int = 10) -> FakeMultiJaxEnv:
 
 def make_fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
     """Creates a fake jax environment wrapped as a dm_env.Environment."""
-    return DeepMindEnvWrapper(FakeJaxEnv(time_limit=time_limit))
+    return JaxEnvToDeepMindEnv(FakeJaxEnv(time_limit=time_limit))
+
+
+def make_fake_brax_env(time_limit: int = 10) -> brax.envs.Env:
+    """Creates a trivial Brax Env meant for unit testing."""
+    return brax.envs.create("fast", auto_reset=False, episode_length=time_limit)
 
 
 class FakeAgent(Agent):

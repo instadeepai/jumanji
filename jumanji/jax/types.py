@@ -1,4 +1,3 @@
-import enum
 from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
@@ -13,25 +12,19 @@ Action = Array
 Extra = Optional[Any]
 
 
-class StepType(enum.IntEnum):
-    """Adapted from dm_env.TimeStep with the goal of making the step types jax scalars, to
-    avoid weak_type=True. Defines the status of a `TimeStep` within a sequence."""
+class StepType(jnp.int8):
+    """Defines the status of a `TimeStep` within a sequence.
+    First: 0
+    Mid: 1
+    Last: 2
+    """
 
     # Denotes the first `TimeStep` in a sequence.
-    FIRST = jnp.int32(0)
+    FIRST = jnp.array(0, jnp.int8)
     # Denotes any `TimeStep` in a sequence that is not FIRST or LAST.
-    MID = jnp.int32(1)
+    MID = jnp.array(1, jnp.int8)
     # Denotes the last `TimeStep` in a sequence.
-    LAST = jnp.int32(2)
-
-    def first(self) -> bool:
-        return self is StepType.FIRST
-
-    def mid(self) -> bool:
-        return self is StepType.MID
-
-    def last(self) -> bool:
-        return self is StepType.LAST
+    LAST = jnp.array(2, jnp.int8)
 
 
 @dataclass

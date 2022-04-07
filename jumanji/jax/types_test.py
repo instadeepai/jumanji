@@ -193,10 +193,10 @@ def test_step_type__helpers(
         step_type=step_type,
     )
     # TimeStep methods
-    assert time_step.first() is is_first
-    assert time_step.mid() is is_mid
-    assert time_step.last() is is_last
-    # StepType methods
-    assert time_step.step_type.first() is is_first
-    assert time_step.step_type.mid() is is_mid
-    assert time_step.step_type.last() is is_last
+    assert time_step.first() == is_first
+    assert time_step.mid() == is_mid
+    assert time_step.last() == is_last
+    # StepType checks
+    assert (time_step.step_type == 0) == is_first
+    assert (time_step.step_type == 1) == is_mid
+    assert (time_step.step_type == 2) == is_last

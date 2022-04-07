@@ -5,7 +5,7 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 
 from jumanji.jax import JaxEnv
-from jumanji.jax.wrappers import DeepMindEnvWrapper
+from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
 from jumanji.pcb_grid.wrappers import DeepMindEnvWrapper as PcbGridDeepMindEnvWrapper
 from validation.benchmark_loops import (
     BenchmarkLoop,
@@ -18,7 +18,7 @@ ENV_LOOP_CLASSES = {
     "DeepMindEnvBenchmarkLoop": DeepMindEnvBenchmarkLoop,
 }
 WRAPPERS = {
-    "DeepMindEnvWrapper": DeepMindEnvWrapper,
+    "JaxEnvToDeepMindEnv": JaxEnvToDeepMindEnv,
     "PcbGridDeepMindEnvWrapper": PcbGridDeepMindEnvWrapper,
 }
 
