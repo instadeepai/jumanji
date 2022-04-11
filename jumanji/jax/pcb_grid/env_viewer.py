@@ -100,7 +100,7 @@ class PcbGridViewer:
         """
         if mode == "human":
             time.sleep(0.2)
-        elif mode == "fast":
+        elif mode == "fast" or mode == "rgb_array":
             pass
         else:
             raise ValueError(f"Render mode '{mode}' currently not supported")
