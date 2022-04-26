@@ -1,7 +1,33 @@
 # Jumanji
 
-InstaDeep's Suite of Reinforcement Learning Environments.
+Jumanji is InstaDeep's suite of Reinforcement Learning environments. Jumanji's goal is to gather every RL
+environment used within the company to create synergy in a centralized library. Jumanji is still
+in an alpha state for which there is no versioning yet (version `0.0.0`).
 
+Material: [Jumanji Presentation (31/03/2022)](https://docs.google.com/presentation/d/1slBo_uv6QPIgWokZUgrH-mn2WQ9tmDb0KrZC1Sb4nYg/edit?usp=sharing)
+
+List of current environments:
+1. Mujoco Environments (NumPy)
+2. Game of Snake (Jax)
+3. Swap (Jax)
+4. PCB-Grid (Jax and NumPy)
+5. Connect Four (Jax)
+6. Brax Environments (Jax)
+
+Environments soon to be added:
+1. Travelling Salesman Problem (Jax) for combinatorial optimization
+2. Knapsack (Jax) for combinatorial optimization
+3. Chess (Jax)
+4. PCB-Grid v2 (Jax) with multiple layers, obstacles, etc...
+5. BinPack (Jax)
+6. Environments from PaRL (backend to be defined)
+
+
+## Contributions
+
+We warmly welcome
+contributions for which we provide a [CONTRIBUTING.md](https://gitlab.com/instadeep/jumanji/-/blob/main/CONTRIBUTING.md)
+document.
 
 # Installation
 
