@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Generic, Optional, Sequence, TypeVar, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -27,8 +27,11 @@ class StepType(jnp.int8):
     LAST = jnp.array(2, jnp.int8)
 
 
+Observation = TypeVar("Observation")
+
+
 @dataclass
-class TimeStep:
+class TimeStep(Generic[Observation]):
     """Copied from dm_env.TimeStep with the goal of making it a Jax Type.
     The original dm_env.TimeStep is not a Jax type because inheriting a namedtuple is
     not treated as a valid Jax type (https://github.com/google/jax/issues/806).
@@ -58,7 +61,7 @@ class TimeStep:
     step_type: StepType
     reward: Array
     discount: Array
-    observation: Array
+    observation: Observation
 
     def first(self) -> Array:
         return self.step_type == StepType.FIRST
@@ -70,11 +73,13 @@ class TimeStep:
         return self.step_type == StepType.LAST
 
 
-def restart(observation: Array, shape: Union[int, Sequence[int]] = ()) -> TimeStep:
+def restart(
+    observation: Observation, shape: Union[int, Sequence[int]] = ()
+) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.FIRST`.
 
     Args:
-        observation: array.
+        observation: array or tree of arrays.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -92,7 +97,7 @@ def restart(observation: Array, shape: Union[int, Sequence[int]] = ()) -> TimeSt
 
 def transition(
     reward: Array,
-    observation: Array,
+    observation: Observation,
     discount: Optional[Array] = None,
     shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
@@ -100,7 +105,7 @@ def transition(
 
     Args:
         reward: array.
-        observation: array.
+        observation: array or tree of arrays.
         discount: array.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
@@ -119,13 +124,13 @@ def transition(
 
 
 def termination(
-    reward: Array, observation: Array, shape: Union[int, Sequence[int]] = ()
+    reward: Array, observation: Observation, shape: Union[int, Sequence[int]] = ()
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 
     Args:
         reward: array.
-        observation: array.
+        observation: array or tree of arrays.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -143,7 +148,7 @@ def termination(
 
 def truncation(
     reward: Array,
-    observation: Array,
+    observation: Observation,
     discount: Optional[Array] = None,
     shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
@@ -151,7 +156,7 @@ def truncation(
 
     Args:
         reward: array.
-        observation: array.
+        observation: array or tree of arrays.
         discount: array.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for

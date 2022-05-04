@@ -103,7 +103,7 @@ class Swap(JaxEnv[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array], Extra]:
         """Resets the environment.
 
         Args:
@@ -146,7 +146,9 @@ class Swap(JaxEnv[State]):
         timestep = restart(observation=obs)
         return state, timestep, None
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(
+        self, state: State, action: Action
+    ) -> Tuple[State, TimeStep[Array], Extra]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -244,7 +246,7 @@ class Swap(JaxEnv[State]):
         )
         return next_state, reward
 
-    def _state_to_timestep(self, state: State, reward: Array) -> TimeStep:
+    def _state_to_timestep(self, state: State, reward: Array) -> TimeStep[Array]:
         """Maps an environment state to an observation. The reward is needed to output the timestep.
 
         Args:
@@ -270,7 +272,7 @@ class Swap(JaxEnv[State]):
             dtype=jnp.float32,
         )
 
-        timestep: TimeStep = lax.cond(
+        timestep: TimeStep[Array] = lax.cond(
             state.step_count % (self.n_periods * 2 * self.swap_period) == 0,
             lambda _: truncation(reward=reward, observation=next_obs),
             lambda _: transition(reward=reward, observation=next_obs),

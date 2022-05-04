@@ -82,7 +82,7 @@ class Snake(JaxEnv[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array], Extra]:
         """Resets the environment.
 
         Args:

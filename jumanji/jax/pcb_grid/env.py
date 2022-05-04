@@ -150,7 +150,7 @@ class PcbGridEnv(JaxEnv[State]):
             name="discount",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array], Extra]:
         """Resets the environment.
 
         Args:
@@ -182,7 +182,7 @@ class PcbGridEnv(JaxEnv[State]):
         )
         return state, timestep, None
 
-    def step(self, state: State, action: Array) -> Tuple[State, TimeStep, Extra]:
+    def step(self, state: State, action: Array) -> Tuple[State, TimeStep[Array], Extra]:
         """Perform an environment step.
 
         Args:
@@ -218,7 +218,7 @@ class PcbGridEnv(JaxEnv[State]):
             rewards,
         )
 
-        timestep: TimeStep = jax.lax.cond(
+        timestep: TimeStep[Array] = jax.lax.cond(
             jnp.all(finished_agents) | horizon_reached,
             lambda _: termination(
                 reward=rewards, observation=observations, shape=self.num_agents

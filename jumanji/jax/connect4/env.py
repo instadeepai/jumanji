@@ -51,7 +51,7 @@ class Connect4(JaxEnv[State]):
 
     n_players: int = 2
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation], Extra]:
         """Resets the environment.
 
         Args:
@@ -74,7 +74,9 @@ class Connect4(JaxEnv[State]):
         extra = {"current_player": jnp.array(0, dtype=jnp.int8)}
         return state, timestep, extra
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(
+        self, state: State, action: Action
+    ) -> Tuple[State, TimeStep[Observation], Extra]:
         """Run one timestep of the environment's dynamics.
 
         Args:
