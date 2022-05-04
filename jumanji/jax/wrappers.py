@@ -26,7 +26,10 @@ class JaxEnvToDeepMindEnv(dm_env.Environment):
             key: optional key to initialize the JaxEnv environment with.
         """
         self._env = env
-        self._key = key or random.PRNGKey(0)
+        if key is None:
+            self._key = random.PRNGKey(0)
+        else:
+            self._key = key
         self._state: Any
         self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep, Extra]] = jit(
             self._env.reset

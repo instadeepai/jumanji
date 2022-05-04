@@ -41,6 +41,10 @@ class TestJaxEnvToDeepMindEnv:
         """Validates initialization of the dm_env wrapper."""
         dm_environment = JaxEnvToDeepMindEnv(self.fake_jax_env)
         assert isinstance(dm_environment, dm_env.Environment)
+        dm_environment_with_key = JaxEnvToDeepMindEnv(
+            self.fake_jax_env, key=jax.random.PRNGKey(0)
+        )
+        assert isinstance(dm_environment_with_key, dm_env.Environment)
 
     def test_dm_env__reset(self) -> None:
         """Validates reset function and timestep type of the wrapped environment."""
