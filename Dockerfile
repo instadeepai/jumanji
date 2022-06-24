@@ -57,3 +57,6 @@ ENV PYTHONPATH=$PYTHONPATH:$PWD
 EXPOSE 6006
 # Expose port for mkdocs serve
 EXPOSE 8000
+
+# Needed since git 2.35.2 security update, see https://stackoverflow.com/questions/71901632/fatal-error-unsafe-repository-home-repon-is-owned-by-someone-else
+RUN git config --global --add safe.directory /home/app/jumanji

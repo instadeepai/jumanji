@@ -9,7 +9,7 @@ mkdocs==1.2.3
 mkdocs-git-revision-date-plugin
 mkdocs-include-markdown-plugin
 mkdocs-material
-mkdocstrings
+mkdocstrings==0.18.0
 mypy==0.942
 optax>=0.0.9
 pre-commit==2.17.0
