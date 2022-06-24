@@ -59,6 +59,7 @@ nav:
               - pcb_grid: api/jax/environments/pcb_grid.md
               - connect4: api/jax/environments/connect4.md
               - knapsack: api/jax/environments/knapsack.md
+              - tsp: api/jax/environments/tsp.md
           - jax_env: api/jax/env.md
           - types: api/jax/types.md
           - wrappers: api/jax/wrappers.md

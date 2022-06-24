@@ -138,7 +138,9 @@ class Knapsack(JaxEnv[State]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a `dm_env.specs.Array` spec.
+            observation_spec: a Tuple containing the spec for each of the constituent fields of an observation.
+
+        TODO: Once issue #87 is solved, the returned type should no longer be a Tuple but a formal spec.
         """
         problem_obs = specs.BoundedArray(
             shape=(self.problem_size, 2),
