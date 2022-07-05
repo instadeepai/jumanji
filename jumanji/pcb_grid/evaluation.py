@@ -13,9 +13,9 @@ def wire_length(env: PcbGridEnv) -> int:
 
 def proportion_connected(env: PcbGridEnv) -> float:
     """Calculates the proportion of wires that are connected."""
-    return sum([agent.done for agent in env.agents]) / env.num_agents
+    return sum([agent.connected for agent in env.agents]) / env.num_agents
 
 
 def is_board_complete(env: PcbGridEnv) -> bool:
     """True if all wires connect, otherwise false."""
-    return sum([agent.done for agent in env.agents]) == env.num_agents
+    return sum([agent.connected for agent in env.agents]) == env.num_agents

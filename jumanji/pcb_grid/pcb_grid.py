@@ -32,7 +32,7 @@ class Agent:
     target: Tuple[int, int] = (-1, -1)
 
     @property
-    def done(self) -> bool:
+    def connected(self) -> bool:
         return self.position == self.target
 
 
@@ -59,9 +59,10 @@ class PcbGridEnv(MultiAgentEnv):
         cols: int,
         num_agents: int,
         difficulty: str = "easy",
-        reward_per_timestep: Optional[float] = None,
-        reward_per_connected: float = 1.0,
-        reward_per_blocked: float = -1.0,
+        reward_per_timestep: float = -0.03,
+        reward_per_connected: float = 0.1,
+        reward_per_blocked: float = -0.1,
+        reward_per_noop: float = -0.01,
         renderer: Optional[viewer.PcbGridViewer] = None,
     ):
         """A simple grid environment that represents the PCB environment.
@@ -72,10 +73,10 @@ class PcbGridEnv(MultiAgentEnv):
             num_agents: number of agents in the grid.
             difficulty: hard or easy layouts. If hard, there is at least 1 overlap.
             reward_per_timestep: a small negative reward provided to every agent at each timestep if
-                they do not connect and are not blocked. If None, a default value of
-                -1.0 / (rows + cols) is used.
+                they do not connect and are not blocked.
             reward_per_connected: reward given if the agent connects.
             reward_per_blocked: reward given if an agent blocks itself.
+            reward_per_noop: reward given if an agent performs a no-op (should be a small negative)
             renderer: an optional PcbGridViewer instance to render the environment, if left as None
                 a default viewer is created when render is called.
         """
@@ -89,13 +90,11 @@ class PcbGridEnv(MultiAgentEnv):
             ), f"Expected a renderer of type 'PcbGridViewer', got {renderer} of type {type(renderer)}."
         self.viewer = renderer
 
-        self.reward_per_timestep = (
-            reward_per_timestep
-            if reward_per_timestep is not None
-            else -1.0 / (rows + cols)
-        )
+        self.reward_per_timestep = reward_per_timestep
         self.reward_per_connected = reward_per_connected
         self.reward_per_blocked = reward_per_blocked
+        self.reward_per_noop = reward_per_noop
+
         self.action_space = spaces.Discrete(5)
         self.obs_ints = 2 + 3 * num_agents
         self.observation_space = spaces.Dict(
@@ -110,6 +109,7 @@ class PcbGridEnv(MultiAgentEnv):
             self.reward_per_timestep,
             self.reward_per_connected,
             self.reward_per_blocked,
+            self.reward_per_noop,
         ]
         self.reward_range = (min(rewards), max(rewards))
 
@@ -136,7 +136,7 @@ class PcbGridEnv(MultiAgentEnv):
         }
         dones = {
             agent_id: (
-                self.agents[agent_id].done
+                self.agents[agent_id].connected
                 or is_agent_blocked(observations[agent_id]["action_mask"])
             )
             for agent_id in actions.keys()
@@ -145,7 +145,7 @@ class PcbGridEnv(MultiAgentEnv):
 
         rewards = {
             agent_id: self._agent_reward(
-                agent_id, observations[agent_id]["action_mask"]
+                agent_id, actions[agent_id], observations[agent_id]["action_mask"]
             )
             for agent_id in actions.keys()
         }
@@ -206,23 +206,30 @@ class PcbGridEnv(MultiAgentEnv):
 
         return pos
 
-    def _agent_reward(self, agent_id: int, action_mask: np.ndarray) -> float:
+    def _agent_reward(
+        self, agent_id: int, action: np.ndarray, action_mask: np.ndarray
+    ) -> float:
         """
         Calculated the reward of the agent with ID agent_id.
 
         Args:
             agent_id: ID of the agent to get the rewards for.
+            action: action of the agent
             action_mask: the action mask of agent with ID agent_id.
 
         Returns: the reward for the agent with ID agent_id.
         """
         agent = self.agents[agent_id]
-        if agent.done:
+        if agent.connected:
             return self.reward_per_connected
         elif is_agent_blocked(action_mask):
             return self.reward_per_blocked
         else:
-            return self.reward_per_timestep
+            return (
+                self.reward_per_timestep + self.reward_per_noop
+                if action == NOOP
+                else self.reward_per_timestep
+            )
 
     def _agent_observation(self, agent_id: int) -> Dict[str, np.ndarray]:
         """
@@ -303,7 +310,7 @@ class PcbGridEnv(MultiAgentEnv):
             return
 
         agent = self.agents[agent_id]
-        if agent.done:
+        if agent.connected:
             return
 
         position = move(agent.position, action)

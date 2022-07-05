@@ -186,7 +186,7 @@ def test_pcb_grid__step(pcb_grid_env: PcbGridEnv) -> None:
         4: (Position(x=row + 1, y=col)),  # Down
     }
     for action, new_position in moves.items():
-        new_state, timestep, _ = step_fn(state, jnp.array([action]))
+        new_state, timestep, _ = step_fn(state, jnp.array([action, action]))
         if pcb_grid_env._is_valid(state.grid, 0, new_position):
             head, _ = pcb_grid_env._extract_agent_information(new_state.grid, 0)
             posx, posy = head

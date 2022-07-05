@@ -50,6 +50,7 @@ class PcbGridEnv(JaxEnv[State]):
         reward_per_timestep: float = -0.03,
         reward_for_connection: float = 0.1,
         reward_for_blocked: float = -0.1,
+        reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
         renderer: Optional[viewer.PcbGridViewer] = None,
@@ -70,6 +71,7 @@ class PcbGridEnv(JaxEnv[State]):
                 connecting to its target.
             reward_for_blocked : the reward given to an agent
                 for blocking itself.
+            reward_for_noop: reward given if an agent performs a no-op (should be a small negative)
             step_limit : the number of steps allowed before an episode terminates.
             reward_for_terminal_step : the reward given if step_limit is reached.
             renderer: an optional PcbGridViewer instance to render the environment, if left as None
@@ -90,6 +92,7 @@ class PcbGridEnv(JaxEnv[State]):
         self._reward_time_step = jnp.array(reward_per_timestep, float)
         self._reward_connected = jnp.array(reward_for_connection, float)
         self._reward_blocked = jnp.array(reward_for_blocked, float)
+        self._reward_noop = jnp.array(reward_for_noop, float)
 
         self._step_limit = step_limit
         self._reward_for_terminal_step = jnp.array(reward_for_terminal_step, float)
@@ -208,7 +211,7 @@ class PcbGridEnv(JaxEnv[State]):
 
         observations = self._get_obsv(grid)
         finished_agents = self.get_finished_agents(grid)
-        rewards = self._get_rewards(grid) * ~state.finished_agents
+        rewards = self._get_rewards(grid, action) * ~state.finished_agents
         horizon_reached = state.step >= self._step_limit
 
         rewards = jax.lax.cond(
@@ -418,30 +421,33 @@ class PcbGridEnv(JaxEnv[State]):
             jnp.arange(self.num_agents, dtype=jnp.int_)
         )
 
-    def _get_rewards(self, grid: Array) -> Array:
+    def _get_rewards(self, grid: Array, actions: Array) -> Array:
         """Get the rewards for each agent.
 
         Args:
             grid (Array) : the environment state grid.
+            actions (Array): actions of all agents.
 
         Return:
             Array : array of rewards in the shape (number of agents, )."""
 
-        def reward_fun(grid: Array, agent_id: jnp.int_) -> jnp.float_:
+        def reward_fun(grid: Array, agent_id: jnp.int_, action: jnp.int_) -> jnp.float_:
+            noop_coeff = action == NOOP  # 1 if noop, otherwise 0
+
             return jax.lax.cond(
                 self.is_agent_connected(grid, agent_id),
                 lambda _: self._reward_connected,
                 lambda _: jax.lax.cond(
                     self._is_agent_blocked(self.get_action_mask(grid, agent_id)),
                     lambda _: self._reward_blocked,
-                    lambda _: self._reward_time_step,
+                    lambda _: self._reward_time_step + noop_coeff * self._reward_noop,
                     None,
                 ),
                 None,
             )
 
         return jax.vmap(functools.partial(reward_fun, grid))(
-            jnp.arange(self.num_agents, dtype=jnp.int_)
+            jnp.arange(self.num_agents, dtype=jnp.int_), actions
         )
 
     def _agent_observation(self, grid: Array, agent_id: int) -> Array:
