@@ -5,8 +5,11 @@ stages:
   - deploy
   - publish
 
+variables:
+  IMAGE: "gcr.io/instadeep/jumanji"
+
 .pip-job:
-  image: gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA
+  image: ${IMAGE}:$CI_COMMIT_SHORT_SHA
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   cache:
@@ -52,8 +55,16 @@ build_image:
   stage: build
   script:
     - *docker_login
-    - docker build -t gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA .
-    - docker push gcr.io/instadeep/id-ml-template:$CI_COMMIT_SHORT_SHA
+    - DOCKER_BUILDKIT=1 docker build
+      -f Dockerfile
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --cache-from ${IMAGE}:$CI_COMMIT_REF_SLUG
+      --cache-from ${IMAGE}:latest
+      -t ${IMAGE}:$CI_COMMIT_SHORT_SHA .
+    - docker tag ${IMAGE}:$CI_COMMIT_SHORT_SHA ${IMAGE}:$CI_COMMIT_REF_SLUG
+    - docker push ${IMAGE}:$CI_COMMIT_SHORT_SHA
+    - docker push ${IMAGE}:$CI_COMMIT_REF_SLUG
+
 
 test_docs:
   extends: .pip-job
