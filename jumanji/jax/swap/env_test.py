@@ -174,7 +174,7 @@ def test_swap__item_sampling() -> None:
 @pytest.mark.parametrize("swap_env", [()], indirect=True)
 def test_swap__does_not_smoke(swap_env: Swap, capsys: pytest.CaptureFixture) -> None:
     """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
-    fake_agent = FakeAgent()
+    fake_agent = FakeAgent(swap_env.action_spec())
     swap_env.swap_period = 5
     jax_environment_loop = JaxEnvironmentLoop(
         swap_env, fake_agent, n_steps=1, batch_size=2

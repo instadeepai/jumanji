@@ -1,11 +1,12 @@
 import abc
-from typing import Optional
+from typing import Optional, Union
 
+import dm_env.specs
 import numpy as np
 from chex import PRNGKey
-from dm_env import specs
 from jax import random
 
+from jumanji.jax import specs
 from jumanji.jax.types import Action
 from validation.utils import loggers
 from validation.utils.timeit import TimeIt
@@ -43,7 +44,11 @@ class BenchmarkLoop(abc.ABC):
             num_steps is not None and step_count >= num_steps
         )
 
-    def _random_action(self, key: PRNGKey, action_spec: specs.BoundedArray) -> Action:
+    def _random_action(
+        self,
+        key: PRNGKey,
+        action_spec: Union[dm_env.specs.BoundedArray, specs.BoundedArray],
+    ) -> Action:
         """Select a random action for a specs.BoundedArray action space.
 
         Returns:

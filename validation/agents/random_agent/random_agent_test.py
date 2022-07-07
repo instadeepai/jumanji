@@ -4,10 +4,10 @@ from typing import Dict
 import chex
 import jax
 import jax.numpy as jnp
-from dm_env import specs
 from jax import random
 
-from jumanji.jax.specs import make_environment_spec
+from jumanji.jax import specs
+from jumanji.jax.env import make_environment_spec
 from jumanji.testing import pytrees
 from jumanji.testing.fakes import FakeJaxEnv, fake_transition
 from validation.agents import RandomAgent, TrainingState

@@ -4,8 +4,8 @@ import abc
 from typing import Any, Generic, Tuple, TypeVar
 
 from chex import PRNGKey
-from dm_env import specs
 
+from jumanji.jax import specs
 from jumanji.jax.types import Action, Extra, TimeStep
 
 State = TypeVar("State")
@@ -49,19 +49,19 @@ class JaxEnv(abc.ABC, Generic[State]):
         """
 
     @abc.abstractmethod
-    def observation_spec(self) -> specs.Array:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a `dm_env.specs.Array` spec.
+            observation_spec: a NestedSpec tree of spec.
         """
 
     @abc.abstractmethod
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.Spec:
         """Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a NestedSpec tree of spec.
         """
 
     def reward_spec(self) -> specs.Array:
@@ -69,16 +69,16 @@ class JaxEnv(abc.ABC, Generic[State]):
         single float.
 
         Returns:
-            reward_spec: a `dm_env.specs.Array` spec.
+            reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(), dtype=float, name="reward")
 
-    def discount_spec(self) -> specs.Array:
+    def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment. By default, this is assumed to be a
         single float between 0 and 1.
 
         Returns:
-            discount_spec: a `dm_env.specs.Array` spec.
+            discount_spec: a `specs.BoundedArray` spec.
         """
         return specs.BoundedArray(
             shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount"
@@ -138,10 +138,20 @@ class Wrapper(JaxEnv[State], Generic[State]):
         """
         return self._env.step(state, action)
 
-    def observation_spec(self) -> specs.Array:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec."""
         return self._env.observation_spec()
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.Spec:
         """Returns the action spec."""
         return self._env.action_spec()
+
+
+def make_environment_spec(jax_env: JaxEnv) -> specs.EnvironmentSpec:
+    """Returns an `EnvironmentSpec` describing values used by an environment."""
+    return specs.EnvironmentSpec(
+        observations=jax_env.observation_spec(),
+        actions=jax_env.action_spec(),
+        rewards=jax_env.reward_spec(),
+        discounts=jax_env.discount_spec(),
+    )

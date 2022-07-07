@@ -2,9 +2,9 @@ from typing import Tuple
 
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import lax, nn, random
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.swap.types import State
 from jumanji.jax.types import Action, Extra, TimeStep, restart, transition, truncation

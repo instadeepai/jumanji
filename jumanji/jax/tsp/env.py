@@ -3,10 +3,10 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import random
 
-from jumanji.jax import JaxEnv
+from jumanji.jax import JaxEnv, specs
+from jumanji.jax.tsp.specs import ObservationSpec
 from jumanji.jax.tsp.types import Observation, State
 from jumanji.jax.tsp.utils import (
     compute_tour_length,
@@ -122,14 +122,13 @@ class TSP(JaxEnv[State]):
         timestep = self._state_to_timestep(state, is_valid)
         return state, timestep, None
 
-    def observation_spec(self) -> Tuple:
+    def observation_spec(self) -> ObservationSpec:
         """
         Returns the observation spec.
 
         Returns:
-            observation_spec: a Tuple containing the spec for each of the constituent fields of an observation.
-
-        TODO: Once issue #87 is solved, the returned type should no longer be a Tuple but a formal spec.
+            observation_spec: a tree of specs containing the spec for each of the constituent fields
+                of an observation.
         """
         problem_obs = specs.BoundedArray(
             shape=(self.problem_size, 2),
@@ -151,14 +150,19 @@ class TSP(JaxEnv[State]):
             maximum=1,
             name="action mask",
         )
-        return problem_obs, start_position_obs, position_obs, action_mask
+        return ObservationSpec(
+            problem_obs,
+            start_position_obs,
+            position_obs,
+            action_mask,
+        )
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.DiscreteArray:
         """
         Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.DiscreteArray` spec.
         """
         return specs.DiscreteArray(self.problem_size, name="action")
 

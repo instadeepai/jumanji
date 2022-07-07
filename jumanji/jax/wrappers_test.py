@@ -1,6 +1,6 @@
 from typing import Tuple
 
-import dm_env
+import dm_env.specs
 import jax
 import jax.numpy as jnp
 import jax.random as random
@@ -8,8 +8,8 @@ import pytest
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
 from chex import assert_trees_all_equal
-from dm_env import specs
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.types import Extra, StepType, TimeStep
 from jumanji.jax.wrappers import (
@@ -61,11 +61,11 @@ class TestJaxEnvToDeepMindEnv:
 
     def test_jax_env_to_deep_mind_env__observation_spec(self) -> None:
         """Validates observation_spec property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.observation_spec(), specs.Array)
+        assert isinstance(self.fake_dm_env.observation_spec(), dm_env.specs.Array)
 
     def test_jax_env_to_deep_mind_env__action_spec(self) -> None:
         """Validates action_spec property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.action_spec(), specs.Array)
+        assert isinstance(self.fake_dm_env.action_spec(), dm_env.specs.Array)
 
     def test_jax_env_to_deep_mind_env__unwrapped(self) -> None:
         """Validates unwrapped property of the wrapped environment."""
@@ -132,20 +132,16 @@ class TestMultiToSingleJaxEnv:
     def test_multi_env__observation_spec(self) -> None:
         """Validates observation_spec property of the multi agent to single
         agent wrapped environment."""
-        assert isinstance(self.fake_multi_to_single_env.observation_spec(), specs.Array)
-        assert (
-            self.fake_multi_to_single_env.observation_spec()
-            == self.fake_multi_jax_env.observation_spec()
-        )
+        obs_spec: specs.Array = self.fake_multi_to_single_env.observation_spec()  # type: ignore
+        assert isinstance(obs_spec, specs.Array)
+        assert obs_spec.shape == self.fake_multi_jax_env.observation_spec().shape
 
     def test_multi_env__action_spec(self) -> None:
         """Validates action_spec property of the multi agent to single
         agent wrapped environment."""
+        action_spec: specs.Array = self.fake_multi_to_single_env.action_spec()  # type: ignore
         assert isinstance(self.fake_multi_to_single_env.action_spec(), specs.Array)
-        assert (
-            self.fake_multi_to_single_env.action_spec()
-            == self.fake_multi_jax_env.action_spec()
-        )
+        assert action_spec.shape == self.fake_multi_jax_env.action_spec().shape
 
     def test_multi_env__unwrapped(self) -> None:
         """Validates unwrapped property of the multi agent to single

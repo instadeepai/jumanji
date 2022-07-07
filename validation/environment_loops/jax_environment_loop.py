@@ -5,7 +5,6 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 from chex import PRNGKey
-from dm_env import specs
 from jax import lax, random
 
 from jumanji.jax.env import JaxEnv
@@ -70,13 +69,8 @@ class JaxEnvironmentLoop:
         self._reset_fn: Callable[
             [PRNGKey], Tuple[Any, TimeStep, Extra]
         ] = environment.reset
-        if not isinstance(environment.action_spec(), specs.BoundedArray):
-            action_spec = environment.action_spec()
-            raise TypeError(
-                f"action spec must be of type BoundedArray, got "
-                f"{action_spec} of type {type(action_spec)}."
-            )
         self._logger = logger or loggers.TerminalLogger("train")
+        self._env_action_spec = environment.action_spec()
 
     @staticmethod
     def should_terminate(
@@ -141,11 +135,7 @@ class JaxEnvironmentLoop:
             )
             transition = Transition(
                 observation=timestep.observation,
-                action=-1
-                * jnp.ones(
-                    self._environment.action_spec().shape,
-                    dtype=self._environment.action_spec().dtype,
-                ),
+                action=self._env_action_spec.generate_value(),
                 reward=timestep.reward,
                 discount=timestep.discount,
                 next_observation=next_timestep.observation,

@@ -81,7 +81,7 @@ def test_knapsack__does_not_smoke(
     knapsack_env: Knapsack, capsys: pytest.CaptureFixture
 ) -> None:
     """Tests that we can run the jitted JaxEnvironmentLoop without any errors."""
-    fake_agent = FakeAgent()
+    fake_agent = FakeAgent(knapsack_env.action_spec())
     jax_environment_loop = JaxEnvironmentLoop(
         knapsack_env, fake_agent, n_steps=1, batch_size=2
     )

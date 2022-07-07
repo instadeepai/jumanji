@@ -11,11 +11,10 @@ import dm_env
 import jax
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import lax, random
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
-from jumanji.jax.specs import EnvironmentSpec
 from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
 from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
 from validation.agents import Agent, TrainingState, Transition
@@ -53,22 +52,22 @@ class FakeJaxEnv(JaxEnv[FakeState]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a `dm_env.specs.Array` spec.
+            observation_spec: a `specs.Array` spec.
         """
 
         return specs.Array(
-            shape=self.observation_shape, dtype=jnp.float32, name="observation"
+            shape=self.observation_shape, dtype=jnp.float_, name="observation"
         )
 
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.DiscreteArray` spec.
         """
 
         return specs.DiscreteArray(
-            self.num_action_values, dtype=jnp.int32, name="action"
+            self.num_action_values, dtype=jnp.int_, name="action"
         )
 
     def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
@@ -84,7 +83,7 @@ class FakeJaxEnv(JaxEnv[FakeState]):
         """
 
         state = FakeState(key=key, step=0)
-        observation = jnp.array(self.observation_spec().generate_value())
+        observation = self.observation_spec().generate_value()
         timestep = restart(observation=observation)
         return state, timestep, None
 
@@ -157,18 +156,18 @@ class FakeMultiJaxEnv(JaxEnv[FakeState]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a `dm_env.specs.Array` spec.
+            observation_spec: a `specs.Array` spec.
         """
 
         return specs.Array(
             shape=self.observation_shape, dtype=jnp.float_, name="observation"
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
+    def action_spec(self) -> specs.BoundedArray:
         """Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.Array` spec.
         """
 
         return specs.BoundedArray(
@@ -179,15 +178,15 @@ class FakeMultiJaxEnv(JaxEnv[FakeState]):
         """Returns the reward spec.
 
         Returns:
-            reward_spec: a `dm_env.specs.Array` spec.
+            reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
 
-    def discount_spec(self) -> specs.Array:
+    def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
 
         Returns:
-            discount_spec: a `dm_env.specs.Array` spec.
+            discount_spec: a `specs.BoundedArray` spec.
         """
         return specs.BoundedArray(
             shape=(self.num_agents,),
@@ -210,7 +209,7 @@ class FakeMultiJaxEnv(JaxEnv[FakeState]):
         """
 
         state = FakeState(key=key, step=0)
-        observation = jnp.zeros(self.observation_shape, float)
+        observation = self.observation_spec().generate_value()
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep, None
 
@@ -294,7 +293,7 @@ class FakeAgent(Agent):
         extra: Extra = None,
     ) -> Action:
         """Returns an action, here returns 0."""
-        action = jnp.array(self._action_spec.generate_value())
+        action = self._action_spec.generate_value()
         return action
 
     def sgd_step(
@@ -310,19 +309,19 @@ def make_fake_agent() -> FakeAgent:
     return FakeAgent()
 
 
-def fake_transition(env_spec: EnvironmentSpec) -> Transition:
+def fake_transition(env_spec: specs.EnvironmentSpec) -> Transition:
     """Returns a fake transition in the environment. Shape: ()."""
     return Transition(
-        observation=jnp.array(env_spec.observations.generate_value()),
-        action=jnp.array(env_spec.actions.generate_value()),
-        reward=jnp.array(env_spec.rewards.generate_value()),
-        discount=jnp.array(env_spec.discounts.generate_value()),
-        next_observation=jnp.array(env_spec.observations.generate_value()),
+        observation=env_spec.observations.generate_value(),
+        action=env_spec.actions.generate_value(),
+        reward=env_spec.rewards.generate_value(),
+        discount=env_spec.discounts.generate_value(),
+        next_observation=env_spec.observations.generate_value(),
         extra=None,
     )
 
 
-def fake_traj(env_spec: EnvironmentSpec, n_steps: int = 1) -> Transition:
+def fake_traj(env_spec: specs.EnvironmentSpec, n_steps: int = 1) -> Transition:
     """Returns a fake trajectory (sequence of transitions) in the environment. Shape: (n_steps,)."""
     traj: Transition = jax.tree_map(
         partial(jnp.tile, reps=(n_steps,)),
@@ -332,7 +331,7 @@ def fake_traj(env_spec: EnvironmentSpec, n_steps: int = 1) -> Transition:
 
 
 def batch_fake_traj(
-    env_spec: EnvironmentSpec, n_steps: int = 1, batch_size: int = 1
+    env_spec: specs.EnvironmentSpec, n_steps: int = 1, batch_size: int = 1
 ) -> Transition:
     """Returns a fake batch of trajectories in the environment. Shape: (batch_size,n_steps)."""
     batch_traj: Transition = jax.tree_map(

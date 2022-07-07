@@ -6,7 +6,7 @@ from jax import random
 
 import jumanji.testing.fakes as fakes
 import jumanji.testing.pytrees as pytrees
-from jumanji.jax.specs import make_environment_spec
+from jumanji.jax.env import make_environment_spec
 from jumanji.jax.types import Action, TimeStep
 from validation.agents import TrainingState, Transition
 

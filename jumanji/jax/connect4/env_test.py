@@ -81,7 +81,7 @@ def test_connect4__does_not_smoke(
     connect4_env: Connect4, capsys: pytest.CaptureFixture
 ) -> None:
     """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
-    fake_agent = FakeAgent()
+    fake_agent = FakeAgent(connect4_env.action_spec())
     jax_environment_loop = JaxEnvironmentLoop(
         connect4_env, fake_agent, n_steps=1, batch_size=2
     )

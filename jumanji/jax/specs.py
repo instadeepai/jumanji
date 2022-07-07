@@ -5,8 +5,6 @@ import chex
 import dm_env.specs
 import jax.numpy as jnp
 
-from jumanji.jax.env import JaxEnv
-
 T = TypeVar("T")
 
 
@@ -24,6 +22,7 @@ class Spec(abc.ABC, Generic[T]):
         """
         self._name = name
 
+    @abc.abstractmethod
     def __repr__(self) -> str:
         return f"Spec(name={repr(self.name)})"
 
@@ -49,7 +48,7 @@ class Spec(abc.ABC, Generic[T]):
 
     @abc.abstractmethod
     def generate_value(self) -> T:
-        """Generate a test value which conforms to this spec."""
+        """Generate a value which conforms to this spec."""
 
 
 class Array(Spec[chex.Array]):
@@ -119,7 +118,7 @@ class Array(Spec[chex.Array]):
         return value
 
     def generate_value(self) -> chex.Array:
-        """Generate a test value which conforms to this spec."""
+        """Generate a value which conforms to this spec."""
         return jnp.zeros(shape=self.shape, dtype=self.dtype)
 
 
@@ -257,7 +256,7 @@ class DiscreteArray(BoundedArray):
     """
 
     def __init__(
-        self, num_values: int, dtype: Union[jnp.dtype, type] = jnp.int_, name: str = ""
+        self, num_values: int, dtype: Union[jnp.dtype, type] = jnp.int32, name: str = ""
     ):
         """Initializes a new `DiscreteArray` spec.
 
@@ -299,20 +298,54 @@ class DiscreteArray(BoundedArray):
         return self._num_values
 
 
+def jumanji_specs_to_dm_env_specs(
+    spec: Spec,
+) -> Union[dm_env.specs.DiscreteArray, dm_env.specs.BoundedArray, dm_env.specs.Array]:
+    """Converts jumanji specs back to dm_env specs. The conversion is possible only if the spec
+    is not nested, i.e is an Array.
+
+    Args:
+        spec: jumanji spec of type jumanji.jax.specs.Spec, can be an Array or any nested spec.
+
+    Returns:
+        dm_env.specs.Array object corresponding to the equivalent jumanji specs implementation.
+
+    Raises:
+        ValueError if spec is not a jumanji specs Array. In that case, one must override the spec
+            method to output specs of type dm_env.specs.Array.
+    """
+    if isinstance(spec, DiscreteArray):
+        return dm_env.specs.DiscreteArray(
+            num_values=spec.num_values,
+            dtype=spec.dtype,
+            name=spec.name if spec.name else None,
+        )
+    elif isinstance(spec, BoundedArray):
+        return dm_env.specs.BoundedArray(
+            shape=spec.shape,
+            dtype=spec.dtype,
+            minimum=spec.minimum,
+            maximum=spec.maximum,
+            name=spec.name if spec.name else None,
+        )
+    elif isinstance(spec, Array):
+        return dm_env.specs.Array(
+            shape=spec.shape,
+            dtype=spec.dtype,
+            name=spec.name if spec.name else None,
+        )
+    else:
+        raise ValueError(
+            f"spec {spec} of type {type(spec)} is not available in a deepmind environment. "
+            "Please override the observation_spec or action_spec method to output spec of type "
+            "`dm_env.specs.Array`."
+        )
+
+
 class EnvironmentSpec(NamedTuple):
     """Full specification of the domains used by a given environment."""
 
-    observations: dm_env.specs.Array
-    actions: dm_env.specs.Array
-    rewards: dm_env.specs.Array
-    discounts: dm_env.specs.Array
-
-
-def make_environment_spec(jax_env: JaxEnv) -> EnvironmentSpec:
-    """Returns an `EnvironmentSpec` describing values used by an environment."""
-    return EnvironmentSpec(
-        observations=jax_env.observation_spec(),
-        actions=jax_env.action_spec(),
-        rewards=jax_env.reward_spec(),
-        discounts=jax_env.discount_spec(),
-    )
+    observations: Spec
+    actions: Spec
+    rewards: Array
+    discounts: BoundedArray

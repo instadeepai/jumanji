@@ -2,9 +2,9 @@ from typing import Tuple, Union
 
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import lax, random
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.snake import utils as snake_utils
 from jumanji.jax.snake.types import Position, State

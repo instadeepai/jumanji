@@ -3,10 +3,11 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import random
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
+from jumanji.jax.knapsack.specs import ObservationSpec
 from jumanji.jax.knapsack.types import Observation, State
 from jumanji.jax.knapsack.utils import (
     compute_value_items,
@@ -134,13 +135,12 @@ class Knapsack(JaxEnv[State]):
         timestep = self._state_to_timestep(state, is_valid)
         return state, timestep, None
 
-    def observation_spec(self) -> Tuple:
+    def observation_spec(self) -> ObservationSpec:
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a Tuple containing the spec for each of the constituent fields of an observation.
-
-        TODO: Once issue #87 is solved, the returned type should no longer be a Tuple but a formal spec.
+            observation_spec: a tree of specs containing the spec for each of the constituent fields
+                of an observation.
         """
         problem_obs = specs.BoundedArray(
             shape=(self.problem_size, 2),
@@ -162,13 +162,18 @@ class Knapsack(JaxEnv[State]):
             maximum=1,
             name="invalid_mask",
         )
-        return problem_obs, first_item_obs, last_item_obs, invalid_mask
+        return ObservationSpec(
+            problem_obs,
+            first_item_obs,
+            last_item_obs,
+            invalid_mask,
+        )
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.DiscreteArray` spec.
         """
         return specs.DiscreteArray(self.problem_size, name="action")
 

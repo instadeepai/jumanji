@@ -1,12 +1,12 @@
 from typing import Tuple
 
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import lax
 from jax import numpy as jnp
 
-from jumanji.jax import JaxEnv
+from jumanji.jax import JaxEnv, specs
 from jumanji.jax.connect4.constants import BOARD_HEIGHT, BOARD_WIDTH
+from jumanji.jax.connect4.specs import ObservationSpec
 from jumanji.jax.connect4.types import Observation, State
 from jumanji.jax.connect4.utils import (
     board_full,
@@ -142,19 +142,28 @@ class Connect4(JaxEnv[State]):
 
         return next_state, timestep, extra
 
-    def observation_spec(self) -> specs.Array:
+    def observation_spec(self) -> ObservationSpec:
         """Returns the observation spec.
 
         Returns:
-            observation_spec: dm_env.specs object
+            observation_spec: ObservationSpec tree of board and action_mask spec.
         """
-        return specs.Array(shape=(6, 7), dtype=jnp.int8, name="observation")
+        return ObservationSpec(
+            board_obs=specs.Array(shape=(6, 7), dtype=jnp.int8, name="board"),
+            action_mask=specs.BoundedArray(
+                shape=(6, 7),
+                dtype=jnp.bool_,
+                minimum=0,
+                maximum=1,
+                name="invalid_mask",
+            ),
+        )
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. 7 actions: [0,1,2,3,4,5,6] -> one per column.
 
         Returns:
-            action_spec: dm_env.specs object
+            action_spec: specs.DiscreteArray object
         """
         return specs.DiscreteArray(7, name="action")
 

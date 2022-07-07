@@ -1,14 +1,14 @@
 from typing import Any, Callable, Optional, Tuple, TypeVar
 
-import dm_env
+import dm_env.specs
 import jax
 import jax.numpy as jnp
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
 from chex import PRNGKey
-from dm_env import specs
 from jax import jit, random
 
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv, Wrapper
 from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
 
@@ -91,13 +91,13 @@ class JaxEnvToDeepMindEnv(dm_env.Environment):
         self._state, timestep, _ = self._jitted_step(self._state, action)
         return dm_env.TimeStep(**timestep)
 
-    def observation_spec(self) -> specs.Array:
-        """Returns the observation spec."""
-        return self._env.observation_spec()
+    def observation_spec(self) -> dm_env.specs.Array:
+        """Returns the dm_env observation spec."""
+        return specs.jumanji_specs_to_dm_env_specs(self._env.observation_spec())
 
-    def action_spec(self) -> specs.Array:
-        """Returns the action spec."""
-        return self._env.action_spec()
+    def action_spec(self) -> dm_env.specs.Array:
+        """Returns the dm_env action spec."""
+        return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec())
 
     @property
     def unwrapped(self) -> JaxEnv:
@@ -281,7 +281,7 @@ class BraxEnvToJaxEnv(JaxEnv):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a `dm_env.specs.Array` spec.
+            observation_spec: a `specs.Array` spec.
         """
         return specs.Array(
             shape=(self._env.observation_size,),
@@ -289,11 +289,11 @@ class BraxEnvToJaxEnv(JaxEnv):
             name="observation",
         )
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.BoundedArray:
         """Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.BoundedArray` spec.
         """
         return specs.BoundedArray(
             shape=(self._env.action_size,),

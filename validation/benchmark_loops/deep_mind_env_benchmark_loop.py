@@ -1,8 +1,8 @@
 from typing import Callable
 
 import dm_env
+import dm_env.specs
 import haiku as hk
-from dm_env import specs
 
 from jumanji.jax.types import Action
 from validation.benchmark_loops.benchmark_loop import BenchmarkLoop
@@ -37,7 +37,7 @@ class DeepMindEnvBenchmarkLoop(BenchmarkLoop):
         self._rng = hk.PRNGSequence(seed)
         self.step_fn: Callable[[Action], dm_env.TimeStep] = environment.step
         self.reset_fn: Callable[[], dm_env.TimeStep] = environment.reset
-        if not isinstance(self._environment.action_spec(), specs.BoundedArray):
+        if not isinstance(self._environment.action_spec(), dm_env.specs.BoundedArray):
             action_spec = self._environment.action_spec()
             raise TypeError(
                 f"action spec must be of type BoundedArray, got "

@@ -1,3 +1,4 @@
+from jumanji.jax import specs
 from jumanji.jax.pcb_grid import PcbGridEnv
 from jumanji.jax.wrappers import MultiToSingleJaxEnv
 from validation import JaxEnvironmentLoop, RandomAgent
@@ -7,7 +8,8 @@ def run_pcb_random_jit() -> None:
     """Runs a random agent in pcb grid using the jitted Jax Environment Loop. This serves as an
     example of how to use an agent on a JaxEnv environment using the JaxEnvironmentLoop."""
     pcb_env = MultiToSingleJaxEnv(PcbGridEnv())
-    random_agent = RandomAgent(action_spec=pcb_env.action_spec())
+    action_spec: specs.BoundedArray = pcb_env.action_spec()  # type: ignore
+    random_agent = RandomAgent(action_spec=action_spec)
     environment_loop = JaxEnvironmentLoop(
         environment=pcb_env,
         agent=random_agent,

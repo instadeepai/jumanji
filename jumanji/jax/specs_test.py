@@ -1,9 +1,10 @@
 # Adapted from dm_env.specs_test
 # ============================================================================
 import pickle
-from typing import Sequence, Union
+from typing import Iterable, Sequence, Tuple, Union
 
 import chex
+import dm_env.specs
 import jax.numpy as jnp
 import pytest
 
@@ -299,3 +300,66 @@ class TestDiscreteArray:
         assert jnp.all(loaded_spec.minimum == loaded_spec.minimum)
         assert jnp.all(loaded_spec.maximum == loaded_spec.maximum)
         assert loaded_spec.num_values == spec.num_values
+
+
+class TestJumanjiSpecsToDmEnvSpecs:
+    def test_array(self) -> None:
+        jumanji_spec = specs.Array((1, 2), jnp.int32)
+        dm_env_spec = dm_env.specs.Array((1, 2), jnp.int32)
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        assert type(converted_spec) is type(dm_env_spec)
+        assert converted_spec.shape == dm_env_spec.shape
+        assert converted_spec.dtype == dm_env_spec.dtype
+        assert converted_spec.name == dm_env_spec.name
+
+    def test_bounded_array(self) -> None:
+        jumanji_spec = specs.BoundedArray((1, 2), jnp.float32, minimum=0.0, maximum=1.0)
+        dm_env_spec = dm_env.specs.BoundedArray(
+            (1, 2), jnp.float32, minimum=0.0, maximum=1.0
+        )
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        assert type(converted_spec) is type(dm_env_spec)
+        assert converted_spec.shape == dm_env_spec.shape
+        assert converted_spec.dtype == dm_env_spec.dtype
+        assert converted_spec.name == dm_env_spec.name
+        assert converted_spec.minimum == dm_env_spec.minimum
+        assert converted_spec.maximum == dm_env_spec.maximum
+
+    def test_discrete_array(self) -> None:
+        jumanji_spec = specs.DiscreteArray(num_values=5, dtype=jnp.int32)
+        dm_env_spec = dm_env.specs.DiscreteArray(num_values=5, dtype=jnp.int32)
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        assert type(converted_spec) is type(dm_env_spec)
+        assert converted_spec.shape == dm_env_spec.shape
+        assert converted_spec.dtype == dm_env_spec.dtype
+        assert converted_spec.name == dm_env_spec.name
+        assert converted_spec.minimum == dm_env_spec.minimum
+        assert converted_spec.maximum == dm_env_spec.maximum
+        assert converted_spec.num_values == dm_env_spec.num_values
+
+    def test_spec(self) -> None:
+        class SpecTest(specs.Spec[Tuple[chex.Array, ...]]):
+            def __init__(
+                self, shape: Iterable, dtype: Union[jnp.dtype, type], name: str = ""
+            ):
+                super(SpecTest, self).__init__(name)
+                self._shape = tuple(int(dim) for dim in shape)
+                self._dtype = jnp.dtype(dtype)
+
+            def __repr__(self) -> str:
+                return "SpecTest"
+
+            def validate(
+                self,
+                value: Tuple[chex.Array, ...],
+            ) -> Tuple[chex.Array, ...]:
+                return value
+
+            def generate_value(
+                self,
+            ) -> Tuple[chex.Array, ...]:
+                return (jnp.zeros(self._shape, self._dtype),)
+
+        jumanji_spec = SpecTest((2, 3), jnp.float32)
+        with pytest.raises(ValueError):
+            _ = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)

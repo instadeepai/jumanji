@@ -76,7 +76,7 @@ def test_tsp__step(tsp_env: TSP) -> None:
 
 def test_tsp__does_not_smoke(tsp_env: TSP, capsys: pytest.CaptureFixture) -> None:
     """Tests that we can run the jitted JaxEnvironmentLoop without any errors."""
-    fake_agent = FakeAgent()
+    fake_agent = FakeAgent(tsp_env.action_spec())
     jax_environment_loop = JaxEnvironmentLoop(
         tsp_env, fake_agent, n_steps=1, batch_size=2
     )

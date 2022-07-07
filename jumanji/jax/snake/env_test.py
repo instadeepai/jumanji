@@ -80,7 +80,7 @@ def test_snake__step(snake_env: Snake) -> None:
 @pytest.mark.parametrize("snake_env", [()], indirect=True)
 def test_snake__does_not_smoke(snake_env: Snake, capsys: pytest.CaptureFixture) -> None:
     """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
-    fake_agent = FakeAgent()
+    fake_agent = FakeAgent(snake_env.action_spec())
     jax_environment_loop = JaxEnvironmentLoop(
         snake_env, fake_agent, n_steps=1, batch_size=2
     )

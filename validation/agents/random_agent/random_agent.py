@@ -2,9 +2,9 @@ from typing import Dict, Tuple
 
 import numpy as np
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import random
 
+from jumanji.jax import specs
 from jumanji.jax.types import Action, Extra
 from validation.agents.base import Agent
 from validation.types import TrainingState, Transition
@@ -17,7 +17,7 @@ class RandomAgent(Agent):
     def __init__(self, action_spec: specs.BoundedArray):
         if not isinstance(action_spec, specs.BoundedArray):
             raise TypeError(
-                f"`action_spec` must be a dm_env.specs.BoundedArray (continuous or discrete), got "
+                f"`action_spec` must be a specs.BoundedArray (continuous or discrete), got "
                 f"{action_spec} of type {action_spec.dtype}."
             )
         self._action_spec = action_spec

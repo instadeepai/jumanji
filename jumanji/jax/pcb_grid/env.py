@@ -4,10 +4,10 @@ from typing import Optional, Tuple
 import jax
 import jax.numpy as jnp
 from chex import Array, PRNGKey
-from dm_env import specs
 from jax import random
 
 import jumanji.jax.pcb_grid.env_viewer as viewer
+from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.pcb_grid.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
 from jumanji.jax.pcb_grid.types import Position, State
@@ -103,11 +103,11 @@ class PcbGridEnv(JaxEnv[State]):
             ), f"Expected a renderer of type 'PcbGridViewer', got {renderer} of type {type(renderer)}."
         self.viewer = renderer
 
-    def observation_spec(self) -> specs.Array:
+    def observation_spec(self) -> specs.BoundedArray:
         """Returns the observation spec.
 
         Returns:
-            observation_spec: dm_env.specs object
+            observation_spec: specs object
         """
         return specs.BoundedArray(
             shape=(self.num_agents, self.rows, self.cols),
@@ -123,9 +123,15 @@ class PcbGridEnv(JaxEnv[State]):
         This array is of shape (num_agents,)
 
         Returns:
-            action_spec: dm_env.specs object
+            action_spec: specs object
         """
-        return specs.BoundedArray((self.num_agents,), jnp.int_, 0, 4)
+        return specs.BoundedArray(
+            shape=(self.num_agents,),
+            dtype=jnp.int_,
+            minimum=0,
+            maximum=4,
+            name="action",
+        )
 
     def reward_spec(self) -> specs.Array:
         """Returns the reward spec.
@@ -133,17 +139,17 @@ class PcbGridEnv(JaxEnv[State]):
         This array is of shape (num_agents,)
 
         Returns:
-            reward_spec: a `dm_env.specs.Array` spec.
+            reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
 
-    def discount_spec(self) -> specs.Array:
+    def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
             Since this is a multi-agent environment, the environment gives an array of discounts.
             This array is of shape (num_agents,)
 
         Returns:
-            discount_spec: a `dm_env.specs.Array` spec.
+            discount_spec: a `specs.Array` spec.
         """
         return specs.BoundedArray(
             shape=(self.num_agents,),
