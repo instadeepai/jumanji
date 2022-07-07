@@ -105,6 +105,7 @@ class PcbGridEnv(MultiAgentEnv):
                 ),
             }
         )
+        self._previous_dones = {agent_id: False for agent_id in range(num_agents)}
         rewards = [
             self.reward_per_timestep,
             self.reward_per_connected,
@@ -120,6 +121,7 @@ class PcbGridEnv(MultiAgentEnv):
         self.grid = np.zeros((self.rows, self.cols), dtype=int)
         self.agents = []
         for agent_id in range(self.num_agents):
+            self._previous_dones[agent_id] = False
             self._spawn_agent(agent_id)
 
         return {
@@ -143,12 +145,16 @@ class PcbGridEnv(MultiAgentEnv):
         }
         dones["__all__"] = all(dones[agent_id] for agent_id in dones.keys())
 
+        # only reward once for completion, stop rewards after connected or blocked
         rewards = {
             agent_id: self._agent_reward(
                 agent_id, actions[agent_id], observations[agent_id]["action_mask"]
             )
+            * int(not self._previous_dones[agent_id])
             for agent_id in actions.keys()
         }
+
+        self._previous_dones = dones
 
         return observations, rewards, dones, {}
 

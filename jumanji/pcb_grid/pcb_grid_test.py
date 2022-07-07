@@ -180,3 +180,34 @@ def test_pcb_grid__agent_observations(pcb_grid_env: PcbGridEnv) -> None:
                 (agent_0_obs == cell_type + 3 * agent_id)
                 == (curr_agent_obs == cell_type)
             )
+
+
+@pytest.mark.parametrize("pcb_grid_env", [()], indirect=True)
+def test_pcb_grid__rewards_stop(pcb_grid_env: PcbGridEnv) -> None:
+    pcb_grid_env.reset()
+    for _ in range(5):
+        _, reward, *_ = pcb_grid_env.step(
+            {i: 0 for i in range(pcb_grid_env.num_agents)}
+        )
+        assert reward == {
+            i: pcb_grid_env.reward_per_timestep + pcb_grid_env.reward_per_noop
+            for i in range(pcb_grid_env.num_agents)
+        }
+
+    assert not all(pcb_grid_env._previous_dones.values())
+
+    # forcing all agents to finish
+    for agent in pcb_grid_env.agents:
+        agent.position = agent.target
+        pcb_grid_env.grid[agent.target] = HEAD + 3 * agent.agent_id
+
+    # all connected
+    _, reward, *_ = pcb_grid_env.step({i: 0 for i in range(pcb_grid_env.num_agents)})
+    assert reward == {
+        i: pcb_grid_env.reward_per_connected for i in range(pcb_grid_env.num_agents)
+    }
+    assert all(pcb_grid_env._previous_dones.values())
+
+    # already connected should get reward of 0
+    _, reward, *_ = pcb_grid_env.step({i: 0 for i in range(pcb_grid_env.num_agents)})
+    assert reward == {i: 0 for i in range(pcb_grid_env.num_agents)}
