@@ -11,7 +11,14 @@ from jumanji.jax import specs
 from jumanji.jax.env import JaxEnv
 from jumanji.jax.pcb_grid.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
 from jumanji.jax.pcb_grid.types import Position, State
-from jumanji.jax.types import Extra, TimeStep, restart, termination, transition
+from jumanji.jax.types import (
+    Extra,
+    TimeStep,
+    restart,
+    termination,
+    transition,
+    truncation,
+)
 
 
 class PcbGridEnv(JaxEnv[State]):
@@ -227,16 +234,31 @@ class PcbGridEnv(JaxEnv[State]):
             rewards,
         )
 
-        timestep: TimeStep[Array] = jax.lax.cond(
-            jnp.all(finished_agents) | horizon_reached,
-            lambda _: termination(
-                reward=rewards, observation=observations, shape=self.num_agents
-            ),
-            lambda _: transition(
-                reward=rewards,
-                observation=observations,
-                discount=jnp.logical_not(finished_agents).astype(float),
-            ),
+        # false + false = 0 = transition
+        # true + false = 1  = truncation
+        # false + true * 2 = 2 = termination
+        # true + true * 2 = 3 -> gets clamped to 2 = termination
+        timestep: TimeStep[Array] = jax.lax.switch(
+            horizon_reached + jnp.all(finished_agents) * 2,
+            [
+                lambda _: transition(
+                    reward=rewards,
+                    observation=observations,
+                    discount=jnp.logical_not(finished_agents).astype(float),
+                    shape=self.num_agents,
+                ),
+                lambda _: truncation(
+                    reward=rewards,
+                    observation=observations,
+                    discount=jnp.logical_not(finished_agents).astype(float),
+                    shape=self.num_agents,
+                ),
+                lambda _: termination(
+                    reward=rewards,
+                    observation=observations,
+                    shape=self.num_agents,
+                ),
+            ],
             None,
         )
 

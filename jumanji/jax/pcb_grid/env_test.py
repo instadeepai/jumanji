@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import jax
 import jax.numpy as jnp
 import pytest
@@ -15,6 +17,21 @@ from validation.environment_loops import JaxEnvironmentLoop
 def pcb_grid_env() -> PcbGridEnv:
     """Instantiates a default PCB Grid environment."""
     return PcbGridEnv(12, 12, 2)
+
+
+@pytest.fixture
+def deterministic_pcb_grid_env() -> Tuple[PcbGridEnv, State, TimeStep]:
+    """Instantiates a 3x3 PCB Grid environment with a step limit of 5."""
+    env = PcbGridEnv(3, 3, 2, step_limit=5)
+    state, timestep, _ = env.reset(random.PRNGKey(10))
+    state.grid = jnp.array(
+        [
+            [4, 0, 0],
+            [3, 0, 0],
+            [0, 7, 6],
+        ]
+    )
+    return env, state, timestep
 
 
 def test_pcb_grid__reset(pcb_grid_env: PcbGridEnv) -> None:
@@ -223,6 +240,54 @@ def test_pcb_grid__step_limit(pcb_grid_env: PcbGridEnv) -> None:
     new_reward = timestep.reward
     assert timestep.last()
     assert jnp.all(new_reward == (reward + pcb_grid_env._reward_for_terminal_step))
+
+
+def test__pcb_grid__termination(
+    deterministic_pcb_grid_env: Tuple[PcbGridEnv, State, TimeStep]
+) -> None:
+    pcb_grid_env, state, timestep = deterministic_pcb_grid_env
+    step_fn = jax.jit(pcb_grid_env.step)
+
+    # termination
+    # agent 0 connects and agent 1 is blocked
+    state, timestep, _ = step_fn(state, jnp.array([4, 1]))
+    assert timestep.last()
+    assert jnp.all(timestep.discount == 0)
+
+
+def test__pcb_grid__truncation(
+    deterministic_pcb_grid_env: Tuple[PcbGridEnv, State, TimeStep]
+) -> None:
+    pcb_grid_env, state, timestep = deterministic_pcb_grid_env
+    step_fn = jax.jit(pcb_grid_env.step)
+
+    # truncation
+    for _ in range(pcb_grid_env._step_limit + 1):
+        state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+
+    assert timestep.last()
+    assert not jnp.all(timestep.discount == 0)
+
+
+def test__pcb_grid__termination_at_horizon(
+    deterministic_pcb_grid_env: Tuple[PcbGridEnv, State, TimeStep]
+) -> None:
+    pcb_grid_env, state, timestep = deterministic_pcb_grid_env
+    step_fn = jax.jit(pcb_grid_env.step)
+
+    # termination at final step and no truncation
+    for _ in range(pcb_grid_env._step_limit):
+        state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+
+        # no termination yet
+        assert timestep.mid()
+        assert not jnp.all(timestep.discount == 0)
+
+    # time horizon and all complete
+    # both agents connect
+    state, timestep, _ = step_fn(state, jnp.array([4, 3]))
+    assert timestep.last()
+    assert jnp.all(timestep.discount == 0)
 
 
 def test_pcb_grid__action_masking(pcb_grid_env: PcbGridEnv) -> None:
