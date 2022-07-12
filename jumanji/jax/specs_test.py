@@ -1,7 +1,7 @@
 # Adapted from dm_env.specs_test
 # ============================================================================
 import pickle
-from typing import Iterable, Sequence, Tuple, Union
+from typing import Any, Iterable, Sequence, Tuple, Union
 
 import chex
 import dm_env.specs
@@ -9,6 +9,47 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.jax import specs
+
+
+class NestedSpecOneArray(specs.Spec[Tuple[chex.Array, ...]]):
+    """An example of nested Spec that is a tuple of one Array."""
+
+    def __init__(self, shape: Iterable, dtype: Union[jnp.dtype, type], name: str = ""):
+        super(NestedSpecOneArray, self).__init__(name)
+        self._shape = tuple(int(dim) for dim in shape)
+        self._dtype = jnp.dtype(dtype)
+        self.array_spec = specs.Array(self._shape, self._dtype)
+
+    def __repr__(self) -> str:
+        return self.name
+
+    def validate(
+        self,
+        value: Tuple[chex.Array, ...],
+    ) -> Tuple[chex.Array, ...]:
+        array = value[0]
+        array = self.array_spec.validate(array)
+        return (array,)
+
+    def generate_value(
+        self,
+    ) -> Tuple[chex.Array, ...]:
+        return (self.array_spec.generate_value(),)
+
+    def replace(self, **kwargs: Any) -> "NestedSpecOneArray":
+        new_array_spec = self.array_spec.replace(**kwargs)
+        return NestedSpecOneArray(
+            new_array_spec.shape, new_array_spec.dtype, new_array_spec.name
+        )
+
+
+@pytest.fixture
+def nested_spec_one_array(
+    shape: Iterable = (2, 3),
+    dtype: Union[jnp.dtype, type] = jnp.float32,
+    name: str = "",
+) -> NestedSpecOneArray:
+    return NestedSpecOneArray(shape, dtype, name)
 
 
 class TestArray:
@@ -83,6 +124,22 @@ class TestArray:
         assert loaded_spec.dtype == spec.dtype
         assert loaded_spec.shape == spec.shape
         assert loaded_spec.name == spec.name
+
+    @pytest.mark.parametrize(
+        "arg_name, new_value",
+        [
+            ("shape", (2, 3)),
+            ("dtype", jnp.int32),
+            ("name", "something_else"),
+        ],
+    )
+    def test_replace(self, arg_name: str, new_value: Any) -> None:
+        old_spec = specs.Array([1, 5], jnp.float32, "test")
+        new_spec = old_spec.replace(**{arg_name: new_value})
+        assert new_spec is not old_spec
+        assert getattr(new_spec, arg_name) == new_value
+        for attr_name in {"shape", "dtype", "name"}.difference([arg_name]):
+            assert getattr(new_spec, attr_name) == getattr(old_spec, attr_name)
 
 
 class TestBoundedArray:
@@ -244,6 +301,26 @@ class TestBoundedArray:
         assert jnp.all(loaded_spec.maximum == loaded_spec.maximum)
 
     @pytest.mark.parametrize(
+        "arg_name, new_value",
+        [
+            ("shape", (2, 3)),
+            ("dtype", jnp.int32),
+            ("name", "something_else"),
+            ("minimum", -2),
+            ("maximum", 2),
+        ],
+    )
+    def test_replace(self, arg_name: str, new_value: Any) -> None:
+        old_spec = specs.BoundedArray([1, 5], jnp.float32, -1, 1, "test")
+        new_spec = old_spec.replace(**{arg_name: new_value})
+        assert old_spec is not new_spec
+        assert getattr(new_spec, arg_name) == new_value
+        for attr_name in {"shape", "dtype", "name", "minimum", "maximum"}.difference(
+            [arg_name]
+        ):
+            assert getattr(new_spec, attr_name) == getattr(old_spec, attr_name)
+
+    @pytest.mark.parametrize(
         "minimum, maximum",
         [
             (1.0, 0.0),
@@ -301,6 +378,22 @@ class TestDiscreteArray:
         assert jnp.all(loaded_spec.maximum == loaded_spec.maximum)
         assert loaded_spec.num_values == spec.num_values
 
+    @pytest.mark.parametrize(
+        "arg_name, new_value",
+        [
+            ("num_values", 4),
+            ("dtype", jnp.int64),
+            ("name", "something_else"),
+        ],
+    )
+    def test_replace(self, arg_name: str, new_value: Any) -> None:
+        old_spec = specs.DiscreteArray(2, jnp.int32, "test")
+        new_spec = old_spec.replace(**{arg_name: new_value})
+        assert old_spec is not new_spec
+        assert getattr(new_spec, arg_name) == new_value
+        for attr_name in {"num_values", "dtype", "name"}.difference([arg_name]):
+            assert getattr(new_spec, attr_name) == getattr(old_spec, attr_name)
+
 
 class TestJumanjiSpecsToDmEnvSpecs:
     def test_array(self) -> None:
@@ -337,29 +430,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         assert converted_spec.maximum == dm_env_spec.maximum
         assert converted_spec.num_values == dm_env_spec.num_values
 
-    def test_spec(self) -> None:
-        class SpecTest(specs.Spec[Tuple[chex.Array, ...]]):
-            def __init__(
-                self, shape: Iterable, dtype: Union[jnp.dtype, type], name: str = ""
-            ):
-                super(SpecTest, self).__init__(name)
-                self._shape = tuple(int(dim) for dim in shape)
-                self._dtype = jnp.dtype(dtype)
-
-            def __repr__(self) -> str:
-                return "SpecTest"
-
-            def validate(
-                self,
-                value: Tuple[chex.Array, ...],
-            ) -> Tuple[chex.Array, ...]:
-                return value
-
-            def generate_value(
-                self,
-            ) -> Tuple[chex.Array, ...]:
-                return (jnp.zeros(self._shape, self._dtype),)
-
-        jumanji_spec = SpecTest((2, 3), jnp.float32)
+    def test_spec(self, nested_spec_one_array: NestedSpecOneArray) -> None:
         with pytest.raises(ValueError):
-            _ = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+            # Cannot work with nested specs.
+            _ = specs.jumanji_specs_to_dm_env_specs(nested_spec_one_array)

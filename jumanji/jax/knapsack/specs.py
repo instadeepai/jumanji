@@ -1,3 +1,5 @@
+from typing import Any
+
 import jax
 
 from jumanji.jax import specs
@@ -62,3 +64,21 @@ class ObservationSpec(specs.Spec[Observation]):
             )
         )
         return observation
+
+    def replace(self, **kwargs: Any) -> "ObservationSpec":
+        """Returns a new copy of `ObservationSpec` with specified attributes replaced.
+
+        Args:
+            **kwargs: Optional attributes to replace.
+
+        Returns:
+            A new copy of `ObservationSpec`.
+        """
+        all_kwargs = {
+            "problem_obs": self.problem_obs,
+            "first_item_obs": self.first_item_obs,
+            "last_item_obs": self.last_item_obs,
+            "invalid_mask": self.invalid_mask,
+        }
+        all_kwargs.update(kwargs)
+        return ObservationSpec(**all_kwargs)  # type: ignore

@@ -1,3 +1,5 @@
+from typing import Any
+
 from jumanji.jax import specs
 from jumanji.jax.connect4.types import Observation
 
@@ -50,3 +52,16 @@ class ObservationSpec(specs.Spec[Observation]):
             action_mask=self.action_mask.validate(value.action_mask),
         )
         return observation
+
+    def replace(self, **kwargs: Any) -> "ObservationSpec":
+        """Returns a new copy of `ObservationSpec` with specified attributes replaced.
+
+        Args:
+            **kwargs: Optional attributes to replace.
+
+        Returns:
+            A new copy of `ObservationSpec`.
+        """
+        all_kwargs = {"board_obs": self.board_obs, "action_mask": self.action_mask}
+        all_kwargs.update(kwargs)
+        return ObservationSpec(**all_kwargs)

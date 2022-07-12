@@ -1,5 +1,17 @@
 import abc
-from typing import Any, Generic, Iterable, NamedTuple, Sequence, Tuple, TypeVar, Union
+import functools
+import inspect
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    Iterable,
+    NamedTuple,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import chex
 import dm_env.specs
@@ -49,6 +61,17 @@ class Spec(abc.ABC, Generic[T]):
     @abc.abstractmethod
     def generate_value(self) -> T:
         """Generate a value which conforms to this spec."""
+
+    @abc.abstractmethod
+    def replace(self, **kwargs: Any) -> "Spec":
+        """Returns a new copy of `self` with specified attributes replaced.
+
+        Args:
+            **kwargs: Optional attributes to replace.
+
+        Returns:
+            A new copy of `self`.
+        """
 
 
 class Array(Spec[chex.Array]):
@@ -120,6 +143,36 @@ class Array(Spec[chex.Array]):
     def generate_value(self) -> chex.Array:
         """Generate a value which conforms to this spec."""
         return jnp.zeros(shape=self.shape, dtype=self.dtype)
+
+    def _get_constructor_kwargs(self) -> Dict[str, Any]:
+        """Returns constructor kwargs for instantiating a new copy of this spec."""
+        # Get the names and kinds of the constructor parameters.
+        params = inspect.signature(
+            functools.partial(type(self).__init__, self)
+        ).parameters
+        # __init__ must not accept *args or **kwargs, since otherwise we won't be
+        # able to infer what the corresponding attribute names are.
+        kinds = {value.kind for value in params.values()}
+        if inspect.Parameter.VAR_POSITIONAL in kinds:
+            raise TypeError("specs.Array subclasses must not accept *args.")
+        elif inspect.Parameter.VAR_KEYWORD in kinds:
+            raise TypeError("specs.Array subclasses must not accept **kwargs.")
+        # Note that we assume direct correspondence between the names of constructor
+        # arguments and attributes.
+        return {name: getattr(self, name) for name in params.keys()}
+
+    def replace(self, **kwargs: Any) -> "Array":
+        """Returns a new copy of `self` with specified attributes replaced.
+
+        Args:
+            **kwargs: Optional attributes to replace.
+
+        Returns:
+            A new copy of `self`.
+        """
+        all_kwargs = self._get_constructor_kwargs()
+        all_kwargs.update(kwargs)
+        return type(self)(**all_kwargs)
 
 
 class BoundedArray(Array):
