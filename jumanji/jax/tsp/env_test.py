@@ -104,8 +104,8 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
             state, (state.position + 1) % tsp_env.problem_size
         )
 
-    # Check that the reward is positive when trajectory is done.
-    assert timestep.reward > 0
+    # Check that the reward is negative when trajectory is done.
+    assert timestep.reward < 0
 
     # Check that no action can be taken (all cities have been selected)
     assert state.num_visited == tsp_env.problem_size
@@ -131,5 +131,5 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
         state, timestep, _ = tsp_env.step(state, a)
 
     # Last action is invalid because it was already taken
-    assert timestep.reward > 0
+    assert timestep.reward < 0
     assert timestep.last()

@@ -218,7 +218,7 @@ class TSP(JaxEnv[State]):
 
         def make_termination_timestep(state: State) -> TimeStep:
             return termination(
-                reward=compute_tour_length(state.problem, state.order),
+                reward=-compute_tour_length(state.problem, state.order),
                 observation=self._state_to_observation(state),
             )
 
