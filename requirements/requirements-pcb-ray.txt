@@ -1,2 +1,0 @@
-pygame==2.1.2
-ray[rllib]==1.11.0

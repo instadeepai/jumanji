@@ -13,10 +13,10 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import lax, random
 
-from jumanji.jax import specs
-from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, TimeStep, restart, termination, transition
-from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
+from jumanji import specs
+from jumanji.env import JaxEnv
+from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.wrappers import JaxEnvToDeepMindEnv
 from validation.agents import Agent, TrainingState, Transition
 
 

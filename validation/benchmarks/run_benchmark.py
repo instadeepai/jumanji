@@ -4,9 +4,8 @@ from typing import Callable, List, Optional
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from jumanji.jax import JaxEnv
-from jumanji.jax.wrappers import JaxEnvToDeepMindEnv
-from jumanji.pcb_grid.wrappers import DeepMindEnvWrapper as PcbGridDeepMindEnvWrapper
+from jumanji import JaxEnv
+from jumanji.wrappers import JaxEnvToDeepMindEnv
 from validation.benchmark_loops import (
     BenchmarkLoop,
     DeepMindEnvBenchmarkLoop,
@@ -19,7 +18,6 @@ ENV_LOOP_CLASSES = {
 }
 WRAPPERS = {
     "JaxEnvToDeepMindEnv": JaxEnvToDeepMindEnv,
-    "PcbGridDeepMindEnvWrapper": PcbGridDeepMindEnvWrapper,
 }
 
 

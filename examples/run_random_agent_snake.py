@@ -1,4 +1,4 @@
-from jumanji.jax.snake import Snake
+from jumanji.snake import Snake
 from validation import JaxEnvironmentLoop, RandomAgent
 
 

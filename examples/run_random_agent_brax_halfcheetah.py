@@ -1,6 +1,6 @@
 import brax.envs
 
-from jumanji.jax.wrappers import BraxEnvToJaxEnv
+from jumanji.wrappers import BraxEnvToJaxEnv
 from validation import JaxEnvironmentLoop, RandomAgent
 
 

@@ -1,6 +1,6 @@
-from jumanji.jax import specs
-from jumanji.jax.pcb_grid import PcbGridEnv
-from jumanji.jax.wrappers import MultiToSingleJaxEnv
+from jumanji import specs
+from jumanji.pcb_grid import PcbGridEnv
+from jumanji.wrappers import MultiToSingleJaxEnv
 from validation import JaxEnvironmentLoop, RandomAgent
 
 

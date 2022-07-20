@@ -1,6 +1,6 @@
-from jumanji.jax import specs
-from jumanji.jax.connect4 import Connect4
-from jumanji.jax.wrappers import MultiToSingleJaxEnv
+from jumanji import specs
+from jumanji.connect4 import Connect4
+from jumanji.wrappers import MultiToSingleJaxEnv
 from validation import JaxEnvironmentLoop, RandomAgent
 
 

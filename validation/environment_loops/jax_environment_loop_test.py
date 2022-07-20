@@ -2,7 +2,7 @@ import dm_env
 import gym
 import pytest
 
-from jumanji.jax import JaxEnv
+from jumanji import JaxEnv
 from jumanji.testing.fakes import FakeAgent, FakeJaxEnv
 from validation.agents import Agent
 from validation.environment_loops.jax_environment_loop import JaxEnvironmentLoop

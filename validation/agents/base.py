@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from chex import Array, PRNGKey
 
-from jumanji.jax.types import Action, Extra
+from jumanji.types import Action, Extra
 from validation.types import TrainingState, Transition
 
 

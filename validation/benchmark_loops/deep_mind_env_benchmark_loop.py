@@ -4,7 +4,7 @@ import dm_env
 import dm_env.specs
 import haiku as hk
 
-from jumanji.jax.types import Action
+from jumanji.types import Action
 from validation.benchmark_loops.benchmark_loop import BenchmarkLoop
 
 

@@ -6,8 +6,8 @@ import numpy as np
 from chex import PRNGKey
 from jax import random
 
-from jumanji.jax import specs
-from jumanji.jax.types import Action
+from jumanji import specs
+from jumanji.types import Action
 from validation.utils import loggers
 from validation.utils.timeit import TimeIt
 

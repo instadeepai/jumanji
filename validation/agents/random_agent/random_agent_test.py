@@ -6,8 +6,8 @@ import jax
 import jax.numpy as jnp
 from jax import random
 
-from jumanji.jax import specs
-from jumanji.jax.env import make_environment_spec
+from jumanji import specs
+from jumanji.env import make_environment_spec
 from jumanji.testing import pytrees
 from jumanji.testing.fakes import FakeJaxEnv, fake_transition
 from validation.agents import RandomAgent, TrainingState

@@ -1,4 +1,4 @@
-_target_: jumanji.jax.pcb_grid.PcbGridEnv
+_target_: jumanji.pcb_grid.PcbGridEnv
 rows: 20
 cols: 20
 num_agents: 7

@@ -1,2 +1,2 @@
-_target_: jumanji.jax.snake.Snake
+_target_: jumanji.snake.Snake
 time_limit: 100

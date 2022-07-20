@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import optax
 from chex import ArrayTree
 
-from jumanji.jax.types import Extra
+from jumanji.types import Extra
 
 
 class Transition(NamedTuple):

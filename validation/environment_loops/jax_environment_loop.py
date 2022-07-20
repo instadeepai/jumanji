@@ -7,8 +7,8 @@ import jax.numpy as jnp
 from chex import PRNGKey
 from jax import lax, random
 
-from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, TimeStep
+from jumanji.env import JaxEnv
+from jumanji.types import Action, Extra, TimeStep
 from validation.agents import Agent, TrainingState, Transition
 from validation.utils import loggers
 from validation.utils.timeit import TimeIt

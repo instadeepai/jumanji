@@ -4,9 +4,9 @@ import haiku as hk
 from chex import PRNGKey
 from jax import jit
 
-from jumanji.jax import specs
-from jumanji.jax.env import JaxEnv
-from jumanji.jax.types import Action, Extra, TimeStep
+from jumanji import specs
+from jumanji.env import JaxEnv
+from jumanji.types import Action, Extra, TimeStep
 from validation.benchmark_loops.benchmark_loop import BenchmarkLoop
 
 State = TypeVar("State")

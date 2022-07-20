@@ -4,8 +4,8 @@ import numpy as np
 from chex import Array, PRNGKey
 from jax import random
 
-from jumanji.jax import specs
-from jumanji.jax.types import Action, Extra
+from jumanji import specs
+from jumanji.types import Action, Extra
 from validation.agents.base import Agent
 from validation.types import TrainingState, Transition
 

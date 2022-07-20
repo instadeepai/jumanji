@@ -6,8 +6,8 @@ from jax import random
 
 import jumanji.testing.fakes as fakes
 import jumanji.testing.pytrees as pytrees
-from jumanji.jax.env import make_environment_spec
-from jumanji.jax.types import Action, TimeStep
+from jumanji.env import make_environment_spec
+from jumanji.types import Action, TimeStep
 from validation.agents import TrainingState, Transition
 
 fake_jax_env = pytest.fixture(fakes.make_fake_jax_env)

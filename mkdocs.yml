@@ -4,7 +4,7 @@ site_author: InstaDeep Developers
 site_url: https://instadeep.gitlab.io/mkdocs
 site_dir: public
 repo_name: instadeep/jumanji
-repo_url: https://gitlab.com/instadeep/templates/machine-learning-project
+repo_url: https://gitlab.com/instadeep/jumanji
 
 strict: false # Don't allow warnings during the build process
 dev_addr: '0.0.0.0:8000' # generate a warning when running in a docker container
@@ -52,17 +52,16 @@ plugins:
 nav:
   - Home: index.md
   - API Reference:
-      - jax:
-          - environments:
-              - snake: api/jax/environments/snake.md
-              - swap: api/jax/environments/swap.md
-              - pcb_grid: api/jax/environments/pcb_grid.md
-              - connect4: api/jax/environments/connect4.md
-              - knapsack: api/jax/environments/knapsack.md
-              - tsp: api/jax/environments/tsp.md
-          - jax_env: api/jax/env.md
-          - types: api/jax/types.md
-          - wrappers: api/jax/wrappers.md
+      - environments:
+          - snake: api/environments/snake.md
+          - swap: api/environments/swap.md
+          - pcb_grid: api/environments/pcb_grid.md
+          - connect4: api/environments/connect4.md
+          - knapsack: api/environments/knapsack.md
+          - tsp: api/environments/tsp.md
+      - jax_env: api/env.md
+      - types: api/types.md
+      - wrappers: api/wrappers.md
       - validation:
           - agents:
               - random_agent: api/validation/agents/random_agent.md

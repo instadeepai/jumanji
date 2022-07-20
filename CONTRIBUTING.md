@@ -19,7 +19,7 @@ managing issue documentation](https://docs.gitlab.com/ee/user/project/issues/man
    1. Implement the JaxEnv API: step, reset, specs, etc...
    2. Implement unit tests for every function used by the environment, including a
    `test_[your_env]__does_not_smoke` test that runs a `JaxEnvironmentLoop` to test compilation.
-   3. Add an environment README in the `jumanji/jax/your_env` folder that describes the environment
+   3. Add an environment README in the `jumanji/your_env` folder that describes the environment
    4. Add an image (or gif) in the readme above. Images are located in `docs/img`.
    5. Update the documentation api in `docs/api` to add your environment to the doc.
    6. Optional, add a `run_random_agent_[your_env].py` script in `examples/` to benchmark your

@@ -13,9 +13,6 @@ COPY ./requirements/* /tmp/
 RUN pip install --upgrade --quiet pip setuptools wheel && \
     pip install --no-cache-dir --quiet -r /tmp/requirements.txt && \
     pip install --no-cache-dir --quiet -r /tmp/requirements-dev.txt && \
-    pip install --no-cache-dir --quiet -r /tmp/requirements-jax.txt && \
-    pip install --no-cache-dir --quiet -r /tmp/requirements-mujoco.txt && \
-    pip install --no-cache-dir --quiet -r /tmp/requirements-pcb-ray.txt && \
     rm -rf /tmp/*
 
 
@@ -55,12 +52,6 @@ ENV LANG=C.UTF-8
 # TensorFlow
 ENV TF_FORCE_GPU_ALLOW_GROWTH=true CUDA_DEVICE_ORDER=PCI_BUS_ID TF_CPP_MIN_LOG_LEVEL=3
 
-RUN mkdir -p /root/.mujoco \
-    && wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz -O mujoco.tar.gz \
-    && tar -xf mujoco.tar.gz -C /root/.mujoco \
-    && rm mujoco.tar.gz
-
-ENV LD_LIBRARY_PATH=/root/.mujoco/mujoco210/bin:${LD_LIBRARY_PATH}
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 
 # Add Python bin to PATH

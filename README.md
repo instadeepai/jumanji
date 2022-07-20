@@ -6,21 +6,15 @@ in an alpha state for which there is no versioning yet (version `0.0.0`).
 
 Material: [Jumanji Presentation (31/03/2022)](https://docs.google.com/presentation/d/1slBo_uv6QPIgWokZUgrH-mn2WQ9tmDb0KrZC1Sb4nYg/edit?usp=sharing)
 
-List of current environments:
-1. Mujoco Environments (NumPy)
-2. Game of Snake (Jax)
-3. Swap (Jax)
-4. PCB-Grid (Jax and NumPy)
-5. Connect Four (Jax)
-6. Brax Environments (Jax)
-
-Environments soon to be added:
-1. Travelling Salesman Problem (Jax) for combinatorial optimization
-2. Knapsack (Jax) for combinatorial optimization
-3. Chess (Jax)
-4. PCB-Grid v2 (Jax) with multiple layers, obstacles, etc...
-5. BinPack (Jax)
-6. Environments from PaRL (backend to be defined)
+List of current Jax environments:
+1. Game of Snake
+2. Swap
+3. PCB-Grid
+4. Connect Four
+5. Brax Environments
+6. Travelling Salesman Problem (TSP)
+7. Knapsack
+8. BinPack
 
 
 ## Contributions
@@ -33,22 +27,11 @@ document.
 
 We detail here a few options available to install and start using Jumanji.
 
-- Install jax environments (Snake, Swap, PcbGrid, Connect4)
+- Install Jumanji
 ```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[jax]
+pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git
 ```
-- Install mujoco environments
-```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[mujoco]
-```
-- Install the non-jax PcbGrid environment (that uses ray.rllib)
-```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[pcb_ray]
-```
-- Install all environments
-```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[all]
-```
+
 
 # Dev version installation :man_technologist:
 
@@ -57,9 +40,9 @@ pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.c
 ```
 
 ### Alternative installation via ssh
-You need to have your ssh key setup correctly. Replace `XXX` with `{jax,pcb_ray,mujoco,all,dev}`.
+You need to have your ssh key setup correctly.
 ```bash
-pip install git+ssh://git@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[XXX]
+pip install git+ssh://git@gitlab.com/instadeep/jumanji.git
 ```
 
 ### Inside the CI
