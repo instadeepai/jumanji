@@ -63,6 +63,9 @@ RUN mkdir -p /root/.mujoco \
 ENV LD_LIBRARY_PATH=/root/.mujoco/mujoco210/bin:${LD_LIBRARY_PATH}
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 
+# Add Python bin to PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY --from=venv-image /opt/venv/. /opt/venv/
 
 # Set default working directory
