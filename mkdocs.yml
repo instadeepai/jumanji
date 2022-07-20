@@ -1,10 +1,12 @@
-site_name: Jumanji docs
+site_name: Jumanji
 site_description: Documentation for Jumanji
-site_author: InstaDeep Developers
-site_url: https://instadeep.gitlab.io/mkdocs
+site_author: InstaDeep
+site_url: https://instadeep.gitlab.io/jumanji/   # temporary
 site_dir: public
-repo_name: instadeep/jumanji
-repo_url: https://gitlab.com/instadeep/jumanji
+
+# Git repo
+repo_name: instadeep/jumanji  # temporary
+repo_url: https://gitlab.com/instadeep/jumanji  # temporary
 
 strict: false # Don't allow warnings during the build process
 dev_addr: '0.0.0.0:8000' # generate a warning when running in a docker container
@@ -13,41 +15,70 @@ theme:
   name: material
   language: en
   palette:
-    primary: light blue
-    accent: indigo
-  logo: PATH_TO_LOGO
-  favicon: PATH_TO_FAVICON
+    primary: white
+    accent: amber
+  logo: assets/instadeep-logo.png # temporary
+  favicon: assets/instadeep-logo.png # temporary
   icon:
     repo: fontawesome/brands/gitlab
   font:
-    text: Avenir Next
+    text: Roboto
+    code: Roboto Mono
   features:
     - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.integrate
+    - toc.follow
 
 markdown_extensions:
   - pymdownx.emoji:
       emoji_generator: !!python/name:pymdownx.emoji.to_svg
       emoji_index: !!python/name:pymdownx.emoji.gemoji
+  - pymdownx.snippets:
+      base_path: jumanji
   - toc:
       permalink: "#"
+      toc_depth: 3
   - pymdownx.highlight:
       linenums: true
-  - pymdownx.superfences
   - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
 
 plugins:
   - search
+  - autorefs
   - git-revision-date
+  - include-markdown
+  - mknotebooks  # enable Jupyter notebooks
+  - mermaid2 # Class diagrams, flowcharts and more
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
-          rendering:
-            show_source: true
+          docstring_style: google
           selection:
+            inherited_members: true  # Allow looking up inherited methods
             filters:
               - '!^test'
-  - include-markdown
+              - "!^_"  # exclude all members starting with _
+              - "^__init__$"  # but always include __init__ modules and methods
+          rendering:
+            show_source: false
+            members_order: source
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            show_root_full_path: false
+            show_root_heading: true
 
 nav:
   - Home: index.md

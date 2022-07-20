@@ -9,8 +9,11 @@ mkdocs==1.2.3
 mkdocs-git-revision-date-plugin
 mkdocs-include-markdown-plugin
 mkdocs-material
+mkdocs-mermaid2-plugin==0.6.0
 mkdocstrings==0.18.0
+mknotebooks==0.7.1
 mypy==0.942
+nbmake
 optax>=0.0.9
 pre-commit==2.17.0
 promise
