@@ -169,8 +169,8 @@ class JaxEnvironmentLoop:
             transition = Transition(
                 observation=timestep.observation,
                 action=action,
-                reward=timestep.reward,
-                discount=timestep.discount,
+                reward=next_timestep.reward,
+                discount=next_timestep.discount,
                 next_observation=next_timestep.observation,
                 extra=extra,
             )
