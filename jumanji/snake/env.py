@@ -12,10 +12,9 @@ from jumanji.types import Action, Extra, TimeStep, restart, termination, transit
 
 
 class Snake(JaxEnv[State]):
-    """
-    A JAX implementation of the 'Snake' game.
+    """A JAX implementation of the 'Snake' game.
 
-    - observation: jax array (float) of shape (5, n_rows, n_cols):
+    - observation: jax array (float) of shape (n_rows, n_cols, 5):
         - body: binary encoding (1. where a body cell is present, else 0.)
         - head: one-hot encoding (1. where the snake's head is, else 0.)
         - tail: one-hot encoding (1. where the snake's tail is, else 0.)
@@ -71,7 +70,7 @@ class Snake(JaxEnv[State]):
             observation_spec: dm_env.specs object
         """
         return specs.Array(
-            shape=(5, *self.board_shape), dtype=jnp.float32, name="observation"
+            shape=(*self.board_shape, 5), dtype=jnp.float32, name="observation"
         )
 
     def action_spec(self) -> specs.DiscreteArray:
@@ -109,7 +108,7 @@ class Snake(JaxEnv[State]):
         start_pos = snake_utils.position_from_coordinates(start_coord)
         fruit = jnp.zeros(self.board_shape, bool).at[tuple(fruit_coord)].set(True)
         body_state = body.astype(float)
-        obs = jnp.stack([body, head, tail, fruit, body_state]).astype(float)
+        obs = jnp.stack([body, head, tail, fruit, body_state], axis=-1).astype(float)
         state = State(
             key=key,
             body_state=body_state,
@@ -235,6 +234,8 @@ class Snake(JaxEnv[State]):
         next_head = (
             jnp.zeros(self.board_shape, bool).at[tuple(state.head_pos)].set(True)
         )
+
+        # build the observation array
         next_obs = jnp.array(
             [
                 next_body,
@@ -245,6 +246,9 @@ class Snake(JaxEnv[State]):
             ],
             dtype=jnp.float32,
         )
+
+        # convert to the HWC format
+        next_obs = jnp.transpose(next_obs, axes=(1, 2, 0))
 
         timestep: TimeStep = lax.cond(
             done,

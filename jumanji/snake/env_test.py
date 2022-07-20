@@ -64,7 +64,7 @@ def test_snake__step(snake_env: Snake) -> None:
     assert new_state1.head_pos != new_state2.head_pos
     # Check that the state update and timestep creation work as expected
     row, col = tuple(state.head_pos)
-    body = timestep.observation[0].at[(row, col)].set(False)
+    body = timestep.observation[..., 0].at[(row, col)].set(False)
     moves = {
         0: (Position(row - 1, col), body.at[(row - 1, col)].set(True)),  # Up
         1: (Position(row, col + 1), body.at[(row, col + 1)].set(True)),  # Right
@@ -74,7 +74,7 @@ def test_snake__step(snake_env: Snake) -> None:
     for action, (new_position, new_body) in moves.items():
         new_state, timestep, _ = step_fn(state, action)
         assert new_state.head_pos == new_position
-        assert jnp.all(timestep.observation[0] == new_body)
+        assert jnp.all(timestep.observation[..., 0] == new_body)
 
 
 @pytest.mark.parametrize("snake_env", [()], indirect=True)

@@ -10,7 +10,7 @@ the episode progresses. An episode ends if the snake exits the board,
 hits itself, or after a certain number of steps (default: `time_limit=5000`).
 
 As an observation, the agent has access to the concatenation of 5 feature maps
-as channels stacked up in an image representing the snake body,
+as channels stacked (HWC format) in an image representing the snake body,
 its head, its tail, where the fruit is, as well as the order in which the cells
 are organised.
 
