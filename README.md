@@ -107,3 +107,8 @@ docker run -it --rm --volume path/to/jumanji/repo:/home/app/jumanji jumanji
 
 Then run inside the container `pip install -e .` or add the current path to your python path
 with `export PYTHONPATH=$PYTHONPATH:$PWD`.
+
+## Acknowledgements
+
+The development of this library was supported with Cloud TPUs
+from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
