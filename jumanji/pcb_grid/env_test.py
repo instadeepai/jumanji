@@ -10,7 +10,7 @@ from jumanji.pcb_grid.types import Position, State
 from jumanji.testing.fakes import FakeMultiAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from validation.environment_loops import JaxEnvironmentLoop
+from validation.environment_loops import EnvironmentLoop
 
 
 @pytest.fixture
@@ -214,11 +214,11 @@ def test_pcb_grid__step(pcb_grid_env: PcbGridEnv) -> None:
 def test_pcb_grid__does_not_smoke(
     pcb_grid_env: PcbGridEnv, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
+    """Test that we can run the jitted EnvironmentLoop without any errors."""
     fake_agent = FakeMultiAgent(
         pcb_grid_env.action_spec(), num_agents=pcb_grid_env.num_agents
     )
-    jax_environment_loop = JaxEnvironmentLoop(
+    jax_environment_loop = EnvironmentLoop(
         pcb_grid_env, fake_agent, n_steps=1, batch_size=2
     )
     jax_environment_loop.run(num_steps=3)

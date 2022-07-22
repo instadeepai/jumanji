@@ -1,13 +1,13 @@
 from jumanji.snake import Snake
-from validation import JaxEnvironmentLoop, RandomAgent
+from validation import EnvironmentLoop, RandomAgent
 
 
 def run_snake_random_jit() -> None:
-    """Runs a random agent in Snake using the jitted Jax Environment Loop. This serves as an
-    example of how to use an agent on a JaxEnv environment using the JaxEnvironmentLoop."""
+    """Runs a random agent in Snake using the jitted EnvironmentLoop. This serves as an
+    example of how to use an agent on an Environment using the EnvironmentLoop."""
     snake_env = Snake()
     random_agent = RandomAgent(action_spec=snake_env.action_spec())
-    environment_loop = JaxEnvironmentLoop(
+    environment_loop = EnvironmentLoop(
         environment=snake_env,
         agent=random_agent,
         n_steps=20,

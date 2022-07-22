@@ -176,7 +176,7 @@ class Array(Spec[chex.Array]):
 
 
 class BoundedArray(Array):
-    """Bounded array spec that specifies minimum and maximum values for a jax environment. This is
+    """Bounded array spec that specifies minimum and maximum values for an environment. This is
     adapted from dm_env.specs.BoundedArray to suit Jax environments.
 
     Example usage:

@@ -9,13 +9,13 @@ from jax import random
 from jumanji import specs
 from jumanji.env import make_environment_spec
 from jumanji.testing import pytrees
-from jumanji.testing.fakes import FakeJaxEnv, fake_transition
+from jumanji.testing.fakes import FakeEnvironment, fake_transition
 from validation.agents import RandomAgent, TrainingState
 
 
 class TestRandomAgent:
-    fake_jax_env = FakeJaxEnv(num_action_values=5)
-    random_agent = RandomAgent(fake_jax_env.action_spec())
+    fake_environment = FakeEnvironment(num_action_values=5)
+    random_agent = RandomAgent(fake_environment.action_spec())
 
     def test_random_agent__init_training_state(self) -> TrainingState:
         """Test and return the training state."""
@@ -26,7 +26,7 @@ class TestRandomAgent:
     def test_random_agent__select_action(self) -> None:
         """Check that sampling two actions with different keys lead to different actions."""
         training_state = self.test_random_agent__init_training_state()
-        fake_obs = self.fake_jax_env.observation_spec().generate_value()
+        fake_obs = self.fake_environment.observation_spec().generate_value()
         action_key_1, action_key_2 = random.split(random.PRNGKey(0))
         action_1 = self.random_agent.select_action(
             training_state, fake_obs, action_key_1
@@ -35,8 +35,8 @@ class TestRandomAgent:
             training_state, fake_obs, action_key_2
         )
         assert jnp.isfinite(action_1).all()
-        chex.assert_shape(action_1, self.fake_jax_env.action_spec().shape)
-        chex.assert_type(action_1, self.fake_jax_env.action_spec().dtype)
+        chex.assert_shape(action_1, self.fake_environment.action_spec().shape)
+        chex.assert_type(action_1, self.fake_environment.action_spec().dtype)
         assert action_2 != action_1
 
     def test_random_agent__different_action_spaces(self) -> None:
@@ -53,7 +53,7 @@ class TestRandomAgent:
         c_training_state = c_random_agent.init_training_state(c_key)
         d_training_state = c_random_agent.init_training_state(d_key)
 
-        fake_obs = self.fake_jax_env.observation_spec().generate_value()
+        fake_obs = self.fake_environment.observation_spec().generate_value()
         c_action_key, d_action_key = random.split(random.PRNGKey(0))
 
         c_action = c_random_agent.select_action(
@@ -70,7 +70,7 @@ class TestRandomAgent:
         training_state = self.test_random_agent__init_training_state()
         batch_fake_traj = jax.tree_map(
             partial(jnp.expand_dims, axis=0),
-            fake_transition(make_environment_spec(self.fake_jax_env)),
+            fake_transition(make_environment_spec(self.fake_environment)),
         )
         new_training_state, metrics = self.random_agent.sgd_step(
             training_state, batch_fake_traj

@@ -8,13 +8,13 @@ from jax import random
 
 import jumanji.pcb_grid.env_viewer as viewer
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.pcb_grid.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
 from jumanji.pcb_grid.types import Position, State
 from jumanji.types import Extra, TimeStep, restart, termination, transition, truncation
 
 
-class PcbGridEnv(JaxEnv[State]):
+class PcbGridEnv(Environment[State]):
     """
     A JAX implementation of the 'PCB Grid' environment. Currently hard mode is not supported.
 

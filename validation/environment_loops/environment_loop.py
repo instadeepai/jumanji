@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from chex import PRNGKey
 from jax import lax, random
 
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep
 from validation.agents import Agent, TrainingState, Transition
 from validation.utils import loggers
@@ -27,24 +27,24 @@ class ActingState(NamedTuple, Generic[State]):
     extra: Extra
 
 
-class JaxEnvironmentLoop:
-    """Training loop designed for JaxEnv environments. It both acts in an environment on a batch
+class EnvironmentLoop:
+    """Training loop designed for Environment environments. It both acts in an environment on a batch
     of states and learns from them. The loop compiles and vmap sequences of steps.
     """
 
     def __init__(
         self,
-        environment: JaxEnv,
+        environment: Environment,
         agent: Agent,
         n_steps: int = 1,
         batch_size: int = 1,
         seed: int = 0,
         logger: Optional[loggers.Logger] = None,
     ):
-        """Environment loop used for JaxEnv environments.
+        """Environment loop used for Environment environments.
 
         Args:
-            environment: JaxEnv to train on.
+            environment: Environment to train on.
             agent: RL agent that learns to maximize expected return in the given environment.
             n_steps: number of steps to execute in a sequence, usually 10-20.
             batch_size: number of different environment states to run and update
@@ -52,9 +52,9 @@ class JaxEnvironmentLoop:
             seed: random seed used for action selection and environment reset.
 
         """
-        if not isinstance(environment, JaxEnv):
+        if not isinstance(environment, Environment):
             raise TypeError(
-                "environment must be of type JaxEnv, "
+                "environment must be of type Environment, "
                 f"got {environment} of type {type(environment)} instead."
             )
         self._environment = environment

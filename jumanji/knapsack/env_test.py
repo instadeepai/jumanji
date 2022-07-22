@@ -9,7 +9,7 @@ from jumanji.knapsack.types import State
 from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from validation import JaxEnvironmentLoop
+from validation import EnvironmentLoop
 
 
 @pytest.fixture
@@ -80,9 +80,9 @@ def test_knapsack__step(knapsack_env: Knapsack) -> None:
 def test_knapsack__does_not_smoke(
     knapsack_env: Knapsack, capsys: pytest.CaptureFixture
 ) -> None:
-    """Tests that we can run the jitted JaxEnvironmentLoop without any errors."""
+    """Tests that we can run the jitted EnvironmentLoop without any errors."""
     fake_agent = FakeAgent(knapsack_env.action_spec())
-    jax_environment_loop = JaxEnvironmentLoop(
+    jax_environment_loop = EnvironmentLoop(
         knapsack_env, fake_agent, n_steps=1, batch_size=2
     )
     jax_environment_loop.run(num_steps=3)

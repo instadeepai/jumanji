@@ -13,7 +13,7 @@ def test_timeit__init() -> None:
     assert isinstance(t, TimeIt)
 
 
-def test_jax_environment_loop__run(capsys: CaptureFixture) -> None:
+def test_environment_loop__run(capsys: CaptureFixture) -> None:
     """Validates TimeIt time measurement and FPS computation."""
     with TimeIt(logger=loggers.TerminalLogger("Test"), frames=10) as t:
         time.sleep(0.01)

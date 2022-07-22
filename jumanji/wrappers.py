@@ -9,21 +9,21 @@ from chex import PRNGKey
 from jax import jit, random
 
 from jumanji import specs
-from jumanji.env import JaxEnv, Wrapper
+from jumanji.env import Environment, Wrapper
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 State = TypeVar("State")
 
 
-class JaxEnvToDeepMindEnv(dm_env.Environment):
-    """A wrapper that converts JaxEnv to dm_env.Environment."""
+class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
+    """A wrapper that converts Environment to dm_env.Environment."""
 
-    def __init__(self, env: JaxEnv, key: Optional[PRNGKey] = None):
+    def __init__(self, env: Environment, key: Optional[PRNGKey] = None):
         """Create the wrapped environment.
 
         Args:
-            env: JaxEnv environment to wrap to a dm_env.Environment.
-            key: optional key to initialize the JaxEnv environment with.
+            env: Environment environment to wrap to a dm_env.Environment.
+            key: optional key to initialize the Environment environment with.
         """
         self._env = env
         if key is None:
@@ -100,23 +100,23 @@ class JaxEnvToDeepMindEnv(dm_env.Environment):
         return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec())
 
     @property
-    def unwrapped(self) -> JaxEnv:
+    def unwrapped(self) -> Environment:
         return self._env
 
 
-class MultiToSingleJaxEnv(Wrapper):
-    """A wrapper that converts a multi-agent JaxEnv to a single-agent JaxEnv."""
+class MultiToSingleEnvironment(Wrapper):
+    """A wrapper that converts a multi-agent Environment to a single-agent Environment."""
 
     def __init__(
         self,
-        env: JaxEnv,
+        env: Environment,
         reward_aggregator: Callable = jnp.sum,
         discount_aggregator: Callable = jnp.max,
     ):
         """Create the wrapped environment.
 
         Args:
-            env: JaxEnv environment to wrap to a dm_env.Environment.
+            env: Environment environment to wrap to a dm_env.Environment.
             reward_aggregator: a function to aggregate all agents rewards
                 into a single scalar value, e.g. sum.
             discount_aggregator: a function to aggregate all agents discounts
@@ -225,14 +225,14 @@ class VmapWrapper(Wrapper):
         return state, timestep, extra
 
 
-class BraxEnvToJaxEnv(JaxEnv):
+class BraxEnvToJumanjiEnvironment(Environment):
     """
-    A wrapper that converts a Brax environment to a JaxEnv for standardisation, use with the
-    JaxEnvironmentLoop and to augment the API (add timesteps, metrics...).
+    A wrapper that converts a Brax environment to an Environment for standardisation, use with the
+    EnvironmentLoop and to augment the API (add timesteps, metrics...).
     """
 
     def __init__(self, brax_env: BraxEnv):
-        """Creates the JaxEnv wrapper for Brax environments.
+        """Creates the Environment wrapper for Brax environments.
 
         Args:
             brax_env: Brax Env object that is not wrapped by a ResetWrapper

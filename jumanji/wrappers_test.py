@@ -10,39 +10,39 @@ from brax.envs import State as BraxState
 from chex import assert_trees_all_equal
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.testing.fakes import (
-    FakeJaxEnv,
+    FakeEnvironment,
     FakeState,
     make_fake_brax_env,
     make_fake_dm_env,
-    make_fake_jax_env,
-    make_fake_multi_jax_env,
+    make_fake_environment,
+    make_fake_multi_environment,
 )
 from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import Extra, StepType, TimeStep
 from jumanji.wrappers import (
-    BraxEnvToJaxEnv,
-    JaxEnvToDeepMindEnv,
-    MultiToSingleJaxEnv,
+    BraxEnvToJumanjiEnvironment,
+    JumanjiEnvironmentToDeepMindEnv,
+    MultiToSingleEnvironment,
     VmapWrapper,
 )
 
 
-class TestJaxEnvToDeepMindEnv:
+class TestJumanjiEnvironmentToDeepMindEnv:
     """
-    Test the JaxEnvToDeepMindEnv that transforms a JaxEnv into a dm_env.Environment format.
+    Test the JumanjiEnvironmentToDeepMindEnv that transforms an Environment into a dm_env.Environment format.
     """
 
-    fake_jax_env = make_fake_jax_env()
+    fake_environment = make_fake_environment()
     fake_dm_env = make_fake_dm_env()
 
-    def test_jax_env_to_deep_mind_env__init(self) -> None:
+    def test_jumanji_environment_to_deep_mind_env__init(self) -> None:
         """Validates initialization of the dm_env wrapper."""
-        dm_environment = JaxEnvToDeepMindEnv(self.fake_jax_env)
+        dm_environment = JumanjiEnvironmentToDeepMindEnv(self.fake_environment)
         assert isinstance(dm_environment, dm_env.Environment)
-        dm_environment_with_key = JaxEnvToDeepMindEnv(
-            self.fake_jax_env, key=jax.random.PRNGKey(0)
+        dm_environment_with_key = JumanjiEnvironmentToDeepMindEnv(
+            self.fake_environment, key=jax.random.PRNGKey(0)
         )
         assert isinstance(dm_environment_with_key, dm_env.Environment)
 
@@ -52,34 +52,34 @@ class TestJaxEnvToDeepMindEnv:
         assert isinstance(timestep, dm_env.TimeStep)
         assert timestep.step_type is dm_env.StepType.FIRST
 
-    def test_jax_env_to_deep_mind_env__step(self) -> None:
+    def test_jumanji_environment_to_deep_mind_env__step(self) -> None:
         """Validates step function of the wrapped environment."""
         timestep = self.fake_dm_env.reset()
         action = self.fake_dm_env.action_spec().generate_value()
         next_timestep = self.fake_dm_env.step(action)
         assert next_timestep != timestep
 
-    def test_jax_env_to_deep_mind_env__observation_spec(self) -> None:
+    def test_jumanji_environment_to_deep_mind_env__observation_spec(self) -> None:
         """Validates observation_spec property of the wrapped environment."""
         assert isinstance(self.fake_dm_env.observation_spec(), dm_env.specs.Array)
 
-    def test_jax_env_to_deep_mind_env__action_spec(self) -> None:
+    def test_jumanji_environment_to_deep_mind_env__action_spec(self) -> None:
         """Validates action_spec property of the wrapped environment."""
         assert isinstance(self.fake_dm_env.action_spec(), dm_env.specs.Array)
 
-    def test_jax_env_to_deep_mind_env__unwrapped(self) -> None:
+    def test_jumanji_environment_to_deep_mind_env__unwrapped(self) -> None:
         """Validates unwrapped property of the wrapped environment."""
-        assert isinstance(self.fake_dm_env.unwrapped, JaxEnv)
+        assert isinstance(self.fake_dm_env.unwrapped, Environment)
 
 
-class TestMultiToSingleJaxEnv:
-    fake_multi_jax_env = make_fake_multi_jax_env()
-    fake_multi_to_single_env = MultiToSingleJaxEnv(fake_multi_jax_env)
+class TestMultiToSingleEnvironment:
+    fake_multi_environment = make_fake_multi_environment()
+    fake_multi_to_single_env = MultiToSingleEnvironment(fake_multi_environment)
 
     def test_multi_env_wrapper__init(self) -> None:
         """Validates initialization of the multi agent to single agent wrapper."""
-        single_agent_env = MultiToSingleJaxEnv(self.fake_multi_jax_env)
-        assert isinstance(single_agent_env, JaxEnv)
+        single_agent_env = MultiToSingleEnvironment(self.fake_multi_environment)
+        assert isinstance(single_agent_env, Environment)
 
     def test_multi_env__reset(self) -> None:
         """Validates (jitted) reset function and timestep type of the multi agent
@@ -87,7 +87,7 @@ class TestMultiToSingleJaxEnv:
         _, timestep, _ = jax.jit(self.fake_multi_to_single_env.reset)(random.PRNGKey(0))
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
-        assert timestep.observation.shape[0] == self.fake_multi_jax_env.num_agents
+        assert timestep.observation.shape[0] == self.fake_multi_environment.num_agents
         assert timestep.reward.shape == ()
         assert timestep.discount.shape == ()
 
@@ -105,16 +105,18 @@ class TestMultiToSingleJaxEnv:
         assert next_timestep.reward.shape == ()
         assert (
             next_timestep.reward
-            == self.fake_multi_jax_env.reward_per_step
-            * self.fake_multi_jax_env.num_agents
+            == self.fake_multi_environment.reward_per_step
+            * self.fake_multi_environment.num_agents
         )
         assert next_timestep.discount.shape == ()
-        assert next_timestep.observation.shape[0] == self.fake_multi_jax_env.num_agents
+        assert (
+            next_timestep.observation.shape[0] == self.fake_multi_environment.num_agents
+        )
 
     def test_multi_env__different_reward_aggregator(self) -> None:
         """Checks that using a different reward aggregator is correct"""
-        mean_fake_multi_to_single_env = MultiToSingleJaxEnv(
-            self.fake_multi_jax_env, reward_aggregator=jnp.mean
+        mean_fake_multi_to_single_env = MultiToSingleEnvironment(
+            self.fake_multi_environment, reward_aggregator=jnp.mean
         )
         state, timestep, _ = mean_fake_multi_to_single_env.reset(
             random.PRNGKey(0)
@@ -125,54 +127,56 @@ class TestMultiToSingleJaxEnv:
         )  # type: Tuple[FakeState, TimeStep, Extra]
         assert next_timestep != timestep
         assert next_timestep.reward.shape == ()
-        assert next_timestep.reward == self.fake_multi_jax_env.reward_per_step
+        assert next_timestep.reward == self.fake_multi_environment.reward_per_step
         assert next_timestep.discount.shape == ()
-        assert next_timestep.observation.shape[0] == self.fake_multi_jax_env.num_agents
+        assert (
+            next_timestep.observation.shape[0] == self.fake_multi_environment.num_agents
+        )
 
     def test_multi_env__observation_spec(self) -> None:
         """Validates observation_spec property of the multi agent to single
         agent wrapped environment."""
         obs_spec: specs.Array = self.fake_multi_to_single_env.observation_spec()  # type: ignore
         assert isinstance(obs_spec, specs.Array)
-        assert obs_spec.shape == self.fake_multi_jax_env.observation_spec().shape
+        assert obs_spec.shape == self.fake_multi_environment.observation_spec().shape
 
     def test_multi_env__action_spec(self) -> None:
         """Validates action_spec property of the multi agent to single
         agent wrapped environment."""
         action_spec: specs.Array = self.fake_multi_to_single_env.action_spec()  # type: ignore
         assert isinstance(self.fake_multi_to_single_env.action_spec(), specs.Array)
-        assert action_spec.shape == self.fake_multi_jax_env.action_spec().shape
+        assert action_spec.shape == self.fake_multi_environment.action_spec().shape
 
     def test_multi_env__unwrapped(self) -> None:
         """Validates unwrapped property of the multi agent to single
         agent wrapped environment."""
-        assert isinstance(self.fake_multi_to_single_env.unwrapped, JaxEnv)
-        assert self.fake_multi_to_single_env._env == self.fake_multi_jax_env
+        assert isinstance(self.fake_multi_to_single_env.unwrapped, Environment)
+        assert self.fake_multi_to_single_env._env == self.fake_multi_environment
 
 
 class TestVmapWrapper:
     @pytest.fixture
-    def fake_jax_env(self) -> FakeJaxEnv:
-        return make_fake_jax_env()
+    def fake_environment(self) -> FakeEnvironment:
+        return make_fake_environment()
 
     @pytest.fixture
-    def fake_vmap_jax_env(self, fake_jax_env: JaxEnv) -> VmapWrapper:
-        return VmapWrapper(fake_jax_env)
+    def fake_vmap_environment(self, fake_environment: Environment) -> VmapWrapper:
+        return VmapWrapper(fake_environment)
 
     @pytest.fixture
     def keys(self) -> random.PRNGKey:
         return random.split(random.PRNGKey(0), num=5)
 
-    def test_vmap_wrapper__init(self, fake_jax_env: JaxEnv) -> None:
+    def test_vmap_wrapper__init(self, fake_environment: Environment) -> None:
         """Validates initialization of the vmap wrapper."""
-        vmap_env = VmapWrapper(fake_jax_env)
-        assert isinstance(vmap_env, JaxEnv)
+        vmap_env = VmapWrapper(fake_environment)
+        assert isinstance(vmap_env, Environment)
 
     def test_vmap_env__reset(
-        self, fake_vmap_jax_env: VmapWrapper, keys: random.PRNGKey
+        self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
     ) -> None:
         """Validates reset function and timestep type of the vmap wrapped environment."""
-        _, timestep, _ = jax.jit(fake_vmap_jax_env.reset)(keys)
+        _, timestep, _ = jax.jit(fake_vmap_environment.reset)(keys)
 
         assert isinstance(timestep, TimeStep)
         assert_trees_all_equal(timestep.step_type, StepType.FIRST)
@@ -181,17 +185,17 @@ class TestVmapWrapper:
         assert timestep.discount.shape == (keys.shape[0],)
 
     def test_vmap_env__step(
-        self, fake_vmap_jax_env: VmapWrapper, keys: random.PRNGKey
+        self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
     ) -> None:
         """Validates step function of the vmap environment."""
-        state, timestep, _ = fake_vmap_jax_env.reset(
+        state, timestep, _ = fake_vmap_environment.reset(
             keys
         )  # type: Tuple[FakeState, TimeStep, Extra]
-        action = jax.vmap(lambda _: fake_vmap_jax_env.action_spec().generate_value())(
-            keys
-        )
+        action = jax.vmap(
+            lambda _: fake_vmap_environment.action_spec().generate_value()
+        )(keys)
 
-        state, next_timestep, _ = jax.jit(fake_vmap_jax_env.step)(
+        state, next_timestep, _ = jax.jit(fake_vmap_environment.step)(
             state, action
         )  # type: Tuple[FakeState, TimeStep, Extra]
 
@@ -203,16 +207,16 @@ class TestVmapWrapper:
         assert next_timestep.observation.shape[0] == keys.shape[0]
 
     def test_vmap_env__unwrapped(
-        self, fake_jax_env: JaxEnv, fake_vmap_jax_env: VmapWrapper
+        self, fake_environment: Environment, fake_vmap_environment: VmapWrapper
     ) -> None:
         """Validates unwrapped property of the vmap environment."""
-        assert isinstance(fake_vmap_jax_env.unwrapped, JaxEnv)
-        assert fake_vmap_jax_env._env == fake_jax_env
+        assert isinstance(fake_vmap_environment.unwrapped, Environment)
+        assert fake_vmap_environment._env == fake_environment
 
 
-class TestBraxEnvToJaxEnv:
+class TestBraxEnvToJumanjiEnvironment:
     """
-    Test the BraxEnvToJaxEnv wrapper that transforms a Brax Env into a JaxEnv format.
+    Test the BraxEnvToJumanjiEnvironment wrapper that transforms a Brax Env into an Environment format.
     """
 
     @staticmethod
@@ -223,41 +227,53 @@ class TestBraxEnvToJaxEnv:
 
     @staticmethod
     @pytest.fixture
-    def jax_env_from_brax(brax_env: BraxEnv) -> JaxEnv:
-        """Instantiates a JaxEnv wrapped from a Brax env."""
-        return BraxEnvToJaxEnv(brax_env)
+    def jumanji_environment_from_brax(brax_env: BraxEnv) -> Environment:
+        """Instantiates an Environment wrapped from a Brax env."""
+        return BraxEnvToJumanjiEnvironment(brax_env)
 
-    def test_brax_env_to_jax_env__init(self, brax_env: BraxEnv) -> None:
+    def test_brax_env_to_jumanji_environment__init(self, brax_env: BraxEnv) -> None:
         """Validates initialization of the wrapper."""
-        jax_env = BraxEnvToJaxEnv(brax_env)
-        assert isinstance(jax_env, JaxEnv)
+        environment = BraxEnvToJumanjiEnvironment(brax_env)
+        assert isinstance(environment, Environment)
 
-    def test_brax_env_to_jax_env__reset(self, jax_env_from_brax: JaxEnv) -> None:
+    def test_brax_env_to_jumanji_environment__reset(
+        self, jumanji_environment_from_brax: Environment
+    ) -> None:
         """Validates (jitted) reset function and timestep type of the wrapped environment."""
-        state, timestep, extra = jax.jit(jax_env_from_brax.reset)(jax.random.PRNGKey(0))
+        state, timestep, extra = jax.jit(jumanji_environment_from_brax.reset)(
+            jax.random.PRNGKey(0)
+        )
         assert isinstance(state, BraxState)
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
         assert extra is None
 
-    def test_brax_env_to_jax_env__step(self, jax_env_from_brax: JaxEnv) -> None:
+    def test_brax_env_to_jumanji_environment__step(
+        self, jumanji_environment_from_brax: Environment
+    ) -> None:
         """Validates (jitted) step function of the wrapped environment."""
-        state, timestep, _ = jax_env_from_brax.reset(jax.random.PRNGKey(0))
-        action = jax_env_from_brax.action_spec().generate_value()
-        next_state, next_timestep, _ = jax.jit(jax_env_from_brax.step)(state, action)
+        state, timestep, _ = jumanji_environment_from_brax.reset(jax.random.PRNGKey(0))
+        action = jumanji_environment_from_brax.action_spec().generate_value()
+        next_state, next_timestep, _ = jax.jit(jumanji_environment_from_brax.step)(
+            state, action
+        )
         assert_trees_are_different(timestep, next_timestep)
         assert_trees_are_different(state, next_state)
 
-    def test_brax_env_to_jax_env__observation_spec(
-        self, jax_env_from_brax: JaxEnv
+    def test_brax_env_to_jumanji_environment__observation_spec(
+        self, jumanji_environment_from_brax: Environment
     ) -> None:
         """Validates observation_spec property of the wrapped environment."""
-        assert isinstance(jax_env_from_brax.observation_spec(), specs.Array)
+        assert isinstance(jumanji_environment_from_brax.observation_spec(), specs.Array)
 
-    def test_brax_env_to_jax_env__action_spec(self, jax_env_from_brax: JaxEnv) -> None:
+    def test_brax_env_to_jumanji_environment__action_spec(
+        self, jumanji_environment_from_brax: Environment
+    ) -> None:
         """Validates action_spec property of the wrapped environment."""
-        assert isinstance(jax_env_from_brax.action_spec(), specs.Array)
+        assert isinstance(jumanji_environment_from_brax.action_spec(), specs.Array)
 
-    def test_brax_env_to_jax_env__unwrapped(self, jax_env_from_brax: JaxEnv) -> None:
+    def test_brax_env_to_jumanji_environment__unwrapped(
+        self, jumanji_environment_from_brax: Environment
+    ) -> None:
         """Validates unwrapped property of the wrapped environment."""
-        assert isinstance(jax_env_from_brax.unwrapped, BraxEnv)
+        assert isinstance(jumanji_environment_from_brax.unwrapped, BraxEnv)

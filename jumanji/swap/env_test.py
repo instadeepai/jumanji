@@ -9,9 +9,9 @@ from jumanji.swap.types import State
 from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from jumanji.wrappers import JaxEnvToDeepMindEnv
+from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
 from validation.benchmark_loops import DeepMindEnvBenchmarkLoop
-from validation.environment_loops import JaxEnvironmentLoop
+from validation.environment_loops import EnvironmentLoop
 
 
 @pytest.fixture
@@ -173,15 +173,15 @@ def test_swap__item_sampling() -> None:
 
 @pytest.mark.parametrize("swap_env", [()], indirect=True)
 def test_swap__does_not_smoke(swap_env: Swap, capsys: pytest.CaptureFixture) -> None:
-    """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
+    """Test that we can run the jitted EnvironmentLoop without any errors."""
     fake_agent = FakeAgent(swap_env.action_spec())
     swap_env.swap_period = 5
-    jax_environment_loop = JaxEnvironmentLoop(
+    jax_environment_loop = EnvironmentLoop(
         swap_env, fake_agent, n_steps=1, batch_size=2
     )
     jax_environment_loop.run(num_steps=3)
     deep_mind_env_benchmark_loop = DeepMindEnvBenchmarkLoop(
-        JaxEnvToDeepMindEnv(swap_env)
+        JumanjiEnvironmentToDeepMindEnv(swap_env)
     )
     deep_mind_env_benchmark_loop.run(num_steps=3)
     assert capsys.readouterr().out

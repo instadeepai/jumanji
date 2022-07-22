@@ -1,2 +1,2 @@
-_target_: jumanji.testing.fakes.FakeJaxEnv
+_target_: jumanji.testing.fakes.FakeEnvironment
 time_limit: 100

@@ -5,12 +5,12 @@ from chex import Array, PRNGKey
 from jax import lax, nn, random
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.swap.types import State
 from jumanji.types import Action, Extra, TimeStep, restart, transition, truncation
 
 
-class Swap(JaxEnv[State]):
+class Swap(Environment[State]):
     """
     A JAX implementation of the two-color toy problem described in (Flennerhag et al., 2021).
     The episode is reset every fixed number of periods.

@@ -1,3 +1,3 @@
-# Jax Environments
+# Environments
 
 ::: jumanji.env

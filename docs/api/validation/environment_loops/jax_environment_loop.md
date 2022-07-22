@@ -1,3 +1,3 @@
-# Jax Environment Loop
+# Environment Loop
 
-::: validation.environment_loops.jax_environment_loop
+::: validation.environment_loops.environment_loop

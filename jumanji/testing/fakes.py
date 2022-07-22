@@ -14,9 +14,9 @@ from chex import Array, PRNGKey
 from jax import lax, random
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
-from jumanji.wrappers import JaxEnvToDeepMindEnv
+from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
 from validation.agents import Agent, TrainingState, Transition
 
 
@@ -26,9 +26,9 @@ class FakeState:
     step: int
 
 
-class FakeJaxEnv(JaxEnv[FakeState]):
+class FakeEnvironment(Environment[FakeState]):
     """
-    A fake environment that inherits from JaxEnv, for testing purposes.
+    A fake environment that inherits from Environment, for testing purposes.
     """
 
     def __init__(
@@ -37,7 +37,7 @@ class FakeJaxEnv(JaxEnv[FakeState]):
         observation_shape: Tuple = (),
         num_action_values: int = 1,
     ):
-        """Initialize a fake jax environment.
+        """Initialize a fake environment.
 
         Args:
             time_limit: horizon of an episode.
@@ -119,9 +119,9 @@ class FakeJaxEnv(JaxEnv[FakeState]):
         return next_state, timestep, None
 
 
-class FakeMultiJaxEnv(JaxEnv[FakeState]):
+class FakeMultiEnvironment(Environment[FakeState]):
     """
-    A fake multi agent environment that inherits from JaxEnv, for testing purposes.
+    A fake multi agent environment that inherits from Environment, for testing purposes.
     """
 
     def __init__(
@@ -132,7 +132,7 @@ class FakeMultiJaxEnv(JaxEnv[FakeState]):
         reward_per_step: float = 1.0,
         time_limit: int = 10,
     ):
-        """Initialize a fake multi agent jax environment.
+        """Initialize a fake multi agent environment.
 
         Args:
             num_agents : the number of agents present in the environment.
@@ -252,19 +252,19 @@ Some common functions and classes that are used in testing throughout jumanji.
 """
 
 
-def make_fake_jax_env(time_limit: int = 10) -> FakeJaxEnv:
-    """Creates a fake jax environment."""
-    return FakeJaxEnv(time_limit=time_limit)
+def make_fake_environment(time_limit: int = 10) -> FakeEnvironment:
+    """Creates a fake environment."""
+    return FakeEnvironment(time_limit=time_limit)
 
 
-def make_fake_multi_jax_env(time_limit: int = 10) -> FakeMultiJaxEnv:
-    """Creates a fake multi agent jax environment."""
-    return FakeMultiJaxEnv(time_limit=time_limit)
+def make_fake_multi_environment(time_limit: int = 10) -> FakeMultiEnvironment:
+    """Creates a fake multi agent environment."""
+    return FakeMultiEnvironment(time_limit=time_limit)
 
 
 def make_fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
-    """Creates a fake jax environment wrapped as a dm_env.Environment."""
-    return JaxEnvToDeepMindEnv(FakeJaxEnv(time_limit=time_limit))
+    """Creates a fake environment wrapped as a dm_env.Environment."""
+    return JumanjiEnvironmentToDeepMindEnv(FakeEnvironment(time_limit=time_limit))
 
 
 def make_fake_brax_env(time_limit: int = 10) -> brax.envs.Env:

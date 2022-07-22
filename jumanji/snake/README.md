@@ -25,6 +25,6 @@ Speed test on 1 CPU, no GPU used.
 
 | Environment type \ board<br>shape (n_rows, n_cols) | (5, 5)   | (10, 10) | (20, 20) |
 |----------------------------------------------------|----------|----------|----------|
-| JaxEnvToDeepMindEnv (jit one step)                  | 3.10^3   | 3.10^3   | 3.10^3   |
-| JaxEnv (jit one step)                              | 3-4.10^3 | 3-4.10^3 | 3-4.10^3 |
-| JaxEnvironmentLoop (jit `n=20` steps)              | 5.10^5   | 3.10^5   | 1.10^5   |
+| JumanjiEnvironmentToDeepMindEnv (jit one step)                  | 3.10^3   | 3.10^3   | 3.10^3   |
+| Environment (jit one step)                              | 3-4.10^3 | 3-4.10^3 | 3-4.10^3 |
+| EnvironmentLoop (jit `n=20` steps)              | 5.10^5   | 3.10^5   | 1.10^5   |

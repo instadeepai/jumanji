@@ -90,7 +90,7 @@ nav:
           - connect4: api/environments/connect4.md
           - knapsack: api/environments/knapsack.md
           - tsp: api/environments/tsp.md
-      - jax_env: api/env.md
+      - environment: api/env.md
       - types: api/types.md
       - wrappers: api/wrappers.md
       - validation:
@@ -98,6 +98,6 @@ nav:
               - random_agent: api/validation/agents/random_agent.md
           - benchmark_loops:
               - deep_mind_env_benchmark_loop: api/validation/benchmark_loops/deep_mind_env_benchmark_loop.md
-              - jax_env_benchmark_loop: api/validation/benchmark_loops/jax_env_benchmark_loop.md
+              - environment_benchmark_loop: api/validation/benchmark_loops/environment_benchmark_loop.md
           - environment_loops:
-              - jax_environment_loop: api/validation/environment_loops/jax_environment_loop.md
+              - environment_loop: api/validation/environment_loops/environment_loop.md

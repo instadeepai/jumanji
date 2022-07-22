@@ -11,7 +11,7 @@ from jumanji.binpack.types import State
 from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from validation import JaxEnvironmentLoop
+from validation import EnvironmentLoop
 
 
 def test_binpack__reset(binpack_env: BinPack) -> None:
@@ -64,9 +64,9 @@ def test_binpack__step(binpack_env: BinPack) -> None:
 def test_binpack__does_not_smoke(
     binpack_env: BinPack, capsys: pytest.CaptureFixture
 ) -> None:
-    """Tests that we can run the jitted JaxEnvironmentLoop without any errors."""
+    """Tests that we can run the jitted EnvironmentLoop without any errors."""
     fake_agent = FakeAgent(binpack_env.action_spec())
-    jax_environment_loop = JaxEnvironmentLoop(
+    jax_environment_loop = EnvironmentLoop(
         binpack_env, fake_agent, n_steps=1, batch_size=2
     )
     jax_environment_loop.run(num_steps=3)

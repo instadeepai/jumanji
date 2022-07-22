@@ -1,1 +1,1 @@
-from validation.environment_loops.jax_environment_loop import JaxEnvironmentLoop
+from validation.environment_loops.environment_loop import EnvironmentLoop

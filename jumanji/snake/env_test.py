@@ -9,7 +9,7 @@ from jumanji.snake.types import Position
 from jumanji.testing.fakes import FakeAgent
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from validation.environment_loops import JaxEnvironmentLoop
+from validation.environment_loops import EnvironmentLoop
 
 
 @pytest.fixture
@@ -79,9 +79,9 @@ def test_snake__step(snake_env: Snake) -> None:
 
 @pytest.mark.parametrize("snake_env", [()], indirect=True)
 def test_snake__does_not_smoke(snake_env: Snake, capsys: pytest.CaptureFixture) -> None:
-    """Test that we can run the jitted JaxEnvironmentLoop without any errors."""
+    """Test that we can run the jitted EnvironmentLoop without any errors."""
     fake_agent = FakeAgent(snake_env.action_spec())
-    jax_environment_loop = JaxEnvironmentLoop(
+    jax_environment_loop = EnvironmentLoop(
         snake_env, fake_agent, n_steps=1, batch_size=2
     )
     jax_environment_loop.run(num_steps=3)

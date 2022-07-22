@@ -4,7 +4,7 @@ from chex import Array, PRNGKey
 from jax import lax
 from jax import numpy as jnp
 
-from jumanji import JaxEnv, specs
+from jumanji import Environment, specs
 from jumanji.connect4.constants import BOARD_HEIGHT, BOARD_WIDTH
 from jumanji.connect4.specs import ObservationSpec
 from jumanji.connect4.types import Observation, State
@@ -18,7 +18,7 @@ from jumanji.connect4.utils import (
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 
-class Connect4(JaxEnv[State]):
+class Connect4(Environment[State]):
     """A JAX implementation of the 'Connect 4' game.
 
     - observation: a dataclass with two attributes:

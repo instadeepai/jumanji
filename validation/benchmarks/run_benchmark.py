@@ -4,27 +4,27 @@ from typing import Callable, List, Optional
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from jumanji import JaxEnv
-from jumanji.wrappers import JaxEnvToDeepMindEnv
+from jumanji import Environment
+from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
 from validation.benchmark_loops import (
     BenchmarkLoop,
     DeepMindEnvBenchmarkLoop,
-    JaxEnvBenchmarkLoop,
+    EnvironmentBenchmarkLoop,
 )
 
 ENV_LOOP_CLASSES = {
-    "JaxEnvBenchmarkLoop": JaxEnvBenchmarkLoop,
+    "EnvironmentBenchmarkLoop": EnvironmentBenchmarkLoop,
     "DeepMindEnvBenchmarkLoop": DeepMindEnvBenchmarkLoop,
 }
 WRAPPERS = {
-    "JaxEnvToDeepMindEnv": JaxEnvToDeepMindEnv,
+    "JumanjiEnvironmentToDeepMindEnv": JumanjiEnvironmentToDeepMindEnv,
 }
 
 
 def run_benchmark(
-    env: JaxEnv,
-    env_loop_cls: Callable[[JaxEnv], BenchmarkLoop],
-    env_wrappers: Optional[List[Callable[[JaxEnv], JaxEnv]]] = None,
+    env: Environment,
+    env_loop_cls: Callable[[Environment], BenchmarkLoop],
+    env_wrappers: Optional[List[Callable[[Environment], Environment]]] = None,
     num_episodes: Optional[int] = None,
     num_env_steps: Optional[int] = None,
     ms: bool = False,
@@ -34,9 +34,9 @@ def run_benchmark(
     with different environment loops.
 
     Args:
-        env: JaxEnv environment.
+        env: Environment environment.
         env_loop_cls: type of environment loop to use. Can be either of:
-            - JaxEnvBenchmarkLoop
+            - EnvironmentBenchmarkLoop
             - DmEnvBenchmarkLoop
         env_wrappers: list of environment wrappers.
         num_episodes: number of episodes to play in the environment.
@@ -49,7 +49,7 @@ def run_benchmark(
         for wrapper in env_wrappers:
             env = wrapper(env)
     if issubclass(
-        env_loop_cls, (JaxEnvBenchmarkLoop, DeepMindEnvBenchmarkLoop)  # type: ignore
+        env_loop_cls, (EnvironmentBenchmarkLoop, DeepMindEnvBenchmarkLoop)  # type: ignore
     ):
         env_loop = env_loop_cls(env)
     else:

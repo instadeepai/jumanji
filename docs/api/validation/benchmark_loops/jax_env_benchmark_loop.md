@@ -1,3 +1,3 @@
-# Jax Environment Benchmark Loop
+# Environment Benchmark Loop
 
-::: validation.benchmark_loops.jax_env_benchmark_loop
+::: validation.benchmark_loops.environment_benchmark_loop

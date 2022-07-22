@@ -5,15 +5,15 @@ from chex import PRNGKey
 from jax import jit
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep
 from validation.benchmark_loops.benchmark_loop import BenchmarkLoop
 
 State = TypeVar("State")
 
 
-class JaxEnvBenchmarkLoop(BenchmarkLoop):
-    """Environment loop for JaxEnv, used for benchmarking. Inspired by acme.environment_loop
+class EnvironmentBenchmarkLoop(BenchmarkLoop):
+    """Environment loop for Environment, used for benchmarking. Inspired by acme.environment_loop
     (https://github.com/deepmind/acme/blob/master/acme/environment_loop.py).
     Compiles reset and step functions. This loop is for benchmark purposes, as it takes a random
     action between each step. The environment speed is being measured as the number of steps
@@ -22,20 +22,20 @@ class JaxEnvBenchmarkLoop(BenchmarkLoop):
 
     def __init__(
         self,
-        environment: JaxEnv,
+        environment: Environment,
         seed: int = 0,
     ):
         """Environment loop used to benchmark the number of steps per second
-        of an environment of type JaxEnv.
+        of an environment of type Environment.
 
         Args:
-            environment: JaxEnv to benchmark on.
+            environment: Environment to benchmark on.
             seed: random seed used for action selection and environment reset.
 
         """
-        if not isinstance(environment, JaxEnv):
+        if not isinstance(environment, Environment):
             raise TypeError(
-                "environment must be of type JaxEnv, "
+                "environment must be of type Environment, "
                 f"got {environment} of type {type(environment)} instead."
             )
         self._environment = environment

@@ -6,7 +6,7 @@ from chex import Array, PRNGKey
 from jax import random
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.knapsack.specs import ObservationSpec
 from jumanji.knapsack.types import Observation, State
 from jumanji.knapsack.utils import (
@@ -17,7 +17,7 @@ from jumanji.knapsack.utils import (
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 
-class Knapsack(JaxEnv[State]):
+class Knapsack(Environment[State]):
     """
     Knapsack environment as described in [1].
     - observation: Observation

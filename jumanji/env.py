@@ -11,7 +11,7 @@ from jumanji.types import Action, Extra, TimeStep
 State = TypeVar("State")
 
 
-class JaxEnv(abc.ABC, Generic[State]):
+class Environment(abc.ABC, Generic[State]):
     """Environment written in Jax that differs from the gym API to make the step and
     reset functions jittable. The state contains all the dynamics and data needed to step
     the environment, no computation stored in attributes of self.
@@ -19,7 +19,7 @@ class JaxEnv(abc.ABC, Generic[State]):
     """
 
     def __repr__(self) -> str:
-        return "Jax environment."
+        return "Environment."
 
     @abc.abstractmethod
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
@@ -85,16 +85,16 @@ class JaxEnv(abc.ABC, Generic[State]):
         )
 
     @property
-    def unwrapped(self) -> "JaxEnv":
+    def unwrapped(self) -> "Environment":
         return self
 
 
-class Wrapper(JaxEnv[State], Generic[State]):
+class Wrapper(Environment[State], Generic[State]):
     """Wraps the environment to allow modular transformations.
     Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
     """
 
-    def __init__(self, env: JaxEnv):
+    def __init__(self, env: Environment):
         super().__init__()
         self._env = env
 
@@ -107,7 +107,7 @@ class Wrapper(JaxEnv[State], Generic[State]):
         return getattr(self._env, name)
 
     @property
-    def unwrapped(self) -> JaxEnv:
+    def unwrapped(self) -> Environment:
         """Returns the wrapped env."""
         return self._env.unwrapped
 
@@ -147,7 +147,7 @@ class Wrapper(JaxEnv[State], Generic[State]):
         return self._env.action_spec()
 
 
-def make_environment_spec(jax_env: JaxEnv) -> specs.EnvironmentSpec:
+def make_environment_spec(jax_env: Environment) -> specs.EnvironmentSpec:
     """Returns an `EnvironmentSpec` describing values used by an environment."""
     return specs.EnvironmentSpec(
         observations=jax_env.observation_spec(),

@@ -5,7 +5,7 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import random
 
-from jumanji import JaxEnv, specs
+from jumanji import Environment, specs
 from jumanji.tsp.specs import ObservationSpec
 from jumanji.tsp.types import Observation, State
 from jumanji.tsp.utils import (
@@ -16,7 +16,7 @@ from jumanji.tsp.utils import (
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 
-class TSP(JaxEnv[State]):
+class TSP(Environment[State]):
     """
     Traveling Salesman Problem (TSP) environment as described in [1].
     - observation: Observation

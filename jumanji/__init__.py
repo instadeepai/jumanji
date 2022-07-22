@@ -1,1 +1,1 @@
-from jumanji.env import JaxEnv
+from jumanji.env import Environment

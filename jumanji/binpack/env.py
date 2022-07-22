@@ -10,11 +10,11 @@ from jumanji.binpack.generator import Generator
 from jumanji.binpack.reward import sparse_linear_reward
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
 from jumanji.binpack.types import EMS, Item, Observation, RewardFn, State
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 
-class BinPack(JaxEnv[State]):
+class BinPack(Environment[State]):
     """
     RL Environment for the problem of bin packing. We use the Empty Maximal Space (EMS) formulation
     of this problem. An EMS is a 3D-rectangle space that lives inside the container and has the

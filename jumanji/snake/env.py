@@ -5,13 +5,13 @@ from chex import Array, PRNGKey
 from jax import lax, random
 
 from jumanji import specs
-from jumanji.env import JaxEnv
+from jumanji.env import Environment
 from jumanji.snake import utils as snake_utils
 from jumanji.snake.types import Position, State
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 
-class Snake(JaxEnv[State]):
+class Snake(Environment[State]):
     """A JAX implementation of the 'Snake' game.
 
     - observation: jax array (float) of shape (n_rows, n_cols, 5):
