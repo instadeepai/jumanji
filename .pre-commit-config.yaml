@@ -53,3 +53,12 @@ repos:
       - id: commitlint
         stages: [ commit-msg ]
         additional_dependencies: [ '@commitlint/config-conventional' ]
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.3.0
+    hooks:
+      - id: insert-license
+        files: .*py$
+        args:
+          - --license-filepath=license_header.txt
+          - --comment-style=#
