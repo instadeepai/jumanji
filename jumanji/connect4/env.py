@@ -165,7 +165,7 @@ class Connect4(Environment[State]):
         return ObservationSpec(
             board_obs=specs.Array(shape=(6, 7), dtype=jnp.int8, name="board"),
             action_mask=specs.BoundedArray(
-                shape=(6, 7),
+                shape=(7,),
                 dtype=jnp.bool_,
                 minimum=0,
                 maximum=1,

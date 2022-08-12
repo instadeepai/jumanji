@@ -1,4 +1,0 @@
-cls: DeepMindEnvBenchmarkLoop
-wrappers: [JumanjiEnvironmentToDeepMindEnv]
-n_steps: null
-batch_size: null

@@ -22,10 +22,9 @@ from jax import random
 from jumanji.connect4.constants import BOARD_HEIGHT, BOARD_WIDTH
 from jumanji.connect4.env import Connect4, compute_reward
 from jumanji.connect4.types import State
-from jumanji.testing.fakes import FakeAgent
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-from validation import EnvironmentLoop
 
 
 @pytest.fixture
@@ -91,16 +90,9 @@ def test_connect4__step(connect4_env: Connect4, empty_board: Array) -> None:
     assert new_state.board[BOARD_HEIGHT - 2, action] == -1
 
 
-def test_connect4__does_not_smoke(
-    connect4_env: Connect4, capsys: pytest.CaptureFixture
-) -> None:
-    """Test that we can run the jitted EnvironmentLoop without any errors."""
-    fake_agent = FakeAgent(connect4_env.action_spec())
-    jax_environment_loop = EnvironmentLoop(
-        connect4_env, fake_agent, n_steps=1, batch_size=2
-    )
-    jax_environment_loop.run(num_steps=3)
-    assert capsys.readouterr().out
+def test_connect4__does_not_smoke(connect4_env: Connect4) -> None:
+    """Test that we can run an episode without any errors."""
+    check_env_does_not_smoke(connect4_env)
 
 
 @pytest.mark.parametrize(

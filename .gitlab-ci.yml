@@ -36,7 +36,7 @@ test:
     - pip install .[dev]
     - /usr/local/bin/Xdummy :1 &
     - export DISPLAY=':1'
-    - pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation
+    - pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
     - coverage html --directory=coverage_html_report
     - coverage report --fail-under=1
   coverage: '/TOTAL.+ (\d+\.?\d+)%/'

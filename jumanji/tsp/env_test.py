@@ -18,12 +18,11 @@ import pytest
 from jax import numpy as jnp
 from jax import random
 
-from jumanji.testing.fakes import FakeAgent
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.tsp.env import TSP
 from jumanji.tsp.types import State
 from jumanji.types import StepType, TimeStep
-from validation import EnvironmentLoop
 
 
 @pytest.fixture
@@ -89,11 +88,8 @@ def test_tsp__step(tsp_env: TSP) -> None:
 
 
 def test_tsp__does_not_smoke(tsp_env: TSP, capsys: pytest.CaptureFixture) -> None:
-    """Tests that we can run the jitted EnvironmentLoop without any errors."""
-    fake_agent = FakeAgent(tsp_env.action_spec())
-    jax_environment_loop = EnvironmentLoop(tsp_env, fake_agent, n_steps=1, batch_size=2)
-    jax_environment_loop.run(num_steps=3)
-    assert capsys.readouterr().out
+    """Test that we can run an episode without any errors."""
+    check_env_does_not_smoke(tsp_env)
 
 
 def test_tsp__trajectory_action(tsp_env: TSP) -> None:

@@ -57,6 +57,7 @@ class DummyInstanceGenerator(InstanceGenerator):
                 container,
             ),
             ems_mask=jnp.array([True], bool),
+            # TODO: batch items
             items=jax.tree_map(
                 functools.partial(jnp.expand_dims, axis=-1),
                 item_from_space(container),

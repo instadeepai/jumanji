@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import partial
-from typing import TYPE_CHECKING, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Tuple
+
+import chex
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -22,16 +23,14 @@ else:
 
 import brax.envs
 import dm_env
-import jax
 import jax.numpy as jnp
-from chex import Array, PRNGKey
+from chex import PRNGKey
 from jax import lax, random
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
-from validation.agents import Agent, TrainingState, Transition
 
 
 @dataclass
@@ -48,19 +47,20 @@ class FakeEnvironment(Environment[FakeState]):
     def __init__(
         self,
         time_limit: int = 10,
-        observation_shape: Tuple = (),
-        num_action_values: int = 1,
+        observation_shape: chex.Shape = (),
+        action_shape: chex.Shape = (2,),
     ):
         """Initialize a fake environment.
 
         Args:
             time_limit: horizon of an episode.
             observation_shape: shape of the dummy observation.
-            num_action_values: number of values in the bounded discrete action space.
+            action_shape: shape of bounded continuous action space.
         """
         self.time_limit = time_limit
         self.observation_shape = observation_shape
-        self.num_action_values = num_action_values
+        self.action_shape = action_shape
+        self._example_action = self.action_spec().generate_value()
 
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
@@ -73,15 +73,19 @@ class FakeEnvironment(Environment[FakeState]):
             shape=self.observation_shape, dtype=jnp.float_, name="observation"
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
+    def action_spec(self) -> specs.BoundedArray:
         """Returns the action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.
         """
 
-        return specs.DiscreteArray(
-            self.num_action_values, dtype=jnp.int_, name="action"
+        return specs.BoundedArray(
+            shape=self.action_shape,
+            minimum=jnp.zeros(self.action_shape, float),
+            maximum=jnp.ones(self.action_shape, float),
+            dtype=float,
+            name="action",
         )
 
     def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
@@ -115,6 +119,7 @@ class FakeEnvironment(Environment[FakeState]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
             extra: metrics, default to None.
         """
+        chex.assert_equal_shape((action, self._example_action))
         key, _ = random.split(state.key)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
@@ -284,107 +289,3 @@ def make_fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
 def make_fake_brax_env(time_limit: int = 10) -> brax.envs.Env:
     """Creates a trivial Brax Env meant for unit testing."""
     return brax.envs.create("fast", auto_reset=False, episode_length=time_limit)
-
-
-class FakeAgent(Agent):
-    """
-    A fake agent that inherits from Agent, for testing purposes.
-    """
-
-    def __init__(self, action_spec: Optional[specs.BoundedArray] = None) -> None:
-        self._action_spec = action_spec or specs.DiscreteArray(1, name="action")
-
-    def init_training_state(self, key: PRNGKey) -> TrainingState:
-        """Returns an initialized learning state."""
-        training_state = TrainingState()
-        return training_state
-
-    def select_action(
-        self,
-        training_state: TrainingState,
-        observation: Array,
-        key: PRNGKey,
-        extra: Extra = None,
-    ) -> Action:
-        """Returns an action, here returns 0."""
-        action = self._action_spec.generate_value()
-        return action
-
-    def sgd_step(
-        self, training_state: TrainingState, batch_traj: Transition
-    ) -> Tuple[TrainingState, Dict]:
-        """Simulates a sgd step without actually computing any loss."""
-        metrics: Dict = {}
-        return training_state, metrics
-
-
-def make_fake_agent() -> FakeAgent:
-    """Creates a fake agent."""
-    return FakeAgent()
-
-
-def fake_transition(env_spec: specs.EnvironmentSpec) -> Transition:
-    """Returns a fake transition in the environment. Shape: ()."""
-    return Transition(
-        observation=env_spec.observations.generate_value(),
-        action=env_spec.actions.generate_value(),
-        reward=env_spec.rewards.generate_value(),
-        discount=env_spec.discounts.generate_value(),
-        next_observation=env_spec.observations.generate_value(),
-        extra=None,
-    )
-
-
-def fake_traj(env_spec: specs.EnvironmentSpec, n_steps: int = 1) -> Transition:
-    """Returns a fake trajectory (sequence of transitions) in the environment. Shape: (n_steps,)."""
-    traj: Transition = jax.tree_map(
-        partial(jnp.tile, reps=(n_steps,)),
-        fake_transition(env_spec),
-    )
-    return traj
-
-
-def batch_fake_traj(
-    env_spec: specs.EnvironmentSpec, n_steps: int = 1, batch_size: int = 1
-) -> Transition:
-    """Returns a fake batch of trajectories in the environment. Shape: (batch_size,n_steps)."""
-    batch_traj: Transition = jax.tree_map(
-        partial(
-            jnp.tile,
-            reps=(
-                batch_size,
-                n_steps,
-            ),
-        ),
-        fake_transition(env_spec),
-    )
-    return batch_traj
-
-
-class FakeMultiAgent(FakeAgent):
-    """
-    An agent to select random correctly sized actions for the multi agent case.
-    For testing purposes.
-    """
-
-    def __init__(
-        self, action_spec: Optional[specs.BoundedArray] = None, num_agents: int = 1
-    ) -> None:
-        super().__init__(action_spec)
-        self._num_agents = num_agents
-
-    def select_action(
-        self,
-        training_state: TrainingState,
-        observation: Array,
-        key: PRNGKey,
-        extra: Extra = None,
-    ) -> jnp.ndarray:
-        """Randomly selects actions in the shape (num_agents,)."""
-        action = random.randint(
-            key,
-            (self._num_agents,),
-            self._action_spec.minimum,
-            self._action_spec.maximum,
-        )
-        return action
