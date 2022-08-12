@@ -20,7 +20,7 @@ import jax.numpy as jnp
 from chex import PRNGKey
 
 from jumanji import specs
-from jumanji.binpack.generator import Generator
+from jumanji.binpack.generator import InstanceGenerator
 from jumanji.binpack.reward import sparse_linear_reward
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
 from jumanji.binpack.types import EMS, Item, Observation, RewardFn, State
@@ -60,8 +60,8 @@ class BinPack(Environment[State]):
         if no other actions are possible (no items fit in any ems).
 
     ```python
-    generator = SomeGenerator(...)
-    env = BinPack(Generator, obs_num_ems=20)
+    instance_generator = SimpleInstanceGenerator(max_num_ems=40)
+    env = BinPack(instance_generator, obs_num_ems=20)
     key = jax.random.key(0)
     state, timestep, _ = jax.jit(env.reset)(key)
     env.render(state)
@@ -73,16 +73,17 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        generator: Generator,
+        instance_generator: InstanceGenerator,
         obs_num_ems: int,
         reward_fn: RewardFn = sparse_linear_reward,
     ):
         """Instantiate a BinPack environment.
 
         Args:
-            generator: Generator object responsible for resetting the environment. E.g. can be a
-                random generator to learn generalisation or one that outputs the same instance to do
-                active search on that instance. It must inherit from the Generator abstract class.
+            instance_generator: InstanceGenerator responsible for resetting the environment. E.g.
+                can be a random generator to learn generalisation or one that outputs the same
+                instance to do active search on that instance. It must inherit from the
+                InstanceGenerator abstract class.
             obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
                 `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
                 in the observation.
@@ -91,7 +92,7 @@ class BinPack(Environment[State]):
                 sparse reward is given at the end of the episode, corresponding to the negative
                 of the proportion of remaining space inside the container.
         """
-        self.generator = generator
+        self.instance_generator = instance_generator
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
 
@@ -99,15 +100,15 @@ class BinPack(Environment[State]):
         return "\n".join(
             [
                 "BinPack environment:",
-                f" - generator: {self.generator}",
-                f" - max_num_items: {self.generator.max_num_items}",
+                f" - instance_generator: {self.instance_generator}",
+                f" - max_num_items: {self.instance_generator.max_num_items}",
                 f" - obs_num_ems: {self.obs_num_ems}",
-                f" - max_num_ems: {self.generator.max_num_ems}",
+                f" - max_num_ems: {self.instance_generator.max_num_ems}",
             ]
         )
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation], Extra]:
-        """Resets the environment by calling the generator for a new instance.
+        """Resets the environment by calling the instance generator for a new instance.
 
         Args:
             key: random key used to reset the environment.
@@ -119,7 +120,7 @@ class BinPack(Environment[State]):
             extra: None.
 
         """
-        state = self.generator(key)
+        state = self.instance_generator(key)
 
         # Compute timestep
         # TODO: select subset of EMS to return in the observation
@@ -133,6 +134,7 @@ class BinPack(Environment[State]):
             state.items_mask,
             state.items_placed,
         )
+        state.action_mask = action_mask
         observation = Observation(
             ems=obs_ems,
             ems_mask=obs_ems_mask,
@@ -217,31 +219,33 @@ class BinPack(Environment[State]):
             - items_placed_spec: BoundedArray (bool) of shape (max_num_items,).
             - action_mask_spec: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
+        obs_num_ems = self.obs_num_ems
+        max_num_items = self.instance_generator.max_num_items
+
         ems_spec_dict = {
-            coord_name
-            + "_spec": specs.Array((self.obs_num_ems,), jnp.float32, coord_name)
+            coord_name + "_spec": specs.Array((obs_num_ems,), jnp.float32, coord_name)
             for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
         }
         ems_spec = EMSSpec(**ems_spec_dict)
         ems_mask_spec = specs.BoundedArray(
-            (self.obs_num_ems,), jnp.bool_, False, True, "ems_mask"
+            (obs_num_ems,), jnp.bool_, False, True, "ems_mask"
         )
         items_spec_dict = {
             axis_len
             + "_spec": specs.BoundedArray(
-                (self.generator.max_num_items,), jnp.float32, 0.0, jnp.inf, axis_len
+                (max_num_items,), jnp.float32, 0.0, jnp.inf, axis_len
             )
             for axis_len in ["x_len", "y_len", "z_len"]
         }
         items_spec = ItemSpec(**items_spec_dict)
         items_mask_spec = specs.BoundedArray(
-            (self.generator.max_num_items,), jnp.bool_, False, True, "items_mask"
+            (max_num_items,), jnp.bool_, False, True, "items_mask"
         )
         items_placed_spec = specs.BoundedArray(
-            (self.generator.max_num_items,), jnp.bool_, False, True, "items_placed"
+            (max_num_items,), jnp.bool_, False, True, "items_placed"
         )
         action_mask_spec = specs.BoundedArray(
-            (self.obs_num_ems, self.generator.max_num_items),
+            (obs_num_ems, max_num_items),
             jnp.bool_,
             False,
             True,
@@ -268,7 +272,7 @@ class BinPack(Environment[State]):
             shape=(2,),
             dtype=jnp.int32,
             minimum=(0, 0),
-            maximum=(self.obs_num_ems - 1, self.generator.max_num_items - 1),
+            maximum=(self.obs_num_ems - 1, self.instance_generator.max_num_items - 1),
             name="action",
         )
 

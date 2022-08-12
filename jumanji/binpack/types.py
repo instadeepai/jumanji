@@ -29,16 +29,47 @@ Container = Space
 EMS = Space
 
 
+def empty_ems() -> EMS:
+    """Returns an empty EMS located at (0, 0, 0)."""
+    return EMS(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0).astype(jnp.float_)
+
+
 class Item(NamedTuple):
     x_len: chex.Numeric
     y_len: chex.Numeric
     z_len: chex.Numeric
 
 
+def item_from_space(space: Space) -> Item:
+    """Convert a space to an item whose length on each dimension is the length of the space."""
+    return Item(
+        x_len=space.x2 - space.x1,
+        y_len=space.y2 - space.y1,
+        z_len=space.z2 - space.z1,
+    )
+
+
 class Location(NamedTuple):
     x: chex.Numeric
     y: chex.Numeric
     z: chex.Numeric
+
+
+def location_from_space(space: Space) -> Location:
+    """Returns the location of a space, i.e. the coordinates of its bottom left corner.
+
+    Args:
+        space: space object from which to get the location.
+
+    Returns:
+        location of the space object (x1, y1, z1).
+
+    """
+    return Location(
+        x=space.x1,
+        y=space.y1,
+        z=space.z1,
+    )
 
 
 @dataclass
