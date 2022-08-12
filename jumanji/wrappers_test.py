@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Tuple, TypeVar
 
 import dm_env.specs
 import jax
@@ -36,11 +36,14 @@ from jumanji.testing.fakes import (
 from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import Extra, StepType, TimeStep
 from jumanji.wrappers import (
+    AutoResetWrapper,
     BraxEnvToJumanjiEnvironment,
     JumanjiEnvironmentToDeepMindEnv,
     MultiToSingleEnvironment,
     VmapWrapper,
 )
+
+State = TypeVar("State")
 
 
 class TestJumanjiEnvironmentToDeepMindEnv:
@@ -291,3 +294,85 @@ class TestBraxEnvToJumanjiEnvironment:
     ) -> None:
         """Validates unwrapped property of the wrapped environment."""
         assert isinstance(jumanji_environment_from_brax.unwrapped, BraxEnv)
+
+
+class TestAutoResetWrapper:
+
+    time_limit = 5
+
+    @pytest.fixture
+    def fake_environment(self) -> FakeEnvironment:
+        return make_fake_environment(time_limit=self.time_limit)
+
+    @pytest.fixture
+    def fake_auto_reset_environment(
+        self, fake_environment: Environment
+    ) -> AutoResetWrapper:
+        return AutoResetWrapper(fake_environment)
+
+    @pytest.fixture
+    def key(self) -> random.PRNGKey:
+        return random.PRNGKey(0)
+
+    @pytest.fixture
+    def fake_state_and_timestep(
+        self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
+    ) -> Tuple[State, TimeStep]:
+        state, timestep, _ = jax.jit(fake_auto_reset_environment.reset)(key)
+        return state, timestep
+
+    def test_auto_reset_wrapper__init(self, fake_environment: Environment) -> None:
+        """Validates initialization of the AutoResetWrapper."""
+        auto_reset_env = AutoResetWrapper(fake_environment)
+        assert isinstance(auto_reset_env, Environment)
+
+    def test_auto_reset_wrapper__auto_reset(
+        self,
+        fake_auto_reset_environment: AutoResetWrapper,
+        fake_state_and_timestep: Tuple[State, TimeStep],
+    ) -> None:
+        """Validates the auto_reset function of the AutoResetWrapper."""
+        state, timestep = fake_state_and_timestep
+        _, reset_timestep = jax.jit(fake_auto_reset_environment.auto_reset)(
+            state, timestep
+        )
+        assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+
+    def test_auto_reset_wrapper__step_no_reset(
+        self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
+    ) -> None:
+        """Validates that step function of the AutoResetWrapper does not do an
+        auto-reset when the terminal state is not reached"""
+        state, first_timestep, _ = fake_auto_reset_environment.reset(
+            key
+        )  # type: Tuple[FakeState, TimeStep, Extra]
+
+        # Generate an action
+        action = fake_auto_reset_environment.action_spec().generate_value()
+
+        state, timestep, _ = jax.jit(fake_auto_reset_environment.step)(
+            state, action
+        )  # type: Tuple[FakeState, TimeStep, Extra]
+
+        assert timestep.step_type == StepType.MID
+        assert_trees_are_different(timestep, first_timestep)
+        assert_trees_all_equal(timestep.reward, 0)
+
+    def test_auto_reset_wrapper__step_reset(
+        self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
+    ) -> None:
+        """Validates that the auto-reset is done correctly by the step function
+        of the AutoResetWrapper when the terminal timestep is reached."""
+        state, first_timestep, _extra = fake_auto_reset_environment.reset(
+            key
+        )  # type: Tuple[FakeState, TimeStep, Extra]
+
+        # Loop across time_limit so auto-reset occurs
+        for _ in range(self.time_limit):
+            action = fake_auto_reset_environment.action_spec().generate_value()
+            state, timestep, _extr = jax.jit(fake_auto_reset_environment.step)(  # type: ignore
+                state, action
+            )  # type: Tuple[FakeState, TimeStep, Extra]
+
+        assert timestep.step_type == first_timestep.step_type == StepType.FIRST
+        assert_trees_all_equal(timestep.observation, first_timestep.observation)

@@ -320,3 +320,39 @@ class BraxEnvToJumanjiEnvironment(Environment):
     @property
     def unwrapped(self) -> BraxEnv:
         return self._env
+
+
+class AutoResetWrapper(Wrapper):
+    """Automatically resets environments that are done. Once the terminal state is reached,
+    the state, observation, and step_type are reset. The observation and step_type of the
+    terminal TimeStep is reset to the reset observation and StepType.FIRST, respectively.
+    The reward, discount, and extra retrieved from the transition to the terminal state."""
+
+    def auto_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
+        """Reset the state and overwrite `timestep.observation` with the reset observation
+        if the episode has terminated.
+        """
+        state, reset_timestep, extra = self._env.reset(state.key)  # type: ignore
+
+        # Replace observation with reset observation.
+        timestep = timestep.replace(  # type: ignore
+            observation=reset_timestep.observation,
+            step_type=reset_timestep.step_type,
+        )
+
+        return state, timestep
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+        """Step the environment, with automatic resetting if the episode terminates."""
+        state, timestep, extra = self._env.step(state, action)
+
+        # Overwrite the state and timestep appropriately if the episode terminates.
+        state, timestep = jax.lax.cond(
+            timestep.last(),
+            self.auto_reset,
+            lambda *x: x,
+            state,
+            timestep,
+        )
+
+        return state, timestep, extra

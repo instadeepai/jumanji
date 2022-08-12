@@ -311,7 +311,7 @@ class BoundedArray(Array):
 
 class DiscreteArray(BoundedArray):
     """Represents a discrete, scalar, zero-based space. This is adapted from
-    dme_env.specs.BoundedArray to suit Jax environments.
+    dm_env.specs.BoundedArray to suit Jax environments.
 
     This is a special case of the parent `BoundedArray` class. It represents a 0-dimensional jax
     array  containing a single integer value between 0 and num_values - 1 (inclusive), and exposes
