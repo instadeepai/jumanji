@@ -31,6 +31,8 @@ import chex
 import dm_env.specs
 import jax.numpy as jnp
 
+from jumanji.types import get_valid_dtype
+
 T = TypeVar("T")
 
 
@@ -105,7 +107,7 @@ class Array(Spec[chex.Array]):
         """
         super().__init__(name)
         self._shape = tuple(int(dim) for dim in shape)
-        self._dtype = jnp.dtype(dtype)
+        self._dtype = get_valid_dtype(dtype)
 
     def __repr__(self) -> str:
         return f"Array(shape={repr(self.shape)}, dtype={repr(self.dtype)}, name={repr(self.name)})"

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Union
 
 import dm_env
 import jax.numpy as jnp
@@ -20,6 +21,7 @@ from jax import lax
 from jumanji.types import (
     StepType,
     TimeStep,
+    get_valid_dtype,
     restart,
     termination,
     transition,
@@ -214,3 +216,18 @@ def test_step_type__helpers(
     assert (time_step.step_type == 0) == is_first
     assert (time_step.step_type == 1) == is_mid
     assert (time_step.step_type == 2) == is_last
+
+
+@pytest.mark.parametrize(
+    "dtype, array_dtype",
+    [
+        (jnp.dtype(float), jnp.array((), float).dtype),
+        (jnp.dtype(int), jnp.array((), int).dtype),
+    ],
+)
+def test_get_valid_dtype(dtype: Union[jnp.dtype, type], array_dtype: jnp.dtype) -> None:
+    """Test that get_valid_dtype converts dtype(float64) to dtype(float32) when 64 bit is not
+    enabled (by default). Does the same for int types.
+    """
+    assert array_dtype != dtype
+    assert array_dtype == get_valid_dtype(dtype)

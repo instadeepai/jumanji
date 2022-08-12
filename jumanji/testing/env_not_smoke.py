@@ -97,9 +97,7 @@ def check_env_does_not_smoke(
         action = select_action(subkey, timestep.observation)
 
         state, timestep, extra = step_fn(state, action)
-        # TODO: uncomment below lines after the 32 bit/64 bit issue
-        #  (https://gitlab.com/instadeep/jumanji/-/issues/84) is resolved.
-        # env.action_spec().validate(action)
-        # env.observation_spec().validate(timestep.observation)
+        env.action_spec().validate(action)
+        env.observation_spec().validate(timestep.observation)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))

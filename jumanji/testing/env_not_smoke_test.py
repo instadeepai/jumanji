@@ -59,6 +59,5 @@ def test_random_select_action(fake_env: FakeEnvironment) -> None:
     env_state, timestep, extra = fake_env.reset(key1)
     action_1 = select_action(key2, timestep.observation)
     action_2 = select_action(key3, timestep.observation)
-    # TODO: uncomment after 64/32 bit issue is fixed
-    # fake_env.action_spec().validate(action_1)
-    assert not (action_1 == action_2).all()
+    fake_env.action_spec().validate(action_1)
+    assert not jnp.all(action_1 == action_2)

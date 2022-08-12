@@ -41,8 +41,8 @@ class Connect4(Environment[State]):
             - 1 if it contains a token by the current player,
             - 0 if it is free,
             - (-1) if it contains a token by the other player.
-        - action_mask: jax array (int8)
-            valid columns (actions) are identified with 1, invalid ones with 0.
+        - action_mask: jax array (bool)
+            valid columns (actions) are identified with `True`, invalid ones with `False`.
 
     - reward: jax array (float) of shape (2,):
         1 for the winning player, 0 for a draw, -1 for the loosing player.

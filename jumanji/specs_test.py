@@ -396,7 +396,7 @@ class TestDiscreteArray:
         "arg_name, new_value",
         [
             ("num_values", 4),
-            ("dtype", jnp.int64),
+            ("dtype", jnp.int16),
             ("name", "something_else"),
         ],
     )
