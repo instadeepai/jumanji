@@ -9,7 +9,7 @@ Material: [Jumanji Presentation (31/03/2022)](https://docs.google.com/presentati
 List of current Jax environments:
 1. Game of Snake
 2. Swap
-3. PCB-Grid
+3. Routing
 4. Connect Four
 5. Brax Environments
 6. Travelling Salesman Problem (TSP)

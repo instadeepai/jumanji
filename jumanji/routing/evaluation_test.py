@@ -16,23 +16,23 @@ import jax.numpy as jnp
 import jax.random as random
 import pytest
 
-from jumanji.pcb_grid.env import PcbGridEnv
-from jumanji.pcb_grid.evaluation import (
+from jumanji.routing.env import Routing
+from jumanji.routing.evaluation import (
     is_board_complete,
     is_episode_finished,
     proportion_connected,
     wire_length,
 )
-from jumanji.pcb_grid.types import State
+from jumanji.routing.types import State
 
 
 class TestEvaluation:
     @pytest.fixture(scope="module")
-    def env(self) -> PcbGridEnv:
-        """Creates the PCB grid environment."""
-        return PcbGridEnv(8, 8, 2)
+    def env(self) -> Routing:
+        """Creates the Routing environment."""
+        return Routing(8, 8, 2)
 
-    def test_evaluation__is_board_complete(self, env: PcbGridEnv) -> None:
+    def test_evaluation__is_board_complete(self, env: Routing) -> None:
         """Tests evaluation method is_board_complete correctly returns True when agents have
         reached desired positions."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
@@ -53,7 +53,7 @@ class TestEvaluation:
         state, timestep, _ = env.step(state, jnp.array([0, 1]))
         assert is_board_complete(env, state.grid)
 
-    def test_evaluation__proportion_connected(self, env: PcbGridEnv) -> None:
+    def test_evaluation__proportion_connected(self, env: Routing) -> None:
         """Tests that proportion_connected returns the correct value when different numbers of
         agents are connected."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
@@ -72,7 +72,7 @@ class TestEvaluation:
         state, timestep, _ = env.step(state, jnp.array([0, 1]))
         assert proportion_connected(env, state.grid) == 1.0
 
-    def test_evaluation__wire_length(self, env: PcbGridEnv) -> None:
+    def test_evaluation__wire_length(self, env: Routing) -> None:
         """Tests that `wire_length` accurately counts the number of wires on the board."""
         grid = jnp.array([[3, 4, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [6, 0, 7, 5]])
         state = State(
@@ -87,7 +87,7 @@ class TestEvaluation:
         state, timestep, _ = env.step(state, jnp.array([0, 1]))
         assert wire_length(env, state.grid) == 4
 
-    def test_evaluation__is_episode_finished(self, env: PcbGridEnv) -> None:
+    def test_evaluation__is_episode_finished(self, env: Routing) -> None:
         """Tests evaluation method is_board_complete correctly returns True when agents have
         reached desired positions."""
         state, timestep, _ = env.reset(random.PRNGKey(0))

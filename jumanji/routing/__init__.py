@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.pcb_grid.env import PcbGridEnv
-from jumanji.pcb_grid.types import State
+from jumanji.routing.env import Routing
+from jumanji.routing.types import State

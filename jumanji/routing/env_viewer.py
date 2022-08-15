@@ -20,12 +20,12 @@ import numpy as np
 import pygame
 from chex import Array
 
-from jumanji.pcb_grid.constants import HEAD, TARGET
+from jumanji.routing.constants import HEAD, TARGET
 
 
-class PcbGridViewer:
+class RoutingViewer:
     """
-    Viewer class for the PCB grid environment.
+    Viewer class for the Routing environment.
     """
 
     def __init__(
@@ -38,7 +38,7 @@ class PcbGridViewer:
         grid_unit: int = 20,
     ) -> None:
         """
-        Create a PcbGridViewer instance for rendering the PcbGridEnv.
+        Create a RoutingViewer instance for rendering the Routing.
 
         Args:
             num_agents: Number of agents in the environment.
@@ -76,7 +76,7 @@ class PcbGridViewer:
         Render the environment.
 
         Args:
-            grid: the grid representing the PcbGridEnv to render.
+            grid: the grid representing the Routing to render.
             mode: Render mode. Options: ['human', 'fast'].
             save_img: optional name to save frame as.
 

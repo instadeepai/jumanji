@@ -86,7 +86,7 @@ nav:
       - environments:
           - snake: api/environments/snake.md
           - swap: api/environments/swap.md
-          - pcb_grid: api/environments/pcb_grid.md
+          - routing: api/environments/routing.md
           - connect4: api/environments/connect4.md
           - knapsack: api/environments/knapsack.md
           - tsp: api/environments/tsp.md

@@ -19,24 +19,24 @@ import jax.random as random
 import pytest
 from pyvirtualdisplay import Display
 
-from jumanji.pcb_grid.env import PcbGridEnv
-from jumanji.pcb_grid.env_viewer import PcbGridViewer
+from jumanji.routing.env import Routing
+from jumanji.routing.env_viewer import RoutingViewer
 
 
 class TestViewer:
     width = height = 500
 
     @pytest.fixture(scope="module")
-    def env(self) -> PcbGridEnv:
-        """Creates the PCB grid environment."""
-        env = PcbGridEnv(8, 8, 2)
+    def env(self) -> Routing:
+        """Creates the Routing environment."""
+        env = Routing(8, 8, 2)
 
         return env
 
     @pytest.fixture(scope="module")
-    def viewer(self, env: PcbGridEnv) -> PcbGridViewer:
-        """Creates a viewer for the PCB grid environment."""
-        return PcbGridViewer(
+    def viewer(self, env: Routing) -> RoutingViewer:
+        """Creates a viewer for the Routing environment."""
+        return RoutingViewer(
             env.num_agents, env.rows, env.cols, self.width, self.height
         )
 
@@ -48,9 +48,9 @@ class TestViewer:
         display.stop()
 
     def test_render(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
+        self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
-        """Tests that the PcbGridViewer.render() method only raises a `ValueError`
+        """Tests that the RoutingViewer.render() method only raises a `ValueError`
         when given unsupported render modes.
         """
         state, timestep, _ = env.reset(random.PRNGKey(0))
@@ -69,7 +69,7 @@ class TestViewer:
         viewer.render(timestep.observation[1], "human")
 
     def test__frame_shape(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
+        self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
         """Tests that the returned pixel array is of the correct shape."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
@@ -79,7 +79,7 @@ class TestViewer:
         assert frame.shape == (viewer.width, viewer.height, 3)
 
     def test__save_frame(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
+        self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
         """Tests that saving an image functions correctly."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
@@ -87,7 +87,7 @@ class TestViewer:
         assert os.path.isfile("./saved_image.png")
         os.remove("./saved_image.png")
 
-    def test_maybe_sleep(self, viewer: PcbGridViewer) -> None:
+    def test_maybe_sleep(self, viewer: RoutingViewer) -> None:
         """Tests that maybe_sleep throws a 'ValueError' when an unsupported mode is passed"""
         viewer.maybe_sleep("human")
         viewer.maybe_sleep("fast")
@@ -96,9 +96,9 @@ class TestViewer:
             viewer.maybe_sleep("abcdefg")
 
     def test__draw_shape(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
+        self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
-        """Tests that a `TypeError` is thrown when PcbGridViewer._draw_shape() is called with
+        """Tests that a `TypeError` is thrown when RoutingViewer._draw_shape() is called with
         incorrect arguments.
         """
         viewer._draw_shape((1, 2, 3, 4), 1)
@@ -113,7 +113,7 @@ class TestViewer:
             viewer._draw_shape((1, 2, 3, 4, 6), 1)  # type: ignore
 
     def test__close(
-        self, display: Display, env: PcbGridEnv, viewer: PcbGridViewer
+        self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
         """Test closing the viewer does not throw an error."""
         viewer.close()

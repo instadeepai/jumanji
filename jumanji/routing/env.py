@@ -20,17 +20,17 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import random
 
-import jumanji.pcb_grid.env_viewer as viewer
+import jumanji.routing.env_viewer as viewer
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.pcb_grid.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
-from jumanji.pcb_grid.types import Position, State
+from jumanji.routing.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
+from jumanji.routing.types import Position, State
 from jumanji.types import Extra, TimeStep, restart, termination, transition, truncation
 
 
-class PcbGridEnv(Environment[State]):
+class Routing(Environment[State]):
     """
-    A JAX implementation of the 'PCB Grid' environment. Currently hard mode is not supported.
+    A JAX implementation of the 'Routing' environment. Currently hard mode is not supported.
 
     - observation: jax array (int) of shape (num_agents, rows, cols):
         - each 2d array (row, col) along axis 0 is the agent's local observation.
@@ -67,9 +67,9 @@ class PcbGridEnv(Environment[State]):
         reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
-        renderer: Optional[viewer.PcbGridViewer] = None,
+        renderer: Optional[viewer.RoutingViewer] = None,
     ):
-        """Create the PCB Grid Environment.
+        """Create the Routing Environment.
 
         Args:
             rows : number of rows in the grid.
@@ -88,7 +88,7 @@ class PcbGridEnv(Environment[State]):
             reward_for_noop: reward given if an agent performs a no-op (should be a small negative)
             step_limit : the number of steps allowed before an episode terminates.
             reward_for_terminal_step : the reward given if step_limit is reached.
-            renderer: an optional PcbGridViewer instance to render the environment, if left as None
+            renderer: an optional RoutingViewer instance to render the environment, if left as None
                 a default viewer is created when render is called.
         """
 
@@ -113,8 +113,8 @@ class PcbGridEnv(Environment[State]):
 
         if renderer:
             assert isinstance(
-                renderer, viewer.PcbGridViewer
-            ), f"Expected a renderer of type 'PcbGridViewer', got {renderer} of type {type(renderer)}."
+                renderer, viewer.RoutingViewer
+            ), f"Expected a renderer of type 'RoutingViewer', got {renderer} of type {type(renderer)}."
         self.viewer = renderer
 
     def observation_spec(self) -> specs.BoundedArray:
@@ -344,7 +344,7 @@ class PcbGridEnv(Environment[State]):
         Return:
             Array of rgb pixel values in the shape width x height x rgb"""
         if self.viewer is None:
-            self.viewer = viewer.PcbGridViewer(
+            self.viewer = viewer.RoutingViewer(
                 self.num_agents,
                 self.rows,
                 self.cols,
@@ -602,7 +602,9 @@ class PcbGridEnv(Environment[State]):
         return new_grid
 
     def __repr__(self) -> str:
-        return f"<PCBGridEnv(rows={self.rows}, cols={self.cols}, agents={self.num_agents})>"
+        return (
+            f"<Routing(rows={self.rows}, cols={self.cols}, agents={self.num_agents})>"
+        )
 
 
 def move(position: Position, action: int) -> Position:
