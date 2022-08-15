@@ -1,110 +1,109 @@
-# Jumanji
+<p align="center">
+    <a href="" rel="nofollow">
+        <img src="docs/img/jumanji_logo.png" />
+    </a>
+</p>
+<div align="center">
+<a rel="nofollow">
+    <img src="docs/img/python-badge.svg" alt="Python" />
+</a>
+<a rel="nofollow">
+    <img src="docs/img/pypi-badge.svg" alt="Pypi" />
+</a>
+<a rel="nofollow">
+    <img src="docs/img/license-badge.svg" alt="License" />
+</a>
+<a rel="nofollow">
+    <img src="docs/img/cov-badge.svg" alt="Coverage" />
+</a>
+<a rel="nofollow">
+    <img src="docs/img/mypy-badge.svg" alt="Styling" />
+</a>
+<a rel="nofollow">
+    <img src="docs/img/cov-style.svg" alt="Styling" />
+</a>
+</div>
 
-Jumanji is InstaDeep's suite of Reinforcement Learning environments. Jumanji's goal is to gather every RL
-environment used within the company to create synergy in a centralized library. Jumanji is still
-in an alpha state for which there is no versioning yet (version `0.0.0`).
+---
+Welcome to Jumanji!
 
-Material: [Jumanji Presentation (31/03/2022)](https://docs.google.com/presentation/d/1slBo_uv6QPIgWokZUgrH-mn2WQ9tmDb0KrZC1Sb4nYg/edit?usp=sharing)
-
-List of current Jax environments:
-1. Game of Snake
-2. Routing
-3. Connect Four
-4. TSP (Travelling Salesman Problem)
-5. Knapsack
-6. BinPack
+Jumanji is an RL environment library written in Jax focused on providing clean and fast hardware accelerated
+environments for industry-driven research. Jumanji is easy to use and can be
+run out of the box with other libraries such as RLlib, StableBaselines, ACME, gym and dm-env.
 
 
-## Contributions
+## Environments
+| Environment                       | Type                                    | Observation                                                                                                                                                                                                                                                                                                                                                                                                    | Action                                                                                                 |
+|-----------------------------------|-----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| Snake                             | Game                                    | Array (float) of shape (n_rows, n_cols, 5)                                                                                                                                                                                                                                                                                                                                                                     | array (int) `[0,1,2,3] -> [Up, Right, Down, Left]`                                                     |
+| Connect4                          | Game                                    | Observation:<<br/>&nbsp;&nbsp;&nbsp;&nbsp;- board: array (int8) of shape (6, 7)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- action_mask: array (int8) of shape(6, 7)                                                                                                                                                                                                                                                                                                          | array (int) `[0,1,2,3,4,5,6] one per column`                                                           |
+| TSP (Travelling Salesman Problem) | Combinatorial Optimization              | Observation:<<br/>&nbsp;&nbsp;&nbsp;&nbsp;- problem: array (float32) of shape (problem_size, 2)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- start_position: int32<br/>&nbsp;&nbsp;&nbsp;&nbsp;- position: int32<br/>- action_mask: array (int8) of shape (problem_size,)                                                                                                                                                                                                                              | array (int) `[0,...,problem_size-1] -> city id`                                                        |
+| Knapsack                          | Combinatorial Optimization              | Observation:<br/>&nbsp;&nbsp;&nbsp;&nbsp;- problem: array (float32) of shape (problem_size, 2)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- first_item: array (int32)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- last_item: array (int32)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- invalid_mask: array (int8) of shape (problem_size,)                                                                                                                                                                                                                | array (int) `[0,...,problem_size-1] -> item id`                                                        |
+| Routing                           | Combinatorial Optimization, Multi Agent | Array (int) of shape (1, 12, 12)                                                                                                                                                                                                                                                                                                                                                                               | array (int) of shape (n_agents,) `[0,1,2,3,4] -> [No Op, Left, Up, Right, Down] per route`             |
+| BinPack                           | Combinatorial Optimization              | Observation: <br/>&nbsp;&nbsp;&nbsp;&nbsp;- ems: (Empty Max Space) dataclass containing arrays of shape (6, 7)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- ems_mask: array (bool) of shape (6, 7)&nbsp;&nbsp;&nbsp;&nbsp;- items: Item dataclass of arrays (float) of shape (max_num_items,)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- items_mask: jax array (bool) of shape (max_num_items,)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- items_placed: array (bool) of shape (max_num_items,)<br/>&nbsp;&nbsp;&nbsp;&nbsp;- action_mask: array (bool) of shape (obs_num_ems, max_num_items) | array (int) of shape (2,) <br/>`[[0,...,obs_num_ems-1], [0,...,max_num_items-1]] -> [ems_id, item_id]` |
 
-We warmly welcome
-contributions for which we provide a [CONTRIBUTING.md](https://gitlab.com/instadeep/jumanji/-/blob/main/CONTRIBUTING.md)
-document.
 
-# Installation
+## Quick Start
 
-We detail here a few options available to install and start using Jumanji.
+```python
+from jumanji.snake import Snake
+import jax
 
-- Install Jumanji
+# create an environment TODO - use jumanji.make()
+env = Snake()
+
+# setup env with key and starting state
+key = jax.random.key(0)
+state, timestep, _ = jax.jit(env.reset)(key)
+
+# render the env state
+env.render(state)
+
+# take a step in the environment
+action = env.action_spec().generate_value()
+state, timestep, _ = jax.jit(env.step)(state, action)
+
+env.render(state)
+```
+
+## Examples
+For a more in-depth example of running with Jumanji environments, check out our colab notebook that
+goes through running beating snake with Online Q-Learning!
+
+TODO - Add colab link
+
+## Installation
+
+### PyPI package
 ```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git
+conda create -n env python=3.8
+conda activate env
+pip install jumanji
 ```
 
-
-# Dev version installation :man_technologist:
-
+### Source
 ```bash
-pip install git+https://<personal_access_token>:<personal_access_token>@gitlab.com/instadeep/jumanji.git@main#egg=jumanji[dev]
+conda create -n env python=3.8
+conda activate env
+pip install -r requirements.txt
+pip install -e .
 ```
 
-### Alternative installation via ssh
-You need to have your ssh key setup correctly.
-```bash
-pip install git+ssh://git@gitlab.com/instadeep/jumanji.git
+## Contribution
+
+Please read our [contributing docs](./CONTRIBUTING.md) for details on how to submit pull requests, our Contributor License Agreement and community guidelines.
+
+## Citing Jumanji
+If you use `jumanji` in your research, please cite it as follows:
 ```
-
-### Inside the CI
-If you add Jumanji as a dependency in your own `requirements.txt`, you can use this command in the
-CI to replace it with access token installation. This way, the token is never visible inside the
-repository.
+@software{jumanji2022github,
+  author = {Clément Bonnet and Alex Laterre and Laurence Midgley and Daniel Luo and Donal Byrne},
+  title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
+  url = {http://github.com/instadeep/jumanji},
+  version = {0.0.1},
+  year = {2022},
+}
 ```
-sed -e "$ s/git+ssh/git+https/g" -e "$ s/git@gitlab/@gitlab/g" -e "$ s/\/\//\/\/${JUMANJI_ACCESS_TOKEN}:${JUMANJI_ACCESS_TOKEN}/" requirements.txt > temp.txt && mv temp.txt requirements.txt
-```
-You will need to add `JUMANJI_ACCESS_TOKEN` in your GitLab repository in
-`Settings -> CI/CD -> Variables`.
-
-### Install with access token
-
-Create your gitlab access token with api scope. Instructions can be found
-[here](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
-
-Set it as an env var
-```bash
-export JUMANJI_ACCESS_TOKEN=your_access_token
-```
-
-
-### Installation for local development
-
-You may clone Jumanji.
-```bash
-git clone git@gitlab.com:instadeep/jumanji.git
-```
-
-Then, create a conda env.
-```bash
-conda create -n jumanji python=3.8
-conda activate jumanji
-```
-
-Alternatively, you may create a virtualenv.
-```bash
-python -m venv venv
-source venv/bin/activate
-```
-
-You can install the dev dependencies directly by using the following command:
-```shell
-pip install -e ".[dev]"
-```
-Note that the quotes are
-[neccesary](https://stackoverflow.com/questions/30539798/zsh-no-matches-found-requestssecurity)
-only if using zsh but will work in general.
-
-
-# Using Docker :whale:
-
-We provide a Dockerfile to build an Nvidia-TensorFlow image docker.
-```bash
-docker build . -f Dockerfile -t jumanji
-```
-To start the container in interactive mode:
-```bash
-docker run -it --rm --volume path/to/jumanji/repo:/home/app/jumanji jumanji
-```
-
-Then run inside the container `pip install -e .` or add the current path to your python path
-with `export PYTHONPATH=$PYTHONPATH:$PWD`.
 
 ## Acknowledgements
 
