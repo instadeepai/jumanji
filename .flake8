@@ -22,3 +22,5 @@ ignore =
     D107  # Do not require docstrings for __init__
     W503  # line break before binary operator (not compatible with black)
     E731  # do not assign a lambda expression, use a def
+    A002  # argument shadowing a python builtin
+    A003  # class attribute shadowing a python builtin

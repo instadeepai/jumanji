@@ -33,7 +33,7 @@ repos:
         args:
           - --max-line-length=100
           - --max-cognitive-complexity=10
-          - --ignore=E266,E501,E731,W503
+          - --ignore=E266,E501,E731,W503,A002,A003
         additional_dependencies:
           - pep8-naming
           - flake8-builtins

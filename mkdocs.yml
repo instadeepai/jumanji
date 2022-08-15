@@ -27,6 +27,8 @@ theme:
   features:
     - navigation.tracking
     - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.indexes
     - search.highlight
     - search.share
@@ -82,6 +84,8 @@ plugins:
 
 nav:
   - Home: index.md
+  - User Guides:
+      - Registration: guides/registration.md
   - API Reference:
       - environments:
           - snake: api/environments/snake.md

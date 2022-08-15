@@ -21,7 +21,7 @@ from chex import Array, PRNGKey
 from jax import random
 
 import jumanji.routing.env_viewer as viewer
-from jumanji import specs
+from jumanji import specs, wrappers
 from jumanji.env import Environment
 from jumanji.routing.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
 from jumanji.routing.types import Position, State
@@ -78,7 +78,7 @@ class Routing(Environment[State]):
             difficulty : there are two difficulties - "easy" is normal random spawning of
                 wires and targets - "hard" ensures wires have straight line intersections
                 with other agents making it more difficult to connect and requiring cooperation.
-                Currently hard mode is not supported.
+                Currently, hard mode is not supported.
             reward_per_timestep : the reward given to an agent for every
                 timestep not being connected.
             reward_for_connection : the reward given to an agent for
@@ -670,3 +670,9 @@ def counter_clockwise(
     return (position_c.y - position_a.y) * (position_b.x - position_a.x) > (
         position_b.y - position_a.y
     ) * (position_c.x - position_a.x)
+
+
+# Convenient function to instantiate a single-agent version of the Routing environment
+SingleRouting = lambda *args, **kwargs: wrappers.MultiToSingleEnvironment(
+    Routing(*args, **kwargs)
+)
