@@ -35,11 +35,15 @@ class Snake(Environment[State]):
         - fruit: one-hot encoding (1. where the fruit is, else 0.)
         - body_state: float encoding (between 0. and 1.)
 
+    - action: jax array (int) of shape(): [0,1,2,3] -> [Up, Right, Down, Left].
+
     - reward: 1 if fruit is eaten, 0 otherwise.
 
-    - episode termination: if snake bumps into its body, or goes outside the board,
-        or the horizon is reached, or the grid is fully filled by the snake, which means
-        it has eaten all the fruits.
+    - episode termination (if any):
+        - the snake bumps into its body.
+        - the snale goes outside the board.
+        - the horizon is reached.
+        - the grid is fully filled by the snake, which means it has eaten all the fruits.
 
     - state: State:
         - key: jax array (uint) of shape (2,) used for the random generation of fruits.
@@ -60,7 +64,6 @@ class Snake(Environment[State]):
             n_cols: number of columns of the 2D grid.
             time_limit: horizon of an episode, i.e. number of environment steps before
                 the episode ends.
-
         """
         self.n_rows = n_rows
         self.n_cols = n_cols
@@ -140,14 +143,14 @@ class Snake(Environment[State]):
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the action number to take.
-                - 0 move up
-                - 1 move to the right
-                - 2 move down
-                - 3 move to the left
+                - 0: move up.
+                - 1: move to the right.
+                - 2: move down.
+                - 3: move to the left.
 
         Returns:
-            state: State object corresponding to the next state of the environment,
-            timestep: TimeStep object corresponding the timestep returned by the environment,
+            state: State object corresponding to the next state of the environment.
+            timestep: TimeStep object corresponding the timestep returned by the environment.
             extra: metrics, default to None.
         """
         state, next_body_no_head, fruit_eaten = self._update_state(state, action)
@@ -231,7 +234,6 @@ class Snake(Environment[State]):
 
         Returns:
             timestep containing the new observation.
-
         """
         next_head_pos = state.head_pos
         next_step = state.step
