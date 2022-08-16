@@ -1,0 +1,29 @@
+name: Workflow
+
+on: [ push ]
+
+env:
+  IMAGE: gcr.io/instadeep/jumanji
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    container:
+      image: joyzoursky/python-chromedriver:3.8
+    steps:
+      - name: Install dependencies for viewer test
+        run: apt-get update && apt-get install -y xvfb
+      - name: Checkout jumanji 🐍
+        uses: actions/checkout@v3
+      - name: Install python dependencies 🔧
+        run: pip install .[dev]
+      - name: Run linters 🖌️
+        run: pre-commit run --all-files --verbose
+      - name: Run tests 🧪
+        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation
+      - name: Run coverage
+        run: |
+          coverage html --directory=coverage_html_report
+          coverage report --fail-under=0.97
+      - name: Test build docs 📖
+        run: mkdocs build --verbose --site-dir docs_public
