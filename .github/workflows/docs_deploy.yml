@@ -12,7 +12,7 @@ jobs:
       image: python:3.8.10
     steps:
       - name: Install dependencies for deploy
-        run: apt-get update && rsync
+        run: apt-get update && apt-get install -y rsync
       - name: Checkout jumanji 🐍
         uses: actions/checkout@v3
       - name: Install python dependencies 🔧
