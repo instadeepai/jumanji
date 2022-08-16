@@ -18,10 +18,6 @@ from jax import random
 import jumanji.testing.fakes as fakes
 from jumanji.types import TimeStep
 
-fake_environment = pytest.fixture(fakes.make_fake_environment)
-fake_multi_environment = pytest.fixture(fakes.make_fake_multi_environment)
-fake_dm_env = pytest.fixture(fakes.make_fake_dm_env)
-
 
 @pytest.mark.parametrize("fake_environment", [()], indirect=True)
 def test_fake_environment__reset(fake_environment: fakes.FakeEnvironment) -> None:

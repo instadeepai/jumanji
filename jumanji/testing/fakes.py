@@ -21,8 +21,6 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
-import brax.envs
-import dm_env
 import jax.numpy as jnp
 from chex import PRNGKey
 from jax import lax, random
@@ -30,7 +28,6 @@ from jax import lax, random
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
-from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
 
 
 @dataclass
@@ -264,28 +261,3 @@ class FakeMultiEnvironment(Environment[FakeState]):
             None,
         )
         return next_state, timestep, None
-
-
-"""
-Some common functions and classes that are used in testing throughout jumanji.
-"""
-
-
-def make_fake_environment(time_limit: int = 10) -> FakeEnvironment:
-    """Creates a fake environment."""
-    return FakeEnvironment(time_limit=time_limit)
-
-
-def make_fake_multi_environment(time_limit: int = 10) -> FakeMultiEnvironment:
-    """Creates a fake multi agent environment."""
-    return FakeMultiEnvironment(time_limit=time_limit)
-
-
-def make_fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
-    """Creates a fake environment wrapped as a dm_env.Environment."""
-    return JumanjiEnvironmentToDeepMindEnv(FakeEnvironment(time_limit=time_limit))
-
-
-def make_fake_brax_env(time_limit: int = 10) -> brax.envs.Env:
-    """Creates a trivial Brax Env meant for unit testing."""
-    return brax.envs.create("fast", auto_reset=False, episode_length=time_limit)
