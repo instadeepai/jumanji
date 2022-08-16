@@ -72,7 +72,7 @@ class TestObservationSpec:
         for arg, modified_spec in zip(arg_list, modified_specs):
             old_spec = obs_spec
             new_spec = old_spec.replace(**{arg: modified_spec})
-            assert new_spec is not old_spec
+            assert new_spec != old_spec
             chex.assert_equal(getattr(new_spec, arg), modified_spec)
             for attr_name in set(arg_list).difference([arg]):
                 chex.assert_equal(

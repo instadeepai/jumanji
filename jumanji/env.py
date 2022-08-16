@@ -161,11 +161,11 @@ class Wrapper(Environment[State], Generic[State]):
         return self._env.action_spec()
 
 
-def make_environment_spec(jax_env: Environment) -> specs.EnvironmentSpec:
+def make_environment_spec(environment: Environment) -> specs.EnvironmentSpec:
     """Returns an `EnvironmentSpec` describing values used by an environment."""
     return specs.EnvironmentSpec(
-        observations=jax_env.observation_spec(),
-        actions=jax_env.action_spec(),
-        rewards=jax_env.reward_spec(),
-        discounts=jax_env.discount_spec(),
+        observations=environment.observation_spec(),
+        actions=environment.action_spec(),
+        rewards=environment.reward_spec(),
+        discounts=environment.discount_spec(),
     )

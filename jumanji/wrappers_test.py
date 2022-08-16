@@ -67,7 +67,7 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         """Validates reset function and timestep type of the wrapped environment."""
         timestep = self.fake_dm_env.reset()
         assert isinstance(timestep, dm_env.TimeStep)
-        assert timestep.step_type is dm_env.StepType.FIRST
+        assert timestep.step_type == dm_env.StepType.FIRST
 
     def test_jumanji_environment_to_deep_mind_env__step(self) -> None:
         """Validates step function of the wrapped environment."""

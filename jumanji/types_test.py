@@ -103,7 +103,7 @@ def test_timestep__restart() -> None:
     observation = jnp.ones(5, float)
     timestep = restart(observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is StepType.FIRST
+    assert timestep.step_type == StepType.FIRST
     assert timestep.reward == 0.0
     assert timestep.discount == 1.0
 
@@ -114,7 +114,7 @@ def test_timestep__transition() -> None:
     reward = jnp.array(2.0, float)
     timestep = transition(reward, observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is StepType.MID
+    assert timestep.step_type == StepType.MID
     assert timestep.reward == reward
     assert timestep.discount == 1.0
 
@@ -126,7 +126,7 @@ def test_timestep__truncation() -> None:
     discount = jnp.array(0.8, float)
     timestep = truncation(reward, observation, discount)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is StepType.LAST
+    assert timestep.step_type == StepType.LAST
     assert timestep.reward == reward
     assert timestep.discount == discount
 
@@ -137,7 +137,7 @@ def test_timestep__termination() -> None:
     reward = jnp.array(2.0, float)
     timestep = termination(reward, observation)
     assert jnp.all(timestep.observation == observation)
-    assert timestep.step_type is StepType.LAST
+    assert timestep.step_type == StepType.LAST
     assert timestep.reward == reward
     assert timestep.discount == 0.0
 
@@ -152,7 +152,7 @@ class TestMultiAgent:
         """Validates that restart function returns the desired TimeStep in the multi agent case."""
         timestep = restart(self.observation, shape=(self.num_agents,))
         assert jnp.all(timestep.observation == self.observation)
-        assert timestep.step_type is StepType.FIRST
+        assert timestep.step_type == StepType.FIRST
         assert jnp.all(timestep.reward == jnp.zeros((self.num_agents,), float))
         assert jnp.all(timestep.discount == jnp.ones((self.num_agents,), float))
 
@@ -163,7 +163,7 @@ class TestMultiAgent:
 
         timestep = transition(self.reward, self.observation, shape=(self.num_agents,))
         assert jnp.all(timestep.observation == self.observation)
-        assert timestep.step_type is StepType.MID
+        assert timestep.step_type == StepType.MID
         assert jnp.all(timestep.reward == self.reward)
         assert jnp.all(timestep.discount == jnp.ones((self.num_agents,), float))
 
@@ -177,7 +177,7 @@ class TestMultiAgent:
 
         timestep = truncation(self.reward, self.observation, self.discount)
         assert jnp.all(timestep.observation == self.observation)
-        assert timestep.step_type is StepType.LAST
+        assert timestep.step_type == StepType.LAST
         assert jnp.all(timestep.reward == self.reward)
         assert jnp.all(timestep.discount == self.discount)
 
@@ -188,7 +188,7 @@ class TestMultiAgent:
 
         timestep = termination(self.reward, self.observation)
         assert jnp.all(timestep.observation == self.observation)
-        assert timestep.step_type is StepType.LAST
+        assert timestep.step_type == StepType.LAST
         assert jnp.all(timestep.reward == self.reward)
         assert jnp.all(timestep.discount == jnp.zeros((self.num_agents,), float))
 

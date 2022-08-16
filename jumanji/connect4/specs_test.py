@@ -60,7 +60,7 @@ class TestObservationSpec:
     def test_observation_spec__replace(self, arg_name: str, new_value: Any) -> None:
         old_spec = self.observation_spec
         new_spec = old_spec.replace(**{arg_name: new_value})
-        assert new_spec is not old_spec
+        assert new_spec != old_spec
         assert getattr(new_spec, arg_name) == new_value
         for attr_name in {"board_obs", "action_mask"}.difference([arg_name]):
             chex.assert_equal(

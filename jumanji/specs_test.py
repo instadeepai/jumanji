@@ -35,7 +35,7 @@ class NestedSpecOneArray(specs.Spec[Tuple[chex.Array, ...]]):
         self.array_spec = specs.Array(self._shape, self._dtype)
 
     def __repr__(self) -> str:
-        return self.name
+        return self.name  # type: ignore
 
     def validate(
         self,
@@ -327,7 +327,7 @@ class TestBoundedArray:
     def test_replace(self, arg_name: str, new_value: Any) -> None:
         old_spec = specs.BoundedArray([1, 5], jnp.float32, -1, 1, "test")
         new_spec = old_spec.replace(**{arg_name: new_value})
-        assert old_spec is not new_spec
+        assert old_spec != new_spec
         assert getattr(new_spec, arg_name) == new_value
         for attr_name in {"shape", "dtype", "name", "minimum", "maximum"}.difference(
             [arg_name]
@@ -403,7 +403,7 @@ class TestDiscreteArray:
     def test_replace(self, arg_name: str, new_value: Any) -> None:
         old_spec = specs.DiscreteArray(2, jnp.int32, "test")
         new_spec = old_spec.replace(**{arg_name: new_value})
-        assert old_spec is not new_spec
+        assert old_spec != new_spec
         assert getattr(new_spec, arg_name) == new_value
         for attr_name in {"num_values", "dtype", "name"}.difference([arg_name]):
             assert getattr(new_spec, attr_name) == getattr(old_spec, attr_name)
@@ -414,7 +414,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         jumanji_spec = specs.Array((1, 2), jnp.int32)
         dm_env_spec = dm_env.specs.Array((1, 2), jnp.int32)
         converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
-        assert type(converted_spec) is type(dm_env_spec)
+        assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
@@ -425,7 +425,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
             (1, 2), jnp.float32, minimum=0.0, maximum=1.0
         )
         converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
-        assert type(converted_spec) is type(dm_env_spec)
+        assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
@@ -436,7 +436,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         jumanji_spec = specs.DiscreteArray(num_values=5, dtype=jnp.int32)
         dm_env_spec = dm_env.specs.DiscreteArray(num_values=5, dtype=jnp.int32)
         converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
-        assert type(converted_spec) is type(dm_env_spec)
+        assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
