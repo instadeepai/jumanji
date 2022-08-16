@@ -38,6 +38,42 @@ class Space:
         }
         return Space(**space_dict)
 
+    def get_axis_value(self, axis: str, index: int) -> chex.Numeric:
+        """Dynamically returns the correct attribute given the axis ("x", "y" or "z") and the index
+        (1 or 2).
+
+        Args:
+            axis: string that can either be "x", "y" or "z".
+            index: index of attribute to get, either 1 or 2.
+
+        Returns:
+            attribute of space matching the axis and index value.
+
+        Example:
+            ```python
+            space.y2 is space.get_axis_value("y", 2)  # True
+            ```
+        """
+        return getattr(self, f"{axis}{index}")
+
+    def set_axis_value(self, axis: str, index: int, value: chex.Numeric) -> None:
+        """Dynamically sets the correct attribute given the axis ("x", "y" or "z"), the index
+        (1 or 2) and the value to set.
+
+        Args:
+            axis: string that can either be "x", "y" or "z".
+            index: index of attribute to get, either 1 or 2.
+            value: value to set the attribute to.
+
+        Example:
+            ```python
+            space.y2 = 10
+            # Using the setter gives:
+            space.set_axis_value("y", 2, 10)
+            ```
+        """
+        return setattr(self, f"{axis}{index}", value)
+
     def __repr__(self) -> str:
         return (
             "Space(\n"

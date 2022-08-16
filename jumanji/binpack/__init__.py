@@ -12,5 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.connect4.env import Connect4
-from jumanji.connect4.types import State
+from jumanji.binpack.env import BinPack
+from jumanji.binpack.instance_generator import (
+    CSVInstanceGenerator,
+    RandomInstanceGenerator,
+    SimpleInstanceGenerator,
+    save_instance_to_csv,
+)
+from jumanji.binpack.types import Observation, State

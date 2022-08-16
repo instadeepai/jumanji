@@ -13,14 +13,58 @@
 # limitations under the License.
 
 import jax.numpy as jnp
+import pytest
 
 from jumanji.binpack.space import Space
 
 
-def test_space__astype() -> None:
-    space_int = Space(x1=0, x2=1, y1=0, y2=1, z1=0, z2=1)
-    assert isinstance(space_int.x1, int)
-    space_jnp_int = space_int.astype(jnp.int32)
+@pytest.fixture
+def space() -> Space:
+    return Space(x1=0, x2=1, y1=0, y2=1, z1=0, z2=1)
+
+
+def test_space__astype(space: Space) -> None:
+    assert isinstance(space.x1, int)
+    space_jnp_int = space.astype(jnp.int32)
     assert space_jnp_int.x1.dtype == jnp.int32
-    space_jnp_float = space_int.astype(jnp.float32)
+    space_jnp_float = space.astype(jnp.float32)
     assert space_jnp_float.x1.dtype == jnp.float32
+
+
+def test_space__get_axis_value(space: Space) -> None:
+    assert space.get_axis_value("x", 1) is space.x1
+    assert space.get_axis_value("x", 2) is space.x2
+    assert space.get_axis_value("y", 1) is space.y1
+    assert space.get_axis_value("y", 2) is space.y2
+    assert space.get_axis_value("z", 1) is space.z1
+    assert space.get_axis_value("z", 2) is space.z2
+
+
+def test_space__set_axis_value(space: Space) -> None:
+    """Test that one can set all attributes (all axes and indices) of a space using dynamic
+    indexing.
+    """
+    new_val = 3
+    assert space.x1 is not new_val
+    space.set_axis_value("x", 1, new_val)
+    assert space.x1 is new_val
+
+    assert space.x2 is not new_val
+    space.set_axis_value("x", 2, new_val)
+    assert space.x2 is new_val
+
+    assert space.y1 is not new_val
+    space.set_axis_value("y", 1, new_val)
+    assert space.y1 is new_val
+
+    assert space.y2 is not new_val
+    space.set_axis_value("y", 2, new_val)
+    assert space.y2 is new_val
+
+    assert space.z1 is not new_val
+    space.set_axis_value("z", 1, new_val)
+    assert space.z1 is new_val
+
+    assert space.z2 is not new_val
+    space.set_axis_value("z", 2, new_val)
+    assert space.z2 is new_val

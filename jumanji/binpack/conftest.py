@@ -20,7 +20,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.binpack.env import BinPack
-from jumanji.binpack.generator import (
+from jumanji.binpack.instance_generator import (
     TWENTY_FOOT_DIMS,
     InstanceGenerator,
     normalized_container,

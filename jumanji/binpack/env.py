@@ -20,7 +20,7 @@ import jax.numpy as jnp
 from chex import PRNGKey
 
 from jumanji import specs
-from jumanji.binpack.generator import InstanceGenerator
+from jumanji.binpack.instance_generator import InstanceGenerator
 from jumanji.binpack.reward import sparse_linear_reward
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
 from jumanji.binpack.types import EMS, Item, Observation, RewardFn, State
@@ -182,6 +182,7 @@ class BinPack(Environment[State]):
             state.items_mask,
             state.items_placed,
         )
+        state.action_mask = action_mask
         observation = Observation(
             ems=obs_ems,
             ems_mask=obs_ems_mask,
