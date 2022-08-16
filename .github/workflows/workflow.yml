@@ -2,9 +2,6 @@ name: Workflow
 
 on: [ push ]
 
-env:
-  IMAGE: gcr.io/instadeep/jumanji
-
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -20,7 +17,7 @@ jobs:
       - name: Run linters 🖌️
         run: pre-commit run --all-files --verbose
       - name: Run tests 🧪
-        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji validation
+        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
       - name: Run coverage
         run: |
           coverage html --directory=coverage_html_report
