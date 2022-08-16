@@ -189,8 +189,8 @@ def truncation(
 
 def get_valid_dtype(dtype: Union[jnp.dtype, type]) -> jnp.dtype:
     """Cast a dtype taking into account the user type precision. E.g., if 64 bit is not enabled,
-    jnp.dtype(jnp.float_) is float64 whereas jnp.dtype(jnp.empty((), dtype).dtype) will be float32
-    as expected.
+    jnp.dtype(jnp.float_) is still float64. By passing the given dtype through `jnp.empty` we get
+    the supported dtype of float32.
 
     Args:
         dtype: jax numpy dtype or string specifying the array dtype.

@@ -25,22 +25,22 @@ ENV_NAME_RE = re.compile(r"^(?:(?P<name>[\w:.-]+?))(?:-v(?P<version>\d+))?$")
 def parse_env_id(id: str) -> Tuple[str, int]:
     """Parse an environment name.
 
-    The format must obey the following structure: {env-name}-v{version number}
+    The format must obey the following structure: {env-name}-v{version-number}.
 
     Args:
-        id: The environment ID to parse
+        id: The environment ID to parse.
 
     Returns:
-        A tuple of environment name and version number
+        A tuple of environment name and version number.
 
     Raises:
-        ValueError: If the environment name does not a valid environment regex
+        ValueError: If the environment name does not a valid environment regex.
     """
     match = ENV_NAME_RE.fullmatch(id)
     if not match:
         raise ValueError(
             f"Malformed environment name: {id}."
-            f"All IDs must be of the form (env-name)[-v(version)]."
+            f"All ID's must be of the form (env-name)[-v(version-number)]."
         )
 
     name, version = match.group("name", "version")
@@ -55,11 +55,11 @@ def get_env_id(name: str, version: Optional[int] = None) -> str:
     """Get the full env ID given a name and (optional) version.
 
     Args:
-        name: The environment name
-        version: The environment version
+        name: The environment name.
+        version: The environment version.
 
     Returns:
-        The environment ID
+        The environment ID.
     """
     version = version or 0
     full_name = name + f"-v{version}"
@@ -94,7 +94,8 @@ def _check_registration_is_allowed(spec: EnvSpec) -> None:
 
     Raises:
         ValueError: if an environment with the same ID is already registered.
-        ValueError: if the previous version of the registered environment doesn't exist (except for v0).
+        ValueError: if the previous version of the registered environment doesn't exist
+        (except for v0).
     """
     global _REGISTRY
 
@@ -110,7 +111,7 @@ def _check_registration_is_allowed(spec: EnvSpec) -> None:
 
     if (latest_version is None) and spec.version != 0:
         raise ValueError(
-            f"The first version of an unregistered environment must be zero, got {spec.version}"
+            f"The first version of an unregistered environment must be 0, got {spec.version}"
         )
 
 
@@ -169,7 +170,7 @@ def make(id: str, *args: Any, **kwargs: Any) -> Environment:
         registered_envs = "\n".join(("- " + name for name in _REGISTRY))
         raise ValueError(
             f"Unregistered environment {env_id}. "
-            f"Please select from the registered environments: \n{registered_envs}"
+            f"Please select from the registered environments: \n{registered_envs}."
         )
 
     env_spec = _REGISTRY[env_id]

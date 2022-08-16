@@ -38,15 +38,15 @@ T = TypeVar("T")
 
 class Spec(abc.ABC, Generic[T]):
     """Adapted from dm_env.spec.Array. This is an augmentation of the Array spec to allow for nested
-    specs. `self.name`, `self.generate_value` and `self.validate` methods are kept from the dm_env
-    object."""
+    specs. `self.name`, `self.generate_value` and `self.validate` methods are adapted from the
+    dm_env object."""
 
     def __init__(self, name: str = ""):
         """Initializes a new spec.
 
         Args:
             name: string containing a semantic name for the corresponding nested spec.
-                Defaults to `''`.
+            Defaults to `''`.
         """
         self._name = name
 
@@ -321,7 +321,6 @@ class DiscreteArray(BoundedArray):
 
     For an example use-case, this can be used to define the action space of a simple RL environment
     that accepts discrete actions.
-    # TODO: make this multi-dimensional if possible.
     """
 
     def __init__(

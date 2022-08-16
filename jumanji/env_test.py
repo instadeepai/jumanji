@@ -45,7 +45,7 @@ def wrapped_mock_env(
 def test_wrapper__unwrapped(
     wrapped_mock_env: Wrapper, mock_env: FakeEnvironment
 ) -> None:
-    """Checks Wrapper.unwrapped returns the unwrapped env"""
+    """Checks `Wrapper.unwrapped` returns the unwrapped env."""
     assert wrapped_mock_env.unwrapped == mock_env
 
 
@@ -54,7 +54,7 @@ def test_wrapper__step(
     wrapped_mock_env: Wrapper,
     mock_env: FakeEnvironment,
 ) -> None:
-    """Checks Wrapper.step calls the step method of the underlying env"""
+    """Checks `Wrapper.step` calls the step method of the underlying env."""
     mock_step = mocker.patch.object(mock_env, "step", autospec=True)
     mock_state = mocker.MagicMock()
     mock_action = mocker.MagicMock()
@@ -69,7 +69,7 @@ def test_wrapper__reset(
     wrapped_mock_env: Wrapper,
     mock_env: FakeEnvironment,
 ) -> None:
-    """Checks Wrapper.reset calls the reset method of the underlying env"""
+    """Checks `Wrapper.reset` calls the reset method of the underlying env."""
     mock_reset = mocker.patch.object(mock_env, "reset", autospec=True)
     mock_key = mocker.MagicMock()
 
@@ -83,7 +83,7 @@ def test_wrapper__observation_spec(
     wrapped_mock_env: Wrapper,
     mock_env: FakeEnvironment,
 ) -> None:
-    """Checks Wrapper.observation_spec calls the observation_spec function of the underlying env"""
+    """Checks `Wrapper.observation_spec` calls the observation_spec function of the underlying env."""
     mock_obs_spec = mocker.patch.object(mock_env, "observation_spec", autospec=True)
 
     wrapped_mock_env.observation_spec()
@@ -96,7 +96,7 @@ def test_wrapper__action_spec(
     wrapped_mock_env: Wrapper,
     mock_env: FakeEnvironment,
 ) -> None:
-    """Checks Wrapper.action_spec calls the action_spec function of the underlying env"""
+    """Checks `Wrapper.action_spec` calls the action_spec function of the underlying env."""
     mock_action_spec = mocker.patch.object(mock_env, "action_spec", autospec=True)
 
     wrapped_mock_env.action_spec()
@@ -105,12 +105,12 @@ def test_wrapper__action_spec(
 
 
 def test_wrapper__repr(wrapped_mock_env: Wrapper, mock_env: FakeEnvironment) -> None:
-    """Checks Wrapper.__repr__ returns the expected representation string"""
+    """Checks `Wrapper.__repr__` returns the expected representation string."""
     repr_str = repr(wrapped_mock_env)
     assert "MockWrapper" in repr_str
 
 
 def test_wrapper__getattr(wrapped_mock_env: Wrapper, mock_env: FakeEnvironment) -> None:
-    """Checks Wrapper.__getattr__ calls the underlying env for unknown attr."""
+    """Checks `Wrapper.__getattr__` calls the underlying env for unknown attr."""
     # time_limit is defined in the mock env
     assert wrapped_mock_env.time_limit == mock_env.time_limit

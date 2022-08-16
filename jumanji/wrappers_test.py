@@ -47,8 +47,8 @@ State = TypeVar("State")
 
 
 class TestJumanjiEnvironmentToDeepMindEnv:
-    """
-    Test the JumanjiEnvironmentToDeepMindEnv that transforms an Environment into a dm_env.Environment format.
+    """Test the JumanjiEnvironmentToDeepMindEnv that transforms an Environment into a
+    dm_env.Environment format.
     """
 
     fake_environment = make_fake_environment()
@@ -100,7 +100,8 @@ class TestMultiToSingleEnvironment:
 
     def test_multi_env__reset(self) -> None:
         """Validates (jitted) reset function and timestep type of the multi agent
-        to single agent wrapped environment."""
+        to single agent wrapped environment.
+        """
         _, timestep, _ = jax.jit(self.fake_multi_to_single_env.reset)(random.PRNGKey(0))
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
@@ -110,7 +111,8 @@ class TestMultiToSingleEnvironment:
 
     def test_multi_env__step(self) -> None:
         """Validates (jitted) step function of the multi agent to single
-        agent wrapped environment."""
+        agent wrapped environment.
+        """
         state, timestep, _ = self.fake_multi_to_single_env.reset(
             random.PRNGKey(0)
         )  # type: Tuple[FakeState, TimeStep, Extra]
@@ -131,7 +133,7 @@ class TestMultiToSingleEnvironment:
         )
 
     def test_multi_env__different_reward_aggregator(self) -> None:
-        """Checks that using a different reward aggregator is correct"""
+        """Checks that using a different reward aggregator is correct."""
         mean_fake_multi_to_single_env = MultiToSingleEnvironment(
             self.fake_multi_environment, reward_aggregator=jnp.mean
         )
@@ -152,21 +154,24 @@ class TestMultiToSingleEnvironment:
 
     def test_multi_env__observation_spec(self) -> None:
         """Validates observation_spec property of the multi agent to single
-        agent wrapped environment."""
+        agent wrapped environment.
+        """
         obs_spec: specs.Array = self.fake_multi_to_single_env.observation_spec()  # type: ignore
         assert isinstance(obs_spec, specs.Array)
         assert obs_spec.shape == self.fake_multi_environment.observation_spec().shape
 
     def test_multi_env__action_spec(self) -> None:
         """Validates action_spec property of the multi agent to single
-        agent wrapped environment."""
+        agent wrapped environment.
+        """
         action_spec: specs.Array = self.fake_multi_to_single_env.action_spec()  # type: ignore
         assert isinstance(self.fake_multi_to_single_env.action_spec(), specs.Array)
         assert action_spec.shape == self.fake_multi_environment.action_spec().shape
 
     def test_multi_env__unwrapped(self) -> None:
         """Validates unwrapped property of the multi agent to single
-        agent wrapped environment."""
+        agent wrapped environment.
+        """
         assert isinstance(self.fake_multi_to_single_env.unwrapped, Environment)
         assert self.fake_multi_to_single_env._env == self.fake_multi_environment
 
@@ -233,7 +238,8 @@ class TestVmapWrapper:
 
 class TestBraxEnvToJumanjiEnvironment:
     """
-    Test the BraxEnvToJumanjiEnvironment wrapper that transforms a Brax Env into an Environment format.
+    Test the BraxEnvToJumanjiEnvironment wrapper that transforms a Brax Env into an Environment
+    format.
     """
 
     @staticmethod
@@ -342,7 +348,8 @@ class TestAutoResetWrapper:
         self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
     ) -> None:
         """Validates that step function of the AutoResetWrapper does not do an
-        auto-reset when the terminal state is not reached"""
+        auto-reset when the terminal state is not reached.
+        """
         state, first_timestep, _ = fake_auto_reset_environment.reset(
             key
         )  # type: Tuple[FakeState, TimeStep, Extra]
@@ -362,7 +369,8 @@ class TestAutoResetWrapper:
         self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
     ) -> None:
         """Validates that the auto-reset is done correctly by the step function
-        of the AutoResetWrapper when the terminal timestep is reached."""
+        of the AutoResetWrapper when the terminal timestep is reached.
+        """
         state, first_timestep, _extra = fake_auto_reset_environment.reset(
             key
         )  # type: Tuple[FakeState, TimeStep, Extra]

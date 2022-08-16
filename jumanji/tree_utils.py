@@ -38,7 +38,7 @@ def tree_slice(tree: T, i: chex.Numeric) -> T:
 
     Args:
         tree: tree of arrays whose ndim is at least 1.
-        i: index of the slice
+        i: index of the slice.
 
     Returns:
         tree whose leaves have been reduced to their i-th item

@@ -36,8 +36,8 @@ class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
         """Create the wrapped environment.
 
         Args:
-            env: Environment environment to wrap to a dm_env.Environment.
-            key: optional key to initialize the Environment environment with.
+            env: `Environment`to wrap to a `dm_env.Environment`.
+            key: optional key to initialize the `Environment` with.
         """
         self._env = env
         if key is None:
@@ -60,13 +60,13 @@ class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
 
         Returns:
             A `TimeStep` namedtuple containing:
-            step_type: A `StepType` of `FIRST`.
-            reward: `None`, indicating the reward is undefined.
-            discount: `None`, indicating the discount is undefined.
-            observation: A NumPy array, or a nested dict, list or tuple of arrays.
-                Scalar values that can be cast to NumPy arrays (e.g. Python floats)
-                are also valid in place of a scalar array. Must conform to the
-                specification returned by `observation_spec()`.
+                - step_type: A `StepType` of `FIRST`.
+                - reward: `None`, indicating the reward is undefined.
+                - discount: `None`, indicating the discount is undefined.
+                - observation: A NumPy array, or a nested dict, list or tuple of arrays.
+                    Scalar values that can be cast to NumPy arrays (e.g. Python floats)
+                    are also valid in place of a scalar array. Must conform to the
+                    specification returned by `observation_spec()`.
         """
         reset_key, self._key = random.split(self._key)
         self._state, timestep, _ = self._jitted_reset(reset_key)
@@ -89,19 +89,18 @@ class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
 
         Returns:
             A `TimeStep` namedtuple containing:
-                step_type: A `StepType` value.
-                reward: Reward at this timestep, or None if step_type is
+                - step_type: A `StepType` value.
+                - reward: Reward at this timestep, or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
                     `reward_spec()`.
-                discount: A discount in the range [0, 1], or None if step_type is
+                - discount: A discount in the range [0, 1], or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
                     `discount_spec()`.
-                observation: A NumPy array, or a nested dict, list or tuple of arrays.
+                - observation: A NumPy array, or a nested dict, list or tuple of arrays.
                     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
                     are also valid in place of a scalar array. Must conform to the
                     specification returned by `observation_spec()`.
         """
-
         self._state, timestep, _ = self._jitted_step(self._state, action)
         return dm_env.TimeStep(**timestep)
 
@@ -130,11 +129,11 @@ class MultiToSingleEnvironment(Wrapper):
         """Create the wrapped environment.
 
         Args:
-            env: Environment environment to wrap to a dm_env.Environment.
-            reward_aggregator: a function to aggregate all agents rewards
-                into a single scalar value, e.g. sum.
-            discount_aggregator: a function to aggregate all agents discounts
-                into a single scalar value, e.g. max.
+            env: `Environment` to wrap to a `dm_env.Environment`.
+            reward_aggregator: a function to aggregate all agents rewards into a single scalar
+                value, e.g. sum.
+            discount_aggregator: a function to aggregate all agents discounts into a single
+                scalar value, e.g. max.
         """
         super().__init__(env)
         self._reward_aggregator = reward_aggregator
@@ -240,9 +239,8 @@ class VmapWrapper(Wrapper):
 
 
 class BraxEnvToJumanjiEnvironment(Environment):
-    """
-    A wrapper that converts a Brax environment to an Environment for standardisation, use with the
-    EnvironmentLoop and to augment the API (add timesteps, metrics...).
+    """A wrapper that converts a Brax environment to an Environment for standardisation,
+    use with the `EnvironmentLoop` and to augment the API (add timesteps, metrics...).
     """
 
     def __init__(self, brax_env: BraxEnv):
@@ -326,7 +324,8 @@ class AutoResetWrapper(Wrapper):
     """Automatically resets environments that are done. Once the terminal state is reached,
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.FIRST, respectively.
-    The reward, discount, and extra retrieved from the transition to the terminal state."""
+    The reward, discount, and extra retrieved from the transition to the terminal state.
+    """
 
     def auto_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
         """Reset the state and overwrite `timestep.observation` with the reset observation

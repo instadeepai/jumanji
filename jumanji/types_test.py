@@ -158,7 +158,8 @@ class TestMultiAgent:
 
     def test_timestep__transition_multi_agent(self) -> None:
         """Validates that transition function returns the desired TimeStep
-        in the multi agent case."""
+        in the multi agent case.
+        """
 
         timestep = transition(self.reward, self.observation, shape=(self.num_agents,))
         assert jnp.all(timestep.observation == self.observation)
@@ -171,7 +172,8 @@ class TestMultiAgent:
 
     def test_timestep__truncation_multi_agent(self) -> None:
         """Validates that truncation function returns the desired TimeStep
-        in the multi agent case."""
+        in the multi agent case.
+        """
 
         timestep = truncation(self.reward, self.observation, self.discount)
         assert jnp.all(timestep.observation == self.observation)
@@ -181,7 +183,8 @@ class TestMultiAgent:
 
     def test_timestep__termination_multi_agent(self) -> None:
         """Validates that termination function returns the desired TimeStep
-        in the multi agent case."""
+        in the multi agent case.
+        """
 
         timestep = termination(self.reward, self.observation)
         assert jnp.all(timestep.observation == self.observation)
