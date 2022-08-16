@@ -17,7 +17,9 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 import pytest
+import pytest_mock
 from jax import random
+from pyvirtualdisplay import Display
 
 from jumanji.routing import Routing
 from jumanji.routing.types import Position, State
@@ -26,10 +28,15 @@ from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def routing_env() -> Routing:
-    """Instantiates a default Routing environment."""
-    return Routing(12, 12, 2)
+    """Instantiates a default Routing environment and its viewer by calling render once."""
+    env = Routing(12, 12, 2)
+    state, _, _ = env.reset(jax.random.PRNGKey(0))
+    with Display(visible=False, size=(500, 500)):
+        env.render(state)
+        env.viewer.close()  # type: ignore
+    return env
 
 
 @pytest.fixture
@@ -349,3 +356,30 @@ def test_routing__action_masking(routing_env: Routing) -> None:
 
     assert jnp.all(agent_0_mask == jnp.array([1, 0, 0, 0, 1]))
     assert jnp.all(agent_1_mask == jnp.array([1, 0, 1, 1, 0]))
+
+
+def test_routing__render(
+    mocker: pytest_mock.MockerFixture,
+    routing_env: Routing,
+) -> None:
+    """Check render method calls the render method of the underlying viewer."""
+
+    mock_action_spec = mocker.patch.object(routing_env.viewer, "render", autospec=True)
+
+    mock_state = mocker.MagicMock()
+    routing_env.render(mock_state)
+
+    mock_action_spec.assert_called_once()
+
+
+def test_routing__close(
+    mocker: pytest_mock.MockerFixture,
+    routing_env: Routing,
+) -> None:
+    """Check close method calls the close method of the underlying viewer."""
+
+    mock_action_spec = mocker.patch.object(routing_env.viewer, "close", autospec=True)
+
+    routing_env.close()
+
+    mock_action_spec.assert_called_once()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Union
+from typing import Any, Tuple, Union
 
 import jax.numpy as jnp
 from chex import Array, PRNGKey
@@ -390,3 +390,30 @@ class Snake(Environment[State]):
         next_head_coord = lax.switch(action, position_change_branches, (row, col))
         next_head_pos = snake_utils.position_from_coordinates(next_head_coord)
         return next_head_pos
+
+    def render(self, state: State) -> Any:
+        """Render frames of the environment for a given state.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+
+        Returns:
+            Any.
+
+        """
+        # TODO: Implement render for Snake in issue #20
+        #   (https://gitlab.com/instadeep/jumanji/-/issues/20)
+        raise NotImplementedError(
+            "Render method is not implemented yet for the Snake environment. "
+            "It will soon be added."
+        )
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        # TODO: Implement close for Snake in issue #20
+        #   (https://gitlab.com/instadeep/jumanji/-/issues/20)
+        pass

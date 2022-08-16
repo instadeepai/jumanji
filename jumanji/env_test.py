@@ -114,3 +114,32 @@ def test_wrapper__getattr(wrapped_mock_env: Wrapper, mock_env: FakeEnvironment) 
     """Checks `Wrapper.__getattr__` calls the underlying env for unknown attr."""
     # time_limit is defined in the mock env
     assert wrapped_mock_env.time_limit == mock_env.time_limit
+
+
+def test_wrapper__render(
+    mocker: pytest_mock.MockerFixture,
+    wrapped_mock_env: Wrapper,
+    mock_env: FakeEnvironment,
+) -> None:
+    """Checks Wrapper.render calls the render method of the underlying env."""
+
+    mock_action_spec = mocker.patch.object(mock_env, "render", autospec=True)
+
+    mock_state = mocker.MagicMock()
+    wrapped_mock_env.render(mock_state)
+
+    mock_action_spec.assert_called_once()
+
+
+def test_wrapper__close(
+    mocker: pytest_mock.MockerFixture,
+    wrapped_mock_env: Wrapper,
+    mock_env: FakeEnvironment,
+) -> None:
+    """Checks Wrapper.close calls the close method of the underlying env."""
+
+    mock_action_spec = mocker.patch.object(mock_env, "close", autospec=True)
+
+    wrapped_mock_env.close()
+
+    mock_action_spec.assert_called_once()

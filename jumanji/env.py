@@ -15,7 +15,7 @@
 """Abstract environment class"""
 
 import abc
-from typing import Any, Generic, Tuple, TypeVar
+from typing import Any, Generic, Literal, Tuple, TypeVar
 
 from chex import PRNGKey
 
@@ -102,6 +102,31 @@ class Environment(abc.ABC, Generic[State]):
     def unwrapped(self) -> "Environment":
         return self
 
+    def render(self, state: State) -> Any:
+        """Render frames of the environment for a given state.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+        """
+        raise NotImplementedError("Render method not implemented for this environment.")
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+
+    def __enter__(self) -> "Environment":
+        """Support with-statement for the environment."""
+        return self
+
+    def __exit__(self, *args: Any) -> Literal[False]:
+        """Support with-statement for the environment."""
+        self.close()
+        # propagate exception
+        return False
+
 
 class Wrapper(Environment[State], Generic[State]):
     """Wraps the environment to allow modular transformations.
@@ -159,6 +184,32 @@ class Wrapper(Environment[State], Generic[State]):
     def action_spec(self) -> specs.Spec:
         """Returns the action spec."""
         return self._env.action_spec()
+
+    def render(self, state: State) -> Any:
+        """Compute render frames during initialisation of the environment.
+
+        Args:
+            state: State object containing the dynamics of the environment.
+        """
+        return self._env.render(state)
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        return self._env.close()
+
+    def __enter__(self) -> "Wrapper":
+        """Support with-statement for the environment."""
+        return self
+
+    def __exit__(self, *args: Any) -> Literal[False]:
+        """Support with-statement for the environment."""
+        self.close()
+        # propagate exception
+        return False
 
 
 def make_environment_spec(environment: Environment) -> specs.EnvironmentSpec:

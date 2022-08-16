@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Any, Tuple
 
 import chex
 import jax
@@ -298,3 +298,26 @@ class BinPack(Environment[State]):
         """
         # TODO
         return jnp.ones((obs_ems_mask.shape[0], items_mask.shape[0]), bool)
+
+    def render(self, state: State) -> Any:
+        """Render frames of the environment for a given state.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+
+        Returns:
+            Any.
+
+        """
+        raise NotImplementedError(
+            "Render method is not implemented yet for the BinPack environment. "
+            "It will soon be added."
+        )
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        pass

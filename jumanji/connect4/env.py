@@ -181,8 +181,7 @@ class Connect4(Environment[State]):
         """
         return specs.DiscreteArray(7, name="action")
 
-    @staticmethod
-    def render(state: State) -> str:
+    def render(self, state: State) -> str:
         """Renders a given state.
 
         Args:
@@ -195,6 +194,11 @@ class Connect4(Environment[State]):
         message = f"Current player: {state.current_player}\n"
         message += f"Board: \n {str(state.board)}"
         return message
+
+    def close(self) -> None:
+        """Perform any necessary cleanup. Since the rendering returns a string only, nothing needs
+        to be done to close, therefore, this method does not do anything.
+        """
 
 
 def compute_reward(invalid: Array, winning: Array) -> Array:

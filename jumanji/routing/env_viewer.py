@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 from typing import List, Optional, Tuple
 
 import jax.numpy as jnp
@@ -24,9 +23,7 @@ from jumanji.routing.constants import HEAD, TARGET
 
 
 class RoutingViewer:
-    """
-    Viewer class for the Routing environment.
-    """
+    """Viewer class for the Routing environment."""
 
     def __init__(
         self,
@@ -69,15 +66,12 @@ class RoutingViewer:
             color = rnd.randint(0, 192, 3)
             self.palette.append((color[0], color[1], color[2]))
 
-    def render(
-        self, grid: Array, mode: str = "human", save_img: Optional[str] = None
-    ) -> Array:
+    def render(self, grid: Array, save_img: Optional[str] = None) -> Array:
         """
-        Render the environment.
+        Render the grid of the environment.
 
         Args:
-            grid: the grid representing the Routing to render.
-            mode: Render mode. Options: ['human', 'fast'].
+            grid: the grid representing the Routing instance to render.
             save_img: optional name to save frame as.
 
         Return:
@@ -98,26 +92,10 @@ class RoutingViewer:
                 self._draw_shape(rect, value)
 
         pygame.display.update()
-        self.maybe_sleep(mode)
         if save_img:
             pygame.image.save(self.screen, save_img)
 
         return jnp.array(pygame.surfarray.pixels3d(self.screen))
-
-    @staticmethod
-    def maybe_sleep(mode: str) -> None:
-        """
-        Sleep function to make viewing easier if given human mode and fast if given fast mode.
-
-        Args:
-            mode: Render mode. Options: ['human', 'fast'].
-        """
-        if mode == "human":
-            time.sleep(0.2)
-        elif mode == "fast" or mode == "rgb_array":
-            pass
-        else:
-            raise ValueError(f"Render mode '{mode}' currently not supported")
 
     def _draw_shape(self, rect: Tuple[int, int, int, int], value: int) -> None:
         """

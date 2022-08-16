@@ -51,7 +51,6 @@ class Routing(Environment[State]):
         - step : int, step number in episode.
     """
 
-    metadata = {"render.modes": ["human", "fast"]}
     VIEWER_WIDTH = 1000
     VIEWER_HEIGHT = 1000
 
@@ -333,16 +332,15 @@ class Routing(Environment[State]):
             None,
         )
 
-    def render(self, grid: Array, mode: str = "human") -> Array:
-        """Render a state in pygame.
+    def render(self, state: State) -> Array:
+        """Render the environment for a given state using pygame.
 
         Args:
-            grid (Array) : the environment state grid to render.
-            sleep (float): amount of time to sleep afterwards - this helps to slow
-                down each step.
+            state: State object containing the current dynamics of the environment.
 
         Return:
-            Array of rgb pixel values in the shape width x height x rgb"""
+            Array of rgb pixel values in the shape (width, height, rgb).
+        """
         if self.viewer is None:
             self.viewer = viewer.RoutingViewer(
                 self.num_agents,
@@ -352,7 +350,16 @@ class Routing(Environment[State]):
                 self.VIEWER_HEIGHT,
             )
 
-        return self.viewer.render(grid, mode)
+        return self.viewer.render(state.grid)
+
+    def close(self) -> None:
+        """Perform any necessary cleanup by calling the viewer's close method.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        if self.viewer:
+            self.viewer.close()
 
     def _extract_agent_information(
         self, grid: Array, agent_id: int

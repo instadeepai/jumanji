@@ -54,19 +54,12 @@ class TestViewer:
         when given unsupported render modes.
         """
         state, timestep, _ = env.reset(random.PRNGKey(0))
-
-        viewer.render(state.grid, "human")
-        viewer.render(state.grid, "fast")
-
-        with pytest.raises(ValueError):
-            viewer.render(state.grid, "abcdefg")
+        viewer.render(state.grid)
 
         state, timestep, _ = env.step(state, jnp.array([1, 2]))
-        viewer.render(state.grid, "human")
-        viewer.render(state.grid, "fast")
-
-        viewer.render(timestep.observation[0], "human")
-        viewer.render(timestep.observation[1], "human")
+        viewer.render(state.grid)
+        viewer.render(timestep.observation[0])
+        viewer.render(timestep.observation[1])
 
     def test__frame_shape(
         self, display: Display, env: Routing, viewer: RoutingViewer
@@ -83,17 +76,9 @@ class TestViewer:
     ) -> None:
         """Tests that saving an image functions correctly."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
-        viewer.render(state.grid, "fast", "saved_image.png")
+        viewer.render(state.grid, "saved_image.png")
         assert os.path.isfile("./saved_image.png")
         os.remove("./saved_image.png")
-
-    def test_maybe_sleep(self, viewer: RoutingViewer) -> None:
-        """Tests that maybe_sleep throws a 'ValueError' when an unsupported mode is passed"""
-        viewer.maybe_sleep("human")
-        viewer.maybe_sleep("fast")
-
-        with pytest.raises(ValueError):
-            viewer.maybe_sleep("abcdefg")
 
     def test__draw_shape(
         self, display: Display, env: Routing, viewer: RoutingViewer
