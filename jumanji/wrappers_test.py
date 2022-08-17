@@ -16,10 +16,13 @@ from typing import Tuple, TypeVar
 
 import brax
 import dm_env.specs
+import gym
 import jax
 import jax.numpy as jnp
 import jax.random as random
+import numpy as np
 import pytest
+import pytest_mock
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
 from chex import assert_trees_all_equal
@@ -33,11 +36,13 @@ from jumanji.wrappers import (
     AutoResetWrapper,
     BraxEnvToJumanjiEnvironment,
     JumanjiEnvironmentToDeepMindEnv,
+    JumanjiEnvironmentToGymEnv,
     MultiToSingleEnvironment,
     VmapWrapper,
 )
 
 State = TypeVar("State")
+Observation = TypeVar("Observation")
 
 
 class TestJumanjiEnvironmentToDeepMindEnv:
@@ -88,6 +93,99 @@ class TestJumanjiEnvironmentToDeepMindEnv:
     ) -> None:
         """Validates unwrapped property of the wrapped environment."""
         assert isinstance(fake_dm_env.unwrapped, Environment)
+
+
+class TestJumanjiEnvironmentToGymEnv:
+    """
+    Test the JumanjiEnvironmentToGymEnv that transforms an Environment into a gym.Env format.
+    """
+
+    @pytest.fixture
+    def fake_gym_env(self, time_limit: int = 10) -> gym.Env:
+        """Creates a fake environment wrapped as a gym.Env."""
+        return JumanjiEnvironmentToGymEnv(FakeEnvironment(time_limit=time_limit))
+
+    def test_jumanji_environment_to_gym_env__init(
+        self, fake_environment: FakeEnvironment
+    ) -> None:
+        """Validates initialization of the gym wrapper."""
+        gym_environment = JumanjiEnvironmentToGymEnv(fake_environment)
+        assert isinstance(gym_environment, gym.Env)
+        gym_environment_with_seed = JumanjiEnvironmentToGymEnv(fake_environment, seed=0)
+        assert isinstance(gym_environment_with_seed, gym.Env)
+
+    def test_jumanji_environment_to_gym_env__reset(
+        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+    ) -> None:
+        """Validates reset function of the wrapped environment."""
+        observation1 = fake_gym_env.reset()  # type: ignore
+        state1 = fake_gym_env._state
+        observation2 = fake_gym_env.reset()  # type: ignore
+        state2 = fake_gym_env._state
+
+        # Observation is typically numpy array
+        assert isinstance(observation1, np.ndarray)
+        assert isinstance(observation2, np.ndarray)
+
+        # Check that the observations are equal
+        assert_trees_all_equal(observation1, observation2)
+        assert_trees_are_different(state1, state2)
+
+    def test_jumanji_environment_to_gym_env__step(
+        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+    ) -> None:
+        """Validates step function of the wrapped environment."""
+        observation = fake_gym_env.reset()  # type: ignore
+        action = fake_gym_env.action_space.sample()
+        next_observation, reward, terminated, info = fake_gym_env.step(action)  # type: ignore
+        assert_trees_are_different(observation, next_observation)
+        assert isinstance(reward, float)
+        assert isinstance(terminated, bool)
+
+    def test_jumanji_environment_to_gym_env__observation_space(
+        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+    ) -> None:
+        """Validates observation_space attribute of the wrapped environment."""
+        assert isinstance(fake_gym_env.observation_space, gym.spaces.Space)
+
+    def test_jumanji_environment_to_gym_env__action_space(
+        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+    ) -> None:
+        """Validates action_space attribute of the wrapped environment."""
+        assert isinstance(fake_gym_env.action_space, gym.spaces.Space)
+
+    def test_jumanji_environment_to_gym_env__render(
+        self,
+        mocker: pytest_mock.MockerFixture,
+        fake_gym_env: JumanjiEnvironmentToGymEnv,
+    ) -> None:
+
+        mock_render = mocker.patch.object(
+            fake_gym_env.unwrapped, "render", autospec=True
+        )
+
+        mock_state = mocker.MagicMock()
+        fake_gym_env.render(mock_state)
+
+        mock_render.assert_called_once()
+
+    def test_jumanji_environment_to_gym_env__close(
+        self,
+        mocker: pytest_mock.MockerFixture,
+        fake_gym_env: JumanjiEnvironmentToGymEnv,
+    ) -> None:
+
+        mock_close = mocker.patch.object(fake_gym_env.unwrapped, "close", autospec=True)
+
+        fake_gym_env.close()
+
+        mock_close.assert_called_once()
+
+    def test_jumanji_environment_to_gym_env__unwrapped(
+        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+    ) -> None:
+        """Validates unwrapped property of the wrapped environment."""
+        assert isinstance(fake_gym_env.unwrapped, Environment)
 
 
 class TestMultiToSingleEnvironment:

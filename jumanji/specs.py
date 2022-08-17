@@ -29,7 +29,9 @@ from typing import (
 
 import chex
 import dm_env.specs
+import gym
 import jax.numpy as jnp
+import numpy as np
 
 from jumanji.types import get_valid_dtype
 
@@ -370,10 +372,10 @@ def jumanji_specs_to_dm_env_specs(
     spec: Spec,
 ) -> Union[dm_env.specs.DiscreteArray, dm_env.specs.BoundedArray, dm_env.specs.Array]:
     """Converts jumanji specs back to dm_env specs. The conversion is possible only if the spec
-    is not nested, i.e is an Array.
+    is not nested, i.e. is an Array.
 
     Args:
-        spec: jumanji spec of type jumanji.specs.Spec, can be an Array or any nested spec.
+        spec: jumanji spec of type `jumanji.specs.Array`. It breaks if spec is nested.
 
     Returns:
         dm_env.specs.Array object corresponding to the equivalent jumanji specs implementation.
@@ -407,6 +409,46 @@ def jumanji_specs_to_dm_env_specs(
             f"spec {spec} of type {type(spec)} is not available in a deepmind environment. "
             "Please override the observation_spec or action_spec method to output spec of type "
             "`dm_env.specs.Array`."
+        )
+
+
+def jumanji_specs_to_gym_spaces(
+    spec: Spec,
+) -> Union[gym.spaces.Box, gym.spaces.Discrete, gym.spaces.Space, gym.spaces.Dict]:
+    """Converts jumanji specs to gym spaces.
+
+    Args:
+        spec: jumanji spec of type jumanji.specs.Spec, can be an Array or any nested spec.
+
+    Returns:
+        gym.spaces object corresponding to the equivalent jumanji specs implementation.
+    """
+    if isinstance(spec, DiscreteArray):
+        return gym.spaces.Discrete(n=spec.num_values, seed=None, start=0)
+    elif isinstance(spec, BoundedArray):
+        return gym.spaces.Box(
+            low=np.broadcast_to(np.array(spec.minimum), shape=spec.shape),
+            high=np.broadcast_to(np.array(spec.maximum), shape=spec.shape),
+            shape=spec.shape,
+            dtype=spec.dtype,
+        )
+    elif isinstance(spec, Array):
+        return gym.spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=spec.shape,
+            dtype=spec.dtype,
+            seed=None,
+        )
+    # Nested spec such as EMSSpec, ItemSpec, and ObservationSpec in BinPack environment
+    else:
+        return gym.spaces.Dict(
+            {
+                # Iterate over specs
+                f"{key}": jumanji_specs_to_gym_spaces(value)
+                for key, value in vars(spec).items()
+                if isinstance(value, Spec)
+            }
         )
 
 

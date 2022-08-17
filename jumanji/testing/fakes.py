@@ -14,13 +14,12 @@
 
 from typing import TYPE_CHECKING, Tuple
 
-import chex
-
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
     from chex import dataclass
 
+import chex
 import jax.numpy as jnp
 from chex import PRNGKey
 from jax import lax, random
@@ -39,6 +38,7 @@ class FakeState:
 class FakeEnvironment(Environment[FakeState]):
     """
     A fake environment that inherits from Environment, for testing purposes.
+    The observation is an array full of `state.step` of shape `(self.observation_shape,)`
     """
 
     def __init__(
@@ -98,7 +98,7 @@ class FakeEnvironment(Environment[FakeState]):
         """
 
         state = FakeState(key=key, step=0)
-        observation = self.observation_spec().generate_value()
+        observation = self._state_to_obs(state)
         timestep = restart(observation=observation)
         return state, timestep, None
 
@@ -120,19 +120,24 @@ class FakeEnvironment(Environment[FakeState]):
         key, _ = random.split(state.key)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
+        observation = self._state_to_obs(next_state)
         timestep = lax.cond(
             next_step >= self.time_limit,
             lambda _: termination(
                 reward=jnp.zeros((), float),
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
             ),
             lambda _: transition(
                 reward=jnp.zeros((), float),
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
             ),
             None,
         )
         return next_state, timestep, None
+
+    def _state_to_obs(self, state: FakeState) -> chex.Array:
+        """The observation is an array full of `state.step` of shape `(self.observation_shape,)`."""
+        return state.step * jnp.ones(self.observation_shape, float)
 
 
 class FakeMultiEnvironment(Environment[FakeState]):

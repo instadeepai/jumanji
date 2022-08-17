@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Optional, Tuple, TypeVar
+from typing import Any, Callable, ClassVar, Dict, Optional, Tuple, TypeVar, Union
 
 import dm_env.specs
+import gym
 import jax
 import jax.numpy as jnp
+import numpy as np
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
-from chex import PRNGKey
+from chex import Array, PRNGKey
 from jax import jit, random
 
 from jumanji import specs
@@ -27,6 +29,7 @@ from jumanji.env import Environment, Wrapper
 from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
 
 State = TypeVar("State")
+Observation = TypeVar("Observation")
 
 
 class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
@@ -355,3 +358,120 @@ class AutoResetWrapper(Wrapper):
         )
 
         return state, timestep, extra
+
+
+class JumanjiEnvironmentToGymEnv(gym.Env):
+    """A wrapper that converts Environment to one that follows the gym.Env API"""
+
+    # Flag that prevents `gym.register` from misinterpreting the `_step` and
+    # `_reset` as signs of a deprecated gym Env API.
+    _gym_disable_underscore_compat: ClassVar[bool] = True
+
+    def __init__(self, env: Environment, seed: int = 0, backend: Optional[str] = None):
+        """Create the wrapped environment.
+
+        Args:
+            env: Environment to wrap to a gym.Env.
+            seed: the seed that is used to initialize the environment's PRNG.
+            backend: the XLA backend.
+        """
+        self._env = env
+        self.metadata: Dict[str, str] = {}
+        self.seed(seed)
+        self.backend = backend
+        self._state = None
+        self.observation_space = specs.jumanji_specs_to_gym_spaces(
+            self._env.observation_spec()
+        )
+        self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec())
+
+        def reset(key: PRNGKey) -> Tuple[State, Observation, Extra]:
+            """Reset function of a Jumanji environment to be jitted."""
+            state, timestep, extra = self._env.reset(key)
+            return state, timestep.observation, extra
+
+        self._reset = jax.jit(reset, backend=self.backend)
+
+        def step(
+            state: State, action: Action
+        ) -> Tuple[State, Observation, Array, bool, Extra]:
+            """Step function of a Jumanji environment to be jitted."""
+            state, timestep, extra = self._env.step(state, action)
+            done = jnp.bool_(timestep.last())
+            return state, timestep.observation, timestep.reward, done, extra
+
+        self._step = jax.jit(step, backend=self.backend)
+
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
+    ) -> Union[Observation, Tuple[Observation, Extra]]:
+        """Resets the environment to an initial state by starting a new sequence
+        and returns the first `Observation` of this sequence.
+
+        Returns:
+            obs: an element of the environment's observation_space.
+            extra (optional): contains supplementary information such as metrics.
+        """
+        if seed is not None:
+            self.seed(seed)
+        key, self._key = random.split(self._key)  # type: Tuple[PRNGKey, PRNGKey]
+        self._state, obs, extra = self._reset(key)
+        obs = np.asarray(obs)
+        if return_info:
+            info = jax.tree_map(np.asarray, extra)
+            return obs, info
+        else:
+            return obs  # type: ignore
+
+    def step(self, action: np.ndarray) -> Tuple[Observation, float, bool, Extra]:
+        """Updates the environment according to the action and returns an `Observation`.
+
+        Args:
+            action: A NumPy array representing the action provided by the agent.
+
+        Returns:
+            observation: an element of the environment's observation_space.
+            reward: the amount of reward returned as a result of taking the action.
+            terminated: whether a terminal state is reached.
+            info: contains supplementary information such as metrics.
+        """
+
+        action = jnp.array(action)  # Convert input numpy array to JAX array
+        self._state, obs, reward, done, extra = self._step(self._state, action)
+
+        # Convert to get the correct signature
+        obs = np.asarray(obs)
+        reward = float(reward)
+        terminated = bool(done)
+        info = jax.tree_map(np.asarray, extra)
+
+        return obs, reward, terminated, info
+
+    def seed(self, seed: int = 0) -> None:
+        """Function which sets the seed for the environment's random number generator(s).
+
+        Args:
+            seed: the seed value for the random number generator(s).
+        """
+        self._key = jax.random.PRNGKey(seed)
+
+    def render(self, mode: str = "human") -> None:
+        """Renders the environment.
+
+        Args:
+            mode: currently not used since Jumanji does not currently support modes.
+        """
+        del mode
+        self._env.render(self._state)
+
+    def close(self) -> None:
+        """Closes the environment, important for rendering where pygame is imported."""
+        self._env.close()
+
+    @property
+    def unwrapped(self) -> Environment:
+        return self._env
