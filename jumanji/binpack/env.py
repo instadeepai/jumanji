@@ -31,11 +31,13 @@ from jumanji.types import Action, Extra, TimeStep, restart, termination, transit
 class BinPack(Environment[State]):
     """
     RL Environment for the problem of bin packing. We use the Empty Maximal Space (EMS) formulation
-    of this problem. An EMS is a 3D-rectangle space that lives inside the container and has the
-    following properties: it does not intersect any items and it is not fully included into any
-    other EMS. It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
-    the first point corresponding to its bottom-left location while the second defining its
-    top-right corner.
+    of this problem. An EMS is a 3D-rectangular space that lives inside the container and has the
+    following properties:
+        - It does not intersect any items, and it is not fully included into any other EMS.
+        - It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
+        the first point corresponding to its bottom-left location while the second defining its
+        top-right corner.
+
     The environment has the following characteristics.
 
     - observation: Observation
@@ -51,6 +53,10 @@ class BinPack(Environment[State]):
             True if the item is placed in the container.
         - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items).
             Mask of the joint action space: True if the action (ems_id, item_id) is feasible.
+
+    - action: BoundedArray
+        - ems_id: int between 0 and obs_num_ems - 1 (included).
+        - item_id: int between 0 and max_num_items - 1 (included).
 
     - reward: jax array (float).
         Default (sparse_linear): negative of the proportion of remaining space in the container at
@@ -285,7 +291,7 @@ class BinPack(Environment[State]):
         items_mask: chex.Array,
         items_placed: chex.Array,
     ) -> chex.Array:
-        """Compute the action mask.
+        """Compute the mask of legal actions.
 
         Args:
             obs_ems: tree of ems from the observation.
