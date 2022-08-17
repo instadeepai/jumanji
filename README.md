@@ -65,10 +65,13 @@ state, timestep, extra = jax.jit(env.step)(state, action)   # take a step and ob
 ```
 
 ## Examples
+<a href="https://colab.research.google.com/github/instadeep/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+```#TODO Update with actual link from github```
 For a more in-depth example of running with Jumanji environments, check out our colab notebook that
 goes through running beating snake with Online Q-Learning!
 
-TODO - Add colab link
+
+
 
 ## Installation
 
