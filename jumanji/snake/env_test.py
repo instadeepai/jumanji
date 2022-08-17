@@ -15,6 +15,9 @@
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib.animation
+import matplotlib.pyplot as plt
+import py
 import pytest
 from jax import random
 
@@ -25,10 +28,10 @@ from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def snake_env() -> Snake:
     """Instantiates a default Snake environment."""
-    return Snake()
+    return Snake(6, 6)
 
 
 @pytest.mark.parametrize("snake_env", [()], indirect=True)
@@ -134,3 +137,31 @@ def test_snake__no_nan(snake_env: Snake) -> None:
     while not timestep.last():
         state, timestep, _ = step_fn(state, action=1)
         chex.assert_tree_all_finite((state, timestep))
+
+
+def test_snake__render(monkeypatch: pytest.MonkeyPatch, snake_env: Snake) -> None:
+    """Check that the render method builds the figure but does not display it."""
+    monkeypatch.setattr(plt, "show", lambda fig: None)
+    state, timestep, _ = snake_env.reset(jax.random.PRNGKey(0))
+    while not timestep.last():
+        state, timestep, _ = snake_env.step(
+            state, action=snake_env.action_spec().generate_value()
+        )
+        snake_env.render(state)
+    snake_env.close()
+
+
+def test_snake__animation(snake_env: Snake, tmpdir: py.path.local) -> None:
+    """Check that the animation method creates the animation correctly and can save to a gif."""
+    state, timestep, _ = snake_env.reset(jax.random.PRNGKey(0))
+    states = [state]
+    while not timestep.last():
+        state, timestep, _ = snake_env.step(
+            state, action=snake_env.action_spec().generate_value()
+        )
+        states.append(state)
+    animation = snake_env.animation(states)
+    assert isinstance(animation, matplotlib.animation.Animation)
+
+    path = str(tmpdir.join("/anim.gif"))
+    animation.save(path, writer=matplotlib.animation.PillowWriter(fps=10), dpi=60)

@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Tuple, Union
+from typing import Any, Sequence, Tuple, Union
 
 import jax.numpy as jnp
+import matplotlib
+import matplotlib.animation
+import matplotlib.pyplot as plt
 from chex import Array, PRNGKey
 from jax import lax, random
+from matplotlib.patches import Circle, Rectangle
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -391,8 +395,8 @@ class Snake(Environment[State]):
         next_head_pos = snake_utils.position_from_coordinates(next_head_coord)
         return next_head_pos
 
-    def render(self, state: State) -> Any:
-        """Render frames of the environment for a given state.
+    def render(self, state: State) -> None:
+        """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: State object containing the current dynamics of the environment.
@@ -401,12 +405,29 @@ class Snake(Environment[State]):
             Any.
 
         """
-        # TODO: Implement render for Snake in issue #20
-        #   (https://gitlab.com/instadeep/jumanji/-/issues/20)
-        raise NotImplementedError(
-            "Render method is not implemented yet for the Snake environment. "
-            "It will soon be added."
+        fig_size = 10
+        n_rows, n_cols = self.n_rows, self.n_cols
+        # Set the figure size and line width
+        fig_size_x = fig_size * n_cols / max(n_cols, n_rows)
+        fig_size_y = fig_size * n_rows / max(n_cols, n_rows)
+        linewidth = min(fig_size_x, fig_size_y) / 4
+
+        fig, ax = plt.subplots(figsize=(fig_size_x, fig_size_y))
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "", ["yellowgreen", "forestgreen"]
         )
+
+        # Draw the square box that delimits the board
+        plt.axis("off")
+        ax.plot([0, 0], [0, n_rows], "-k", lw=2)
+        ax.plot([0, n_cols], [n_rows, n_rows], "-k", lw=2)
+        ax.plot([n_cols, n_cols], [n_rows, 0], "-k", lw=2)
+        ax.plot([n_cols, 0], [0, 0], "-k", lw=2)
+
+        self._add_image_to_ax(ax, state, cmap, linewidth)
+
+        fig.tight_layout()
+        plt.show(fig)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -414,6 +435,122 @@ class Snake(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        # TODO: Implement close for Snake in issue #20
-        #   (https://gitlab.com/instadeep/jumanji/-/issues/20)
-        pass
+        plt.close()
+
+    def animation(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        blit: bool = False,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of states.
+
+        Args:
+            states: sequence of `State` corresponding to subsequent timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            blit: whether to use blitting to optimize drawing, default to False.
+                Note: when using blitting, any animated artists will be drawn according to their
+                zorder. However, they will be drawn on top of any previous artists, regardless
+                of their zorder.
+
+        Returns:
+            animation that can export to gif, mp4, or render with HTML.
+
+        Example:
+            ```python
+            env = Snake(6, 6)
+            states = []
+            state, *_ = env.reset(jax.random.PRNGKey(0))
+            states.append(state)
+            state, *_ = env.step(state, env.action_spec().generate_value())
+            states.append(state)
+            state, *_ = env.step(state, env.action_spec().generate_value())
+            states.append(state)
+            state, *_ = env.step(state, env.action_spec().generate_value())
+            states.append(state)
+            animation = env.animation(states)
+            animation.save("anim.gif", writer=matplotlib.animation.FFMpegWriter(fps=10), dpi=60)
+            ```
+        """
+        fig_size = 10
+        n_rows, n_cols = self.n_rows, self.n_cols
+        # Set the figure size and line width
+        fig_size_x = fig_size * n_cols / max(n_cols, n_rows)
+        fig_size_y = fig_size * n_rows / max(n_cols, n_rows)
+        linewidth = min(fig_size_x, fig_size_y) / 4
+
+        fig, ax = plt.subplots(figsize=(fig_size_x, fig_size_y))
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "", ["yellowgreen", "forestgreen"]
+        )
+
+        # Draw the square box that delimits the board
+        plt.axis("off")
+        ax.plot([0, 0], [0, n_rows], "-k", lw=2)
+        ax.plot([0, n_cols], [n_rows, n_rows], "-k", lw=2)
+        ax.plot([n_cols, n_cols], [n_rows, 0], "-k", lw=2)
+        ax.plot([n_cols, 0], [0, 0], "-k", lw=2)
+
+        def animate(state: State) -> Any:
+            del ax.patches[:]
+            self._add_image_to_ax(ax, state, cmap, linewidth)
+
+        animation = matplotlib.animation.FuncAnimation(
+            fig,
+            animate,
+            frames=states,
+            blit=blit,
+            interval=interval,
+        )
+        return animation
+
+    def _add_image_to_ax(  # noqa: CCR001
+        self, ax: plt.Axes, state: State, cmap: Any, linewidth: float
+    ) -> None:
+        """Loop over the different cells and draws corresponding shapes in the ax object."""
+
+        def make_body_cell_patch(row: int, col: int) -> matplotlib.patches.Patch:
+            body_cell_patch = Rectangle(
+                (col, self.n_rows - 1 - row),
+                1,
+                1,
+                edgecolor=cmap(1),
+                facecolor=cmap(state.body_state[row, col] / state.length),
+                fill=True,
+                lw=linewidth,
+            )
+            return body_cell_patch
+
+        def make_head_patch(row: int, col: int) -> matplotlib.patches.Patch:
+            head_patch = Circle(
+                (col + 0.5, self.n_rows - 1 - row + 0.5),
+                0.3,
+                edgecolor=cmap(0.5),
+                facecolor=cmap(0),
+                fill=True,
+                lw=linewidth,
+            )
+            return head_patch
+
+        def make_fruit_patch(row: int, col: int) -> matplotlib.patches.Patch:
+            fruit_patch = Circle(
+                (col + 0.5, self.n_rows - 1 - row + 0.5),
+                0.2,
+                edgecolor="brown",
+                facecolor="lightcoral",
+                fill=True,
+                lw=linewidth,
+            )
+            return fruit_patch
+
+        for row in range(self.n_rows):
+            for col in range(self.n_cols):
+                if state.body_state[row, col]:
+                    body_cell_patch = make_body_cell_patch(row, col)
+                    ax.add_patch(body_cell_patch)
+                if state.head_pos == (row, col):
+                    head_patch = make_head_patch(row, col)
+                    ax.add_patch(head_patch)
+                if state.fruit_pos == (row, col):
+                    fruit_patch = make_fruit_patch(row, col)
+                    ax.add_patch(fruit_patch)

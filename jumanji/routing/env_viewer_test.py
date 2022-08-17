@@ -50,9 +50,7 @@ class TestViewer:
     def test_render(
         self, display: Display, env: Routing, viewer: RoutingViewer
     ) -> None:
-        """Tests that the RoutingViewer.render() method only raises a `ValueError`
-        when given unsupported render modes.
-        """
+        """Tests that the RoutingViewer.render() does not raise any errors."""
         state, timestep, _ = env.reset(random.PRNGKey(0))
         viewer.render(state.grid)
 
