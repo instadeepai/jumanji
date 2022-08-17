@@ -1,0 +1,17 @@
+/* Increase font size in admonitions */
+.md-typeset .admonition {
+    font-size: 100% !important;
+}
+
+/* More space at the bottom of the page. */
+.md-main__inner {
+  margin-bottom: 1.5rem;
+}
+
+/* Indentation */
+/* This makes the documentation much more readable */
+div.doc-contents:not(.first) {
+  padding-left: 25px;
+  border-left: 4px solid rgba(230, 230, 230);
+  margin-bottom: 80px;
+}

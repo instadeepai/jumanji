@@ -13,7 +13,7 @@ import jax
 import jumanji
 
 env = jumanji.make('Snake12-v0')
-key=jax.random.PRNGKey(1)
+key = jax.random.PRNGKey(1)
 state, timestep, extra = env.reset(key)
 ```
 

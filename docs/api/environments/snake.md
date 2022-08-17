@@ -1,6 +1,5 @@
-{%
-   include-markdown "../../../../jumanji/jax/snake/README.md"
-   rewrite_relative_urls=true
-%}
+--8<-- "jumanji/snake/README.md"
 
-::: jumanji.snake.env
+---
+# API Reference
+::: jumanji.snake.env.Snake

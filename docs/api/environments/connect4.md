@@ -1,6 +1,5 @@
-{%
-   include-markdown "../../../../jumanji/jax/connect4/README.md"
-   rewrite_relative_urls=true
-%}
+--8<-- "jumanji/connect4/README.md"
 
-::: jumanji.connect4.env
+---
+# API Reference
+::: jumanji.connect4.env.Connect4

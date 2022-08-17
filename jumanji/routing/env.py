@@ -285,7 +285,7 @@ class Routing(Environment[State]):
             grid (Array): the environment state grid.
             agent_id: (int): the agent id whose legal actions are being checked.
 
-        Return:
+        Returns:
             Array : action mask.
         """
 
@@ -338,7 +338,7 @@ class Routing(Environment[State]):
         Args:
             state: State object containing the current dynamics of the environment.
 
-        Return:
+        Returns:
             Array of rgb pixel values in the shape (width, height, rgb).
         """
         if self.viewer is None:
@@ -370,7 +370,7 @@ class Routing(Environment[State]):
             grid (Array): the environment state grid (self.rows, self.cols).
             agent_id (int): the agents id.
 
-        Return:
+        Returns:
             Tuple[Position, Position]: the agent's head and target position in the grid."""
         d = agent_id * 3
         head = jnp.where(grid == 4 + d, size=1)
@@ -386,7 +386,8 @@ class Routing(Environment[State]):
         Args:
             grid (Array): the environment state grid.
             agent_id (int): the agents id.
-        Return:
+
+        Returns:
             bool : true if agent is connected otherwise false.
         """
         d = agent_id * 3
@@ -402,7 +403,7 @@ class Routing(Environment[State]):
         Args:
             grid (Array): The environment state grid.
 
-        Return:
+        Returns:
             Array: each agents local observation stacked on top of
                 each other in the shape (num_agents, rows, cols).
         """
@@ -418,7 +419,7 @@ class Routing(Environment[State]):
             key (KeyArray): pseudo random number key.
             id (int): id of the agent being spawned.
 
-        Return:
+        Returns:
             Array: the updated environment grid."""
         pos_key, target_key = random.split(key)
         agent_pos = self._random_empty_position(grid, pos_key)
@@ -437,7 +438,9 @@ class Routing(Environment[State]):
 
         Returns:
             Tuple: an empty position.
-            KeyArray : the new pseudo random number key."""
+            KeyArray : the new pseudo random number key.
+        """
+
         pos_index = random.choice(
             key, jnp.arange(self.rows * self.cols), p=jnp.logical_not(grid).flatten()
         )
@@ -451,8 +454,9 @@ class Routing(Environment[State]):
         Args:
             grid (Array) : the environment state grid.
 
-        Return:
-            Array : array of boolean flags in the shape (number of agents, )."""
+        Returns:
+            Array : array of boolean flags in the shape (number of agents, ).
+        """
 
         def done_fun(grid: Array, agent_id: jnp.int_) -> jnp.bool_:
             return (self._is_agent_blocked(self.get_action_mask(grid, agent_id))) | (
@@ -467,11 +471,12 @@ class Routing(Environment[State]):
         """Get the rewards for each agent.
 
         Args:
-            grid (Array) : the environment state grid.
-            actions (Array): actions of all agents.
+            grid: the environment state grid.
+            actions: actions of all agents.
 
-        Return:
-            Array : array of rewards in the shape (number of agents, )."""
+        Returns:
+            Array: array of rewards in the shape (number of agents, ).
+        """
 
         def reward_fun(grid: Array, agent_id: jnp.int_, action: jnp.int_) -> jnp.float_:
             noop_coeff = action == NOOP  # 1 if noop, otherwise 0
@@ -494,15 +499,16 @@ class Routing(Environment[State]):
 
     def _agent_observation(self, grid: Array, agent_id: int) -> Array:
         """
-        Get an observation for an agents perspective, this makes it so an agent always sees
+        Get an observation for an agent's perspective, this makes it so an agent always sees
             itself using the values 2, 3, 4.
 
         Args:
             grid (Array): the environment state grid.
             agent_id (int): the id of the agent whose observation is being requested.
 
-        Return:
-            Array: the state in the perspective of the agent."""
+        Returns:
+            Array: the state in the perspective of the agent.
+        """
 
         def swap_obs(grid_and_agent_id: Tuple[Array, int]) -> Array:
 
@@ -541,8 +547,9 @@ class Routing(Environment[State]):
         Args:
             action_mask (Array): an agents action mask.
 
-        Return:
-            bool: returns true if the agent is blocked otherwise false."""
+        Returns:
+            bool: returns true if the agent is blocked otherwise false.
+        """
         return jnp.all(action_mask[1:] == 0)
 
     def _step_agent(self, grid: Array, agent_id: int, action: int) -> Array:
@@ -553,8 +560,9 @@ class Routing(Environment[State]):
             id (int): the agents id.
             action (int): the agents action.
 
-        Return:
-            Array: the new updated state."""
+        Returns:
+            Array: the new updated state.
+        """
         pos, _ = self._extract_agent_information(grid, agent_id)
         position = move(pos, action)
         is_not_valid = jnp.logical_not(self._is_valid(grid, agent_id, position))
@@ -578,8 +586,9 @@ class Routing(Environment[State]):
             agent_id (int): the agents id.
             position (Tuple[Array,Array]): the agents position.
 
-        Return:
-            bool: True if the agent moving to position is valid."""
+        Returns:
+            bool: True if the agent moving to position is valid.
+        """
         row, col = position.x, position.y
         return (
             (0 <= row)
@@ -598,8 +607,9 @@ class Routing(Environment[State]):
             agent_id (Agent): the id of the agent being moved.
             position (tuple(int, int)): the position the agent is moving to.
 
-        Return:
-            Array: the new updated environment state."""
+        Returns:
+            Array: the new updated environment state.
+        """
         grid, agent_id, position = grid_id_position
         pos, _ = self._extract_agent_information(grid, agent_id)
         new_grid = grid.at[pos].set(SOURCE + 3 * agent_id)
@@ -621,7 +631,7 @@ def move(position: Position, action: int) -> Position:
         position (Position): a position representing row and col.
         action (int): the action representing cardinal directions.
 
-    Return:
+    Returns:
         Position : the new position after the move.
     """
 
@@ -650,7 +660,7 @@ def intersect(
     Args:
         position A, B, C, D (Position): each argument is a position.
 
-    Return:
+    Returns:
         bool: true if line segments AB and CD intersect."""
     return (
         counter_clockwise(position_a, position_c, position_d)
@@ -671,7 +681,7 @@ def counter_clockwise(
     Args:
         position A, B, C, D (Position): each argument is a position.
 
-    Return:
+    Returns:
         bool: true if points A, B, C are ordered in a counter clockwise manner.
     """
     return (position_c.y - position_a.y) * (position_b.x - position_a.x) > (

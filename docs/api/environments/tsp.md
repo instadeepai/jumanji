@@ -1,6 +1,5 @@
-{%
-   include-markdown "../../../../jumanji/jax/tsp/README.md"
-   rewrite_relative_urls=true
-%}
+--8<-- "jumanji/tsp/README.md"
 
-::: jumanji.tsp.env
+---
+# API Reference
+::: jumanji.tsp.env.TSP

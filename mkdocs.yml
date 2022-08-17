@@ -1,38 +1,54 @@
 site_name: Jumanji
-site_description: Documentation for Jumanji
-site_author: InstaDeep
-site_url: https://instadeep.gitlab.io/jumanji/   # temporary
+site_description: Documentation
+site_author: InstaDeep Research
+site_url: https://instadeep.gitlab.io/jumanji/
 site_dir: public
+strict: false # Don't allow warnings during the build process
 
 # Git repo
-repo_name: instadeep/jumanji  # temporary
-repo_url: https://gitlab.com/instadeep/jumanji  # temporary
+repo_name: instadeep/jumanji                      # temporary
+repo_url: https://gitlab.com/instadeep/jumanji    # temporary
 
-strict: false # Don't allow warnings during the build process
-dev_addr: '0.0.0.0:8000' # generate a warning when running in a docker container
+# Navigation Map
+nav:
+  - Home: index.md
+  - User Guides:
+      - Registration: guides/registration.md
+  - API Reference:
+      - Base: api/env.md
+      - Environments:
+          - Combinatorial:
+            - TSP: api/environments/tsp.md
+            - Routing: api/environments/routing.md
+            - BinPack: api/environments/binpack.md
+            - Knapsack: api/environments/knapsack.md
+          - Game:
+            - Snake: api/environments/snake.md
+            - Connect4: api/environments/connect4.md
+      - Extra:
+          - Wrappers: api/wrappers.md
+          - Types: api/types.md
 
+# Configuration
 theme:
   name: material
   language: en
   palette:
     primary: white
     accent: amber
-  logo: assets/instadeep-logo.png # temporary
-  favicon: assets/instadeep-logo.png # temporary
+  logo: img/instadeep-logo.png     # temporary
+  favicon: img/instadeep-logo.png  # temporary
   icon:
     repo: fontawesome/brands/gitlab
-  font:
-    text: Roboto
-    code: Roboto Mono
   features:
-    - navigation.tracking
-    - navigation.sections
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.indexes
-    - search.highlight
-    - search.share
-    - search.suggest
+    - navigation.tracking       # the URL is automatically updated with the active anchor
+    - navigation.sections       # top-level sections are rendered as groups in the sidebar
+    - navigation.tabs           # horizontal tabs at the top of the page
+    - navigation.tabs.sticky    # navigation tabs will lock below the header and always remain visible when scrolling
+    - navigation.indexes        # documents can be directly attached to sections
+    - search.highlight          # highlight search result
+    - search.share              # share button
+    - search.suggest            # smart suggestion
     - toc.integrate
     - toc.follow
 
@@ -41,7 +57,10 @@ markdown_extensions:
       emoji_generator: !!python/name:pymdownx.emoji.to_svg
       emoji_index: !!python/name:pymdownx.emoji.gemoji
   - pymdownx.snippets:
-      base_path: jumanji
+      base_path: ./
+  - pymdownx.pathconverter:
+      base_path: ./
+      relative_path: docs
   - toc:
       permalink: "#"
       toc_depth: 3
@@ -61,38 +80,26 @@ plugins:
   - autorefs
   - git-revision-date
   - include-markdown
-  - mknotebooks  # enable Jupyter notebooks
-  - mermaid2 # Class diagrams, flowcharts and more
+  - mknotebooks       # enable Jupyter notebooks
+  - mermaid2          # Class diagrams, flowcharts and more
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
           docstring_style: google
           selection:
-            inherited_members: true  # Allow looking up inherited methods
-            filters:
-              - '!^test'
-              - "!^_"  # exclude all members starting with _
-              - "^__init__$"  # but always include __init__ modules and methods
+            inherited_members: true
           rendering:
             show_source: false
             members_order: source
             show_if_no_docstring: true
+            show_signature: true
             show_signature_annotations: true
             show_root_full_path: false
             show_root_heading: true
+            merge_init_into_class: true
+            docstring_section_style: spacy
 
-nav:
-  - Home: index.md
-  - User Guides:
-      - Registration: guides/registration.md
-  - API Reference:
-      - environments:
-          - snake: api/environments/snake.md
-          - routing: api/environments/routing.md
-          - connect4: api/environments/connect4.md
-          - knapsack: api/environments/knapsack.md
-          - tsp: api/environments/tsp.md
-      - environment: api/env.md
-      - types: api/types.md
-      - wrappers: api/wrappers.md
+# Customization
+extra_css:
+    - _static/custom.css

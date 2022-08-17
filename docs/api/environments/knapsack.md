@@ -1,6 +1,5 @@
-{%
-   include-markdown "../../../../jumanji/jax/knapsack/README.md"
-   rewrite_relative_urls=true
-%}
+--8<-- "jumanji/knapsack/README.md"
 
-::: jumanji.knapsack.env
+---
+# API Reference
+::: jumanji.knapsack.env.Knapsack

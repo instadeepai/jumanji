@@ -46,24 +46,22 @@ run out of the box with other libraries such as RLlib, StableBaselines, ACME, gy
 ## Quick Start
 
 ```python
-from jumanji.snake import Snake
 import jax
+import jumanji
 
-# create an environment TODO - use jumanji.make()
-env = Snake()
+# Create a Jumanji environment
+env = jumanji.make('Snake6')
 
-# setup env with key and starting state
-key = jax.random.key(0)
-state, timestep, _ = jax.jit(env.reset)(key)
+# Instantiate your (jit-able) environment
+key = jax.random.PRNGKey(0)
+state, timestep, extra = jax.jit(env.reset)(key)
 
-# render the env state
+# (Optional) Render the env state
 env.render(state)
 
-# take a step in the environment
-action = env.action_spec().generate_value()
-state, timestep, _ = jax.jit(env.step)(state, action)
-
-env.render(state)
+# Interact with the environment
+action = env.action_spec().generate_value()                 # (dummy) action selection
+state, timestep, extra = jax.jit(env.step)(state, action)   # take a step and observe the next state and time step
 ```
 
 ## Examples
@@ -89,17 +87,15 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-## Contribution
-
-Please read our [contributing docs](./CONTRIBUTING.md) for details on how to submit pull requests, our Contributor License Agreement and community guidelines.
-
 ## Citing Jumanji
-If you use `jumanji` in your research, please cite it as follows:
+If you use `jumanji` in your research, please cite the library as follows:
 ```
 @software{jumanji2022github,
-  author = {Clément Bonnet and Alex Laterre and Laurence Midgley and Daniel Luo and Donal Byrne},
+  author = {Clément Bonnet and Donal Byrne and Victor Le and Laurence Midgley and Daniel Luo
+        and Sasha Abramowitz and Edan Toledo and Cyprien Courtot and Matthew Morris
+        and Daniel Furelos Blanco and Cemlyn Waters and Thomas D. Barrett and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
-  url = {http://github.com/instadeep/jumanji},
+  url = {https://github.com/instadeepai/jumanji},
   version = {0.0.1},
   year = {2022},
 }

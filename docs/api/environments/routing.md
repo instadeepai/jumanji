@@ -1,6 +1,5 @@
-{%
-   include-markdown "../../../../jumanji/jax/routing/README.md"
-   rewrite_relative_urls=true
-%}
+--8<-- "jumanji/routing/README.md"
 
-::: jumanji.routing.env
+---
+# API Reference
+::: jumanji.routing.env.Routing
