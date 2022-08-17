@@ -2,8 +2,8 @@
 
 We provide here an implementation of the Routing environment using JAX.
 
-The Routing environment contains multiple agents spawn in a grid world (default: `(rows=12, cols=12)`) with each agent representing a wire/net that needs to
-be connected to its own unique target/pin. The main goal of the environment is to connect each wire and to do so optimally.
+The Routing environment contains multiple agents spawn in a grid world (default: `(rows=12, cols=12)`) with each agent representing a route that needs to
+be connected to its own unique target/pin. The main goal of the environment is to connect each route and to do so optimally.
 Agents need to cooperate in order to allow each other to connect to their own targets.
 
 The rewards given to each agent can be set but by default are as follows:
@@ -42,7 +42,7 @@ Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …
 
 Traces appear in the location of the head once it moves, starting from 2 in multiples of 3: 2, 5, 8, …
 
-Every group of 3 corresponds to 1 net: (2,3,4), (5,6,7), …
+Every group of 3 corresponds to 1 route: (2,3,4), (5,6,7), …
 
 ### Current Agent
 
@@ -52,18 +52,4 @@ The implementation shifts all other agents values to make the (2,3,4) values rep
 
 ## Action Space
 
-Each net can step in 4 cardinal directions, or take no action.
-
-
-
-## Benchmark (Steps/s)
-
-### CPU - Batch Size 10:
-| Environment type \ board shape (n_rows, n_cols, n_agents) | (5, 5, 1) | (10, 10, 1) | (20, 20, 1) | (5, 5, 3) | (10, 10, 5) | (20, 20, 7) |
-|-----------------------------------------------------------|-----------|-------------|-------------|-----------|-------------|-------------|
-| Routing                                        | 461,743    | 111,575      | 29,015       | 131,708    | 20,973       | 3,316        |
-
-### GPU - Batch Size 1000:
-| Environment type \ board shape (n_rows, n_cols, n_agents) | (5, 5, 1) | (10, 10, 1) | (20, 20, 1) | (5, 5, 3) | (10, 10, 5) | (20, 20, 7) |
-|-----------------------------------------------------------|-----------|-------------|-------------|-----------|-------------|-------------|
-| Routing                                        | 2,933,149   | 2,446,476     | 1,351,949     | 1,258,591   | 592,582      | 222,688      |
+Each route can step in 4 cardinal directions, or take no action.
