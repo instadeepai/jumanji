@@ -26,21 +26,22 @@ from jumanji.binpack.instance_generator import (
     normalized_container,
 )
 from jumanji.binpack.specs import ObservationSpec
-from jumanji.binpack.types import Location, State, item_from_space
+from jumanji.binpack.types import Item, Location, State
 
 
 class DummyInstanceGenerator(InstanceGenerator):
     """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
-    container and one item whose size is the container itself.
+    container and three items: two identical items and a different third one to be able to
+    test item aggregation.
     """
 
     def __init__(self) -> None:
-        """Instantiate a dummy `InstanceGenerator` with one item and one EMS maximum."""
-        super(DummyInstanceGenerator, self).__init__(max_num_items=1, max_num_ems=1)
+        """Instantiate a dummy `InstanceGenerator` with three items and one EMS maximum."""
+        super(DummyInstanceGenerator, self).__init__(max_num_items=3, max_num_ems=1)
         self.container_dims = TWENTY_FOOT_DIMS
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Returns a fixed instance with one item, one EMS and a 20-ft container.
+        """Returns a fixed instance with three items, one EMS and a 20-ft container.
 
         Args:
             key: random key not used here but kept for consistency with parent signature.
@@ -57,15 +58,16 @@ class DummyInstanceGenerator(InstanceGenerator):
                 container,
             ),
             ems_mask=jnp.array([True], bool),
-            # TODO: batch items
-            items=jax.tree_map(
-                functools.partial(jnp.expand_dims, axis=-1),
-                item_from_space(container),
+            items=Item(
+                # The 1st and 2nd items have the same shape.
+                x_len=jnp.array([0.2, 0.2, 0.1], float),
+                y_len=jnp.array([0.3, 0.3, 0.2], float),
+                z_len=jnp.array([0.4, 0.4, 0.3], float),
             ),
-            items_mask=jnp.array([True], bool),
-            items_placed=jnp.array([False], bool),
+            items_mask=jnp.array([True, True, True], bool),
+            items_placed=jnp.array([False, False, False], bool),
             items_location=jax.tree_map(
-                lambda x: jnp.array([x], dtype=jnp.float32), Location(x=0, y=0, z=0)
+                lambda x: jnp.array(3 * [x], dtype=jnp.float32), Location(x=0, y=0, z=0)
             ),
             action_mask=None,
             sorted_ems_indexes=jnp.array([0], int),

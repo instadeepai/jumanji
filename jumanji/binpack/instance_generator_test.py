@@ -34,7 +34,9 @@ def test_save_instance_to_csv(dummy_instance: State, tmpdir: py.path.local) -> N
     save_instance_to_csv(dummy_instance, str(tmpdir.join(file_name)))
     lines = tmpdir.join(file_name).readlines()
     assert lines[0] == "Product_Name,Length,Width,Height,Quantity,Stackable\n"
-    assert lines[1] == "shape_1,5870,2330,2200,1,1\n"
+    assert lines[1] == "shape_1,1174,1761,2348,2,1\n"
+    assert lines[2] == "shape_2,587,1174,1761,1,1\n"
+    assert len(lines) == 3
 
 
 class TestSimpleInstanceGenerator:
@@ -112,7 +114,7 @@ class TestCSVInstanceGenerator:
         csv_instance_generator: CSVInstanceGenerator,
     ) -> None:
         """Validate that the csv instance generator has the correct properties."""
-        assert csv_instance_generator.max_num_items == 1
+        assert csv_instance_generator.max_num_items == 3
         assert csv_instance_generator.max_num_ems == 1
 
     def test_csv_instance_generator__call(

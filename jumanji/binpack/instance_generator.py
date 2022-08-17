@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import abc
+import collections
+import csv
 import functools
+import operator
 from typing import List, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
-import pandas as pd
 from chex import Array, PRNGKey
 
 from jumanji.binpack.space import Space
@@ -38,6 +40,8 @@ from jumanji.tree_utils import tree_slice, tree_transpose
 # Oftentimes people use different values (inner volume) : 5.870m long x 2.330m wide x 2.200m high
 # real_container_volume = 1.103 * inner_container_volume
 TWENTY_FOOT_DIMS = (5870, 2330, 2200)
+
+CSV_COLUMNS = ["Product_Name", "Length", "Width", "Height", "Quantity", "Stackable"]
 
 
 def normalized_container(container_dims: Tuple[int, int, int]) -> Container:
@@ -343,8 +347,8 @@ class CSVInstanceGenerator(InstanceGenerator):
         ems_mask = jnp.zeros(max_num_ems, bool).at[0].set(True)
 
         # Parse the CSV file to generate the items
-        data_frame = pd.read_csv(csv_path)
-        list_of_items = self._generate_list_of_items(data_frame)
+        rows = self._read_csv(csv_path)
+        list_of_items = self._generate_list_of_items(rows)
         items = tree_transpose(list_of_items)
 
         # Initialize items mask and location
@@ -372,11 +376,39 @@ class CSVInstanceGenerator(InstanceGenerator):
 
         return reset_state
 
-    def _generate_list_of_items(self, data_frame: pd.DataFrame) -> List[Item]:
+    def _read_csv(self, csv_path: str) -> List[Tuple[str, int, int, int, int, int]]:
+        rows = []
+        with open(csv_path, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            for row_index, row in enumerate(reader):
+                if row_index == 0:
+                    if len(row) != len(CSV_COLUMNS):
+                        raise ValueError(
+                            f"Got wrong number of columns, expected: {', '.join(CSV_COLUMNS)}"
+                        )
+                    elif row != CSV_COLUMNS:
+                        raise ValueError("Columns in wrong order")
+                else:
+                    # Column order: Product_Name, Length, Width, Height, Quantity, Stackable.
+                    rows.append(
+                        (
+                            row[0],
+                            int(row[1]),
+                            int(row[2]),
+                            int(row[3]),
+                            int(row[4]),
+                            int(row[5]),
+                        )
+                    )
+        return rows
+
+    def _generate_list_of_items(
+        self, rows: List[Tuple[str, int, int, int, int, int]]
+    ) -> List[Item]:
         """Generate the list of items from a Pandas DataFrame.
 
         Args:
-            data_frame: Pandas DataFrame describing the items for the corresponding instance.
+            rows: List[tuple] describing the items for the corresponding instance.
 
         Returns:
             List of Item flattened so that identical items (quantity > 1) are copied according to
@@ -384,7 +416,7 @@ class CSVInstanceGenerator(InstanceGenerator):
         """
         max_size = max(self.container_dims)
         list_of_items = []
-        for _, (_, x_len, y_len, z_len, quantity, _) in data_frame.iterrows():
+        for (_, x_len, y_len, z_len, quantity, _) in rows:
             identical_items = quantity * [
                 Item(
                     x_len=jnp.array(x_len / max_size, float),
@@ -398,7 +430,7 @@ class CSVInstanceGenerator(InstanceGenerator):
 
 def save_instance_to_csv(
     state: State, path: str, container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS
-) -> pd.DataFrame:
+) -> None:
     """Save an instance to a CSV file. Items are supposed to be normalized by the container_dims
     dimensions and have length, width and height between 0 and 1. The conversion to CSV
     will convert the item dimensions back to millimeters.
@@ -410,7 +442,7 @@ def save_instance_to_csv(
             dimensions of the container in millimeters. By default, assume a 20-ft container.
 
     Returns:
-        A Pandas dataframe that contains the instance data saved to CSV.
+        None
 
     Example:
         Product_Name,Length,Width,Height,Quantity,Stackable
@@ -418,43 +450,23 @@ def save_instance_to_csv(
         shape_2,1100,430,250,3,1
     """
     max_size = max(container_dims)
-
-    # Rescale items to their real size and set to 0 empty items
-    rescaled_items = jax.tree_map(
-        lambda x: round(x * max_size * state.items_mask), state.items
-    )
-    data_frame = pd.DataFrame(rescaled_items._asdict())
-    data_frame.columns = ["Length", "Width", "Height"]
-
-    # Remove empty items
-    data_frame = data_frame[
-        (data_frame["Length"] > 0)
-        & (data_frame["Width"] > 0)
-        & (data_frame["Height"] > 0)
+    items = list(zip(state.items.x_len, state.items.y_len, state.items.z_len))
+    # Rescale items to their real size and remove items which are empty or have a mask set to False.
+    items = [
+        tuple(round(float(x * max_size)) for x in item)
+        for item, mask in zip(items, state.items_mask)
+        if mask and all(x > 0 for x in item)
     ]
-
-    # Add missing fields
-    data_frame["Quantity"] = 1
-    data_frame["Stackable"] = 1
-
-    # Aggregate same items together
-    aggregation_functions = {
-        "Length": "first",
-        "Width": "first",
-        "Height": "first",
-        "Quantity": "sum",
-        "Stackable": "first",
-    }
-    data_frame = data_frame.groupby(["Length", "Width", "Height"]).aggregate(
-        aggregation_functions
-    )
-    data_frame = data_frame.sort_values("Quantity", ascending=False)
-
-    # Make Product_Name column
-    data_frame.index = [f"shape_{i}" for i in range(1, len(data_frame.Length) + 1)]
-    data_frame = data_frame.reset_index().rename(columns={"index": "Product_Name"})
-    data_frame.to_csv(path, index=False)
-    return data_frame
+    grouped_items = list(collections.Counter(items).items())
+    grouped_items.sort(key=operator.itemgetter(1), reverse=True)
+    rows = [
+        (f"shape_{i}", *item, count, 1)
+        for i, (item, count) in enumerate(grouped_items, start=1)
+    ]
+    with open(path, "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(CSV_COLUMNS)
+        writer.writerows(rows)
 
 
 class RandomInstanceGenerator(InstanceGenerator):
