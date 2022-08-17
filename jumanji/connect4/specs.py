@@ -43,7 +43,7 @@ class ObservationSpec(specs.Spec[Observation]):
         )
 
     def generate_value(self) -> Observation:
-        """Generate a value which conforms to this spec."""
+        """Generate values for the observations board and action_mask."""
         return Observation(
             board=self.board_obs.generate_value(),
             action_mask=self.action_mask.generate_value(),

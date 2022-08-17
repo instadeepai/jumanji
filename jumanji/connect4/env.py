@@ -35,7 +35,7 @@ from jumanji.types import Action, Extra, TimeStep, restart, termination, transit
 class Connect4(Environment[State]):
     """A JAX implementation of the 'Connect 4' game.
 
-    - observation: a dataclass with two attributes:
+    - observation: Observation
         - board: jax array (int8) of shape (6, 7):
             each cell contains either:
             - 1 if it contains a token by the current player,
@@ -44,16 +44,18 @@ class Connect4(Environment[State]):
         - action_mask: jax array (bool)
             valid columns (actions) are identified with `True`, invalid ones with `False`.
 
-    - reward: jax array (float) of shape (2,):
-        1 for the winning player, 0 for a draw, -1 for the loosing player.
+    - action: Array containing the column to insert the token into {0, 1, 2, 3, 4, 5, 6}
+
+    - reward: jax array (float) of shape (2,).
+        - 1 for the winning player, 0 for a draw and -1 for the losing player.
 
     - episode termination:
-        - if the board is full, the game ends on a draw,
+        - if the board is full, the game ends on a draw.
         - if a player connects 4 tokens (horizontally, vertically or diagonally), they win
         and the game ends.
         - if a player plays an invalid move, this player loses and the game ends.
 
-    - state: State:
+    - state: State
         - current_player: int, id of the current player {0, 1}.
         - board: jax array (int8) of shape (6, 7):
             each cell contains either:
@@ -157,7 +159,7 @@ class Connect4(Environment[State]):
         return next_state, timestep, extra
 
     def observation_spec(self) -> ObservationSpec:
-        """Returns the observation spec.
+        """Returns the observation spec containing the board and action_mask arrays.
 
         Returns:
             observation_spec: ObservationSpec tree of board and action_mask spec.
