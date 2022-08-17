@@ -78,7 +78,9 @@ def test_wrapper__observation_spec(
     wrapped_fake_environment: Wrapper,
     fake_environment: FakeEnvironment,
 ) -> None:
-    """Checks `Wrapper.observation_spec` calls the observation_spec function of the underlying env."""
+    """Checks `Wrapper.observation_spec` calls the observation_spec function of
+    the underlying env.
+    """
     mock_obs_spec = mocker.patch.object(
         fake_environment, "observation_spec", autospec=True
     )

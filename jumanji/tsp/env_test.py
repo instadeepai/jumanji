@@ -94,8 +94,8 @@ def test_tsp__does_not_smoke(tsp_env: TSP, capsys: pytest.CaptureFixture) -> Non
 
 def test_tsp__trajectory_action(tsp_env: TSP) -> None:
     """
-    Checks that the agent stops when there are no more cities to be selected and that the appropriate reward is
-    received. The testing loop ensures that no city is selected twice.
+    Checks that the agent stops when there are no more cities to be selected and that the
+    appropriate reward is received. The testing loop ensures that no city is selected twice.
     """
     key = random.PRNGKey(0)
     state, timestep, _ = tsp_env.reset(key)
@@ -123,7 +123,8 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
 
 
 def test_tsp__invalid_action(tsp_env: TSP) -> None:
-    """Checks that an invalid action leads to a termination and the appropriate reward is received."""
+    """Checks that an invalid action leads to a termination and the appropriate reward is
+    received."""
     key = random.PRNGKey(0)
     state, timestep, _ = tsp_env.reset(key)
 

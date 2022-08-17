@@ -13,27 +13,32 @@ repos:
     rev: 22.3.0
     hooks:
       - id: black
-        name: "Format code (black)"
+        name: "Code formatter"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
       - id: end-of-file-fixer
+        name: "End of file fixer"
       - id: debug-statements
+        name: "Debug imports and breakpoints checker"
       - id: requirements-txt-fixer
+        name: "Requirements txt fixer"
       - id: mixed-line-ending
+        name: "Mixed line ending fixer"
       - id: check-yaml
+        name: "Yaml checker"
         args: [ '--unsafe' ]
       - id: trailing-whitespace
+        name: "Trailing whitespace fixer"
 
   - repo: https://gitlab.com/pycqa/flake8
     rev: 4.0.1
     hooks:
       - id: flake8
+        name: "Linter"
         args:
-          - --max-line-length=100
-          - --max-cognitive-complexity=10
-          - --ignore=E266,E501,E731,W503,A002,A003
+          - --config=setup.cfg
         additional_dependencies:
           - pep8-naming
           - flake8-builtins
@@ -46,11 +51,13 @@ repos:
     rev: v0.942
     hooks:
       - id: mypy
+        name: "Static type checker"
 
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v4.1.0
     hooks:
       - id: commitlint
+        name: "Commit linter"
         stages: [ commit-msg ]
         additional_dependencies: [ '@commitlint/config-conventional' ]
 
@@ -58,6 +65,7 @@ repos:
     rev: v1.3.0
     hooks:
       - id: insert-license
+        name: "License inserter"
         files: .*py$
         args:
           - --license-filepath=license_header.txt

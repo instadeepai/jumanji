@@ -125,7 +125,8 @@ def register(
     Args:
         id: environment ID, formatted as `(env_name)[-v(version)]`.
         entry_point: module and class constructor for the environment.
-        **kwargs: extra arguments that will be passed to the environment constructor at instantiation.
+        **kwargs: extra arguments that will be passed to the environment constructor at
+            instantiation.
     """
     global _REGISTRY
 

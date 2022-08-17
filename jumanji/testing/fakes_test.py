@@ -82,7 +82,8 @@ def test_fake_multi_environment__step(
 def test_fake_multi_environment__does_not_smoke(
     fake_multi_environment: fakes.FakeMultiEnvironment,
 ) -> None:
-    """Validates the run of an episode in the fake multi agent environment. Check that it does not smoke."""
+    """Validates the run of an episode in the fake multi agent environment.
+    Check that it does not smoke."""
     state, timestep, _ = fake_multi_environment.reset(random.PRNGKey(0))
     action = fake_multi_environment.action_spec().generate_value()
     assert action.shape[0] == fake_multi_environment.num_agents

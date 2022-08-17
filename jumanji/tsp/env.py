@@ -44,8 +44,8 @@ class TSP(Environment[State]):
             binary mask (0/1 <--> not visited/visited)
 
     - reward: jax array (float32)
-        the sum of the distances between consecutive cities at the end of the episode (the reward is 0 if a previously
-        selected city is selected again)
+        the sum of the distances between consecutive cities at the end of the episode
+        (the reward is 0 if a previously selected city is selected again)
 
     - state: State
         - problem: jax array (float32) of shape (problem_size, 2)
@@ -55,13 +55,13 @@ class TSP(Environment[State]):
         - visited_mask: jax array (int8) of shape (problem_size,)
             binary mask (0/1 <--> not visited/visited)
         - order: jax array (int32) of shape (problem_size,)
-            the identifiers of the cities that have been visited (-1 means that no city has been visited yet at that
-            time in the sequence)
+            the identifiers of the cities that have been visited (-1 means that no city has been
+            visited yet at that time in the sequence)
         - num_visited: int32
             number of cities that have been visited
 
-    [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with Multiple Optima for
-        Reinforcement Learning".
+    [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization
+        with Multiple Optima for Reinforcement Learning".
     """
 
     def __init__(self, problem_size: int = 10):
@@ -79,7 +79,8 @@ class TSP(Environment[State]):
 
         Returns:
              state: State object corresponding to the new state of the environment.
-             timestep: TimeStep object corresponding to the first timestep returned by the environment.
+             timestep: TimeStep object corresponding to the first timestep returned
+                 by the environment.
              extra: Not used.
         """
         problem_key, start_key = random.split(key)
@@ -100,7 +101,8 @@ class TSP(Environment[State]):
                 the identifier (index) of the first city
         Returns:
             state: State object corresponding to the new state of the environment.
-            timestep: TimeStep object corresponding to the first timestep returned by the environment.
+            timestep: TimeStep object corresponding to the first timestep returned by the
+                environment.
             extra: Not used.
         """
         state = State(
@@ -123,8 +125,8 @@ class TSP(Environment[State]):
             action: Array containing the index of the next position to visit.
 
         Returns:
-            state, timestep, extra: Tuple[State, TimeStep, Extra] containing the next state of the environment, as well
-            as the timestep to be observed.
+            state, timestep, extra: Tuple[State, TimeStep, Extra] containing the next state of the
+                environment, as well as the timestep to be observed.
         """
         is_valid = state.visited_mask[action] == 0
         state = jax.lax.cond(
@@ -218,8 +220,9 @@ class TSP(Environment[State]):
 
     def _state_to_timestep(self, state: State, is_valid: bool) -> TimeStep:
         """
-        Checks if the state is terminal and converts it into a timestep. The episode terminates if there is no legal
-        action to take (i.e., all cities have been visited) or if the last action was not valid.
+        Checks if the state is terminal and converts it into a timestep. The episode terminates if
+        there is no legal action to take (i.e., all cities have been visited) or if the last
+        action was not valid.
 
         Args:
             state: State object containing the dynamics of the environment.

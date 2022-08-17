@@ -110,9 +110,10 @@ class Routing(Environment[State]):
         self._reward_for_terminal_step = jnp.array(reward_for_terminal_step, float)
 
         if renderer:
-            assert isinstance(
-                renderer, viewer.RoutingViewer
-            ), f"Expected a renderer of type 'RoutingViewer', got {renderer} of type {type(renderer)}."
+            assert isinstance(renderer, viewer.RoutingViewer), (
+                "Expected a renderer of type 'RoutingViewer', "
+                f"got {renderer} of type {type(renderer)}."
+            )
         self.viewer = renderer
 
     def observation_spec(self) -> specs.BoundedArray:

@@ -74,7 +74,10 @@ class Knapsack(Environment[State]):
         self.total_budget = total_budget
 
     def __repr__(self) -> str:
-        return f"0-1 Knapsack environment with {self.problem_size} items, and a total budget of {self.total_budget}"
+        return (
+            f"0-1 Knapsack environment with {self.problem_size} items, "
+            f"and a total budget of {self.total_budget}"
+        )
 
     def reset(
         self,
@@ -133,8 +136,8 @@ class Knapsack(Environment[State]):
             action: Array containing the index of next item to take.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep, Extra] containing the next state of the environment,
-                as well as the timestep to be observed.
+            state, timestep: Tuple[State, TimeStep, Extra] containing the next state of the
+                environment, as well as the timestep to be observed.
         """
 
         state_budget_fits = state.remaining_budget >= state.problem[action, 0]
