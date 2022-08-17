@@ -15,7 +15,7 @@
 """Abstract environment class"""
 
 import abc
-from typing import Any, Generic, Literal, Tuple, TypeVar
+from typing import Any, Generic, Tuple, TypeVar
 
 from chex import PRNGKey
 
@@ -118,14 +118,10 @@ class Environment(abc.ABC, Generic[State]):
         """
 
     def __enter__(self) -> "Environment":
-        """Support with-statement for the environment."""
         return self
 
-    def __exit__(self, *args: Any) -> Literal[False]:
-        """Support with-statement for the environment."""
+    def __exit__(self, *args: Any) -> None:
         self.close()
-        # propagate exception
-        return False
 
 
 class Wrapper(Environment[State], Generic[State]):
@@ -202,14 +198,10 @@ class Wrapper(Environment[State], Generic[State]):
         return self._env.close()
 
     def __enter__(self) -> "Wrapper":
-        """Support with-statement for the environment."""
         return self
 
-    def __exit__(self, *args: Any) -> Literal[False]:
-        """Support with-statement for the environment."""
+    def __exit__(self, *args: Any) -> None:
         self.close()
-        # propagate exception
-        return False
 
 
 def make_environment_spec(environment: Environment) -> specs.EnvironmentSpec:

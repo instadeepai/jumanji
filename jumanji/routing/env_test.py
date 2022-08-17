@@ -35,7 +35,7 @@ def routing_env() -> Routing:
     state, _, _ = env.reset(jax.random.PRNGKey(0))
     with Display(visible=False, size=(500, 500)):
         env.render(state)
-        env.viewer.close()  # type: ignore
+        env.close()  # type: ignore
     return env
 
 
