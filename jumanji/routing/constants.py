@@ -25,3 +25,7 @@ LEFT = 1
 UP = 2
 RIGHT = 3
 DOWN = 4
+
+# Rendering
+VIEWER_WIDTH = 1000
+VIEWER_HEIGHT = 1000

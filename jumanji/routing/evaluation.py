@@ -41,7 +41,8 @@ def is_board_complete(env: Routing, grid: Array) -> jnp.bool_:
     """Returns True if all agents in a state are connected.
 
     Args:
-        grid : Any observation of the environment grid.
+        env: instance of the `Routing` environment.
+        grid: Any observation of the environment grid.
 
     Return:
         True if all agents are connected otherwise False.

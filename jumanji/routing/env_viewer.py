@@ -104,7 +104,6 @@ class RoutingViewer:
         Args:
             rect: Rectangle to draw shape in.
             value: Color value.
-
         """
         color = self.palette[value if value < 2 else 2 + (value - 2) // 3]
         if value > 1 and (value - TARGET) % 3 == 0:

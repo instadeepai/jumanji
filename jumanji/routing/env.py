@@ -23,21 +23,36 @@ from jax import random
 import jumanji.routing.env_viewer as viewer
 from jumanji import specs, wrappers
 from jumanji.env import Environment
-from jumanji.routing.constants import EMPTY, HEAD, NOOP, SOURCE, TARGET
+from jumanji.routing.constants import (
+    EMPTY,
+    HEAD,
+    NOOP,
+    SOURCE,
+    TARGET,
+    VIEWER_HEIGHT,
+    VIEWER_WIDTH,
+)
 from jumanji.routing.types import Position, State
 from jumanji.types import Extra, TimeStep, restart, termination, transition, truncation
 
 
 class Routing(Environment[State]):
     """
-    A JAX implementation of the 'Routing' environment. Currently hard mode is not supported.
+    The Routing environment consists of a 2d grid containing a number of wires that must be
+    connected from a given starting position to a corresponding target position. The goal of the
+    environment is to connect each wire to its respective target in as few steps as possible without
+    any of the wires overlapping.
+
+    Note: routing problems are randomly generated and may not be solvable!
 
     - observation: jax array (int) of shape (num_agents, rows, cols):
         - each 2d array (row, col) along axis 0 is the agent's local observation.
         - agents have ids from 0 to (num_agents - 1)
 
+    - action: jax array (int) of shape (num_agents,): [0,1,2,3,4] -> [No Op, Left, Up, Right, Down].
+
     - reward: jax array (float) of shape (num_agents,)
-        - each agents reward is given separately
+        - each agent's reward is given separately
 
     - episode termination: if a wire traps itself and can't move
         or the horizon is reached, or the wire connects to its target it is considered done.
@@ -51,15 +66,11 @@ class Routing(Environment[State]):
         - step : int, step number in episode.
     """
 
-    VIEWER_WIDTH = 1000
-    VIEWER_HEIGHT = 1000
-
     def __init__(
         self,
         rows: int = 12,
         cols: int = 12,
         num_agents: int = 1,
-        difficulty: str = "easy",
         reward_per_timestep: float = -0.03,
         reward_for_connection: float = 0.1,
         reward_for_blocked: float = -0.1,
@@ -71,34 +82,22 @@ class Routing(Environment[State]):
         """Create the Routing Environment.
 
         Args:
-            rows : number of rows in the grid.
-            cols : number of columns in the grid.
-            num_agents : number of separate agents/wires and separate targets in the grid.
-            difficulty : there are two difficulties - "easy" is normal random spawning of
-                wires and targets - "hard" ensures wires have straight line intersections
-                with other agents making it more difficult to connect and requiring cooperation.
-                Currently, hard mode is not supported.
-            reward_per_timestep : the reward given to an agent for every
-                timestep not being connected.
-            reward_for_connection : the reward given to an agent for
-                connecting to its target.
-            reward_for_blocked : the reward given to an agent
-                for blocking itself.
+            rows: number of rows in the grid.
+            cols: number of columns in the grid.
+            num_agents: number of separate agents/wires and separate targets in the grid.
+            reward_per_timestep: the reward given to an agent for every timestep not
+                being connected.
+            reward_for_connection: the reward given to an agent for connecting to its target.
+            reward_for_blocked: the reward given to an agent for blocking itself.
             reward_for_noop: reward given if an agent performs a no-op (should be a small negative)
-            step_limit : the number of steps allowed before an episode terminates.
-            reward_for_terminal_step : the reward given if step_limit is reached.
-            renderer: an optional RoutingViewer instance to render the environment, if left as None
-                a default viewer is created when render is called.
+            step_limit: the number of steps allowed before an episode terminates.
+            reward_for_terminal_step: the reward given if `step_limit` is reached.
+            renderer: an optional `RoutingViewer` instance to render the environment, if left as
+                None a default viewer is created when render is called.
         """
-
         self.rows = rows
         self.cols = cols
         self.num_agents = num_agents
-        self.difficulty = difficulty.upper()
-        if self.difficulty != "EASY":
-            raise NotImplementedError(
-                f"'easy' is the only implemented mode, but got difficulty: {difficulty}."
-            )
 
         self.obs_ints = 2 + 3 * num_agents
 
@@ -117,10 +116,10 @@ class Routing(Environment[State]):
         self.viewer = renderer
 
     def observation_spec(self) -> specs.BoundedArray:
-        """Returns the observation spec.
+        """Returns the observation spec for Routing environment.
 
         Returns:
-            observation_spec: specs object
+            observation_spec: BoundedArray of shape (num_agents, rows, cols).
         """
         return specs.BoundedArray(
             shape=(self.num_agents, self.rows, self.cols),
@@ -157,9 +156,9 @@ class Routing(Environment[State]):
         return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
-        """Describes the discount returned by the environment.
-            Since this is a multi-agent environment, the environment gives an array of discounts.
-            This array is of shape (num_agents,)
+        """Describes the discount returned by the environment. Since this is a multi-agent
+        environment, the environment gives an array of discounts. This array is of shape
+        (num_agents,).
 
         Returns:
             discount_spec: a `specs.Array` spec.
@@ -346,8 +345,8 @@ class Routing(Environment[State]):
                 self.num_agents,
                 self.rows,
                 self.cols,
-                self.VIEWER_WIDTH,
-                self.VIEWER_HEIGHT,
+                VIEWER_WIDTH,
+                VIEWER_HEIGHT,
             )
 
         return self.viewer.render(state.grid)
@@ -415,9 +414,9 @@ class Routing(Environment[State]):
         """Spawn an agent and update the state grid.
 
         Args:
-            grid (Array): environment state grid.
-            key (KeyArray): pseudo random number key.
-            id (int): id of the agent being spawned.
+            grid: environment state grid.
+            key: pseudo random number key.
+            id: id of the agent being spawned.
 
         Returns:
             Array: the updated environment grid."""
@@ -433,8 +432,8 @@ class Routing(Environment[State]):
         """Generates a random empty position in the environment grid using the random key.
 
         Args:
-            grid (Array): the environment state grid.
-            key (KeyArray): the pseudo random number key.
+            grid: the environment state grid.
+            key: the pseudo random number key.
 
         Returns:
             Tuple: an empty position.
@@ -452,7 +451,7 @@ class Routing(Environment[State]):
         """Get the done flags for each agent.
 
         Args:
-            grid (Array) : the environment state grid.
+            grid: the environment state grid.
 
         Returns:
             Array : array of boolean flags in the shape (number of agents, ).
@@ -499,12 +498,15 @@ class Routing(Environment[State]):
 
     def _agent_observation(self, grid: Array, agent_id: int) -> Array:
         """
-        Get an observation for an agent's perspective, this makes it so an agent always sees
-            itself using the values 2, 3, 4.
+        Encodes the observation with respect to the current agent defined by 'agent_id'.
+        The current agent denoted as 2, 3 and 4.
+            2 = agent route.
+            3 = target position.
+            4 = agent head.
 
         Args:
-            grid (Array): the environment state grid.
-            agent_id (int): the id of the agent whose observation is being requested.
+            grid: the environment state grid.
+            agent_id: the id of the agent whose observation is being requested.
 
         Returns:
             Array: the state in the perspective of the agent.
@@ -545,7 +547,7 @@ class Routing(Environment[State]):
         """Checks if an agent is blocked by checking their action mask.
 
         Args:
-            action_mask (Array): an agents action mask.
+            action_mask: an agents action mask.
 
         Returns:
             bool: returns true if the agent is blocked otherwise false.
@@ -553,12 +555,12 @@ class Routing(Environment[State]):
         return jnp.all(action_mask[1:] == 0)
 
     def _step_agent(self, grid: Array, agent_id: int, action: int) -> Array:
-        """Take an agent step.
+        """Take a step for a single agent.
 
         Args:
-            grid (Array): the environment state grid.
-            id (int): the agents id.
-            action (int): the agents action.
+            grid: the environment state grid.
+            agent_id: the agent's id.
+            action: the agents action.
 
         Returns:
             Array: the new updated state.
@@ -582,14 +584,15 @@ class Routing(Environment[State]):
         """Checks to see if an agents move is valid.
 
         Args:
-            grid (Array): the environment state grid.
-            agent_id (int): the agents id.
-            position (Tuple[Array,Array]): the agents position.
+            grid: the environment state grid.
+            agent_id: the agent's id.
+            position: the agent's position.
 
         Returns:
             bool: True if the agent moving to position is valid.
         """
         row, col = position.x, position.y
+
         return (
             (0 <= row)
             & (row < self.rows)
@@ -603,9 +606,10 @@ class Routing(Environment[State]):
         """Move an agent.
 
         Args:
-            grid (Array): the environment state grid.
-            agent_id (Agent): the id of the agent being moved.
-            position (tuple(int, int)): the position the agent is moving to.
+            grid_id_position: Tuple of
+                - the environment state grid.
+                - the id of the agent being moved.
+                - the position the agent is moving to.
 
         Returns:
             Array: the new updated environment state.
@@ -628,8 +632,8 @@ def move(position: Position, action: int) -> Position:
     """Use a position and an action to return a new position.
 
     Args:
-        position (Position): a position representing row and col.
-        action (int): the action representing cardinal directions.
+        position: a position representing row and col.
+        action: the action representing cardinal directions.
 
     Returns:
         Position : the new position after the move.
@@ -658,7 +662,10 @@ def intersect(
     """Checks to see if line segments intersect.
 
     Args:
-        position A, B, C, D (Position): each argument is a position.
+        position_a: Position point a
+        position_b: Position point b
+        position_c: Position point c
+        position_d: Position point d
 
     Returns:
         bool: true if line segments AB and CD intersect."""
@@ -676,10 +683,12 @@ def counter_clockwise(
     position_b: Position,
     position_c: Position,
 ) -> Array:
-    """Determines if points A, B and C are positioned in a counter clockwise order.
+    """Determines if points A, B and C are positioned in a counterclockwise order.
 
     Args:
-        position A, B, C, D (Position): each argument is a position.
+        position_a: Position point a
+        position_b: Position point b
+        position_c: Position point c
 
     Returns:
         bool: true if points A, B, C are ordered in a counter clockwise manner.
