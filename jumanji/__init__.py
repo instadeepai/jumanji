@@ -135,11 +135,22 @@ register(
 )
 
 # Routing
-# TODO(alex) agreeing on standard configs (expected name: Routing-n3-v0)
 register(
-    id="Routing-n3-v0",
-    entry_point="jumanji.pcb_grid:SingleRouting",
-    kwargs={},
+    id="Routing-n3-8x8-v0",
+    entry_point="jumanji.routing:Routing",
+    kwargs={"rows": 8, "cols": 8, "num_agents": 3, "step_limit": 64},
+)
+
+register(
+    id="Routing-n4-12x12-v0",
+    entry_point="jumanji.routing:Routing",
+    kwargs={"rows": 12, "cols": 12, "num_agents": 4, "step_limit": 144},
+)
+
+register(
+    id="Routing-n5-16x16-v0",
+    entry_point="jumanji.routing:Routing",
+    kwargs={"rows": 16, "cols": 16, "num_agents": 5, "step_limit": 256},
 )
 
 
