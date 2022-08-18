@@ -17,4 +17,7 @@ from jumanji.testing.fakes import FakeEnvironment
 
 def test_make_environment_spec(fake_environment: FakeEnvironment):
     env_spec = make_environment_spec(fake_environment)
-    print(env_spec)
+    assert hasattr(env_spec, "observations")
+    assert hasattr(env_spec, "actions")
+    assert hasattr(env_spec, "rewards")
+    assert hasattr(env_spec, "discounts")
