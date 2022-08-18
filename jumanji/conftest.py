@@ -16,7 +16,7 @@ import dm_env
 import pytest
 
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment
-from jumanji.wrappers import JumanjiEnvironmentToDeepMindEnv
+from jumanji.wrappers import JumanjiToDMEnvWrapper
 
 
 @pytest.fixture
@@ -34,4 +34,4 @@ def fake_multi_environment(time_limit: int = 10) -> FakeMultiEnvironment:
 @pytest.fixture
 def fake_dm_env(time_limit: int = 10) -> dm_env.Environment:
     """Creates a fake environment wrapped as a dm_env.Environment."""
-    return JumanjiEnvironmentToDeepMindEnv(FakeEnvironment(time_limit=time_limit))
+    return JumanjiToDMEnvWrapper(FakeEnvironment(time_limit=time_limit))

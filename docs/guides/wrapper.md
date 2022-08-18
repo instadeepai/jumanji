@@ -13,7 +13,7 @@ import jax.random
 import jumanji.wrappers
 
 brax_env = brax.envs.create("walker2d")
-env = jumanji.wrappers.BraxEnvToJumanjiEnvironment(brax_env)
+env = jumanji.wrappers.BraxToJumanjiWrapper(brax_env)
 
 key = jax.random.PRNGKey(0)
 state, timestep, extra = env.reset(key)

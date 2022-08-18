@@ -700,6 +700,6 @@ def counter_clockwise(
 
 
 # Convenient function to instantiate a single-agent version of the Routing environment
-SingleRouting = lambda *args, **kwargs: wrappers.MultiToSingleEnvironment(
+SingleRouting = lambda *args, **kwargs: wrappers.MultiToSingleWrapper(
     Routing(*args, **kwargs)
 )

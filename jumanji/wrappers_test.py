@@ -34,10 +34,10 @@ from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import Extra, StepType, TimeStep
 from jumanji.wrappers import (
     AutoResetWrapper,
-    BraxEnvToJumanjiEnvironment,
-    JumanjiEnvironmentToDeepMindEnv,
-    JumanjiEnvironmentToGymEnv,
-    MultiToSingleEnvironment,
+    BraxToJumanjiWrapper,
+    JumanjiToDMEnvWrapper,
+    JumanjiToGymWrapper,
+    MultiToSingleWrapper,
     VmapWrapper,
 )
 
@@ -54,21 +54,21 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         self, fake_environment: FakeEnvironment
     ) -> None:
         """Validates initialization of the dm_env wrapper."""
-        dm_environment = JumanjiEnvironmentToDeepMindEnv(fake_environment)
+        dm_environment = JumanjiToDMEnvWrapper(fake_environment)
         assert isinstance(dm_environment, dm_env.Environment)
-        dm_environment_with_key = JumanjiEnvironmentToDeepMindEnv(
+        dm_environment_with_key = JumanjiToDMEnvWrapper(
             fake_environment, key=jax.random.PRNGKey(0)
         )
         assert isinstance(dm_environment_with_key, dm_env.Environment)
 
-    def test_dm_env__reset(self, fake_dm_env: JumanjiEnvironmentToDeepMindEnv) -> None:
+    def test_dm_env__reset(self, fake_dm_env: JumanjiToDMEnvWrapper) -> None:
         """Validates reset function and timestep type of the wrapped environment."""
         timestep = fake_dm_env.reset()
         assert isinstance(timestep, dm_env.TimeStep)
         assert timestep.step_type == dm_env.StepType.FIRST
 
     def test_jumanji_environment_to_deep_mind_env__step(
-        self, fake_dm_env: JumanjiEnvironmentToDeepMindEnv
+        self, fake_dm_env: JumanjiToDMEnvWrapper
     ) -> None:
         """Validates step function of the wrapped environment."""
         timestep = fake_dm_env.reset()
@@ -77,19 +77,19 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         assert next_timestep != timestep
 
     def test_jumanji_environment_to_deep_mind_env__observation_spec(
-        self, fake_dm_env: JumanjiEnvironmentToDeepMindEnv
+        self, fake_dm_env: JumanjiToDMEnvWrapper
     ) -> None:
         """Validates observation_spec property of the wrapped environment."""
         assert isinstance(fake_dm_env.observation_spec(), dm_env.specs.Array)
 
     def test_jumanji_environment_to_deep_mind_env__action_spec(
-        self, fake_dm_env: JumanjiEnvironmentToDeepMindEnv
+        self, fake_dm_env: JumanjiToDMEnvWrapper
     ) -> None:
         """Validates action_spec property of the wrapped environment."""
         assert isinstance(fake_dm_env.action_spec(), dm_env.specs.Array)
 
     def test_jumanji_environment_to_deep_mind_env__unwrapped(
-        self, fake_dm_env: JumanjiEnvironmentToDeepMindEnv
+        self, fake_dm_env: JumanjiToDMEnvWrapper
     ) -> None:
         """Validates unwrapped property of the wrapped environment."""
         assert isinstance(fake_dm_env.unwrapped, Environment)
@@ -103,19 +103,19 @@ class TestJumanjiEnvironmentToGymEnv:
     @pytest.fixture
     def fake_gym_env(self, time_limit: int = 10) -> gym.Env:
         """Creates a fake environment wrapped as a gym.Env."""
-        return JumanjiEnvironmentToGymEnv(FakeEnvironment(time_limit=time_limit))
+        return JumanjiToGymWrapper(FakeEnvironment(time_limit=time_limit))
 
     def test_jumanji_environment_to_gym_env__init(
         self, fake_environment: FakeEnvironment
     ) -> None:
         """Validates initialization of the gym wrapper."""
-        gym_environment = JumanjiEnvironmentToGymEnv(fake_environment)
+        gym_environment = JumanjiToGymWrapper(fake_environment)
         assert isinstance(gym_environment, gym.Env)
-        gym_environment_with_seed = JumanjiEnvironmentToGymEnv(fake_environment, seed=0)
+        gym_environment_with_seed = JumanjiToGymWrapper(fake_environment, seed=0)
         assert isinstance(gym_environment_with_seed, gym.Env)
 
     def test_jumanji_environment_to_gym_env__reset(
-        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+        self, fake_gym_env: JumanjiToGymWrapper
     ) -> None:
         """Validates reset function of the wrapped environment."""
         observation1 = fake_gym_env.reset()  # type: ignore
@@ -132,7 +132,7 @@ class TestJumanjiEnvironmentToGymEnv:
         assert_trees_are_different(state1, state2)
 
     def test_jumanji_environment_to_gym_env__step(
-        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+        self, fake_gym_env: JumanjiToGymWrapper
     ) -> None:
         """Validates step function of the wrapped environment."""
         observation = fake_gym_env.reset()  # type: ignore
@@ -143,13 +143,13 @@ class TestJumanjiEnvironmentToGymEnv:
         assert isinstance(terminated, bool)
 
     def test_jumanji_environment_to_gym_env__observation_space(
-        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+        self, fake_gym_env: JumanjiToGymWrapper
     ) -> None:
         """Validates observation_space attribute of the wrapped environment."""
         assert isinstance(fake_gym_env.observation_space, gym.spaces.Space)
 
     def test_jumanji_environment_to_gym_env__action_space(
-        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+        self, fake_gym_env: JumanjiToGymWrapper
     ) -> None:
         """Validates action_space attribute of the wrapped environment."""
         assert isinstance(fake_gym_env.action_space, gym.spaces.Space)
@@ -157,7 +157,7 @@ class TestJumanjiEnvironmentToGymEnv:
     def test_jumanji_environment_to_gym_env__render(
         self,
         mocker: pytest_mock.MockerFixture,
-        fake_gym_env: JumanjiEnvironmentToGymEnv,
+        fake_gym_env: JumanjiToGymWrapper,
     ) -> None:
 
         mock_render = mocker.patch.object(
@@ -172,7 +172,7 @@ class TestJumanjiEnvironmentToGymEnv:
     def test_jumanji_environment_to_gym_env__close(
         self,
         mocker: pytest_mock.MockerFixture,
-        fake_gym_env: JumanjiEnvironmentToGymEnv,
+        fake_gym_env: JumanjiToGymWrapper,
     ) -> None:
 
         mock_close = mocker.patch.object(fake_gym_env.unwrapped, "close", autospec=True)
@@ -182,7 +182,7 @@ class TestJumanjiEnvironmentToGymEnv:
         mock_close.assert_called_once()
 
     def test_jumanji_environment_to_gym_env__unwrapped(
-        self, fake_gym_env: JumanjiEnvironmentToGymEnv
+        self, fake_gym_env: JumanjiToGymWrapper
     ) -> None:
         """Validates unwrapped property of the wrapped environment."""
         assert isinstance(fake_gym_env.unwrapped, Environment)
@@ -192,24 +192,24 @@ class TestMultiToSingleEnvironment:
     @pytest.fixture
     def fake_multi_to_single_env(
         self, fake_multi_environment: FakeMultiEnvironment
-    ) -> MultiToSingleEnvironment:
+    ) -> MultiToSingleWrapper:
         """Creates a fake wrapper that converts a multi-agent Environment
         to a single-agent Environment."""
-        return MultiToSingleEnvironment(fake_multi_environment)
+        return MultiToSingleWrapper(fake_multi_environment)
 
     def test_multi_env_wrapper__init(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates initialization of the multi agent to single agent wrapper."""
-        single_agent_env = MultiToSingleEnvironment(fake_multi_environment)
+        single_agent_env = MultiToSingleWrapper(fake_multi_environment)
         assert isinstance(single_agent_env, Environment)
 
     def test_multi_env__reset(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates (jitted) reset function and timestep type of the multi agent
         to single agent wrapped environment.
@@ -224,7 +224,7 @@ class TestMultiToSingleEnvironment:
     def test_multi_env__step(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates (jitted) step function of the multi agent to single
         agent wrapped environment.
@@ -249,10 +249,10 @@ class TestMultiToSingleEnvironment:
     def test_multi_env__different_reward_aggregator(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Checks that using a different reward aggregator is correct."""
-        mean_fake_multi_to_single_env = MultiToSingleEnvironment(
+        mean_fake_multi_to_single_env = MultiToSingleWrapper(
             fake_multi_environment, reward_aggregator=jnp.mean
         )
         state, timestep, _ = mean_fake_multi_to_single_env.reset(
@@ -271,7 +271,7 @@ class TestMultiToSingleEnvironment:
     def test_multi_env__observation_spec(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates observation_spec property of the multi agent to single
         agent wrapped environment.
@@ -283,7 +283,7 @@ class TestMultiToSingleEnvironment:
     def test_multi_env__action_spec(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates action_spec property of the multi agent to single
         agent wrapped environment.
@@ -295,7 +295,7 @@ class TestMultiToSingleEnvironment:
     def test_multi_env__unwrapped(
         self,
         fake_multi_environment: FakeMultiEnvironment,
-        fake_multi_to_single_env: MultiToSingleEnvironment,
+        fake_multi_to_single_env: MultiToSingleWrapper,
     ) -> None:
         """Validates unwrapped property of the multi agent to single
         agent wrapped environment.
@@ -374,13 +374,13 @@ class TestBraxEnvToJumanjiEnvironment:
     @pytest.fixture
     def jumanji_environment_from_brax(self, fake_brax_env: BraxEnv) -> Environment:
         """Instantiates an Environment wrapped from a Brax env."""
-        return BraxEnvToJumanjiEnvironment(fake_brax_env)
+        return BraxToJumanjiWrapper(fake_brax_env)
 
     def test_brax_env_to_jumanji_environment__init(
         self, fake_brax_env: BraxEnv
     ) -> None:
         """Validates initialization of the wrapper."""
-        environment = BraxEnvToJumanjiEnvironment(fake_brax_env)
+        environment = BraxToJumanjiWrapper(fake_brax_env)
         assert isinstance(environment, Environment)
 
     def test_brax_env_to_jumanji_environment__reset(

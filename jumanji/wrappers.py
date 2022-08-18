@@ -32,7 +32,7 @@ State = TypeVar("State")
 Observation = TypeVar("Observation")
 
 
-class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
+class JumanjiToDMEnvWrapper(dm_env.Environment):
     """A wrapper that converts Environment to dm_env.Environment."""
 
     def __init__(self, env: Environment, key: Optional[PRNGKey] = None):
@@ -120,7 +120,7 @@ class JumanjiEnvironmentToDeepMindEnv(dm_env.Environment):
         return self._env
 
 
-class MultiToSingleEnvironment(Wrapper):
+class MultiToSingleWrapper(Wrapper):
     """A wrapper that converts a multi-agent Environment to a single-agent Environment."""
 
     def __init__(
@@ -241,7 +241,7 @@ class VmapWrapper(Wrapper):
         return state, timestep, extra
 
 
-class BraxEnvToJumanjiEnvironment(Environment):
+class BraxToJumanjiWrapper(Environment):
     """A wrapper that converts a Brax environment to an Environment for standardisation,
     use with the `EnvironmentLoop` and to augment the API (add timesteps, metrics...).
     """
@@ -360,7 +360,7 @@ class AutoResetWrapper(Wrapper):
         return state, timestep, extra
 
 
-class JumanjiEnvironmentToGymEnv(gym.Env):
+class JumanjiToGymWrapper(gym.Env):
     """A wrapper that converts Environment to one that follows the gym.Env API"""
 
     # Flag that prevents `gym.register` from misinterpreting the `_step` and
