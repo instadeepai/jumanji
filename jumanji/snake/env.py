@@ -490,6 +490,7 @@ class Snake(Environment[State]):
         ax.plot([0, n_cols], [n_rows, n_rows], "-k", lw=2)
         ax.plot([n_cols, n_cols], [n_rows, 0], "-k", lw=2)
         ax.plot([n_cols, 0], [0, 0], "-k", lw=2)
+        plt.close()
 
         def animate(state: State) -> Any:
             del ax.patches[:]
