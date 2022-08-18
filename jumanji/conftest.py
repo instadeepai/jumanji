@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 import dm_env
 import pytest
 
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment
 from jumanji.wrappers import JumanjiToDMEnvWrapper
+
+# Use headless driver for Pygame.
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
 @pytest.fixture

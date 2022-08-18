@@ -24,5 +24,4 @@ pytest-mock
 pytest-parallel
 pytest-xdist
 pytype
-PyVirtualDisplay
 testfixtures

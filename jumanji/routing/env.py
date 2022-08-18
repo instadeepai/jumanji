@@ -20,9 +20,9 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import random
 
-import jumanji.routing.env_viewer as viewer
 from jumanji import specs, wrappers
 from jumanji.env import Environment
+from jumanji.routing import env_viewer
 from jumanji.routing.constants import (
     EMPTY,
     HEAD,
@@ -77,7 +77,7 @@ class Routing(Environment[State]):
         reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
-        renderer: Optional[viewer.RoutingViewer] = None,
+        renderer: Optional[env_viewer.RoutingViewer] = None,
     ):
         """Create the Routing Environment.
 
@@ -110,7 +110,7 @@ class Routing(Environment[State]):
         self._reward_for_terminal_step = jnp.array(reward_for_terminal_step, float)
 
         if renderer:
-            assert isinstance(renderer, viewer.RoutingViewer), (
+            assert isinstance(renderer, env_viewer.RoutingViewer), (
                 "Expected a renderer of type 'RoutingViewer', "
                 f"got {renderer} of type {type(renderer)}."
             )
@@ -342,7 +342,7 @@ class Routing(Environment[State]):
             Array of rgb pixel values in the shape (width, height, rgb).
         """
         if self.viewer is None:
-            self.viewer = viewer.RoutingViewer(
+            self.viewer = env_viewer.RoutingViewer(
                 self.num_agents,
                 self.rows,
                 self.cols,

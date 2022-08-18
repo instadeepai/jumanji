@@ -27,7 +27,6 @@ module = [
     "dm_env.*",
     "tree.*",
     "pytest.*",
-    "pyvirtualdisplay.*",
     "pygame.*",
 ]
 ignore_missing_imports = true
