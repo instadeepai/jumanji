@@ -17,8 +17,8 @@ from typing import Type
 import pytest
 import pytest_mock
 
-from jumanji.env import Wrapper
 from jumanji.testing.fakes import FakeEnvironment, FakeState
+from jumanji.wrappers import Wrapper
 
 
 @pytest.fixture
