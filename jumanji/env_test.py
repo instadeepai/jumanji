@@ -15,7 +15,7 @@ from jumanji.env import make_environment_spec
 from jumanji.testing.fakes import FakeEnvironment
 
 
-def test_make_environment_spec(fake_environment: FakeEnvironment):
+def test_make_environment_spec(fake_environment: FakeEnvironment) -> None:
     env_spec = make_environment_spec(fake_environment)
     assert hasattr(env_spec, "observations")
     assert hasattr(env_spec, "actions")

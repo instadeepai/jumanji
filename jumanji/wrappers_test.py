@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, TypeVar
+from typing import Tuple, Type, TypeVar
 
 import brax
 import dm_env.specs
@@ -39,14 +39,8 @@ from jumanji.wrappers import (
     JumanjiToGymWrapper,
     MultiToSingleWrapper,
     VmapWrapper,
+    Wrapper,
 )
-from typing import Type
-
-import pytest
-import pytest_mock
-
-from jumanji.testing.fakes import FakeEnvironment, FakeState
-from jumanji.wrappers import Wrapper
 
 State = TypeVar("State")
 Observation = TypeVar("Observation")
@@ -150,13 +144,14 @@ class TestBaseWrapper:
     ) -> None:
         """Checks `Wrapper.render` calls the render method of the underlying env."""
 
-        mock_action_spec = mocker.patch.object(fake_environment, "render", autospec=True)
+        mock_action_spec = mocker.patch.object(
+            fake_environment, "render", autospec=True
+        )
 
         mock_state = mocker.MagicMock()
         wrapped_fake_environment.render(mock_state)
 
         mock_action_spec.assert_called_once()
-
 
     def test_wrapper__close(
         self,
@@ -172,10 +167,8 @@ class TestBaseWrapper:
 
         mock_action_spec.assert_called_once()
 
-
     def test_wrapper__getattr(
-        self,
-        wrapped_fake_environment: Wrapper, fake_environment: FakeEnvironment
+        self, wrapped_fake_environment: Wrapper, fake_environment: FakeEnvironment
     ) -> None:
         """Checks `Wrapper.__getattr__` calls the underlying env for unknown attr."""
         # time_limit is defined in the mock env
