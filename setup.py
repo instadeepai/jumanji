@@ -49,7 +49,7 @@ setup(
     version=__version__,
     description="Suite of Reinforcement Learning environments",
     author="InstaDeep",
-    url="https://gitlab.com/instadeep/jumanji",
+    url="https://github.com/instadeepai/jumanji/",
     packages=setuptools.find_packages(),
     zip_safe=False,
     install_requires=read_requirements("./requirements/requirements.txt"),
