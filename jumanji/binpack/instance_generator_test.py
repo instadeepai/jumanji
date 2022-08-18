@@ -33,9 +33,9 @@ def test_save_instance_to_csv(dummy_instance: State, tmpdir: py.path.local) -> N
     file_name = "/test.csv"
     save_instance_to_csv(dummy_instance, str(tmpdir.join(file_name)))
     lines = tmpdir.join(file_name).readlines()
-    assert lines[0] == "Product_Name,Length,Width,Height,Quantity,Stackable\n"
-    assert lines[1] == "shape_1,1174,1761,2348,2,1\n"
-    assert lines[2] == "shape_2,587,1174,1761,1,1\n"
+    assert lines[0] == "Product_Name,Length,Width,Height,Quantity\n"
+    assert lines[1] == "shape_1,1174,1761,2348,2\n"
+    assert lines[2] == "shape_2,587,1174,1761,1\n"
     assert len(lines) == 3
 
 

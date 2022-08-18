@@ -41,7 +41,7 @@ from jumanji.tree_utils import tree_slice, tree_transpose
 # real_container_volume = 1.103 * inner_container_volume
 TWENTY_FOOT_DIMS = (5870, 2330, 2200)
 
-CSV_COLUMNS = ["Product_Name", "Length", "Width", "Height", "Quantity", "Stackable"]
+CSV_COLUMNS = ["Product_Name", "Length", "Width", "Height", "Quantity"]
 
 
 def normalized_container(container_dims: Tuple[int, int, int]) -> Container:
@@ -287,12 +287,11 @@ class CSVInstanceGenerator(InstanceGenerator):
     - Width
     - Height
     - Quantity
-    - Stackable
 
     Example of such a CSV file:
-        Product_Name,Length,Width,Height,Quantity,Stackable
-        shape_1,1080,760,300,5,2
-        shape_2,1100,430,250,3,1
+        Product_Name,Length,Width,Height,Quantity
+        shape_1,1080,760,300,5
+        shape_2,1100,430,250,3
     """
 
     def __init__(
@@ -376,7 +375,7 @@ class CSVInstanceGenerator(InstanceGenerator):
 
         return reset_state
 
-    def _read_csv(self, csv_path: str) -> List[Tuple[str, int, int, int, int, int]]:
+    def _read_csv(self, csv_path: str) -> List[Tuple[str, int, int, int, int]]:
         rows = []
         with open(csv_path, newline="") as csvfile:
             reader = csv.reader(csvfile)
@@ -389,7 +388,7 @@ class CSVInstanceGenerator(InstanceGenerator):
                     elif row != CSV_COLUMNS:
                         raise ValueError("Columns in wrong order")
                 else:
-                    # Column order: Product_Name, Length, Width, Height, Quantity, Stackable.
+                    # Column order: Product_Name, Length, Width, Height, Quantity.
                     rows.append(
                         (
                             row[0],
@@ -397,13 +396,12 @@ class CSVInstanceGenerator(InstanceGenerator):
                             int(row[2]),
                             int(row[3]),
                             int(row[4]),
-                            int(row[5]),
                         )
                     )
         return rows
 
     def _generate_list_of_items(
-        self, rows: List[Tuple[str, int, int, int, int, int]]
+        self, rows: List[Tuple[str, int, int, int, int]]
     ) -> List[Item]:
         """Generate the list of items from a Pandas DataFrame.
 
@@ -416,7 +414,7 @@ class CSVInstanceGenerator(InstanceGenerator):
         """
         max_size = max(self.container_dims)
         list_of_items = []
-        for (_, x_len, y_len, z_len, quantity, _) in rows:
+        for (_, x_len, y_len, z_len, quantity) in rows:
             identical_items = quantity * [
                 Item(
                     x_len=jnp.array(x_len / max_size, float),
@@ -445,9 +443,9 @@ def save_instance_to_csv(
         None
 
     Example:
-        Product_Name,Length,Width,Height,Quantity,Stackable
-        shape_1,1080,760,300,5,2
-        shape_2,1100,430,250,3,1
+        Product_Name,Length,Width,Height,Quantity
+        shape_1,1080,760,300,5
+        shape_2,1100,430,250,3
     """
     max_size = max(container_dims)
     items = list(zip(state.items.x_len, state.items.y_len, state.items.z_len))
@@ -460,7 +458,7 @@ def save_instance_to_csv(
     grouped_items = list(collections.Counter(items).items())
     grouped_items.sort(key=operator.itemgetter(1), reverse=True)
     rows = [
-        (f"shape_{i}", *item, count, 1)
+        (f"shape_{i}", *item, count)
         for i, (item, count) in enumerate(grouped_items, start=1)
     ]
     with open(path, "w", newline="") as csvfile:
