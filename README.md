@@ -86,7 +86,7 @@ pip install jumanji
 ```bash
 conda create -n env python=3.8
 conda activate env
-pip install -r requirements.txt
+pip install -r requirements/requirements.txt 
 pip install -e .
 ```
 
