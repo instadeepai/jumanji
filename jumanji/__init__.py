@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from jumanji.binpack import instance_generator as generator
 from jumanji.env import Environment
 from jumanji.registration import make, register, registered_environments
 
@@ -84,26 +85,54 @@ register(
 )
 
 
-# BinPacking
-# TODO(alex) to finalize once the generators are merged into develop
+# BinPack
+
+# Toy instance of the BinPack environment
+register(
+    id="BinPack-toy-v0",
+    entry_point="jumanji.binpack:BinPack",
+    kwargs={
+        "instance_generator": generator.SimpleInstanceGenerator(),
+        "obs_num_ems": 40,
+    },
+)
+
+# Random Instance Generator
 register(
     id="BinPack-rand20-v0",
     entry_point="jumanji.binpack:BinPack",
-    kwargs={"generator": ..., "obs_num_ems": 40},  # max_num_ems: 80
+    kwargs={
+        "instance_generator": generator.RandomInstanceGenerator(
+            max_num_items=20,
+            max_num_ems=80,
+        ),
+        "obs_num_ems": 40,
+    },
 )
 
 register(
     id="BinPack-rand40-v0",
     entry_point="jumanji.binpack:BinPack",
-    kwargs={"generator": ..., "obs_num_ems": 60},  # max_num_ems: 200
+    kwargs={
+        "instance_generator": generator.RandomInstanceGenerator(
+            max_num_items=40,
+            max_num_ems=200,
+        ),
+        "obs_num_ems": 60,
+    },
 )
 
 register(
     id="BinPack-rand100-v0",
     entry_point="jumanji.binpack:BinPack",
-    kwargs={"generator": ..., "obs_num_ems": 150},  # max_num_ems: ...
+    kwargs={
+        "instance_generator": generator.RandomInstanceGenerator(
+            max_num_items=100,
+            max_num_ems=300,
+        ),
+        "obs_num_ems": 150,
+    },
 )
-
 
 # Routing
 # TODO(alex) agreeing on standard configs (expected name: Routing-n3-v0)
