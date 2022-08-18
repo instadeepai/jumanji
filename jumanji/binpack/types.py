@@ -31,7 +31,7 @@ EMS = Space
 
 def empty_ems() -> EMS:
     """Returns an empty EMS located at (0, 0, 0)."""
-    return EMS(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0).astype(jnp.float_)
+    return EMS(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0).astype(jnp.int32)
 
 
 class Item(NamedTuple):

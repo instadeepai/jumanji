@@ -41,11 +41,13 @@ class BinPack(Environment[State]):
     The environment has the following characteristics.
 
     - observation: Observation
-        - ems: EMS dataclass of jax arrays (float) of shape (obs_num_ems,).
+        - ems: EMS dataclass of jax arrays (float if normalize_dimensions else int)
+            of shape (obs_num_ems,).
             (x1, x2, y1, y2, z1, z2): the coordinates of all ems at the current timestep.
         - ems_mask: jax array (bool) of shape (obs_num_ems,).
             True if the ems exists.
-        - items: Item dataclass of jax arrays (float) of shape (max_num_items,).
+        - items: Item dataclass of jax arrays (float if normalize_dimensions else int)
+            of shape (max_num_items,).
             (x_len, y_len, z_len): characteristics of all items for this instance.
         - items_mask: jax array (bool) of shape (max_num_items,).
             True if the item exists.
@@ -82,6 +84,7 @@ class BinPack(Environment[State]):
         instance_generator: InstanceGenerator,
         obs_num_ems: int,
         reward_fn: RewardFn = sparse_linear_reward,
+        normalize_dimensions: bool = True,
     ):
         """Instantiate a BinPack environment.
 
@@ -97,10 +100,13 @@ class BinPack(Environment[State]):
                 outputs a scalar, namely the reward. Default: sparse_linear, meaning a
                 sparse reward is given at the end of the episode, corresponding to the negative
                 of the proportion of remaining space inside the container.
+            normalize_dimensions: if True (default), the observation is normalized to a unit cubic
+                container. If False, the observation is returned in integers (both items and EMS).
         """
         self.instance_generator = instance_generator
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
+        self.normalize_dimensions = normalize_dimensions
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -218,42 +224,66 @@ class BinPack(Environment[State]):
         Returns:
             ObservationSpec containing all the specifications for all the Observation fields:
             - ems_spec: EMSSpec.
-                - tree of Array (float) of shape (obs_num_ems,).
+                - normalize_dimensions: True -> tree of BoundedArray (float)
+                    of shape (obs_num_ems,).
+                - normalize_dimensions: False -> tree of BoundedArray (int)
+                    of shape (obs_num_ems,).
             - ems_mask_spec: BoundedArray (bool) of shape (obs_num_ems,).
             - items_spec: ItemSpec.
-                - tree of BoundedArray (float) of shape (max_num_items,).
+                - normalize_dimensions: True -> tree of BoundedArray (float)
+                    of shape (max_num_items,).
+                - normalize_dimensions: False -> tree of BoundedArray (int)
+                    of shape (max_num_items,).
             - items_mask_spec: BoundedArray (bool) of shape (max_num_items,).
             - items_placed_spec: BoundedArray (bool) of shape (max_num_items,).
             - action_mask_spec: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
         obs_num_ems = self.obs_num_ems
         max_num_items = self.instance_generator.max_num_items
+        max_dim = max(self.instance_generator.container_dims)
 
-        ems_spec_dict = {
-            coord_name + "_spec": specs.Array((obs_num_ems,), jnp.float32, coord_name)
-            for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
-        }
+        if self.normalize_dimensions:
+            ems_spec_dict = {
+                f"{coord_name}_spec": specs.BoundedArray(
+                    (obs_num_ems,), float, 0.0, 1.0, coord_name
+                )
+                for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
+            }
+        else:
+            ems_spec_dict = {
+                f"{coord_name}_spec": specs.BoundedArray(
+                    (obs_num_ems,), jnp.int32, 0, max_dim, coord_name
+                )
+                for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
+            }
         ems_spec = EMSSpec(**ems_spec_dict)
         ems_mask_spec = specs.BoundedArray(
-            (obs_num_ems,), jnp.bool_, False, True, "ems_mask"
+            (obs_num_ems,), bool, False, True, "ems_mask"
         )
-        items_spec_dict = {
-            axis_len
-            + "_spec": specs.BoundedArray(
-                (max_num_items,), jnp.float32, 0.0, jnp.inf, axis_len
-            )
-            for axis_len in ["x_len", "y_len", "z_len"]
-        }
+        if self.normalize_dimensions:
+            items_spec_dict = {
+                f"{axis}_spec": specs.BoundedArray(
+                    (max_num_items,), float, 0.0, 1.0, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
+        else:
+            items_spec_dict = {
+                f"{axis}_spec": specs.BoundedArray(
+                    (max_num_items,), jnp.int32, 0, max_dim, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
         items_spec = ItemSpec(**items_spec_dict)
         items_mask_spec = specs.BoundedArray(
-            (max_num_items,), jnp.bool_, False, True, "items_mask"
+            (max_num_items,), bool, False, True, "items_mask"
         )
         items_placed_spec = specs.BoundedArray(
-            (max_num_items,), jnp.bool_, False, True, "items_placed"
+            (max_num_items,), bool, False, True, "items_placed"
         )
         action_mask_spec = specs.BoundedArray(
             (obs_num_ems, max_num_items),
-            jnp.bool_,
+            bool,
             False,
             True,
             "action_mask",

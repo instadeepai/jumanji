@@ -12,17 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Type
+
 import chex
 import jax
 import jax.numpy as jnp
+import pytest
 from jax import random
 
 from jumanji import specs
 from jumanji.binpack.env import BinPack
+from jumanji.binpack.instance_generator import InstanceGenerator
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
-from jumanji.binpack.types import State
+from jumanji.binpack.types import Observation, State
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
+
+
+def assert_type_binpack_state(state: State) -> None:
+    """Assert that all spaces or items are integers while all masks are boolean in the state."""
+    jax.tree_map(
+        lambda leaf: chex.assert_type(leaf, int),
+        (
+            state.container,
+            state.ems,
+            state.items,
+            state.items_location,
+            state.sorted_ems_indexes,
+        ),
+    )
+    jax.tree_map(
+        lambda leaf: chex.assert_type(leaf, bool),
+        (state.ems_mask, state.items_mask, state.items_placed, state.action_mask),
+    )
 
 
 def test_binpack__reset(binpack_env: BinPack) -> None:
@@ -39,13 +61,24 @@ def test_binpack__reset(binpack_env: BinPack) -> None:
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(state)
+    assert_type_binpack_state(state)
     assert state.ems_mask.any()
     assert state.items_mask.any()
     assert jnp.any(state.action_mask)
 
 
-def test_binpack__spec(binpack_env: BinPack) -> None:
-    """Validates the observation and action spec of the BinPack environment."""
+@pytest.mark.parametrize("normalize_dimensions", [True, False])
+def test_binpack__spec(
+    normalize_dimensions: bool, dummy_instance_generator: InstanceGenerator
+) -> None:
+    """Validates the observation and action spec of the BinPack environment. Checks that
+    different specs are generated depending on the `normalize_dimensions` argument.
+    """
+    binpack_env = BinPack(
+        instance_generator=dummy_instance_generator,
+        obs_num_ems=1,
+        normalize_dimensions=normalize_dimensions,
+    )
     observation_spec = binpack_env.observation_spec()
     assert isinstance(observation_spec, ObservationSpec)
     assert isinstance(observation_spec.ems_spec, EMSSpec)
@@ -55,6 +88,16 @@ def test_binpack__spec(binpack_env: BinPack) -> None:
     assert isinstance(observation_spec.items_placed_spec, specs.BoundedArray)
     assert isinstance(observation_spec.action_mask_spec, specs.BoundedArray)
     assert isinstance(binpack_env.action_spec(), specs.BoundedArray)
+    observation = observation_spec.generate_value()
+
+    def assert_type_binpack_observation(obs: Observation, type_: Type) -> None:
+        """Assert that the EMS and items are of given type."""
+        jax.tree_map(lambda leaf: chex.assert_type(leaf, type_), (obs.ems, obs.items))
+
+    if normalize_dimensions:
+        assert_type_binpack_observation(observation, float)
+    else:
+        assert_type_binpack_observation(observation, int)
 
 
 def test_binpack__step(binpack_env: BinPack) -> None:
@@ -70,6 +113,7 @@ def test_binpack__step(binpack_env: BinPack) -> None:
     state, timestep, _ = step_fn(state, action)
     # Call again to check it does not compile twice.
     state, timestep, _ = step_fn(state, action)
+    assert_type_binpack_state(state)
 
 
 # TODO: Add below test once random binpack agent has been created.

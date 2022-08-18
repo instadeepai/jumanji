@@ -34,8 +34,8 @@ def test_save_instance_to_csv(dummy_instance: State, tmpdir: py.path.local) -> N
     save_instance_to_csv(dummy_instance, str(tmpdir.join(file_name)))
     lines = tmpdir.join(file_name).readlines()
     assert lines[0] == "Product_Name,Length,Width,Height,Quantity\n"
-    assert lines[1] == "shape_1,1174,1761,2348,2\n"
-    assert lines[2] == "shape_2,587,1174,1761,1\n"
+    assert lines[1] == "shape_1,1000,700,900,2\n"
+    assert lines[2] == "shape_2,500,500,600,1\n"
     assert len(lines) == 3
 
 
@@ -49,7 +49,7 @@ class TestSimpleInstanceGenerator:
         simple_instance_generator: SimpleInstanceGenerator,
     ) -> None:
         """Validate that the simple instance generator has the correct properties."""
-        assert simple_instance_generator.max_num_items == 8
+        assert simple_instance_generator.max_num_items == 20
         assert simple_instance_generator.max_num_ems > 0
 
     def test_simple_instance_generator__call(
@@ -120,8 +120,9 @@ class TestCSVInstanceGenerator:
     def test_csv_instance_generator__call(
         self, dummy_instance: State, csv_instance_generator: CSVInstanceGenerator
     ) -> None:
-        """Validate that the csv instance generator's call function is jittable and compiles only once.
-        Also check that the function is independent of the key."""
+        """Validate that the csv instance generator's call function is jittable and compiles only
+        once. Also check that the function is independent of the key.
+        """
         chex.clear_trace_counter()
         call_fn = jax.jit(chex.assert_max_traces(csv_instance_generator.__call__, n=1))
         state1 = call_fn(key=jax.random.PRNGKey(1))
@@ -168,7 +169,8 @@ class TestRandomInstanceGenerator:
         random_instance_generator: RandomInstanceGenerator,
     ) -> None:
         """Validate that the random instance generator's generate_solution method behaves correctly.
-        Also check that it is jittable and compiles only once."""
+        Also check that it is jittable and compiles only once.
+        """
         state1 = random_instance_generator(jax.random.PRNGKey(1))
 
         chex.clear_trace_counter()

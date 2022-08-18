@@ -23,7 +23,7 @@ from jumanji.binpack.env import BinPack
 from jumanji.binpack.instance_generator import (
     TWENTY_FOOT_DIMS,
     InstanceGenerator,
-    normalized_container,
+    make_container,
 )
 from jumanji.binpack.specs import ObservationSpec
 from jumanji.binpack.types import Item, Location, State
@@ -37,8 +37,9 @@ class DummyInstanceGenerator(InstanceGenerator):
 
     def __init__(self) -> None:
         """Instantiate a dummy `InstanceGenerator` with three items and one EMS maximum."""
-        super(DummyInstanceGenerator, self).__init__(max_num_items=3, max_num_ems=1)
-        self.container_dims = TWENTY_FOOT_DIMS
+        super(DummyInstanceGenerator, self).__init__(
+            max_num_items=3, max_num_ems=1, container_dims=TWENTY_FOOT_DIMS
+        )
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Returns a fixed instance with three items, one EMS and a 20-ft container.
@@ -50,7 +51,7 @@ class DummyInstanceGenerator(InstanceGenerator):
             State.
         """
         del key
-        container = normalized_container(self.container_dims)
+        container = make_container(TWENTY_FOOT_DIMS)
         return State(
             container=container,
             ems=jax.tree_map(
@@ -60,14 +61,14 @@ class DummyInstanceGenerator(InstanceGenerator):
             ems_mask=jnp.array([True], bool),
             items=Item(
                 # The 1st and 2nd items have the same shape.
-                x_len=jnp.array([0.2, 0.2, 0.1], float),
-                y_len=jnp.array([0.3, 0.3, 0.2], float),
-                z_len=jnp.array([0.4, 0.4, 0.3], float),
+                x_len=jnp.array([1000, 1000, 500], jnp.int32),
+                y_len=jnp.array([700, 700, 500], jnp.int32),
+                z_len=jnp.array([900, 900, 600], jnp.int32),
             ),
             items_mask=jnp.array([True, True, True], bool),
             items_placed=jnp.array([False, False, False], bool),
             items_location=jax.tree_map(
-                lambda x: jnp.array(3 * [x], dtype=jnp.float32), Location(x=0, y=0, z=0)
+                lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
             ),
             action_mask=None,
             sorted_ems_indexes=jnp.array([0], int),

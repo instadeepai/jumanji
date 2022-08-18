@@ -14,8 +14,6 @@
 
 from typing import Any
 
-import jax
-
 from jumanji import specs
 from jumanji.binpack.types import EMS, Item, Observation
 
@@ -23,22 +21,22 @@ from jumanji.binpack.types import EMS, Item, Observation
 class EMSSpec(specs.Spec[EMS]):
     def __init__(
         self,
-        x1_spec: specs.Array,
-        x2_spec: specs.Array,
-        y1_spec: specs.Array,
-        y2_spec: specs.Array,
-        z1_spec: specs.Array,
-        z2_spec: specs.Array,
+        x1_spec: specs.BoundedArray,
+        x2_spec: specs.BoundedArray,
+        y1_spec: specs.BoundedArray,
+        y2_spec: specs.BoundedArray,
+        z1_spec: specs.BoundedArray,
+        z2_spec: specs.BoundedArray,
     ):
         """Instantiate the specifications of the ems.
 
         Args:
-            x1_spec: Array spec defining the specifications of the x1 coordinate of all ems.
-            x2_spec: Array spec defining the specifications of the x2 coordinate of all ems.
-            y1_spec: Array spec defining the specifications of the y1 coordinate of all ems.
-            y2_spec: Array spec defining the specifications of the y2 coordinate of all ems.
-            z1_spec: Array spec defining the specifications of the z1 coordinate of all ems.
-            z2_spec: Array spec defining the specifications of the z2 coordinate of all ems.
+            x1_spec: BoundedArray spec defining the specifications of the x1 coordinate of all ems.
+            x2_spec: BoundedArray spec defining the specifications of the x2 coordinate of all ems.
+            y1_spec: BoundedArray spec defining the specifications of the y1 coordinate of all ems.
+            y2_spec: BoundedArray spec defining the specifications of the y2 coordinate of all ems.
+            z1_spec: BoundedArray spec defining the specifications of the z1 coordinate of all ems.
+            z2_spec: BoundedArray spec defining the specifications of the z2 coordinate of all ems.
         """
         super().__init__(name="ems")
         self.x1_spec = x1_spec
@@ -251,27 +249,6 @@ class ObservationSpec(specs.Spec[Observation]):
         Raises:
             ValueError: if value doesn't conform to this spec.
         """
-        observation = Observation(
-            *jax.tree_map(
-                lambda spec, v: spec.validate(v),
-                (
-                    self.ems_spec,
-                    self.ems_mask_spec,
-                    self.items_spec,
-                    self.items_mask_spec,
-                    self.items_placed_spec,
-                    self.action_mask_spec,
-                ),
-                (
-                    value.ems,
-                    value.ems_mask,
-                    value.items,
-                    value.items_mask,
-                    value.items_placed,
-                    value.action_mask,
-                ),
-            )
-        )
         observation = Observation(
             ems=self.ems_spec.validate(value.ems),
             ems_mask=self.ems_mask_spec.validate(value.ems_mask),
