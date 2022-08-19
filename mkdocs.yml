@@ -14,6 +14,7 @@ nav:
   - Home: index.md
   - User Guides:
       - Registration: guides/registration.md
+      - Wrapper: guides/wrappers.md
   - API Reference:
       - Base: api/env.md
       - Environments:

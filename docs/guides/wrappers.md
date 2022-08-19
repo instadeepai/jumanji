@@ -1,4 +1,4 @@
-# Wrapper
+# Wrappers
 
 The `Wrapper` interface is used for extending Jumanji `Environment` to add features like auto reset and vectorised environments.
 Jumanji provides wrappers to convert a Jumanji `Environment` to a DeepMind or Gym environment, and a Brax environment into a Jumanji `Environment`.
