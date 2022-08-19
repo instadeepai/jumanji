@@ -402,7 +402,7 @@ class TestDiscreteArray:
         "dtype",
         [jnp.float32, float, str],
     )
-    def test_dtype_not_integral(self, dtype: Union[jnp.dtype, type]) -> None:
+    def test_dtype_not_integer(self, dtype: Union[jnp.dtype, type]) -> None:
         with pytest.raises(ValueError):
             specs.DiscreteArray(num_values=5, dtype=dtype)
 

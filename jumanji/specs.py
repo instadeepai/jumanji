@@ -332,11 +332,11 @@ class DiscreteArray(BoundedArray):
 
         Args:
             num_values: integer specifying the number of possible values to represent.
-            dtype: the dtype of the jax array. Must be an integral type.
+            dtype: the dtype of the jax array. Must be an integer type.
             name: string containing a semantic name for the corresponding array. Defaults to `''`.
 
         Raises:
-            ValueError: if `num_values` is not positive, if `dtype` is not integral.
+            ValueError: if `num_values` is not positive, if `dtype` is not integer.
         """
         if num_values <= 0 or not jnp.issubdtype(type(num_values), jnp.integer):
             raise ValueError(
@@ -344,7 +344,7 @@ class DiscreteArray(BoundedArray):
             )
 
         if not jnp.issubdtype(dtype, jnp.integer):
-            raise ValueError(f"`dtype` must be integral, got {dtype}.")
+            raise ValueError(f"`dtype` must be integer, got {dtype}.")
 
         num_values = int(num_values)
         maximum = num_values - 1
