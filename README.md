@@ -50,7 +50,7 @@ import jax
 import jumanji
 
 # Create a Jumanji environment
-env = jumanji.make('Snake6')
+env = jumanji.make('Snake-6x6-v0')
 
 # Instantiate your (jit-able) environment
 key = jax.random.PRNGKey(0)

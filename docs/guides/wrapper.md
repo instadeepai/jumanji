@@ -29,7 +29,7 @@ Below is an example of how to convert a Jumanji environment into a Gym environme
 ```python
 import jumanji.wrappers
 
-env = jumanji.make("Snake6")
+env = jumanji.make("Snake-6x6-v0")
 gym_env = jumanji.wrappers.JumanjiToGymWrapper(env)
 
 obs = gym_env.reset()
@@ -47,7 +47,7 @@ import jax.random
 
 import jumanji.wrappers
 
-env = jumanji.make("Snake6")
+env = jumanji.make("Snake-6x6-v0")
 env = jumanji.wrappers.AutoResetWrapper(env)
 
 key = jax.random.PRNGKey(0)
