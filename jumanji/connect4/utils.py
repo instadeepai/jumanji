@@ -253,4 +253,4 @@ def get_action_mask(board: Board) -> Array:
         binary action mask
 
     """
-    return jnp.equal(board[0, :], 0).astype(jnp.bool_)
+    return jnp.equal(board[0, :], 0).astype(bool)

@@ -171,7 +171,7 @@ class Connect4(Environment[State]):
             board_obs=specs.Array(shape=(6, 7), dtype=jnp.int8, name="board"),
             action_mask=specs.BoundedArray(
                 shape=(7,),
-                dtype=jnp.bool_,
+                dtype=bool,
                 minimum=0,
                 maximum=1,
                 name="invalid_mask",

@@ -389,7 +389,7 @@ class BraxToJumanjiWrapper(Environment):
         """
         return specs.Array(
             shape=(self._env.observation_size,),
-            dtype=jnp.float_,
+            dtype=float,
             name="observation",
         )
 
@@ -401,7 +401,7 @@ class BraxToJumanjiWrapper(Environment):
         """
         return specs.BoundedArray(
             shape=(self._env.action_size,),
-            dtype=jnp.float_,
+            dtype=float,
             minimum=-1.0,
             maximum=1.0,
             name="action",

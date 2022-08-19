@@ -200,25 +200,25 @@ class BoundedArray(Array):
     Example usage:
     ```python
     # Specifying the same minimum and maximum for every element.
-    spec = BoundedArray((3, 4), jnp.float_, minimum=0.0, maximum=1.0)
+    spec = BoundedArray((3, 4), float, minimum=0.0, maximum=1.0)
 
     # Specifying a different minimum and maximum for each element.
-    spec = BoundedArray((2,), jnp.float_, minimum=[0.1, 0.2], maximum=[0.9, 0.9])
+    spec = BoundedArray((2,), float, minimum=[0.1, 0.2], maximum=[0.9, 0.9])
 
     # Specifying the same minimum and a different maximum for each element.
-    spec = BoundedArray((3,), jnp.float_, minimum=-10.0, maximum=[4.0, 5.0, 3.0])
+    spec = BoundedArray((3,), float, minimum=-10.0, maximum=[4.0, 5.0, 3.0])
     ```
 
     Bounds are meant to be inclusive. This is especially important for integer types. The following
     spec will be satisfied by arrays with values in the set {0, 1, 2}:
     ```python
-    spec = BoundedArray((3, 4), jnp.int_, minimum=0, maximum=2)
+    spec = BoundedArray((3, 4), int, minimum=0, maximum=2)
     ```
 
     Note that one or both bounds may be infinite. For example, the set of non-negative floats can be
     expressed as:
     ```python
-    spec = BoundedArray((), jnp.float_, minimum=0.0, maximum=jnp.inf)
+    spec = BoundedArray((), float, minimum=0.0, maximum=jnp.inf)
     ```
     In this case `jnp.inf` would be considered valid, since the upper bound is inclusive.
     """

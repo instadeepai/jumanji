@@ -19,7 +19,6 @@ if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
 else:
     from chex import dataclass
 
-import jax.numpy as jnp
 from chex import Array, PRNGKey
 
 
@@ -27,10 +26,10 @@ from chex import Array, PRNGKey
 class State:
     key: PRNGKey
     grid: Array
-    step: jnp.int_
+    step: int
     finished_agents: Array
 
 
 class Position(NamedTuple):
-    x: jnp.int_
-    y: jnp.int_
+    x: int
+    y: int

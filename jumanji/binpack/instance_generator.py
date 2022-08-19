@@ -844,7 +844,7 @@ class RandomInstanceGenerator(InstanceGenerator):
         )
         items_spaces.set_axis_value(axis, 2, new_items_axis_2)
 
-        def body_fn(i: jnp.int_, carry: Tuple[Space, Array]) -> Tuple[Space, Array]:
+        def body_fn(i: int, carry: Tuple[Space, Array]) -> Tuple[Space, Array]:
             items_spaces, items_mask = carry
             free_index = jnp.argmin(items_mask)
             items_spaces = jax.tree_map(

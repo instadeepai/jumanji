@@ -67,7 +67,7 @@ class FakeEnvironment(Environment[FakeState]):
         """
 
         return specs.Array(
-            shape=self.observation_shape, dtype=jnp.float_, name="observation"
+            shape=self.observation_shape, dtype=float, name="observation"
         )
 
     def action_spec(self) -> specs.BoundedArray:
@@ -177,7 +177,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
 
         return specs.Array(
-            shape=self.observation_shape, dtype=jnp.float_, name="observation"
+            shape=self.observation_shape, dtype=float, name="observation"
         )
 
     def action_spec(self) -> specs.BoundedArray:
@@ -188,7 +188,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
 
         return specs.BoundedArray(
-            (self.num_agents,), jnp.int_, 0, self.num_action_values - 1
+            (self.num_agents,), int, 0, self.num_action_values - 1
         )
 
     def reward_spec(self) -> specs.Array:
@@ -197,7 +197,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         Returns:
             reward_spec: a `specs.Array` spec.
         """
-        return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
@@ -207,7 +207,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
         return specs.BoundedArray(
             shape=(self.num_agents,),
-            dtype=jnp.float_,
+            dtype=float,
             minimum=0.0,
             maximum=1.0,
             name="discount",

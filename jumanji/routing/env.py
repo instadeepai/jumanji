@@ -124,7 +124,7 @@ class Routing(Environment[State]):
         """
         return specs.BoundedArray(
             shape=(self.num_agents, self.rows, self.cols),
-            dtype=jnp.int_,
+            dtype=int,
             name="observation",
             minimum=0,
             maximum=self.obs_ints,
@@ -140,7 +140,7 @@ class Routing(Environment[State]):
         """
         return specs.BoundedArray(
             shape=(self.num_agents,),
-            dtype=jnp.int_,
+            dtype=int,
             minimum=0,
             maximum=4,
             name="action",
@@ -154,7 +154,7 @@ class Routing(Environment[State]):
         Returns:
             reward_spec: a `specs.Array` spec.
         """
-        return specs.Array(shape=(self.num_agents,), dtype=jnp.float_, name="reward")
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment. Since this is a multi-agent
@@ -166,7 +166,7 @@ class Routing(Environment[State]):
         """
         return specs.BoundedArray(
             shape=(self.num_agents,),
-            dtype=jnp.float_,
+            dtype=float,
             minimum=0.0,
             maximum=1.0,
             name="discount",
@@ -407,7 +407,7 @@ class Routing(Environment[State]):
                 each other in the shape (num_agents, rows, cols).
         """
         return jax.vmap(functools.partial(self._agent_observation, grid))(
-            jnp.arange(self.num_agents, dtype=jnp.int_)
+            jnp.arange(self.num_agents, dtype=int)
         )
 
     def _spawn_agent(self, grid: Array, key: PRNGKey, agent_id: int) -> Array:
@@ -457,13 +457,13 @@ class Routing(Environment[State]):
             Array : array of boolean flags in the shape (number of agents, ).
         """
 
-        def done_fun(grid: Array, agent_id: jnp.int_) -> jnp.bool_:
+        def done_fun(grid: Array, agent_id: int) -> jnp.bool_:
             return (self._is_agent_blocked(self.get_action_mask(grid, agent_id))) | (
                 self.is_agent_connected(grid, agent_id)
             )
 
         return jax.vmap(functools.partial(done_fun, grid))(
-            jnp.arange(self.num_agents, dtype=jnp.int_)
+            jnp.arange(self.num_agents, dtype=int)
         )
 
     def _get_rewards(self, grid: Array, actions: Array) -> Array:
@@ -477,7 +477,7 @@ class Routing(Environment[State]):
             Array: array of rewards in the shape (number of agents, ).
         """
 
-        def reward_fun(grid: Array, agent_id: jnp.int_, action: jnp.int_) -> jnp.float_:
+        def reward_fun(grid: Array, agent_id: int, action: int) -> jnp.float_:
             noop_coeff = action == NOOP  # 1 if noop, otherwise 0
 
             return jax.lax.cond(
@@ -493,7 +493,7 @@ class Routing(Environment[State]):
             )
 
         return jax.vmap(functools.partial(reward_fun, grid))(
-            jnp.arange(self.num_agents, dtype=jnp.int_), actions
+            jnp.arange(self.num_agents, dtype=int), actions
         )
 
     def _agent_observation(self, grid: Array, agent_id: int) -> Array:

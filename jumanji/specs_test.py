@@ -106,11 +106,11 @@ def singly_nested_spec() -> SinglyNestedSpec:
 class TestArray:
     def test_shape_type_error(self) -> None:
         with pytest.raises(TypeError):
-            specs.Array(32, jnp.int_)  # type: ignore
+            specs.Array(32, int)  # type: ignore
 
     def test_shape_element_type_error(self) -> None:
         with pytest.raises(TypeError):
-            specs.Array([None], jnp.int_)
+            specs.Array([None], int)
 
     def test_dtype_type_error(self) -> None:
         with pytest.raises(TypeError):
@@ -123,14 +123,14 @@ class TestArray:
         specs.Array((1, 2, 3), "int32")
 
     def test_dtype(self) -> None:
-        specs.Array((1, 2, 3), jnp.int_)
+        specs.Array((1, 2, 3), int)
 
     def test_correct_dtype(self) -> None:
         spec = specs.Array((1, 2, 3), jnp.int32)
         assert spec.dtype == jnp.int32
 
     def test_shape(self) -> None:
-        spec = specs.Array([1, 2, 3], jnp.int_)
+        spec = specs.Array([1, 2, 3], int)
         assert spec.shape == (1, 2, 3)
 
     @pytest.mark.parametrize(
@@ -329,7 +329,7 @@ class TestBoundedArray:
         spec.validate(test_value)
 
     def test_scalar_bounds(self) -> None:
-        spec = specs.BoundedArray((), jnp.float_, minimum=0.0, maximum=1.0)
+        spec = specs.BoundedArray((), float, minimum=0.0, maximum=1.0)
 
         assert isinstance(spec.minimum, jnp.ndarray)
         assert isinstance(spec.maximum, jnp.ndarray)
