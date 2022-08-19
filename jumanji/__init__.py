@@ -92,7 +92,7 @@ register(
     id="BinPack-toy-v0",
     entry_point="jumanji.binpack:BinPack",
     kwargs={
-        "instance_generator": generator.SimpleInstanceGenerator(),
+        "instance_generator": generator.ToyInstanceGenerator(),
         "obs_num_ems": 40,
     },
 )

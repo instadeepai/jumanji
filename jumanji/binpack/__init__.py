@@ -16,7 +16,7 @@ from jumanji.binpack.env import BinPack
 from jumanji.binpack.instance_generator import (
     CSVInstanceGenerator,
     RandomInstanceGenerator,
-    SimpleInstanceGenerator,
+    ToyInstanceGenerator,
     save_instance_to_csv,
 )
 from jumanji.binpack.types import Observation, State

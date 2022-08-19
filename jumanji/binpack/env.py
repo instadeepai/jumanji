@@ -69,7 +69,7 @@ class BinPack(Environment[State]):
         if no other actions are possible (no items fit in any ems).
 
     ```python
-    instance_generator = SimpleInstanceGenerator(max_num_ems=40)
+    instance_generator = ToyInstanceGenerator(max_num_ems=40)
     env = BinPack(instance_generator, obs_num_ems=20)
     key = jax.random.key(0)
     state, timestep, _ = jax.jit(env.reset)(key)

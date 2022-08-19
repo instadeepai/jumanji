@@ -21,7 +21,7 @@ import pytest
 from jumanji.binpack.instance_generator import (
     CSVInstanceGenerator,
     RandomInstanceGenerator,
-    SimpleInstanceGenerator,
+    ToyInstanceGenerator,
     save_instance_to_csv,
 )
 from jumanji.binpack.types import State
@@ -39,46 +39,44 @@ def test_save_instance_to_csv(dummy_instance: State, tmpdir: py.path.local) -> N
     assert len(lines) == 3
 
 
-class TestSimpleInstanceGenerator:
+class TestToyInstanceGenerator:
     @pytest.fixture
-    def simple_instance_generator(self) -> SimpleInstanceGenerator:
-        return SimpleInstanceGenerator()
+    def toy_instance_generator(self) -> ToyInstanceGenerator:
+        return ToyInstanceGenerator()
 
-    def test_simple_instance_generator__properties(
+    def test_toy_instance_generator__properties(
         self,
-        simple_instance_generator: SimpleInstanceGenerator,
+        toy_instance_generator: ToyInstanceGenerator,
     ) -> None:
-        """Validate that the simple instance generator has the correct properties."""
-        assert simple_instance_generator.max_num_items == 20
-        assert simple_instance_generator.max_num_ems > 0
+        """Validate that the toy instance generator has the correct properties."""
+        assert toy_instance_generator.max_num_items == 20
+        assert toy_instance_generator.max_num_ems > 0
 
-    def test_simple_instance_generator__call(
+    def test_toy_instance_generator__call(
         self,
-        simple_instance_generator: SimpleInstanceGenerator,
+        toy_instance_generator: ToyInstanceGenerator,
     ) -> None:
-        """Validate that the simple instance generator's call function behaves correctly, that it
+        """Validate that the toy instance generator's call function behaves correctly, that it
         returns the same state for different keys. Also check that it is jittable and compiles only
         once.
         """
         chex.clear_trace_counter()
-        call_fn = jax.jit(
-            chex.assert_max_traces(simple_instance_generator.__call__, n=1)
-        )
+        call_fn = jax.jit(chex.assert_max_traces(toy_instance_generator.__call__, n=1))
         state1 = call_fn(jax.random.PRNGKey(1))
         state2 = call_fn(jax.random.PRNGKey(2))
         assert_trees_are_equal(state1, state2)
 
-    def test_simple_instance_generator__generate_solution(
+    def test_toy_instance_generator__generate_solution(
         self,
-        simple_instance_generator: SimpleInstanceGenerator,
+        toy_instance_generator: ToyInstanceGenerator,
     ) -> None:
-        """Validate that the simple instance generator's generate_solution method behaves correctly.
+        """Validate that the toy instance generator's generate_solution method behaves correctly.
         Also check that it is jittable and compiles only once."""
-        state1 = simple_instance_generator(jax.random.PRNGKey(1))
+        state1 = toy_instance_generator(jax.random.PRNGKey(1))
 
         chex.clear_trace_counter()
         generate_solution = jax.jit(
-            chex.assert_max_traces(simple_instance_generator.generate_solution, n=1)
+            chex.assert_max_traces(toy_instance_generator.generate_solution, n=1)
         )
 
         solution_state1 = generate_solution(jax.random.PRNGKey(1))
@@ -164,7 +162,7 @@ class TestRandomInstanceGenerator:
         state2 = call_fn(key=jax.random.PRNGKey(2))
         assert_trees_are_different(state1, state2)
 
-    def test_simple_instance_generator__generate_solution(
+    def test_toy_instance_generator__generate_solution(
         self,
         random_instance_generator: RandomInstanceGenerator,
     ) -> None:

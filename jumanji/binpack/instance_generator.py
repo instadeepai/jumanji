@@ -137,13 +137,13 @@ class InstanceGenerator(abc.ABC):
         return state
 
 
-class SimpleInstanceGenerator(InstanceGenerator):
+class ToyInstanceGenerator(InstanceGenerator):
     """`InstanceGenerator` that can be used as an example. It deterministically outputs a single
     instance with 20 items that can be packed in a way to fully utilize a 20-ft container.
     """
 
     def __init__(self) -> None:
-        """Instantiate a SimpleInstanceGenerator with 20 items and 80 EMS maximum."""
+        """Instantiate a ToyInstanceGenerator with 20 items and 80 EMS maximum."""
         super().__init__(
             max_num_items=20, max_num_ems=80, container_dims=TWENTY_FOOT_DIMS
         )
@@ -178,7 +178,7 @@ class SimpleInstanceGenerator(InstanceGenerator):
 
         Example:
             ```python
-            instance_generator = SimpleInstanceGenerator()
+            instance_generator = ToyInstanceGenerator()
             env = BinPack(instance_generator, obs_num_ems=40)
             key = jax.random.key(0)
             reset_state = instance_generator(key)
