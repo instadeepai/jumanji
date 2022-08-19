@@ -116,6 +116,13 @@ def test_binpack__step(binpack_env: BinPack) -> None:
     assert_type_binpack_state(state)
 
 
+def test_binpack__render_does_not_smoke(
+    binpack_env: BinPack, dummy_instance: State
+) -> None:
+    binpack_env.render(dummy_instance)
+    binpack_env.close()
+
+
 # TODO: Add below test once random binpack agent has been created.
 # def test_binpack__does_not_smoke(
 #     binpack_env: BinPack

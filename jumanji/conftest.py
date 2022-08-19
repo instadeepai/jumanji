@@ -14,6 +14,7 @@
 import os
 
 import dm_env
+import matplotlib
 import pytest
 
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment
@@ -21,6 +22,9 @@ from jumanji.wrappers import JumanjiToDMEnvWrapper
 
 # Use headless driver for Pygame.
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+# For Matplotlib, select a headless backend.
+matplotlib.use("agg")
 
 
 @pytest.fixture

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Tuple
+from typing import Tuple
 
 import chex
 import jax
@@ -20,6 +20,7 @@ import jax.numpy as jnp
 from chex import PRNGKey
 
 from jumanji import specs
+from jumanji.binpack import env_viewer
 from jumanji.binpack.instance_generator import InstanceGenerator
 from jumanji.binpack.reward import sparse_linear_reward
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
@@ -107,6 +108,7 @@ class BinPack(Environment[State]):
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
         self.normalize_dimensions = normalize_dimensions
+        self._env_viewer = env_viewer.BinPackViewer("BinPack")
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -308,6 +310,23 @@ class BinPack(Environment[State]):
             name="action",
         )
 
+    def render(self, state: State) -> None:
+        """Render the given state of the environment.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+
+        """
+        self._env_viewer.render(state)
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()
+
     def _action_mask(
         self,
         obs_ems: EMS,
@@ -330,26 +349,3 @@ class BinPack(Environment[State]):
         """
         # TODO
         return jnp.ones((obs_ems_mask.shape[0], items_mask.shape[0]), bool)
-
-    def render(self, state: State) -> Any:
-        """Render frames of the environment for a given state.
-
-        Args:
-            state: State object containing the current dynamics of the environment.
-
-        Returns:
-            Any.
-
-        """
-        raise NotImplementedError(
-            "Render method is not implemented yet for the BinPack environment. "
-            "It will soon be added."
-        )
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        pass
