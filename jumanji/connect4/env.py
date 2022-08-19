@@ -29,7 +29,7 @@ from jumanji.connect4.utils import (
     is_winning,
     update_board,
 )
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connect4(Environment[State]):
@@ -67,7 +67,7 @@ class Connect4(Environment[State]):
 
     n_players: int = 2
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation], Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -75,8 +75,8 @@ class Connect4(Environment[State]):
 
         Returns:
             state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, contains the current player.
+            timestep: TimeStep object corresponding to the first timestep returned by
+                the environment, its `extras` field contains the current player id.
         """
         del key
         board = jnp.zeros((BOARD_HEIGHT, BOARD_WIDTH), dtype=jnp.int8)
@@ -84,15 +84,14 @@ class Connect4(Environment[State]):
 
         obs = Observation(board=board, action_mask=action_mask)
 
-        timestep = restart(observation=obs, shape=(self.n_players,))
+        extras = {"current_player": jnp.array(0, dtype=jnp.int8)}
+        timestep = restart(observation=obs, shape=(self.n_players,), extras=extras)
 
         state = State(current_player=jnp.int8(0), board=board)
-        extra = {"current_player": jnp.array(0, dtype=jnp.int8)}
-        return state, timestep, extra
 
-    def step(
-        self, state: State, action: Action
-    ) -> Tuple[State, TimeStep[Observation], Extra]:
+        return state, timestep
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -101,8 +100,8 @@ class Connect4(Environment[State]):
 
         Returns:
             state: State object corresponding to the next state of the environment,
-            timestep: TimeStep object corresponding the timestep returned by the environment,
-            extra: metrics, contains the current player.
+            timestep: TimeStep object corresponding to the timestep returned by the environment,
+                its `extras` field contains the current player id.
         """
         board = state.board
 
@@ -146,17 +145,21 @@ class Connect4(Environment[State]):
         timestep = lax.cond(
             done,
             lambda _: termination(
-                reward=reward, observation=obs, shape=(self.n_players,)
+                reward=reward,
+                observation=obs,
+                shape=(self.n_players,),
+                extras={"current_player": next_player},
             ),
             lambda _: transition(
-                reward=reward, observation=obs, shape=(self.n_players,)
+                reward=reward,
+                observation=obs,
+                shape=(self.n_players,),
+                extras={"current_player": next_player},
             ),
             operand=None,
         )
 
-        extra = {"current_player": next_player}
-
-        return next_state, timestep, extra
+        return next_state, timestep
 
     def observation_spec(self) -> ObservationSpec:
         """Returns the observation spec containing the board and action_mask arrays.

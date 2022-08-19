@@ -33,7 +33,7 @@ from jumanji.routing.constants import (
     VIEWER_WIDTH,
 )
 from jumanji.routing.types import Position, State
-from jumanji.types import Extra, TimeStep, restart, termination, transition, truncation
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 
 
 class Routing(Environment[State]):
@@ -172,16 +172,16 @@ class Routing(Environment[State]):
             name="discount",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array], Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array]]:
         """Resets the environment.
 
         Args:
             key: random key used to reset the environment since it is stochastic.
 
         Returns:
-            state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, default to None."""
+            state: State object corresponding to the new state of the environment.
+            timestep: TimeStep object corresponding the first timestep returned by the environment.
+        """
         grid = jnp.zeros((self.rows, self.cols), int)
         state_key, spawn_key = random.split(key)
         spawn_keys = random.split(spawn_key, self.num_agents)
@@ -202,9 +202,9 @@ class Routing(Environment[State]):
             step=jnp.array(0, int),
             finished_agents=jnp.zeros(self.num_agents, bool),
         )
-        return state, timestep, None
+        return state, timestep
 
-    def step(self, state: State, action: Array) -> Tuple[State, TimeStep[Array], Extra]:
+    def step(self, state: State, action: Array) -> Tuple[State, TimeStep[Array]]:
         """Perform an environment step.
 
         Args:
@@ -219,7 +219,6 @@ class Routing(Environment[State]):
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
-            extra: metrics, default to None.
         """
 
         def step_agent_fn(grid: Array, agent_id: int) -> Tuple[Array, None]:
@@ -275,7 +274,7 @@ class Routing(Environment[State]):
             finished_agents=finished_agents,
         )
 
-        return next_state, timestep, None
+        return next_state, timestep
 
     def get_action_mask(self, grid: Array, agent_id: int) -> Array:
         """

@@ -53,9 +53,9 @@ def test_binpack__reset(binpack_env: BinPack) -> None:
     reset_fn = jax.jit(chex.assert_max_traces(binpack_env.reset, n=1))
 
     key = random.PRNGKey(0)
-    state, timestep, _ = reset_fn(key)
+    state, timestep = reset_fn(key)
     # Call again to check it does not compile twice.
-    state, timestep, _ = reset_fn(key)
+    state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
@@ -107,12 +107,12 @@ def test_binpack__step(binpack_env: BinPack) -> None:
     step_fn = jax.jit(chex.assert_max_traces(binpack_env.step, n=1))
 
     key = random.PRNGKey(0)
-    state, timestep, _ = binpack_env.reset(key)
+    state, timestep = binpack_env.reset(key)
 
     action = binpack_env.action_spec().generate_value()
-    state, timestep, _ = step_fn(state, action)
+    state, timestep = step_fn(state, action)
     # Call again to check it does not compile twice.
-    state, timestep, _ = step_fn(state, action)
+    state, timestep = step_fn(state, action)
     assert_type_binpack_state(state)
 
 

@@ -28,7 +28,7 @@ from jumanji.knapsack.utils import (
     generate_first_item,
     generate_problem,
 )
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Knapsack(Environment[State]):
@@ -82,7 +82,7 @@ class Knapsack(Environment[State]):
     def reset(
         self,
         key: PRNGKey,
-    ) -> Tuple[State, TimeStep, Extra]:
+    ) -> Tuple[State, TimeStep]:
         """Resets the environment.
 
         Args:
@@ -91,7 +91,6 @@ class Knapsack(Environment[State]):
         Returns:
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: not used.
         """
         problem_key, start_key = random.split(key)
         problem = generate_problem(problem_key, self.problem_size)
@@ -102,19 +101,18 @@ class Knapsack(Environment[State]):
         self,
         problem: Array,
         first_item: jnp.int32,
-    ) -> Tuple[State, TimeStep, Extra]:
+    ) -> Tuple[State, TimeStep]:
         """Resets the environment from a given problem instance and first item.
 
         Args:
-            problem: jax array (float32) of shape (problem_size, 2)
-                the weights and values of the items.
-            first_item: jax array (int32)
-                index of the first added item (useless, but [1] does it to match TSP environment)
+            problem: jax array (float32) of shape (problem_size, 2) the weights
+                and values of the items.
+            first_item: jax array (int32) index of the first added item
+                (useless, but [1] does it to match TSP environment).
 
         Returns:
-            state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: not used.
+            state: State object corresponding to the new state of the environment.
+            timestep: TimeStep object corresponding the first timestep returned by the environment.
         """
         state = State(
             problem=problem,
@@ -126,9 +124,9 @@ class Knapsack(Environment[State]):
         )
         state = self._update_state(state, first_item)
         timestep = restart(observation=self._state_to_observation(state))
-        return state, timestep, None
+        return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -136,8 +134,8 @@ class Knapsack(Environment[State]):
             action: Array containing the index of next item to take.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep, Extra] containing the next state of the
-                environment, as well as the timestep to be observed.
+            state: next state of the environment.
+            timestep: the timestep to be observed.
         """
 
         state_budget_fits = state.remaining_budget >= state.problem[action, 0]
@@ -150,7 +148,7 @@ class Knapsack(Environment[State]):
             operand=[state, action],
         )
         timestep = self._state_to_timestep(state, is_valid)
-        return state, timestep, None
+        return state, timestep
 
     def observation_spec(self) -> ObservationSpec:
         """Returns the observation spec.
@@ -240,8 +238,8 @@ class Knapsack(Environment[State]):
 
         Returns:
             timestep: TimeStep object containing the timestep of the environment.
-            the episode terminates if there is no legal item to take or if the last action
-            was invalid.
+                The episode terminates if there is no legal item to take or if
+                the last action was invalid.
         """
         is_done = (
             jnp.min(jnp.where(state.used_mask == 0, state.problem[:, 0], 1))

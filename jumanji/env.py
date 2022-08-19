@@ -20,7 +20,7 @@ from typing import Any, Generic, Tuple, TypeVar
 from chex import PRNGKey
 
 from jumanji import specs
-from jumanji.types import Action, Extra, TimeStep
+from jumanji.types import Action, TimeStep
 
 State = TypeVar("State")
 
@@ -36,7 +36,7 @@ class Environment(abc.ABC, Generic[State]):
         return "Environment."
 
     @abc.abstractmethod
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
 
         Args:
@@ -45,11 +45,10 @@ class Environment(abc.ABC, Generic[State]):
         Returns:
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, default to None.
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -59,7 +58,6 @@ class Environment(abc.ABC, Generic[State]):
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
-            extra: metrics, default to None.
         """
 
     @abc.abstractmethod

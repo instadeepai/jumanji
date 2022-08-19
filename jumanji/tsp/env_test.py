@@ -35,7 +35,7 @@ def test_tsp__reset(tsp_env: TSP) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(tsp_env.reset)
     key = random.PRNGKey(0)
-    state, timestep, _ = reset_fn(key)
+    state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.visited_mask[state.position] == 1
@@ -54,12 +54,12 @@ def test_tsp__step(tsp_env: TSP) -> None:
     step_fn = jax.jit(step_fn)
 
     key = random.PRNGKey(0)
-    state, timestep, _ = tsp_env.reset(key)
+    state, timestep = tsp_env.reset(key)
 
     last_action = state.position
     new_action = last_action - 1 if last_action > 0 else 0
 
-    new_state, next_timestep, _ = step_fn(state, new_action)
+    new_state, next_timestep = step_fn(state, new_action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.position, state.position)
@@ -78,7 +78,7 @@ def test_tsp__step(tsp_env: TSP) -> None:
     # New step with same action should be invalid
     state = new_state
 
-    new_state, next_timestep, _ = step_fn(state, new_action)
+    new_state, next_timestep = step_fn(state, new_action)
 
     # Check that the state has not changed
     assert jnp.array_equal(new_state.position, state.position)
@@ -98,7 +98,7 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
     appropriate reward is received. The testing loop ensures that no city is selected twice.
     """
     key = random.PRNGKey(0)
-    state, timestep, _ = tsp_env.reset(key)
+    state, timestep = tsp_env.reset(key)
 
     while not timestep.last():
         # Check that there are cities that have not been selected yet.
@@ -108,7 +108,7 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
         # Check that the reward is 0 while trajectory is not done.
         assert timestep.reward == 0
 
-        state, timestep, _ = tsp_env.step(
+        state, timestep = tsp_env.step(
             state, (state.position + 1) % tsp_env.problem_size
         )
 
@@ -126,7 +126,7 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
     """Checks that an invalid action leads to a termination and the appropriate reward is
     received."""
     key = random.PRNGKey(0)
-    state, timestep, _ = tsp_env.reset(key)
+    state, timestep = tsp_env.reset(key)
 
     first_position = state.position
     actions = (
@@ -137,7 +137,7 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
     for a in actions:
         assert timestep.reward == 0
         assert timestep.step_type < StepType.LAST
-        state, timestep, _ = tsp_env.step(state, a)
+        state, timestep = tsp_env.step(state, a)
 
     # Last action is invalid because it was already taken
     assert timestep.reward < 0

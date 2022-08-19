@@ -31,7 +31,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
 from jumanji.testing.pytrees import assert_trees_are_different
-from jumanji.types import Extra, StepType, TimeStep
+from jumanji.types import StepType, TimeStep
 from jumanji.wrappers import (
     AutoResetWrapper,
     BraxToJumanjiWrapper,
@@ -344,7 +344,7 @@ class TestMultiToSingleEnvironment:
         """Validates (jitted) reset function and timestep type of the multi agent
         to single agent wrapped environment.
         """
-        _, timestep, _ = jax.jit(fake_multi_to_single_env.reset)(random.PRNGKey(0))
+        _, timestep = jax.jit(fake_multi_to_single_env.reset)(random.PRNGKey(0))
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
         assert timestep.observation.shape[0] == fake_multi_environment.num_agents
@@ -359,13 +359,13 @@ class TestMultiToSingleEnvironment:
         """Validates (jitted) step function of the multi agent to single
         agent wrapped environment.
         """
-        state, timestep, _ = fake_multi_to_single_env.reset(
+        state, timestep = fake_multi_to_single_env.reset(
             random.PRNGKey(0)
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
         action = fake_multi_to_single_env.action_spec().generate_value()
-        state, next_timestep, _ = jax.jit(fake_multi_to_single_env.step)(
+        state, next_timestep = jax.jit(fake_multi_to_single_env.step)(
             state, action
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
         assert next_timestep != timestep
         assert next_timestep.reward.shape == ()
         assert (
@@ -385,13 +385,13 @@ class TestMultiToSingleEnvironment:
         mean_fake_multi_to_single_env = MultiToSingleWrapper(
             fake_multi_environment, reward_aggregator=jnp.mean
         )
-        state, timestep, _ = mean_fake_multi_to_single_env.reset(
+        state, timestep = mean_fake_multi_to_single_env.reset(
             random.PRNGKey(0)
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
         action = mean_fake_multi_to_single_env.action_spec().generate_value()
-        state, next_timestep, _ = mean_fake_multi_to_single_env.step(
+        state, next_timestep = mean_fake_multi_to_single_env.step(
             state, action
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
         assert next_timestep != timestep
         assert next_timestep.reward.shape == ()
         assert next_timestep.reward == fake_multi_environment.reward_per_step
@@ -452,7 +452,7 @@ class TestVmapWrapper:
         self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
     ) -> None:
         """Validates reset function and timestep type of the vmap wrapped environment."""
-        _, timestep, _ = jax.jit(fake_vmap_environment.reset)(keys)
+        _, timestep = jax.jit(fake_vmap_environment.reset)(keys)
 
         assert isinstance(timestep, TimeStep)
         assert_trees_all_equal(timestep.step_type, StepType.FIRST)
@@ -464,16 +464,16 @@ class TestVmapWrapper:
         self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
     ) -> None:
         """Validates step function of the vmap environment."""
-        state, timestep, _ = fake_vmap_environment.reset(
+        state, timestep = fake_vmap_environment.reset(
             keys
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
         action = jax.vmap(
             lambda _: fake_vmap_environment.action_spec().generate_value()
         )(keys)
 
-        state, next_timestep, _ = jax.jit(fake_vmap_environment.step)(
+        state, next_timestep = jax.jit(fake_vmap_environment.step)(
             state, action
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
 
         assert_trees_are_different(next_timestep, timestep)
         assert_trees_all_equal(next_timestep.reward, 0)
@@ -517,21 +517,21 @@ class TestBraxEnvToJumanjiEnvironment:
         self, jumanji_environment_from_brax: Environment
     ) -> None:
         """Validates (jitted) reset function and timestep type of the wrapped environment."""
-        state, timestep, extra = jax.jit(jumanji_environment_from_brax.reset)(
+        state, timestep = jax.jit(jumanji_environment_from_brax.reset)(
             jax.random.PRNGKey(0)
         )
         assert isinstance(state, BraxState)
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
-        assert extra is None
+        assert timestep.extras == {}
 
     def test_brax_env_to_jumanji_environment__step(
         self, jumanji_environment_from_brax: Environment
     ) -> None:
         """Validates (jitted) step function of the wrapped environment."""
-        state, timestep, _ = jumanji_environment_from_brax.reset(jax.random.PRNGKey(0))
+        state, timestep = jumanji_environment_from_brax.reset(jax.random.PRNGKey(0))
         action = jumanji_environment_from_brax.action_spec().generate_value()
-        next_state, next_timestep, _ = jax.jit(jumanji_environment_from_brax.step)(
+        next_state, next_timestep = jax.jit(jumanji_environment_from_brax.step)(
             state, action
         )
         assert_trees_are_different(timestep, next_timestep)
@@ -571,7 +571,7 @@ class TestAutoResetWrapper:
     def fake_state_and_timestep(
         self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
     ) -> Tuple[State, TimeStep]:
-        state, timestep, _ = jax.jit(fake_auto_reset_environment.reset)(key)
+        state, timestep = jax.jit(fake_auto_reset_environment.reset)(key)
         return state, timestep
 
     def test_auto_reset_wrapper__init(self, fake_environment: Environment) -> None:
@@ -597,16 +597,16 @@ class TestAutoResetWrapper:
         """Validates that step function of the AutoResetWrapper does not do an
         auto-reset when the terminal state is not reached.
         """
-        state, first_timestep, _ = fake_auto_reset_environment.reset(
+        state, first_timestep = fake_auto_reset_environment.reset(
             key
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
 
         # Generate an action
         action = fake_auto_reset_environment.action_spec().generate_value()
 
-        state, timestep, _ = jax.jit(fake_auto_reset_environment.step)(
+        state, timestep = jax.jit(fake_auto_reset_environment.step)(
             state, action
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
 
         assert timestep.step_type == StepType.MID
         assert_trees_are_different(timestep, first_timestep)
@@ -621,18 +621,18 @@ class TestAutoResetWrapper:
         """Validates that the auto-reset is done correctly by the step function
         of the AutoResetWrapper when the terminal timestep is reached.
         """
-        state, first_timestep, _extra = fake_auto_reset_environment.reset(
+        state, first_timestep = fake_auto_reset_environment.reset(
             key
-        )  # type: Tuple[FakeState, TimeStep, Extra]
+        )  # type: Tuple[FakeState, TimeStep]
 
         fake_environment.time_limit = 5  # type: ignore
 
         # Loop across time_limit so auto-reset occurs
         for _ in range(fake_environment.time_limit):  # type: ignore
             action = fake_auto_reset_environment.action_spec().generate_value()
-            state, timestep, _extr = jax.jit(fake_auto_reset_environment.step)(  # type: ignore
+            state, timestep = jax.jit(fake_auto_reset_environment.step)(  # type: ignore
                 state, action
-            )  # type: Tuple[FakeState, TimeStep, Extra]
+            )  # type: Tuple[FakeState, TimeStep]
 
         assert timestep.step_type == first_timestep.step_type == StepType.FIRST
         assert_trees_all_equal(timestep.observation, first_timestep.observation)

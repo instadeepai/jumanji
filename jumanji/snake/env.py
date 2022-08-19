@@ -26,7 +26,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.snake import utils as snake_utils
 from jumanji.snake.types import Position, State
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Snake(Environment[State]):
@@ -102,7 +102,7 @@ class Snake(Environment[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array], Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Array]]:
         """Resets the environment.
 
         Args:
@@ -111,7 +111,6 @@ class Snake(Environment[State]):
         Returns:
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, default to None.
         """
         key, body_key, fruit_key = random.split(key, 3)
         body = jnp.zeros(self.board_shape, bool)
@@ -139,9 +138,9 @@ class Snake(Environment[State]):
             step=jnp.int32(0),
         )
         timestep = restart(observation=obs)
-        return state, timestep, None
+        return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -155,11 +154,10 @@ class Snake(Environment[State]):
         Returns:
             state: State object corresponding to the next state of the environment.
             timestep: TimeStep object corresponding the timestep returned by the environment.
-            extra: metrics, default to None.
         """
         state, next_body_no_head, fruit_eaten = self._update_state(state, action)
         timestep = self._state_to_timestep(state, next_body_no_head, fruit_eaten)
-        return state, timestep, None
+        return state, timestep
 
     def _update_state(self, state: State, action: Action) -> Tuple[State, Array, Array]:
         """Update the environment state by taking an action.
@@ -460,13 +458,13 @@ class Snake(Environment[State]):
             ```python
             env = Snake(6, 6)
             states = []
-            state, *_ = env.reset(jax.random.PRNGKey(0))
+            state, _ = env.reset(jax.random.PRNGKey(0))
             states.append(state)
-            state, *_ = env.step(state, env.action_spec().generate_value())
+            state, _ = env.step(state, env.action_spec().generate_value())
             states.append(state)
-            state, *_ = env.step(state, env.action_spec().generate_value())
+            state, _ = env.step(state, env.action_spec().generate_value())
             states.append(state)
-            state, *_ = env.step(state, env.action_spec().generate_value())
+            state, _ = env.step(state, env.action_spec().generate_value())
             states.append(state)
             animation = env.animation(states)
             animation.save("anim.gif", writer=matplotlib.animation.FFMpegWriter(fps=10), dpi=60)

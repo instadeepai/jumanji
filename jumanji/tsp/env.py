@@ -27,7 +27,7 @@ from jumanji.tsp.utils import (
     generate_problem,
     generate_start_position,
 )
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class TSP(Environment[State]):
@@ -70,7 +70,7 @@ class TSP(Environment[State]):
     def __repr__(self) -> str:
         return f"TSP environment with {self.problem_size} cities."
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """
         Resets the environment.
 
@@ -78,10 +78,9 @@ class TSP(Environment[State]):
             key: used to randomly generate the problem and the start position.
 
         Returns:
-             state: State object corresponding to the new state of the environment.
-             timestep: TimeStep object corresponding to the first timestep returned
-                 by the environment.
-             extra: Not used.
+            state: State object corresponding to the new state of the environment.
+            timestep: TimeStep object corresponding to the first timestep returned
+                by the environment.
         """
         problem_key, start_key = random.split(key)
         problem = generate_problem(problem_key, self.problem_size)
@@ -90,7 +89,7 @@ class TSP(Environment[State]):
 
     def reset_from_state(
         self, problem: Array, start_position: jnp.int32
-    ) -> Tuple[State, TimeStep, Extra]:
+    ) -> Tuple[State, TimeStep]:
         """
         Resets the environment from a given problem instance and start position.
 
@@ -114,9 +113,9 @@ class TSP(Environment[State]):
         )
         state = self._update_state(state, start_position)
         timestep = restart(observation=self._state_to_observation(state))
-        return state, timestep, None
+        return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep, Extra]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """
         Run one timestep of the environment's dynamics.
 
@@ -125,8 +124,8 @@ class TSP(Environment[State]):
             action: Array containing the index of the next position to visit.
 
         Returns:
-            state, timestep, extra: Tuple[State, TimeStep, Extra] containing the next state of the
-                environment, as well as the timestep to be observed.
+            state: the next state of the environment.
+            timestep: the timestep to be observed.
         """
         is_valid = state.visited_mask[action] == 0
         state = jax.lax.cond(
@@ -136,7 +135,7 @@ class TSP(Environment[State]):
             operand=[state, action],
         )
         timestep = self._state_to_timestep(state, is_valid)
-        return state, timestep, None
+        return state, timestep
 
     def observation_spec(self) -> ObservationSpec:
         """

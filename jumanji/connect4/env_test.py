@@ -37,11 +37,11 @@ def test_connect4__reset(connect4_env: Connect4, empty_board: Array) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(connect4_env.reset)
     key = random.PRNGKey(0)
-    state, timestep, extra = reset_fn(key)
+    state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.current_player == 0
-    assert extra["current_player"] == 0
+    assert timestep.extras["current_player"] == 0  # type: ignore
     assert jnp.array_equal(state.board, empty_board)
     assert jnp.array_equal(
         timestep.observation.action_mask, jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
@@ -59,11 +59,11 @@ def test_connect4__step(connect4_env: Connect4, empty_board: Array) -> None:
     step_fn = jax.jit(step_fn)
 
     key = random.PRNGKey(0)
-    state, timestep, _ = connect4_env.reset(key)
+    state, timestep = connect4_env.reset(key)
 
     action = jnp.array(0)
 
-    new_state, next_timestep, extra = step_fn(state, action)
+    new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.board, state.board)
@@ -79,7 +79,7 @@ def test_connect4__step(connect4_env: Connect4, empty_board: Array) -> None:
     # New step
     state = new_state
 
-    new_state, next_timestep, extra = step_fn(state, action)
+    new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.board, state.board)
@@ -114,12 +114,12 @@ def test_connect4__invalid_action(connect4_env: Connect4) -> None:
     and the appropriate reward is received
     """
     key = random.PRNGKey(0)
-    state, timestep, _ = connect4_env.reset(key)
+    state, timestep = connect4_env.reset(key)
     action = jnp.array(0)
 
     # legal actions
     for _ in range(BOARD_HEIGHT):
-        state, timestep, _ = connect4_env.step(state, action)
+        state, timestep = connect4_env.step(state, action)
 
     # check that the action is flagged as illegal
     assert timestep.observation.action_mask[0] == 0
@@ -130,7 +130,7 @@ def test_connect4__invalid_action(connect4_env: Connect4) -> None:
     good_player = (bad_player + 1) % 2
 
     # do the illegal action
-    state, timestep, _ = connect4_env.step(state, action)
+    state, timestep = connect4_env.step(state, action)
 
     assert timestep.last()
     assert timestep.reward[bad_player] == -1
@@ -142,7 +142,7 @@ def test_connect4__draw(connect4_env: Connect4) -> None:
     and the appropriate reward is received
     """
     key = random.PRNGKey(0)
-    state, timestep, _ = connect4_env.reset(key)
+    state, timestep = connect4_env.reset(key)
 
     # create a full board
 
@@ -162,7 +162,7 @@ def test_connect4__draw(connect4_env: Connect4) -> None:
 
     # do the last action
     action = jnp.array(0)
-    state, timestep, _ = connect4_env.step(state, action)
+    state, timestep = connect4_env.step(state, action)
 
     # check for termination
     assert timestep.last()
@@ -171,10 +171,10 @@ def test_connect4__draw(connect4_env: Connect4) -> None:
     assert jnp.all(timestep.reward == 0)
 
 
-def test_connet4__render(connect4_env: Connect4, empty_board: Array) -> None:
+def test_connect4__render(connect4_env: Connect4, empty_board: Array) -> None:
     """Checks that render functions correctly and returns the expected string"""
     key = random.PRNGKey(0)
-    state, timestep, _ = connect4_env.reset(key)
+    state, timestep = connect4_env.reset(key)
 
     render = connect4_env.render(state)
 

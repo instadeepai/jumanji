@@ -26,7 +26,7 @@ from jax import lax, random
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 @dataclass
@@ -85,7 +85,7 @@ class FakeEnvironment(Environment[FakeState]):
             name="action",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep]:
         """Resets the environment to an initial state: step number is 0.
 
         Args:
@@ -94,17 +94,14 @@ class FakeEnvironment(Environment[FakeState]):
         Returns:
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, default to None.
         """
 
         state = FakeState(key=key, step=0)
         observation = self._state_to_obs(state)
         timestep = restart(observation=observation)
-        return state, timestep, None
+        return state, timestep
 
-    def step(
-        self, state: FakeState, action: Action
-    ) -> Tuple[FakeState, TimeStep, Extra]:
+    def step(self, state: FakeState, action: Action) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -114,7 +111,6 @@ class FakeEnvironment(Environment[FakeState]):
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
-            extra: metrics, default to None.
         """
         chex.assert_equal_shape((action, self._example_action))
         key, _ = random.split(state.key)
@@ -133,7 +129,7 @@ class FakeEnvironment(Environment[FakeState]):
             ),
             None,
         )
-        return next_state, timestep, None
+        return next_state, timestep
 
     def _state_to_obs(self, state: FakeState) -> chex.Array:
         """The observation is an array full of `state.step` of shape `(self.observation_shape,)`."""
@@ -217,7 +213,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
             name="discount",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep, Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep]:
         """Resets the environment to an initial state: step number is 0.
 
         Args:
@@ -226,17 +222,14 @@ class FakeMultiEnvironment(Environment[FakeState]):
         Returns:
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
-            extra: metrics, default to None.
         """
 
         state = FakeState(key=key, step=0)
         observation = self.observation_spec().generate_value()
         timestep = restart(observation=observation, shape=(self.num_agents,))
-        return state, timestep, None
+        return state, timestep
 
-    def step(
-        self, state: FakeState, action: Action
-    ) -> Tuple[FakeState, TimeStep, Extra]:
+    def step(self, state: FakeState, action: Action) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -246,7 +239,6 @@ class FakeMultiEnvironment(Environment[FakeState]):
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
-            extra: metrics, default to None.
         """
         key = random.split(state.key, 1).squeeze(0)
         next_step = state.step + 1
@@ -265,4 +257,4 @@ class FakeMultiEnvironment(Environment[FakeState]):
             ),
             None,
         )
-        return next_state, timestep, None
+        return next_state, timestep

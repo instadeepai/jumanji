@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, Sequence, TypeVar, Union
+from typing import TYPE_CHECKING, Dict, Generic, Optional, Sequence, TypeVar, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -23,7 +23,6 @@ import jax.numpy as jnp
 from chex import Array
 
 Action = Array
-Extra = Optional[Any]
 
 
 class StepType(jnp.int8):
@@ -70,12 +69,17 @@ class TimeStep(Generic[Observation]):
         observation: A NumPy array, or a nested dict, list or tuple of arrays.
             Scalar values that can be cast to NumPy arrays (e.g. Python floats) are
             also valid in place of a scalar array.
+        extras: environment metrics or things to be seen by the agent but not directly
+            observed (hence not in the observation) e.g. whether an invalid action was
+            taken, some environment metric, or the player whose turn it is. In most
+            environments, extras is None.
     """
 
     step_type: StepType
     reward: Array
     discount: Array
     observation: Observation
+    extras: Optional[Dict] = None
 
     def first(self) -> Array:
         return self.step_type == StepType.FIRST
@@ -88,13 +92,19 @@ class TimeStep(Generic[Observation]):
 
 
 def restart(
-    observation: Observation, shape: Union[int, Sequence[int]] = ()
+    observation: Observation,
+    extras: Optional[Dict] = None,
+    shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.FIRST`.
 
     Args:
         observation: array or tree of arrays.
-        shape : optional parameter to specify the shape of the rewards and discounts.
+        extras: environment metrics or things to be seen by the agent but not directly
+            observed (hence not in the observation) e.g. whether an invalid action was
+            taken, some environment metric, or the player whose turn it is. In most
+            environments, extras is None.
+        shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
 
@@ -106,6 +116,7 @@ def restart(
         reward=jnp.zeros(shape, dtype=float),
         discount=jnp.ones(shape, dtype=float),
         observation=observation,
+        extras=extras,
     )
 
 
@@ -113,6 +124,7 @@ def transition(
     reward: Array,
     observation: Observation,
     discount: Optional[Array] = None,
+    extras: Optional[Dict] = None,
     shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.MID`.
@@ -121,7 +133,11 @@ def transition(
         reward: array.
         observation: array or tree of arrays.
         discount: array.
-        shape : optional parameter to specify the shape of the rewards and discounts.
+        extras: environment metrics or things to be seen by the agent but not directly
+            observed (hence not in the observation) e.g. whether an invalid action was
+            taken, some environment metric, or the player whose turn it is. In most
+            environments, extras is None.
+        shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
 
@@ -134,17 +150,25 @@ def transition(
         reward=reward,
         discount=discount,
         observation=observation,
+        extras=extras,
     )
 
 
 def termination(
-    reward: Array, observation: Observation, shape: Union[int, Sequence[int]] = ()
+    reward: Array,
+    observation: Observation,
+    extras: Optional[Dict] = None,
+    shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
 
     Args:
         reward: array.
         observation: array or tree of arrays.
+        extras: environment metrics or things to be seen by the agent but not directly
+            observed (hence not in the observation) e.g. whether an invalid action was
+            taken, some environment metric, or the player whose turn it is. In most
+            environments, extras is None.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -157,6 +181,7 @@ def termination(
         reward=reward,
         discount=jnp.zeros(shape, dtype=float),
         observation=observation,
+        extras=extras,
     )
 
 
@@ -164,6 +189,7 @@ def truncation(
     reward: Array,
     observation: Observation,
     discount: Optional[Array] = None,
+    extras: Optional[Dict] = None,
     shape: Union[int, Sequence[int]] = (),
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`.
@@ -172,7 +198,11 @@ def truncation(
         reward: array.
         observation: array or tree of arrays.
         discount: array.
-        shape : optional parameter to specify the shape of the rewards and discounts.
+        extras: environment metrics or things to be seen by the agent but not directly
+            observed (hence not in the observation) e.g. whether an invalid action was
+            taken, some environment metric, or the player whose turn it is. In most
+            environments, extras is None.
+        shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
     Returns:
@@ -184,6 +214,7 @@ def truncation(
         reward=reward,
         discount=discount,
         observation=observation,
+        extras=extras,
     )
 
 

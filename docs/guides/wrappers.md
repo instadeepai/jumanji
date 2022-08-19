@@ -16,9 +16,9 @@ brax_env = brax.envs.create("walker2d")
 env = jumanji.wrappers.BraxToJumanjiWrapper(brax_env)
 
 key = jax.random.PRNGKey(0)
-state, timestep, extra = env.reset(key)
+state, timestep = env.reset(key)
 action = jax.random.normal(key, [brax_env.action_size])
-state, timestep, extra = env.step(state, action)
+state, timestep = env.step(state, action)
 ...
 ```
 
@@ -51,11 +51,11 @@ env = jumanji.make("Snake-6x6-v0")
 env = jumanji.wrappers.AutoResetWrapper(env)
 
 key = jax.random.PRNGKey(0)
-state, timestep, extra = env.reset(key)
+state, timestep = env.reset(key)
 print("New episode")
 for i in range(100):
     action = env.action_spec().generate_value()  # Returns jnp.array(0) when using Snake.
-    state, timestep, extra = env.step(state, action)
+    state, timestep = env.step(state, action)
     if timestep.first():
         print("New episode")
 ```

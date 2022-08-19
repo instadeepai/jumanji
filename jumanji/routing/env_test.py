@@ -46,7 +46,7 @@ def routing_env() -> Routing:
 def deterministic_routing_env() -> Tuple[Routing, State, TimeStep]:
     """Instantiates a 3x3 Routing environment with a step limit of 5."""
     env = Routing(3, 3, 2, step_limit=5)
-    state, timestep, _ = env.reset(random.PRNGKey(10))
+    state, timestep = env.reset(random.PRNGKey(10))
     state.grid = jnp.array(
         [
             [4, 0, 0],
@@ -61,8 +61,8 @@ def test_routing__reset(routing_env: Routing) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(routing_env.reset)
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
-    state1, timestep1, _ = reset_fn(key1)
-    state2, timestep2, _ = reset_fn(key2)
+    state1, timestep1 = reset_fn(key1)
+    state2, timestep2 = reset_fn(key2)
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step == 0
@@ -88,11 +88,11 @@ def test_routing__finished_agents_behaviour(routing_env: Routing) -> None:
         finished_agents=jnp.array([False, False]),
     )
 
-    state, _, _ = routing_env.step(state, jnp.array([1, 1]))
+    state, _ = routing_env.step(state, jnp.array([1, 1]))
 
-    state2, _, _ = routing_env.step(state, jnp.array([1, 0]))
-    state3, _, _ = routing_env.step(state, jnp.array([0, 1]))
-    state4, _, _ = routing_env.step(state, jnp.array([1, 1]))
+    state2, _ = routing_env.step(state, jnp.array([1, 0]))
+    state3, _ = routing_env.step(state, jnp.array([0, 1]))
+    state4, _ = routing_env.step(state, jnp.array([1, 1]))
 
     assert jnp.all(state2.finished_agents == jnp.array([True, False]))
     assert jnp.all(state3.finished_agents == jnp.array([False, True]))
@@ -111,7 +111,7 @@ def test_routing__agent_observation(routing_env: Routing) -> None:
         finished_agents=jnp.array([False, False]),
     )
 
-    state2, timestep, _ = routing_env.step(state1, jnp.array([0, 0]))
+    state2, timestep = routing_env.step(state1, jnp.array([0, 0]))
 
     assert jnp.all(timestep.observation[0] == grid)
 
@@ -139,7 +139,7 @@ def test_routing__agent_observation(routing_env: Routing) -> None:
         finished_agents=jnp.array([False, False, False, False, False, False]),
     )
 
-    state2, timestep, _ = test_env.step(state1, jnp.array([0, 0, 0, 0, 0, 0]))
+    state2, timestep = test_env.step(state1, jnp.array([0, 0, 0, 0, 0, 0]))
 
     assert jnp.all(timestep.observation[0] == grid)
 
@@ -180,7 +180,7 @@ def test_routing__step(routing_env: Routing) -> None:
     """Validates the jitted step function of the environment."""
     step_fn = jax.jit(routing_env.step)
     state_key, action_key1, action_key2 = random.split(random.PRNGKey(10), 3)
-    state, timestep, _ = routing_env.reset(state_key)
+    state, timestep = routing_env.reset(state_key)
 
     # Sample two different actions
     action1, action2 = random.choice(
@@ -194,7 +194,7 @@ def test_routing__step(routing_env: Routing) -> None:
     action1 = jnp.zeros((routing_env.num_agents,), int).at[0].set(action1)
     action2 = jnp.zeros((routing_env.num_agents,), int).at[0].set(action2)
 
-    new_state1, timestep1, _ = step_fn(state, action1)
+    new_state1, timestep1 = step_fn(state, action1)
 
     # Check that rewards are within the correct range
     assert jnp.all(timestep1.reward <= routing_env._reward_connected)
@@ -213,7 +213,7 @@ def test_routing__step(routing_env: Routing) -> None:
     assert new_state1.step != state.step
     assert not jnp.all(new_state1.grid != state.grid)
     # Check that two different actions lead to two different states
-    new_state2, timestep2, _ = step_fn(state, action2)
+    new_state2, timestep2 = step_fn(state, action2)
     assert not jnp.all(new_state1.grid != new_state2.grid)
     # Check that the state update and timestep creation work as expected
     head, _ = routing_env._extract_agent_information(state.grid, 0)
@@ -226,7 +226,7 @@ def test_routing__step(routing_env: Routing) -> None:
         4: (Position(x=row + 1, y=col)),  # Down
     }
     for action, new_position in moves.items():
-        new_state, timestep, _ = step_fn(state, jnp.array([action, action]))
+        new_state, timestep = step_fn(state, jnp.array([action, action]))
         if routing_env._is_valid(state.grid, 0, new_position):
             head, _ = routing_env._extract_agent_information(new_state.grid, 0)
             posx, posy = head
@@ -243,14 +243,14 @@ def test_routing__step_limit(routing_env: Routing) -> None:
     """Validates the terminal reward."""
     step_fn = jax.jit(routing_env.step)
     state_key, action_key1, action_key2 = random.split(random.PRNGKey(10), 3)
-    state, timestep, _ = routing_env.reset(state_key)
+    state, timestep = routing_env.reset(state_key)
 
     for _ in range(routing_env._step_limit):
-        state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+        state, timestep = step_fn(state, jnp.array([0, 0]))
 
     assert timestep.mid()
     reward = timestep.reward
-    state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+    state, timestep = step_fn(state, jnp.array([0, 0]))
     new_reward = timestep.reward
     assert timestep.last()
     assert jnp.all(new_reward == (reward + routing_env._reward_for_terminal_step))
@@ -264,7 +264,7 @@ def test__routing__termination(
 
     # termination
     # agent 0 connects and agent 1 is blocked
-    state, timestep, _ = step_fn(state, jnp.array([4, 1]))
+    state, timestep = step_fn(state, jnp.array([4, 1]))
     assert timestep.last()
     assert jnp.all(timestep.discount == 0)
 
@@ -277,7 +277,7 @@ def test__routing__truncation(
 
     # truncation
     for _ in range(routing_env._step_limit + 1):
-        state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+        state, timestep = step_fn(state, jnp.array([0, 0]))
 
     assert timestep.last()
     assert not jnp.all(timestep.discount == 0)
@@ -291,7 +291,7 @@ def test__routing__termination_at_horizon(
 
     # termination at final step and no truncation
     for _ in range(routing_env._step_limit):
-        state, timestep, _ = step_fn(state, jnp.array([0, 0]))
+        state, timestep = step_fn(state, jnp.array([0, 0]))
 
         # no termination yet
         assert timestep.mid()
@@ -299,7 +299,7 @@ def test__routing__termination_at_horizon(
 
     # time horizon and all complete
     # both agents connect
-    state, timestep, _ = step_fn(state, jnp.array([4, 3]))
+    state, timestep = step_fn(state, jnp.array([4, 3]))
     assert timestep.last()
     assert jnp.all(timestep.discount == 0)
 
@@ -329,7 +329,7 @@ def test_routing__action_masking(routing_env: Routing) -> None:
     assert jnp.all(agent_0_mask == jnp.array([1, 1, 0, 0, 1]))
     assert jnp.all(agent_1_mask == jnp.array([1, 1, 1, 0, 0]))
 
-    state2, timestep, _ = routing_env.step(state1, jnp.array([1, 1]))
+    state2, timestep = routing_env.step(state1, jnp.array([1, 1]))
 
     agent_0_mask = routing_env.get_action_mask(state2.grid, 0)
     agent_1_mask = routing_env.get_action_mask(state2.grid, 1)
@@ -337,7 +337,7 @@ def test_routing__action_masking(routing_env: Routing) -> None:
     assert jnp.all(agent_0_mask == jnp.array([1, 1, 0, 0, 1]))
     assert jnp.all(agent_1_mask == jnp.array([1, 1, 1, 0, 0]))
 
-    state3, timestep, _ = routing_env.step(state2, jnp.array([4, 2]))
+    state3, timestep = routing_env.step(state2, jnp.array([4, 2]))
 
     agent_0_mask = routing_env.get_action_mask(state3.grid, 0)
     agent_1_mask = routing_env.get_action_mask(state3.grid, 1)
@@ -352,7 +352,7 @@ def test_routing__action_masking(routing_env: Routing) -> None:
     assert jnp.all(agent_1_mask == jnp.array([1, 1, 0, 1, 1]))
     assert jnp.all(agent_0_mask == jnp.array([1, 1, 1, 1, 0]))
 
-    state4, timestep, _ = routing_env.step(state3, jnp.array([3, 3]))
+    state4, timestep = routing_env.step(state3, jnp.array([3, 3]))
 
     agent_0_mask = routing_env.get_action_mask(state4.grid, 0)
     agent_1_mask = routing_env.get_action_mask(state4.grid, 1)

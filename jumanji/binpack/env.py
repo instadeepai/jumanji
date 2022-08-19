@@ -25,7 +25,7 @@ from jumanji.binpack.reward import sparse_linear_reward
 from jumanji.binpack.specs import EMSSpec, ItemSpec, ObservationSpec
 from jumanji.binpack.types import EMS, Item, Observation, RewardFn, State
 from jumanji.env import Environment
-from jumanji.types import Action, Extra, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class BinPack(Environment[State]):
@@ -119,7 +119,7 @@ class BinPack(Environment[State]):
             ]
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation], Extra]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment by calling the instance generator for a new instance.
 
         Args:
@@ -129,8 +129,6 @@ class BinPack(Environment[State]):
             state: State object corresponding to the new state of the environment after a reset.
             timestep: TimeStep object corresponding the first timestep returned by the environment
                 after a reset.
-            extra: None.
-
         """
         state = self.instance_generator(key)
 
@@ -157,12 +155,10 @@ class BinPack(Environment[State]):
         )
         timestep = restart(observation=observation)
         # TODO: add metrics to extras
-        extras = None
-        return state, timestep, extras
 
-    def step(
-        self, state: State, action: Action
-    ) -> Tuple[State, TimeStep[Observation], Extra]:
+        return state, timestep
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -170,12 +166,11 @@ class BinPack(Environment[State]):
             action: jax array of shape (2,): (ems_id, item_id). This means placing the given item
                 at the location of the given ems. The action is supposed to be feasible, otherwise
                 the behaviour is unexpected and the flag `invalid_action_taken` will be True in
-                extra.
+                `timestep.extras`.
 
         Returns:
             state: State object corresponding to the next state of the environment.
             timestep: TimeStep object corresponding to the timestep returned by the environment.
-            extra: None.
         """
 
         # TODO: Actually do the env step logic
@@ -215,8 +210,8 @@ class BinPack(Environment[State]):
             None,
         )
         # TODO: add metrics to extras
-        extras = None
-        return state, timestep, extras
+
+        return state, timestep
 
     def observation_spec(self) -> ObservationSpec:
         """Specifications of the observation of the BinPack environment.

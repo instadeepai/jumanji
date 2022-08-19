@@ -14,7 +14,7 @@ import jumanji
 
 env = jumanji.make('Snake12-v0')
 key = jax.random.PRNGKey(1)
-state, timestep, extra = env.reset(key)
+state, timestep = env.reset(key)
 ```
 
 The environment ID is composed of two parts, the environment name and its version.

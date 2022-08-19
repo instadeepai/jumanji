@@ -36,7 +36,7 @@ def test_knapsack__reset(knapsack_env: Knapsack) -> None:
 
     reset_fn = jax.jit(knapsack_env.reset)
     key = random.PRNGKey(0)
-    state, timestep, _ = reset_fn(key)
+    state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.remaining_budget <= knapsack_env.total_budget
@@ -60,12 +60,12 @@ def test_knapsack__step(knapsack_env: Knapsack) -> None:
     step_fn = jax.jit(step_fn)
 
     key = random.PRNGKey(0)
-    state, timestep, _ = knapsack_env.reset(key)
+    state, timestep = knapsack_env.reset(key)
 
     action_already_taken = state.last_item
     new_action = action_already_taken - 1 if action_already_taken > 0 else 0
 
-    new_state, next_timestep, _ = step_fn(state, new_action)
+    new_state, next_timestep = step_fn(state, new_action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.used_mask, state.used_mask)
@@ -82,7 +82,7 @@ def test_knapsack__step(knapsack_env: Knapsack) -> None:
     # New step with same action should be invalid
     state = new_state
 
-    new_state, next_timestep, _ = step_fn(state, new_action)
+    new_state, next_timestep = step_fn(state, new_action)
 
     # Check that the state has not changed
     assert jnp.array_equal(new_state.used_mask, state.used_mask)
@@ -101,7 +101,7 @@ def test_knapsackenv__trajectory_action(knapsack_env: Knapsack) -> None:
     """
 
     key = random.PRNGKey(0)
-    state, timestep, _ = knapsack_env.reset(key)
+    state, timestep = knapsack_env.reset(key)
 
     while not timestep.last():
         # check that budget remains positive
@@ -110,7 +110,7 @@ def test_knapsackenv__trajectory_action(knapsack_env: Knapsack) -> None:
         # check that the reward is 0 while trajectory is not done
         assert timestep.reward == 0
 
-        state, timestep, _ = knapsack_env.step(
+        state, timestep = knapsack_env.step(
             state, (state.last_item + 1) % knapsack_env.problem_size
         )
 
@@ -131,7 +131,7 @@ def test_knapsackenv__invalid_action(knapsack_env: Knapsack) -> None:
     """
 
     key = random.PRNGKey(0)
-    state, timestep, _ = knapsack_env.reset(key)
+    state, timestep = knapsack_env.reset(key)
 
     first_item = state.first_item
     actions = (
@@ -142,7 +142,7 @@ def test_knapsackenv__invalid_action(knapsack_env: Knapsack) -> None:
     for a in actions:
         assert timestep.reward == 0
         assert timestep.step_type < 2
-        state, timestep, _ = knapsack_env.step(state, a)
+        state, timestep = knapsack_env.step(state, a)
 
     # last action is invalid because it was already taken
     assert timestep.reward > 0

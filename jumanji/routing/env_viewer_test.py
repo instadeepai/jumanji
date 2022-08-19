@@ -41,17 +41,17 @@ class TestViewer:
 
     def test_render(self, env: Routing, viewer: RoutingViewer) -> None:
         """Tests that the RoutingViewer.render() does not raise any errors."""
-        state, timestep, _ = env.reset(random.PRNGKey(0))
+        state, timestep = env.reset(random.PRNGKey(0))
         viewer.render(state.grid)
 
-        state, timestep, _ = env.step(state, jnp.array([1, 2]))
+        state, timestep = env.step(state, jnp.array([1, 2]))
         viewer.render(state.grid)
         viewer.render(timestep.observation[0])
         viewer.render(timestep.observation[1])
 
     def test__frame_shape(self, env: Routing, viewer: RoutingViewer) -> None:
         """Tests that the returned pixel array is of the correct shape."""
-        state, timestep, _ = env.reset(random.PRNGKey(0))
+        state, timestep = env.reset(random.PRNGKey(0))
 
         frame = viewer.render(state.grid)
 
@@ -59,7 +59,7 @@ class TestViewer:
 
     def test__save_frame(self, env: Routing, viewer: RoutingViewer) -> None:
         """Tests that saving an image functions correctly."""
-        state, timestep, _ = env.reset(random.PRNGKey(0))
+        state, timestep = env.reset(random.PRNGKey(0))
         viewer.render(state.grid, "saved_image.png")
         assert os.path.isfile("./saved_image.png")
         os.remove("./saved_image.png")

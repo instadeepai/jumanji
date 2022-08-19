@@ -56,7 +56,7 @@ def test_random_select_action(fake_env: FakeEnvironment) -> None:
     key = jax.random.PRNGKey(0)
     select_action = make_random_select_action_fn(fake_env.action_spec())
     key1, key2, key3 = jax.random.split(key, 3)
-    env_state, timestep, extra = fake_env.reset(key1)
+    env_state, timestep = fake_env.reset(key1)
     action_1 = select_action(key2, timestep.observation)
     action_2 = select_action(key3, timestep.observation)
     fake_env.action_spec().validate(action_1)
