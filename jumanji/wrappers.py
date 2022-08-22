@@ -34,6 +34,7 @@ from brax.envs import State as BraxState
 from chex import Array, PRNGKey
 from jax import jit, random
 
+import jumanji.tree_utils
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
@@ -333,7 +334,8 @@ class VmapWrapper(Wrapper):
         return state, timestep
 
     def render(self, state: State) -> Any:
-        """Render the first environment state of the given batch. The remaining elements of the batched state are ignored.
+        """Render the first environment state of the given batch. The remaining elements of the
+        batched state are ignored.
 
         Args:
             state: State object containing the current dynamics of the environment.
