@@ -22,8 +22,22 @@ state, timestep = env.step(state, action)
 ...
 ```
 
+## Jumanji to DeepMind Environment
+We can also convert our Jumanji environments to a DeepMind environment:
+```python
+import jumanji.wrappers
+
+env = jumanji.make("Snake-6x6-v0")
+dm_env = jumanji.wrappers.JumanjiToDMEnvWrapper(env)
+
+timestep = dm_env.reset()
+action = dm_env.action_spec().generate_value()
+next_timestep = dm_env.step(action)
+...
+```
+
 ## Jumanji To Gym
-We can also convert our Jumanji environments to other popular formats such as [Gym](https://github.com/openai/gym)!
+We can also convert our Jumanji environments to a [Gym](https://github.com/openai/gym) environment!
 Below is an example of how to convert a Jumanji environment into a Gym environment.
 
 ```python
