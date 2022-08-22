@@ -94,9 +94,9 @@ pip install -e .
 If you use `jumanji` in your research, please cite the library as follows:
 ```
 @software{jumanji2022github,
-  author = {Clément Bonnet and Donal Byrne and Victor Le and Laurence Midgley and Daniel Luo
-        and Sasha Abramowitz and Edan Toledo and Cyprien Courtot and Matthew Morris
-        and Daniel Furelos Blanco and Cemlyn Waters and Thomas D. Barrett and Alexandre Laterre},
+  author = {Clément Bonnet and Donal Byrne and Victor Le and Laurence Midgley and Daniel Luo and
+      Cemlyn Waters and Sasha Abramowitz and Edan Toledo and Cyprien Courtot and Matthew Morris
+      and Daniel Furelos Blanco and Thomas D. Barrett and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
   url = {https://github.com/instadeepai/jumanji},
   version = {0.0.1},
