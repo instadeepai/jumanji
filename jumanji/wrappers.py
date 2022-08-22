@@ -41,6 +41,9 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 State = TypeVar("State")
 Observation = TypeVar("Observation")
 
+# Type alias that corresponds to ObsType in the Gym API
+GymObservation = Union[np.ndarray, Dict[str, np.ndarray]]
+
 
 class Wrapper(Environment[State], Generic[State]):
     """Wraps the environment to allow modular transformations.
@@ -74,7 +77,7 @@ class Wrapper(Environment[State], Generic[State]):
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
         """
-        return self._env.reset(key)
+        return self._env.reset(key)  # type: ignore
 
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
@@ -87,7 +90,7 @@ class Wrapper(Environment[State], Generic[State]):
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        return self._env.step(state, action)
+        return self._env.step(state, action)  # type: ignore
 
     def observation_spec(self) -> specs.Spec:
         """Returns the observation spec."""
@@ -111,7 +114,7 @@ class Wrapper(Environment[State], Generic[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        return self._env.close()
+        return self._env.close()  # type: ignore
 
     def __enter__(self) -> "Wrapper":
         return self
@@ -497,7 +500,7 @@ class JumanjiToGymWrapper(gym.Env):
         seed: Optional[int] = None,
         return_info: bool = False,
         options: Optional[dict] = None,
-    ) -> Union[Observation, Tuple[Observation, Optional[Any]]]:
+    ) -> Union[GymObservation, Tuple[GymObservation, Optional[Any]]]:
         """Resets the environment to an initial state by starting a new sequence
         and returns the first `Observation` of this sequence.
 
@@ -509,7 +512,10 @@ class JumanjiToGymWrapper(gym.Env):
             self.seed(seed)
         key, self._key = random.split(self._key)  # type: Tuple[PRNGKey, PRNGKey]
         self._state, obs, extras = self._reset(key)
-        obs = np.asarray(obs)
+
+        # Convert the observation to a numpy array or a nested dict thereof
+        obs = jumanji_to_gym_obs(obs)
+
         if return_info:
             info = jax.tree_map(np.asarray, extras)
             return obs, info
@@ -518,7 +524,7 @@ class JumanjiToGymWrapper(gym.Env):
 
     def step(
         self, action: np.ndarray
-    ) -> Tuple[Observation, float, bool, Optional[Any]]:
+    ) -> Tuple[GymObservation, float, bool, Optional[Any]]:
         """Updates the environment according to the action and returns an `Observation`.
 
         Args:
@@ -535,7 +541,7 @@ class JumanjiToGymWrapper(gym.Env):
         self._state, obs, reward, done, extras = self._step(self._state, action)
 
         # Convert to get the correct signature
-        obs = np.asarray(obs)
+        obs = jumanji_to_gym_obs(obs)
         reward = float(reward)
         terminated = bool(done)
         info = jax.tree_map(np.asarray, extras)
@@ -566,3 +572,33 @@ class JumanjiToGymWrapper(gym.Env):
     @property
     def unwrapped(self) -> Environment:
         return self._env
+
+
+def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
+    """Convert a Jumanji observation into a gym observation.
+
+    Args:
+        observation: JAX pytree with (possibly nested) containers that
+            either have the `__dict__` or `_asdict` methods implemented.
+
+    Returns:
+        Numpy array or nested dictionary of numpy arrays.
+    """
+    if isinstance(observation, jnp.ndarray):
+        return np.asarray(observation)
+    elif hasattr(observation, "__dict__"):
+        # Applies to various containers including `chex.dataclass`
+        return {
+            key: jumanji_to_gym_obs(value) for key, value in vars(observation).items()
+        }
+    elif hasattr(observation, "_asdict"):
+        # Applies to `NamedTuple` container.
+        return {
+            key: jumanji_to_gym_obs(value)
+            for key, value in observation._asdict().items()  # type: ignore
+        }
+    else:
+        raise NotImplementedError(
+            "Conversion only implemented for JAX pytrees with (possibly nested) containers "
+            "that either have the `__dict__` or `_asdict` methods implemented."
+        )

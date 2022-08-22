@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import namedtuple
 from typing import Tuple, Type, TypeVar
 
 import brax
@@ -25,9 +26,11 @@ import pytest
 import pytest_mock
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
-from chex import assert_trees_all_equal
+from chex import assert_trees_all_equal, dataclass
 
 from jumanji import specs
+from jumanji.binpack import BinPack
+from jumanji.binpack.conftest import DummyInstanceGenerator
 from jumanji.env import Environment
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
 from jumanji.testing.pytrees import assert_trees_are_different
@@ -40,6 +43,7 @@ from jumanji.wrappers import (
     MultiToSingleWrapper,
     VmapWrapper,
     Wrapper,
+    jumanji_to_gym_obs,
 )
 
 State = TypeVar("State")
@@ -636,3 +640,82 @@ class TestAutoResetWrapper:
 
         assert timestep.step_type == first_timestep.step_type == StepType.FIRST
         assert_trees_all_equal(timestep.observation, first_timestep.observation)
+
+
+class TestJumanjiToGymObservation:
+    """Tests for checking the behaviour of jumanji_to_gym_obs."""
+
+    @dataclass
+    class DummyChexDataclass:
+        x: jnp.ndarray
+        y: jnp.ndarray
+
+    def test_jumanji_to_gym_obs__correct_observation(self) -> None:
+        """Check that a NamedTuple containing a JAX array and a chex dataclass of two
+        JAX arrays is converted correctly into a nested dictionary of numpy arrays.
+        """
+        NestedObservation = namedtuple(
+            "NestedObservation", ["jax_array", "chex_dataclass"]
+        )
+        array = jnp.zeros((2, 2))
+        data_class = self.DummyChexDataclass(x=array, y=array)  # type: ignore
+        nested_obs = NestedObservation(array, data_class)
+
+        converted_obs = jumanji_to_gym_obs(nested_obs)
+        correct_obs = {
+            "jax_array": np.zeros((2, 2)),
+            "chex_dataclass": {"x": np.zeros((2, 2)), "y": np.zeros((2, 2))},
+        }
+
+        assert_trees_all_equal(converted_obs, correct_obs)
+        assert isinstance(converted_obs, dict)
+        assert isinstance(converted_obs["jax_array"], np.ndarray)
+        assert isinstance(converted_obs["chex_dataclass"], dict)
+        assert isinstance(converted_obs["chex_dataclass"]["x"], np.ndarray)
+        assert isinstance(converted_obs["chex_dataclass"]["y"], np.ndarray)
+
+    def test_jumanji_to_gym_obs__wrong_observation(self) -> None:
+        """Check that a NotImplementedError is raised when the wrong datatype is passed
+        to one of the two attributes of the chex dataclass.
+        """
+        NestedObservation = namedtuple(
+            "NestedObservation", ["jax_array", "chex_dataclass"]
+        )
+        array = jnp.zeros((10, 10))
+
+        # Pass in the wrong datatype
+        data_class = self.DummyChexDataclass(x=array, y="array")  # type: ignore
+        nested_obs = NestedObservation(array, data_class)
+
+        # Check that the function raises a NotImplementedError
+        with pytest.raises(NotImplementedError):
+            jumanji_to_gym_obs(nested_obs)
+
+    def test_jumanji_to_gym_obs__binpack(self) -> None:
+        """Check that an example binpack observation is correctly converted."""
+        instance_generator = DummyInstanceGenerator()
+        env = BinPack(instance_generator, obs_num_ems=1)
+        obs = env.observation_spec().generate_value()
+
+        converted_obs = jumanji_to_gym_obs(obs)
+        correct_obs = {
+            "ems": {
+                "x1": jnp.zeros((1,), jnp.float32),
+                "x2": jnp.zeros((1,), jnp.float32),
+                "y1": jnp.zeros((1,), jnp.float32),
+                "y2": jnp.zeros((1,), jnp.float32),
+                "z1": jnp.zeros((1,), jnp.float32),
+                "z2": jnp.zeros((1,), jnp.float32),
+            },
+            "ems_mask": jnp.bool_([0]),
+            "items": {
+                "x_len": jnp.zeros((3,), jnp.float32),
+                "y_len": jnp.zeros((3,), jnp.float32),
+                "z_len": jnp.zeros((3,), jnp.float32),
+            },
+            "items_mask": jnp.bool_([0, 0, 0]),
+            "items_placed": jnp.bool_([0, 0, 0]),
+            "action_mask": jnp.bool_([[0, 0, 0]]),
+        }
+        assert_trees_all_equal(converted_obs, correct_obs)
+        assert isinstance(converted_obs, dict)
