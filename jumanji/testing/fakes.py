@@ -131,6 +131,18 @@ class FakeEnvironment(Environment[FakeState]):
         )
         return next_state, timestep
 
+    def render(self, state: FakeState) -> Tuple[chex.Shape, chex.Shape]:
+        """Render the state attributes as a tuple.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+
+        Returns:
+            A tuple of key and step shapes from the environment state.
+
+        """
+        return state.key.shape, state.step.shape
+
     def _state_to_obs(self, state: FakeState) -> chex.Array:
         """The observation is an array full of `state.step` of shape `(self.observation_shape,)`."""
         return state.step * jnp.ones(self.observation_shape, float)

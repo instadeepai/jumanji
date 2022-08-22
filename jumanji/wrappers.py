@@ -332,6 +332,15 @@ class VmapWrapper(Wrapper):
         state, timestep = jax.vmap(self._env.step)(state, action)
         return state, timestep
 
+    def render(self, state: State) -> Any:
+        """Render the first environment state of the given batch. The remaining elements of the batched state are ignored.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+        """
+        state_0 = jumanji.tree_utils.tree_slice(state, 0)
+        return super().render(state_0)
+
 
 class BraxToJumanjiWrapper(Environment):
     """A wrapper that converts a Brax environment to an Environment for standardisation,

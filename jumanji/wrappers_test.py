@@ -486,6 +486,11 @@ class TestVmapWrapper:
         assert next_timestep.discount.shape == (keys.shape[0],)
         assert next_timestep.observation.shape[0] == keys.shape[0]
 
+    def test_vmap_env__render(self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey) -> None:
+        states, _ = fake_vmap_environment.reset(keys)
+        result = fake_vmap_environment.render(states)
+        assert result == (keys.shape[1:], ())
+
     def test_vmap_env__unwrapped(
         self, fake_environment: Environment, fake_vmap_environment: VmapWrapper
     ) -> None:
