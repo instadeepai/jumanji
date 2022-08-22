@@ -294,19 +294,18 @@ class BinPack(Environment[State]):
             action_mask_spec=action_mask_spec,
         )
 
-    def action_spec(self) -> specs.BoundedArray:
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the BinPack environment.
 
         Returns:
-            BoundedArray (int) of shape (2,).
+            MultiDiscreteArray (int) of shape (obs_num_ems, max_num_items).
             - ems_id: int between 0 and obs_num_ems - 1 (included).
             - item_id: int between 0 and max_num_items - 1 (included).
         """
-        return specs.BoundedArray(
-            shape=(2,),
-            dtype=jnp.int32,
-            minimum=(0, 0),
-            maximum=(self.obs_num_ems - 1, self.instance_generator.max_num_items - 1),
+        return specs.MultiDiscreteArray(
+            num_values=jnp.array(
+                [self.obs_num_ems, self.instance_generator.max_num_items], int
+            ),
             name="action",
         )
 

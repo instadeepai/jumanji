@@ -16,7 +16,7 @@ from typing import Callable, Optional, TypeVar, Union
 
 import chex
 import jax
-import numpy as np
+import jax.numpy as jnp
 
 from jumanji import Environment, specs
 
@@ -26,19 +26,18 @@ SelectActionFn = Callable[[chex.PRNGKey, Observation], Action]
 
 
 def make_random_select_action_fn(
-    action_spec: Union[specs.BoundedArray, specs.DiscreteArray]
+    action_spec: Union[
+        specs.BoundedArray, specs.DiscreteArray, specs.MultiDiscreteArray
+    ]
 ) -> SelectActionFn:
     """Create select action function that chooses random actions."""
 
     def select_action(key: chex.PRNGKey, state: chex.ArrayTree) -> chex.ArrayTree:
         del state
-        # TODO: Change to Discrete or Continuous Array Spec condition once MultipleDiscrete is
-        #  handled.
         if (
-            np.issubdtype(action_spec.dtype, np.int32)
-            or np.issubdtype(action_spec.dtype, np.int64)
-            or np.issubdtype(action_spec.dtype, np.int16)
-            or np.issubdtype(action_spec.dtype, np.int8)
+            isinstance(action_spec, specs.DiscreteArray)
+            or isinstance(action_spec, specs.MultiDiscreteArray)
+            or jnp.issubdtype(action_spec.dtype, jnp.integer)
         ):
             action = jax.random.randint(
                 key=key,
@@ -47,12 +46,8 @@ def make_random_select_action_fn(
                 maxval=action_spec.maximum + 1,
                 dtype=action_spec.dtype,
             )
-        elif (
-            np.issubdtype(action_spec.dtype, np.float32)
-            or np.issubdtype(action_spec.dtype, np.float64)
-            or np.issubdtype(action_spec.dtype, np.float16)
-            or np.issubdtype(action_spec.dtype, np.float8)
-        ):
+        elif isinstance(action_spec, specs.BoundedArray):
+            assert jnp.issubdtype(action_spec.dtype, jnp.floating)
             action = jax.random.uniform(
                 key=key,
                 shape=action_spec.shape,
@@ -62,7 +57,8 @@ def make_random_select_action_fn(
             )
         else:
             raise ValueError(
-                f"`action_spec.dtype` must be integer or float, got {action_spec.dtype}."
+                "Only supported for action specs of type `specs.BoundedArray, "
+                "specs.DiscreteArray or specs.MultiDiscreteArray`."
             )
         return action
 

@@ -446,6 +446,72 @@ class TestDiscreteArray:
             assert getattr(new_spec, attr_name) == getattr(old_spec, attr_name)
 
 
+class TestMultiDiscreteArray:
+    @pytest.mark.parametrize("num_values", [jnp.array([0, 0]), jnp.array([-3, 1])])
+    def test_invalid_num_actions(self, num_values: chex.Array) -> None:
+        with pytest.raises(ValueError):
+            specs.MultiDiscreteArray(num_values=num_values)
+
+    @pytest.mark.parametrize(
+        "dtype",
+        [jnp.float32, float, str],
+    )
+    def test_dtype_not_integer(self, dtype: Union[jnp.dtype, type]) -> None:
+        with pytest.raises(ValueError):
+            specs.MultiDiscreteArray(num_values=jnp.array([5, 6], int), dtype=dtype)
+
+    def test_repr(self) -> None:
+        as_string = repr(
+            specs.MultiDiscreteArray(num_values=jnp.array([5, 6], dtype=int))
+        )
+        assert "5" in as_string
+
+    def test_properties(self) -> None:
+        num_values = jnp.array([5, 6], dtype=int)
+        spec = specs.MultiDiscreteArray(num_values=num_values, dtype=jnp.int32)
+        assert (spec.minimum == jnp.zeros_like(num_values)).all()
+        assert (spec.maximum == num_values - 1).all()
+        assert spec.dtype == jnp.int32
+        assert (spec.num_values == num_values).all()
+
+    def test_serialization(self) -> None:
+        spec = specs.MultiDiscreteArray(
+            jnp.array([5, 6], dtype=int), jnp.int32, "pickle_test"
+        )
+        loaded_spec = pickle.loads(pickle.dumps(spec))
+        assert isinstance(loaded_spec, spec.__class__)
+        assert loaded_spec.dtype == spec.dtype
+        assert loaded_spec.shape == spec.shape
+        assert loaded_spec.name == spec.name
+        assert jnp.all(loaded_spec.minimum == loaded_spec.minimum)
+        assert jnp.all(loaded_spec.maximum == loaded_spec.maximum)
+        assert (loaded_spec.num_values == spec.num_values).all()
+
+    @pytest.mark.parametrize(
+        "arg_name, new_value",
+        [
+            ("num_values", jnp.array([5, 6], dtype=int)),
+            ("dtype", jnp.int16),
+            ("name", "something_else"),
+        ],
+    )
+    def test_replace(self, arg_name: str, new_value: Any) -> None:
+        old_spec = specs.MultiDiscreteArray(
+            jnp.array([5, 6], dtype=int), jnp.int32, "test"
+        )
+        new_spec = old_spec.replace(**{arg_name: new_value})
+        for attr_name in ["num_values", "dtype", "name"]:
+            # Check that the attribute corresponding to arg_name has been set to new_value, while
+            # the other attributes have remained the same.
+            target_value = (
+                new_value if attr_name == arg_name else getattr(old_spec, attr_name)
+            )
+            if attr_name == "num_values":
+                assert (getattr(new_spec, attr_name) == target_value).all()
+            else:
+                assert getattr(new_spec, attr_name) == target_value
+
+
 class TestJumanjiSpecsToDmEnvSpecs:
     def test_array(self) -> None:
         jumanji_spec = specs.Array((1, 2), jnp.int32)
@@ -531,6 +597,17 @@ class TestJumanjiSpecsToGymSpaces:
         assert converted_spec.dtype == gym_space.dtype
         assert converted_spec.n == gym_space.n
         assert converted_spec.start == gym_space.start
+
+    def test_multi_discrete_array(self) -> None:
+        jumanji_spec = specs.MultiDiscreteArray(
+            num_values=jnp.array([5, 6], dtype=jnp.int32)
+        )
+        gym_space = gym.spaces.MultiDiscrete(nvec=[5, 6])
+        converted_spec = specs.jumanji_specs_to_gym_spaces(jumanji_spec)
+        assert type(converted_spec) == type(gym_space)
+        assert converted_spec.shape == gym_space.shape
+        assert converted_spec.dtype == gym_space.dtype
+        assert (converted_spec.nvec == gym_space.nvec).all()
 
     def test_singly_nested_spec(self, singly_nested_spec: SinglyNestedSpec) -> None:
         """Check that a tree of three distinct Jumanji specs is converted to the correct

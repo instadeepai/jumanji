@@ -130,19 +130,13 @@ class Routing(Environment[State]):
             maximum=self.obs_ints,
         )
 
-    def action_spec(self) -> specs.BoundedArray:
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. 5 actions: [0,1,2,3,4] -> [No Op, Left, Up, Right, Down].
         Since this is a multi-agent environment, the environment expects an array of actions.
         This array is of shape (num_agents,)
-
-        Returns:
-            action_spec: specs object
         """
-        return specs.BoundedArray(
-            shape=(self.num_agents,),
-            dtype=int,
-            minimum=0,
-            maximum=4,
+        return specs.MultiDiscreteArray(
+            num_values=jnp.array([4] * self.num_agents),
             name="action",
         )
 

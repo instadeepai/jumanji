@@ -87,7 +87,7 @@ def test_binpack__spec(
     assert isinstance(observation_spec.items_mask_spec, specs.BoundedArray)
     assert isinstance(observation_spec.items_placed_spec, specs.BoundedArray)
     assert isinstance(observation_spec.action_mask_spec, specs.BoundedArray)
-    assert isinstance(binpack_env.action_spec(), specs.BoundedArray)
+    assert isinstance(binpack_env.action_spec(), specs.MultiDiscreteArray)
     observation = observation_spec.generate_value()
 
     def assert_type_binpack_observation(obs: Observation, type_: Type) -> None:

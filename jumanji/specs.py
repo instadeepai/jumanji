@@ -368,6 +368,64 @@ class DiscreteArray(BoundedArray):
         return self._num_values
 
 
+class MultiDiscreteArray(BoundedArray):
+    """Generalizes DiscreteArray to a multi-dimensional array (e.g. a vector of actions) similarly
+    to Gym's MultiDiscrete Space. This is commonly used for the action spec in Jumanji.
+    """
+
+    def __init__(
+        self,
+        num_values: chex.Array,
+        dtype: Union[jnp.dtype, type] = jnp.int32,
+        name: str = "",
+    ):
+        """Initializes a new `MultiDiscreteArray` spec.
+
+        Args:
+            num_values: Array of integers specifying the number of possible values to represent for
+                each element of the action space.
+            dtype: the dtype of the jax array. Must be an integer type.
+            name: string containing a semantic name for the corresponding array. Defaults to `''`.
+
+        Raises:
+            ValueError: if `num_values` are not all positive, if `dtype` is not integer.
+        """
+        if (num_values <= 0).any() or not jnp.issubdtype(num_values.dtype, jnp.integer):
+            raise ValueError(
+                f"`num_values` must be an array of positive integers, got {num_values}."
+            )
+
+        if not jnp.issubdtype(dtype, jnp.integer):
+            raise ValueError(f"`dtype` must be integer, got {dtype}.")
+
+        num_values = num_values
+        maximum = num_values - 1
+        super().__init__(
+            shape=num_values.shape,
+            dtype=dtype,
+            minimum=jnp.zeros_like(num_values),
+            maximum=maximum,
+            name=name,
+        )
+        self._num_values = num_values
+
+    def __repr__(self) -> str:
+        return (
+            f"MultiDiscreteArray(shape={repr(self.shape)}, dtype={repr(self.dtype)}, "
+            f"name={repr(self.name)}, minimum={repr(self.minimum)}, maximum={repr(self.maximum)}, "
+            f"num_values={repr(self.num_values)})"
+        )
+
+    def __reduce__(self) -> Any:
+        """To allow pickle to serialize the spec."""
+        return MultiDiscreteArray, (self._num_values, self._dtype, self._name)
+
+    @property
+    def num_values(self) -> chex.Array:
+        """Returns the number of items."""
+        return self._num_values
+
+
 def jumanji_specs_to_dm_env_specs(
     spec: Spec,
 ) -> Union[dm_env.specs.DiscreteArray, dm_env.specs.BoundedArray, dm_env.specs.Array]:
@@ -414,7 +472,13 @@ def jumanji_specs_to_dm_env_specs(
 
 def jumanji_specs_to_gym_spaces(
     spec: Spec,
-) -> Union[gym.spaces.Box, gym.spaces.Discrete, gym.spaces.Space, gym.spaces.Dict]:
+) -> Union[
+    gym.spaces.Box,
+    gym.spaces.Discrete,
+    gym.spaces.MultiDiscrete,
+    gym.spaces.Space,
+    gym.spaces.Dict,
+]:
     """Converts jumanji specs to gym spaces.
 
     Args:
@@ -425,6 +489,8 @@ def jumanji_specs_to_gym_spaces(
     """
     if isinstance(spec, DiscreteArray):
         return gym.spaces.Discrete(n=spec.num_values, seed=None, start=0)
+    elif isinstance(spec, MultiDiscreteArray):
+        return gym.spaces.MultiDiscrete(nvec=spec.num_values, seed=None)
     elif isinstance(spec, BoundedArray):
         return gym.spaces.Box(
             low=np.broadcast_to(np.array(spec.minimum), shape=spec.shape),
