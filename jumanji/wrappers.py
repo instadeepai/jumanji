@@ -43,7 +43,7 @@ State = TypeVar("State")
 Observation = TypeVar("Observation")
 
 # Type alias that corresponds to ObsType in the Gym API
-GymObservation = Union[np.ndarray, Dict[str, np.ndarray]]
+GymObservation = Any
 
 
 class Wrapper(Environment[State], Generic[State]):
@@ -78,7 +78,7 @@ class Wrapper(Environment[State], Generic[State]):
             state: State object corresponding to the new state of the environment,
             timestep: TimeStep object corresponding the first timestep returned by the environment,
         """
-        return self._env.reset(key)  # type: ignore
+        return self._env.reset(key)
 
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
@@ -91,7 +91,7 @@ class Wrapper(Environment[State], Generic[State]):
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        return self._env.step(state, action)  # type: ignore
+        return self._env.step(state, action)
 
     def observation_spec(self) -> specs.Spec:
         """Returns the observation spec."""
@@ -115,7 +115,7 @@ class Wrapper(Environment[State], Generic[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        return self._env.close()  # type: ignore
+        return self._env.close()
 
     def __enter__(self) -> "Wrapper":
         return self
@@ -437,6 +437,12 @@ class AutoResetWrapper(Wrapper):
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
         """
+        if not hasattr(state, "key"):
+            raise AttributeError(
+                "This wrapper assumes that the state has attribute key which is used"
+                " as the source of randomness for automatic reset"
+            )
+        # State is a type variable hence it does not have key type hinted, so we type ignore
         state, reset_timestep = self._env.reset(state.key)  # type: ignore
 
         # Replace observation with reset observation.

@@ -23,6 +23,9 @@ follow_imports = "skip"
 
 [[tool.mypy.overrides]]
 module = [
+    "matplotlib.*",
+    "mpl_toolkits.*",
+    "brax.*",
     "numpy.*",
     "dm_env.*",
     "tree.*",

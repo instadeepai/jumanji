@@ -25,6 +25,7 @@ import tree as tree_lib
 # `np.asarray(leaf)` on. This allows for backend agnostic functionality (e.g. will work for tf
 # tensors or jax arrays, as well as floats, strings, None etc). We define the below type to
 # indicate this behavior.
+
 MixedTypeTree = TypeVar("MixedTypeTree")
 
 
@@ -41,8 +42,8 @@ def is_equal_pytree(tree1: MixedTypeTree, tree2: MixedTypeTree) -> bool:
     is_equal_leaves = tree_lib.flatten(
         tree_lib.map_structure(is_equal_func, tree1, tree2)
     )
-    is_equal: bool = np.all(is_equal_leaves)
-    return is_equal
+    is_equal = np.all(is_equal_leaves)
+    return bool(is_equal)
 
 
 def assert_trees_are_different(tree1: MixedTypeTree, tree2: MixedTypeTree) -> None:
@@ -75,8 +76,8 @@ def is_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> bool:
     is_type_leaves = tree_lib.flatten(
         tree_lib.map_structure(leaf_is_type_func, input_tree)
     )
-    tree_leaves_are_all_of_type: bool = np.all(is_type_leaves)
-    return tree_leaves_are_all_of_type
+    tree_leaves_are_all_of_type = np.all(is_type_leaves)
+    return bool(tree_leaves_are_all_of_type)
 
 
 def assert_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> None:
@@ -98,5 +99,5 @@ def has_at_least_rank(input_tree: chex.ArrayTree, rank: int) -> bool:
     has_rank_greater, _ = jax.tree_util.tree_flatten(
         jax.tree_map(lambda x: x.ndim >= rank, input_tree)
     )
-    has_at_least_rank_result: bool = np.all(has_rank_greater)
-    return has_at_least_rank_result
+    has_at_least_rank_result = np.all(has_rank_greater)
+    return bool(has_at_least_rank_result)
