@@ -12,50 +12,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shlex
-from codecs import open
-from subprocess import check_call
+import os
 from typing import List
 
 import setuptools
 from setuptools import setup
-from setuptools.command.develop import develop
 
-__version__ = "0.0.0"
+__version__ = "0.0.1"
+
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def read_requirements(*files: str) -> List[str]:
+def _parse_requirements(path: str) -> List[str]:
     """Returns content of given requirements file."""
-    return [
-        line
-        for file in files
-        for line in open(file)
-        if not (line.startswith("#") or line.startswith("--"))
-    ]
-
-
-class PostDevelopCommand(develop):
-    def run(self) -> None:
-        try:
-            check_call(shlex.split("pre-commit install"))
-            check_call(shlex.split("pre-commit install --hook-type commit-msg"))
-        except Exception as e:
-            print("Unable to run 'pre-commit install'", e)
-        develop.run(self)
+    with open(os.path.join(path)) as f:
+        return [
+            line.rstrip() for line in f if not (line.isspace() or line.startswith("#"))
+        ]
 
 
 setup(
-    name="jumanji",
+    name="jumanji-internal",
     version=__version__,
-    description="Suite of Reinforcement Learning environments",
     author="InstaDeep",
-    url="https://github.com/instadeepai/jumanji/",
-    packages=setuptools.find_packages(),
-    zip_safe=False,
-    install_requires=read_requirements("./requirements/requirements.txt"),
+    author_email="hello@instadeep.com",
+    description="Industry-Driven Hardware-Accelerated RL Environments",
+    license="Apache 2.0",
+    url="https://github.com/instadeepai/jumanji-internal/",
+    long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
+    long_description_content_type="text/markdown",
+    keywords="reinforcement-learning python jax",
+    packages=setuptools.find_packages(exclude=["*_test.py"]),
+    python_requires=">=3.7",
+    install_requires=_parse_requirements(
+        os.path.join(_CURRENT_DIR, "requirements", "requirements.txt")
+    ),
     extras_require={
-        "dev": read_requirements("./requirements/requirements-dev.txt"),
+        "dev": _parse_requirements(
+            os.path.join(_CURRENT_DIR, "requirements", "requirements-dev.txt")
+        ),
     },
-    cmdclass={"develop": PostDevelopCommand},
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Environment :: Console",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: Apache Software License",
+    ],
+    zip_safe=False,
     include_package_data=True,
 )
