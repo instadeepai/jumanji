@@ -32,7 +32,7 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 @dataclass
 class FakeState:
     key: PRNGKey
-    step: int
+    step: jnp.int32
 
 
 class FakeEnvironment(Environment[FakeState]):
