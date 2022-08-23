@@ -292,7 +292,14 @@ class MultiToSingleWrapper(Wrapper):
 
 
 class VmapWrapper(Wrapper):
-    """Vectorized Jax env."""
+    """Vectorized Jax env.
+    Please note that all methods that return arrays do not return a batch dimension because the
+    batch size is not known to the VmapWrapper. Methods that omit the batch dimension include:
+    - observation_spec
+    - action_spec
+    - reward_spec
+    - discount_spec
+    """
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
