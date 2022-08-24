@@ -23,6 +23,8 @@ from jumanji.environments.combinatorial.binpack.types import State, item_from_sp
 
 
 class BinPackViewer:
+    FONT_STYLE = "monospace"
+
     def __init__(self, name: str) -> None:
         """
         Viewer for the BinPack environment.
@@ -59,6 +61,7 @@ class BinPackViewer:
         recreate = not plt.fignum_exists(self._name)
         fig = plt.figure(self._name)
         if recreate:
+            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
             fig.show()
             ax = fig.add_subplot(111, projection="3d")
         else:
@@ -117,7 +120,7 @@ class BinPackViewer:
         """
         Sets the bounds of the scene and displays text about the scene.
         Args:
-            state: State of the environement
+            state: State of the environment
 
         """
         fig, ax = self._get_fig_ax()
@@ -128,9 +131,9 @@ class BinPackViewer:
             ylim=(-container.y_len * eps, container.y_len * (1 + eps)),
             zlim=(-container.z_len * eps, container.z_len * (1 + eps)),
         )
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("z")
+        ax.set_xlabel("x", font=self.FONT_STYLE)
+        ax.set_ylabel("y", font=self.FONT_STYLE)
+        ax.set_zlabel("z", font=self.FONT_STYLE)
 
         n_items = sum(state.items_mask)
         placed_items = sum(state.items_placed)
@@ -138,11 +141,12 @@ class BinPackViewer:
             float(container.x_len) * float(container.y_len) * float(container.z_len)
         )
         used_volume = self._get_used_volume(state)
-
-        fig.suptitle(
-            f"Placed: {placed_items}/{n_items} | "
-            f"Used Volume: {used_volume / container_volume * 100:.2f}%"
-        )
+        metrics = [
+            ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
+            ("Used Volume", f"{used_volume / container_volume:6.1%}"),
+        ]
+        title = " | ".join(key + ": " + value for key, value in metrics)
+        fig.suptitle(title, font=self.FONT_STYLE)
 
     def _create_box_vertices(
         self, pos: Tuple[float, float, float], lens: Tuple[float, float, float]
