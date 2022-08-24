@@ -103,19 +103,58 @@ A notable advantage of using TimeStep, as opposed to the Gym interface,
 is how it nicely handles termination and truncation thanks to `StepType`
 ([discussion](https://github.com/openai/gym/issues/2510)).
 
-Being written in JAX, Jumanji's environments benefit from many its features including
+Being written in JAX, Jumanji's environments benefit from many of its features including
 automatic vectorization/parallelization (`jax.vmap`, `jax.pmap`) and JIT-compilation (`jax.jit`),
 which can be composed arbitrarily.
+We provide an example of this below, where we use `jax.vmap` and `jax.lax.scan` to generate a batch
+of rollouts in the `Snake` environment.
 
-TODO(laurence) code snippet showing a random rollout with vmap + scan.
+```python
+import jax
 
-## Examples
-```#TODO(Laurence) Update with actual link from github```
+import jumanji
+from jumanji.wrappers import AutoResetWrapper
 
-- **RL Training** (Anakin-style): <a href="https://colab.research.google.com/github/instadeep/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+env = jumanji.make("Snake-6x6-v0")  # Creates the snake environment.
+env = AutoResetWrapper(env)         # Automatically reset the environment when an episode terminates.
 
-For a more in-depth example of running with Jumanji environments, check out our colab notebook that
-goes through running beating snake with Online Q-Learning!
+batch_size, rollout_length = 7, 5
+num_actions = env.action_spec().num_values
+
+random_key = jax.random.PRNGKey(0)
+key1, key2 = jax.random.split(random_key)
+
+def step_fn(state, key):
+  action = jax.random.randint(key=key, minval=0, maxval=num_actions, shape=())
+  new_state, timestep = env.step(state, action)
+  return new_state, timestep
+
+def run_n_step(state, key, n):
+  random_keys = jax.random.split(key, n)
+  state, rollout = jax.lax.scan(step_fn, state, random_keys)
+  return rollout
+
+# Instantiate a batch of environment states
+keys = jax.random.split(key1, batch_size)
+state, timestep = jax.vmap(env.reset)(keys)
+
+# Collect a batch of rollouts
+keys = jax.random.split(key2, batch_size)
+rollout = jax.vmap(run_n_step, in_axes=(0, 0, None))(state, keys, rollout_length)
+
+# Shape and type of rollout:
+# TimeStep(step_type=(7, 5), reward=(7, 5), discount=(7, 5), observation=(7, 5, 6, 6, 5), extras=None)
+```
+
+## Examples 🕹️
+
+For a more in-depth examples of running with Jumanji environments, check out our colab notebooks:
+
+| Example           | Topic          | Colab |
+|-------------------|----------------|:-----:|
+| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) |   <a href="https://colab.research.google.com/github/instadeep/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
+
+
 
 ## Environments
 
