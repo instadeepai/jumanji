@@ -14,4 +14,4 @@ as channels stacked (HWC format) in an image representing the snake body,
 its head, its tail, where the fruit is, as well as the order in which the cells
 are organised.
 
-![Snake observation](../../docs/img/_snake_obs.png)
+![Snake observation](../../../../docs/img/_snake_obs.png)
