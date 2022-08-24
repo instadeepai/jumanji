@@ -32,25 +32,25 @@
 | **Reference docs**
 | [**See Also**](#see-also)
 
-## Welcome to Jumanji! 🌴
+## Welcome to the Jungle! 🌴
 
-Jumanji is an RL environment library written in Jax focused on providing clean and fast hardware accelerated
-environments for industry-driven research. Jumanji is easy to use and can be
-run out of the box with other libraries such as RLlib, StableBaselines, ACME, gym and dm-env.
-
-- TODO: Value proposition compared to Gymnax
-- TODO: even if this is not new, we should still highlight the huge performance gain by using JAX, especialluy for hard industrial problems
-
-Jumanji was originally started by engineers and researchers within the Research Team at [InstaDeep](https://www.instadeep.com/),
-and is now developed jointly with the open source community.
+Jumanji is a suite of RL environments written in JAX focused on providing clean and hardware-accelerated
+environments for industry-driven research. Jumanji was originally started by engineers and researchers
+within the Research Team at [InstaDeep](https://www.instadeep.com/), and is now developed jointly with
+the open source community.
 
 Our goals are:
 
 1. Provide a simple, well-test API reference for JAX-based environments.
 2. Make research in Reinforcement Learning more accessible:
-   * The computational speedups allow researchers with a single GPU/TPU workstation to train models in seconds/minutes instead of hours/days. This means fast iteration cycles and the ability to run larger experiments which should lead to more robust scientific results.
-   * Having the RL environment directly in JAX removes a lot of the complexity that made RL research cumbersome. No more worrying about multiprocessing or distributed RL agents. Instead, just prototype, train and evaluate agents interactively in a Colab notebook.
-3. Facilitate the research on Decision-Making for problems in the industry, and as such, contribute to closing the gap between research works and industrial applications.
+(i) The high-performance induced by JAX-based environments allows for more robust research, i.e. fast iteration cycle and larger scale experiments;
+(ii) Writing environments in JAX reduces the complexity that made RL research cumbersome, hence removing barriers to entry.
+3. Facilitate the research on Reinforcement Learning for problems in the industry and
+contribute to closing the gap between research works and their industrial applications.
+
+[//]: # (- TODO: Value proposition compared to Gymnax)
+[//]: # (- TODO: even if this is not new, we should still highlight the huge performance gain by using JAX, especialluy for hard industrial problems)
+
 
 ## Overview
 
@@ -155,8 +155,7 @@ For a more in-depth examples of running with Jumanji environments, check out our
 | Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) |   <a href="https://colab.research.google.com/github/instadeep/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
 
 
-
-## Environments
+## Environments 🌍
 
 TODO(whoever) - Add the reference to the doc (point to the documentation) and the code (class).
 
