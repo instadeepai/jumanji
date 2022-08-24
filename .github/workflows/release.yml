@@ -1,4 +1,4 @@
-name: Publish to TestPyPi 🚀
+name: Publish to TestPyPi 📦
 
 on:
   release:
