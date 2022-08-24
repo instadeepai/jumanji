@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-::: jumanji.knapsack.env.Knapsack
+::: jumanji.environments.combinatorial.knapsack.env.Knapsack

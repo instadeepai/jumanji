@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-::: jumanji.routing.env.Routing
+::: jumanji.environments.combinatorial.routing.env.Routing

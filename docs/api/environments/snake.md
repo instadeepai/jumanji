@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-::: jumanji.snake.env.Snake
+::: jumanji.environments.games.snake.env.Snake

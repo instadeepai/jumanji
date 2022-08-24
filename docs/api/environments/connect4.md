@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-::: jumanji.connect4.env.Connect4
+::: jumanji.environments.games.connect4.env.Connect4

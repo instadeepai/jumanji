@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-::: jumanji.tsp.env.TSP
+::: jumanji.environments.combinatorial.tsp.env.TSP

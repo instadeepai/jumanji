@@ -2,4 +2,4 @@
 
 ---
 # API Reference
-[//]: # (::: jumanji.binpack.env.BinPack)
+[//]: # (::: jumanji.environments.combinatorial.binpack.env.BinPack)
