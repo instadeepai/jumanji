@@ -11,3 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from jumanji.environments.combinatorial import binpack, knapsack, routing, tsp
+from jumanji.environments.combinatorial.binpack.env import BinPack
+from jumanji.environments.combinatorial.knapsack.env import Knapsack
+from jumanji.environments.combinatorial.routing.env import Routing
+from jumanji.environments.combinatorial.tsp.env import TSP
+from jumanji.environments.env import Environment, State
+from jumanji.environments.games import connect4, snake
+from jumanji.environments.games.connect4.env import Connect4
+from jumanji.environments.games.snake.env import Snake

@@ -20,7 +20,6 @@ from chex import Array, PRNGKey
 from jax import random
 
 from jumanji import specs
-from jumanji.env import Environment
 from jumanji.environments.combinatorial.knapsack.specs import ObservationSpec
 from jumanji.environments.combinatorial.knapsack.types import Observation, State
 from jumanji.environments.combinatorial.knapsack.utils import (
@@ -28,6 +27,7 @@ from jumanji.environments.combinatorial.knapsack.utils import (
     generate_first_item,
     generate_problem,
 )
+from jumanji.environments.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 

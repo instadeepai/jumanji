@@ -11,19 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from jumanji import specs
-from jumanji.env import Environment, State
-from jumanji.environments.combinatorial import binpack, knapsack, routing, tsp
-from jumanji.environments.combinatorial.binpack.env import BinPack
-from jumanji.environments.combinatorial.knapsack.env import Knapsack
-from jumanji.environments.combinatorial.routing.env import Routing
-from jumanji.environments.combinatorial.tsp.env import TSP
-from jumanji.environments.games import connect4, snake
-from jumanji.environments.games.connect4.env import Connect4
-from jumanji.environments.games.snake.env import Snake
+from jumanji.environments.combinatorial import binpack as _binpack
 from jumanji.registration import make, register, registered_environments
-from jumanji.types import TimeStep
 
 ## Environment Registration
 
@@ -101,7 +90,7 @@ register(
     id="BinPack-toy-v0",
     entry_point="jumanji.binpack:BinPack",
     kwargs={
-        "instance_generator": binpack.instance_generator.ToyInstanceGenerator(),
+        "instance_generator": _binpack.instance_generator.ToyInstanceGenerator(),
         "obs_num_ems": 40,
     },
 )
@@ -111,7 +100,7 @@ register(
     id="BinPack-rand20-v0",
     entry_point="jumanji.binpack:BinPack",
     kwargs={
-        "instance_generator": binpack.instance_generator.RandomInstanceGenerator(
+        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
             max_num_items=20,
             max_num_ems=80,
         ),
@@ -123,7 +112,7 @@ register(
     id="BinPack-rand40-v0",
     entry_point="jumanji.binpack:BinPack",
     kwargs={
-        "instance_generator": binpack.instance_generator.RandomInstanceGenerator(
+        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
             max_num_items=40,
             max_num_ems=200,
         ),
@@ -135,7 +124,7 @@ register(
     id="BinPack-rand100-v0",
     entry_point="jumanji.binpack:BinPack",
     kwargs={
-        "instance_generator": binpack.instance_generator.RandomInstanceGenerator(
+        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
             max_num_items=100,
             max_num_ems=300,
         ),

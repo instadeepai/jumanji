@@ -18,7 +18,8 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji import Environment, specs
+from jumanji import specs
+from jumanji.environments import Environment
 
 Observation = TypeVar("Observation")
 Action = TypeVar("Action")

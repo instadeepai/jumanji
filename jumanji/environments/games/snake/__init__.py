@@ -13,4 +13,4 @@
 # limitations under the License.
 
 from jumanji.environments.games.snake.env import Snake
-from jumanji.environments.games.snake.types import State
+from jumanji.environments.games.snake.types import Actions, Position, State

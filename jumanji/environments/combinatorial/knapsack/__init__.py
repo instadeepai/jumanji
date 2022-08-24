@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from jumanji.environments.combinatorial.knapsack.env import Knapsack
+from jumanji.environments.combinatorial.knapsack.types import Observation, State

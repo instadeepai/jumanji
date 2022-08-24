@@ -19,7 +19,7 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import random
 
-from jumanji import Environment, specs
+from jumanji import specs
 from jumanji.environments.combinatorial.tsp.specs import ObservationSpec
 from jumanji.environments.combinatorial.tsp.types import Observation, State
 from jumanji.environments.combinatorial.tsp.utils import (
@@ -27,6 +27,7 @@ from jumanji.environments.combinatorial.tsp.utils import (
     generate_problem,
     generate_start_position,
 )
+from jumanji.environments.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 

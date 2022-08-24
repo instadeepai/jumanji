@@ -21,7 +21,6 @@ from chex import Array, PRNGKey
 from jax import random
 
 from jumanji import specs, wrappers
-from jumanji.env import Environment
 from jumanji.environments.combinatorial.routing import env_viewer
 from jumanji.environments.combinatorial.routing.constants import (
     EMPTY,
@@ -33,6 +32,7 @@ from jumanji.environments.combinatorial.routing.constants import (
     VIEWER_WIDTH,
 )
 from jumanji.environments.combinatorial.routing.types import Position, State
+from jumanji.environments.env import Environment
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 
 

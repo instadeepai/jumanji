@@ -25,7 +25,7 @@ from chex import PRNGKey
 from jax import lax, random
 
 from jumanji import specs
-from jumanji.env import Environment
+from jumanji.environments.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 

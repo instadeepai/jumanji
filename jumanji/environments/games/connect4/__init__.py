@@ -12,4 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.games.connect4.types import State
+from jumanji.environments.games.connect4.env import Connect4
+from jumanji.environments.games.connect4.types import Observation, State

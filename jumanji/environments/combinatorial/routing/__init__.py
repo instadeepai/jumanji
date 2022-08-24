@@ -12,4 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.combinatorial.routing.types import State
+from jumanji.environments.combinatorial.routing.env import Routing
+from jumanji.environments.combinatorial.routing.types import Position, State

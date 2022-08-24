@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from jumanji.env import Environment
+from jumanji.environments.env import Environment
 
 ENV_NAME_RE = re.compile(r"^(?:(?P<name>[\w:.-]+?))(?:-v(?P<version>\d+))?$")
 

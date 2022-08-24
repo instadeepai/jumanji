@@ -35,7 +35,7 @@ from chex import Array, PRNGKey
 from jax import jit, random
 
 from jumanji import specs, tree_utils
-from jumanji.env import Environment
+from jumanji.environments.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 State = TypeVar("State")

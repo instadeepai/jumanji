@@ -20,7 +20,6 @@ import jax.numpy as jnp
 from chex import PRNGKey
 
 from jumanji import specs
-from jumanji.env import Environment
 from jumanji.environments.combinatorial.binpack import env_viewer
 from jumanji.environments.combinatorial.binpack.instance_generator import (
     InstanceGenerator,
@@ -38,6 +37,7 @@ from jumanji.environments.combinatorial.binpack.types import (
     RewardFn,
     State,
 )
+from jumanji.environments.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
