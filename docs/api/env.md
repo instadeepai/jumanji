@@ -1,3 +1,3 @@
 # Environments
 
-::: jumanji.environments.env
+::: jumanji.env

@@ -19,7 +19,7 @@ from jax import lax
 from jax import numpy as jnp
 
 from jumanji import specs
-from jumanji.environments.env import Environment
+from jumanji.env import Environment
 from jumanji.environments.games.connect4.constants import BOARD_HEIGHT, BOARD_WIDTH
 from jumanji.environments.games.connect4.specs import ObservationSpec
 from jumanji.environments.games.connect4.types import Observation, State

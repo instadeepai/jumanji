@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from jumanji.env import Environment
 from jumanji.environments.combinatorial import binpack as _binpack
 from jumanji.registration import make, register, registered_environments
 

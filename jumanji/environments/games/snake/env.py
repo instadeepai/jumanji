@@ -23,7 +23,7 @@ from jax import lax, random
 from matplotlib.patches import Circle, Rectangle
 
 from jumanji import specs
-from jumanji.environments.env import Environment
+from jumanji.env import Environment
 from jumanji.environments.games.snake import utils as snake_utils
 from jumanji.environments.games.snake.types import Position, State
 from jumanji.types import Action, TimeStep, restart, termination, transition

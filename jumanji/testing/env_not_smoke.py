@@ -19,7 +19,7 @@ import jax
 import jax.numpy as jnp
 
 from jumanji import specs
-from jumanji.environments import Environment
+from jumanji.env import Environment
 
 Observation = TypeVar("Observation")
 Action = TypeVar("Action")

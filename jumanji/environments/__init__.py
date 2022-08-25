@@ -17,7 +17,6 @@ from jumanji.environments.combinatorial.binpack.env import BinPack
 from jumanji.environments.combinatorial.knapsack.env import Knapsack
 from jumanji.environments.combinatorial.routing.env import Routing
 from jumanji.environments.combinatorial.tsp.env import TSP
-from jumanji.environments.env import Environment, State
 from jumanji.environments.games import connect4, snake
 from jumanji.environments.games.connect4.env import Connect4
 from jumanji.environments.games.snake.env import Snake
