@@ -34,6 +34,7 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 class TSP(Environment[State]):
     """
     Traveling Salesman Problem (TSP) environment as described in [1].
+
     - observation: Observation
         - problem: jax array (float32) of shape (problem_size, 2)
             the coordinates of each city

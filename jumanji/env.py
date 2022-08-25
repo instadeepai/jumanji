@@ -109,16 +109,13 @@ class Environment(abc.ABC, Generic[State]):
         raise NotImplementedError("Render method not implemented for this environment.")
 
     def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
+        """Perform any necessary cleanup."""
 
     def __enter__(self) -> "Environment":
         return self
 
     def __exit__(self, *args: Any) -> None:
+        """Calls :meth:`close()`."""
         self.close()
 
 

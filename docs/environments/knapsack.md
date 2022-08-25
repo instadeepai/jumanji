@@ -1,6 +1,8 @@
 # Knapskack Environment
 
-![Knapskack](../../../../docs/img/knapsack.png)
+<p align="center">
+        <img src="../img/knapsack.png" width="500"/>
+</p>
 
 We provide here a Jax JIT-able implementation of the knapskack problem. The environment follows the design
 of [1].
@@ -21,3 +23,9 @@ was invalid. The reward is 0 at every step, except at the last timestep when the
 total value of the knapsack.
 
 [1] [POMO: Policy Optimization with Multiple Optima for Reinforcement Learning](https://arxiv.org/abs/2010.16011).
+
+## Registered Versions 📖
+- `Knapsack50-v0`
+- `Knapsack100-v0`
+- `Knapsack200-v0`
+- `Knapsack250-v0`

@@ -14,7 +14,9 @@ For each agent:
 An episode is regarded as complete when all agents have connected to their targets/pins
 or no agents can make any further moves due to being blocked.
 
-![Routing Example](../../../../docs/img/routing_rollout.gif)
+<p align="center">
+        <img src="../img/routing_rollout.gif" width="500"/>
+</p>
 
 ## Observation Space
 
@@ -63,3 +65,8 @@ This means that each subsequent agent ID will always be the previous agent id's 
 ## Action Space
 
 Each route can step in 4 cardinal directions, or take no action.
+
+## Registered Versions 📖
+- `Routing-n3-8x8-v0`, 3 routes on a `8x8` board.
+- `Routing-n4-12x12-v0`, 4 routes on a `12x12` board.
+- `Routing-n5-16x16-v0`, 5 routes on a `16x16` board.

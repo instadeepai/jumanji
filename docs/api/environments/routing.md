@@ -1,10 +1,20 @@
---8<-- "jumanji/routing/README.md"
-
----
-# API Reference
 ::: jumanji.environments.combinatorial.routing.env.Routing
-
-# Registered Versions 📖
-- `Routing-n3-8x8-v0`, 3 routes on a `8x8` board.
-- `Routing-n4-12x12-v0`, 4 routes on a `12x12` board.
-- `Routing-n5-16x16-v0`, 5 routes on a `16x16` board.
+    selection:
+      members:
+        - __init__
+        - observation_spec
+        - action_spec
+        - reward_spec
+        - discount_spec
+        - reset
+        - step
+        - get_action_mask
+        - render
+        - close
+        - is_agent_connected
+        - get_finished_agents
+        - move
+        - intersect
+        - counter_clockwise
+        - __enter__
+        - __exit__

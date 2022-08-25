@@ -1,9 +1,14 @@
---8<-- "jumanji/snake/README.md"
-
----
-# API Reference
 ::: jumanji.environments.games.snake.env.Snake
-
-# Registered Versions 📖
-- `Snake-6x6-v0`, Snake game on a board of size `6x6`.
-- `Snake-12x12-v0`, Snake game on a board of size `12x12`.
+    selection:
+      members:
+        - __init__
+        - observation_spec
+        - action_spec
+        - reset
+        - step
+        - update_head_pos
+        - render
+        - close
+        - animation
+        - __enter__
+        - __exit__

@@ -19,3 +19,9 @@ reward is 0 at every step except for the last step, when the reward is
 the length of the path chosen by the agent.
 
 [1] [POMO: Policy Optimization with Multiple Optima for Reinforcement Learning](https://arxiv.org/abs/2010.16011).
+
+## Registered Versions 📖
+- `TSP50`, TSP problem with 50 cities (randomly generated).
+- `TSP100`, TSP problem with 100 cities (randomly generated).
+- `TSP150`, TSP problem with 150 cities (randomly generated).
+- `TSP200`, TSP problem with 200 cities (randomly generated).

@@ -1,46 +1,71 @@
 site_name: Jumanji
 site_description: Documentation
 site_author: InstaDeep Research
-site_url: https://instadeep.gitlab.io/jumanji/
+site_url: https://instadeep.github.io/jumanji/
 site_dir: public
-strict: false # Don't allow warnings during the build process
+strict: false # TODO: Don't allow warning during the build process.
+
+# Copyright
+copyright: InstaDeep © 2022 Copyright, all rights reserved.
 
 # Git repo
-repo_name: instadeep/jumanji                      # temporary
-repo_url: https://gitlab.com/instadeep/jumanji    # temporary
+repo_name: instadeepai/jumanji                               # temporary
+repo_url: https://github.com/instadeepai/jumanji-internal    # temporary
+edit_uri: edit/develop/docs/
 
 # Navigation Map
 nav:
   - Home: index.md
+  - Environments:
+      - Combinatorial:
+          - TSP: environments/tsp.md
+          - Routing: environments/routing.md
+          - BinPack: environments/binpack.md
+          - Knapsack: environments/knapsack.md
+      - Game:
+          - Snake: environments/snake.md
+          - Connect4: environments/connect4.md
   - User Guides:
       - Registration: guides/registration.md
+      - Examples: guides/anakin_snake.ipynb
       - Wrapper: guides/wrappers.md
   - API Reference:
-      - Base: api/env.md
       - Environments:
+          - Base: api/env.md
           - Combinatorial:
-            - TSP: api/environments/tsp.md
-            - Routing: api/environments/routing.md
-            - BinPack: api/environments/binpack.md
-            - Knapsack: api/environments/knapsack.md
+              - TSP: api/environments/tsp.md
+              - Routing: api/environments/routing.md
+              - BinPack: api/environments/binpack.md
+              - Knapsack: api/environments/knapsack.md
           - Game:
-            - Snake: api/environments/snake.md
-            - Connect4: api/environments/connect4.md
-      - Extra:
+              - Snake: api/environments/snake.md
+              - Connect4: api/environments/connect4.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
 # Configuration
 theme:
   name: material
+  logo: img/instadeep-logo.png     # replace with jumanji
+  icon:
+    repo: fontawesome/brands/github
   language: en
   palette:
-    primary: white
-    accent: amber
-  logo: img/instadeep-logo.png     # temporary
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
   favicon: img/instadeep-logo.png  # temporary
-  icon:
-    repo: fontawesome/brands/gitlab
   features:
     - navigation.tracking       # the URL is automatically updated with the active anchor
     - navigation.sections       # top-level sections are rendered as groups in the sidebar
@@ -52,6 +77,9 @@ theme:
     - search.suggest            # smart suggestion
     - toc.integrate
     - toc.follow
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.top
 
 markdown_extensions:
   - pymdownx.emoji:
@@ -81,15 +109,19 @@ plugins:
   - autorefs
   - git-revision-date
   - include-markdown
-  - mknotebooks       # enable Jupyter notebooks
+  - mknotebooks:       # enable Jupyter notebooks
+      enable_default_jupyter_cell_styling: false
   - mermaid2          # Class diagrams, flowcharts and more
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
-          docstring_style: google
+          options:
+            docstring_style: google
+            merge_init_into_class: yes
+            show_submodules: no
           selection:
-            inherited_members: true
+            inherited_members: false
           rendering:
             show_source: false
             members_order: source
@@ -103,4 +135,4 @@ plugins:
 
 # Customization
 extra_css:
-    - _static/custom.css
+  - _static/custom.css

@@ -27,6 +27,7 @@ Action = Array
 
 class StepType(jnp.int8):
     """Defines the status of a `TimeStep` within a sequence.
+
     First: 0
     Mid: 1
     Last: 2
@@ -45,8 +46,8 @@ Observation = TypeVar("Observation")
 
 @dataclass
 class TimeStep(Generic[Observation]):
-    """Copied from dm_env.TimeStep with the goal of making it a Jax Type.
-    The original dm_env.TimeStep is not a Jax type because inheriting a namedtuple is
+    """Copied from `dm_env.TimeStep` with the goal of making it a Jax Type.
+    The original `dm_env.TimeStep` is not a Jax type because inheriting a namedtuple is
     not treated as a valid Jax type (https://github.com/google/jax/issues/806).
 
     A `TimeStep` contains the data emitted by an environment at each step of

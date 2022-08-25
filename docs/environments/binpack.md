@@ -1,7 +1,7 @@
 # BinPack Environment
 
 <p align="center">
-        <img src="../../../../docs/img/binpack_example.gif" width="1000"/>
+        <img src="../img/binpack_example.gif" width="1000"/>
 </p>
 
 We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem).
@@ -60,3 +60,9 @@ a reward of `0.0`.
 ```
 reward: jax array of shape() # [-1, 0]
 ```
+
+## Registered Versions 📖
+- `BinPack-toy-v0`, a fixed problem instance containing 20 items to pack in a 20ft container.
+- `BinPack-rand20-v0`, randomly generated instances containing 20 items.
+- `BinPack-rand40-v0`, randomly generated instances containing 40 items.
+- `BinPack-rand100-v0`, randomly generated instances containing 100 items.

@@ -1,6 +1,8 @@
 # Connect 4 Environment
 
-![Connect four](../../../../docs/img/connect4.png)
+<p align="center">
+        <img src="../img/connect4.png" width="500"/>
+</p>
 
 We provide here a Jax JIT-able implementation of the _Connect Four_ game. The environment contains
 two agents competing against each other, playing turn by turn.
@@ -14,3 +16,6 @@ for winning is 1.
 The board is 6 rows by 7 columns.
 The observation is a dataclass containing a view of the board from the point of view of the current
 player and a mask indicating valid actions.
+
+## Registered Versions 📖
+- `Connect4-v0`, the classic [Connect4](https://en.wikipedia.org/wiki/Connect_Four) game.
