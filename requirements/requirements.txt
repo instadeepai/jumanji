@@ -8,3 +8,4 @@ matplotlib>=3.3.4
 numpy>=1.19.5
 Pillow>=9.0.0
 pygame>=2.0.0
+typing-extensions>=4.0.0

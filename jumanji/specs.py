@@ -492,9 +492,13 @@ def jumanji_specs_to_gym_spaces(
     elif isinstance(spec, MultiDiscreteArray):
         return gym.spaces.MultiDiscrete(nvec=spec.num_values, seed=None)
     elif isinstance(spec, BoundedArray):
+        # When using NumPy: 1.21.5:
+        # MyPy error: "Call to untyped function "broadcast_to" in typed context"
+        low = np.broadcast_to(spec.minimum, shape=spec.shape)  # type: ignore
+        high = np.broadcast_to(spec.maximum, shape=spec.shape)  # type: ignore
         return gym.spaces.Box(
-            low=np.broadcast_to(np.array(spec.minimum), shape=spec.shape),
-            high=np.broadcast_to(np.array(spec.maximum), shape=spec.shape),
+            low=low,
+            high=high,
             shape=spec.shape,
             dtype=spec.dtype,
         )
