@@ -117,7 +117,7 @@ to take a step when executing an action. This shouldn't be confused with the `ob
 which is the one perceived by the agent.
 - `timestep` is a dataclass containing `step_type`, `reward`, `discount`, `observation`, and `extras`.
 This structure is similar to [`dm_env.TimeStep`](https://github.com/deepmind/dm_env/blob/master/docs/index.md)
-except for the `extra` field that was added to allow users to retrieve information that are neither
+except for the `extras` field that was added to allow users to retrieve information that are neither
 part of the agent's observation nor part of the environment's internal state.
 A notable advantage of using `TimeStep`, as opposed to the Gym interface,
 is how it nicely handles termination and truncation thanks to `StepType`
