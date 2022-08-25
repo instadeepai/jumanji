@@ -236,6 +236,16 @@ Note that because JAX installation is different depending on your hardware accel
 we advise users to explicitly install the correct JAX version,
 see the [official installation guide](https://github.com/google/jax#installation).
 
+Matplotlib is used for rendering the `BinPack` and `Snake` environments. If you want to visualise the environments you will need a GUI backend. For example on Linux you can install Tk via:
+```bash
+apt-get install python3-tk
+```
+Or with conda using:
+```bash
+conda install tk
+```
+For a list of backends you could use check out Matplotlib [backends](https://matplotlib.org/stable/users/explain/backends.html).
+
 ## Contributing 🤝
 Contributions welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji-internal/labels/good%20first%20issue).
 Please read our [contributing guidelines](./CONTRIBUTING.md) for details on
