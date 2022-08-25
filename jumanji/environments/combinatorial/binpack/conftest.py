@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
-
 import chex
 import jax
 import jax.numpy as jnp
@@ -25,6 +23,7 @@ from jumanji.environments.combinatorial.binpack.instance_generator import (
     InstanceGenerator,
     make_container,
 )
+from jumanji.environments.combinatorial.binpack.space import Space
 from jumanji.environments.combinatorial.binpack.specs import ObservationSpec
 from jumanji.environments.combinatorial.binpack.types import Item, Location, State
 
@@ -38,7 +37,7 @@ class DummyInstanceGenerator(InstanceGenerator):
     def __init__(self) -> None:
         """Instantiate a dummy `InstanceGenerator` with three items and one EMS maximum."""
         super(DummyInstanceGenerator, self).__init__(
-            max_num_items=3, max_num_ems=1, container_dims=TWENTY_FOOT_DIMS
+            max_num_items=3, max_num_ems=10, container_dims=TWENTY_FOOT_DIMS
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
@@ -55,10 +54,10 @@ class DummyInstanceGenerator(InstanceGenerator):
         return State(
             container=container,
             ems=jax.tree_map(
-                functools.partial(jnp.expand_dims, axis=-1),
+                lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
                 container,
             ),
-            ems_mask=jnp.array([True], bool),
+            ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
             items=Item(
                 # The 1st and 2nd items have the same shape.
                 x_len=jnp.array([1000, 1000, 500], jnp.int32),
@@ -71,7 +70,7 @@ class DummyInstanceGenerator(InstanceGenerator):
                 lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
             ),
             action_mask=None,
-            sorted_ems_indexes=jnp.array([0], int),
+            sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
         )
 
 
@@ -82,14 +81,24 @@ def dummy_instance_generator() -> DummyInstanceGenerator:
 
 @pytest.fixture
 def dummy_instance(dummy_instance_generator: DummyInstanceGenerator) -> State:
-    return dummy_instance_generator(key=jax.random.PRNGKey(0))
+    state = dummy_instance_generator(key=jax.random.PRNGKey(0))
+    state.action_mask = jnp.ones(
+        (dummy_instance_generator.max_num_ems, dummy_instance_generator.max_num_items),
+        bool,
+    )
+    return state
 
 
 @pytest.fixture
 def binpack_env(dummy_instance_generator: DummyInstanceGenerator) -> BinPack:
-    return BinPack(instance_generator=dummy_instance_generator, obs_num_ems=1)
+    return BinPack(instance_generator=dummy_instance_generator, obs_num_ems=5)
 
 
 @pytest.fixture
 def obs_spec(binpack_env: BinPack) -> ObservationSpec:
     return binpack_env.observation_spec()
+
+
+@pytest.fixture
+def space() -> Space:
+    return Space(x1=0, x2=1, y1=0, y2=1, z1=0, z2=1).astype(jnp.int32)

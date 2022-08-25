@@ -44,3 +44,24 @@ def tree_slice(tree: T, i: chex.Numeric) -> T:
         tree whose leaves have been reduced to their i-th item
     """
     return jax.tree_map(lambda x: x[i], tree)  # type: ignore
+
+
+def tree_add_element(tree: T, i: chex.Numeric, element: T) -> T:
+    """Sets one value of a tree along the batch axis. It is equivalent to
+
+    ```Python
+    for array_leaf in tree:
+        array_leaf[i] = element[i]
+    ```
+
+    Args:
+        tree: leaves are arrays and have a batch dimension.
+        i: index of arrays to set the value.
+        element: pytree with the same structure as `tree`. Its leaves are scalars or arrays whose
+            dimension is one less than `tree`.
+
+    Returns:
+        tree whose elements are the same as before but with the ith value being set to that of
+            the given element.
+    """
+    return jax.tree_map(lambda array, value: array.at[i].set(value), tree, element)  # type: ignore

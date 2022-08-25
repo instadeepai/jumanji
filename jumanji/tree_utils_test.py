@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import TypeVar
+
 import chex
 import jax.numpy as jnp
+import pytest
 
 from jumanji.testing.pytrees import assert_trees_are_equal
-from jumanji.tree_utils import tree_slice, tree_transpose
+from jumanji.tree_utils import tree_add_element, tree_slice, tree_transpose
+
+T = TypeVar("T")
 
 
 def test_tree_transpose() -> None:
@@ -36,3 +41,21 @@ def test_tree_slice() -> None:
     tree = {"a": jnp.array([0, 5], int), "b": jnp.array([1, 2, 3], int)}
     sliced_tree: chex.ArrayTree = {"a": jnp.array(5, int), "b": jnp.array(2, int)}
     assert_trees_are_equal(sliced_tree, tree_slice(tree, 1))
+
+
+@pytest.mark.parametrize(
+    ["tree", "i", "element", "expected_tree"],
+    [
+        ((jnp.array([3, 6]),), 1, (1,), (jnp.array([3, 1]),)),
+        (
+            {"a": jnp.array([0, 1]), "b": (jnp.array([-1, -1]),)},
+            0,
+            {"a": 4, "b": (2,)},
+            {"a": jnp.array([4, 1]), "b": (jnp.array([2, -1]),)},
+        ),
+    ],
+)
+def test_tree_add_element(
+    tree: T, i: chex.Numeric, element: T, expected_tree: T
+) -> None:
+    assert_trees_are_equal(tree_add_element(tree, i, element), expected_tree)

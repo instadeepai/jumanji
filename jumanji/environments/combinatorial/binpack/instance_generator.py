@@ -724,6 +724,7 @@ class RandomInstanceGenerator(InstanceGenerator):
         items_mask = jnp.zeros(self.max_num_items, bool).at[0].set(True)
         init_val = (items_spaces, items_mask, key)
         (items_spaces, items_mask, _) = jax.lax.while_loop(cond_fun, body_fun, init_val)
+
         return items_spaces, items_mask
 
     def _split_space_into_sub_spaces(
@@ -753,6 +754,10 @@ class RandomInstanceGenerator(InstanceGenerator):
             items_mask,
             split_key,
         )
+
+        # Remove possibly empty items (a dimension may be split to 0).
+        items_mask &= ~items_spaces.is_empty()
+
         return items_spaces, items_mask
 
     def _split_along_axis(
@@ -804,8 +809,8 @@ class RandomInstanceGenerator(InstanceGenerator):
         space axis length with paddings equal to `_split_eps`% on each side of the space.
         """
         axis_min, axis_max = (
-            jnp.int32(item_space.get_axis_value(axis, 1) + self._split_eps * axis_len),
-            jnp.int32(item_space.get_axis_value(axis, 2) - self._split_eps * axis_len),
+            item_space.get_axis_value(axis, 1) + jnp.int32(self._split_eps * axis_len),
+            item_space.get_axis_value(axis, 2) - jnp.int32(self._split_eps * axis_len),
         )
         axis_split = jax.random.randint(split_key, (), axis_min, axis_max, jnp.int32)
         free_index = jnp.argmin(items_mask)
@@ -833,14 +838,13 @@ class RandomInstanceGenerator(InstanceGenerator):
         uniformly sampled between 0 and `_split_num_same_items`.
         """
         initial_item_axis_1 = item_space.get_axis_value(axis, 1)
-        initial_item_axis_2 = item_space.get_axis_value(axis, 2)
         num_split = jax.random.randint(split_key, (), 1, self._split_num_same_items + 1)
-        axis_step = jnp.int32(axis_len / num_split)
+
         # Shortens first item before the others as its mask is already True.
         new_items_axis_2 = (
             items_spaces.get_axis_value(axis, 2)
             .at[item_id]
-            .set(initial_item_axis_1 + axis_step)
+            .set(initial_item_axis_1 + jnp.int32(axis_len / num_split))
         )
         items_spaces.set_axis_value(axis, 2, new_items_axis_2)
 
@@ -851,8 +855,10 @@ class RandomInstanceGenerator(InstanceGenerator):
                 lambda coord: coord.at[free_index].set(coord[item_id]),
                 items_spaces,
             )
-            item_axis_1 = initial_item_axis_1 + i * axis_step
-            item_axis_2 = initial_item_axis_1 + (i + 1) * axis_step
+            item_axis_1 = initial_item_axis_1 + jnp.int32(i * axis_len / num_split)
+            item_axis_2 = initial_item_axis_1 + jnp.int32(
+                (i + 1) * axis_len / num_split
+            )
             new_items_axis_1 = (
                 items_spaces.get_axis_value(axis, 1).at[free_index].set(item_axis_1)
             )
@@ -872,10 +878,4 @@ class RandomInstanceGenerator(InstanceGenerator):
             (items_spaces, items_mask),
         )
 
-        # In case of rounding, set the last item second edge to the initial (big) item second edge.
-        last_index = jnp.argmin(items_mask) - 1
-        new_items_axis_2 = (
-            items_spaces.get_axis_value(axis, 2).at[last_index].set(initial_item_axis_2)
-        )
-        items_spaces.set_axis_value(axis, 2, new_items_axis_2)
         return items_spaces, items_mask

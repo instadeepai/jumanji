@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Callable, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -23,7 +23,6 @@ import chex
 import jax.numpy as jnp
 
 from jumanji.environments.combinatorial.binpack.space import Space
-from jumanji.types import Action
 
 Container = Space
 EMS = Space
@@ -49,6 +48,23 @@ def item_from_space(space: Space) -> Item:
     )
 
 
+def item_fits_in_item(item: Item, other_item: Item) -> jnp.bool_:
+    """Check if an item is smaller than another one."""
+    return (
+        (item.x_len <= other_item.x_len)
+        & (item.y_len <= other_item.y_len)
+        & (item.z_len <= other_item.z_len)
+    )
+
+
+def item_volume(item: Item) -> jnp.float_:
+    """Returns the volume as a float to prevent from overflow with 32 bits."""
+    x_len = jnp.float_(item.x_len)
+    y_len = jnp.float_(item.y_len)
+    z_len = jnp.float_(item.z_len)
+    return x_len * y_len * z_len
+
+
 class Location(NamedTuple):
     x: chex.Numeric
     y: chex.Numeric
@@ -69,6 +85,20 @@ def location_from_space(space: Space) -> Location:
         x=space.x1,
         y=space.y1,
         z=space.z1,
+    )
+
+
+def space_from_item_and_location(item: Item, location: Location) -> Space:
+    """Returns a space from an item at a particular location. The bottom left corner is given
+    by the location while the top right is the location plus the item dimensions.
+    """
+    return Space(
+        x1=location.x,
+        x2=location.x + item.x_len,
+        y1=location.y,
+        y2=location.y + item.y_len,
+        z1=location.z,
+        z2=location.z + item.z_len,
     )
 
 
@@ -106,6 +136,3 @@ class Observation(NamedTuple):
     items_mask: chex.Array  # True if items exist | shape (max_num_items,)
     items_placed: chex.Array  # True if items are placed in the container | shape (max_num_items,)
     action_mask: chex.Array  # Joint action mask | shape (obs_num_ems, max_num_items)
-
-
-RewardFn = Callable[[State, Action, jnp.bool_], chex.Array]

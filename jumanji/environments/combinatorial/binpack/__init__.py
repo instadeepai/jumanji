@@ -13,4 +13,11 @@
 # limitations under the License.
 
 from jumanji.environments.combinatorial.binpack.env import BinPack
-from jumanji.environments.combinatorial.binpack.types import Observation, State
+from jumanji.environments.combinatorial.binpack.types import (
+    EMS,
+    Container,
+    Item,
+    Location,
+    Observation,
+    State,
+)

@@ -31,8 +31,27 @@ from jumanji.environments.combinatorial.binpack.specs import (
     ObservationSpec,
 )
 from jumanji.environments.combinatorial.binpack.types import Observation, State
+from jumanji.testing.env_not_smoke import SelectActionFn, check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
+
+
+@pytest.fixture
+def binpack_random_select_action(binpack_env: BinPack) -> SelectActionFn:
+    num_ems, num_items = binpack_env.action_spec().num_values
+
+    def select_action(rng_key: chex.PRNGKey, obs: Observation) -> chex.Array:
+        """Randomly sample valid actions, as determined by `observation.action_mask`."""
+        ems_item_id = jax.random.choice(
+            key=rng_key,
+            a=num_ems * num_items,
+            p=obs.action_mask.flatten(),
+        )
+        ems_id, item_id = jnp.divmod(ems_item_id, num_items)
+        action = jnp.array([ems_id, item_id], int)
+        return action
+
+    return select_action
 
 
 def assert_type_binpack_state(state: State) -> None:
@@ -106,9 +125,8 @@ def test_binpack__spec(
         assert_type_binpack_observation(observation, int)
 
 
-def test_binpack__step(binpack_env: BinPack) -> None:
-    """Validates the jitted step of the environment."""
-    # TODO: Do more checks when step function implemented.
+def test_binpack_step__jit(binpack_env: BinPack) -> None:
+    """Validates jitting the environment step function."""
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(binpack_env.step, n=1))
 
@@ -129,9 +147,24 @@ def test_binpack__render_does_not_smoke(
     binpack_env.close()
 
 
-# TODO: Add below test once random binpack agent has been created.
-# def test_binpack__does_not_smoke(
-#     binpack_env: BinPack
-# ) -> None:
-#     """Test that we can run an episode without any errors."""
-#     check_env_does_not_smoke(binpack_env)
+def test_binpack__does_not_smoke(
+    binpack_env: BinPack,
+    binpack_random_select_action: SelectActionFn,
+) -> None:
+    """Test that we can run an episode without any errors."""
+    check_env_does_not_smoke(binpack_env, binpack_random_select_action)
+
+
+def test_binpack__pack_all_items_dummy_instance(
+    binpack_env: BinPack, binpack_random_select_action: SelectActionFn
+) -> None:
+    """Functional test to check that the dummy instance can be completed with a random agent."""
+    key = random.PRNGKey(0)
+    state, timestep = binpack_env.reset(key)
+
+    while not timestep.last():
+        action_key, key = jax.random.split(key)
+        action = binpack_random_select_action(action_key, timestep.observation)
+        state, timestep = jax.jit(binpack_env.step)(state, action)
+
+    assert jnp.sum(state.items_placed) == jnp.sum(state.items_mask)

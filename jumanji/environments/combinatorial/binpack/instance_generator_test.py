@@ -18,13 +18,14 @@ import jax.random
 import py
 import pytest
 
+from jumanji.environments.combinatorial.binpack.conftest import DummyInstanceGenerator
 from jumanji.environments.combinatorial.binpack.instance_generator import (
     CSVInstanceGenerator,
     RandomInstanceGenerator,
     ToyInstanceGenerator,
     save_instance_to_csv,
 )
-from jumanji.environments.combinatorial.binpack.types import State
+from jumanji.environments.combinatorial.binpack.types import State, item_volume
 from jumanji.testing.pytrees import assert_trees_are_different, assert_trees_are_equal
 
 
@@ -98,22 +99,31 @@ class TestToyInstanceGenerator:
 class TestCSVInstanceGenerator:
     @pytest.fixture
     def csv_instance_generator(
-        self, dummy_instance: State, tmpdir: py.path.local, max_num_ems: int = 1
+        self,
+        dummy_instance_generator: DummyInstanceGenerator,
+        dummy_instance: State,
+        tmpdir: py.path.local,
     ) -> CSVInstanceGenerator:
         """Save a dummy instance to a csv file and then use this file to instantiate a
         CSVInstanceGenerator that generates the same dummy instance.
         """
         path = str(tmpdir.join("/for_generator.csv"))
         save_instance_to_csv(dummy_instance, path)
-        return CSVInstanceGenerator(path, max_num_ems)
+        return CSVInstanceGenerator(path, dummy_instance_generator.max_num_ems)
 
     def test_csv_instance_generator__properties(
         self,
         csv_instance_generator: CSVInstanceGenerator,
+        dummy_instance_generator: DummyInstanceGenerator,
     ) -> None:
         """Validate that the csv instance generator has the correct properties."""
-        assert csv_instance_generator.max_num_items == 3
-        assert csv_instance_generator.max_num_ems == 1
+        assert (
+            csv_instance_generator.max_num_items
+            == dummy_instance_generator.max_num_items
+        )
+        assert (
+            csv_instance_generator.max_num_ems == dummy_instance_generator.max_num_ems
+        )
 
     def test_csv_instance_generator__call(
         self, dummy_instance: State, csv_instance_generator: CSVInstanceGenerator
@@ -123,11 +133,19 @@ class TestCSVInstanceGenerator:
         """
         chex.clear_trace_counter()
         call_fn = jax.jit(chex.assert_max_traces(csv_instance_generator.__call__, n=1))
-        state1 = call_fn(key=jax.random.PRNGKey(1))
+        state1: State = call_fn(key=jax.random.PRNGKey(1))
+        state1.action_mask = jnp.ones(
+            (csv_instance_generator.max_num_ems, csv_instance_generator.max_num_items),
+            bool,
+        )
         assert isinstance(state1, State)
         assert_trees_are_equal(state1, dummy_instance)
 
-        state2 = call_fn(key=jax.random.PRNGKey(2))
+        state2: State = call_fn(key=jax.random.PRNGKey(2))
+        state2.action_mask = jnp.ones(
+            (csv_instance_generator.max_num_ems, csv_instance_generator.max_num_items),
+            bool,
+        )
         assert_trees_are_equal(state1, state2)
 
 
@@ -162,7 +180,7 @@ class TestRandomInstanceGenerator:
         state2 = call_fn(key=jax.random.PRNGKey(2))
         assert_trees_are_different(state1, state2)
 
-    def test_toy_instance_generator__generate_solution(
+    def test_random_instance_generator__generate_solution(
         self,
         random_instance_generator: RandomInstanceGenerator,
     ) -> None:
@@ -187,6 +205,10 @@ class TestRandomInstanceGenerator:
             solution_state1.items_location, state1.items_location
         )
         assert jnp.all(solution_state1.items_placed | ~solution_state1.items_mask)
+        items_volume = (
+            item_volume(solution_state1.items) * solution_state1.items_mask
+        ).sum()
+        assert jnp.isclose(items_volume, solution_state1.container.volume())
 
         solution_state2 = generate_solution(jax.random.PRNGKey(2))
         assert_trees_are_different(solution_state1, solution_state2)
