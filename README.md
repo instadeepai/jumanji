@@ -96,17 +96,17 @@ while our `TimeStep` structure is inspired by `dm_env.TimeStep`.
 import jax
 import jumanji
 
-# Create a Jumanji environment using the registry
+# Instantiate a Jumanji environment using the registry
 env = jumanji.make('Snake-6x6-v0')
 
-# Instantiate your (jit-able) environment
+# Reset your (jit-able) environment
 key = jax.random.PRNGKey(0)
 state, timestep = jax.jit(env.reset)(key)
 
 # (Optional) Render the env state
 env.render(state)
 
-# Interact with the environment
+# Interact with the (jit-able) environment
 action = env.action_spec().generate_value()          # (dummy) action selection
 state, timestep = jax.jit(env.step)(state, action)   # take a step and observe the next state and time step
 ```
