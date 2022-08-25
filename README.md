@@ -37,19 +37,19 @@
 
 Jumanji is a suite of Reinforcement Learning (RL) environments written in JAX focused on providing clean, hardware-accelerated
 environments for industry-driven research. Jumanji is helping pioneer a new wave of hardware-accelerated research and development in the
-exciting field of RL. Jumanji's high-speed environments enable faster iterations and larger scale experimentation
+exciting field of RL. Jumanji's high-speed environments enable faster iterations and larger-scale experimentation
 while simultaneously reducing complexity and removing barriers of entry.
 
 Jumanji was originally started by engineers and researchers
-within the Research Team at [InstaDeep](https://www.instadeep.com/), and is now developed jointly with
-the open source community. We are looking forward to see what the future of JAX powered RL holds and what we
+within the Research Team at [InstaDeep](https://www.instadeep.com/) and is now developed jointly with
+the open-source community. We are looking forward to seeing what the future of JAX-powered RL holds and what we
 can do with the RL community. Don't forget to watch 🔭 and star 🌟 the repo, so you don't miss out on any of the
 exciting advances and future development of Jumanji!
 
 ### Goals 🚀
 
 1. Provide a simple, well-test API reference for JAX-based environments.
-2. Make research in RL more accessible
+2. Make research in RL more accessible.
 3. Facilitate the research on RL for problems in the industry and
 contribute to closing the gap between research and industrial applications.
 
@@ -57,7 +57,7 @@ contribute to closing the gap between research and industrial applications.
 
 - 👾 **Framework Compatability**: easily connect to your favorite RL framework such as [Acme](https://github.com/deepmind/acme),
 [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3), and [RLlib](https://docs.ray.io/en/latest/rllib/index.html).
-- 🥑 **Environment API**: core abstractions for JAX-based environments and its variations, e.g. multi-agent, turn-by-turn.
+- 🥑 **Environment API**: core abstractions for JAX-based environments and their variations, e.g. multi-agent, turn-by-turn.
 - 🕹️ **Environment Suite**: a list of RL environments ranging from simple games to complex NP-hard problems.
 - ⚙️ **Wrappers and Utilities**: all the bells and whistles to efficiently work with our environments.
 - 🎓 **Educational Examples and User Guides**: a few guides to facilitate Jumanji's adoption and highlight the value add of JAX-based environments.
@@ -78,9 +78,9 @@ we advise users to explicitly install the correct JAX version,
 see the [official installation guide](https://github.com/google/jax#installation).
 
 **Rendering:** Matplotlib is used for rendering the `BinPack` and `Snake` environments.
-If you want to visualise the environments you will need a GUI backend.
-For example on Linux you can install Tk via: `apt-get install python3-tk`, or using conda: `conda install tk`.
-For a list of backends you could use check out Matplotlib [backends](https://matplotlib.org/stable/users/explain/backends.html).
+If you want to visualize the environments you will need a GUI backend.
+For example, on Linux, you can install Tk via: `apt-get install python3-tk`, or using conda: `conda install tk`.
+For a list of backends, you could use check out Matplotlib [backends](https://matplotlib.org/stable/users/explain/backends.html).
 
 ## What does Jumanji look like? 👀
 
@@ -117,7 +117,7 @@ to take a step when executing an action. This shouldn't be confused with the `ob
 which is the one perceived by the agent.
 - `timestep` is a dataclass containing `step_type`, `reward`, `discount`, `observation`, and `extras`.
 This structure is similar to [`dm_env.TimeStep`](https://github.com/deepmind/dm_env/blob/master/docs/index.md)
-except for the `extras` field that was added to allow users to retrieve information that are neither
+except for the `extras` field that was added to allow users to retrieve information that is neither
 part of the agent's observation nor part of the environment's internal state.
 A notable advantage of using `TimeStep`, as opposed to the Gym interface,
 is how it nicely handles termination and truncation thanks to `StepType`
@@ -169,7 +169,7 @@ rollout = jax.vmap(run_n_step, in_axes=(0, 0, None))(state, keys, rollout_length
 
 ## Examples 🕹️
 
-For a more in-depth examples of running with Jumanji environments, check out our colab notebooks:
+For more in-depth examples of running with Jumanji environments, check out our colab notebooks:
 
 | Example           | Topic          | Colab |
 |-------------------|----------------|:-----:|
@@ -198,7 +198,7 @@ We maintain a registry of standard environments with their configuration.
 For each one, a version suffix is appended, e.g. `Snake-6x6-v0`.
 When changes are made to environments that might impact learning results,
 the version number is increased by one to prevent potential confusion. For a full list of registered versions
-of each environment, checkout the environments' documentation.
+of each environment, check out the environments' documentation.
 
 ## Contributing 🤝
 Contributions welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji-internal/labels/good%20first%20issue).
