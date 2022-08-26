@@ -25,6 +25,7 @@ from jumanji.env import Environment
 from jumanji.environments.combinatorial.binpack import env_viewer
 from jumanji.environments.combinatorial.binpack.instance_generator import (
     InstanceGenerator,
+    ToyInstanceGenerator,
 )
 from jumanji.environments.combinatorial.binpack.reward import (
     RewardFn,
@@ -90,8 +91,7 @@ class BinPack(Environment[State]):
         if no other actions are possible (no items fit in any ems).
 
     ```python
-    instance_generator = ToyInstanceGenerator()
-    env = BinPack(instance_generator, obs_num_ems=40)
+    env = BinPack()
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
@@ -103,8 +103,8 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        instance_generator: InstanceGenerator,
-        obs_num_ems: int,
+        instance_generator: InstanceGenerator = None,
+        obs_num_ems: int = 60,
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
         debug: bool = False,
@@ -115,10 +115,12 @@ class BinPack(Environment[State]):
             instance_generator: InstanceGenerator responsible for resetting the environment. E.g.
                 can be a random generator to learn generalisation or one that outputs the same
                 instance to do active search on that instance. It must inherit from the
-                InstanceGenerator abstract class.
+                InstanceGenerator abstract class. Default to ToyInstanceGenerator that always
+                resets to the same instance with 20 items.
             obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
                 `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
-                in the observation.
+                in the observation. Default to 60, but the good number heavily depends on the
+                number of items (given by the instance generator).
             reward_fn: function of the state, the next state, the action taken and the done flag,
                 and outputs a scalar, namely the reward. Default: sparse_linear, meaning a
                 sparse reward is given at the end of the episode, corresponding to the volume
@@ -129,7 +131,11 @@ class BinPack(Environment[State]):
                 within timestep. Default to False as computing this metric slows down the
                 environment.
         """
-        self.instance_generator = instance_generator
+        self.instance_generator = (
+            instance_generator
+            if instance_generator is not None
+            else ToyInstanceGenerator()
+        )
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
         self.normalize_dimensions = normalize_dimensions

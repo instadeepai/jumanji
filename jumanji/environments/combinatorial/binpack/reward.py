@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Protocol, runtime_checkable
-
 import jax
 import jax.numpy as jnp
+from typing_extensions import Protocol
 
 from jumanji.environments.combinatorial.binpack.types import State, item_volume
 from jumanji.types import Action
 
 
-@runtime_checkable
 class RewardFn(Protocol):
     """Callable specification for the reward function."""
 

@@ -405,7 +405,7 @@ class CSVInstanceGenerator(InstanceGenerator):
     def __init__(
         self,
         csv_path: str,
-        max_num_ems: int,
+        max_num_ems: int = 150,
         container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
     ):
         """Instantiate a CSVInstanceGenerator that generates the same instance (active search)
@@ -414,7 +414,8 @@ class CSVInstanceGenerator(InstanceGenerator):
         Args:
             csv_path: path to the CSV file defining the instance to reset to.
             max_num_ems: maximum number of ems the environment will handle. This defines the shape
-                of the EMS buffer that is kept in the environment state.
+                of the EMS buffer that is kept in the environment state. Default to 150, but the
+                good number heavily depends on the number of items (given by the CSV file).
             container_dims: (length, width, height) tuple of integers corresponding to the
                 dimensions of the container in millimeters. By default, assume a 20-ft container.
         """
@@ -582,8 +583,8 @@ class RandomInstanceGenerator(InstanceGenerator):
 
     Example:
         ```python
-        instance_generator = RandomInstanceGenerator(...)
-        env = BinPack(instance_generator, ...)
+        instance_generator = RandomInstanceGenerator()
+        env = BinPack(instance_generator)
         key = jax.random.key(0)
         reset_state = instance_generator(key)
         env.render(reset_state)
@@ -593,8 +594,8 @@ class RandomInstanceGenerator(InstanceGenerator):
 
     def __init__(
         self,
-        max_num_items: int,
-        max_num_ems: int,
+        max_num_items: int = 40,
+        max_num_ems: int = 200,
         split_eps: float = 0.3,
         prob_split_one_item: float = 0.7,
         split_num_same_items: int = 3,
@@ -605,9 +606,11 @@ class RandomInstanceGenerator(InstanceGenerator):
         Args:
             max_num_items: maximum number of items the generator will ever generate when creating
                 a new instance. This defines the shapes of arrays related to items in the
-                environment state.
+                environment state. Default to 40, but the more items the more difficult the
+                environment will be.
             max_num_ems: maximum number of ems the environment will handle. This defines the shape
-                of the EMS buffer that is kept in the environment state.
+                of the EMS buffer that is kept in the environment state. Default to 200, but the
+                good number heavily depends on the number of items (given by `max_num_items`).
             split_eps: fraction of edges of a space that cannot be chosen as a split point. This
                 prevents from infinitely small items and biases the distribution towards
                 reasonable-size items.
@@ -651,8 +654,8 @@ class RandomInstanceGenerator(InstanceGenerator):
 
         Example:
             ```python
-            instance_generator = RandomInstanceGenerator(...)
-            env = BinPack(instance_generator, ...)
+            instance_generator = RandomInstanceGenerator()
+            env = BinPack(instance_generator)
             key = jax.random.key(0)
             reset_state = instance_generator(key)
             env.render(reset_state)
