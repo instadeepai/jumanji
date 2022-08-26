@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
+import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d
 import mpl_toolkits.mplot3d.axes3d
 
+import jumanji.environments
 from jumanji.environments.combinatorial.binpack.types import State, item_from_space
 
 
 class BinPackViewer:
     FONT_STYLE = "monospace"
+    FIGURE_SIZE = (6.0, 6.0)
 
     def __init__(self, name: str) -> None:
         """
@@ -33,6 +36,9 @@ class BinPackViewer:
             name: The window name to be used when initialising the window.
         """
         self._name = name
+        # You must store the created Animation in a variable that lives as long as the animation
+        # should run. Otherwise the animation will get garbage-collected.
+        self._animation: Optional[matplotlib.animation.Animation] = None
 
     def render(self, state: State) -> None:
         """
@@ -41,39 +47,84 @@ class BinPackViewer:
         Args:
             state: the State to render.
         """
+        self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
-        self._add_state(state)
-        self._update_ax(state)
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-        # Block for 2 seconds.
-        fig.canvas.start_event_loop(2.0)
+        entities = self._create_entities(state)
+        for entity in entities:
+            ax.add_collection3d(entity)
+        self._add_overlay(fig, ax, state)
+        self._display(fig)
+
+    def animation(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        blit: bool = False,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of states.
+
+        Args:
+            states: sequence of `State` corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            blit: whether to use blitting to optimize drawing, default to False.
+                Note: when using blitting, any animated artists will be drawn according to their
+                zorder. However, they will be drawn on top of any previous artists, regardless
+                of their zorder.
+
+        Returns:
+            animation that can export to gif, mp4, or render with HTML.
+        """
+        fig = plt.figure(f"{self._name}Anim", figsize=self.FIGURE_SIZE)
+        ax = fig.add_subplot(111, projection="3d")
+        plt.close(fig)
+
+        entities: List[mpl_toolkits.mplot3d.art3d.Poly3DCollection] = []
+
+        def animate(state_index: int) -> None:
+            state = states[state_index]
+            for entity in entities:
+                entity.remove()
+            entities.clear()
+            entities.extend(self._create_entities(state))
+            for entity in entities:
+                ax.add_collection3d(entity)
+            self._add_overlay(fig, ax, state)
+
+        matplotlib.rc("animation", html="jshtml")
+        self._animation = matplotlib.animation.FuncAnimation(
+            fig,
+            animate,
+            frames=len(states),
+            blit=blit,
+            interval=interval,
+        )
+        return self._animation
 
     def close(self) -> None:
         plt.close(self._name)
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name)
+        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
         if recreate:
-            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
-            fig.show()
+            fig.tight_layout()
+            if not plt.isinteractive():
+                fig.show()
             ax = fig.add_subplot(111, projection="3d")
         else:
             ax = fig.get_axes()[0]
         return fig, ax
 
-    def _add_state(self, state: State) -> None:
+    def _create_entities(
+        self, state: State
+    ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
+        entities = []
         n_items = len(state.items_mask)
         cmap = plt.cm.get_cmap("hsv", n_items)
         for i in range(n_items):
             if state.items_placed[i]:
-                self._add_box(
+                box = self._create_box(
                     (
                         state.items_location.x[i],
                         state.items_location.y[i],
@@ -83,22 +134,25 @@ class BinPackViewer:
                     cmap(i),
                     0.3,
                 )
+                entities.append(box)
 
         container = item_from_space(state.container)
-        self._add_box(
+        box = self._create_box(
             (0.0, 0.0, 0.0),
             (container.x_len, container.y_len, container.z_len),
             "cyan",
             0.05,
         )
+        entities.append(box)
+        return entities
 
-    def _add_box(
+    def _create_box(
         self,
         pos: Tuple[float, float, float],
         lens: Tuple[float, float, float],
         colour: Union[matplotlib.cm.ScalarMappable, str],
         alpha: float,
-    ) -> None:
+    ) -> mpl_toolkits.mplot3d.art3d.Poly3DCollection:
         """
         Add a box to the artist.
 
@@ -113,17 +167,15 @@ class BinPackViewer:
         poly3d = mpl_toolkits.mplot3d.art3d.Poly3DCollection(
             verts, linewidths=1, edgecolors="black", facecolors=colour, alpha=alpha
         )
-        _, ax = self._get_fig_ax()
-        ax.add_collection3d(poly3d)
+        return poly3d
 
-    def _update_ax(self, state: State) -> None:
+    def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
         """
         Sets the bounds of the scene and displays text about the scene.
         Args:
             state: State of the environment
 
         """
-        fig, ax = self._get_fig_ax()
         eps = 0.05
         container = item_from_space(state.container)
         ax.set(
@@ -147,6 +199,24 @@ class BinPackViewer:
         ]
         title = " | ".join(key + ": " + value for key, value in metrics)
         fig.suptitle(title, font=self.FONT_STYLE)
+
+    def _display(self, fig: plt.Figure) -> None:
+        if plt.isinteractive():
+            # Required to update render when using Jupyter Notebook.
+            fig.canvas.draw()
+            if jumanji.environments.is_colab():
+                plt.show(self._name)
+        else:
+            # Required to update render when not using Jupyter Notebook.
+            fig.canvas.draw_idle()
+            # Block for 2 seconds.
+            fig.canvas.start_event_loop(2.0)
+
+    def _clear_display(self) -> None:
+        if jumanji.environments.is_colab():
+            import IPython.display
+
+            IPython.display.clear_output(True)
 
     def _create_box_vertices(
         self, pos: Tuple[float, float, float], lens: Tuple[float, float, float]
