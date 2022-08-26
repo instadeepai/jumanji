@@ -1,4 +1,4 @@
-# Connect4 Environment
+# Connect 4 Environment
 
 <p align="center">
         <img src="../img/connect4.png" height="200"/>
@@ -14,7 +14,6 @@ player and a mask indicating valid actions.
 
 ## Action
 There are 7 possible actions, each representing which column to insert the token into (recall that the board is 6 rows by 7 columns): `0, 1, 2, 3, 4, 5, 6`.
-
 
 ## Reward
 If the board gets full before any of the two agents connects 4, the game is a draw and the

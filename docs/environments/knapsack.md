@@ -1,11 +1,10 @@
 # Knapskack Environment
 
 <p align="center">
-        <img src="../img/knapsack.png" width="500"/>
+        <img src="../img/knapsack.png" width="350"/>
 </p>
 
-We provide here a Jax JIT-able implementation of the knapskack problem. The environment follows the design
-of [1].
+We provide here a Jax JIT-able implementation of the [knapskack problem](https://en.wikipedia.org/wiki/Knapsack_problem).
 
 The knapsack problem is a famous problem in combinatorial optimization. The goal is to determine, given
 a set of items, each with a weight and a value,
@@ -19,10 +18,30 @@ When the environment is reset, a new problem instance is generated, by sampling 
 from a uniform distribution between 0 and 1. The weight limit of the knapsack is a parameter of the
 environment.
 A trajectory terminates when no further item can be added to the knapsack, or that the last action
-was invalid. The reward is 0 at every step, except at the last timestep when the reward is the
-total value of the knapsack.
+was invalid.
 
-[1] [POMO: Policy Optimization with Multiple Optima for Reinforcement Learning](https://arxiv.org/abs/2010.16011).
+## Observation
+The observation given to the agent provides information on the total problem, the items already added
+to the knapsack and environment meta info such as number of steps taken and the remaining budget.
+
+**Observation Spec**:
+
+- `problem` jax array (float32) of shape `(problem_size, 2)`, shows an array of weights/values of the items to be packed into the knapsack.
+- `first_item`: jax array (int32), gives the index of the last item added.
+- `last_item`: jax array (int32), gives the index of the first item added.
+- `invalid_mask`: jax array (int8) of shape `(problem_size,)`, array of binary values denoting valid/invalid actions.
+
+## Action
+Action space is an `Array` where each index corresponds to an item that can be packed next.
+
+```
+action: [0, 0, 1, 0]  # Problem size of 4 items, choosing the 3rd item
+```
+
+## Reward
+
+The reward is 0 at every step, except at the last timestep when the reward is the
+total value of the knapsack.
 
 ## Registered Versions 📖
 - `Knapsack50-v0`

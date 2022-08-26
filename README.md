@@ -33,6 +33,10 @@
 | [**See Also**](#see-also)
 | [**Reference Docs**](instadeepai.github.io/jumanji-internal/)
 
+<p align="center">
+<img src="docs/img/snake.gif" width="300"><img src="docs/img/binpack_example.gif" width="300"><img src="docs/img/routing.gif" width="300">
+</p>
+
 ## Welcome to the Jungle! 🌴
 
 Jumanji is a suite of Reinforcement Learning (RL) environments written in JAX providing clean, hardware-accelerated

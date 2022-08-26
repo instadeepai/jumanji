@@ -1,26 +1,19 @@
 # Routing Environment
 
+<p align="center">
+        <img src="../img/routing_rollout.gif" width="300"/>
+</p>
+
 The Routing environment contains multiple agents spawn in a grid world (default: `(rows=12, cols=12)`) with each agent representing a route that needs to
 be connected to its own unique target. The main goal of the environment is to connect each route in as few steps as possible.
 Agents need to cooperate in order to allow each other to connect to their own targets without overlapping.
 
-The rewards given to each agent can be set but by default are as follows:
-
-For each agent:
-- The reward per timestep when not connected is -0.03
-- The reward for an agent connecting to its target is 0.1
-- The reward for an agent blocking itself is -0.1
-
 An episode is regarded as complete when all agents have connected to their targets/pins
 or no agents can make any further moves due to being blocked.
 
-<p align="center">
-        <img src="../img/routing_rollout.gif" width="500"/>
-</p>
+## Observation
 
-## Observation Space
-
-The grid is a configurable size 2D matrix that represents pairs of points that need to be connected.
+The grid is a size-configurable 2D matrix that represents pairs of points that need to be connected.
 The “head” of an agent has to connect to the “target”, leaving a “route” behind it as it moves across the environment forming its route.
 Each head connects to only 1 target.
 
@@ -59,12 +52,21 @@ Agent3[head=10, target=9, route=8]
 
 The current agent is always encoded as (2,3,4).
 
-The implementation shifts all other agents values to make the (2,3,4) values represent the current agent.
-This means that each subsequent agent ID will always be the previous agent id's values shifted up by 3.
+The implementation shifts all other agents' values to make the `(2,3,4)` values represent the current agent.
+This means that each subsequent agent ID will always be the previous agent ID incremented by 3.
 
-## Action Space
+## Action
 
 Each route can step in 4 cardinal directions, or take no action.
+
+## Reward
+
+The rewards given to each agent can be set but by default are as follows:
+
+For each agent:
+- The reward per timestep when not connected is -0.03.
+- The reward for an agent connecting to its target is 0.1.
+- The reward for an agent blocking itself is -0.1.
 
 ## Registered Versions 📖
 - `Routing-n3-8x8-v0`, 3 routes on a `8x8` board.

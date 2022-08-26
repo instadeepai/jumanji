@@ -1,7 +1,7 @@
 # BinPack Environment
 
 <p align="center">
-        <img src="../img/binpack_example.gif" width="1000"/>
+        <img src="../img/binpack_example.gif" width="500"/>
 </p>
 
 We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem). In this problem, the goal of the agent is to efficiently pack a set of boxes of different sizes into a single container with
@@ -12,24 +12,16 @@ The observation given to the agent provides information on the available empty s
 still need to be packed, and information on what actions are legal at this point. The full observation
 spec is as follows:
 
-```
-Observation:
-    ems: EMS(Empty Maximal Space)
-    ems_mask: chex.Array
-    items: Item
-    items_mask: chex.Array
-    items_placed: chex.Array
-    action_mask: chex.Array
-```
-where
 
-- `ems` is the **empty maximal space (EMS)**, which specifies the space that can contain an `Item`.
-It is defined by a pair of points in 3D space `(x1, x2, y1, y2, z1, z2)` and has the shape `(obs_num_ems,)`.
-- `ems_mask` is `True` if `ems` exists. It has shape `(obs_num_ems,)`.
-- `items` is defined by `(x_len, y_len, z_len)` and has shape `(max_num_items,)`.
-- `items_mask` is `True` if `items` exist. It has shape `(max_num_items,)`.
-- `items_placed` is  `True` if items are placed in the container. It has shape `(max_num_items,)`.
-- `action_mask` is the joint action mask specifying which actions are valid. It has shape `(obs_num_ems, max_num_items)`.
+**Observation Spec**:
+
+- **ems**: EMS(Empty Maximal Space) specifying space that can contain an Item defined by 3d points (x1, x2, y1, y2, z1, z2) | shape (obs_num_ems,)
+- **ems_mask**: chex.Array True if ems exist | shape (obs_num_ems,)
+- **items**: Item # defined by (x_len, y_len, z_len) | shape (max_num_items,)
+- **items_mask**: chex.Array True if items exist | shape (max_num_items,)
+- **items_placed**: chex.Array True if items are placed in the container | shape (max_num_items,)
+- **action_mask**: chex.Array Joint action mask specifying which actions are valid | shape (obs_num_ems, max_num_items)
+
 
 ## Actions
 At each step in the environment, the agent must provide an action specifying 2 integers:
@@ -50,11 +42,23 @@ space that already contains an item. To avoid taking illegal actions, you should
 `action_mask` contained in the observation.
 
 ```python
-#TODO - action example
-```
+key = jax.random.PRNGKey(0)
+reset_key, action_key = jax.random.split(key)
 
-```
-action: jax array of shape (2,) # (ems_id, item_id)
+# Reset environment
+state, timestep = env.reset(reset_key)
+
+# Randomly choose ems_id and item_id using the action mask
+num_ems, num_items = env.action_spec().num_values
+ems_item_id = jax.random.choice(
+    key=rng_key,
+    a=num_ems * num_items,
+    p=timestep.observation.action_mask.flatten(),
+)
+ems_id, item_id = jnp.divmod(ems_item_id, num_items)
+
+# Wrap the action as a jax array of shape (2,)
+action = jnp.array([ems_id, item_id])
 ```
 
 ## Reward
