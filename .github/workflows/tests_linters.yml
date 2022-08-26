@@ -4,20 +4,19 @@ on: [ push ]
 
 jobs:
   tests-and-linters:
-    name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
-    runs-on: "${{ matrix.os }}"
+    name: "Python ${{ matrix.python-version }}"
+    runs-on: [self-hosted]
 
     strategy:
       matrix:
         python-version: ["3.8", "3.9"]
-        os: [ubuntu-latest]
 
     steps:
       - name: Install dependencies for viewer test
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Checkout jumanji 🐍
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
             python-version: "${{ matrix.python-version }}"
       - name: Install python dependencies 🔧
