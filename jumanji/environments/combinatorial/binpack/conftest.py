@@ -71,6 +71,8 @@ class DummyInstanceGenerator(InstanceGenerator):
             ),
             action_mask=None,
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
         )
 
 

@@ -113,6 +113,7 @@ class State:
     items_location: Location  # Leaves (x, y, z) | shape (max_num_items,)
     action_mask: Optional[chex.Array]  # Array | shape (obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # Array | shape (max_num_ems,)
+    key: chex.Array  # Source of randomness for instances with a random reset.
 
     def __repr__(self) -> str:
         class_name = f"{self.__class__.__name__}("

@@ -448,8 +448,11 @@ class AutoResetWrapper(Wrapper):
                 "This wrapper assumes that the state has attribute key which is used"
                 " as the source of randomness for automatic reset"
             )
-        # State is a type variable hence it does not have key type hinted, so we type ignore
-        state, reset_timestep = self._env.reset(state.key)  # type: ignore
+
+        # Make sure that the random key in the environment changes at each call to reset.
+        # State is a type variable hence it does not have key type hinted, so we type ignore.
+        key, _ = jax.random.split(state.key)  # type: ignore
+        state, reset_timestep = self._env.reset(key)
 
         # Replace observation with reset observation.
         timestep = timestep.replace(  # type: ignore

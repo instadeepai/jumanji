@@ -379,6 +379,8 @@ class ToyInstanceGenerator(InstanceGenerator):
             items_location=all_item_locations,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
         )
 
         return solution
@@ -485,6 +487,8 @@ class CSVInstanceGenerator(InstanceGenerator):
             items_location=items_location,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
         )
 
         return reset_state
@@ -668,7 +672,7 @@ class RandomInstanceGenerator(InstanceGenerator):
 
     def _generate_solved_instance(self, key: PRNGKey) -> State:
         """Generate the random instance with all items correctly packed."""
-
+        state_key, split_key = jax.random.split(key)
         container = make_container(self.container_dims)
 
         list_of_ems = [container] + (self.max_num_ems - 1) * [empty_ems()]
@@ -676,7 +680,7 @@ class RandomInstanceGenerator(InstanceGenerator):
         ems_mask = jnp.zeros(self.max_num_ems, bool)
 
         items_spaces, items_mask = self._split_container_into_items_spaces(
-            container, key
+            container, split_key
         )
         items = item_from_space(items_spaces)
         sorted_ems_indexes = jnp.arange(0, self.max_num_ems, dtype=int)
@@ -692,6 +696,7 @@ class RandomInstanceGenerator(InstanceGenerator):
             items_location=all_item_locations,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            key=state_key,
         )
         return solution
 
