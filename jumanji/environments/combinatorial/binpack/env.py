@@ -584,24 +584,63 @@ class BinPack(Environment[State]):
 
         # Remove intersection EMS that are included in other intersection EMS. The process is cyclic
         # but we can do it only once since is_included is a transitive operation.
+        # This does not remove EMS that are equal <=> both included in each other.
         num_ems = len(state.ems_mask)
-        for key in intersections_mask_dict.keys():
-            current_intersections_ems = intersections_ems_dict[key]
-            current_intersections_mask = intersections_mask_dict[key]
-            for other_key in intersections_mask_dict.keys():
-                other_intersections_ems = intersections_ems_dict[other_key]
-                other_intersections_mask = intersections_mask_dict[other_key]
-                inclusions = jax.vmap(
+        # Outer loop iterates through directions.
+        for (direction, direction_intersections_ems), (
+            _,
+            direction_intersections_mask,
+        ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items()):
+
+            # Inner loop iterates through alternative directions.
+            for (alt_direction, alt_direction_intersections_ems), (
+                _,
+                alt_direction_intersections_mask,
+            ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items()):
+
+                # The current direction EMS is included in the alternative EMS.
+                directions_included_in_alt_directions = jax.vmap(
                     jax.vmap(Space.is_included, in_axes=(None, 0)), in_axes=(0, None)
-                )(current_intersections_ems, other_intersections_ems)
-                inclusions_not_in_itself = inclusions.at[
-                    jnp.arange(num_ems), jnp.arange(num_ems)
-                ].set(False)
-                current_included_in_others = inclusions_not_in_itself & jnp.outer(
-                    current_intersections_mask, other_intersections_mask
+                )(direction_intersections_ems, alt_direction_intersections_ems)
+                if direction == alt_direction:
+                    directions_included_in_alt_directions = (
+                        directions_included_in_alt_directions.at[
+                            jnp.arange(num_ems), jnp.arange(num_ems)
+                        ].set(False)
+                    )
+                directions_included_in_alt_directions = (
+                    directions_included_in_alt_directions
+                    & jnp.outer(
+                        direction_intersections_mask, alt_direction_intersections_mask
+                    )
                 )
-                current_included_in_any = current_included_in_others.any(axis=-1)
-                intersections_mask_dict[key] &= ~current_included_in_any
+
+                # The alternative EMS are included in the current direction EMS.
+                alt_directions_included_in_directions = jax.vmap(
+                    jax.vmap(Space.is_included, in_axes=(None, 0)), in_axes=(0, None)
+                )(alt_direction_intersections_ems, direction_intersections_ems)
+                if direction == alt_direction:
+                    alt_directions_included_in_directions = (
+                        alt_directions_included_in_directions.at[
+                            jnp.arange(num_ems), jnp.arange(num_ems)
+                        ].set(False)
+                    )
+                alt_directions_included_in_directions = (
+                    alt_directions_included_in_directions
+                    & jnp.outer(
+                        alt_direction_intersections_mask, direction_intersections_mask
+                    )
+                )
+
+                # Remove EMS that are strictly included in another EMS. This does not remove
+                # EMS that are identical and included into each other.
+                to_remove = jnp.any(
+                    directions_included_in_alt_directions
+                    & ~alt_directions_included_in_directions.T,
+                    axis=-1,
+                )
+
+                intersections_mask_dict[direction] &= ~to_remove
         return intersections_ems_dict, intersections_mask_dict
 
     def _add_ems(
@@ -627,7 +666,18 @@ class BinPack(Environment[State]):
                 ems_mask = ems_mask.at[i_ems].set(True)
                 return ems, ems_mask
 
-            carry = jax.lax.cond(intersection_mask, add_the_ems, lambda _: _, carry)
+            def inclusion_check(carry: Tuple[EMS, chex.Array]) -> jnp.bool_:
+                """Only add EMS that are not included in others."""
+                ems, ems_mask = carry
+                is_included = intersection_ems.is_included(ems) & ems_mask
+                return ~(is_included.any())
+
+            carry = jax.lax.cond(
+                intersection_mask & inclusion_check(carry),
+                add_the_ems,
+                lambda _: _,
+                carry,
+            )
             return carry, None
 
         init_carry = ems, ems_mask
