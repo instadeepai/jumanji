@@ -169,7 +169,7 @@ For more in-depth examples of running with Jumanji environments, check out our C
 
 | Example           | Topic          | Colab |
 |-------------------|----------------|:-----:|
-| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) |   <a href="https://colab.research.google.com/github/instadeep/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
+| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
 
 
 ## Environments 🌍
