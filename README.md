@@ -27,13 +27,13 @@
 </div>
 
 ---
-[**Installation**](#installation)
-| [**Quickstart**](#what-does-jumanji-look-like)
-| [**Examples**](#examples)
-| [**Environments**](#environments)
-| [**Citation**](#citation)
+[**Installation**](#installation-)
+| [**Quickstart**](#quickstart-)
+| [**Examples**](#examples-%EF%B8%8F)
+| [**Environments**](#environments-)
+| [**Citation**](##citing-jumanji-%EF%B8%8F)
 | [**See Also**](#see-also)
-| [**Reference Docs**](instadeepai.github.io/jumanji/)
+| [**Reference Docs**](https://instadeepai.github.io/jumanji)
 
 
 <p float="left" align="center">
@@ -52,7 +52,7 @@ Jumanji is helping pioneer a new wave of hardware-accelerated research and devel
 field of RL. Jumanji's high-speed environments enable faster iteration and larger-scale experimentation
 while simultaneously reducing complexity. Originating in the Research Team at [InstaDeep](https://www.instadeep.com/),
 Jumanji is now developed jointly with the open-source community.
-To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing) (or just star 🌟 to stay up to date with the latest developments)!
+To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-) (or just star 🌟 to stay up to date with the latest developments)!
 
 ### Goals 🚀
 
@@ -185,12 +185,12 @@ from single-agent to multi-agent and turn-by-turn games.
 
 | Environment                                                                 | Category      | Type         | Source                                                                                                           | Description                                                         |
 |-----------------------------------------------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| 🐍 Snake                  | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
-| 4️⃣  Connect4          | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
-| 📬 Travelling Salesman Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
-| 🎒 Knapsack        | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
-| 🪢 Routing        | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
-| 📦 3D BinPacking Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/develop/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
+| 🐍 Snake                  | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
+| 4️⃣  Connect4          | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
+| 📬 Travelling Salesman Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
+| 🎒 Knapsack        | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
+| 🪢 Routing        | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
+| 📦 3D BinPacking Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
 
 
 ### Registry and Versioning 📖
