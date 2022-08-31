@@ -31,7 +31,7 @@
 | [**Quickstart**](#quickstart-)
 | [**Examples**](#examples-%EF%B8%8F)
 | [**Environments**](#environments-)
-| [**Citation**](##citing-jumanji-%EF%B8%8F)
+| [**Citation**](#citing-jumanji-%EF%B8%8F)
 | [**See Also**](#see-also)
 | [**Reference Docs**](https://instadeepai.github.io/jumanji)
 
