@@ -488,7 +488,7 @@ def jumanji_specs_to_gym_spaces(
         gym.spaces object corresponding to the equivalent jumanji specs implementation.
     """
     if isinstance(spec, DiscreteArray):
-        return gym.spaces.Discrete(n=spec.num_values, seed=None, start=0)
+        return gym.spaces.Discrete(n=spec.num_values, seed=None)
     elif isinstance(spec, MultiDiscreteArray):
         return gym.spaces.MultiDiscrete(nvec=spec.num_values, seed=None)
     elif isinstance(spec, BoundedArray):
