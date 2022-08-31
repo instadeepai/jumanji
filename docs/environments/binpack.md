@@ -1,7 +1,7 @@
 # BinPack Environment
 
 <p align="center">
-        <img src="../img/binpack_example.gif" width="500"/>
+        <img src="../img/binpack.gif" width="500"/>
 </p>
 
 We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem). In this problem, the goal of the agent is to efficiently pack a set of boxes of different sizes into a single container with

@@ -1,8 +1,10 @@
 <p align="center">
-    <a href="" rel="nofollow">
-        <img src="docs/img/jumanji_logo.png" />
+    <a href="docs/img/jumanji_logo.png">
+        <img src="docs/img/jumanji_logo.png" alt="Jumanji logo" width="50%"/>
     </a>
 </p>
+
+
 <div align="center">
 <a rel="nofollow">
     <img src="docs/img/python-badge.svg" alt="Python" />
@@ -33,9 +35,13 @@
 | [**See Also**](#see-also)
 | [**Reference Docs**](instadeepai.github.io/jumanji-internal/)
 
-<p align="center">
-<img src="docs/img/snake.gif" width="300"><img src="docs/img/binpack_example.gif" width="300"><img src="docs/img/routing.gif" width="300">
+
+<p float="left" align="center">
+  <img src="docs/img/snake.gif" alt="Snake" width="30%" />
+  <img src="docs/img/binpack.gif" alt="BinPack" width="30%" />
+  <img src="docs/img/routing.gif" alt="Routing" width="30%" />
 </p>
+
 
 ## Welcome to the Jungle! 🌴
 

@@ -46,7 +46,7 @@ nav:
 # Configuration
 theme:
   name: material
-  logo: img/instadeep-logo.png     # replace with jumanji
+  logo: img/monkey_head.png
   icon:
     repo: fontawesome/brands/github
   language: en
@@ -63,7 +63,7 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to light mode
-  favicon: img/instadeep-logo.png  # temporary
+  favicon: img/monkey_head.png
   features:
     - navigation.tracking       # the URL is automatically updated with the active anchor
     - navigation.sections       # top-level sections are rendered as groups in the sidebar
