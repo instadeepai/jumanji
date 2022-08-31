@@ -46,7 +46,7 @@ nav:
 # Configuration
 theme:
   name: material
-  logo: img/monkey_head.png
+  logo: img/instadeep_logo.png
   icon:
     repo: fontawesome/brands/github
   language: en
@@ -63,7 +63,7 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to light mode
-  favicon: img/monkey_head.png
+  favicon: img/instadeep_logo.png
   features:
     - navigation.tracking       # the URL is automatically updated with the active anchor
     - navigation.sections       # top-level sections are rendered as groups in the sidebar

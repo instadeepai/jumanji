@@ -2,7 +2,7 @@
 name: Bug report
 description: >-
   Report a bug or unexpected behavior to help us improve Jumanji
-title: ""
+title: "bug:"
 labels:
 - bug
 
@@ -11,11 +11,20 @@ body:
   attributes:
     value: >
       ## Thank you for helping us improve Jumanji!
-      * Please first verify that your issue is not already reported using the [Issue search][issue search].
-      * If you are asking a question or seeking support, please consider [starting a discussion][Discussions].
+
+      * Please first verify that your issue is not already reported using the
+      [Issue search][issue search].
+
+      * If you are asking a question or seeking support, please
+      consider [starting a discussion][Discussions].
+
       * If you prefer a non-templated issue report, click [here][Raw report].
+
+
       [Discussions]: https://github.com/instadeepai/jumanji/discussions
+
       [issue search]: https://github.com/instadeepai/jumanji/search?q=is%3Aissue&type=issues
+
       [Raw report]: https://github.com/instadeepai/jumanji/issues/new
 - type: textarea
   attributes:
