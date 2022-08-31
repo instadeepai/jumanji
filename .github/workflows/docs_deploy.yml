@@ -1,0 +1,25 @@
+name: Deploy Docs 📚
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.8.10
+    steps:
+      - name: Install dependencies for deploy
+        run: apt-get update && apt-get install -y rsync
+      - name: Checkout jumanji 🐍
+        uses: actions/checkout@v3
+      - name: Install python dependencies 🔧
+        run: pip install .[dev]
+      - name: Build docs 📖
+        run: mkdocs build --verbose --site-dir docs_public
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs_public

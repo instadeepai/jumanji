@@ -1,0 +1,138 @@
+site_name: Jumanji
+site_description: Documentation
+site_author: InstaDeep Research
+site_url: https://instadeep.github.io/jumanji/
+site_dir: public
+strict: false # TODO: Don't allow warning during the build process.
+
+# Copyright
+copyright: InstaDeep © 2022 Copyright, all rights reserved.
+
+# Git repo
+repo_name: instadeepai/jumanji
+repo_url: https://github.com/instadeepai/jumanji
+edit_uri: edit/develop/docs/
+
+# Navigation Map
+nav:
+  - Home: index.md
+  - Environments:
+      - Combinatorial:
+          - TSP: environments/tsp.md
+          - Routing: environments/routing.md
+          - BinPack: environments/binpack.md
+          - Knapsack: environments/knapsack.md
+      - Game:
+          - Snake: environments/snake.md
+          - Connect4: environments/connect4.md
+  - User Guides:
+      - Registration: guides/registration.md
+      - Examples: guides/anakin_snake.ipynb
+      - Wrapper: guides/wrappers.md
+  - API Reference:
+      - Environments:
+          - Base: api/env.md
+          - Combinatorial:
+              - TSP: api/environments/tsp.md
+              - Routing: api/environments/routing.md
+              - BinPack: api/environments/binpack.md
+              - Knapsack: api/environments/knapsack.md
+          - Game:
+              - Snake: api/environments/snake.md
+              - Connect4: api/environments/connect4.md
+          - Wrappers: api/wrappers.md
+          - Types: api/types.md
+
+# Configuration
+theme:
+  name: material
+  logo: img/monkey_head.png
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+  palette:
+    - scheme: default
+      primary: white
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  favicon: img/monkey_head.png
+  features:
+    - navigation.tracking       # the URL is automatically updated with the active anchor
+    - navigation.sections       # top-level sections are rendered as groups in the sidebar
+    - navigation.tabs           # horizontal tabs at the top of the page
+    - navigation.tabs.sticky    # navigation tabs will lock below the header and always remain visible when scrolling
+    - navigation.indexes        # documents can be directly attached to sections
+    - search.highlight          # highlight search result
+    - search.share              # share button
+    - search.suggest            # smart suggestion
+    - toc.integrate
+    - toc.follow
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.top
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+      emoji_index: !!python/name:pymdownx.emoji.gemoji
+  - pymdownx.snippets:
+      base_path: ./
+  - pymdownx.pathconverter:
+      base_path: ./
+      relative_path: docs
+  - toc:
+      permalink: "#"
+      toc_depth: 3
+  - pymdownx.highlight:
+      linenums: true
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+
+plugins:
+  - search
+  - autorefs
+  - git-revision-date
+  - include-markdown
+  - mknotebooks:       # enable Jupyter notebooks
+      enable_default_jupyter_cell_styling: false
+  - mermaid2          # Class diagrams, flowcharts and more
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            merge_init_into_class: yes
+            show_submodules: no
+          selection:
+            inherited_members: false
+          rendering:
+            show_source: false
+            members_order: source
+            show_if_no_docstring: true
+            show_signature: true
+            show_signature_annotations: true
+            show_root_full_path: false
+            show_root_heading: true
+            merge_init_into_class: true
+            docstring_section_style: spacy
+
+# Customization
+extra_css:
+  - _static/custom.css
