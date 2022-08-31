@@ -596,7 +596,6 @@ class TestJumanjiSpecsToGymSpaces:
         assert converted_spec.shape == gym_space.shape
         assert converted_spec.dtype == gym_space.dtype
         assert converted_spec.n == gym_space.n
-        assert converted_spec.start == gym_space.start
 
     def test_multi_discrete_array(self) -> None:
         jumanji_spec = specs.MultiDiscreteArray(
