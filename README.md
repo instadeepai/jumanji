@@ -174,7 +174,7 @@ rollout = jax.vmap(run_n_step, in_axes=(0, 0, None))(state, keys, rollout_length
 For more in-depth examples of running with Jumanji environments, check out our Colab notebooks:
 | Example           | Topic          | Colab |
 |-------------------|----------------|:-----:|
-| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/blob/main/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
+| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/jumanji/blob/main/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
 
 
 ## Environments 🌍
