@@ -351,7 +351,7 @@ class VmapWrapper(Wrapper):
 
 
 class BraxToJumanjiWrapper(Environment):
-    """A wrapper that converts a Brax environment to an Environment for standardisation and to
+    """A wrapper that converts a Brax environment to an `Environment` for standardisation and to
     augment the API (add timesteps, metrics...).
     """
 
