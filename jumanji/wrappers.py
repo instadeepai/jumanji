@@ -351,8 +351,8 @@ class VmapWrapper(Wrapper):
 
 
 class BraxToJumanjiWrapper(Environment):
-    """A wrapper that converts a Brax environment to an Environment for standardisation,
-    use with the `EnvironmentLoop` and to augment the API (add timesteps, metrics...).
+    """A wrapper that converts a Brax environment to an Environment for standardisation and to
+    augment the API (add timesteps, metrics...).
     """
 
     def __init__(self, brax_env: BraxEnv):
