@@ -183,14 +183,14 @@ For more in-depth examples of running with Jumanji environments, check out our C
 Jumanji implements different types of environments ranging from simple games to NP-hard problems,
 from single-agent to multi-agent and turn-by-turn games.
 
-| Environment                                                                 | Category      | Type         | Source                                                                                                           | Description                                                         |
-|-----------------------------------------------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| 🐍 Snake                  | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
-| 4️⃣  Connect4          | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
-| 📬 Travelling Salesman Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
-| 🎒 Knapsack        | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
-| 🪢 Routing        | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
-| 📦 3D BinPacking Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
+| Environment                         | Category      | Type         | Source                                                                                                           | Description                                                         |
+|-------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| 🐍 Snake                            | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
+| 4️⃣  Connect4                       |  Game         | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
+| 📬 TSP (Travelling Salesman Problem)| Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
+| 🎒 Knapsack                         | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
+| 🪢 Routing                          | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
+| 📦 BinPack (3D BinPacking Problem)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
 
 
 ### Registry and Versioning 📖
@@ -199,8 +199,16 @@ Similarly to OpenAI Gym, Jumanji keeps a strict versioning of its environments f
 We maintain a registry of standard environments with their configuration.
 For each environment, a version suffix is appended, e.g. `Snake-6x6-v0`.
 When changes are made to environments that might impact learning results,
-the version number is incremented by one to prevent potential confusion. For a full list of registered versions
-of each environment, check out the environments' documentation.
+the version number is incremented by one to prevent potential confusion. Jumanji currently provides the following registered versions for each environment:
+
+- 🐍 Snake: `Snake-6x6-v0`, `Snake-12x12-v0`.
+- 4️⃣ Connect4: `Connect4-v0`.
+- 📬 TSP: `TSP50-v0`, `TSP100-v0`, `TSP150-v0`, `TSP200-v0`.
+- 🎒 Knapsack: `Knapsack50-v0`, `Knapsack100-v0`, `Knapsack200-v0`, `Knapsack250-v0`.
+- 🪢 Routing: `Routing-n3-8x8-v0`, `Routing-n4-12x12-v0`, `Routing-n5-16x16-v0`.
+- 📦 BinPack: `BinPack-toy-v0`, `BinPack-rand20-v0`, `BinPack-rand40-v0`, `BinPack-rand100-v0`.
+
+For more details about each registered environment, [see the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
 ## Contributing 🤝
 Contributions are welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue).
