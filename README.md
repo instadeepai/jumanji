@@ -235,4 +235,3 @@ In particular, we suggest users check out the following sister repositories:
 
 The development of this library was supported with Cloud TPUs
 from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC) 🌤.
-
