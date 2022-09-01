@@ -199,7 +199,7 @@ Similarly to OpenAI Gym, Jumanji keeps a strict versioning of its environments f
 We maintain a registry of standard environments with their configuration.
 For each environment, a version suffix is appended, e.g. `Snake-6x6-v0`.
 When changes are made to environments that might impact learning results,
-the version number is incremented by one to prevent potential confusion. 
+the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
 ## Contributing 🤝
