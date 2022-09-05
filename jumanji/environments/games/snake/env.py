@@ -47,7 +47,7 @@ class Snake(Environment[State]):
 
     - episode termination (if any):
         - the snake bumps into its body.
-        - the snale goes outside the board.
+        - the snake goes outside the board.
         - the horizon is reached.
         - the grid is fully filled by the snake, which means it has eaten all the fruits.
 
