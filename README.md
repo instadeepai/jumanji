@@ -5,7 +5,7 @@
 </p>
 
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Contributions welcome](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://badge.fury.io/py/jumanji)
+[![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://badge.fury.io/py/jumanji)
 [![GitHub Issues](https://img.shields.io/github/issues/instadeepai/jumanji.svg)](https://github.com/instadeepai/jumanji/issues)
 [![PyPI version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
 [![PyPi downloads](https://img.shields.io/pypi/dm/jumanji?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/jumanji/)
