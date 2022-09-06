@@ -4,11 +4,11 @@
     </a>
 </p>
 
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://badge.fury.io/py/jumanji)
 [![GitHub Issues](https://img.shields.io/github/issues/instadeepai/jumanji.svg)](https://github.com/instadeepai/jumanji/issues)
-[![PyPI version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
-[![PyPi downloads](https://img.shields.io/pypi/dm/jumanji?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/jumanji/)
+[![PyPI Version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
+[![PyPi Downloads](https://img.shields.io/pypi/dm/jumanji?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/jumanji/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
