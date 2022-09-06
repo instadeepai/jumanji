@@ -4,27 +4,17 @@
     </a>
 </p>
 
-
-<div align="center">
-<a rel="nofollow">
-    <img src="docs/img/python-badge.svg" alt="Python" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/pypi-badge.svg" alt="Pypi" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/license-badge.svg" alt="License" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/cov-badge.svg" alt="Coverage" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/mypy-badge.svg" alt="Styling" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/cov-style.svg" alt="Styling" />
-</a>
-</div>
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributions welcome](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://badge.fury.io/py/jumanji)
+[![GitHub Issues](https://img.shields.io/github/issues/instadeepai/jumanji.svg)](https://github.com/instadeepai/jumanji/issues)
+[![PyPI version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
+[![PyPi downloads](https://img.shields.io/pypi/dm/jumanji?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/jumanji/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![Imports](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat)](https://pycqa.github.io/isort/)
+[![Tests](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml/badge.svg)](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml)
+[![Documentation](https://github.com/instadeepai/jumanji/actions/workflows/docs_deploy.yml/badge.svg)](https://instadeepai.github.io/jumanji/)
 
 ---
 [**Installation**](#installation-)
