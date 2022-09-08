@@ -4,17 +4,13 @@
     </a>
 </p>
 
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://badge.fury.io/py/jumanji)
-[![GitHub Issues](https://img.shields.io/github/issues/instadeepai/jumanji.svg)](https://github.com/instadeepai/jumanji/issues)
+[![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://www.python.org/doc/versions/)
 [![PyPI Version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
-[![PyPi Downloads](https://img.shields.io/pypi/dm/jumanji?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/jumanji/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Tests](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml/badge.svg)](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml)
+[![PyPi Downloads](https://img.shields.io/pypi/dm/jumanji?color=blue&style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/jumanji/)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
-[![Imports](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat)](https://pycqa.github.io/isort/)
-[![Tests](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml/badge.svg)](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml)
-[![Documentation](https://github.com/instadeepai/jumanji/actions/workflows/docs_deploy.yml/badge.svg)](https://instadeepai.github.io/jumanji/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-teal.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ---
 [**Installation**](#installation-)
