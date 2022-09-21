@@ -27,11 +27,11 @@
 </div>
 
 ---
-[**Installation**](#installation-)
-| [**Quickstart**](#quickstart-)
-| [**Examples**](#examples-%EF%B8%8F)
-| [**Environments**](#environments-)
-| [**Citation**](#citing-jumanji-%EF%B8%8F)
+[**Installation**](#installation)
+| [**Quickstart**](#quickstart)
+| [**Examples**](#examples)
+| [**Environments**](#environments)
+| [**Citation**](#citing-jumanji)
 | [**See Also**](#see-also)
 | [**Reference Docs**](https://instadeepai.github.io/jumanji)
 
@@ -52,7 +52,7 @@ Jumanji is helping pioneer a new wave of hardware-accelerated research and devel
 field of RL. Jumanji's high-speed environments enable faster iteration and larger-scale experimentation
 while simultaneously reducing complexity. Originating in the Research Team at [InstaDeep](https://www.instadeep.com/),
 Jumanji is now developed jointly with the open-source community.
-To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-) (or just star 🌟 to stay up to date with the latest developments)!
+To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing) (or just star 🌟 to stay up to date with the latest developments)!
 
 ### Goals 🚀
 
@@ -204,7 +204,7 @@ For a full list of registered versions of each environment, check out [the docum
 
 ## Contributing 🤝
 Contributions are welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue).
-Please read our [contributing guidelines](./CONTRIBUTING.md) for details on
+Please read our [contributing guidelines](https://github.com/instadeepai/jumanji/tree/main/CONTRIBUTING.md) for details on
 how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
 ## Citing Jumanji ✏️
