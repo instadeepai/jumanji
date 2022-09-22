@@ -215,6 +215,22 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
     def unwrapped(self) -> Environment:
         return self._env
 
+    @property
+    def state(self) -> Any:
+        return self._state
+
+    @state.setter
+    def state(self, new_state: Any) -> None:
+        self._state = new_state
+
+    @property
+    def key(self) -> PRNGKey:
+        return self._key
+
+    @key.setter
+    def key(self, new_key: PRNGKey) -> None:
+        self._key = new_key
+
 
 class MultiToSingleWrapper(Wrapper):
     """A wrapper that converts a multi-agent Environment to a single-agent Environment."""
