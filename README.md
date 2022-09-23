@@ -27,12 +27,13 @@
 </div>
 
 ---
-[**Installation**](#installation-)
-| [**Quickstart**](#quickstart-)
-| [**Examples**](#examples-%EF%B8%8F)
-| [**Environments**](#environments-)
-| [**Citation**](#citing-jumanji-%EF%B8%8F)
+[**Installation 🎬**](#installation-🎬)
+| [**Quickstart ⚡**](#quickstart-⚡)
+| [**Examples 🕹️**](#examples-🕹️)
+| [**Environments 🌍**](#environments-🌍)
+| [**Citing Jumanji ✏️**](#citing-jumanji-✏️)
 | [**See Also**](#see-also)
+| [**Acknowledgements 🙏**](#acknowledgements-🙏)
 | [**Reference Docs**](https://instadeepai.github.io/jumanji)
 
 
@@ -52,7 +53,7 @@ Jumanji is helping pioneer a new wave of hardware-accelerated research and devel
 field of RL. Jumanji's high-speed environments enable faster iteration and larger-scale experimentation
 while simultaneously reducing complexity. Originating in the Research Team at [InstaDeep](https://www.instadeep.com/),
 Jumanji is now developed jointly with the open-source community.
-To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-) (or just star 🌟 to stay up to date with the latest developments)!
+To join us in these efforts, reach out, raise issues and read our [contribution guidelines](./CONTRIBUTING.md) (or just star 🌟 to stay up to date with the latest developments)!
 
 ### Goals 🚀
 
