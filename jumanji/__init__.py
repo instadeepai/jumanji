@@ -158,3 +158,23 @@ register(
     id="Connect4-v0",
     entry_point="jumanji.environments:Connect4",
 )
+
+
+# CVRP
+register(
+    id="CVRP100-v0",
+    entry_point="jumanji.environments:CVRP",
+    kwargs={"problem_size": 100},
+)
+
+register(
+    id="CVRP125-v0",
+    entry_point="jumanji.environments:CVRP",
+    kwargs={"problem_size": 125},
+)
+
+register(
+    id="CVRP150-v0",
+    entry_point="jumanji.environments:CVRP",
+    kwargs={"problem_size": 150},
+)
