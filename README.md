@@ -183,14 +183,15 @@ For more in-depth examples of running with Jumanji environments, check out our C
 Jumanji implements different types of environments ranging from simple games to NP-hard problems,
 from single-agent to multi-agent and turn-by-turn games.
 
-| Environment                         | Category      | Type         | Source                                                                                                           | Description                                                         |
-|-------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| 🐍 Snake                            | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
-| 4️⃣  Connect4                       |  Game         | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
-| 📬 TSP (Travelling Salesman Problem)| Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
-| 🎒 Knapsack                         | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
-| 🪢 Routing                          | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
-| 📦 BinPack (3D BinPacking Problem)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
+| Environment                                    | Category      | Type         | Source                                                                                               | Description                                                         |
+|------------------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| 🐍 Snake                                       | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
+| 4️⃣ Connect4                                   | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
+| 📬 TSP (Travelling Salesman Problem)           | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
+| 🎒 Knapsack                                    | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
+| 🪢 Routing                                     | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
+| 📦 BinPack (3D BinPacking Problem)             | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
+| 🚚 Capacitated Vehicle Routing Problem (CVRP)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)     |
 
 
 ### Registry and Versioning 📖
