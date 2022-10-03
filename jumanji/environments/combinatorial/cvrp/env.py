@@ -26,7 +26,6 @@ from jumanji.environments.combinatorial.cvrp.specs import ObservationSpec
 from jumanji.environments.combinatorial.cvrp.types import Observation, State
 from jumanji.environments.combinatorial.cvrp.utils import (
     DEPOT_IDX,
-    MIN_NORM_FACTOR,
     generate_problem
 )
 
@@ -65,21 +64,20 @@ class CVRP(Environment[State]):
         - num_visits: int32
             number of actions that have been taken (i.e., unique visits)
 
-    [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with Multiple Optima for
-        Reinforcement Learning".
+    [1] Toth P., Vigo D. (2014). "Vehicle routing: problems, methods, and applications".
     """
 
-    def __init__(self, problem_size: int = 20, norm_factor: int = 30):
-        assert norm_factor >= MIN_NORM_FACTOR, (
-            f"The cost associated to each node must be lower than 1.0, hence the normalization factor must be "
-            f">= {MIN_NORM_FACTOR}."
+    def __init__(self, problem_size: int = 100, max_capacity: int = 30, max_demand: int = 10):
+        assert max_capacity >= max_demand, (
+            f"The demand associated with each node must be lower than the maximum capacity, hence the "
+            f"maximum capacity must be >= {max_demand}."
         )
         self.problem_size = problem_size
-        self.norm_factor = norm_factor
-        self.max_capacity = norm_factor
+        self.max_capacity = max_capacity
+        self.max_demand = max_demand
 
     def __repr__(self):
-        return f"CVRP environment with {self.problem_size} nodes and normalization factor {self.norm_factor}."
+        return f"CVRP(problem_size={self.problem_size}, max_capacity={self.max_capacity}, max_demand={self.max_demand})"
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """
@@ -91,10 +89,9 @@ class CVRP(Environment[State]):
         Returns:
              state: State object corresponding to the new state of the environment.
              timestep: TimeStep object corresponding to the first timestep returned by the environment.
-             extra: Not used.
         """
         problem_key, start_key = random.split(key)
-        problem = generate_problem(problem_key, self.problem_size)
+        problem = generate_problem(problem_key, self.problem_size, self.max_demand)
         state = State(
             problem=problem,
             position=jnp.int32(DEPOT_IDX),
@@ -115,10 +112,10 @@ class CVRP(Environment[State]):
             action: Array containing the index of the next node to visit.
 
         Returns:
-            state, timestep, extra: Tuple[State, TimeStep, Extra] containing the next state of the environment, as well
+            state, timestep: Tuple[State, TimeStep] containing the next state of the environment, as well
             as the timestep to be observed.
         """
-        is_valid = (state.visited_mask[action] == 0) & (state.capacity > state.problem[action, -1])
+        is_valid = (state.visited_mask[action] == 0) & (state.capacity >= state.problem[action, -1])
 
         state = jax.lax.cond(
             pred=is_valid,
@@ -216,7 +213,7 @@ class CVRP(Environment[State]):
         action_mask = action_mask.at[DEPOT_IDX].set(jnp.int32(state.position == DEPOT_IDX))
 
         return Observation(
-            problem=state.problem.at[:, -1].set(jnp.float32(state.problem[:, -1] / self.norm_factor)),
+            problem=state.problem.at[:, -1].set(jnp.float32(state.problem[:, -1] / self.max_capacity)),
             position=state.position,
             capacity=state.capacity,
             action_mask=action_mask,

@@ -32,8 +32,10 @@ and the depot node, along with the demand of each city.
 - **action_mask**: jax array (int8) of shape (problem_size + 1,), array of binary values denoting visited/not_visited cities.
 
 ## Action
-Action space is an `Array` where each index (starting from index 1) corresponds to the next city to visit and the 
-0th index corresponds to the depot.
+Action space is an `Array` of size equal to the number of city nodes + 1 depot node. The 0th 
+index corresponds to the depot node and the remaining indices correspond to the city nodes. A value
+of 1 at an index indicates an action to visit the node corresponding to that index, 
+a value of 0 indicates an action not to visit that node. 
 
 ```
 action: [0, 0, 0, 1, 0]  # Problem size of 4 cities, choosing the 3rd city
