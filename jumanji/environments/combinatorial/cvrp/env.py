@@ -181,7 +181,7 @@ class CVRP(Environment[State]):
             pred=state.visited_mask.sum() == self.problem_size + 1,
             true_fun=lambda _: DEPOT_IDX,  # stay in the depot if we have visited all nodes
             false_fun=lambda _: next_node,
-            operand=[],
+            operand=None,
         )
 
         # Set depot to 0 (valid to visit) since it can be visited multiple times
