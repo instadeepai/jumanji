@@ -42,8 +42,8 @@ action: [0, 0, 0, 1, 0]  # Problem size of 4 cities, choosing the 3rd city
 ```
 
 ## Reward
-The reward is 0 at every step except for the last step, where the reward is
-the length of the path chosen by the agent.
+The reward is 0 at every step but the last, where the reward is
+the negative of the length of the path chosen by the agent.
 
 ## Registered Versions 📖
 - `CVRP100-v0`, CVRP problem with 100 nodes with demand (randomly generated).
