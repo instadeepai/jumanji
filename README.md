@@ -191,7 +191,7 @@ from single-agent to multi-agent and turn-by-turn games.
 | 🎒 Knapsack                                    | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
 | 🪢 Routing                                     | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
 | 📦 BinPack (3D BinPacking Problem)             | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
-| 🚚 Capacitated Vehicle Routing Problem (CVRP)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)     |
+| 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)     |
 
 
 ### Registry and Versioning 📖
