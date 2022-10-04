@@ -35,17 +35,19 @@ class TestObservationSpec:
         """Test the validation of an observation given the observation spec."""
         observation = self.observation_spec.validate(self.observation)
         # Check that a different shape breaks the validation
+        modified_shape_observation = observation._replace(
+            coordinates=observation.coordinates[None, ...]
+        )
         with pytest.raises(ValueError):
-            modified_shape_observation = observation._replace(
-                problem=observation.problem[None, ...]
-            )
             self.observation_spec.validate(modified_shape_observation)
+
         # Check that a different dtype breaks the validation
+        modified_dtype_observation = observation._replace(
+            coordinates=observation.coordinates.astype(jnp.float16)
+        )
         with pytest.raises(ValueError):
-            modified_dtype_observation = observation._replace(
-                problem=observation.problem.astype(jnp.float16)
-            )
             self.observation_spec.validate(modified_dtype_observation)
+
         # Check that validating another object breaks the validation
         with pytest.raises(Exception):
             self.observation_spec.validate(None)  # type: ignore
@@ -53,10 +55,11 @@ class TestObservationSpec:
     @pytest.mark.parametrize(
         "arg_name, new_value",
         [
-                ("problem_obs", observation_spec.problem_obs.replace(shape=(3, 4))),
-                ("position_obs", observation_spec.position_obs.replace(name="new_name")),
-                ("capacity_obs", observation_spec.capacity_obs.replace(name="new_name")),
-                ("action_mask_obs", observation_spec.capacity_obs.replace(shape=(3, 4))),
+                ("coordinates_spec", observation_spec.coordinates_spec.replace(shape=(3, 4))),
+                ("demands_spec", observation_spec.demands_spec.replace(shape=(3, 4))),
+                ("position_spec", observation_spec.position_spec.replace(name="new_name")),
+                ("capacity_spec", observation_spec.capacity_spec.replace(name="new_name")),
+                ("action_mask_spec", observation_spec.action_mask_spec.replace(shape=(3, 4))),
         ]
     )
     def test_observation_spec__replace(self, arg_name: str, new_value: Any) -> None:
@@ -65,9 +68,10 @@ class TestObservationSpec:
         assert new_spec != old_spec
         assert getattr(new_spec, arg_name) == new_value
         for attr_name in {
-            "problem_obs",
-            "position_obs",
-            "capacity_obs",
-            "action_mask_obs",
+            "coordinates_spec",
+            "demands_spec",
+            "position_spec",
+            "capacity_spec",
+            "action_mask_spec",
         }.difference([arg_name]):
             chex.assert_equal(getattr(new_spec, attr_name), getattr(old_spec, attr_name))

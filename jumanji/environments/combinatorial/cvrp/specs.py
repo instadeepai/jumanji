@@ -23,34 +23,38 @@ from jumanji.environments.combinatorial.cvrp.types import Observation
 class ObservationSpec(specs.Spec[Observation]):
     def __init__(
         self,
-        problem_obs: specs.BoundedArray,
-        position_obs: specs.DiscreteArray,
-        capacity_obs: specs.BoundedArray,
-        action_mask_obs: specs.BoundedArray,
+        coordinates_spec: specs.BoundedArray,
+        demands_spec: specs.BoundedArray,
+        position_spec: specs.DiscreteArray,
+        capacity_spec: specs.BoundedArray,
+        action_mask_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
-        self.problem_obs = problem_obs
-        self.position_obs = position_obs
-        self.capacity_obs = capacity_obs
-        self.action_mask_obs = action_mask_obs
+        self.coordinates_spec = coordinates_spec
+        self.demands_spec = demands_spec
+        self.position_spec = position_spec
+        self.capacity_spec = capacity_spec
+        self.action_mask_spec = action_mask_spec
 
     def __repr__(self) -> str:
         return (
             "ObservationSpec(\n"
-            f"\tproblem_obs={repr(self.problem_obs)},\n"
-            f"\tposition_obs={repr(self.position_obs)},\n"
-            f"\tcapacity_obs={repr(self.position_obs)},\n"
-            f"\taction_mask_obs={repr(self.action_mask_obs)},\n"
+            f"\tcoordinates_spec={repr(self.coordinates_spec)},\n"
+            f"\tdemands_spec={repr(self.demands_spec)},\n"
+            f"\tposition_spec={repr(self.position_spec)},\n"
+            f"\tcapacity_spec={repr(self.capacity_spec)},\n"
+            f"\taction_mask_spec={repr(self.action_mask_spec)},\n"
             ")"
         )
 
     def generate_value(self) -> Observation:
         """Generate a value which conforms to this spec."""
         return Observation(
-            problem=self.problem_obs.generate_value(),
-            position=self.position_obs.generate_value(),
-            capacity=self.capacity_obs.generate_value(),
-            action_mask=self.action_mask_obs.generate_value(),
+            coordinates=self.coordinates_spec.generate_value(),
+            demands=self.demands_spec.generate_value(),
+            position=self.position_spec.generate_value(),
+            capacity=self.capacity_spec.generate_value(),
+            action_mask=self.action_mask_spec.generate_value(),
         )
 
     def validate(self, value: Observation) -> Observation:
@@ -69,13 +73,15 @@ class ObservationSpec(specs.Spec[Observation]):
             *jax.tree_map(
                 lambda spec, v: spec.validate(v),
                 (
-                    self.problem_obs,
-                    self.position_obs,
-                    self.capacity_obs,
-                    self.action_mask_obs,
+                    self.coordinates_spec,
+                    self.demands_spec,
+                    self.position_spec,
+                    self.capacity_spec,
+                    self.action_mask_spec,
                 ),
                 (
-                    value.problem,
+                    value.coordinates,
+                    value.demands,
                     value.position,
                     value.capacity,
                     value.action_mask,
@@ -94,10 +100,11 @@ class ObservationSpec(specs.Spec[Observation]):
             A new copy of `ObservationSpec`.
         """
         all_kwargs = {
-            "problem_obs": self.problem_obs,
-            "position_obs": self.position_obs,
-            "capacity_obs": self.capacity_obs,
-            "action_mask_obs": self.action_mask_obs,
+            "coordinates_spec": self.coordinates_spec,
+            "demands_spec": self.demands_spec,
+            "position_spec": self.position_spec,
+            "capacity_spec": self.capacity_spec,
+            "action_mask_spec": self.action_mask_spec,
         }
         all_kwargs.update(kwargs)
         return ObservationSpec(**all_kwargs)  # type: ignore

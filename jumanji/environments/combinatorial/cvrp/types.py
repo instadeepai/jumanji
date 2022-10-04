@@ -26,17 +26,19 @@ from chex import Array
 @dataclass
 class State:
     """
-    problem: array with the coordinates of all nodes (+ depot) and their cost
+    coordinates: array with the coordinates of all nodes (+ depot)
+    demands: array with the demands of all nodes (+ depot)
     position: index of the current node
     capacity: current capacity of the vehicle
-    visited_mask: binary mask (0/1 <--> unvisited/visited)
+    visited_mask: binary mask (False/True <--> unvisited/visited)
     order: array of node indices denoting route (-1 --> not filled yet)
     num_total_visits: number of performed visits (it can count depot multiple times)
     """
 
-    problem: Array  # (problem_size + 1, 3)
+    coordinates: Array  # (problem_size + 1, 2)
+    demands: Array  # (problem_size + 1,)
     position: jnp.int32
-    capacity: jnp.float32
+    capacity: jnp.int32
     visited_mask: Array  # (problem_size + 1,)
     order: Array  # (2 * problem_size,) - the size is worst-case (going back to depot after visiting each node)
     num_total_visits: jnp.int32
@@ -44,13 +46,15 @@ class State:
 
 class Observation(NamedTuple):
     """
-    problem: array with the coordinates of all nodes (+ depot) and their cost
+    coordinates: array with the coordinates of all nodes (+ depot)
+    demands: array with the demands of all nodes (+ depot)
     position: index of the current node
     capacity: current capacity of the vehicle
-    invalid_mask: binary mask (0/1 <--> legal/illegal)
+    action_mask: binary mask (True/False <--> invalid/valid action)
     """
 
-    problem: Array  # (problem_size + 1, 3)
+    coordinates: Array  # (problem_size + 1, 2)
+    demands: Array  # (problem_size + 1,)
     position: jnp.int32
     capacity: jnp.float32
     action_mask: Array  # (problem_size + 1,)

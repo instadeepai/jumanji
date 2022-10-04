@@ -21,12 +21,12 @@ from jax import random
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.combinatorial.tsp.utils import compute_tour_length
 from jumanji.environments.combinatorial.cvrp.specs import ObservationSpec
 from jumanji.environments.combinatorial.cvrp.types import Observation, State
 from jumanji.environments.combinatorial.cvrp.utils import (
     DEPOT_IDX,
-    generate_problem
+    generate_problem,
+    compute_tour_length
 )
 
 from jumanji.types import Action, TimeStep, termination, transition, restart
@@ -36,28 +36,32 @@ class CVRP(Environment[State]):
     """
     Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
     - observation: Observation
-        - problem: jax array (float32) of shape (num_nodes + 1, 3)
-            the coordinates of each node and the depot, and the associated cost (0.0 for the depot)
-        - position: jax array (float32)
+        - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
+            the coordinates of each node and the depot
+        - demands: jax array (float32) of shape (num_nodes + 1,)
+            the associated cost of each node and the depot (0.0 for the depot)
+        - position: jax array (int32)
             the index of the last visited node
         - capacity: jax array (float32)
             the current capacity of the vehicle
-        - action_mask: jax array (int8) of shape (num_nodes + 1,)
-            binary mask (0/1 <--> visitable/not visitable)
+        - action_mask: jax array (bool) of shape (num_nodes + 1,)
+            binary mask (False/True <--> invalid/valid action)
 
     - reward: jax array (float32)
-        the sum of the distances between consecutive nodes at the end of the episode (the reward is 0 if a previously
-        selected non-dept node is selected again, or the depot is selected twice in a row)
+        the negative sum of the distances between consecutive nodes at the end of the episode (the reward is 0 if a
+        previously selected non-dept node is selected again, or the depot is selected twice in a row)
 
     - state: State
-        - problem: jax array (float32) of shape (num_nodes + 1, 3)
-            the coordinates of each node and the depot, and the associated cost (0.0 for the depot)
-        - position: jax array (float32)
+        - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
+            the coordinates of each node and the depot
+        - demands: jax array (int32) of shape (num_nodes + 1,)
+            the associated cost of each node and the depot (0.0 for the depot)
+        - position: jax array (int32)
             the index of the last visited node
-        - capacity: jax array (float32)
+        - capacity: jax array (int32)
             the current capacity of the vehicle
-        - visited_mask: jax array (int8) of shape (num_nodes,)
-            binary mask (0/1 <--> not visited/visited)
+        - visited_mask: jax array (bool) of shape (num_nodes + 1,)
+            binary mask (False/True <--> not visited/visited)
         - order: jax array (int32) of shape (2 * num_nodes,)
             the identifiers of the nodes that have been visited (-1 means that no node has been visited yet at that
             time in the sequence)
@@ -91,13 +95,14 @@ class CVRP(Environment[State]):
              timestep: TimeStep object corresponding to the first timestep returned by the environment.
         """
         problem_key, start_key = random.split(key)
-        problem = generate_problem(problem_key, self.problem_size, self.max_demand)
+        coordinates, demands = generate_problem(problem_key, self.problem_size, self.max_demand)
         state = State(
-            problem=problem,
+            coordinates=coordinates,
+            demands=demands,
             position=jnp.int32(DEPOT_IDX),
-            capacity=jnp.float32(self.max_capacity),
-            visited_mask=jnp.zeros(self.problem_size + 1, dtype=jnp.int8).at[DEPOT_IDX].set(1),
-            order=jnp.zeros(self.get_episode_horizon(), jnp.int32),
+            capacity=self.max_capacity,
+            visited_mask=jnp.zeros(self.problem_size + 1, dtype=bool).at[DEPOT_IDX].set(True),
+            order=jnp.zeros(2 * self.problem_size, jnp.int32),
             num_total_visits=jnp.int32(1),
         )
         timestep = restart(observation=self._state_to_observation(state))
@@ -115,13 +120,14 @@ class CVRP(Environment[State]):
             state, timestep: Tuple[State, TimeStep] containing the next state of the environment, as well
             as the timestep to be observed.
         """
-        is_valid = (state.visited_mask[action] == 0) & (state.capacity >= state.problem[action, -1])
+        is_valid = (~state.visited_mask[action]) & (state.capacity >= state.demands[action])
 
         state = jax.lax.cond(
-            pred=is_valid,
-            true_fun=lambda x: self._update_state(x[0], x[1]),
-            false_fun=lambda _: state,
-            operand=[state, action],
+            is_valid,
+            self._update_state,
+            lambda *_: state,
+            state,
+            action,
         )
         timestep = self._state_to_timestep(state, is_valid)
         return state, timestep
@@ -133,29 +139,36 @@ class CVRP(Environment[State]):
         Returns:
             observation_spec: a Tuple containing the spec for each of the constituent fields of an observation.
         """
-        problem_obs = specs.BoundedArray(
-            shape=(self.problem_size + 1, 3),
+        coordinates_obs = specs.BoundedArray(
+            shape=(self.problem_size + 1, 2),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
-            name="problem",
+            name="coordinates",
+        )
+        demands_obs = specs.BoundedArray(
+            shape=(self.problem_size + 1,),
+            minimum=0.0,
+            maximum=1.0,
+            dtype=jnp.float32,
+            name="demands",
         )
         position_obs = specs.DiscreteArray(
             self.problem_size + 1, dtype=jnp.int32, name="position"
         )
         capacity_obs = specs.BoundedArray(
-            shape=(), minimum=0.0, maximum=30.0, dtype=jnp.float32, name="capacity"
+            shape=(), minimum=0.0, maximum=1.0, dtype=jnp.float32, name="capacity"
         )
         action_mask = specs.BoundedArray(
             shape=(self.problem_size + 1,),
-            dtype=jnp.int8,
-            minimum=0,
-            maximum=1,
+            dtype=jnp.bool_,
+            minimum=False,
+            maximum=True,
             name="action mask",
         )
-        return ObservationSpec(problem_obs, position_obs, capacity_obs, action_mask)
+        return ObservationSpec(coordinates_obs, demands_obs, position_obs, capacity_obs, action_mask)
 
-    def action_spec(self) -> specs.Array:
+    def action_spec(self) -> specs.DiscreteArray:
         """
         Returns the action spec.
 
@@ -175,24 +188,27 @@ class CVRP(Environment[State]):
         Returns:
             state: State object corresponding to the new state of the environment.
         """
-        is_not_depot = jnp.int32(next_node != DEPOT_IDX)
-
-        next_node = jax.lax.cond(
-            pred=state.visited_mask.sum() == self.problem_size + 1,
-            true_fun=lambda _: DEPOT_IDX,  # stay in the depot if we have visited all nodes
-            false_fun=lambda _: next_node,
-            operand=[],
+        next_node = jax.lax.select(
+            pred=state.visited_mask.all(),
+            on_true=DEPOT_IDX,  # stay in the depot if we have visited all nodes
+            on_false=next_node,
         )
 
-        # Set depot to 0 (valid to visit) since it can be visited multiple times
-        visited_mask = state.visited_mask.at[DEPOT_IDX].set(0)
+        capacity = jax.lax.select(
+            pred=next_node == DEPOT_IDX,
+            on_true=self.max_capacity,
+            on_false=state.capacity - state.demands[next_node],
+        )
+
+        # Set depot to False (valid to visit) since it can be visited multiple times
+        visited_mask = state.visited_mask.at[DEPOT_IDX].set(False)
 
         return State(
-            problem=state.problem,
+            coordinates=state.coordinates,
+            demands=state.demands,
             position=next_node,
-            capacity=is_not_depot * (state.capacity - jnp.int32(state.problem[next_node, 2])) + (
-                        1 - is_not_depot) * self.max_capacity,
-            visited_mask=visited_mask.at[next_node].set(1),
+            capacity=capacity,
+            visited_mask=visited_mask.at[next_node].set(True),
             order=state.order.at[state.num_total_visits].set(next_node),
             num_total_visits=state.num_total_visits + 1,
         )
@@ -207,15 +223,16 @@ class CVRP(Environment[State]):
         Returns:
             observation: Observation object containing the observation of the environment.
         """
-        # A node is invalid if it has been visited or the vehicle does not have enough capacity to cover its demand.
-        action_mask = state.visited_mask | (state.capacity < state.problem[:, 2])
+        # A node is false if it has been visited or the vehicle does not have enough capacity to cover its demand.
+        action_mask = ~state.visited_mask & (state.capacity >= state.demands)
         # The depot is valid (0) if we are not at it, else it is invalid (1).
-        action_mask = action_mask.at[DEPOT_IDX].set(jnp.int32(state.position == DEPOT_IDX))
+        action_mask = action_mask.at[DEPOT_IDX].set(state.position != DEPOT_IDX)
 
         return Observation(
-            problem=state.problem.at[:, -1].set(jnp.float32(state.problem[:, -1] / self.max_capacity)),
+            coordinates=state.coordinates,
+            demands=jnp.float32(state.demands / self.max_capacity),
             position=state.position,
-            capacity=state.capacity,
+            capacity=jnp.float32(state.capacity / self.max_capacity),
             action_mask=action_mask,
         )
 
@@ -232,7 +249,7 @@ class CVRP(Environment[State]):
 
         def make_termination_timestep(state: State) -> TimeStep:
             return termination(
-                reward=-compute_tour_length(state.problem[:, :2], state.order),
+                reward=-compute_tour_length(state.coordinates, state.order),
                 observation=self._state_to_observation(state),
             )
 
@@ -241,13 +258,10 @@ class CVRP(Environment[State]):
                 reward=jnp.float32(0), observation=self._state_to_observation(state)
             )
 
-        is_done = (state.visited_mask.sum() == self.problem_size + 1) | (~is_valid)
+        is_done = (state.visited_mask.all()) | (~is_valid)
         return jax.lax.cond(
             is_done,
             make_termination_timestep,
             make_transition_timestep,
             state,
         )
-
-    def get_episode_horizon(self):
-        return 2 * self.problem_size

@@ -13,49 +13,62 @@
 # limitations under the License.
 
 from chex import Array, PRNGKey
+import jax
 from jax import numpy as jnp
-from jax import random
-from jumanji.environments.combinatorial.tsp.utils import get_augmentations as get_augmentations_tsp
+from typing import Tuple
 
 DEPOT_IDX = 0
 
 
-def compute_tour_length(problem: Array, order: Array) -> jnp.float32:
+def compute_tour_length(coordinates: Array, order: Array) -> jnp.float32:
     """Calculate the length of a tour."""
-    problem = problem[order, 0:2]
-    return jnp.linalg.norm((problem - jnp.roll(problem, -1, axis=0)), axis=1).sum()
+    coordinates = coordinates[order]
+    return jnp.linalg.norm((coordinates - jnp.roll(coordinates, -1, axis=0)), axis=1).sum()
 
 
-def generate_problem(key: PRNGKey, num_nodes: jnp.int32, max_demand: jnp.int32) -> Array:
-    coord_key, demand_key = random.split(key)
-    coords = random.uniform(coord_key, (num_nodes + 1, 2), minval=0, maxval=1)
-    demands = random.randint(demand_key, (num_nodes + 1, 1), minval=1, maxval=max_demand)
-    problem = jnp.hstack((coords, demands))
-    problem = problem.at[DEPOT_IDX, 2].set(0.0)
-    return problem
+def generate_problem(key: PRNGKey, num_nodes: jnp.int32, max_demand: jnp.int32) -> Tuple[Array, Array]:
+    coord_key, demand_key = jax.random.split(key)
+    coords = jax.random.uniform(coord_key, (num_nodes + 1, 2), minval=0, maxval=1)
+    demands = jax.random.randint(demand_key, (num_nodes + 1,), minval=1, maxval=max_demand)
+    demands = demands.at[DEPOT_IDX].set(0)
+    return coords, demands
 
 
 def generate_start_position(key: PRNGKey, num_nodes: jnp.int32) -> jnp.int32:
-    return random.randint(key, (), minval=1, maxval=num_nodes + 1)
+    return jax.random.randint(key, (), minval=1, maxval=num_nodes + 1)
 
 
-def get_augmentations(problem: Array) -> Array:
+def get_augmentations(coordinates: Array, demands: Array) -> Tuple[Array, Array]:
     """Returns the 8 augmentations of a given instance problem described in [1]. This function leverages the existing
     augmentation method for TSP and appends the costs/demands used in CVRP.
     [1] https://arxiv.org/abs/2010.16011
 
     Args:
-        problem: Array of coordinates and demands/costs for all nodes [num_nodes, 3]
+        coordinates: Array of coordinates for all nodes [num_nodes, 2]
+        demands: Array of demands for all nodes [num_nodes]
 
     Returns:
-        augmentations: Array with 8 augmentations [8, num_nodes, 3]
+        coord_augmentations: Array with 8 coordinates augmentations [8, num_nodes, 2]
+        demands_augmentations: Array with 8 demands augmentations [8, num_nodes, 1]
     """
-    coord_augmentations = get_augmentations_tsp(problem[:, :2])
+    # Coordinates -> (1 - coordinates) for each city
+    p_aug1 = jnp.array(
+        [
+            coordinates,
+            jnp.transpose(jnp.array([1 - coordinates[:, 0], coordinates[:, 1]])),
+            jnp.transpose(jnp.array([coordinates[:, 0], 1 - coordinates[:, 1]])),
+            jnp.transpose(jnp.array([1 - coordinates[:, 0], 1 - coordinates[:, 1]])),
+        ]
+    )
 
-    num_nodes = problem.shape[0]
+    # Coordinates are also flipped
+    p_aug2 = jnp.einsum("ijk -> jki", jnp.array([p_aug1[:, :, 1], p_aug1[:, :, 0]]))
+
+    coord_augmentations = jnp.concatenate([p_aug1, p_aug2], axis=0)
+
+    num_nodes = coordinates.shape[0]
     num_augmentations = coord_augmentations.shape[0]
 
-    demands_per_aug = jnp.tile(problem[:, 2], num_augmentations).reshape(
-        num_augmentations, num_nodes, 1
-    )
-    return jnp.concatenate((coord_augmentations, demands_per_aug), axis=2)
+    demands_augmentations = jnp.tile(demands, num_augmentations).reshape(num_augmentations, num_nodes, 1)
+
+    return coord_augmentations, demands_augmentations
