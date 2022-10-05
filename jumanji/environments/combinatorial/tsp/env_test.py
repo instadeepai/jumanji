@@ -20,7 +20,7 @@ from jax import random
 
 from jumanji.environments.combinatorial.tsp.env import TSP
 from jumanji.environments.combinatorial.tsp.types import State
-from jumanji.environments.combinatorial.utils import get_augmentations
+from jumanji.environments.combinatorial.utils import get_coordinates_augmentations
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
@@ -213,4 +213,4 @@ def test_tsp__augmentations() -> None:
         ]
     )
 
-    assert jnp.allclose(expected_augmentations, get_augmentations(problem))
+    assert jnp.allclose(expected_augmentations, get_coordinates_augmentations(problem))

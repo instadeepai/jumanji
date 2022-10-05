@@ -17,10 +17,11 @@ from chex import Array
 import jax.numpy as jnp
 
 
-def get_augmentations(problem: Array) -> Array:
+def get_coordinates_augmentations(problem: Array) -> Array:
     """
-       Returns the 8 augmentations of a given instance problem described in [1].
+       Returns the 8 augmentations of the coordinates of a given instance problem described in [1].
        [1] https://arxiv.org/abs/2010.16011
+       Usages: TSP and CVRP.
        Args:
            problem: array of coordinates for all cities [problem_size, 2]
        Returns:
