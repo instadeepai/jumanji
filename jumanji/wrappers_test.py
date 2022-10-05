@@ -21,13 +21,12 @@ import gym
 import jax
 import jax.numpy as jnp
 import jax.random as random
-from matplotlib.backend_bases import key_press_handler
 import numpy as np
 import pytest
 import pytest_mock
 from brax.envs import Env as BraxEnv
 from brax.envs import State as BraxState
-from chex import assert_trees_all_equal, dataclass
+from chex import PRNGKey, assert_trees_all_equal, dataclass
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -57,12 +56,6 @@ def mock_wrapper_class() -> Type[Wrapper]:
         pass
 
     return MockWrapper
-
-
-@pytest.fixture
-def fake_state() -> FakeState:
-    return FakeState(key=jax.random.PRNGKey(0),
-                     step=jax.random.randint(jax.random.PRNGKey(0), [1], 0, 100))
 
 
 class TestBaseWrapper:
@@ -236,23 +229,32 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         assert isinstance(fake_dm_env.unwrapped, Environment)
 
     def test_jumanji_environment_to_deep_mind_env__key_getter_setter(
-        self, fake_environment: FakeEnvironment)-> None:
-        """validate state getter and setter"""
+        self, fake_environment: FakeEnvironment
+    ) -> None:
+        """validates key getter and setter."""
         key = jax.random.PRNGKey(0)
         fake_dm_env = JumanjiToDMEnvWrapper(fake_environment, key=key)
         assert jnp.array_equal(key, fake_dm_env.key)
         new_key = jax.random.PRNGKey(10)
         fake_dm_env.key = new_key
         assert jnp.array_equal(new_key, fake_dm_env.key)
-    
+
+    def fake_state(self, key: PRNGKey, step: jnp.int32) -> FakeState:
+        """returns a fake state."""
+        return FakeState(
+            key=key,
+            step=step,
+        )
+
     def test_jumanji_environment_to_deep_mind_env__state_getter_setter(
-        self, fake_environment: FakeEnvironment, fake_state: FakeState
-        ) -> None:
-        """validate state getter and setter"""
+        self, fake_environment: FakeEnvironment, 
+    ) -> None:
+        """validates state getter and setter."""
         key = jax.random.PRNGKey(0)
         fake_dm_env = JumanjiToDMEnvWrapper(fake_environment, key=key)
+        fake_state = self.fake_state(key=jax.random.PRNGKey(3), step=jax.random.randint(jax.random.PRNGKey(5), (), 0, 100))
         fake_dm_env.state = fake_state
-        assert fake_state == fake_dm_env.state
+        assert fake_state is fake_dm_env.state
 
 
 class TestJumanjiEnvironmentToGymEnv:
