@@ -173,7 +173,7 @@ class CVRP(Environment[State]):
         Returns the action spec.
 
         Returns:
-            action_spec: a `dm_env.specs.Array` spec.
+            action_spec: a `specs.DiscreteArray` spec.
         """
         return specs.DiscreteArray(self.problem_size + 1, name="action")
 

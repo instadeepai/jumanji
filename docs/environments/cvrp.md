@@ -36,14 +36,8 @@ and the depot node.
 which are not (False).
 
 ## Action
-Action space is an `DiscreteArray` of size equal to the number of city nodes + 1 depot node. The 0th 
-index corresponds to the depot node and the remaining indices correspond to the city nodes. A value
-of 1 at an index indicates an action to visit the node corresponding to that index, 
-a value of 0 indicates an action not to visit that node. 
-
-```
-action: [0, 0, 0, 1, 0]  # Problem size of 4 cities, choosing the 3rd city
-```
+Action space is a `DiscreteArray` of integer values in the range of [0, problem_size]. An action is the index of the 
+next node to visit, and an action value of 0 corresponds to visiting the depot.
 
 ## Reward
 The reward is 0 at every step but the last, where the reward is
