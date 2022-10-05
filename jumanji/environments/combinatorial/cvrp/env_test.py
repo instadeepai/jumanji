@@ -122,7 +122,7 @@ def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
     # actions = jnp.arange(1, cvrp_env.problem_size + 1)
     while not timestep.last():
         # Check that there are nodes that have not been selected yet.
-        assert state.visited_mask.sum() < (cvrp_env.problem_size + 1)
+        assert not state.visited_mask.all()
 
         # Check that the reward is 0 while the trajectory is not done.
         assert timestep.reward == 0
