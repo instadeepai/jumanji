@@ -148,7 +148,7 @@ def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
     assert timestep.reward < 0
 
     # Check that no action can be taken (all nodes have been selected).
-    assert state.visited_mask.sum() == cvrp_env.problem_size + 1
+    assert state.visited_mask.all()
 
     assert timestep.last()
 
