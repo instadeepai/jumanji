@@ -139,7 +139,7 @@ def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
                 next_position = DEPOT_IDX
 
         # If all cities have been visited, go to depot to finish the episode.
-        if state.visited_mask[1:].sum() == cvrp_env.problem_size:
+        if state.visited_mask[1:].all():
             next_position = DEPOT_IDX
 
         state, timestep = cvrp_env.step(state, next_position)
