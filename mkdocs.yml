@@ -22,6 +22,7 @@ nav:
           - Routing: environments/routing.md
           - BinPack: environments/binpack.md
           - Knapsack: environments/knapsack.md
+          - CVRP: environments/cvrp.md
       - Game:
           - Snake: environments/snake.md
           - Connect4: environments/connect4.md
@@ -37,6 +38,7 @@ nav:
               - Routing: api/environments/routing.md
               - BinPack: api/environments/binpack.md
               - Knapsack: api/environments/knapsack.md
+              - CVRP: api/environments/cvrp.md
           - Game:
               - Snake: api/environments/snake.md
               - Connect4: api/environments/connect4.md

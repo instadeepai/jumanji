@@ -130,8 +130,8 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
 
     first_position = state.position
     actions = (
-        jnp.array([first_position + 1, first_position + 2, first_position + 2])
-        % tsp_env.problem_size
+            jnp.array([first_position + 1, first_position + 2, first_position + 2])
+            % tsp_env.problem_size
     )
 
     for a in actions:
