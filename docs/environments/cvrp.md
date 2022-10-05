@@ -26,7 +26,7 @@ the current position of the agent as well as the current capacity.
 
 **Observation Spec**:
 
-- **coordinates**: jax array (float32) of shape (problem_size + 1, 3), shows an array of the coordinates of each city node 
+- **coordinates**: jax array (float32) of shape (problem_size + 1, 2), shows an array of the coordinates of each city node 
 and the depot node.
 - **demands**: jax array (float32) of shape (problem_size + 1,), shows an array of the demands of each city node 
 (and depot node where the demand is set to 0).
@@ -50,6 +50,8 @@ The reward is 0 at every step but the last, where the reward is
 the negative of the length of the path chosen by the agent.
 
 ## Registered Versions 📖
-- `CVRP100-v0`, CVRP problem with 100 nodes with demand (randomly generated).
-- `CVRP125-v0`, CVRP problem with 125 nodes with demand (randomly generated).
-- `CVRP150-v0`, CVRP problem with 150 nodes with demand (randomly generated).
+- `CVRP20-v0`, CVRP problem with 20 nodes (randomly generated), maximum capacity of 30, and maximum demand of 10.
+- `CVRP50-v0`, CVRP problem with 50 nodes (randomly generated), maximum capacity of 40, and maximum demand of 10.
+- `CVRP100-v0`, CVRP problem with 100 nodes (randomly generated), maximum capacity of 50, and maximum demand of 10.
+- `CVRP125-v0`, CVRP problem with 125 nodes (randomly generated), maximum capacity of 55, and maximum demand of 10.
+- `CVRP150-v0`, CVRP problem with 150 nodes (randomly generated), maximum capacity of 60, and maximum demand of 10.

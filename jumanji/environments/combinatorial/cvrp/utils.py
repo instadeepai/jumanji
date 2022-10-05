@@ -16,6 +16,7 @@ from chex import Array, PRNGKey
 import jax
 from jax import numpy as jnp
 from typing import Tuple
+from jumanji.environments.combinatorial.utils import get_augmentations as get_augmentations_coords
 
 DEPOT_IDX = 0
 
@@ -51,20 +52,7 @@ def get_augmentations(coordinates: Array, demands: Array) -> Tuple[Array, Array]
         coord_augmentations: Array with 8 coordinates augmentations [8, num_nodes, 2]
         demands_augmentations: Array with 8 demands augmentations [8, num_nodes, 1]
     """
-    # Coordinates -> (1 - coordinates) for each city
-    p_aug1 = jnp.array(
-        [
-            coordinates,
-            jnp.transpose(jnp.array([1 - coordinates[:, 0], coordinates[:, 1]])),
-            jnp.transpose(jnp.array([coordinates[:, 0], 1 - coordinates[:, 1]])),
-            jnp.transpose(jnp.array([1 - coordinates[:, 0], 1 - coordinates[:, 1]])),
-        ]
-    )
-
-    # Coordinates are also flipped
-    p_aug2 = jnp.einsum("ijk -> jki", jnp.array([p_aug1[:, :, 1], p_aug1[:, :, 0]]))
-
-    coord_augmentations = jnp.concatenate([p_aug1, p_aug2], axis=0)
+    coord_augmentations = get_augmentations_coords(coordinates)
 
     num_nodes = coordinates.shape[0]
     num_augmentations = coord_augmentations.shape[0]

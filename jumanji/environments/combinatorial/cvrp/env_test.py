@@ -109,7 +109,7 @@ def test_cvrp__does_not_smoke(cvrp_env: CVRP) -> None:
     check_env_does_not_smoke(cvrp_env)
 
 
-def test_tsp__trajectory_action(cvrp_env: CVRP) -> None:
+def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
     """
     Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot when the next node in the
     list surpasses the current capacity of the agent.
@@ -197,8 +197,6 @@ def test_cvrp__revisit_depot_invalid(cvrp_env: CVRP) -> None:
     """Checks that the depot cannot be revisited if we are already at the depot."""
     key = jax.random.PRNGKey(0)
     state, timestep = cvrp_env.reset(key)
-
-    state, timestep = cvrp_env.step(state, jnp.int32(DEPOT_IDX))
     state, timestep = cvrp_env.step(state, jnp.int32(DEPOT_IDX))
 
     assert timestep.last()

@@ -20,6 +20,7 @@ from jax import random
 
 from jumanji.environments.combinatorial.tsp.env import TSP
 from jumanji.environments.combinatorial.tsp.types import State
+from jumanji.environments.combinatorial.utils import get_augmentations
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
@@ -130,8 +131,8 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
 
     first_position = state.position
     actions = (
-        jnp.array([first_position + 1, first_position + 2, first_position + 2])
-        % tsp_env.problem_size
+            jnp.array([first_position + 1, first_position + 2, first_position + 2])
+            % tsp_env.problem_size
     )
 
     for a in actions:
@@ -142,3 +143,74 @@ def test_tsp__invalid_action(tsp_env: TSP) -> None:
     # Last action is invalid because it was already taken
     assert timestep.reward < 0
     assert timestep.last()
+
+
+def test_tsp__augmentations() -> None:
+    """Checks that the augmentations of a given instance problem is computed properly."""
+    problem = jnp.array(
+        [[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]]
+    )
+
+    expected_augmentations = jnp.array(
+        [
+            problem,
+            jnp.array(
+                [
+                    [0.35, 0.85],
+                    [0.82, 0.06],
+                    [0.59, 0.19],
+                    [0.08, 0.27],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.65, 0.15],
+                    [0.18, 0.94],
+                    [0.41, 0.81],
+                    [0.92, 0.73],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.35, 0.15],
+                    [0.82, 0.94],
+                    [0.59, 0.81],
+                    [0.08, 0.73],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.85, 0.65],
+                    [0.06, 0.18],
+                    [0.19, 0.41],
+                    [0.27, 0.92],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.85, 0.35],
+                    [0.06, 0.82],
+                    [0.19, 0.59],
+                    [0.27, 0.08],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.15, 0.65],
+                    [0.94, 0.18],
+                    [0.81, 0.41],
+                    [0.73, 0.92],
+                ]
+            ),
+            jnp.array(
+                [
+                    [0.15, 0.35],
+                    [0.94, 0.82],
+                    [0.81, 0.59],
+                    [0.73, 0.08],
+                ]
+            ),
+        ]
+    )
+
+    assert jnp.allclose(expected_augmentations, get_augmentations(problem))
