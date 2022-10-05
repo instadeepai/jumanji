@@ -225,7 +225,7 @@ class CVRP(Environment[State]):
         """
         # A node is false if it has been visited or the vehicle does not have enough capacity to cover its demand.
         action_mask = ~state.visited_mask & (state.capacity >= state.demands)
-        # The depot is valid (0) if we are not at it, else it is invalid (1).
+        # The depot is valid (True) if we are not at it, else it is invalid (False).
         action_mask = action_mask.at[DEPOT_IDX].set(state.position != DEPOT_IDX)
 
         return Observation(
