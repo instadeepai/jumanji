@@ -50,13 +50,12 @@ def get_augmentations(coordinates: Array, demands: Array) -> Tuple[Array, Array]
 
     Returns:
         coord_augmentations: Array with 8 coordinates augmentations [8, num_nodes, 2]
-        demands_augmentations: Array with 8 demands augmentations [8, num_nodes, 1]
+        demands_augmentations: Array with 8 demands augmentations [8, num_nodes]
     """
     coord_augmentations = get_coordinates_augmentations(coordinates)
 
-    num_nodes = coordinates.shape[0]
     num_augmentations = coord_augmentations.shape[0]
 
-    demands_augmentations = jnp.tile(demands, num_augmentations).reshape(num_augmentations, num_nodes, 1)
+    demands_augmentations = jnp.tile(demands, (num_augmentations, 1))
 
     return coord_augmentations, demands_augmentations

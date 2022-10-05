@@ -17,28 +17,28 @@ from chex import Array
 import jax.numpy as jnp
 
 
-def get_coordinates_augmentations(problem: Array) -> Array:
+def get_coordinates_augmentations(coordinates: Array) -> Array:
     """
        Returns the 8 augmentations of the coordinates of a given instance problem described in [1].
        [1] https://arxiv.org/abs/2010.16011
        Usages: TSP and CVRP.
        Args:
-           problem: array of coordinates for all cities [problem_size, 2]
+           coordinates: array of coordinates for all cities [problem_size, 2]
        Returns:
            Array with 8 augmentations [8, problem_size, 2]
        """
 
     # Coordinates -> (1 - coordinates) for each city
-    p_aug1 = jnp.array(
+    rotated_coordinates = jnp.array(
         [
-            problem,
-            jnp.transpose(jnp.array([1 - problem[:, 0], problem[:, 1]])),
-            jnp.transpose(jnp.array([problem[:, 0], 1 - problem[:, 1]])),
-            jnp.transpose(jnp.array([1 - problem[:, 0], 1 - problem[:, 1]])),
+            coordinates,
+            jnp.transpose(jnp.array([1 - coordinates[:, 0], coordinates[:, 1]])),
+            jnp.transpose(jnp.array([coordinates[:, 0], 1 - coordinates[:, 1]])),
+            jnp.transpose(jnp.array([1 - coordinates[:, 0], 1 - coordinates[:, 1]])),
         ]
     )
 
     # Coordinates are also flipped
-    p_aug2 = jnp.einsum("ijk -> jki", jnp.array([p_aug1[:, :, 1], p_aug1[:, :, 0]]))
+    flipped_coordinates = jnp.einsum("ijk -> jki", jnp.array([rotated_coordinates[:, :, 1], rotated_coordinates[:, :, 0]]))
 
-    return jnp.concatenate([p_aug1, p_aug2], axis=0)
+    return jnp.concatenate([rotated_coordinates, flipped_coordinates], axis=0)

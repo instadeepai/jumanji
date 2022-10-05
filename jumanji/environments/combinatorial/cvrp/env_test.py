@@ -204,105 +204,123 @@ def test_cvrp__revisit_depot_invalid(cvrp_env: CVRP) -> None:
 
 def test_cvrp__tour_length() -> None:
     """Checks that the tour lengths are properly computed."""
-    problem = jnp.array(
+    coords = jnp.array(
         [
-            [0.65948975, 0.8527372, 0.0],
-            [0.18317401, 0.06975579, 0.26666668],
-            [0.4064678, 0.19167936, 0.2],
-            [0.92129254, 0.27006388, 0.13333334],
-            [0.7105516, 0.9370967, 0.3],
-            [0.5277389, 0.18168604, 0.03333334],
-            [0.47508526, 0.19661963, 0.23333333],
-            [0.46782017, 0.6201354, 0.06666667],
-            [0.4211073, 0.5530877, 0.23333333],
-            [0.94237375, 0.64736927, 0.13333334],
-            [0.97507954, 0.43589878, 0.2],
+            [0.65948975, 0.8527372],
+            [0.18317401, 0.06975579],
+            [0.4064678, 0.19167936],
+            [0.92129254, 0.27006388],
+            [0.7105516, 0.9370967],
+            [0.5277389, 0.18168604],
+            [0.47508526, 0.19661963],
+            [0.46782017, 0.6201354],
+            [0.4211073, 0.5530877],
+            [0.94237375, 0.64736927],
+            [0.97507954, 0.43589878],
         ]
     )
+
+    demands = jnp.array(
+        [
+            [0.0],
+            [0.26666668],
+            [0.2],
+            [0.13333334],
+            [0.3],
+            [0.03333334],
+            [0.23333333],
+            [0.06666667],
+            [0.23333333],
+            [0.13333334],
+            [0.2],
+        ]
+    )
+
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0, 0, 0, 0, 0])
-    tour_length = compute_tour_length(problem[:, :2], order)
+    tour_length = compute_tour_length(coords, order)
     assert jnp.isclose(tour_length, 6.8649917)
 
     # Check augmentations have same tour length
-    coords_aug, demands_aug = get_augmentations(problem[:, :2], problem[:, -1])
+    coords_aug, demands_aug = get_augmentations(coords, demands)
     lengths = jax.vmap(compute_tour_length, in_axes=(0, None))(coords_aug, order)
     assert jnp.allclose(lengths, jnp.ones(coords_aug.shape[0], dtype=jnp.float32) * tour_length)
 
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6])
-    assert compute_tour_length(problem[:, :2], order) == 6.8649917
+    assert compute_tour_length(coords, order) == 6.8649917
 
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0])
-    assert compute_tour_length(problem[:, :2], order) == 6.8649917
+    assert compute_tour_length(coords, order) == 6.8649917
 
 
 def test_cvrp__augmentations() -> None:
     """Checks that the augmentations of a given instance problem is computed properly."""
-    problem = jnp.array(
-        [[0.65, 0.85, 0.00], [0.18, 0.06, 0.27], [0.41, 0.19, 0.20], [0.92, 0.27, 0.13]]
-    )
+    coords = jnp.array([[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]])
+    demands = jnp.array([0.00, 0.27, 0.20, 0.13])
 
-    expected_augmentations = jnp.array(
+    expected_coords = jnp.array(
         [
-            problem,
+            coords,
             jnp.array(
                 [
-                    [0.35, 0.85, 0.00],
-                    [0.82, 0.06, 0.27],
-                    [0.59, 0.19, 0.20],
-                    [0.08, 0.27, 0.13],
+                    [0.35, 0.85],
+                    [0.82, 0.06],
+                    [0.59, 0.19],
+                    [0.08, 0.27],
                 ]
             ),
             jnp.array(
                 [
-                    [0.65, 0.15, 0.00],
-                    [0.18, 0.94, 0.27],
-                    [0.41, 0.81, 0.20],
-                    [0.92, 0.73, 0.13],
+                    [0.65, 0.15],
+                    [0.18, 0.94],
+                    [0.41, 0.81],
+                    [0.92, 0.73],
                 ]
             ),
             jnp.array(
                 [
-                    [0.35, 0.15, 0.00],
-                    [0.82, 0.94, 0.27],
-                    [0.59, 0.81, 0.20],
-                    [0.08, 0.73, 0.13],
+                    [0.35, 0.15],
+                    [0.82, 0.94],
+                    [0.59, 0.81],
+                    [0.08, 0.73],
                 ]
             ),
             jnp.array(
                 [
-                    [0.85, 0.65, 0.00],
-                    [0.06, 0.18, 0.27],
-                    [0.19, 0.41, 0.20],
-                    [0.27, 0.92, 0.13],
+                    [0.85, 0.65],
+                    [0.06, 0.18],
+                    [0.19, 0.41],
+                    [0.27, 0.92],
                 ]
             ),
             jnp.array(
                 [
-                    [0.85, 0.35, 0.00],
-                    [0.06, 0.82, 0.27],
-                    [0.19, 0.59, 0.20],
-                    [0.27, 0.08, 0.13],
+                    [0.85, 0.35],
+                    [0.06, 0.82],
+                    [0.19, 0.59],
+                    [0.27, 0.08],
                 ]
             ),
             jnp.array(
                 [
-                    [0.15, 0.65, 0.00],
-                    [0.94, 0.18, 0.27],
-                    [0.81, 0.41, 0.20],
-                    [0.73, 0.92, 0.13],
+                    [0.15, 0.65],
+                    [0.94, 0.18],
+                    [0.81, 0.41],
+                    [0.73, 0.92],
                 ]
             ),
             jnp.array(
                 [
-                    [0.15, 0.35, 0.00],
-                    [0.94, 0.82, 0.27],
-                    [0.81, 0.59, 0.20],
-                    [0.73, 0.08, 0.13],
+                    [0.15, 0.35],
+                    [0.94, 0.82],
+                    [0.81, 0.59],
+                    [0.73, 0.08],
                 ]
             ),
         ]
     )
 
-    coords_aug, demands_aug = get_augmentations(problem[:, :2], problem[:, -1])
-    augmentations = jnp.concatenate((coords_aug, demands_aug), axis=2)
-    assert jnp.allclose(expected_augmentations, augmentations)
+    expected_demands = jnp.tile(demands, (8, 1))
+
+    coords_aug, demands_aug = get_augmentations(coords, demands)
+    assert jnp.allclose(expected_coords, coords_aug)
+    assert jnp.allclose(expected_demands, demands_aug)
