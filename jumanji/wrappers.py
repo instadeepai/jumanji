@@ -138,7 +138,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
             self._key = random.PRNGKey(0)
         else:
             self._key = key
-        self._state: Any
+        self._state: State
         self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep]] = jit(
             self._env.reset
         )
@@ -216,11 +216,11 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
         return self._env
 
     @property
-    def state(self) -> Any:
+    def state(self) -> State:
         return self._state
 
     @state.setter
-    def state(self, new_state: Any) -> None:
+    def state(self, new_state: State) -> None:
         self._state = new_state
 
     @property

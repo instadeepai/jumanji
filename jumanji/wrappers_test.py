@@ -21,6 +21,7 @@ import gym
 import jax
 import jax.numpy as jnp
 import jax.random as random
+from matplotlib.backend_bases import key_press_handler
 import numpy as np
 import pytest
 import pytest_mock
@@ -56,6 +57,12 @@ def mock_wrapper_class() -> Type[Wrapper]:
         pass
 
     return MockWrapper
+
+
+@pytest.fixture
+def fake_state() -> FakeState:
+    return FakeState(key=jax.random.PRNGKey(0),
+                     step=jax.random.randint(jax.random.PRNGKey(0), [1], 0, 100))
 
 
 class TestBaseWrapper:
@@ -227,6 +234,25 @@ class TestJumanjiEnvironmentToDeepMindEnv:
     ) -> None:
         """Validates unwrapped property of the wrapped environment."""
         assert isinstance(fake_dm_env.unwrapped, Environment)
+
+    def test_jumanji_environment_to_deep_mind_env__key_getter_setter(
+        self, fake_environment: FakeEnvironment)-> None:
+        """validate state getter and setter"""
+        key = jax.random.PRNGKey(0)
+        fake_dm_env = JumanjiToDMEnvWrapper(fake_environment, key=key)
+        assert jnp.array_equal(key, fake_dm_env.key)
+        new_key = jax.random.PRNGKey(10)
+        fake_dm_env.key = new_key
+        assert jnp.array_equal(new_key, fake_dm_env.key)
+    
+    def test_jumanji_environment_to_deep_mind_env__state_getter_setter(
+        self, fake_environment: FakeEnvironment, fake_state: FakeState
+        ) -> None:
+        """validate state getter and setter"""
+        key = jax.random.PRNGKey(0)
+        fake_dm_env = JumanjiToDMEnvWrapper(fake_environment, key=key)
+        fake_dm_env.state = fake_state
+        assert fake_state == fake_dm_env.state
 
 
 class TestJumanjiEnvironmentToGymEnv:
