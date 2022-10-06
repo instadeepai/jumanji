@@ -55,12 +55,18 @@ class TestObservationSpec:
     @pytest.mark.parametrize(
         "arg_name, new_value",
         [
-                ("coordinates_spec", observation_spec.coordinates_spec.replace(shape=(3, 4))),
-                ("demands_spec", observation_spec.demands_spec.replace(shape=(3, 4))),
-                ("position_spec", observation_spec.position_spec.replace(name="new_name")),
-                ("capacity_spec", observation_spec.capacity_spec.replace(name="new_name")),
-                ("action_mask_spec", observation_spec.action_mask_spec.replace(shape=(3, 4))),
-        ]
+            (
+                "coordinates_spec",
+                observation_spec.coordinates_spec.replace(shape=(3, 4)),
+            ),
+            ("demands_spec", observation_spec.demands_spec.replace(shape=(3, 4))),
+            ("position_spec", observation_spec.position_spec.replace(name="new_name")),
+            ("capacity_spec", observation_spec.capacity_spec.replace(name="new_name")),
+            (
+                "action_mask_spec",
+                observation_spec.action_mask_spec.replace(shape=(3, 4)),
+            ),
+        ],
     )
     def test_observation_spec__replace(self, arg_name: str, new_value: Any) -> None:
         old_spec = self.observation_spec
@@ -74,4 +80,6 @@ class TestObservationSpec:
             "capacity_spec",
             "action_mask_spec",
         }.difference([arg_name]):
-            chex.assert_equal(getattr(new_spec, attr_name), getattr(old_spec, attr_name))
+            chex.assert_equal(
+                getattr(new_spec, attr_name), getattr(old_spec, attr_name)
+            )

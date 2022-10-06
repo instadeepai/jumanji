@@ -161,10 +161,10 @@ register(
 
 
 # CVRP - problem size, maximum capacity and maximum demand are derived from [1, 2]
-# [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with Multiple Optima
-# for Reinforcement Learning".
-# [2] Grinsztajn N., Furelos-Blanco D., Barrett T. (2022). "Population-Based Reinforcement Learning for
-# Combinatorial Optimization Problem".
+# [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with
+# Multiple Optima for Reinforcement Learning".
+# [2] Grinsztajn N., Furelos-Blanco D., Barrett T. (2022). "Population-Based Reinforcement
+# Learning for Combinatorial Optimization Problem".
 register(
     id="CVRP20-v0",
     entry_point="jumanji.environments:CVRP",
