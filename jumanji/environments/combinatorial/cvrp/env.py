@@ -25,11 +25,10 @@ from jumanji.environments.combinatorial.cvrp.specs import ObservationSpec
 from jumanji.environments.combinatorial.cvrp.types import Observation, State
 from jumanji.environments.combinatorial.cvrp.utils import (
     DEPOT_IDX,
+    compute_tour_length,
     generate_problem,
-    compute_tour_length
 )
-
-from jumanji.types import Action, TimeStep, termination, transition, restart
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class CVRP(Environment[State]):
@@ -48,8 +47,9 @@ class CVRP(Environment[State]):
             binary mask (False/True <--> invalid/valid action)
 
     - reward: jax array (float32)
-        the negative sum of the distances between consecutive nodes at the end of the episode (the reward is 0 if a
-        previously selected non-dept node is selected again, or the depot is selected twice in a row)
+        the negative sum of the distances between consecutive nodes at the end of the episode (the
+        reward is 0 if a previously selected non-dept node is selected again, or the depot is
+        selected twice in a row)
 
     - state: State
         - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
@@ -63,25 +63,30 @@ class CVRP(Environment[State]):
         - visited_mask: jax array (bool) of shape (num_nodes + 1,)
             binary mask (False/True <--> not visited/visited)
         - order: jax array (int32) of shape (2 * num_nodes,)
-            the identifiers of the nodes that have been visited (-1 means that no node has been visited yet at that
-            time in the sequence)
+            the identifiers of the nodes that have been visited (-1 means that no node has been
+            visited yet at that time in the sequence)
         - num_visits: int32
             number of actions that have been taken (i.e., unique visits)
 
     [1] Toth P., Vigo D. (2014). "Vehicle routing: problems, methods, and applications".
     """
 
-    def __init__(self, problem_size: int = 100, max_capacity: int = 30, max_demand: int = 10):
+    def __init__(
+        self, problem_size: int = 100, max_capacity: int = 30, max_demand: int = 10
+    ):
         assert max_capacity >= max_demand, (
-            f"The demand associated with each node must be lower than the maximum capacity, hence the "
-            f"maximum capacity must be >= {max_demand}."
+            f"The demand associated with each node must be lower than the maximum capacity, "
+            f"hence the maximum capacity must be >= {max_demand}."
         )
         self.problem_size = problem_size
         self.max_capacity = max_capacity
         self.max_demand = max_demand
 
-    def __repr__(self):
-        return f"CVRP(problem_size={self.problem_size}, max_capacity={self.max_capacity}, max_demand={self.max_demand})"
+    def __repr__(self) -> str:
+        return (
+            f"CVRP(problem_size={self.problem_size}, max_capacity={self.max_capacity}, "
+            f"max_demand={self.max_demand})"
+        )
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """
@@ -92,16 +97,21 @@ class CVRP(Environment[State]):
 
         Returns:
              state: State object corresponding to the new state of the environment.
-             timestep: TimeStep object corresponding to the first timestep returned by the environment.
+             timestep: TimeStep object corresponding to the first timestep returned by the
+             environment.
         """
         problem_key, start_key = random.split(key)
-        coordinates, demands = generate_problem(problem_key, self.problem_size, self.max_demand)
+        coordinates, demands = generate_problem(
+            problem_key, self.problem_size, self.max_demand
+        )
         state = State(
             coordinates=coordinates,
             demands=demands,
             position=jnp.int32(DEPOT_IDX),
             capacity=self.max_capacity,
-            visited_mask=jnp.zeros(self.problem_size + 1, dtype=bool).at[DEPOT_IDX].set(True),
+            visited_mask=jnp.zeros(self.problem_size + 1, dtype=bool)
+            .at[DEPOT_IDX]
+            .set(True),
             order=jnp.zeros(2 * self.problem_size, jnp.int32),
             num_total_visits=jnp.int32(1),
         )
@@ -117,10 +127,13 @@ class CVRP(Environment[State]):
             action: Array containing the index of the next node to visit.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the next state of the environment, as well
+            state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
+            as well
             as the timestep to be observed.
         """
-        is_valid = (~state.visited_mask[action]) & (state.capacity >= state.demands[action])
+        is_valid = (~state.visited_mask[action]) & (
+            state.capacity >= state.demands[action]
+        )
 
         state = jax.lax.cond(
             is_valid,
@@ -137,7 +150,8 @@ class CVRP(Environment[State]):
         Returns the observation spec.
 
         Returns:
-            observation_spec: a Tuple containing the spec for each of the constituent fields of an observation.
+            observation_spec: a Tuple containing the spec for each of the constituent fields of an
+            observation.
         """
         coordinates_obs = specs.BoundedArray(
             shape=(self.problem_size + 1, 2),
@@ -166,7 +180,9 @@ class CVRP(Environment[State]):
             maximum=True,
             name="action mask",
         )
-        return ObservationSpec(coordinates_obs, demands_obs, position_obs, capacity_obs, action_mask)
+        return ObservationSpec(
+            coordinates_obs, demands_obs, position_obs, capacity_obs, action_mask
+        )
 
     def action_spec(self) -> specs.DiscreteArray:
         """
@@ -223,7 +239,8 @@ class CVRP(Environment[State]):
         Returns:
             observation: Observation object containing the observation of the environment.
         """
-        # A node is false if it has been visited or the vehicle does not have enough capacity to cover its demand.
+        # A node is false if it has been visited or the vehicle does not have enough capacity to
+        # cover its demand.
         action_mask = ~state.visited_mask & (state.capacity >= state.demands)
         # The depot is valid (True) if we are not at it, else it is invalid (False).
         action_mask = action_mask.at[DEPOT_IDX].set(state.position != DEPOT_IDX)
@@ -259,9 +276,10 @@ class CVRP(Environment[State]):
             )
 
         is_done = (state.visited_mask.all()) | (~is_valid)
-        return jax.lax.cond(
+        timestep: TimeStep = jax.lax.cond(
             is_done,
             make_termination_timestep,
             make_transition_timestep,
             state,
         )
+        return timestep

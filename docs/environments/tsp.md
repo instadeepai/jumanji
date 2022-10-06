@@ -32,7 +32,7 @@ the current position of the agent as well as the starting point.
 - **action_mask**: jax array (int8) of shape (problem_size,), array of binary values denoting visited/not_visited cities.
 
 ## Action
-Action space is a `DiscreteArray` of integer values in the range of [0, problem_size-1]. An action is the index of the 
+Action space is a `DiscreteArray` of integer values in the range of [0, problem_size-1]. An action is the index of the
 next city to visit.
 
 

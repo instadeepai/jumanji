@@ -13,20 +13,20 @@
 # limitations under the License.
 
 
-from chex import Array
 import jax.numpy as jnp
+from chex import Array
 
 
 def get_coordinates_augmentations(coordinates: Array) -> Array:
     """
-       Returns the 8 augmentations of the coordinates of a given instance problem described in [1].
-       [1] https://arxiv.org/abs/2010.16011
-       Usages: TSP and CVRP.
-       Args:
-           coordinates: array of coordinates for all cities [problem_size, 2]
-       Returns:
-           Array with 8 augmentations [8, problem_size, 2]
-       """
+    Returns the 8 augmentations of the coordinates of a given instance problem described in [1].
+    [1] https://arxiv.org/abs/2010.16011
+    Usages: TSP and CVRP.
+    Args:
+        coordinates: array of coordinates for all cities [problem_size, 2]
+    Returns:
+        Array with 8 augmentations [8, problem_size, 2]
+    """
 
     # Coordinates -> (1 - coordinates) for each city
     rotated_coordinates = jnp.array(
@@ -39,6 +39,9 @@ def get_coordinates_augmentations(coordinates: Array) -> Array:
     )
 
     # Coordinates are also flipped
-    flipped_coordinates = jnp.einsum("ijk -> jki", jnp.array([rotated_coordinates[:, :, 1], rotated_coordinates[:, :, 0]]))
+    flipped_coordinates = jnp.einsum(
+        "ijk -> jki",
+        jnp.array([rotated_coordinates[:, :, 1], rotated_coordinates[:, :, 0]]),
+    )
 
     return jnp.concatenate([rotated_coordinates, flipped_coordinates], axis=0)

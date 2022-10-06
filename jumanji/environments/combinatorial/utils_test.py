@@ -14,14 +14,13 @@
 
 
 from jax import numpy as jnp
+
 from jumanji.environments.combinatorial.utils import get_coordinates_augmentations
 
 
 def test_utils__get_coordinates_augmentations() -> None:
     """Checks that the augmentations of a given instance problem is computed properly."""
-    coordinates = jnp.array(
-        [[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]]
-    )
+    coordinates = jnp.array([[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]])
 
     expected_augmentations = jnp.array(
         [
@@ -85,4 +84,6 @@ def test_utils__get_coordinates_augmentations() -> None:
         ]
     )
 
-    assert jnp.allclose(expected_augmentations, get_coordinates_augmentations(coordinates))
+    assert jnp.allclose(
+        expected_augmentations, get_coordinates_augmentations(coordinates)
+    )

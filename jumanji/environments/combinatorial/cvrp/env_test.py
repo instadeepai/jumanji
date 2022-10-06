@@ -24,10 +24,9 @@ from jumanji.environments.combinatorial.cvrp.utils import (
     compute_tour_length,
     get_augmentations,
 )
-
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import StepType, TimeStep
+from jumanji.types import TimeStep
 
 
 @pytest.fixture
@@ -50,7 +49,7 @@ def test_cvrp__reset(cvrp_env: CVRP) -> None:
     assert isinstance(state, State)
 
     # Initial position is at depot, so current capacity is max capacity
-    assert (state.capacity == cvrp_env.max_capacity)
+    assert state.capacity == cvrp_env.max_capacity
     # # The depot is initially visited
     assert state.visited_mask[DEPOT_IDX]
     assert state.visited_mask.sum() == 1
@@ -111,8 +110,8 @@ def test_cvrp__does_not_smoke(cvrp_env: CVRP) -> None:
 
 def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
     """
-    Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot when the next node in the
-    list surpasses the current capacity of the agent.
+    Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot when the
+    next node in the list surpasses the current capacity of the agent.
     """
     key = jax.random.PRNGKey(0)
     state, timestep = cvrp_env.reset(key)
@@ -154,7 +153,8 @@ def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
 
 
 def test_cvrp__invalid_revisit_node(cvrp_env: CVRP) -> None:
-    """Checks that an invalid action leads to a termination and the appropriate reward is received."""
+    """Checks that an invalid action leads to a termination and the appropriate reward is
+    received."""
     key = jax.random.PRNGKey(0)
     state, timestep = cvrp_env.reset(key)
 
@@ -243,7 +243,9 @@ def test_cvrp__tour_length() -> None:
     # Check augmentations have same tour length
     coords_aug, demands_aug = get_augmentations(coords, demands)
     lengths = jax.vmap(compute_tour_length, in_axes=(0, None))(coords_aug, order)
-    assert jnp.allclose(lengths, jnp.ones(coords_aug.shape[0], dtype=jnp.float32) * tour_length)
+    assert jnp.allclose(
+        lengths, jnp.ones(coords_aug.shape[0], dtype=jnp.float32) * tour_length
+    )
 
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6])
     assert compute_tour_length(coords, order) == 6.8649917

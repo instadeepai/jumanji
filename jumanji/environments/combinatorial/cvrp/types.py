@@ -40,7 +40,7 @@ class State:
     position: jnp.int32
     capacity: jnp.int32
     visited_mask: Array  # (problem_size + 1,)
-    order: Array  # (2 * problem_size,) - the size is worst-case (going back to depot after visiting each node)
+    order: Array  # (2 * problem_size,) - this size is worst-case (visit depot after each node)
     num_total_visits: jnp.int32
 
 

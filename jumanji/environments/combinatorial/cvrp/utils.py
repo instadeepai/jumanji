@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chex import Array, PRNGKey
-import jax
-from jax import numpy as jnp
 from typing import Tuple
+
+import jax
+from chex import Array, PRNGKey
+from jax import numpy as jnp
+
 from jumanji.environments.combinatorial.utils import get_coordinates_augmentations
 
 DEPOT_IDX = 0
@@ -24,13 +26,19 @@ DEPOT_IDX = 0
 def compute_tour_length(coordinates: Array, order: Array) -> jnp.float32:
     """Calculate the length of a tour."""
     coordinates = coordinates[order]
-    return jnp.linalg.norm((coordinates - jnp.roll(coordinates, -1, axis=0)), axis=1).sum()
+    return jnp.linalg.norm(
+        (coordinates - jnp.roll(coordinates, -1, axis=0)), axis=1
+    ).sum()
 
 
-def generate_problem(key: PRNGKey, num_nodes: jnp.int32, max_demand: jnp.int32) -> Tuple[Array, Array]:
+def generate_problem(
+    key: PRNGKey, num_nodes: jnp.int32, max_demand: jnp.int32
+) -> Tuple[Array, Array]:
     coord_key, demand_key = jax.random.split(key)
     coords = jax.random.uniform(coord_key, (num_nodes + 1, 2), minval=0, maxval=1)
-    demands = jax.random.randint(demand_key, (num_nodes + 1,), minval=1, maxval=max_demand)
+    demands = jax.random.randint(
+        demand_key, (num_nodes + 1,), minval=1, maxval=max_demand
+    )
     demands = demands.at[DEPOT_IDX].set(0)
     return coords, demands
 
@@ -40,8 +48,8 @@ def generate_start_position(key: PRNGKey, num_nodes: jnp.int32) -> jnp.int32:
 
 
 def get_augmentations(coordinates: Array, demands: Array) -> Tuple[Array, Array]:
-    """Returns the 8 augmentations of a given instance problem described in [1]. This function leverages the existing
-    augmentation method for TSP and appends the costs/demands used in CVRP.
+    """Returns the 8 augmentations of a given instance problem described in [1]. This function
+    leverages the existing augmentation method for TSP and appends the costs/demands used in CVRP.
     [1] https://arxiv.org/abs/2010.16011
 
     Args:

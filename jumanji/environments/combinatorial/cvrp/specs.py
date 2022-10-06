@@ -108,4 +108,3 @@ class ObservationSpec(specs.Spec[Observation]):
         }
         all_kwargs.update(kwargs)
         return ObservationSpec(**all_kwargs)  # type: ignore
-
