@@ -11,17 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
+import pytest
 from jax import numpy as jnp
 
 from jumanji.environments.combinatorial.utils import get_coordinates_augmentations
 
 
-def test_utils__get_coordinates_augmentations() -> None:
-    """Checks that the augmentations of a given instance problem is computed properly."""
+@pytest.fixture
+def coordinates() -> jnp.array:
     coordinates = jnp.array([[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]])
+    return coordinates
 
+
+@pytest.fixture
+def expected_augmentations(coordinates: jnp.array) -> jnp.array:
     expected_augmentations = jnp.array(
         [
             coordinates,
@@ -83,7 +86,13 @@ def test_utils__get_coordinates_augmentations() -> None:
             ),
         ]
     )
+    return expected_augmentations
 
+
+def test_utils__get_coordinates_augmentations(
+    coordinates: jnp.array, expected_augmentations: jnp.array
+) -> None:
+    """Checks that the augmentations of a given instance problem is computed properly."""
     assert jnp.allclose(
         expected_augmentations, get_coordinates_augmentations(coordinates)
     )

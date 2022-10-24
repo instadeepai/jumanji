@@ -36,37 +36,37 @@ class CVRP(Environment[State]):
     Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
     - observation: Observation
         - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
-            the coordinates of each node and the depot
+            the coordinates of each node and the depot.
         - demands: jax array (float32) of shape (num_nodes + 1,)
-            the associated cost of each node and the depot (0.0 for the depot)
+            the associated cost of each node and the depot (0.0 for the depot).
         - position: jax array (int32)
-            the index of the last visited node
+            the index of the last visited node.
         - capacity: jax array (float32)
-            the current capacity of the vehicle
+            the current capacity of the vehicle.
         - action_mask: jax array (bool) of shape (num_nodes + 1,)
-            binary mask (False/True <--> invalid/valid action)
+            binary mask (False/True <--> invalid/valid action).
 
     - reward: jax array (float32)
         the negative sum of the distances between consecutive nodes at the end of the episode (the
         reward is 0 if a previously selected non-dept node is selected again, or the depot is
-        selected twice in a row)
+        selected twice in a row).
 
     - state: State
         - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
-            the coordinates of each node and the depot
+            the coordinates of each node and the depot.
         - demands: jax array (int32) of shape (num_nodes + 1,)
-            the associated cost of each node and the depot (0.0 for the depot)
+            the associated cost of each node and the depot (0.0 for the depot).
         - position: jax array (int32)
-            the index of the last visited node
+            the index of the last visited node.
         - capacity: jax array (int32)
-            the current capacity of the vehicle
+            the current capacity of the vehicle.
         - visited_mask: jax array (bool) of shape (num_nodes + 1,)
-            binary mask (False/True <--> not visited/visited)
+            binary mask (False/True <--> not visited/visited).
         - order: jax array (int32) of shape (2 * num_nodes,)
             the identifiers of the nodes that have been visited (-1 means that no node has been
-            visited yet at that time in the sequence)
+            visited yet at that time in the sequence).
         - num_visits: int32
-            number of actions that have been taken (i.e., unique visits)
+            number of actions that have been taken (i.e., unique visits).
 
     [1] Toth P., Vigo D. (2014). "Vehicle routing: problems, methods, and applications".
     """
@@ -74,10 +74,11 @@ class CVRP(Environment[State]):
     def __init__(
         self, problem_size: int = 100, max_capacity: int = 30, max_demand: int = 10
     ):
-        assert max_capacity >= max_demand, (
-            f"The demand associated with each node must be lower than the maximum capacity, "
-            f"hence the maximum capacity must be >= {max_demand}."
-        )
+        if max_capacity < max_demand:
+            raise ValueError(
+                f"The demand associated with each node must be lower than the maximum capacity, "
+                f"hence the maximum capacity must be >= {max_demand}."
+            )
         self.problem_size = problem_size
         self.max_capacity = max_capacity
         self.max_demand = max_demand
@@ -128,8 +129,7 @@ class CVRP(Environment[State]):
 
         Returns:
             state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
-            as well
-            as the timestep to be observed.
+            as well as the timestep to be observed.
         """
         is_valid = (~state.visited_mask[action]) & (
             state.capacity >= state.demands[action]

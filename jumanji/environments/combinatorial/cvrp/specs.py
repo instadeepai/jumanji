@@ -107,4 +107,5 @@ class ObservationSpec(specs.Spec[Observation]):
             "action_mask_spec": self.action_mask_spec,
         }
         all_kwargs.update(kwargs)
+
         return ObservationSpec(**all_kwargs)  # type: ignore
