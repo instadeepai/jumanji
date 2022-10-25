@@ -46,7 +46,7 @@ from jumanji.wrappers import (
     jumanji_to_gym_obs,
 )
 
-State = TypeVar("State")
+State = TypeVar("State", FakeState, BraxState)
 Observation = TypeVar("Observation")
 
 
@@ -239,7 +239,7 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         fake_dm_env.key = new_key
         assert jnp.array_equal(new_key, fake_dm_env.key)
 
-    def fake_state(self, key: PRNGKey, step: jnp.int32) -> FakeState:
+    def fake_state(self, key: PRNGKey, step: jnp.int32) -> State:
         """returns a fake state."""
         return FakeState(
             key=key,
@@ -247,12 +247,16 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         )
 
     def test_jumanji_environment_to_deep_mind_env__state_getter_setter(
-        self, fake_environment: FakeEnvironment, 
+        self,
+        fake_environment: FakeEnvironment,
     ) -> None:
         """validates state getter and setter."""
         key = jax.random.PRNGKey(0)
         fake_dm_env = JumanjiToDMEnvWrapper(fake_environment, key=key)
-        fake_state = self.fake_state(key=jax.random.PRNGKey(3), step=jax.random.randint(jax.random.PRNGKey(5), (), 0, 100))
+        fake_state = self.fake_state(
+            key=jax.random.PRNGKey(3),
+            step=jax.random.randint(jax.random.PRNGKey(5), (), 0, 100),
+        )
         fake_dm_env.state = fake_state
         assert fake_state is fake_dm_env.state
 

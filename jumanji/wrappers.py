@@ -36,6 +36,7 @@ from jax import jit, random
 
 from jumanji import specs, tree_utils
 from jumanji.env import Environment
+from jumanji.testing.fakes import FakeState
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 State = TypeVar("State")
@@ -133,12 +134,12 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
             env: `Environment`to wrap to a `dm_env.Environment`.
             key: optional key to initialize the `Environment` with.
         """
+        self.state: Union[State, FakeState]
         self._env = env
         if key is None:
-            self._key = random.PRNGKey(0)
+            self.key = random.PRNGKey(0)
         else:
-            self._key = key
-        self._state: State
+            self.key = key
         self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep]] = jit(
             self._env.reset
         )
@@ -217,19 +218,19 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
 
     @property
     def state(self) -> State:
-        return self._state
+        return self.state
 
     @state.setter
     def state(self, new_state: State) -> None:
-        self._state = new_state
+        self.state = new_state
 
     @property
     def key(self) -> PRNGKey:
-        return self._key
+        return self.key
 
     @key.setter
     def key(self, new_key: PRNGKey) -> None:
-        self._key = new_key
+        self.key = new_key
 
 
 class MultiToSingleWrapper(Wrapper):
