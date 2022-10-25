@@ -1263,7 +1263,7 @@ the episode ends.</p></td>
 
 
 <h3 id="jumanji.environments.games.snake.env.Snake.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">snake</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">snake</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">basearray</span><span class="o">.</span><span class="n">Array</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.environments.games.snake.env.Snake.reset" class="headerlink" title="Permanent link">#</a></h3>
@@ -1318,7 +1318,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.environments.games.snake.env.Snake.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">snake</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">snake</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.environments.games.snake.env.Snake.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1346,7 +1346,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>Array containing the action number to take.
 - 0: move up.
 - 1: move to the right.
@@ -1383,7 +1383,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h3 id="jumanji.environments.games.snake.env.Snake.update_head_pos" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">update_head_pos</span><span class="p">(</span><span class="n">head_pos</span><span class="p">:</span> <span class="n">Position</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Position</span></code>
+<code class="highlight language-python"><span class="n">update_head_pos</span><span class="p">(</span><span class="n">head_pos</span><span class="p">:</span> <span class="n">Position</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Position</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-staticmethod"><code>staticmethod</code></small>
@@ -1414,7 +1414,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>integer that tells which direction to go.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1610,7 +1610,7 @@ of their zorder.</p></td>
   <small>
     
       Last update:
-      2022-09-05
+      2022-10-25
     
   </small>
 </div>

@@ -1145,14 +1145,14 @@ have `StepType.MID.</p>
       </tr>
       <tr>
         <td><code>reward</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>A scalar, NumPy array, nested dict, list or tuple of rewards; or
 <code>None</code> if <code>step_type</code> is <code>StepType.FIRST</code>, i.e. at the start of a
 sequence.</p></td>
       </tr>
       <tr>
         <td><code>discount</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>A scalar, NumPy array, nested dict, list or tuple of discount
 values in the range <code>[0, 1]</code>, or <code>None</code> if <code>step_type</code> is
 <code>StepType.FIRST</code>, i.e. at the start of a sequence.</p></td>
@@ -1210,7 +1210,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.reward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reward</span><span class="p">:</span> <span class="n">ndarray</span></code>
+<code class="highlight language-python"><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
@@ -1231,7 +1231,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.discount" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">discount</span><span class="p">:</span> <span class="n">ndarray</span></code>
+<code class="highlight language-python"><span class="n">discount</span><span class="p">:</span> <span class="n">Array</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
@@ -1319,7 +1319,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_type</span><span class="p">:</span> <span class="n">StepType</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_type</span><span class="p">:</span> <span class="n">StepType</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1429,7 +1429,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.first" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span></code>
+<code class="highlight language-python"><span class="n">first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
 
 
 <a href="#jumanji.types.TimeStep.first" class="headerlink" title="Permanent link">#</a></h4>
@@ -1448,7 +1448,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.mid" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">mid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span></code>
+<code class="highlight language-python"><span class="n">mid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
 
 
 <a href="#jumanji.types.TimeStep.mid" class="headerlink" title="Permanent link">#</a></h4>
@@ -1467,7 +1467,7 @@ environments, extras is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.last" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">last</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span></code>
+<code class="highlight language-python"><span class="n">last</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
 
 
 <a href="#jumanji.types.TimeStep.last" class="headerlink" title="Permanent link">#</a></h4>
@@ -1669,7 +1669,7 @@ scalar reward and discount.</p></td>
 
 
 <h3 id="jumanji.types.transition" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">transition</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">transition</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">basearray</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.types.transition" class="headerlink" title="Permanent link">#</a></h3>
@@ -1691,7 +1691,7 @@ scalar reward and discount.</p></td>
   <tbody>
       <tr>
         <td><code>reward</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>array.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1703,7 +1703,7 @@ scalar reward and discount.</p></td>
       </tr>
       <tr>
         <td><code>discount</code></td>
-        <td><code>Optional[jax._src.numpy.ndarray.ndarray]</code></td>
+        <td><code>Optional[jax._src.basearray.Array]</code></td>
         <td><p>array.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -1752,7 +1752,7 @@ scalar reward and discount.</p></td>
 
 
 <h3 id="jumanji.types.termination" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">termination</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">termination</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.types.termination" class="headerlink" title="Permanent link">#</a></h3>
@@ -1774,7 +1774,7 @@ scalar reward and discount.</p></td>
   <tbody>
       <tr>
         <td><code>reward</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>array.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1829,7 +1829,7 @@ scalar reward and discount.</p></td>
 
 
 <h3 id="jumanji.types.truncation" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">truncation</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">truncation</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">basearray</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.types.truncation" class="headerlink" title="Permanent link">#</a></h3>
@@ -1851,7 +1851,7 @@ scalar reward and discount.</p></td>
   <tbody>
       <tr>
         <td><code>reward</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>Array</code></td>
         <td><p>array.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1863,7 +1863,7 @@ scalar reward and discount.</p></td>
       </tr>
       <tr>
         <td><code>discount</code></td>
-        <td><code>Optional[jax._src.numpy.ndarray.ndarray]</code></td>
+        <td><code>Optional[jax._src.basearray.Array]</code></td>
         <td><p>array.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -1977,7 +1977,7 @@ the supported dtype of float32.</p>
   <small>
     
       Last update:
-      2022-09-05
+      2022-10-25
     
   </small>
 </div>
