@@ -406,6 +406,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_2_1">
@@ -532,6 +534,20 @@
     <li class="md-nav__item">
       <a href="../knapsack/" class="md-nav__link">
         Knapsack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cvrp/" class="md-nav__link">
+        CVRP
       </a>
     </li>
   
@@ -812,6 +828,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4_1_2">
@@ -876,6 +894,20 @@
     <li class="md-nav__item">
       <a href="../../api/environments/knapsack/" class="md-nav__link">
         Knapsack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/cvrp/" class="md-nav__link">
+        CVRP
       </a>
     </li>
   
@@ -1044,9 +1076,8 @@ the current position of the agent as well as the starting point.</p>
 <li><strong>action_mask</strong>: jax array (int8) of shape (problem_size,), array of binary values denoting visited/not_visited cities.</li>
 </ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>Action space is an <code>Array</code> where each index corresponds to the next city to visit.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>action: [0, 0, 1, 0]  # Problem size of 4 cities, choosing the 3rd city
-</code></pre></div></td></tr></table></div>
+<p>Action space is a <code>DiscreteArray</code> of integer values in the range of [0, problem_size-1]. An action is the index of the
+next city to visit.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
 <p>The reward is 0 at every step except for the last step, where the reward is
 the length of the path chosen by the agent.</p>
@@ -1063,7 +1094,7 @@ the length of the path chosen by the agent.</p>
   <small>
     
       Last update:
-      2022-10-25
+      2022-10-28
     
   </small>
 </div>

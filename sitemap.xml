@@ -2,97 +2,107 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://instadeep.github.io/jumanji/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/env/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/types/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/wrappers/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/binpack/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/connect4/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/api/environments/cvrp/</loc>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/knapsack/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/routing/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/snake/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/tsp/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/binpack/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/connect4/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/cvrp/</loc>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/knapsack/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/routing/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/snake/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/tsp/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/anakin_snake/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/registration/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/wrappers/</loc>
-         <lastmod>2022-10-25</lastmod>
+         <lastmod>2022-10-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
