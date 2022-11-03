@@ -25,7 +25,7 @@ ENV_NAME_RE = re.compile(r"^(?:(?P<name>[\w:.-]+?))(?:-v(?P<version>\d+))?$")
 def parse_env_id(id: str) -> Tuple[str, int]:
     """Parse an environment name.
 
-    The format must obey the following structure: (env-name)-v(version-number).
+    The format must obey the following structure: <env-name>-v<version>.
 
     Args:
         id: The environment ID to parse.
@@ -40,7 +40,7 @@ def parse_env_id(id: str) -> Tuple[str, int]:
     if not match:
         raise ValueError(
             f"Malformed environment name: {id}."
-            "All env ID's must be of the form (env-name)-v(version-number)."
+            "All env ID's must be of the form <env-name>-v<version>."
         )
 
     name, version = match.group("name", "version")
@@ -49,7 +49,7 @@ def parse_env_id(id: str) -> Tuple[str, int]:
     if version is None:
         raise ValueError(
             f"Version missing, got name={name} and version={version}. "
-            "All env ID's must be of the form (env-name)-v(version-number)."
+            "All env ID's must be of the form <env-name>-v<version>."
         )
 
     return name, int(version)
@@ -131,7 +131,7 @@ def register(
     """Register an environment.
 
     Args:
-        id: environment ID, formatted as `(env_name)-v(version)`.
+        id: environment ID, formatted as `<env-name>-v<version>`.
         entry_point: module and class constructor for the environment.
         **kwargs: extra arguments that will be passed to the environment constructor at
             instantiation.
