@@ -41,6 +41,9 @@ class BinPackViewer:
 
         Args:
             name: The window name to be used when initialising the window.
+            render_mode: The mode used to render the environment. Must be one of:
+                - RenderMode.HUMAN: Render the environment on screen.
+                - RenderMode.RGB_ARRAY: Return a jnp.array frame representing the environment.
         """
         self._name = name
         # You must store the created Animation in a variable that lives as long as the animation

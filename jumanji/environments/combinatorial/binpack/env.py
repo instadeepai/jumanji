@@ -132,6 +132,9 @@ class BinPack(Environment[State]):
             debug: if True, will output an `invalid_ems_from_env` field in the extras returned
                 within timestep. Default to False as computing this metric slows down the
                 environment.
+            render_mode: The mode used to render the environment. Must be one of:
+                - RenderMode.HUMAN: Render the environment on screen.
+                - RenderMode.RGB_ARRAY: Return a jnp.array frame representing the environment.
         """
         self.instance_generator = (
             instance_generator
