@@ -581,14 +581,14 @@ class JumanjiToGymWrapper(gym.Env):
         """
         self._key = jax.random.PRNGKey(seed)
 
-    def render(self, mode: str = "human") -> None:
+    def render(self, mode: str = "human") -> Any:
         """Renders the environment.
 
         Args:
             mode: currently not used since Jumanji does not currently support modes.
         """
         del mode
-        self._env.render(self._state)
+        return self._env.render(self._state)
 
     def close(self) -> None:
         """Closes the environment, important for rendering where pygame is imported."""

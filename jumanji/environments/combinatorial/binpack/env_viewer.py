@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 from typing import List, Optional, Sequence, Tuple, Union
 
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -24,11 +26,16 @@ import jumanji.environments
 from jumanji.environments.combinatorial.binpack.types import State, item_from_space
 
 
+class RenderMode(str, Enum):
+    HUMAN = "human"
+    RGB_ARRAY = "rgb_array"
+
+
 class BinPackViewer:
     FONT_STYLE = "monospace"
     FIGURE_SIZE = (6.0, 6.0)
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, render_mode: RenderMode = RenderMode.HUMAN) -> None:
         """
         Viewer for the BinPack environment.
 
@@ -40,7 +47,14 @@ class BinPackViewer:
         # should run. Otherwise the animation will get garbage-collected.
         self._animation: Optional[matplotlib.animation.Animation] = None
 
-    def render(self, state: State) -> None:
+        if render_mode == RenderMode.RGB_ARRAY:
+            self._display = self._display_rgb_array
+        elif render_mode == RenderMode.HUMAN:
+            self._display = self._display_human
+        else:
+            raise ValueError(f"Invalid render mode: {render_mode}")
+
+    def render(self, state: State) -> Optional[jnp.ndarray]:
         """
         Render the given state of the BinPack environment.
 
@@ -54,7 +68,7 @@ class BinPackViewer:
         for entity in entities:
             ax.add_collection3d(entity)
         self._add_overlay(fig, ax, state)
-        self._display(fig)
+        return self._display(fig)
 
     def animation(
         self,
@@ -200,7 +214,7 @@ class BinPackViewer:
         title = " | ".join(key + ": " + value for key, value in metrics)
         fig.suptitle(title, font=self.FONT_STYLE)
 
-    def _display(self, fig: plt.Figure) -> None:
+    def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
             # Required to update render when using Jupyter Notebook.
             fig.canvas.draw()
@@ -211,6 +225,10 @@ class BinPackViewer:
             fig.canvas.draw_idle()
             # Block for 2 seconds.
             fig.canvas.start_event_loop(2.0)
+
+    def _display_rgb_array(self, fig: plt.Figure) -> jnp.ndarray:
+        fig.canvas.draw()
+        return jnp.asarray(fig.canvas.buffer_rgba())
 
     def _clear_display(self) -> None:
         if jumanji.environments.is_colab():
