@@ -40,7 +40,7 @@ you can register it as follows:
 from jumanji import register
 
 register(
-    id="CustomEnv-v0",                            # format: (env_name)[-v(version)]
+    id="CustomEnv-v0",                            # format: (env_name)-v(version)
     entry_point="path.to.your.package:CustomEnv", # class constructor
     kwargs={...},                                 # environment configuration
 )
@@ -48,9 +48,7 @@ register(
 
 To successfully register your environment, make sure to provide the right path to your class constructor.
 The `kwargs` argument is there to configurate the environment and allow you to register scenarios with a specific set of arguments.
-The environment ID must respect the format `(env_name)[-v(version)]`.
-The version number is optional as Jumanji automatically appends `v0` to it if omitted.
-In that case, the environment can be retrieved with or without the `-v0` suffix.
+The environment ID must respect the format `(env_name)-v(version)`, where the version number starts at `v0`.
 
 For examples on how to register environments, please see our `__init__.py` file.
 
