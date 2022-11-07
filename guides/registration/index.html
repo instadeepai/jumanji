@@ -1073,16 +1073,14 @@ you can register it as follows:</p>
 <span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">jumanji</span> <span class="kn">import</span> <span class="n">register</span>
 
 <span class="n">register</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;CustomEnv-v0&quot;</span><span class="p">,</span>                            <span class="c1"># format: (env_name)[-v(version)]</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;CustomEnv-v0&quot;</span><span class="p">,</span>                            <span class="c1"># format: (env_name)-v(version)</span>
     <span class="n">entry_point</span><span class="o">=</span><span class="s2">&quot;path.to.your.package:CustomEnv&quot;</span><span class="p">,</span> <span class="c1"># class constructor</span>
     <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">},</span>                                 <span class="c1"># environment configuration</span>
 <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
 <p>To successfully register your environment, make sure to provide the right path to your class constructor.
 The <code>kwargs</code> argument is there to configurate the environment and allow you to register scenarios with a specific set of arguments.
-The environment ID must respect the format <code>(env_name)[-v(version)]</code>.
-The version number is optional as Jumanji automatically appends <code>v0</code> to it if omitted.
-In that case, the environment can be retrieved with or without the <code>-v0</code> suffix.</p>
+The environment ID must respect the format <code>(env_name)-v(version)</code>, where the version number starts at <code>v0</code>.</p>
 <p>For examples on how to register environments, please see our <code>__init__.py</code> file.</p>
 <div class="admonition note">
 <p>Note that Jumanji doesn't allow users to overwrite the registration of an existing environment.</p>
@@ -1095,7 +1093,7 @@ you can inspect the listing of registered environments using the <code>registere
   <small>
     
       Last update:
-      2022-10-28
+      2022-11-07
     
   </small>
 </div>
