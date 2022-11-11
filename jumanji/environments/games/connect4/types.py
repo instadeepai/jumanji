@@ -35,3 +35,4 @@ class State:
 class Observation:
     board: Board
     action_mask: Array
+    current_player: Array

@@ -83,10 +83,11 @@ class Connect4(Environment[State]):
         board = jnp.zeros((BOARD_HEIGHT, BOARD_WIDTH), dtype=jnp.int8)
         action_mask = jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
 
-        obs = Observation(board=board, action_mask=action_mask)
+        obs = Observation(
+            board=board, action_mask=action_mask, current_player=jnp.int8(0)
+        )
 
-        extras = {"current_player": jnp.array(0, dtype=jnp.int8)}
-        timestep = restart(observation=obs, shape=(self.n_players,), extras=extras)
+        timestep = restart(observation=obs, shape=(self.n_players,))
 
         state = State(current_player=jnp.int8(0), board=board)
 
@@ -101,8 +102,8 @@ class Connect4(Environment[State]):
 
         Returns:
             state: State object corresponding to the next state of the environment,
-            timestep: TimeStep object corresponding to the timestep returned by the environment,
-                its `extras` field contains the current player id.
+            timestep: TimeStep object corresponding to the timestep returned by the environment.
+                Its `observation` attribute contains a field for the current player id.
         """
         board = state.board
 
@@ -141,7 +142,11 @@ class Connect4(Environment[State]):
         # creating next state
         next_state = State(current_player=jnp.int8(next_player), board=new_board)
 
-        obs = Observation(board=new_board, action_mask=action_mask)
+        obs = Observation(
+            board=new_board,
+            action_mask=action_mask,
+            current_player=jnp.int8(next_player),
+        )
 
         timestep = lax.cond(
             done,
@@ -149,13 +154,11 @@ class Connect4(Environment[State]):
                 reward=reward,
                 observation=obs,
                 shape=(self.n_players,),
-                extras={"current_player": next_player},
             ),
             lambda _: transition(
                 reward=reward,
                 observation=obs,
                 shape=(self.n_players,),
-                extras={"current_player": next_player},
             ),
             operand=None,
         )
@@ -177,6 +180,7 @@ class Connect4(Environment[State]):
                 maximum=1,
                 name="invalid_mask",
             ),
+            current_player=specs.Array(shape=(), dtype=jnp.int8, name="current_player"),
         )
 
     def action_spec(self) -> specs.DiscreteArray:
