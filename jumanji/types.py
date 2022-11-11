@@ -72,8 +72,9 @@ class TimeStep(Generic[Observation]):
             also valid in place of a scalar array.
         extras: environment metrics or things to be seen by the agent but not directly
             observed (hence not in the observation) e.g. whether an invalid action was
-            taken, some environment metric, or the player whose turn it is. In most
-            environments, extras is None.
+            taken or some environment metric(s). In most environments, extras is None.
+            In particular, the extras should not contain any quantity that is meant to
+            be observed by the agent - such quantities should be in the observation.
     """
 
     step_type: StepType
@@ -103,8 +104,7 @@ def restart(
         observation: array or tree of arrays.
         extras: environment metrics or things to be seen by the agent but not directly
             observed (hence not in the observation) e.g. whether an invalid action was
-            taken, some environment metric, or the player whose turn it is. In most
-            environments, extras is None.
+            taken or some environment metric(s). In most environments, extras is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -136,8 +136,7 @@ def transition(
         discount: array.
         extras: environment metrics or things to be seen by the agent but not directly
             observed (hence not in the observation) e.g. whether an invalid action was
-            taken, some environment metric, or the player whose turn it is. In most
-            environments, extras is None.
+            taken or some environment metric(s). In most environments, extras is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -168,8 +167,7 @@ def termination(
         observation: array or tree of arrays.
         extras: environment metrics or things to be seen by the agent but not directly
             observed (hence not in the observation) e.g. whether an invalid action was
-            taken, some environment metric, or the player whose turn it is. In most
-            environments, extras is None.
+            taken or some environment metric(s). In most environments, extras is None.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -201,8 +199,7 @@ def truncation(
         discount: array.
         extras: environment metrics or things to be seen by the agent but not directly
             observed (hence not in the observation) e.g. whether an invalid action was
-            taken, some environment metric, or the player whose turn it is. In most
-            environments, extras is None.
+            taken or some environment metric(s). In most environments, extras is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
