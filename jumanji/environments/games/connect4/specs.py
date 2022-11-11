@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import Any
 
 from jumanji import specs
@@ -23,7 +22,7 @@ class ObservationSpec(specs.Spec[Observation]):
         self,
         board_obs: specs.Array,
         action_mask: specs.Array,
-        current_player: specs.Array,
+        current_player: specs.DiscreteArray,
     ):
         name = (
             "Observation(\n"
@@ -82,6 +81,10 @@ class ObservationSpec(specs.Spec[Observation]):
         Returns:
             A new copy of `ObservationSpec`.
         """
-        all_kwargs = {"board_obs": self.board_obs, "action_mask": self.action_mask}
+        all_kwargs = {
+            "board_obs": self.board_obs,
+            "action_mask": self.action_mask,
+            "current_player": self.current_player,
+        }
         all_kwargs.update(kwargs)
-        return ObservationSpec(**all_kwargs)
+        return ObservationSpec(**all_kwargs)  # type: ignore

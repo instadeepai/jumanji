@@ -44,6 +44,7 @@ class Connect4(Environment[State]):
             - (-1) if it contains a token by the other player.
         - action_mask: jax array (bool)
             valid columns (actions) are identified with `True`, invalid ones with `False`.
+        - current_player: int, id of the current player {0, 1}.
 
     - action: Array containing the column to insert the token into {0, 1, 2, 3, 4, 5, 6}
 
@@ -180,7 +181,9 @@ class Connect4(Environment[State]):
                 maximum=1,
                 name="invalid_mask",
             ),
-            current_player=specs.Array(shape=(), dtype=jnp.int8, name="current_player"),
+            current_player=specs.DiscreteArray(
+                num_values=self.n_players, dtype=jnp.int8, name="current_player"
+            ),
         )
 
     def action_spec(self) -> specs.DiscreteArray:
