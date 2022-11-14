@@ -104,7 +104,6 @@ class TSP(Environment[State]):
             state: State object corresponding to the new state of the environment.
             timestep: TimeStep object corresponding to the first timestep returned by the
                 environment.
-            extra: Not used.
         """
         state = State(
             problem=problem,
