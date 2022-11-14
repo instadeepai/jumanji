@@ -70,11 +70,10 @@ class TimeStep(Generic[Observation]):
         observation: A NumPy array, or a nested dict, list or tuple of arrays.
             Scalar values that can be cast to NumPy arrays (e.g. Python floats) are
             also valid in place of a scalar array.
-        extras: environment metrics or things to be seen by the agent but not directly
-            observed (hence not in the observation) e.g. whether an invalid action was
-            taken or some environment metric(s). In most environments, extras is None.
-            In particular, the extras should not contain any quantity that is meant to
-            be observed by the agent - such quantities should be in the observation.
+        extras: environment metric(s) or information returned by the environment but
+            not observed by the agent (hence not in the observation). For example, it
+            could be whether an invalid action was taken. In most environments, extras
+            is None.
     """
 
     step_type: StepType
@@ -102,9 +101,10 @@ def restart(
 
     Args:
         observation: array or tree of arrays.
-        extras: environment metrics or things to be seen by the agent but not directly
-            observed (hence not in the observation) e.g. whether an invalid action was
-            taken or some environment metric(s). In most environments, extras is None.
+        extras: environment metric(s) or information returned by the environment but
+            not observed by the agent (hence not in the observation). For example, it
+            could be whether an invalid action was taken. In most environments, extras
+            is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -134,9 +134,10 @@ def transition(
         reward: array.
         observation: array or tree of arrays.
         discount: array.
-        extras: environment metrics or things to be seen by the agent but not directly
-            observed (hence not in the observation) e.g. whether an invalid action was
-            taken or some environment metric(s). In most environments, extras is None.
+        extras: environment metric(s) or information returned by the environment but
+            not observed by the agent (hence not in the observation). For example, it
+            could be whether an invalid action was taken. In most environments, extras
+            is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -165,9 +166,10 @@ def termination(
     Args:
         reward: array.
         observation: array or tree of arrays.
-        extras: environment metrics or things to be seen by the agent but not directly
-            observed (hence not in the observation) e.g. whether an invalid action was
-            taken or some environment metric(s). In most environments, extras is None.
+        extras: environment metric(s) or information returned by the environment but
+            not observed by the agent (hence not in the observation). For example, it
+            could be whether an invalid action was taken. In most environments, extras
+            is None.
         shape : optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
@@ -197,9 +199,10 @@ def truncation(
         reward: array.
         observation: array or tree of arrays.
         discount: array.
-        extras: environment metrics or things to be seen by the agent but not directly
-            observed (hence not in the observation) e.g. whether an invalid action was
-            taken or some environment metric(s). In most environments, extras is None.
+        extras: environment metric(s) or information returned by the environment but
+            not observed by the agent (hence not in the observation). For example, it
+            could be whether an invalid action was taken. In most environments, extras
+            is None.
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
