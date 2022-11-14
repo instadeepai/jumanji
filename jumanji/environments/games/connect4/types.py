@@ -28,7 +28,7 @@ Board: TypeAlias = Array
 
 @dataclass
 class State:
-    current_player: int
+    current_player: jnp.int8
     board: Board
 
 
