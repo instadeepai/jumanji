@@ -77,8 +77,8 @@ class Connect4(Environment[State]):
 
         Returns:
             state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding to the first timestep returned by
-                the environment, its `extras` field contains the current player id.
+            timestep: TimeStep object corresponding to the first timestep returned by the
+            environment. Its `observation` attribute contains a field for the current player id.
         """
         del key
         board = jnp.zeros((BOARD_HEIGHT, BOARD_WIDTH), dtype=jnp.int8)
