@@ -129,7 +129,7 @@ class Connect4(Environment[State]):
         action_mask = get_action_mask(new_board)
 
         # switching player
-        next_player = (state.current_player + 1) % self.n_players
+        next_player = jnp.int8((state.current_player + 1) % self.n_players)
 
         # computing reward
         reward_value = compute_reward(invalid, winning)
@@ -141,12 +141,12 @@ class Connect4(Environment[State]):
         reward = reward.at[next_player].set(-reward_value)
 
         # creating next state
-        next_state = State(current_player=jnp.int8(next_player), board=new_board)
+        next_state = State(current_player=next_player, board=new_board)
 
         obs = Observation(
             board=new_board,
             action_mask=action_mask,
-            current_player=jnp.int8(next_player),
+            current_player=next_player,
         )
 
         timestep = lax.cond(
