@@ -41,7 +41,7 @@ def test_connect4__reset(connect4_env: Connect4, empty_board: Array) -> None:
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.current_player == 0
-    assert timestep.extras["current_player"] == 0  # type: ignore
+    assert timestep.observation.current_player == 0
     assert jnp.array_equal(state.board, empty_board)
     assert jnp.array_equal(
         timestep.observation.action_mask, jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
