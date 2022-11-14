@@ -44,7 +44,7 @@ class Connect4(Environment[State]):
             - (-1) if it contains a token by the other player.
         - action_mask: jax array (bool)
             valid columns (actions) are identified with `True`, invalid ones with `False`.
-        - current_player: int, id of the current player {0, 1}.
+        - current_player: jnp.int8, id of the current player {0, 1}.
 
     - action: Array containing the column to insert the token into {0, 1, 2, 3, 4, 5, 6}
 
@@ -58,7 +58,7 @@ class Connect4(Environment[State]):
         - if a player plays an invalid move, this player loses and the game ends.
 
     - state: State
-        - current_player: int, id of the current player {0, 1}.
+        - current_player: jnp.int8, id of the current player {0, 1}.
         - board: jax array (int8) of shape (6, 7):
             each cell contains either:
             - 1 if it contains a token placed by the current player,
