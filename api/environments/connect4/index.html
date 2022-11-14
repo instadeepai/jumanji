@@ -1110,6 +1110,7 @@ Connect4            (<a class="autorefs autorefs-internal" title="jumanji.env.En
 </li>
 <li>action_mask: jax array (bool)
     valid columns (actions) are identified with <code>True</code>, invalid ones with <code>False</code>.</li>
+<li>current_player: jnp.int8, id of the current player {0, 1}.</li>
 </ul>
 </li>
 <li>
@@ -1133,7 +1134,7 @@ and the game ends.</li>
 <li>
 <p>state: State</p>
 <ul>
-<li>current_player: int, id of the current player {0, 1}.</li>
+<li>current_player: jnp.int8, id of the current player {0, 1}.</li>
 <li>board: jax array (int8) of shape (6, 7):
     each cell contains either:<ul>
 <li>1 if it contains a token placed by the current player,</li>
@@ -1221,8 +1222,8 @@ and the game ends.</li>
     <tr>
       <td><code>state</code></td>
       <td><p>State object corresponding to the new state of the environment,
-timestep: TimeStep object corresponding to the first timestep returned by
-    the environment, its <code>extras</code> field contains the current player id.</p></td>
+timestep: TimeStep object corresponding to the first timestep returned by the
+environment. Its <code>observation</code> attribute contains a field for the current player id.</p></td>
     </tr>
   </tbody>
 </table>
@@ -1283,8 +1284,8 @@ timestep: TimeStep object corresponding to the first timestep returned by
     <tr>
       <td><code>state</code></td>
       <td><p>State object corresponding to the next state of the environment,
-timestep: TimeStep object corresponding to the timestep returned by the environment,
-    its <code>extras</code> field contains the current player id.</p></td>
+timestep: TimeStep object corresponding to the timestep returned by the environment.
+    Its <code>observation</code> attribute contains a field for the current player id.</p></td>
     </tr>
   </tbody>
 </table>
