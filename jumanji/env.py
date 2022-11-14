@@ -15,14 +15,22 @@
 """Abstract environment class"""
 
 import abc
-from typing import Any, Generic, Tuple, TypeVar
+from typing import Any, Generic, Protocol, Tuple, TypeVar
 
+import jax.random
 from chex import PRNGKey
 
 from jumanji import specs
 from jumanji.types import Action, TimeStep
 
-State = TypeVar("State")
+
+class StateProtocol(Protocol):
+    """Enforce that the State for every Environment must implement a key."""
+
+    key: jax.random.PRNGKey
+
+
+State = TypeVar("State", bound="StateProtocol")
 
 
 class Environment(abc.ABC, Generic[State]):
