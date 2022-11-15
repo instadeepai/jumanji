@@ -27,7 +27,7 @@ from jumanji.types import Action, TimeStep
 class StateProtocol(Protocol):
     """Enforce that the State for every Environment must implement a key."""
 
-    key: jax.random.PRNGKey
+    key: chex.PRNGKey
 
 
 State = TypeVar("State", bound="StateProtocol")
