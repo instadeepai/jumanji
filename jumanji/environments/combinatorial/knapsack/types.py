@@ -14,6 +14,9 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
+import chex
+import jax.random
+
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
@@ -40,6 +43,7 @@ class State:
     used_mask: Array  # (problem_size,)
     num_steps: jnp.int32
     remaining_budget: jnp.float32
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):

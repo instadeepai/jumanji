@@ -35,10 +35,9 @@ from chex import Array, PRNGKey
 from jax import jit, random
 
 from jumanji import specs, tree_utils
-from jumanji.env import Environment
+from jumanji.env import Environment, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
-State = TypeVar("State")
 Observation = TypeVar("Observation")
 
 # Type alias that corresponds to ObsType in the Gym API
