@@ -14,6 +14,7 @@
 
 from typing import TYPE_CHECKING
 
+import jax.numpy as jnp
 from chex import Array
 from typing_extensions import TypeAlias
 
@@ -27,7 +28,7 @@ Board: TypeAlias = Array
 
 @dataclass
 class State:
-    current_player: int
+    current_player: jnp.int8
     board: Board
 
 
@@ -35,3 +36,4 @@ class State:
 class Observation:
     board: Board
     action_mask: Array
+    current_player: jnp.int8
