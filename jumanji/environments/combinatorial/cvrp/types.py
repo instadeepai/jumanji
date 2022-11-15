@@ -21,6 +21,7 @@ if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
 else:
     from chex import dataclass
 
+import chex
 import jax.numpy as jnp
 from chex import Array
 

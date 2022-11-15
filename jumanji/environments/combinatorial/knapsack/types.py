@@ -14,6 +14,7 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
+import chex
 import jax.random
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239

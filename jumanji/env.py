@@ -17,7 +17,7 @@
 import abc
 from typing import Any, Generic, Protocol, Tuple, TypeVar
 
-import jax.random
+import chex
 from chex import PRNGKey
 
 from jumanji import specs

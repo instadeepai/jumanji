@@ -14,6 +14,7 @@
 
 from typing import TYPE_CHECKING
 
+import chex
 import jax.numpy as jnp
 import jax.random
 from chex import Array
