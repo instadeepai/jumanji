@@ -18,7 +18,6 @@ import abc
 from typing import Any, Generic, Protocol, Tuple, TypeVar
 
 import chex
-from chex import PRNGKey
 
 from jumanji import specs
 from jumanji.types import Action, TimeStep
@@ -44,7 +43,7 @@ class Environment(abc.ABC, Generic[State]):
         return "Environment."
 
     @abc.abstractmethod
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
 
         Args:
