@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+import enum
 from typing import List, Optional, Sequence, Tuple, Union
 
 import jax.numpy as jnp
@@ -26,7 +26,7 @@ import jumanji.environments
 from jumanji.environments.combinatorial.binpack.types import State, item_from_space
 
 
-class RenderMode(str, Enum):
+class RenderMode(str, enum.Enum):
     HUMAN = "human"
     RGB_ARRAY = "rgb_array"
 
