@@ -40,7 +40,7 @@ class State:
     visited_mask: Array  # (problem_size,)
     order: Array  # (problem_size,)
     num_visited: jnp.int32
-    key: jax.random.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):

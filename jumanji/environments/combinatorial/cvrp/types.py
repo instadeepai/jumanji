@@ -44,7 +44,7 @@ class State:
     visited_mask: Array  # (problem_size + 1,)
     order: Array  # (2 * problem_size,) - this size is worst-case (visit depot after each node)
     num_total_visits: jnp.int32
-    key: jax.random.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):

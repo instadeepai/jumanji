@@ -42,7 +42,7 @@ class State:
     used_mask: Array  # (problem_size,)
     num_steps: jnp.int32
     remaining_budget: jnp.float32
-    key: jax.random.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):

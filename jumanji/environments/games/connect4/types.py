@@ -31,7 +31,7 @@ Board: TypeAlias = Array
 class State:
     current_player: jnp.int8
     board: Board
-    key: jax.random.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 @dataclass
