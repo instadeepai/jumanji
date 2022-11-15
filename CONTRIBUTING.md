@@ -31,11 +31,11 @@ Before sending your pull request for review, make sure your changes are consiste
 
 When contributing a new environment, make sure to do the following:
 1. Implement all the functions of the Environment abstraction: step, reset, specs, etc.
-2. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` test that runs a `JaxEnvironmentLoop` to test compilation.
-3. Add an environment README in the `jumanji/{your_env}` folder describing the environment.
-4. Add an image (or gif) in the readme above. Images are located in `docs/img`.
-5. Update the documentation api in `docs/api` to add your environment to the doc.
-6. (Optional) Add a `run_random_agent_[your_env].py` script in `examples/` to benchmark your environment.
+2. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` using the testing utils.
+3. Add an environment README in the `docs/environments/` folder describing the environment you implemented.
+4. Add an image (or gif) in the readme above. Images are located in `docs/img/`.
+5. Update the documentation api in `docs/api/environments/` to add your environment to the doc.
+6. Update the `mkdocs.yml` file to include the newly added markdown files.
 
 
 ### Coding Style
