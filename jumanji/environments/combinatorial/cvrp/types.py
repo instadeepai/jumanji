@@ -14,11 +14,14 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
+import jax.random
+
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
 
+import chex
 import jax.numpy as jnp
 from chex import Array
 
@@ -42,6 +45,7 @@ class State:
     visited_mask: Array  # (problem_size + 1,)
     order: Array  # (2 * problem_size,) - this size is worst-case (visit depot after each node)
     num_total_visits: jnp.int32
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):

@@ -15,14 +15,21 @@
 """Abstract environment class"""
 
 import abc
-from typing import Any, Generic, Tuple, TypeVar
+from typing import Any, Generic, Protocol, Tuple, TypeVar
 
-from chex import PRNGKey
+import chex
 
 from jumanji import specs
 from jumanji.types import Action, TimeStep
 
-State = TypeVar("State")
+
+class StateProtocol(Protocol):
+    """Enforce that the State for every Environment must implement a key."""
+
+    key: chex.PRNGKey
+
+
+State = TypeVar("State", bound="StateProtocol")
 
 
 class Environment(abc.ABC, Generic[State]):
@@ -36,7 +43,7 @@ class Environment(abc.ABC, Generic[State]):
         return "Environment."
 
     @abc.abstractmethod
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
 
         Args:

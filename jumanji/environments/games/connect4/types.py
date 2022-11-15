@@ -14,7 +14,9 @@
 
 from typing import TYPE_CHECKING
 
+import chex
 import jax.numpy as jnp
+import jax.random
 from chex import Array
 from typing_extensions import TypeAlias
 
@@ -30,6 +32,7 @@ Board: TypeAlias = Array
 class State:
     current_player: jnp.int8
     board: Board
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 @dataclass
