@@ -40,7 +40,7 @@ try:
         if is_colab():
             backend = "inline"
         else:
-            backend = "notebook"
+            backend = ""
         IPython.get_ipython().run_line_magic("matplotlib", backend)
 
 except ImportError as exc:
