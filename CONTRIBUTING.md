@@ -40,6 +40,7 @@ When contributing a new environment, make sure to do the following:
 
 ### Coding Style
 In general, we follow the [Google Style Guide](https://google.github.io/styleguide/pyguide.html).
+We use [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages.
 In addition, to guarantee the quality and uniformity of the code, we use various linters:
 
 - [Black](https://black.readthedocs.io/en/stable/#) is a deterministic code formatter that is compliant with PEP8 standards.
