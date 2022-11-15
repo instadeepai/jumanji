@@ -28,6 +28,10 @@ def is_colab() -> bool:
     return "google.colab" in sys.modules
 
 
+def is_notebook() -> bool:
+    return "ipykernel" in sys.modules
+
+
 # In a notebook, force the Matplotlib backend to ngAgg in order for figures to update
 # every time render is called for environments that use Matplotlib
 # for rendering. Without this, only the last render result is shown per figure.
@@ -39,6 +43,8 @@ try:
 
         if is_colab():
             backend = "inline"
+        elif is_notebook():
+            backend = "notebook"
         else:
             backend = ""
         IPython.get_ipython().run_line_magic("matplotlib", backend)
