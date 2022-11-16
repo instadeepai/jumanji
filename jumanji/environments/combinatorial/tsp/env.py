@@ -46,7 +46,7 @@ class TSP(Environment[State]):
             binary mask (0/1 <--> not visited/visited)
 
     - reward: jax array (float32)
-        the sum of the distances between consecutive cities at the end of the episode
+        the negative sum of the distances between consecutive cities at the end of the episode
         (the reward is 0 if a previously selected city is selected again)
 
     - state: State
@@ -104,7 +104,6 @@ class TSP(Environment[State]):
             state: State object corresponding to the new state of the environment.
             timestep: TimeStep object corresponding to the first timestep returned by the
                 environment.
-            extra: Not used.
         """
         state = State(
             problem=problem,

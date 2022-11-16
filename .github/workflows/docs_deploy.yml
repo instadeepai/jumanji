@@ -3,7 +3,7 @@ name: Deploy Docs 📚
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   docs:

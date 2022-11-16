@@ -32,18 +32,16 @@ the current position of the agent as well as the starting point.
 - **action_mask**: jax array (int8) of shape (problem_size,), array of binary values denoting visited/not_visited cities.
 
 ## Action
-Action space is an `Array` where each index corresponds to the next city to visit.
+Action space is a `DiscreteArray` of integer values in the range of [0, problem_size-1]. An action is the index of the
+next city to visit.
 
-```
-action: [0, 0, 1, 0]  # Problem size of 4 cities, choosing the 3rd city
-```
 
 ## Reward
 The reward is 0 at every step except for the last step, where the reward is
 the length of the path chosen by the agent.
 
 ## Registered Versions 📖
-- `TSP50`, TSP problem with 50 cities (randomly generated).
-- `TSP100`, TSP problem with 100 cities (randomly generated).
-- `TSP150`, TSP problem with 150 cities (randomly generated).
-- `TSP200`, TSP problem with 200 cities (randomly generated).
+- `TSP50-v0`, TSP problem with 50 cities (randomly generated).
+- `TSP100-v0`, TSP problem with 100 cities (randomly generated).
+- `TSP150-v0`, TSP problem with 150 cities (randomly generated).
+- `TSP200-v0`, TSP problem with 200 cities (randomly generated).

@@ -31,20 +31,23 @@ Before sending your pull request for review, make sure your changes are consiste
 
 When contributing a new environment, make sure to do the following:
 1. Implement all the functions of the Environment abstraction: step, reset, specs, etc.
-2. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` test that runs a `JaxEnvironmentLoop` to test compilation.
-3. Add an environment README in the `jumanji/{your_env}` folder describing the environment.
-4. Add an image (or gif) in the readme above. Images are located in `docs/img`.
-5. Update the documentation api in `docs/api` to add your environment to the doc.
-6. (Optional) Add a `run_random_agent_[your_env].py` script in `examples/` to benchmark your environment.
+2. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` using the testing utils.
+3. Add an environment README in the `docs/environments/` folder describing the environment you implemented.
+4. Add an image (or gif) in the readme above. Images are located in `docs/img/`.
+5. Update the documentation api in `docs/api/environments/` to add your environment to the doc.
+6. Update the `mkdocs.yml` file to include the newly added markdown files.
 
 
 ### Coding Style
-To guarantee the quality and uniformisation of the code, we use various linters:
+In general, we follow the [Google Style Guide](https://google.github.io/styleguide/pyguide.html).
+We use [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages.
+In addition, to guarantee the quality and uniformity of the code, we use various linters:
 
 - [Black](https://black.readthedocs.io/en/stable/#) is a deterministic code formatter that is compliant with PEP8 standards.
 - [Isort](https://pycqa.github.io/isort/) sorts imports alphabetically and separates them into sections.
 - [Flake8](https://flake8.pycqa.org/en/latest/) is a library that wraps PyFlakes and PyCodeStyle. It is a great toolkit for checking your codebase against coding style (PEP8), programming, and syntax errors. Flake8 also benefits from an ecosystem of plugins developed by the community that extend its capabilities. You can read more about Flake8 plugins on the documentation and find a curated list of plugins here.
 - [MyPy](https://mypy.readthedocs.io/en/stable/#) is a static type checker that can help you detect inconsistent typing of variables.
+
 
 #### Pre-Commit
 To help in automating the quality of the code, we use [pre-commit](https://pre-commit.com/), a framework that manages the installation and execution of git hooks that will be run before every commit. These hooks help to automatically point out issues in code such as formatting mistakes, unused variables, trailing whitespace, debug statements, etc. By pointing these issues out before code review, it allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Each commit should be preceded by a call to pre-commit to ensure code quality and formatting. The configuration is in .pre-commit-config.yaml and includes Black, Flake8, MyPy and checks for the yaml formatting, trimming trailing whitespace, etc.

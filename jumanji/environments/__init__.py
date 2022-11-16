@@ -14,8 +14,9 @@
 
 import sys
 
-from jumanji.environments.combinatorial import binpack, knapsack, routing, tsp
+from jumanji.environments.combinatorial import binpack, cvrp, knapsack, routing, tsp
 from jumanji.environments.combinatorial.binpack.env import BinPack
+from jumanji.environments.combinatorial.cvrp.env import CVRP
 from jumanji.environments.combinatorial.knapsack.env import Knapsack
 from jumanji.environments.combinatorial.routing.env import Routing
 from jumanji.environments.combinatorial.tsp.env import TSP
@@ -26,6 +27,10 @@ from jumanji.environments.games.snake.env import Snake
 
 def is_colab() -> bool:
     return "google.colab" in sys.modules
+
+
+def is_notebook() -> bool:
+    return "ipykernel" in sys.modules
 
 
 # In a notebook, force the Matplotlib backend to ngAgg in order for figures to update
@@ -39,8 +44,10 @@ try:
 
         if is_colab():
             backend = "inline"
-        else:
+        elif is_notebook():
             backend = "notebook"
+        else:
+            backend = ""
         IPython.get_ipython().run_line_magic("matplotlib", backend)
 
 except ImportError as exc:

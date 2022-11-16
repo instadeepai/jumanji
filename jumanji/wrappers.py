@@ -35,10 +35,9 @@ from chex import Array, PRNGKey
 from jax import jit, random
 
 from jumanji import specs, tree_utils
-from jumanji.env import Environment
+from jumanji.env import Environment, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
-State = TypeVar("State")
 Observation = TypeVar("Observation")
 
 # Type alias that corresponds to ObsType in the Gym API
@@ -351,8 +350,8 @@ class VmapWrapper(Wrapper):
 
 
 class BraxToJumanjiWrapper(Environment):
-    """A wrapper that converts a Brax environment to an Environment for standardisation,
-    use with the `EnvironmentLoop` and to augment the API (add timesteps, metrics...).
+    """A wrapper that converts a Brax environment to an `Environment` for standardisation and to
+    augment the API (add timesteps, metrics...).
     """
 
     def __init__(self, brax_env: BraxEnv):

@@ -4,36 +4,21 @@
     </a>
 </p>
 
-
-<div align="center">
-<a rel="nofollow">
-    <img src="docs/img/python-badge.svg" alt="Python" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/pypi-badge.svg" alt="Pypi" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/license-badge.svg" alt="License" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/cov-badge.svg" alt="Coverage" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/mypy-badge.svg" alt="Styling" />
-</a>
-<a rel="nofollow">
-    <img src="docs/img/cov-style.svg" alt="Styling" />
-</a>
-</div>
+[![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://www.python.org/doc/versions/)
+[![PyPI Version](https://badge.fury.io/py/jumanji.svg)](https://badge.fury.io/py/jumanji)
+[![Tests](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml/badge.svg)](https://github.com/instadeepai/jumanji/actions/workflows/tests_linters.yml)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ---
-[**Installation**](#installation)
-| [**Quickstart**](#what-does-jumanji-look-like)
-| [**Examples**](#examples)
-| [**Environments**](#environments)
-| [**Citation**](#citation)
+[**Installation**](#installation-)
+| [**Quickstart**](#quickstart-)
+| [**Examples**](#examples-%EF%B8%8F)
+| [**Environments**](#environments-)
+| [**Citation**](#citing-jumanji-%EF%B8%8F)
 | [**See Also**](#see-also)
-| [**Reference Docs**](instadeepai.github.io/jumanji-internal/)
+| [**Reference Docs**](https://instadeepai.github.io/jumanji)
 
 
 <p float="left" align="center">
@@ -52,7 +37,7 @@ Jumanji is helping pioneer a new wave of hardware-accelerated research and devel
 field of RL. Jumanji's high-speed environments enable faster iteration and larger-scale experimentation
 while simultaneously reducing complexity. Originating in the Research Team at [InstaDeep](https://www.instadeep.com/),
 Jumanji is now developed jointly with the open-source community.
-To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing) (or just star 🌟 to stay up to date with the latest developments)!
+To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-) (or just star 🌟 to stay up to date with the latest developments)!
 
 ### Goals 🚀
 
@@ -66,7 +51,7 @@ help close the gap between research and industrial applications.
 - 🥑 **Environment API**: core abstractions for JAX-based environments and their variations, e.g. multi-agent or turn-by-turn.
 - 🕹️ **Environment Suite**: a list of RL environments ranging from simple games to complex NP-hard problems.
 - 🍬 **Wrappers**: easily connect to your favourite RL frameworks and libraries such as [Acme](https://github.com/deepmind/acme), [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3), [RLlib](https://docs.ray.io/en/latest/rllib/index.html), [OpenAI Gym](https://github.com/openai/gym), and [DeepMind-Env](https://github.com/deepmind/dm_env).
-- 🎓 **Educational Examples and User Guides**: guides to facilitate Jumanji's adoption and highlight the value-add of JAX-based environments.
+- 🎓 **Educational Examples and User Guides**: guides to facilitate Jumanji's adoption and highlight the added value of JAX-based environments.
 
 ## Installation 🎬
 
@@ -175,7 +160,7 @@ For more in-depth examples of running with Jumanji environments, check out our C
 
 | Example           | Topic          | Colab |
 |-------------------|----------------|:-----:|
-| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/jumanji/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
+| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/jumanji/blob/main/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
 
 
 ## Environments 🌍
@@ -183,14 +168,15 @@ For more in-depth examples of running with Jumanji environments, check out our C
 Jumanji implements different types of environments ranging from simple games to NP-hard problems,
 from single-agent to multi-agent and turn-by-turn games.
 
-| Environment                                                                 | Category      | Type         | Source                                                                                                           | Description                                                   |
-|-----------------------------------------------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| 🐍 Snake                  | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/games/snake)            | [doc](http://127.0.0.1:8000//jumanji/api/environments/snake/) |
-| 4️⃣  Connect4          | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/games/connect4)         | [doc](http://127.0.0.1:8000//jumanji/api/environments/connect4/)                                                           |
-| 📬 Travelling Salesman Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/combinatorial/tsp)      | [doc](http://127.0.0.1:8000//jumanji/api/environments/tsp/)                                                           |
-| 🎒 Knapsack        | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/combinatorial/knapsack) | [doc](http://127.0.0.1:8000//jumanji/api/environments/knapsack/)                                                           |
-| 🪢 Routing        | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/combinatorial/routing)  | [doc](http://127.0.0.1:8000//jumanji/api/environments/routing/)                                                           |
-| 📦 3D BinPacking Problem | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji-internal/tree/develop/jumanji/environments/combinatorial/binpack)  | [doc](http://127.0.0.1:8000//jumanji/api/environments/binpack/)                                                           |
+| Environment                                    | Category      | Type         | Source                                                                                               | Description                                                         |
+|------------------------------------------------|---------------|--------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| 🐍 Snake                                       | Game          | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/snake)            | [doc](https://instadeepai.github.io/jumanji/environments/snake/)    |
+| 4️⃣ Connect4                                   | Game          | Turn-by-turn | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/games/connect4)         | [doc](https://instadeepai.github.io/jumanji/environments/connect4/) |
+| 📬 TSP (Travelling Salesman Problem)           | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)      |
+| 🎒 Knapsack                                    | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/) |
+| 🪢 Routing                                     | Combinatorial | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)  |
+| 📦 BinPack (3D BinPacking Problem)             | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)  |
+| 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Combinatorial | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/combinatorial/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)     |
 
 
 ### Registry and Versioning 📖
@@ -199,11 +185,11 @@ Similarly to OpenAI Gym, Jumanji keeps a strict versioning of its environments f
 We maintain a registry of standard environments with their configuration.
 For each environment, a version suffix is appended, e.g. `Snake-6x6-v0`.
 When changes are made to environments that might impact learning results,
-the version number is incremented by one to prevent potential confusion. For a full list of registered versions
-of each environment, check out the environments' documentation.
+the version number is incremented by one to prevent potential confusion.
+For a full list of registered versions of each environment, check out [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
 ## Contributing 🤝
-Contributions are welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji-internal/labels/good%20first%20issue).
+Contributions are welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue).
 Please read our [contributing guidelines](./CONTRIBUTING.md) for details on
 how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
@@ -217,7 +203,7 @@ If you use Jumanji in your work, please cite the library using:
         and Nathan Grinsztajn and Thomas D. Barrett and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
   url = {https://github.com/instadeepai/jumanji},
-  version = {0.1.0},
+  version = {0.1.3},
   year = {2022},
 }
 ```

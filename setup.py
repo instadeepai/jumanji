@@ -18,7 +18,7 @@ from typing import List
 import setuptools
 from setuptools import setup
 
-__version__ = "0.0.1"
+__version__ = "0.1.3"
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,8 +58,9 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: Apache Software License",

@@ -15,7 +15,7 @@
 import importlib
 import re
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Set, Tuple
 
 from jumanji.env import Environment
 
@@ -25,7 +25,7 @@ ENV_NAME_RE = re.compile(r"^(?:(?P<name>[\w:.-]+?))(?:-v(?P<version>\d+))?$")
 def parse_env_id(id: str) -> Tuple[str, int]:
     """Parse an environment name.
 
-    The format must obey the following structure: {env-name}-v{version-number}.
+    The format must obey the following structure: <env-name>-v<version>.
 
     Args:
         id: The environment ID to parse.
@@ -40,19 +40,23 @@ def parse_env_id(id: str) -> Tuple[str, int]:
     if not match:
         raise ValueError(
             f"Malformed environment name: {id}."
-            f"All ID's must be of the form (env-name)[-v(version-number)]."
+            "All env ID's must be of the form <env-name>-v<version>."
         )
 
     name, version = match.group("name", "version")
 
-    # default the version to zero if not provided
-    version = int(version) if version is not None else 0
+    # missing version number
+    if version is None:
+        raise ValueError(
+            f"Version missing, got name={name} and version={version}. "
+            "All env ID's must be of the form <env-name>-v<version>."
+        )
 
-    return name, version
+    return name, int(version)
 
 
-def get_env_id(name: str, version: Optional[int] = None) -> str:
-    """Get the full env ID given a name and (optional) version.
+def get_env_id(name: str, version: int) -> str:
+    """Get the full env ID given a name and version.
 
     Args:
         name: The environment name.
@@ -61,10 +65,7 @@ def get_env_id(name: str, version: Optional[int] = None) -> str:
     Returns:
         The environment ID.
     """
-    version = version or 0
-    full_name = name + f"-v{version}"
-
-    return full_name
+    return name + f"-v{version}"
 
 
 @dataclass
@@ -103,15 +104,22 @@ def _check_registration_is_allowed(spec: EnvSpec) -> None:
     if spec.id in _REGISTRY:
         raise ValueError(f"Trying to override the registered environment {spec.id}.")
 
-    # Verify that version v-1 exist when trying to register version v (except 0)
     latest_version = max(
         (_spec.version for _spec in _REGISTRY.values() if _spec.name == spec.name),
         default=None,  # if no version of the environment is registered
     )
 
+    # the first version of an env must be zero.
     if (latest_version is None) and spec.version != 0:
         raise ValueError(
             f"The first version of an unregistered environment must be 0, got {spec.version}"
+        )
+
+    # Verify that version v-1 exists when trying to register version v (except 0)
+    if (latest_version is not None) and latest_version != (spec.version - 1):
+        raise ValueError(
+            f"Trying to register version {spec.version} of {spec.name}. "
+            f"However, the latest registered version of {spec.name} is {latest_version}."
         )
 
 
@@ -123,7 +131,7 @@ def register(
     """Register an environment.
 
     Args:
-        id: environment ID, formatted as `(env_name)[-v(version)]`.
+        id: environment ID, formatted as `<env-name>-v<version>`.
         entry_point: module and class constructor for the environment.
         **kwargs: extra arguments that will be passed to the environment constructor at
             instantiation.
@@ -185,5 +193,5 @@ def make(id: str, *args: Any, **kwargs: Any) -> Environment:
     return env_fn(*args, **env_fn_kwargs)
 
 
-def registered_environments() -> List[str]:
-    return list(_REGISTRY.keys())
+def registered_environments() -> Set[str]:
+    return set(_REGISTRY.keys())

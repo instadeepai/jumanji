@@ -12,31 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING
-
-import chex
-import jax.numpy as jnp
-import jax.random
-from chex import Array
-from typing_extensions import TypeAlias
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from chex import dataclass
-
-Board: TypeAlias = Array
-
-
-@dataclass
-class State:
-    current_player: jnp.int8
-    board: Board
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
-
-
-@dataclass
-class Observation:
-    board: Board
-    action_mask: Array
-    current_player: jnp.int8
+from jumanji.environments.combinatorial.cvrp.env import CVRP
+from jumanji.environments.combinatorial.cvrp.types import Observation, State
