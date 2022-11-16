@@ -14,8 +14,9 @@
 
 import sys
 
-from jumanji.environments.combinatorial import binpack, knapsack, routing, tsp
+from jumanji.environments.combinatorial import binpack, cvrp, knapsack, routing, tsp
 from jumanji.environments.combinatorial.binpack.env import BinPack
+from jumanji.environments.combinatorial.cvrp.env import CVRP
 from jumanji.environments.combinatorial.knapsack.env import Knapsack
 from jumanji.environments.combinatorial.routing.env import Routing
 from jumanji.environments.combinatorial.tsp.env import TSP
