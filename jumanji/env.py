@@ -15,9 +15,10 @@
 """Abstract environment class"""
 
 import abc
-from typing import Any, Generic, Protocol, Tuple, TypeVar
+from typing import Any, Generic, Tuple, TypeVar
 
 import chex
+from typing_extensions import Protocol
 
 from jumanji import specs
 from jumanji.types import Action, TimeStep
