@@ -1,7 +1,7 @@
 black==22.3.0
 coverage
 dm-haiku==0.0.5
-flake8==4.0.1
+flake8
 hydra-core~=1.1
 isort==5.10.1
 livereload
