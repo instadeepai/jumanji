@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import itertools
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import chex
 import jax
@@ -103,7 +103,7 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        instance_generator: InstanceGenerator = None,
+        instance_generator: Optional[InstanceGenerator] = None,
         obs_num_ems: int = 60,
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
