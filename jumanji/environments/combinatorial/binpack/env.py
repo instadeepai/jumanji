@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import itertools
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import chex
 import jax
 import jax.numpy as jnp
 from chex import PRNGKey
+from numpy.typing import NDArray
+from typing_extensions import Literal
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -108,6 +109,9 @@ class BinPack(Environment[State]):
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
         debug: bool = False,
+        render_mode: Union[
+            Literal["human", "rgb_array"], env_viewer.RenderMode
+        ] = env_viewer.RenderMode.HUMAN,
     ):
         """Instantiate a BinPack environment.
 
@@ -130,6 +134,9 @@ class BinPack(Environment[State]):
             debug: if True, will output an `invalid_ems_from_env` field in the extras returned
                 within timestep. Default to False as computing this metric slows down the
                 environment.
+            render_mode: The mode used to render the environment. Must be one of:
+                - RenderMode.HUMAN: Render the environment on screen.
+                - RenderMode.RGB_ARRAY: Return a numpy array frame representing the environment.
         """
         self.instance_generator = (
             instance_generator
@@ -139,7 +146,9 @@ class BinPack(Environment[State]):
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = env_viewer.BinPackViewer("BinPack")
+        self._env_viewer = env_viewer.BinPackViewer(
+            "BinPack", env_viewer.RenderMode(render_mode)
+        )
         self.debug = debug
 
     def __repr__(self) -> str:
@@ -348,13 +357,13 @@ class BinPack(Environment[State]):
 
         return next_state, timestep
 
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment.
 
         Args:
             state: State object containing the current dynamics of the environment.
         """
-        self._env_viewer.render(state)
+        return self._env_viewer.render(state)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
