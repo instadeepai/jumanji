@@ -61,12 +61,23 @@ def deterministic_routing_env() -> Tuple[Routing, State, TimeStep]:
     return env, state, timestep
 
 
+def test_routing__specs(routing_env: Routing) -> None:
+    """Validate environment specs conform to the expected shapes and values"""
+    action_spec = routing_env.action_spec()
+    observation_spec = routing_env.observation_spec()
+
+    assert observation_spec.shape == (2, 12, 12)
+    assert action_spec.num_values.shape[0] == routing_env.num_agents
+    assert action_spec.num_values[0] == 5
+
+
 def test_routing__reset(routing_env: Routing) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(routing_env.reset)
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
     state1, timestep1 = reset_fn(key1)
     state2, timestep2 = reset_fn(key2)
+
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step == 0

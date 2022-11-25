@@ -136,7 +136,7 @@ class Routing(Environment[State]):
         This array is of shape (num_agents,)
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([4] * self.num_agents),
+            num_values=jnp.array([5] * self.num_agents),
             name="action",
         )
 
