@@ -17,15 +17,16 @@ edit_uri: edit/develop/docs/
 nav:
   - Home: index.md
   - Environments:
-      - Combinatorial:
-          - TSP: environments/tsp.md
-          - Routing: environments/routing.md
+      - Logic:
+          - Connect4: environments/connect4.md
+      - Packing:
           - BinPack: environments/binpack.md
           - Knapsack: environments/knapsack.md
+      - Routing:
           - CVRP: environments/cvrp.md
-      - Game:
+          - Routing: environments/routing.md
           - Snake: environments/snake.md
-          - Connect4: environments/connect4.md
+          - TSP: environments/tsp.md
   - User Guides:
       - Registration: guides/registration.md
       - Examples: guides/anakin_snake.ipynb
@@ -33,15 +34,16 @@ nav:
   - API Reference:
       - Environments:
           - Base: api/env.md
-          - Combinatorial:
-              - TSP: api/environments/tsp.md
-              - Routing: api/environments/routing.md
+          - Logic:
+              - Connect4: api/environments/connect4.md
+          - Packing:
               - BinPack: api/environments/binpack.md
               - Knapsack: api/environments/knapsack.md
+          - Routing:
               - CVRP: api/environments/cvrp.md
-          - Game:
+              - Routing: api/environments/routing.md
               - Snake: api/environments/snake.md
-              - Connect4: api/environments/connect4.md
+              - TSP: api/environments/tsp.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 

@@ -1,1 +1,1 @@
-::: jumanji.environments.games.connect4.env.Connect4
+::: jumanji.environments.logic.connect4.env.Connect4

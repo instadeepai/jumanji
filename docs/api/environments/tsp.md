@@ -1,4 +1,4 @@
-::: jumanji.environments.combinatorial.tsp.env.TSP
+::: jumanji.environments.routing.tsp.env.TSP
     selection:
       members:
         - __init__

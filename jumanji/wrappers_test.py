@@ -30,8 +30,8 @@ from chex import assert_trees_all_equal, dataclass
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.combinatorial.binpack.conftest import DummyInstanceGenerator
-from jumanji.environments.combinatorial.binpack.env import BinPack
+from jumanji.environments.packing.binpack.conftest import DummyInstanceGenerator
+from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
 from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import StepType, TimeStep

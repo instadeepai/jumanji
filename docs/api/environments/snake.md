@@ -1,4 +1,4 @@
-::: jumanji.environments.games.snake.env.Snake
+::: jumanji.environments.routing.snake.env.Snake
     selection:
       members:
         - __init__

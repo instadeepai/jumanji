@@ -1,4 +1,4 @@
-::: jumanji.environments.combinatorial.binpack.env.BinPack
+::: jumanji.environments.packing.binpack.env.BinPack
     selection:
       members:
         - __init__

@@ -14,15 +14,16 @@
 
 import sys
 
-from jumanji.environments.combinatorial import binpack, cvrp, knapsack, routing, tsp
-from jumanji.environments.combinatorial.binpack.env import BinPack
-from jumanji.environments.combinatorial.cvrp.env import CVRP
-from jumanji.environments.combinatorial.knapsack.env import Knapsack
-from jumanji.environments.combinatorial.routing.env import Routing
-from jumanji.environments.combinatorial.tsp.env import TSP
-from jumanji.environments.games import connect4, snake
-from jumanji.environments.games.connect4.env import Connect4
-from jumanji.environments.games.snake.env import Snake
+from jumanji.environments.logic import connect4
+from jumanji.environments.logic.connect4.env import Connect4
+from jumanji.environments.packing import binpack, knapsack
+from jumanji.environments.packing.binpack.env import BinPack
+from jumanji.environments.packing.knapsack.env import Knapsack
+from jumanji.environments.routing import cvrp, routing, snake, tsp
+from jumanji.environments.routing.cvrp.env import CVRP
+from jumanji.environments.routing.routing.env import Routing
+from jumanji.environments.routing.snake.env import Snake
+from jumanji.environments.routing.tsp.env import TSP
 
 
 def is_colab() -> bool:

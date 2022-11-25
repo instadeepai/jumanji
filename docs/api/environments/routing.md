@@ -1,4 +1,4 @@
-::: jumanji.environments.combinatorial.routing.env.Routing
+::: jumanji.environments.routing.routing.env.Routing
     selection:
       members:
         - __init__

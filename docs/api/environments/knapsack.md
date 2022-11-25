@@ -1,4 +1,4 @@
-::: jumanji.environments.combinatorial.knapsack.env.Knapsack
+::: jumanji.environments.packing.knapsack.env.Knapsack
     selection:
       members:
         - __init__
