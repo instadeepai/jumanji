@@ -42,7 +42,7 @@ setup(
     long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
     long_description_content_type="text/markdown",
     keywords="reinforcement-learning python jax",
-    packages=setuptools.find_packages(exclude=["*testing"]),
+    packages=setuptools.find_packages(),
     python_requires=">=3.7",
     install_requires=_parse_requirements(
         os.path.join(_CURRENT_DIR, "requirements", "requirements.txt")
