@@ -35,50 +35,50 @@ register(
 register(
     id="TSP50-v0",
     entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 50},
+    kwargs={"num_cities": 50},
 )
 
 register(
     id="TSP100-v0",
     entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 100},
+    kwargs={"num_cities": 100},
 )
 
 register(
     id="TSP150-v0",
     entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 150},
+    kwargs={"num_cities": 150},
 )
 
 register(
     id="TSP200-v0",
     entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 200},
+    kwargs={"num_cities": 200},
 )
 
 # Knapsack
 register(
     id="Knapsack50-v0",
     entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 50, "total_budget": 25},
+    kwargs={"num_items": 50, "total_budget": 25},
 )
 
 register(
     id="Knapsack100-v0",
     entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 100, "total_budget": 25},
+    kwargs={"num_items": 100, "total_budget": 25},
 )
 
 register(
     id="Knapsack200-v0",
     entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 200, "total_budget": 25},
+    kwargs={"num_items": 200, "total_budget": 25},
 )
 
 register(
     id="Knapsack250-v0",
     entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 250, "total_budget": 25},
+    kwargs={"num_items": 250, "total_budget": 25},
 )
 
 # BinPack

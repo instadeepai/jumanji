@@ -17,8 +17,8 @@ algorithm both correct and fast (polynomial-time) in all cases.
 When the environment is reset, a new problem instance is generated, by sampling weights and values
 from a uniform distribution between 0 and 1. The weight limit of the knapsack is a parameter of the
 environment.
-A trajectory terminates when no further item can be added to the knapsack, or that the last action
-was invalid.
+A trajectory terminates when no further item can be added to the knapsack, or the last action
+is invalid.
 
 ## Observation
 The observation given to the agent provides information on the total problem, the items already added
@@ -26,16 +26,17 @@ to the knapsack and environment meta info such as number of steps taken and the 
 
 **Observation Spec**:
 
-- `problem` jax array (float32) of shape `(problem_size, 2)`, shows an array of weights/values of the items to be packed into the knapsack.
+- `problem` jax array (float32) of shape `(num_items, 2)`, shows an array of weights/values of the items to be packed into the knapsack.
 - `first_item`: jax array (int32), gives the index of the last item added.
 - `last_item`: jax array (int32), gives the index of the first item added.
-- `invalid_mask`: jax array (int8) of shape `(problem_size,)`, array of binary values denoting valid/invalid actions.
+- `action_mask`: jax array (bool) of shape `(num_items,)`, array of binary values denoting which items can be packed into the knapsack.
 
 ## Action
-Action space is an `Array` where each index corresponds to an item that can be packed next.
+Action space is a `DiscreteArray` of integer values in the range of [0, num_items-1]. An action is the index of the
+item to pack next.
 
 ```
-action: [0, 0, 1, 0]  # Problem size of 4 items, choosing the 3rd item
+action: 2  # Problem consisting of 4 items, choosing item 2 (among items 0, 1, 2, 3).
 ```
 
 ## Reward

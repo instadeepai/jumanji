@@ -23,9 +23,9 @@ def compute_tour_length(problem: Array, order: Array) -> jnp.float32:
     return jnp.linalg.norm((problem - jnp.roll(problem, -1, axis=0)), axis=1).sum()
 
 
-def generate_problem(problem_key: PRNGKey, problem_size: jnp.int32) -> Array:
-    return random.uniform(problem_key, (problem_size, 2), minval=0, maxval=1)
+def generate_problem(problem_key: PRNGKey, num_cities: jnp.int32) -> Array:
+    return random.uniform(problem_key, (num_cities, 2), minval=0, maxval=1)
 
 
-def generate_start_position(start_key: PRNGKey, problem_size: jnp.int32) -> jnp.int32:
-    return random.randint(start_key, (), minval=0, maxval=problem_size)
+def generate_start_position(start_key: PRNGKey, num_cities: jnp.int32) -> jnp.int32:
+    return random.randint(start_key, (), minval=0, maxval=num_cities)

@@ -58,7 +58,7 @@ class TestObservationSpec:
                 observation_spec.first_item_obs.replace(name="new_name"),
             ),
             ("last_item_obs", observation_spec.last_item_obs.replace(name="new_name")),
-            ("invalid_mask", observation_spec.invalid_mask.replace(shape=(3, 4))),
+            ("action_mask", observation_spec.action_mask.replace(shape=(3, 4))),
         ],
     )
     def test_observation_spec__replace(self, arg_name: str, new_value: Any) -> None:
@@ -70,7 +70,7 @@ class TestObservationSpec:
             "problem_obs",
             "first_item_obs",
             "last_item_obs",
-            "invalid_mask",
+            "action_mask",
         }.difference([arg_name]):
             chex.assert_equal(
                 getattr(new_spec, attr_name), getattr(old_spec, attr_name)

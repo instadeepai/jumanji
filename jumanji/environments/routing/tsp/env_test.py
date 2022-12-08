@@ -38,10 +38,10 @@ def test_tsp__reset(tsp_env: TSP) -> None:
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
-    assert state.visited_mask[state.position] == 1
-    assert state.visited_mask.sum() == 1
-    assert state.order[0] == state.position
-    assert state.num_visited == 1
+    assert state.position == -1
+    assert jnp.all(state.visited_mask == 0)
+    assert jnp.all(state.order == -1)
+    assert state.num_visited == 0
 
     assert_is_jax_array_tree(state)
 
@@ -54,12 +54,11 @@ def test_tsp__step(tsp_env: TSP) -> None:
     step_fn = jax.jit(step_fn)
 
     key = random.PRNGKey(0)
-    state, timestep = tsp_env.reset(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = tsp_env.reset(reset_key)
 
-    last_action = state.position
-    new_action = last_action - 1 if last_action > 0 else 0
-
-    new_state, next_timestep = step_fn(state, new_action)
+    action = jax.random.randint(step_key, shape=(), minval=0, maxval=tsp_env.num_cities)
+    new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.position, state.position)
@@ -72,13 +71,13 @@ def test_tsp__step(tsp_env: TSP) -> None:
     assert_is_jax_array_tree(new_state)
 
     # Check token was inserted as expected
-    assert new_state.visited_mask[new_action] == 1
-    assert new_state.visited_mask.sum() == 2
+    assert new_state.visited_mask[action] == 1
+    assert new_state.visited_mask.sum() == 1
 
     # New step with same action should be invalid
     state = new_state
 
-    new_state, next_timestep = step_fn(state, new_action)
+    new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has not changed
     assert jnp.array_equal(new_state.position, state.position)
@@ -102,22 +101,22 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
 
     while not timestep.last():
         # Check that there are cities that have not been selected yet.
-        assert state.num_visited < tsp_env.problem_size
-        assert state.visited_mask.sum() < tsp_env.problem_size
+        assert state.num_visited < tsp_env.num_cities
+        assert state.visited_mask.sum() < tsp_env.num_cities
 
         # Check that the reward is 0 while trajectory is not done.
         assert timestep.reward == 0
 
         state, timestep = tsp_env.step(
-            state, (state.position + 1) % tsp_env.problem_size
+            state, jnp.argmax(timestep.observation.action_mask)
         )
 
     # Check that the reward is negative when trajectory is done.
     assert timestep.reward < 0
 
     # Check that no action can be taken (all cities have been selected)
-    assert state.num_visited == tsp_env.problem_size
-    assert state.visited_mask.sum() == tsp_env.problem_size
+    assert state.num_visited == tsp_env.num_cities
+    assert state.visited_mask.sum() == tsp_env.num_cities
 
     assert timestep.last()
 
@@ -125,13 +124,16 @@ def test_tsp__trajectory_action(tsp_env: TSP) -> None:
 def test_tsp__invalid_action(tsp_env: TSP) -> None:
     """Checks that an invalid action leads to a termination and the appropriate reward is
     received."""
-    key = random.PRNGKey(0)
-    state, timestep = tsp_env.reset(key)
+    key = random.PRNGKey(73)
+    reset_key, position_key = jax.random.split(key, 2)
+    state, timestep = tsp_env.reset(reset_key)
 
-    first_position = state.position
+    first_position = jax.random.randint(
+        position_key, shape=(), minval=0, maxval=tsp_env.num_cities
+    )
     actions = (
         jnp.array([first_position + 1, first_position + 2, first_position + 2])
-        % tsp_env.problem_size
+        % tsp_env.num_cities
     )
 
     for a in actions:

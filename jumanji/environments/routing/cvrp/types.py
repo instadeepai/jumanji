@@ -54,7 +54,7 @@ class Observation(NamedTuple):
     demands: array with the demands of all nodes (+ depot)
     position: index of the current node
     capacity: current capacity of the vehicle
-    action_mask: binary mask (True/False <--> invalid/valid action)
+    action_mask: binary mask (False/True <--> invalid/valid action)
     """
 
     coordinates: Array  # (problem_size + 1, 2)

@@ -26,13 +26,13 @@ the current position of the agent as well as the starting point.
 
 **Observation Spec**:
 
-- **problem**: jax array (float32) of shape (problem_size, 2), shows an array of the coordinates of each city.
+- **problem**: jax array (float32) of shape (num_cities, 2), shows an array of the coordinates of each city.
 - **start_position**: jax array (int32), gives the identifier (index) of the first visited city.
 - **position**: jax array (int32), gives the identifier (index) of the last visited city.
-- **action_mask**: jax array (int8) of shape (problem_size,), array of binary values denoting visited/not_visited cities.
+- **action_mask**: jax array (bool) of shape (num_cities,), array of binary values denoting whether a city can be visited.
 
 ## Action
-Action space is a `DiscreteArray` of integer values in the range of [0, problem_size-1]. An action is the index of the
+Action space is a `DiscreteArray` of integer values in the range of [0, num_cities-1]. An action is the index of the
 next city to visit.
 
 

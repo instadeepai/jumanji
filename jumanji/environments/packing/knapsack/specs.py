@@ -26,13 +26,13 @@ class ObservationSpec(specs.Spec[Observation]):
         problem_obs: specs.BoundedArray,
         first_item_obs: specs.DiscreteArray,
         last_item_obs: specs.DiscreteArray,
-        invalid_mask: specs.BoundedArray,
+        action_mask: specs.BoundedArray,
     ):
         super().__init__(name="observation")
         self.problem_obs = problem_obs
         self.first_item_obs = first_item_obs
         self.last_item_obs = last_item_obs
-        self.invalid_mask = invalid_mask
+        self.action_mask = action_mask
 
     def __repr__(self) -> str:
         return (
@@ -40,7 +40,7 @@ class ObservationSpec(specs.Spec[Observation]):
             f"\tproblem_obs={repr(self.problem_obs)},\n"
             f"\tfirst_item_obs={repr(self.first_item_obs)},\n"
             f"\tlast_item_obs={repr(self.last_item_obs)},\n"
-            f"\tinvalid_mask={repr(self.invalid_mask)},\n"
+            f"\taction_mask={repr(self.action_mask)},\n"
             ")"
         )
 
@@ -50,7 +50,7 @@ class ObservationSpec(specs.Spec[Observation]):
             problem=self.problem_obs.generate_value(),
             first_item=self.first_item_obs.generate_value(),
             last_item=self.last_item_obs.generate_value(),
-            invalid_mask=self.invalid_mask.generate_value(),
+            action_mask=self.action_mask.generate_value(),
         )
 
     def validate(self, value: Observation) -> Observation:
@@ -72,9 +72,9 @@ class ObservationSpec(specs.Spec[Observation]):
                     self.problem_obs,
                     self.first_item_obs,
                     self.last_item_obs,
-                    self.invalid_mask,
+                    self.action_mask,
                 ),
-                (value.problem, value.first_item, value.last_item, value.invalid_mask),
+                (value.problem, value.first_item, value.last_item, value.action_mask),
             )
         )
         return observation
@@ -92,7 +92,7 @@ class ObservationSpec(specs.Spec[Observation]):
             "problem_obs": self.problem_obs,
             "first_item_obs": self.first_item_obs,
             "last_item_obs": self.last_item_obs,
-            "invalid_mask": self.invalid_mask,
+            "action_mask": self.action_mask,
         }
         all_kwargs.update(kwargs)
         return ObservationSpec(**all_kwargs)  # type: ignore

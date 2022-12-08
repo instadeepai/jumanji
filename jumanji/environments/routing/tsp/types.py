@@ -31,15 +31,15 @@ class State:
     """
     problem: array of coordinates for all cities
     position: index of current city
-    visited_mask: binary mask (0/1 <--> unvisited/visited)
+    visited_mask: binary mask (False/True <--> unvisited/visited)
     order: array of city indices denoting route (-1 --> not filled yet)
     num_visited: how many cities have been visited
     """
 
-    problem: Array  # (problem_size, 2)
+    problem: Array  # (num_cities, 2)
     position: jnp.int32
-    visited_mask: Array  # (problem_size,)
-    order: Array  # (problem_size,)
+    visited_mask: Array  # (num_cities,)
+    order: Array  # (num_cities,)
     num_visited: jnp.int32
     key: chex.PRNGKey = jax.random.PRNGKey(0)
 
@@ -49,7 +49,7 @@ class Observation(NamedTuple):
     problem: array of coordinates for all cities
     start_position: index of starting city
     position: index of current city
-    action_mask: binary mask (0/1 <--> legal/illegal)
+    action_mask: binary mask (False/True <--> illegal/legal)
     """
 
     problem: Array
