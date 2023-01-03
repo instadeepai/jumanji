@@ -702,8 +702,8 @@ class TestJumanjiToGymObservation:
 
     def test_jumanji_to_gym_obs__binpack(self) -> None:
         """Check that an example binpack observation is correctly converted."""
-        instance_generator = DummyInstanceGenerator()
-        env = BinPack(instance_generator, obs_num_ems=1)
+        env = BinPack(obs_num_ems=1)
+        env.instance_generator = DummyInstanceGenerator()
         obs = env.observation_spec().generate_value()
 
         converted_obs = jumanji_to_gym_obs(obs)

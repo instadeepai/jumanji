@@ -93,7 +93,9 @@ def dummy_instance(dummy_instance_generator: DummyInstanceGenerator) -> State:
 
 @pytest.fixture
 def binpack_env(dummy_instance_generator: DummyInstanceGenerator) -> BinPack:
-    return BinPack(instance_generator=dummy_instance_generator, obs_num_ems=5)
+    env = BinPack(obs_num_ems=5)
+    env.instance_generator = dummy_instance_generator
+    return env
 
 
 @pytest.fixture
