@@ -64,6 +64,7 @@ class RoutingViewer:
 
         for _ in range(num_agents):
             color = rnd.randint(0, 192, 3)
+            color = list(map(int, color))
             self.palette.append((color[0], color[1], color[2]))
 
     def render(self, grid: Array, save_img: Optional[str] = None) -> Array:
