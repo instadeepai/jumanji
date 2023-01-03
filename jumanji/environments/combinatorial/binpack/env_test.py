@@ -235,7 +235,7 @@ def test_binpack__optimal_policy_toy_instance(
     policy. Checks for both options: normalizing dimensions and not normalizing.
     """
     toy_binpack = BinPack(
-        instance_generator="toy",
+        instance_generator_type="toy",
         obs_num_ems=40,
         normalize_dimensions=normalize_dimensions,
         debug=True,
@@ -276,7 +276,7 @@ def test_binpack__optimal_policy_random_instance(
     two different sizes: 20 items and 40 items.
     """
     random_binpack = BinPack(
-        instance_generator="random",
+        instance_generator_type="random",
         obs_num_ems=obs_num_ems,
         normalize_dimensions=normalize_dimensions,
         debug=True,

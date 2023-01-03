@@ -90,7 +90,7 @@ register(
     id="BinPack-toy-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": "toy",
+        "instance_generator_type": "toy",
         "obs_num_ems": 40,
     },
 )
@@ -100,7 +100,7 @@ register(
     id="BinPack-rand20-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": "random",
+        "instance_generator_type": "random",
         "max_num_items": 20,
         "max_num_ems": 80,
         "obs_num_ems": 40,
@@ -111,7 +111,7 @@ register(
     id="BinPack-rand40-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": "random",
+        "instance_generator_type": "random",
         "max_num_items": 40,
         "max_num_ems": 200,
         "obs_num_ems": 60,
@@ -122,7 +122,7 @@ register(
     id="BinPack-rand100-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": "random",
+        "instance_generator_type": "random",
         "max_num_items": 100,
         "max_num_ems": 300,
         "obs_num_ems": 150,

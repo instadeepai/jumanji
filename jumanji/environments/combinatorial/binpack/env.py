@@ -105,7 +105,7 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        instance_generator: str = "toy",
+        instance_generator_type: str = "toy",
         obs_num_ems: int = 60,
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
@@ -115,10 +115,10 @@ class BinPack(Environment[State]):
         """Instantiate a BinPack environment.
 
         Args:
-            instance_generator: string representing the InstanceGenerator responsible for resetting
-                the environment. E.g. can be a random generator to learn generalisation or one that
-                outputs the same instance to do active search on that instance.
-                Default to ToyInstanceGenerator that always resets to the same instance
+            instance_generator_type: string representing the InstanceGenerator responsible for
+                resetting the environment. E.g. can be a random generator to learn generalisation
+                or one that outputs the same instance to do active search on that instance.
+                Defaults to ToyInstanceGenerator that always resets to the same instance
                 with 20 items. Possible values: 'toy' (default), 'csv' or 'random'.
             obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
                 `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
@@ -136,7 +136,7 @@ class BinPack(Environment[State]):
             instance_generator_kwargs: Keyword arguments for the specified instance generator.
         """
         self.instance_generator = self.create_instance_generator(
-            instance_generator, **instance_generator_kwargs
+            instance_generator_type, **instance_generator_kwargs
         )
 
         self.obs_num_ems = obs_num_ems
@@ -149,7 +149,7 @@ class BinPack(Environment[State]):
         return "\n".join(
             [
                 "BinPack environment:",
-                f" - instance_generator: {self.instance_generator}",
+                f" - instance_generator_type: {self.instance_generator}",
                 f" - max_num_items: {self.instance_generator.max_num_items}",
                 f" - obs_num_ems: {self.obs_num_ems}",
                 f" - max_num_ems: {self.instance_generator.max_num_ems}",
@@ -161,7 +161,7 @@ class BinPack(Environment[State]):
 
     @classmethod
     def create_instance_generator(
-        cls, instance_generator: str, **instance_generator_kwargs: Any
+        cls, instance_generator_type: str, **instance_generator_kwargs: Any
     ) -> InstanceGenerator:
         """
         Factory method for creating an instance generator.
@@ -169,7 +169,7 @@ class BinPack(Environment[State]):
         This method can be overridden to add new instance generator types.
 
         Args:
-            instance_generator: The type of instance generator to create. Possible values:
+            instance_generator_type: The type of instance generator to create. Possible values:
                 - 'toy': Create a toy instance generator.
                 - 'csv': Create a CSV instance generator.
                 - 'random': Create a random instance generator.
@@ -180,21 +180,21 @@ class BinPack(Environment[State]):
             An instance of `InstanceGenerator`.
 
         Raises:
-            ValueError: If an unexpected value is provided for `instance_generator`.
+            ValueError: If an unexpected value is provided for `instance_generator_type`.
         """
         instance_generator_obj: InstanceGenerator
 
-        if instance_generator == "toy":
+        if instance_generator_type == "toy":
             instance_generator_obj = ToyInstanceGenerator()
-        elif instance_generator == "csv":
+        elif instance_generator_type == "csv":
             instance_generator_obj = CSVInstanceGenerator(**instance_generator_kwargs)
-        elif instance_generator == "random":
+        elif instance_generator_type == "random":
             instance_generator_obj = RandomInstanceGenerator(
                 **instance_generator_kwargs
             )
         else:
             raise ValueError(
-                f"Unexpected value for 'instance_generator', got {instance_generator!r}."
+                f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
                 "Possible values: 'toy', 'csv', 'random'."
             )
         return instance_generator_obj
