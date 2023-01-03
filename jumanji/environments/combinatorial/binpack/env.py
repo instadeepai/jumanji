@@ -118,7 +118,7 @@ class BinPack(Environment[State]):
             instance_generator_type: string representing the InstanceGenerator responsible for
                 resetting the environment. E.g. can be a random generator to learn generalisation
                 or one that outputs the same instance to do active search on that instance.
-                Defaults to ToyInstanceGenerator that always resets to the same instance
+                Defaults to "toy" which creates a ToyInstanceGenerator that always resets to the same instance
                 with 20 items. Possible values: 'toy' (default), 'csv' or 'random'.
             obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
                 `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
