@@ -109,7 +109,7 @@ class CVRP(Environment[State]):
             coordinates=coordinates,
             demands=demands,
             position=jnp.int32(DEPOT_IDX),
-            capacity=self.max_capacity,
+            capacity=jnp.int32(self.max_capacity),
             visited_mask=jnp.zeros(self.problem_size + 1, dtype=bool)
             .at[DEPOT_IDX]
             .set(True),

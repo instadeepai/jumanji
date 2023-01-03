@@ -422,7 +422,7 @@ class MultiDiscreteArray(BoundedArray):
 
     @property
     def num_values(self) -> chex.Array:
-        """Returns the number of items."""
+        """Returns the number of possible values for each element of the action vector."""
         return self._num_values
 
 

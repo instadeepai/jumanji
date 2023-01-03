@@ -90,8 +90,8 @@ class Knapsack(Environment[State]):
         problem = generate_problem(key, self.num_items)
         state = State(
             problem=problem,
-            last_item=-1,
-            first_item=-1,
+            last_item=jnp.array(-1, jnp.int32),
+            first_item=jnp.array(-1, jnp.int32),
             used_mask=jnp.zeros(self.num_items, dtype=bool),
             num_steps=jnp.int32(0),
             remaining_budget=jnp.float32(self.total_budget),

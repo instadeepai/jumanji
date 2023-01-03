@@ -82,7 +82,7 @@ class TSP(Environment[State]):
         problem = generate_problem(key, self.num_cities)
         state = State(
             problem=problem,
-            position=-1,
+            position=jnp.array(-1, jnp.int32),
             visited_mask=jnp.zeros(self.num_cities, dtype=bool),
             order=-1 * jnp.ones(self.num_cities, jnp.int32),
             num_visited=jnp.int32(0),
