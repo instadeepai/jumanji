@@ -65,7 +65,7 @@ def normalize_dimensions(request: pytest.mark.FixtureRequest) -> bool:
     return request.param  # type: ignore
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function")  # noqa: CCR001
 def binpack_optimal_policy_select_action(  # noqa: CCR001
     request: pytest.mark.FixtureRequest,
 ) -> Callable[[Observation, State], chex.Array]:
