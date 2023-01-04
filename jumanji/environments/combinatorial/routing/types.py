@@ -14,12 +14,12 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
+from chex import Array, PRNGKey
+
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
-
-from chex import Array, PRNGKey
 
 
 @dataclass

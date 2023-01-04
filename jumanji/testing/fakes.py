@@ -14,11 +14,6 @@
 
 from typing import TYPE_CHECKING, Tuple
 
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from chex import dataclass
-
 import chex
 import jax.numpy as jnp
 from chex import PRNGKey
@@ -27,6 +22,11 @@ from jax import lax, random
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.types import Action, TimeStep, restart, termination, transition
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from chex import dataclass
 
 
 @dataclass

@@ -14,15 +14,15 @@
 
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from chex import dataclass
-
 import chex
 import jax.numpy as jnp
 
 from jumanji.environments.combinatorial.binpack.space import Space
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from chex import dataclass
 
 Container = Space
 EMS = Space

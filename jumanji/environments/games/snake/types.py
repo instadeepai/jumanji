@@ -15,13 +15,13 @@
 from enum import IntEnum
 from typing import TYPE_CHECKING, NamedTuple, Union
 
+import jax.numpy as jnp
+from chex import Array, PRNGKey
+
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
     from chex import dataclass
-
-import jax.numpy as jnp
-from chex import Array, PRNGKey
 
 
 class Position(NamedTuple):

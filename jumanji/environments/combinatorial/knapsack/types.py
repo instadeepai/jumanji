@@ -15,15 +15,14 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
+import jax.numpy as jnp
 import jax.random
+from chex import Array
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
-
-import jax.numpy as jnp
-from chex import Array
 
 
 @dataclass

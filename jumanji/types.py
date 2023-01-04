@@ -14,13 +14,13 @@
 
 from typing import TYPE_CHECKING, Dict, Generic, Optional, Sequence, TypeVar, Union
 
+import jax.numpy as jnp
+from chex import Array
+
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
-
-import jax.numpy as jnp
-from chex import Array
 
 Action = Array
 
