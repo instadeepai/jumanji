@@ -1,6 +1,6 @@
 default_stages: [ "commit", "commit-msg", "push" ]
 default_language_version:
-  python: python3.8
+  python: python3
 
 
 repos:
