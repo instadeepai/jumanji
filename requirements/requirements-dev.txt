@@ -1,8 +1,9 @@
 black==22.3.0
 coverage
 dm-haiku==0.0.5
-flake8
+flake8==3.9.2
 hydra-core~=1.1
+importlib-metadata<5.0
 isort==5.10.1
 livereload
 mkdocs==1.2.3
