@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import itertools
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 import chex
 import jax
@@ -24,7 +24,9 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.combinatorial.binpack import env_viewer
 from jumanji.environments.combinatorial.binpack.instance_generator import (
+    CSVInstanceGenerator,
     InstanceGenerator,
+    RandomInstanceGenerator,
     ToyInstanceGenerator,
 )
 from jumanji.environments.combinatorial.binpack.reward import (
@@ -103,20 +105,22 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        instance_generator: InstanceGenerator = None,
+        instance_generator_type: str = "toy",
         obs_num_ems: int = 60,
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
         debug: bool = False,
+        **instance_generator_kwargs: Any,
     ):
         """Instantiate a BinPack environment.
 
         Args:
-            instance_generator: InstanceGenerator responsible for resetting the environment. E.g.
-                can be a random generator to learn generalisation or one that outputs the same
-                instance to do active search on that instance. It must inherit from the
-                InstanceGenerator abstract class. Default to ToyInstanceGenerator that always
-                resets to the same instance with 20 items.
+            instance_generator_type: string representing the InstanceGenerator responsible for
+                resetting the environment. E.g. can be a random generator to learn generalisation
+                or one that outputs the same instance to do active search on that instance.
+                Defaults to "toy" which creates a ToyInstanceGenerator that always resets to
+                the same instance with 20 items.
+                Possible values: 'toy' (default), 'csv' or 'random'.
             obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
                 `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
                 in the observation. Default to 60, but the good number heavily depends on the
@@ -130,12 +134,12 @@ class BinPack(Environment[State]):
             debug: if True, will output an `invalid_ems_from_env` field in the extras returned
                 within timestep. Default to False as computing this metric slows down the
                 environment.
+            instance_generator_kwargs: Keyword arguments for the specified instance generator.
         """
-        self.instance_generator = (
-            instance_generator
-            if instance_generator is not None
-            else ToyInstanceGenerator()
+        self.instance_generator = self.create_instance_generator(
+            instance_generator_type, **instance_generator_kwargs
         )
+
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
         self.normalize_dimensions = normalize_dimensions
@@ -146,7 +150,7 @@ class BinPack(Environment[State]):
         return "\n".join(
             [
                 "BinPack environment:",
-                f" - instance_generator: {self.instance_generator}",
+                f" - instance_generator_type: {self.instance_generator}",
                 f" - max_num_items: {self.instance_generator.max_num_items}",
                 f" - obs_num_ems: {self.obs_num_ems}",
                 f" - max_num_ems: {self.instance_generator.max_num_ems}",
@@ -155,6 +159,46 @@ class BinPack(Environment[State]):
                 f" - debug: {self.debug}",
             ]
         )
+
+    @classmethod
+    def create_instance_generator(
+        cls, instance_generator_type: str, **instance_generator_kwargs: Any
+    ) -> InstanceGenerator:
+        """
+        Factory method for creating an instance generator.
+
+        This method can be overridden to add new instance generator types.
+
+        Args:
+            instance_generator_type: The type of instance generator to create. Possible values:
+                - 'toy': Create a toy instance generator.
+                - 'csv': Create a CSV instance generator.
+                - 'random': Create a random instance generator.
+            **instance_generator_kwargs:
+                Additional keyword arguments to pass to the instance generator constructor.
+
+        Returns:
+            An instance of `InstanceGenerator`.
+
+        Raises:
+            ValueError: If an unexpected value is provided for `instance_generator_type`.
+        """
+        instance_generator_obj: InstanceGenerator
+
+        if instance_generator_type == "toy":
+            instance_generator_obj = ToyInstanceGenerator()
+        elif instance_generator_type == "csv":
+            instance_generator_obj = CSVInstanceGenerator(**instance_generator_kwargs)
+        elif instance_generator_type == "random":
+            instance_generator_obj = RandomInstanceGenerator(
+                **instance_generator_kwargs
+            )
+        else:
+            raise ValueError(
+                f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
+                "Possible values: 'toy', 'csv', 'random'."
+            )
+        return instance_generator_obj
 
     def observation_spec(self) -> ObservationSpec:
         """Specifications of the observation of the BinPack environment.

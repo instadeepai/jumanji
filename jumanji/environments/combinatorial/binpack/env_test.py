@@ -23,8 +23,6 @@ from jumanji import specs, tree_utils
 from jumanji.environments.combinatorial.binpack.env import BinPack
 from jumanji.environments.combinatorial.binpack.instance_generator import (
     InstanceGenerator,
-    RandomInstanceGenerator,
-    ToyInstanceGenerator,
 )
 from jumanji.environments.combinatorial.binpack.space import Space
 from jumanji.environments.combinatorial.binpack.specs import (
@@ -158,10 +156,10 @@ def test_binpack__spec(
     different specs are generated depending on the `normalize_dimensions` argument.
     """
     binpack_env = BinPack(
-        instance_generator=dummy_instance_generator,
         obs_num_ems=1,
         normalize_dimensions=normalize_dimensions,
     )
+    binpack_env.instance_generator = dummy_instance_generator
     observation_spec = binpack_env.observation_spec()
     assert isinstance(observation_spec, ObservationSpec)
     assert isinstance(observation_spec.ems_spec, EMSSpec)
@@ -237,7 +235,7 @@ def test_binpack__optimal_policy_toy_instance(
     policy. Checks for both options: normalizing dimensions and not normalizing.
     """
     toy_binpack = BinPack(
-        ToyInstanceGenerator(),
+        instance_generator_type="toy",
         obs_num_ems=40,
         normalize_dimensions=normalize_dimensions,
         debug=True,
@@ -278,10 +276,12 @@ def test_binpack__optimal_policy_random_instance(
     two different sizes: 20 items and 40 items.
     """
     random_binpack = BinPack(
-        RandomInstanceGenerator(max_num_items=max_num_items, max_num_ems=max_num_ems),
+        instance_generator_type="random",
         obs_num_ems=obs_num_ems,
         normalize_dimensions=normalize_dimensions,
         debug=True,
+        max_num_items=max_num_items,
+        max_num_ems=max_num_ems,
     )
     reset_fn = jax.jit(random_binpack.reset)
     generate_solution_fn = jax.jit(random_binpack.instance_generator.generate_solution)
