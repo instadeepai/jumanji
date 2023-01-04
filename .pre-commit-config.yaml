@@ -33,7 +33,7 @@ repos:
         name: "Trailing whitespace fixer"
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 6.0.0
     hooks:
       - id: flake8
         name: "Linter"
