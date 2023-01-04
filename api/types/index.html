@@ -1701,7 +1701,7 @@ scalar reward and discount.</p></td>
 
 
 <h3 id="jumanji.types.transition" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">transition</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">basearray</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">transition</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.types.transition" class="headerlink" title="Permanent link">#</a></h3>
@@ -1735,7 +1735,7 @@ scalar reward and discount.</p></td>
       </tr>
       <tr>
         <td><code>discount</code></td>
-        <td><code>Optional[jax._src.basearray.Array]</code></td>
+        <td><code>Optional[jax.Array]</code></td>
         <td><p>array.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -1861,7 +1861,7 @@ scalar reward and discount.</p></td>
 
 
 <h3 id="jumanji.types.truncation" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">truncation</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">basearray</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">truncation</span><span class="p">(</span><span class="n">reward</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.types.truncation" class="headerlink" title="Permanent link">#</a></h3>
@@ -1895,7 +1895,7 @@ scalar reward and discount.</p></td>
       </tr>
       <tr>
         <td><code>discount</code></td>
-        <td><code>Optional[jax._src.basearray.Array]</code></td>
+        <td><code>Optional[jax.Array]</code></td>
         <td><p>array.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -2009,7 +2009,7 @@ the supported dtype of float32.</p>
   <small>
     
       Last update:
-      2022-11-21
+      2023-01-04
     
   </small>
 </div>
