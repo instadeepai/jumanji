@@ -34,5 +34,8 @@ module = [
     "pytest.*",
     "pygame.*",
     "IPython.*",
+    "optax.*",
+    "tqdm.*",
+    "rlax.*",
 ]
 ignore_missing_imports = true
