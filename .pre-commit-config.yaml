@@ -46,6 +46,7 @@ repos:
           - flake8-bugbear
           - flake8-pytest-style
           - flake8-cognitive-complexity
+          - importlib-metadata<5.0
 
   - repo: local
     hooks:
