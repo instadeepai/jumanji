@@ -16,6 +16,7 @@ import sys
 
 from jumanji.environments.logic import connect4
 from jumanji.environments.logic.connect4.env import Connect4
+from jumanji.environments.logic.rubiks_cube import RubiksCube
 from jumanji.environments.packing import binpack, knapsack
 from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.environments.packing.knapsack.env import Knapsack

@@ -19,6 +19,7 @@ nav:
   - Environments:
       - Logic:
           - Connect4: environments/connect4.md
+          - RubiksCube: environments/rubiks_cube.md
       - Packing:
           - BinPack: environments/binpack.md
           - Knapsack: environments/knapsack.md
@@ -36,6 +37,7 @@ nav:
           - Base: api/env.md
           - Logic:
               - Connect4: api/environments/connect4.md
+              - RubiksCube: api/environments/rubiks_cube.md
           - Packing:
               - BinPack: api/environments/binpack.md
               - Knapsack: api/environments/knapsack.md

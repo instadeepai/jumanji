@@ -155,6 +155,9 @@ register(
     entry_point="jumanji.environments:Connect4",
 )
 
+# Rubik's Cube
+register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
+
 
 # CVRP - problem size, maximum capacity and maximum demand are derived from [1, 2]
 # [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with
