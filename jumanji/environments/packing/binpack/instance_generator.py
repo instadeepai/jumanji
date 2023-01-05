@@ -178,12 +178,11 @@ class ToyInstanceGenerator(InstanceGenerator):
 
         Example:
             ```python
-            instance_generator = ToyInstanceGenerator()
-            env = BinPack(instance_generator, obs_num_ems=40)
+            env = BinPack(instance_generator_type="toy", obs_num_ems=40)
             key = jax.random.key(0)
-            reset_state = instance_generator(key)
+            reset_state = env.instance_generator(key)
             env.render(reset_state)
-            solution = instance_generator.generate_solution(key)
+            solution = env.instance_generator.generate_solution(key)
             env.render(solution)
             ```
         """
@@ -575,12 +574,11 @@ class RandomInstanceGenerator(InstanceGenerator):
 
     Example:
         ```python
-        instance_generator = RandomInstanceGenerator()
-        env = BinPack(instance_generator)
+        env = BinPack(instance_generator_type="random")
         key = jax.random.key(0)
-        reset_state = instance_generator(key)
+        reset_state = env.instance_generator(key)
         env.render(reset_state)
-        solution = instance_generator.generate_solution(key)
+        solution = env.instance_generator.generate_solution(key)
         env.render(solution)
         ```"""
 
@@ -646,12 +644,11 @@ class RandomInstanceGenerator(InstanceGenerator):
 
         Example:
             ```python
-            instance_generator = RandomInstanceGenerator()
-            env = BinPack(instance_generator)
+            env = BinPack(instance_generator_type="random")
             key = jax.random.key(0)
-            reset_state = instance_generator(key)
+            reset_state = env.instance_generator(key)
             env.render(reset_state)
-            solution = instance_generator.generate_solution(key)
+            solution = env.instance_generator.generate_solution(key)
             env.render(solution)
             ```
         """

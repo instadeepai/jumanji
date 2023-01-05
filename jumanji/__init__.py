@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from jumanji.env import Environment
-from jumanji.environments.packing import binpack as _binpack
 from jumanji.registration import make, register, registered_environments
 
 ## Environment Registration
+
 
 # Snake
 register(
@@ -30,6 +29,7 @@ register(
     entry_point="jumanji.environments:Snake",
     kwargs={"n_rows": 12, "n_cols": 12, "time_limit": 5000},
 )
+
 
 # TSP
 register(
@@ -56,6 +56,7 @@ register(
     kwargs={"num_cities": 200},
 )
 
+
 # Knapsack
 register(
     id="Knapsack50-v0",
@@ -81,6 +82,7 @@ register(
     kwargs={"num_items": 250, "total_budget": 25},
 )
 
+
 # BinPack
 
 # Toy instance of the BinPack environment
@@ -88,7 +90,7 @@ register(
     id="BinPack-toy-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": _binpack.instance_generator.ToyInstanceGenerator(),
+        "instance_generator_type": "toy",
         "obs_num_ems": 40,
     },
 )
@@ -98,10 +100,9 @@ register(
     id="BinPack-rand20-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
-            max_num_items=20,
-            max_num_ems=80,
-        ),
+        "instance_generator_type": "random",
+        "max_num_items": 20,
+        "max_num_ems": 80,
         "obs_num_ems": 40,
     },
 )
@@ -110,10 +111,9 @@ register(
     id="BinPack-rand40-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
-            max_num_items=40,
-            max_num_ems=200,
-        ),
+        "instance_generator_type": "random",
+        "max_num_items": 40,
+        "max_num_ems": 200,
         "obs_num_ems": 60,
     },
 )
@@ -122,10 +122,9 @@ register(
     id="BinPack-rand100-v0",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator": _binpack.instance_generator.RandomInstanceGenerator(
-            max_num_items=100,
-            max_num_ems=300,
-        ),
+        "instance_generator_type": "random",
+        "max_num_items": 100,
+        "max_num_ems": 300,
         "obs_num_ems": 150,
     },
 )
@@ -149,11 +148,13 @@ register(
     kwargs={"rows": 16, "cols": 16, "num_agents": 5, "step_limit": 256},
 )
 
+
 # Connect4
 register(
     id="Connect4-v0",
     entry_point="jumanji.environments:Connect4",
 )
+
 
 # CVRP - problem size, maximum capacity and maximum demand are derived from [1, 2]
 # [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with

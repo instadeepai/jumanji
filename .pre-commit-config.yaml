@@ -1,6 +1,6 @@
 default_stages: [ "commit", "commit-msg", "push" ]
 default_language_version:
-  python: python3.8
+  python: python3
 
 
 repos:
@@ -33,7 +33,7 @@ repos:
         name: "Trailing whitespace fixer"
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 3.9.2
     hooks:
       - id: flake8
         name: "Linter"
@@ -46,6 +46,7 @@ repos:
           - flake8-bugbear
           - flake8-pytest-style
           - flake8-cognitive-complexity
+          - importlib-metadata<5.0
 
   - repo: local
     hooks:
