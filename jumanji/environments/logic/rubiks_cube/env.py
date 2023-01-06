@@ -84,7 +84,7 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = DEFAULT_CUBE_SIZE,
         step_limit: int = 200,
-        reward_function: Callable[[State], jnp.array] = sparse_reward_function,
+        reward_function: Callable[[State], chex.Array] = sparse_reward_function,
         num_scrambles_on_reset: int = 100,
         sticker_colours: Optional[list] = None,
     ):

@@ -27,7 +27,7 @@ The observation also contains a step count.
 An action consists of three pieces of information; firstly the face to turn, secondly the depth of the turn (possible depths are between 0 representing the outer layer and cube_size//2 representing the layer closest to the middle), and thirdly the amount (possible amounts are clockwise, anti-clockwise, or a half turn). The action is therefore a tuple of an index between 0 and 5, an index between 0 and cube_size//2, and an index between 0 and 2.
 
 ## Reward
-The reward function is configurable, but default is the fully sparse reward giving +1 for solving the cube and otherwise 0. The episode terminates if either the cube is solved or a configurable horizon (by default 200) is reached.
+The reward function is configurable, but by default is the fully sparse reward giving +1 for solving the cube and otherwise 0. The episode terminates if either the cube is solved or a configurable horizon (by default 200) is reached.
 
 ## Registered Versions 📖
 - `RubiksCube-v0`, the classic [puzzle](https://en.wikipedia.org/wiki/Rubik%27s_Cube).
