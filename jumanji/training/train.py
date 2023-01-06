@@ -24,6 +24,13 @@ from tqdm.auto import trange
 
 from jumanji.training import utils
 from jumanji.training.loggers import TerminalLogger
+from jumanji.training.setup_train import (
+    setup_agent,
+    setup_env,
+    setup_evaluator,
+    setup_logger,
+    setup_training_state,
+)
 from jumanji.training.types import TrainingState
 
 
@@ -34,16 +41,16 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     logging.info({"devices": jax.local_devices()})
 
     key, init_key = jax.random.split(jax.random.PRNGKey(cfg.seed))
-    logger = ...
-    env = ...  # noqa: F841
-    agent = ...
-    evaluator = ...
-    training_state = ...
+    logger = setup_logger(cfg)
+    env = setup_env(cfg)
+    agent = setup_agent(cfg, env)
+    evaluator = setup_evaluator(cfg, agent)
+    training_state = setup_training_state(env, agent, init_key)
 
     @functools.partial(jax.pmap, axis_name="devices")
     def epoch_fn(training_state: TrainingState) -> Tuple[TrainingState, Dict]:
         training_state, metrics = jax.lax.scan(
-            lambda training_state, _: agent.run_epoch(training_state),  # type: ignore
+            lambda training_state, _: agent.run_epoch(training_state),
             training_state,
             None,
             cfg.num_learner_steps_per_epoch,
@@ -54,13 +61,13 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     with jax.log_compiles(log_compiles):
         for _ in trange(cfg.num_epochs, disable=isinstance(logger, TerminalLogger)):
             env_steps = utils.first_from_device(
-                training_state.acting_state.env_step_count  # type: ignore
+                training_state.acting_state.env_step_count
             )
 
             # Validation
             key, eval_key = jax.random.split(key)
-            metrics = evaluator.run_evaluation(training_state.params_state, eval_key)  # type: ignore # noqa: E501
-            logger.write(  # type: ignore
+            metrics = evaluator.run_evaluation(training_state.params_state, eval_key)
+            logger.write(
                 data=utils.first_from_device(metrics),
                 label="eval",
                 env_steps=env_steps,
@@ -68,7 +75,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
 
             # Training
             training_state, metrics = epoch_fn(training_state)
-            logger.write(  # type: ignore
+            logger.write(
                 data=utils.first_from_device(metrics),
                 label="train",
                 env_steps=env_steps,
