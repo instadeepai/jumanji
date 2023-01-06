@@ -63,8 +63,10 @@ class DummyInstanceGenerator(InstanceGenerator):
             jnp.int32,
         )
 
-        # Initially, all machines are available
-        machines_job_ids = jnp.array([-1, -1, -1], jnp.int32)
+        # Initially, all machines are available (the index self.num_jobs corresponds to no-op)
+        machines_job_ids = jnp.array(
+            [self.num_jobs, self.num_jobs, self.num_jobs], jnp.int32
+        )
         machines_remaining_times = jnp.array([0, 0, 0], jnp.int32)
 
         # Initial action mask given the problem instance

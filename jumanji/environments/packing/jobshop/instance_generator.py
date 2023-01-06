@@ -114,7 +114,9 @@ class ToyInstanceGenerator(InstanceGenerator):
             ],
             jnp.int32,
         )
-        machines_job_ids = jnp.full(self.num_machines, -1, jnp.int32)
+
+        # Initially, all machines are available (the value self.num_jobs corresponds to no-op)
+        machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
         machines_remaining_times = jnp.full(self.num_machines, 0, jnp.int32)
         scheduled_times = jnp.full((self.num_jobs, self.max_num_ops), -1, jnp.int32)
         operations_mask = operations_machine_ids != -1
@@ -205,8 +207,8 @@ class RandomInstanceGenerator(InstanceGenerator):
         operations_machine_ids = jnp.where(mask, operations_machine_ids, jnp.int32(-1))
         operations_durations = jnp.where(mask, operations_durations, jnp.int32(-1))
 
-        # Initially, all machines are available
-        machines_job_ids = jnp.full(self.num_machines, -1, jnp.int32)
+        # Initially, all machines are available (the value self.num_jobs corresponds to no-op)
+        machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
         machines_remaining_times = jnp.full(self.num_machines, 0, jnp.int32)
 
         # Initially, none of the operations have been scheduled
