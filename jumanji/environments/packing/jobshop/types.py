@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 import chex
 import jax.random
+
+if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
+    from dataclasses import dataclass
+else:
+    from chex import dataclass
 
 
 class Observation(NamedTuple):
@@ -44,7 +49,8 @@ class Observation(NamedTuple):
     action_mask: chex.Array  # (num_machines, num_jobs + 1)
 
 
-class State(NamedTuple):
+@dataclass
+class State:
     """The environment state containing a complete description of the job shop scheduling problem.
 
     operations_machine_ids: for each job, it specifies the machine each op must be processed on.
