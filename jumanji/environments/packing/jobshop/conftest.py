@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import jax.numpy as jnp
+import pytest
 from chex import PRNGKey
 
+from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.jobshop.instance_generator import InstanceGenerator
 from jumanji.environments.packing.jobshop.types import State
 
@@ -108,3 +110,14 @@ class DummyInstanceGenerator(InstanceGenerator):
         )
 
         return state
+
+
+@pytest.fixture
+def job_shop_env() -> JobShop:
+    env = JobShop()
+    env.instance_generator = DummyInstanceGenerator()
+    env.num_jobs = env.instance_generator.num_jobs
+    env.num_machines = env.instance_generator.num_machines
+    env.max_num_ops = env.instance_generator.max_num_ops
+    env.max_op_duration = env.instance_generator.max_op_duration
+    return env

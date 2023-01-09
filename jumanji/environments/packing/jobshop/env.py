@@ -14,6 +14,7 @@
 from typing import Any, Tuple
 
 import chex
+import jax
 import jax.numpy as jnp
 
 from jumanji import specs
@@ -24,8 +25,8 @@ from jumanji.environments.packing.jobshop.instance_generator import (
     ToyInstanceGenerator,
 )
 from jumanji.environments.packing.jobshop.specs import ObservationSpec
-from jumanji.environments.packing.jobshop.types import State
-from jumanji.types import Action, TimeStep
+from jumanji.environments.packing.jobshop.types import Observation, State
+from jumanji.types import Action, TimeStep, restart
 
 
 class JobShop(Environment[State]):
@@ -99,8 +100,33 @@ class JobShop(Environment[State]):
             )
         return instance_generator_obj
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:  # type: ignore
-        pass  # type: ignore
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+        """Resets the environment by calling the instance generator for a new instance.
+
+        Args:
+            key: random key used to reset the environment.
+
+        Returns:
+            state: `State` object corresponding to the new state of the environment after the reset.
+            timestep: `TimeStep` object corresponding the first timestep returned by the environment
+                after a reset.
+        """
+        # Generate a new instance
+        state = self.instance_generator(key)
+
+        # Create the action mask and update the state
+        state.action_mask = self._create_action_mask(
+            state.machines_job_ids,
+            state.machines_remaining_times,
+            state.operations_machine_ids,
+            state.operations_mask,
+        )
+
+        # Get the observation and the timestep
+        obs = self._observation_from_state(state)
+        timestep = restart(observation=obs)
+
+        return state, timestep
 
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:  # type: ignore
         pass  # type: ignore
@@ -180,3 +206,115 @@ class JobShop(Environment[State]):
             num_values=jnp.full(self.num_machines, self.num_jobs + 1, jnp.int32),
             name="action",
         )
+
+    @staticmethod
+    def _observation_from_state(state: State) -> Observation:
+        """Converts a job shop environment state to an observation.
+
+        Args:
+            state: `State` object containing the dynamics of the environment.
+
+        Returns:
+            observation: `Observation` object containing the observation of the environment.
+        """
+
+        return Observation(
+            operations_machine_ids=state.operations_machine_ids,
+            operations_durations=state.operations_durations,
+            operations_mask=state.operations_mask,
+            machines_job_ids=state.machines_job_ids,
+            machines_remaining_times=state.machines_remaining_times,
+            action_mask=state.action_mask,
+        )
+
+    @staticmethod
+    def _is_action_valid(
+        job_id: jnp.int32,
+        op_id: jnp.int32,
+        machine_id: jnp.int32,
+        machines_job_ids: chex.Array,
+        machines_remaining_times: chex.Array,
+        operations_machine_ids: chex.Array,
+        updated_operations_mask: chex.Array,
+    ) -> Any:
+        """Check whether a particular action is valid, specifically the action of scheduling
+         the specified operation of the specified job on the specified machine given the
+         current status of all machines.
+
+         To achieve this, four things need to be checked:
+            - The machine is available.
+            - The machine is exactly the one required by the operation.
+            - The job is not currently being processed on any other machine.
+            - The job has not yet finished all of its operations.
+
+        Args:
+            job_id: the job in question.
+            op_id: the operation of the job in question.
+            machine_id: the machine in question.
+            machines_job_ids: array giving which job (or no-op) each machine is working on.
+            machines_remaining_times: array giving the time until available for each machine.
+            operations_machine_ids: array specifying the machine needed by each operation.
+            updated_operations_mask: a boolean mask indicating which operations for each job
+                remain to be scheduled.
+
+        Returns:
+            Boolean representing whether the action in question is valid.
+        """
+        is_machine_available = machines_remaining_times[machine_id] == 0
+        is_correct_machine = operations_machine_ids[job_id, op_id] == machine_id
+        is_job_ready = ~jnp.any(
+            (machines_job_ids == job_id) & (machines_remaining_times > 0)
+        )
+        is_job_finished = jnp.all(~updated_operations_mask[job_id])
+        return (
+            is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
+        )
+
+    def _create_action_mask(
+        self,
+        machines_job_ids: chex.Array,
+        machines_remaining_times: chex.Array,
+        operations_machine_ids: chex.Array,
+        operations_mask: chex.Array,
+    ) -> chex.Array:
+        """Create the action mask based on the current status of all machines and which
+        operations remain to be scheduled. Specifically, for each machine, it is checked
+        whether each job (or no-op) can be scheduled on that machine. Note that we vmap
+        twice: once over the jobs and once over the machines.
+
+        Args:
+            machines_job_ids: array giving which job (or no-op) each machine is working on.
+            machines_remaining_times: array giving the time until available for each machine.
+            operations_machine_ids: array specifying the machine needed by each operation.
+            operations_mask: a boolean mask indicating which operations for each job
+                remain to be scheduled.
+
+        Returns:
+            The action mask representing which jobs (or no-op) can be scheduled on each machine.
+                Has shape (num_machines, num_jobs+1).
+        """
+        job_indexes = jnp.arange(self.num_jobs)
+        machine_indexes = jnp.arange(self.num_machines)
+
+        # Get the ID of the next operation for each job
+        next_op_ids = jnp.argmax(operations_mask, axis=-1)
+
+        # vmap over the jobs (and their ops) and vmap over the machines
+        action_mask = jax.vmap(
+            jax.vmap(
+                self._is_action_valid, in_axes=(0, 0, None, None, None, None, None)
+            ),
+            in_axes=(None, None, 0, None, None, None, None),
+        )(
+            job_indexes,
+            next_op_ids,
+            machine_indexes,
+            machines_job_ids,
+            machines_remaining_times,
+            operations_machine_ids,
+            operations_mask,
+        )
+        no_op_mask = jnp.ones((self.num_machines, 1), bool)
+        full_action_mask = jnp.concatenate([action_mask, no_op_mask], axis=-1)
+
+        return full_action_mask
