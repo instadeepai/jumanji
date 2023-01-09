@@ -12,5 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.agents.random.random_agent import RandomAgent
-from jumanji.training.agents.random.random_policy import RandomPolicy
+import chex
+import jax
+
+from jumanji.training.agents.random import RandomPolicy
+
+
+def make_random_policy_snake() -> RandomPolicy:
+    """Make random policy for Snake. The action mask is not given, so we may sample actions
+    that lead to a terminal state.
+    """
+
+    def random_policy(observation: chex.Array, key: chex.PRNGKey) -> chex.Array:
+        batch_shape = observation.shape[:-3]
+        action = jax.random.randint(key, batch_shape, minval=0, maxval=4)
+        return action
+
+    return random_policy

@@ -12,5 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.agents.random.random_agent import RandomAgent
-from jumanji.training.agents.random.random_policy import RandomPolicy
+from jumanji.training.agents.random import RandomPolicy
+from jumanji.training.networks.masked_categorical_random import (
+    masked_categorical_random,
+)
+
+
+def make_random_policy_knapsack() -> RandomPolicy:
+    """Make random policy for Knapsack."""
+    return masked_categorical_random

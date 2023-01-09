@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
 
 import chex
 import jax
@@ -21,9 +20,9 @@ from omegaconf import DictConfig
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments import CVRP, TSP, BinPack, Connect4, Knapsack, Routing, Snake
+from jumanji.training import networks
 from jumanji.training.agents.base import Agent
-from jumanji.training.agents.random import RandomAgent
-from jumanji.training.agents.random.random_policy import RandomPolicy
+from jumanji.training.agents.random import RandomAgent, RandomPolicy
 from jumanji.training.evaluator import Evaluator
 from jumanji.training.loggers import Logger, TerminalLogger
 from jumanji.training.types import ActingState, TrainingState
@@ -99,35 +98,26 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
 
 def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
     assert cfg.agent.network == "random"
-    action_spec = env.action_spec()
-
-    def random_policy(observation: Any, key: chex.PRNGKey) -> chex.Array:
-        del observation, key
-        return action_spec.generate_value()
-
-    random_policy = jax.vmap(random_policy)
-
-    # TODO: uncomment when networks and random policies are implemented.
-    # if cfg.environment.name == "binpack":
-    #     assert isinstance(env.unwrapped, BinPack)
-    #     random_policy = make_random_policy_binpack(binpack=env.unwrapped)
-    # elif cfg.environment.name == "snake":
-    #     assert isinstance(env.unwrapped, Snake)
-    #     random_policy = make_random_policy_snake()
-    # elif cfg.environment.name == "tsp":
-    #     assert isinstance(env.unwrapped, TSP)
-    #     random_policy = make_random_policy_tsp()
-    # elif cfg.environment.name == "knapsack":
-    #     assert isinstance(env.unwrapped, Knapsack)
-    #     random_policy = make_random_policy_knapsack()
-    # elif cfg.environment.name == "cvrp":
-    #     assert isinstance(env.unwrapped, CVRP)
-    #     random_policy = make_random_policy_cvrp()
-    # elif cfg.environment.name == "routing":
-    #     assert isinstance(env.unwrapped, Routing)
-    #     random_policy = make_random_policy_routing(routing=env.unwrapped)
-    # else:
-    #     raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
+    if cfg.environment.name == "binpack":
+        assert isinstance(env.unwrapped, BinPack)
+        random_policy = networks.make_random_policy_binpack(binpack=env.unwrapped)
+    elif cfg.environment.name == "snake":
+        assert isinstance(env.unwrapped, Snake)
+        random_policy = networks.make_random_policy_snake()
+    elif cfg.environment.name == "tsp":
+        assert isinstance(env.unwrapped, TSP)
+        random_policy = networks.make_random_policy_tsp()
+    elif cfg.environment.name == "knapsack":
+        assert isinstance(env.unwrapped, Knapsack)
+        random_policy = networks.make_random_policy_knapsack()
+    elif cfg.environment.name == "cvrp":
+        assert isinstance(env.unwrapped, CVRP)
+        random_policy = networks.make_random_policy_cvrp()
+    elif cfg.environment.name == "routing":
+        assert isinstance(env.unwrapped, Routing)
+        random_policy = networks.make_random_policy_routing(routing=env.unwrapped)
+    else:
+        raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return random_policy
 
 
