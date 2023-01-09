@@ -1,0 +1,14 @@
+name: binpack
+env_kwargs:
+    instance_generator_type: toy
+    obs_num_ems: 40
+instance_generator_kwargs:
+
+
+network:
+    policy_layers: [32, 32]
+    value_layers: [64, 64]
+    transformer_n_blocks: 2
+    transformer_mlp_units: [32,]
+    transformer_key_size: 16
+    transformer_num_heads: 8

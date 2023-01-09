@@ -1,0 +1,9 @@
+name: snake
+env_kwargs:
+    n_rows: 6
+    n_cols: 6
+
+network:
+    num_channels: 32
+    policy_layers: [64, 64]
+    value_layers: [128, 128]

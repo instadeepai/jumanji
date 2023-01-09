@@ -1,0 +1,10 @@
+name: routing
+env_kwargs:
+    rows: 12
+    cols: 12
+    num_agents: 3
+
+network:
+    num_channels: 32
+    policy_layers: [64, 64]
+    value_layers: [128, 128]

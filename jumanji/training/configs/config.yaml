@@ -1,0 +1,12 @@
+defaults:
+    - _self_
+    - agent: random
+    - environment: binpack
+
+seed: 0
+num_epochs: 1000
+num_learner_steps_per_epoch: 100
+total_num_eval: 500
+
+n_steps: 10
+total_batch_size: 64

@@ -47,7 +47,9 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
     env_name = cfg.environment.name
-    env_kwargs = cfg.environment.kwargs
+    env_kwargs = cfg.environment.env_kwargs
+    if "instance_generator_kwargs" in cfg.environment.keys():
+        env_kwargs.update(cfg.environment.instance_generator_kwargs)
     env: Environment = ENV_FACTORY[env_name](**env_kwargs)
     if isinstance(env.action_spec(), specs.MultiDiscreteArray):
         env = MultiToSingleWrapper(env)

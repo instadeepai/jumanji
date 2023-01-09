@@ -1,0 +1,15 @@
+name: cvrp
+env_kwargs:
+    problem_size: 20
+    max_capacity: 30
+    max_demand: 10
+
+network:
+    encoder_num_layers: 1
+    encoder_num_heads: 4
+    encoder_key_size: 8
+    encoder_expand_factor: 2
+    encoder_model_size: 128
+    decoder_num_heads: 4
+    decoder_key_size: 8
+    decoder_model_size: 128
