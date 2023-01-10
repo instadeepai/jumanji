@@ -33,8 +33,8 @@ class Observation(NamedTuple):
     operations_mask: for each job, indicates which operations remain to be scheduled. False if the
         op has been scheduled or if the op was added for padding, True otherwise. The first True in
         each row (i.e. each job) identifies the next operation for that job.
-    machines_job_ids: for each machine, it specifies the job currently being processed.
-        Note that -1 means no-op in which case the remaining time until available is always 0.
+    machines_job_ids: for each machine, it specifies the job currently being processed. Note that
+        the index num_jobs represents a no-op for which the time until available is always 0.
     machines_remaining_times: for each machine, it specifies the number of time steps until
         available.
     action_mask: for each machine, it indicates which jobs (or no-op) can legally be scheduled.
@@ -60,8 +60,8 @@ class State:
     operations_mask: for each job, indicates which operations remain to be scheduled. False if the
         op has been scheduled or if the op was added for padding, True otherwise. The first True in
         each row (i.e. each job) identifies the next operation for that job.
-    machines_job_ids: for each machine, it specifies the job currently being processed.
-        Note that -1 means no-op in which case the remaining time until available is always 0.
+    machines_job_ids: for each machine, it specifies the job currently being processed. Note that
+        the index num_jobs represents a no-op for which the time until available is always 0.
     machines_remaining_times: for each machine, it specifies the number of time steps until
         available.
     action_mask: for each machine, it indicates which jobs (or no-op) can legally be scheduled.

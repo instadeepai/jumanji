@@ -26,7 +26,7 @@ from jumanji.environments.packing.jobshop.instance_generator import (
 )
 from jumanji.environments.packing.jobshop.specs import ObservationSpec
 from jumanji.environments.packing.jobshop.types import Observation, State
-from jumanji.types import Action, TimeStep, restart
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class JobShop(Environment[State]):
@@ -50,6 +50,9 @@ class JobShop(Environment[State]):
         self.num_machines = self.instance_generator.num_machines
         self.max_num_ops = self.instance_generator.max_num_ops
         self.max_op_duration = self.instance_generator.max_op_duration
+
+        # Define the "job id" of a no-op action as the number of jobs
+        self.no_op_idx = self.num_jobs
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -128,8 +131,188 @@ class JobShop(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:  # type: ignore
-        pass  # type: ignore
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+        """Updates the status of all machines, the status of the operations, and increments the
+        time step. It updates the environment state and the timestep (which contains the new
+        observation). It calculates the reward based on the three terminal conditions:
+            - The action provided by the agent is invalid.
+            - The schedule has finished.
+            - All machines do a no-op that leads to all machines being simultaneously idle.
+
+        Args:
+            state (State): the current state of the system.
+            action (Action): the action to take.
+
+        Returns:
+            state: `State` object corresponding to the new state of the environment after the step.
+            timestep: `TimeStep` object of the updated timestep. Contains the reward and observation
+                the current timestep in the `extras` field.
+        """
+        # Check the action is legal
+        invalid = ~jnp.all(state.action_mask[jnp.arange(self.num_machines), action])  # type: ignore
+
+        # Obtain the id for every job's next operation
+        op_ids = jnp.argmax(state.operations_mask, axis=-1)
+
+        # Update the status of all machines
+        (
+            updated_machines_job_ids,
+            updated_machines_remaining_times,
+        ) = self._update_machines(
+            action,
+            op_ids,
+            state.machines_job_ids,
+            state.machines_remaining_times,
+            state.operations_durations,
+        )
+
+        # Update the status of operations that have been scheduled
+        updated_operations_mask, updated_scheduled_times = self._update_operations(
+            action,
+            op_ids,
+            state.current_timestep,
+            state.scheduled_times,
+            state.operations_mask,
+        )
+
+        # Update the action_mask
+        updated_action_mask = self._create_action_mask(
+            updated_machines_job_ids,
+            updated_machines_remaining_times,
+            state.operations_machine_ids,
+            updated_operations_mask,
+        )
+
+        # Increment the time step
+        updated_timestep = jnp.int32(state.current_timestep + 1)
+
+        # Check if all machines are idle simultaneously
+        all_machines_idle = jnp.all(
+            (updated_machines_job_ids == self.no_op_idx)
+            & (updated_machines_remaining_times == 0)
+        )
+
+        # Check if the schedule has finished
+        all_operations_scheduled = ~jnp.any(updated_operations_mask)
+        schedule_finished = all_operations_scheduled & jnp.all(
+            updated_machines_remaining_times == 0
+        )
+
+        # Update the state and extract the next observation
+        next_state = State(
+            operations_machine_ids=state.operations_machine_ids,
+            operations_durations=state.operations_durations,
+            operations_mask=updated_operations_mask,
+            machines_job_ids=updated_machines_job_ids,
+            machines_remaining_times=updated_machines_remaining_times,
+            action_mask=updated_action_mask,
+            current_timestep=updated_timestep,
+            scheduled_times=updated_scheduled_times,
+        )
+        next_obs = self._observation_from_state(state)
+
+        # Compute terminal condition
+        done = invalid | all_machines_idle | schedule_finished
+        reward = jnp.float32(-1)
+
+        timestep = jax.lax.cond(
+            done,
+            lambda _: termination(reward=reward, observation=next_obs),
+            lambda _: transition(reward=reward, observation=next_obs),
+            operand=None,
+        )
+
+        return next_state, timestep
+
+    def _update_operations(
+        self,
+        action: Action,
+        op_ids: chex.Array,
+        current_timestep: int,
+        scheduled_times: chex.Array,
+        operations_mask: chex.Array,
+    ) -> Any:
+        """Update the operations mask and schedule times based on the newly scheduled
+         operations as detailed by the action.
+
+         Args:
+            action: array representing the job (or no-op) scheduled by each machine.
+            op_ids: array containing the index of the next operation for each job.
+            current_timestep: the current time.
+            scheduled_times: specifies the time step at which each operation was
+                scheduled. Set to -1 if the operation has not been scheduled yet.
+            operations_mask: specifies which operations have yet to be scheduled.
+
+        Returns:
+            updated_operations_mask: specifies which operations have yet to be scheduled.
+            updated_scheduled_times: specifies the time step at which each operation was
+                scheduled. Set to -1 if the operation has not been scheduled yet.
+        """
+        job_id_batched = jnp.arange(self.num_jobs)
+        is_new_job = jax.vmap(self._set_busy, in_axes=(0, None))(job_id_batched, action)
+        is_new_job = jnp.tile(is_new_job, reps=(self.max_num_ops, 1)).T
+        is_next_op = jnp.zeros(shape=(self.num_jobs, self.max_num_ops), dtype=bool)
+        is_next_op = is_next_op.at[jnp.arange(self.num_jobs), op_ids].set(True)
+        is_new_job_and_next_op = jnp.logical_and(is_new_job, is_next_op)
+        updated_scheduled_times = jnp.where(
+            is_new_job_and_next_op, current_timestep, scheduled_times
+        )
+        updated_operations_mask = jnp.where(
+            is_new_job_and_next_op, False, operations_mask
+        )
+        return updated_operations_mask, updated_scheduled_times
+
+    def _update_machines(
+        self,
+        action: Action,
+        op_ids: chex.Array,
+        machines_job_ids: chex.Array,
+        machines_remaining_times: chex.Array,
+        operations_durations: chex.Array,
+    ) -> Any:
+        """Update the status of all machines based on the action, specifically:
+            - The specific job (or no-op) processed by each machine.
+            - The number of time steps until each machine is available.
+
+        Args:
+            action: array representing the job (or no-op) scheduled by each machine.
+            op_ids: array containing the index of the next operation for each job.
+            machines_job_ids: array containing the job (or no-op) processed by each machine.
+            machines_remaining_times: array containing the time remaining until available
+                for each machine.
+            operations_durations: for each job, it specifies the processing time of each
+                operation.
+
+        Returns:
+            updated_machines_job_ids: array containing the job (or no-op) processed by
+                each machine.
+            updated_machines_remaining_times: array containing the time remaining
+                until available for each machine.
+        """
+        # For machines that do a no-op, keep the existing job (or no-op)
+        job_ids = jnp.where(action == self.no_op_idx, machines_job_ids, action)
+
+        # If a machine does a no-op and is available, schedule the job (or no-op)
+        updated_machines_job_ids = jnp.where(
+            (action == self.no_op_idx) & (machines_remaining_times == 0),
+            action,
+            job_ids,
+        )
+
+        # If a machine does a no-op, keep the existing remaining time
+        # Otherwise, use the duration of the job's operation
+        remaining_times = jnp.where(
+            action == self.no_op_idx,
+            machines_remaining_times,
+            operations_durations[action, op_ids[action]],
+        )
+
+        # For busy machines, decrement the remaining time by one
+        updated_machines_remaining_times = jnp.where(
+            remaining_times > 0, remaining_times - 1, 0
+        )
+
+        return updated_machines_job_ids, updated_machines_remaining_times
 
     def observation_spec(self) -> ObservationSpec:
         """Specifications of the observation of the `JobShop` environment.
@@ -207,8 +390,7 @@ class JobShop(Environment[State]):
             name="action",
         )
 
-    @staticmethod
-    def _observation_from_state(state: State) -> Observation:
+    def _observation_from_state(self, state: State) -> Observation:
         """Converts a job shop environment state to an observation.
 
         Args:
@@ -227,8 +409,8 @@ class JobShop(Environment[State]):
             action_mask=state.action_mask,
         )
 
-    @staticmethod
     def _is_action_valid(
+        self,
         job_id: jnp.int32,
         op_id: jnp.int32,
         machine_id: jnp.int32,
@@ -269,6 +451,20 @@ class JobShop(Environment[State]):
         return (
             is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
         )
+
+    def _set_busy(self, job_id: jnp.int32, action: Action) -> Any:
+        """Determine, for a given action and job, whether the job is a new job to be
+        scheduled.
+
+        Args:
+            job_id: identifier of a job.
+            action: `Action` object whose indices and values represent the machines and
+                jobs, respectively.
+
+        Returns:
+            Boolean indicating whether the specified job is a job that will be scheduled.
+        """
+        return jnp.any(action == job_id)
 
     def _create_action_mask(
         self,

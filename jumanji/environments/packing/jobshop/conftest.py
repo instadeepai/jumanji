@@ -120,4 +120,5 @@ def job_shop_env() -> JobShop:
     env.num_machines = env.instance_generator.num_machines
     env.max_num_ops = env.instance_generator.max_num_ops
     env.max_op_duration = env.instance_generator.max_op_duration
+    env.no_op_idx = env.num_jobs
     return env
