@@ -83,7 +83,7 @@ class A2CAgent(Agent):
         if not isinstance(training_state.params_state, ParamsState):
             raise TypeError(
                 "Expected params_state to be of type ParamsState, got "
-                f"{training_state.params_state}."
+                f"type {type(training_state.params_state)}."
             )
         grad, (acting_state, metrics) = jax.grad(self.a2c_loss, has_aux=True)(
             training_state.params_state.params,

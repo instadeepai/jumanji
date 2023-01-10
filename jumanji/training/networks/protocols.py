@@ -35,3 +35,9 @@ class RandomPolicy(Protocol):
         Returns:
             action
         """
+
+
+class ObservationWithActionMaskProtocol(Protocol):
+    """Make sure that the Observation has a field called action_mask."""
+
+    action_mask: chex.Array

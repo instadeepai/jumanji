@@ -27,7 +27,7 @@ from jumanji.training.agents.base import Agent
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.evaluator import Evaluator
 from jumanji.training.loggers import Logger, TerminalLogger
-from jumanji.training.networks.random_policy import RandomPolicy
+from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import AutoResetWrapper, MultiToSingleWrapper, VmapWrapper
 

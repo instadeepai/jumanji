@@ -17,14 +17,8 @@ from typing import TypeVar
 import chex
 import jax
 import jax.numpy as jnp
-from typing_extensions import Protocol
 
-
-class ObservationWithActionMaskProtocol(Protocol):
-    """Make sure that the Observation has a field called action_mask."""
-
-    action_mask: chex.Array
-
+from jumanji.training.networks.protocols import ObservationWithActionMaskProtocol
 
 ObservationWithActionMask = TypeVar(
     "ObservationWithActionMask", bound="ObservationWithActionMaskProtocol"

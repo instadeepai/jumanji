@@ -17,7 +17,7 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.packing.binpack import BinPack, Observation
-from jumanji.training.networks.random_policy import RandomPolicy
+from jumanji.training.networks.protocols import RandomPolicy
 
 
 def make_random_policy_binpack(binpack: BinPack) -> RandomPolicy:

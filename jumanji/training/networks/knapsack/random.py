@@ -15,7 +15,7 @@
 from jumanji.training.networks.masked_categorical_random import (
     masked_categorical_random,
 )
-from jumanji.training.networks.random_policy import RandomPolicy
+from jumanji.training.networks.protocols import RandomPolicy
 
 
 def make_random_policy_knapsack() -> RandomPolicy:
