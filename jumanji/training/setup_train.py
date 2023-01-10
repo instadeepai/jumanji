@@ -15,16 +15,19 @@
 import chex
 import jax
 import jax.numpy as jnp
+import optax
 from omegaconf import DictConfig
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments import CVRP, TSP, BinPack, Connect4, Knapsack, Routing, Snake
 from jumanji.training import networks
+from jumanji.training.agents.a2c import A2CAgent
 from jumanji.training.agents.base import Agent
-from jumanji.training.agents.random import RandomAgent, RandomPolicy
+from jumanji.training.agents.random import RandomAgent
 from jumanji.training.evaluator import Evaluator
 from jumanji.training.loggers import Logger, TerminalLogger
+from jumanji.training.networks.random_policy import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import AutoResetWrapper, MultiToSingleWrapper, VmapWrapper
 
@@ -49,7 +52,8 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
     env_name = cfg.environment.name
     env_kwargs = cfg.environment.env_kwargs
     if "instance_generator_kwargs" in cfg.environment.keys():
-        env_kwargs.update(cfg.environment.instance_generator_kwargs)
+        instance_generator_kwargs = cfg.environment.instance_generator_kwargs
+        env_kwargs.update(instance_generator_kwargs or {})
     env: Environment = ENV_FACTORY[env_name](**env_kwargs)
     if isinstance(env.action_spec(), specs.MultiDiscreteArray):
         env = MultiToSingleWrapper(env)
@@ -75,22 +79,23 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
         )
     elif cfg.agent.name == "a2c":
         raise NotImplementedError
-        # TODO: uncomment when A2C is implemented.
+        actor_critic_networks = None
+        # TODO: uncomment when A2C networks are implemented.
         # actor_critic_networks = _setup_actor_critic_neworks(cfg, env)
-        # optimizer = optax.adam(cfg.learning_rate)
-        # agent = A2C(
-        #     env=env,
-        #     n_steps=cfg.n_steps,
-        #     total_batch_size=cfg.total_batch_size,
-        #     actor_critic_networks=actor_critic_networks,
-        #     optimizer=optimizer,
-        #     normalize_advantage=cfg.normalize_advantage,
-        #     discount_factor=cfg.discount_factor,
-        #     bootstrapping_factor=cfg.bootstrapping_factor,
-        #     l_pg=cfg.agent.l_pg,
-        #     l_td=cfg.agent.l_td,
-        #     l_en=cfg.agent.l_en,
-        # )
+        optimizer = optax.adam(cfg.learning_rate)
+        agent = A2CAgent(
+            env=env,
+            n_steps=cfg.n_steps,
+            total_batch_size=cfg.total_batch_size,
+            actor_critic_networks=actor_critic_networks,
+            optimizer=optimizer,
+            normalize_advantage=cfg.normalize_advantage,
+            discount_factor=cfg.discount_factor,
+            bootstrapping_factor=cfg.bootstrapping_factor,
+            l_pg=cfg.agent.l_pg,
+            l_td=cfg.agent.l_td,
+            l_en=cfg.agent.l_en,
+        )
     else:
         raise ValueError(
             f"Expected agent name to be in ['random', 'a2c'], got {cfg.agent.name}."

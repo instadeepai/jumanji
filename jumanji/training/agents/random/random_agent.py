@@ -20,7 +20,7 @@ import jax
 
 from jumanji.env import Environment
 from jumanji.training.agents.base import Agent
-from jumanji.training.agents.random.random_policy import RandomPolicy
+from jumanji.training.networks.random_policy import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 
 

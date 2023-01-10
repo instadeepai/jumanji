@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.networks.masked_categorical_random import (
-    masked_categorical_random,
-)
-from jumanji.training.networks.random_policy import RandomPolicy
+from typing import Any, Callable, NamedTuple
+
+import chex
+import haiku as hk
 
 
-def make_random_policy_knapsack() -> RandomPolicy:
-    """Make random policy for Knapsack."""
-    return masked_categorical_random
+class FeedForwardNetwork(NamedTuple):
+    init: Callable[[chex.PRNGKey, Any], hk.Params]
+    apply: Callable[[hk.Params, Any], chex.Array]

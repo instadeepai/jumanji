@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.networks.masked_categorical_random import (
-    masked_categorical_random,
-)
-from jumanji.training.networks.random_policy import RandomPolicy
+from typing import NamedTuple
+
+from jumanji.training.networks.base import FeedForwardNetwork
+from jumanji.training.networks.parametric_distribution import ParametricDistribution
 
 
-def make_random_policy_knapsack() -> RandomPolicy:
-    """Make random policy for Knapsack."""
-    return masked_categorical_random
+class ActorCriticNetworks(NamedTuple):
+    """Defines the actor-critic networks, which outputs the logits of a policy, and a value given
+    an observation.
+    """
+
+    policy_network: FeedForwardNetwork
+    value_network: FeedForwardNetwork
+    parametric_action_distribution: ParametricDistribution

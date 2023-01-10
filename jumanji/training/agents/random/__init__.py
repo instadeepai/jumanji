@@ -13,4 +13,3 @@
 # limitations under the License.
 
 from jumanji.training.agents.random.random_agent import RandomAgent
-from jumanji.training.agents.random.random_policy import RandomPolicy

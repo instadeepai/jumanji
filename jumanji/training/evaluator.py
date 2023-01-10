@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import functools
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import chex
 import haiku as hk
@@ -21,6 +21,7 @@ import jax
 from jax import numpy as jnp
 
 from jumanji.env import Environment
+from jumanji.training.agents.a2c import A2CAgent
 from jumanji.training.agents.base import Agent
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.types import ActingState, ParamsState
@@ -55,9 +56,14 @@ class Evaluator:
         key: chex.PRNGKey,
     ) -> Dict:
         policy = self.agent.make_policy(policy_params=policy_params)
-        # TODO: To uncomment once A2C is implemented.
-        # if isinstance(self.agent, A2C):
-        #     policy = lambda *args: policy(*args)[0]
+        if isinstance(self.agent, A2CAgent):
+
+            def acting_policy(observation: Any, key: chex.PRNGKey) -> chex.Array:
+                action, _ = policy(observation, key)
+                return action
+
+        else:
+            acting_policy = policy
 
         def cond_fun(carry: Tuple[ActingState, jnp.float32]) -> jnp.bool_:
             acting_state, _ = carry
@@ -71,7 +77,7 @@ class Evaluator:
             observation = jax.tree_util.tree_map(
                 lambda x: x[None, ...], acting_state.timestep.observation
             )
-            action = policy(observation, action_key)
+            action = acting_policy(observation, action_key)
             state, timestep = self.eval_env.step(
                 acting_state.state, jnp.squeeze(action)
             )
@@ -112,10 +118,9 @@ class Evaluator:
         key: chex.PRNGKey,
         num_eval: int,
     ) -> Dict:
-        # TODO: To uncomment once A2C is implemented.
-        # if isinstance(self.agent, A2C):
-        #     policy_params = params_state.params.actor
-        if isinstance(self.agent, RandomAgent):
+        if isinstance(self.agent, A2CAgent):
+            policy_params = params_state.params.actor
+        elif isinstance(self.agent, RandomAgent):
             policy_params = None
         else:
             raise ValueError

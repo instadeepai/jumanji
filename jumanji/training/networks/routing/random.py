@@ -16,7 +16,7 @@ import chex
 import jax
 
 from jumanji.environments.routing.routing import Routing
-from jumanji.training.agents.random import RandomPolicy
+from jumanji.training.networks.random_policy import RandomPolicy
 
 
 def make_random_policy_routing(routing: Routing) -> RandomPolicy:
