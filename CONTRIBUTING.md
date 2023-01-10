@@ -29,13 +29,15 @@ Before sending your pull request for review, make sure your changes are consiste
 
 #### When contributing a new environment
 
-When contributing a new environment, make sure to do the following:
-1. Implement all the functions of the Environment abstraction: step, reset, specs, etc.
-2. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` using the testing utils.
-3. Add an environment README in the `docs/environments/` folder describing the environment you implemented.
-4. Add an image (or gif) in the readme above. Images are located in `docs/img/`.
-5. Update the documentation api in `docs/api/environments/` to add your environment to the doc.
-6. Update the `mkdocs.yml` file to include the newly added markdown files.
+1. Confirm with a member of the development team that the environment is a right fit for the repo.
+2. Complete a design document outlining the problem formulation and software design. Please have the design doc reviewed by a core development team member before submitting PRs.
+3. New environments must be broken down into small, logical PRs that iteratively add the full logic of the environment. This is to avoid very large PRs that are hard to review and require more re-work if problems are discovered.
+4. Implement all the functions of the `Environment` abstraction: step, reset, specs, etc.
+5. Implement unit tests for every function used by the environment, including a `test_[your_env]__does_not_smoke` using the testing utils.
+6. Add an environment README in the `docs/environments/` folder describing the environment you implemented.
+7. Add an image (or gif) in the readme above. Images are located in `docs/img/`.
+8. Update the documentation api in `docs/api/environments/` to add your environment to the doc.
+9. Update the `mkdocs.yml` file to include the newly added markdown files.
 
 
 ### Coding Style
