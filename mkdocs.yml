@@ -23,6 +23,7 @@ nav:
       - Packing:
           - BinPack: environments/binpack.md
           - Knapsack: environments/knapsack.md
+          - JobShop: environments/jobshop.md
       - Routing:
           - CVRP: environments/cvrp.md
           - Routing: environments/routing.md
@@ -41,6 +42,7 @@ nav:
           - Packing:
               - BinPack: api/environments/binpack.md
               - Knapsack: api/environments/knapsack.md
+              - JobShop: api/environments/jobshop.md
           - Routing:
               - CVRP: api/environments/cvrp.md
               - Routing: api/environments/routing.md

@@ -19,6 +19,7 @@ from jumanji.environments.logic.connect4.env import Connect4
 from jumanji.environments.logic.rubiks_cube import RubiksCube
 from jumanji.environments.packing import binpack, knapsack
 from jumanji.environments.packing.binpack.env import BinPack
+from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.routing import cvrp, routing, snake, tsp
 from jumanji.environments.routing.cvrp.env import CVRP
