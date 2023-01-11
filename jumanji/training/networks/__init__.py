@@ -12,11 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from jumanji.training.networks.binpack.actor_critic import (
+    make_actor_critic_networks_binpack,
+)
 from jumanji.training.networks.binpack.random import make_random_policy_binpack
+from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
+from jumanji.training.networks.knapsack.actor_critic import (
+    make_actor_critic_networks_knapsack,
+)
 from jumanji.training.networks.knapsack.random import make_random_policy_knapsack
+from jumanji.training.networks.routing.actor_critic import (
+    make_actor_critic_networks_routing,
+)
 from jumanji.training.networks.routing.random import make_random_policy_routing
+from jumanji.training.networks.snake.actor_critic import (
+    make_actor_critic_networks_snake,
+)
 from jumanji.training.networks.snake.random import make_random_policy_snake
+from jumanji.training.networks.tsp.actor_critic import make_actor_critic_networks_tsp
 from jumanji.training.networks.tsp.random import make_random_policy_tsp
-
-# from jumanji.training.networks.connect4.random import ...

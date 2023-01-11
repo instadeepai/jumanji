@@ -1,7 +1,7 @@
 defaults:
     - _self_
-    - agent: random
-    - environment: binpack
+    - agent: a2c  # [random, a2c]
+    - environment: routing  # [binpack, cvrp, knapsack, routing, snake, tsp]
 
 seed: 0
 num_epochs: 1000

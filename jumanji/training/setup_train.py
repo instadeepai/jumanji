@@ -27,6 +27,7 @@ from jumanji.training.agents.base import Agent
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.evaluator import Evaluator
 from jumanji.training.loggers import Logger, TerminalLogger
+from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import AutoResetWrapper, MultiToSingleWrapper, VmapWrapper
@@ -78,20 +79,17 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
             random_policy=random_policy,
         )
     elif cfg.agent.name == "a2c":
-        raise NotImplementedError
-        actor_critic_networks = None
-        # TODO: uncomment when A2C networks are implemented.
-        # actor_critic_networks = _setup_actor_critic_neworks(cfg, env)
-        optimizer = optax.adam(cfg.learning_rate)
+        actor_critic_networks = _setup_actor_critic_neworks(cfg, env)
+        optimizer = optax.adam(cfg.agent.learning_rate)
         agent = A2CAgent(
             env=env,
             n_steps=cfg.n_steps,
             total_batch_size=cfg.total_batch_size,
             actor_critic_networks=actor_critic_networks,
             optimizer=optimizer,
-            normalize_advantage=cfg.normalize_advantage,
-            discount_factor=cfg.discount_factor,
-            bootstrapping_factor=cfg.bootstrapping_factor,
+            normalize_advantage=cfg.agent.normalize_advantage,
+            discount_factor=cfg.agent.discount_factor,
+            bootstrapping_factor=cfg.agent.bootstrapping_factor,
             l_pg=cfg.agent.l_pg,
             l_td=cfg.agent.l_td,
             l_en=cfg.agent.l_en,
@@ -126,6 +124,80 @@ def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return random_policy
+
+
+def _setup_actor_critic_neworks(
+    cfg: DictConfig, env: Environment
+) -> ActorCriticNetworks:
+    assert cfg.agent.network == "actor_critic"
+    if cfg.environment.name == "binpack":
+        assert isinstance(env.unwrapped, BinPack)
+        actor_critic_networks = networks.make_actor_critic_networks_binpack(
+            observation_spec=env.unwrapped.observation_spec(),
+            policy_layers=cfg.environment.network.policy_layers,
+            value_layers=cfg.environment.network.value_layers,
+            transformer_n_blocks=cfg.environment.network.transformer_n_blocks,
+            transformer_mlp_units=cfg.environment.network.transformer_mlp_units,
+            transformer_key_size=cfg.environment.network.transformer_key_size,
+            transformer_num_heads=cfg.environment.network.transformer_num_heads,
+        )
+    elif cfg.environment.name == "snake":
+        assert isinstance(env.unwrapped, Snake)
+        actor_critic_networks = networks.make_actor_critic_networks_snake(
+            num_channels=cfg.environment.network.num_channels,
+            policy_layers=cfg.environment.network.policy_layers,
+            value_layers=cfg.environment.network.value_layers,
+        )
+    elif cfg.environment.name == "tsp":
+        assert isinstance(env.unwrapped, TSP)
+        actor_critic_networks = networks.make_actor_critic_networks_tsp(
+            tsp=env.unwrapped,
+            encoder_num_layers=cfg.environment.network.encoder_num_layers,
+            encoder_num_heads=cfg.environment.network.encoder_num_heads,
+            encoder_key_size=cfg.environment.network.encoder_key_size,
+            encoder_model_size=cfg.environment.network.encoder_model_size,
+            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
+            decoder_num_heads=cfg.environment.network.decoder_num_heads,
+            decoder_key_size=cfg.environment.network.decoder_key_size,
+            decoder_model_size=cfg.environment.network.decoder_model_size,
+        )
+    elif cfg.environment.name == "knapsack":
+        assert isinstance(env.unwrapped, Knapsack)
+        actor_critic_networks = networks.make_actor_critic_networks_knapsack(
+            knapsack=env.unwrapped,
+            encoder_num_layers=cfg.environment.network.encoder_num_layers,
+            encoder_num_heads=cfg.environment.network.encoder_num_heads,
+            encoder_key_size=cfg.environment.network.encoder_key_size,
+            encoder_model_size=cfg.environment.network.encoder_model_size,
+            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
+            decoder_num_heads=cfg.environment.network.decoder_num_heads,
+            decoder_key_size=cfg.environment.network.decoder_key_size,
+            decoder_model_size=cfg.environment.network.decoder_model_size,
+        )
+    elif cfg.environment.name == "cvrp":
+        assert isinstance(env.unwrapped, CVRP)
+        actor_critic_networks = networks.make_actor_critic_networks_cvrp(
+            cvrp=env.unwrapped,
+            encoder_num_layers=cfg.environment.network.encoder_num_layers,
+            encoder_num_heads=cfg.environment.network.encoder_num_heads,
+            encoder_key_size=cfg.environment.network.encoder_key_size,
+            encoder_model_size=cfg.environment.network.encoder_model_size,
+            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
+            decoder_num_heads=cfg.environment.network.decoder_num_heads,
+            decoder_key_size=cfg.environment.network.decoder_key_size,
+            decoder_model_size=cfg.environment.network.decoder_model_size,
+        )
+    elif cfg.environment.name == "routing":
+        assert isinstance(env.unwrapped, Routing)
+        actor_critic_networks = networks.make_actor_critic_networks_routing(
+            routing=env.unwrapped,
+            num_channels=cfg.environment.network.num_channels,
+            policy_layers=cfg.environment.network.policy_layers,
+            value_layers=cfg.environment.network.value_layers,
+        )
+    else:
+        raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
+    return actor_critic_networks
 
 
 def setup_evaluator(cfg: DictConfig, agent: Agent) -> Evaluator:
