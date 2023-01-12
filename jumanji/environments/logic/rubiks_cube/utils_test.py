@@ -19,6 +19,7 @@ import pytest
 from jax import numpy as jnp
 
 from jumanji.environments.logic.rubiks_cube.constants import DEFAULT_CUBE_SIZE, Face
+from jumanji.environments.logic.rubiks_cube.reward_functions import SparseRewardFunction
 from jumanji.environments.logic.rubiks_cube.types import Cube, FakeState
 from jumanji.environments.logic.rubiks_cube.utils import (
     CubeMovementAmount,
@@ -30,7 +31,6 @@ from jumanji.environments.logic.rubiks_cube.utils import (
     generate_right_move,
     generate_up_move,
     make_solved_cube,
-    sparse_reward_function,
 )
 
 # 3x3x3 moves, for testing purposes
@@ -116,8 +116,8 @@ def test_solved_reward(
     differently_stickered_state = FakeState(
         cube=differently_stickered_cube, step_count=jnp.int32(0)
     )
-    assert jnp.equal(sparse_reward_function(solved_state), 1.0)
-    assert jnp.equal(sparse_reward_function(differently_stickered_state), 0.0)
+    assert jnp.equal(SparseRewardFunction()(solved_state), 1.0)
+    assert jnp.equal(SparseRewardFunction()(differently_stickered_state), 0.0)
 
 
 @pytest.mark.parametrize(
@@ -136,7 +136,7 @@ def test_moves_nontrivial(
     """Test that all moves leave the cube in a non-solved state"""
     move_solved_cube = move(solved_cube)
     move_solved_state = FakeState(cube=move_solved_cube, step_count=jnp.int32(0))
-    assert jnp.equal(sparse_reward_function(move_solved_state), 0.0)
+    assert jnp.equal(SparseRewardFunction()(move_solved_state), 0.0)
     assert (
         jnp.not_equal(solved_cube, move_solved_cube).sum()
         == (len(Face) - 2) * solved_cube.shape[-1]

@@ -186,8 +186,9 @@ def test_rubiks_cube_env_done(step_limit: int) -> None:
     state, timestep = jit(env.reset)(random.PRNGKey(0))
     action = env.action_spec().generate_value()
     episode_length = 0
+    step_fn = jit(env.step)
     while not timestep.last():
-        state, timestep = jit(env.step)(state, action)
+        state, timestep = step_fn(state, action)
         episode_length += 1
         if episode_length > 10:
             # Exit condition to make sure tests don't enter infinite loop, should not be hit

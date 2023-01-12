@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import chex
 import jax
@@ -31,13 +31,16 @@ from jumanji.environments.logic.rubiks_cube.constants import (
     CubeMovementAmount,
     Face,
 )
+from jumanji.environments.logic.rubiks_cube.reward_functions import (
+    RewardFunction,
+    SparseRewardFunction,
+)
 from jumanji.environments.logic.rubiks_cube.specs import ObservationSpec
 from jumanji.environments.logic.rubiks_cube.types import Cube, Observation, State
 from jumanji.environments.logic.rubiks_cube.utils import (
     generate_all_moves,
     is_solved,
     make_solved_cube,
-    sparse_reward_function,
 )
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -84,16 +87,29 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = DEFAULT_CUBE_SIZE,
         step_limit: int = 200,
-        reward_function: Callable[[State], chex.Array] = sparse_reward_function,
+        reward_function_type: str = "sparse",
         num_scrambles_on_reset: int = 100,
         sticker_colours: Optional[list] = None,
     ):
-        assert cube_size > 1, "Cannot meaningfully construct a cube smaller than 2x2x2"
-        assert step_limit > 0, "Episodes must be non-trivial"
-        assert num_scrambles_on_reset >= 0
+        if cube_size <= 1:
+            raise ValueError(
+                f"Cannot meaningfully construct a cube smaller than 2x2x2, "
+                f"but received cube_size={cube_size}"
+            )
+        if step_limit <= 0:
+            raise ValueError(
+                f"The step_limit must be positive, but received step_limit={step_limit}"
+            )
+        if num_scrambles_on_reset < 0:
+            raise ValueError(
+                f"The num_scrambles_on_reset must be non-negative, "
+                f"but received num_scrambles_on_reset={num_scrambles_on_reset}"
+            )
         self.cube_size = cube_size
         self.step_limit = step_limit
-        self.reward_function = reward_function
+        self.reward_function = self.create_reward_function(
+            reward_function_type=reward_function_type
+        )
         self.num_scrambles_on_reset = num_scrambles_on_reset
         self.sticker_colours_cmap = matplotlib.colors.ListedColormap(
             sticker_colours if sticker_colours else DEFAULT_STICKER_COLOURS
@@ -103,6 +119,16 @@ class RubiksCube(Environment[State]):
 
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's cube"
         self.figure_size = (6.0, 6.0)
+
+    @classmethod
+    def create_reward_function(cls, reward_function_type: str) -> RewardFunction:
+        if reward_function_type == "sparse":
+            return SparseRewardFunction()
+        else:
+            raise ValueError(
+                f"Unexpected value for reward_function_type, got {reward_function_type}. "
+                f"Possible values: 'sparse'"
+            )
 
     def _unflatten_action(self, action: chex.Array) -> chex.Array:
         """Turn a flat action (index into the sequence of all moves) into a tuple:
@@ -222,7 +248,7 @@ class RubiksCube(Environment[State]):
             key=state.key,
             action_history=action_history,
         )
-        reward = self.reward_function(next_state)
+        reward = self.reward_function(state=next_state)
         solved = is_solved(cube)
         done = (step_count >= self.step_limit) | solved
         next_observation = state_to_observation(state=next_state)
@@ -247,12 +273,20 @@ class RubiksCube(Environment[State]):
             observation_spec: ObservationSpec tree of cube and step_count spec.
         """
         return ObservationSpec(
-            cube=specs.Array(
+            cube=specs.BoundedArray(
                 shape=(len(Face), self.cube_size, self.cube_size),
                 dtype=jnp.int8,
+                minimum=0,
+                maximum=len(Face) - 1,
                 name="cube",
             ),
-            step_count=specs.Array(shape=(), dtype=jnp.int32, name="step_count"),
+            step_count=specs.BoundedArray(
+                shape=(),
+                dtype=jnp.int32,
+                minimum=0,
+                maximum=self.step_limit,
+                name="step_count",
+            ),
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
