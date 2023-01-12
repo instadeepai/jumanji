@@ -15,6 +15,7 @@
 from typing import List, Optional, Tuple
 
 import chex
+import matplotlib.pyplot as plt
 import pytest
 from jax import jit
 from jax import numpy as jnp
@@ -157,22 +158,17 @@ def test_minesweeper_env_does_not_smoke(minesweeper_env: Minesweeper) -> None:
 
 
 def test_minesweeper_env_render(
-    minesweeper_env: Minesweeper, manual_start_state: State
+    monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper
 ) -> None:
-    """Checks that render functions correctly and returns the expected string"""
-    key = random.PRNGKey(0)
-    state, timestep = minesweeper_env.reset(key)
-
-    render = minesweeper_env.render(state)
-
-    assert "Step count: 0" in render
-    assert f"Number of mines: {minesweeper_env.num_mines}" in render
-    assert "Board: " in render
-
-    render = minesweeper_env.render(manual_start_state)
-    expected_board_render = str(manual_start_state.board)
-
-    assert expected_board_render in render
+    """Check that the render method builds the figure but does not display it."""
+    monkeypatch.setattr(plt, "show", lambda fig: None)
+    state, timestep = jit(minesweeper_env.reset)(random.PRNGKey(0))
+    minesweeper_env.render(state)
+    minesweeper_env.close()
+    action = minesweeper_env.action_spec().generate_value()
+    state, timestep = jit(minesweeper_env.step)(state, action)
+    minesweeper_env.render(state)
+    minesweeper_env.close()
 
 
 def test_minesweeper_env_done_invalid_action(minesweeper_env: Minesweeper) -> None:

@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import List, Optional, Tuple
 
+import chex
+import matplotlib.pyplot as plt
 from chex import PRNGKey
 from jax import lax
 from jax import numpy as jnp
 
+import jumanji.environments
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.minesweeper.constants import (
+    COLOUR_MAPPING,
     DEFAULT_BOARD_HEIGHT,
     DEFAULT_BOARD_WIDTH,
     DEFAULT_NUM_MINES,
@@ -39,6 +43,7 @@ from jumanji.environments.logic.minesweeper.types import Observation, State
 from jumanji.environments.logic.minesweeper.utils import (
     count_adjacent_mines,
     create_flat_mine_locations,
+    explored_mine,
 )
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -96,6 +101,7 @@ class Minesweeper(Environment[State]):
         reward_function_type: str = "default",
         done_function_type: str = "default",
         num_mines: int = DEFAULT_NUM_MINES,
+        colour_maping: Optional[List[str]] = None,
     ):
         if board_height <= 1 or board_width <= 1:
             raise ValueError(
@@ -116,6 +122,10 @@ class Minesweeper(Environment[State]):
         self.done_function = self.create_done_function(
             done_function_type=done_function_type
         )
+
+        self.cmap = colour_maping if colour_maping else COLOUR_MAPPING
+        self.figure_name = f"{board_height}x{board_width} minesweeper"
+        self.figure_size = (6.0, 6.0)
 
     @classmethod
     def create_reward_function(cls, reward_function_type: str) -> RewardFunction:
@@ -258,17 +268,101 @@ class Minesweeper(Environment[State]):
             dtype=jnp.int32,
         )
 
-    def render(self, state: State) -> str:
-        """Renders a given state.
+    def render(self, state: State) -> None:
+        """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: State object corresponding to the new state of the environment.
 
-        Returns:
-            human-readable string displaying the current state of the game.
-
         """
-        message = f"Board: {state.board}\n"
-        message += f"Number of mines: {str(state.flat_mine_locations.shape[0])}"
-        message += f"Step count: {str(state.step_count)}"
-        return message
+        self._clear_display()
+        fig, ax = self._get_fig_ax(
+            caption=f"step_count={state.step_count}, num_mines={self.num_mines}"
+        )
+        self._draw(ax, state)
+        self._update_display(fig)
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        plt.close(self.figure_name)
+
+    def _get_fig_ax(self, caption: str) -> Tuple[plt.Figure, plt.Axes]:
+        exists = plt.fignum_exists(self.figure_name)
+        if exists:
+            fig = plt.figure(self.figure_name)
+            ax = fig.get_axes()[0]
+        else:
+            fig = plt.figure(self.figure_name, figsize=self.figure_size)
+            plt.figtext(
+                0.5, 0.01, caption, wrap=True, horizontalalignment="center", fontsize=8
+            )
+            fig.set_tight_layout({"pad": True, "w_pad": 1.0, "h_pad": 1.0})
+            plt.axis("off")
+            if not plt.isinteractive():
+                fig.show()
+            ax = fig.add_subplot()
+        return fig, ax
+
+    def _draw(self, ax: plt.Axes, state: State) -> None:
+        ax.clear()
+        ax.set_xticks(jnp.arange(-0.5, self.board_width - 1, 1))
+        ax.set_yticks(jnp.arange(-0.5, self.board_height - 1, 1))
+        ax.tick_params(
+            top=False,
+            bottom=False,
+            left=False,
+            right=False,
+            labelleft=False,
+            labelbottom=False,
+            labeltop=False,
+            labelright=False,
+        )
+        background = jnp.ones_like(state.board)
+        for i in range(self.board_height):
+            for j in range(self.board_width):
+                background = self._render_grid_square(
+                    state=state, ax=ax, i=i, j=j, background=background
+                )
+        ax.imshow(background, cmap="gray", vmin=0, vmax=1)
+        ax.grid(color="black", linestyle="-", linewidth=2)
+
+    def _render_grid_square(
+        self, state: State, ax: plt.Axes, i: int, j: int, background: chex.Array
+    ) -> chex.Array:
+        board_value = state.board[i, j]
+        if board_value != UNEXPLORED_ID:
+            if explored_mine(state=state, action=jnp.array([i, j], dtype=jnp.int32)):
+                background = background.at[i, j].set(0)
+            else:
+                ax.text(
+                    j,
+                    i,
+                    str(board_value),
+                    color=self.cmap[board_value],
+                    ha="center",
+                    va="center",
+                    fontsize="xx-large",
+                )
+        return background
+
+    def _update_display(self, fig: plt.Figure) -> None:
+        if plt.isinteractive():
+            # Required to update render when using Jupyter Notebook.
+            fig.canvas.draw()
+            if jumanji.environments.is_colab():
+                plt.show(self.figure_name)
+        else:
+            # Required to update render when not using Jupyter Notebook.
+            fig.canvas.draw_idle()
+            # Block for 0.5 seconds.
+            fig.canvas.start_event_loop(0.5)
+
+    def _clear_display(self) -> None:
+        if jumanji.environments.is_colab():
+            import IPython.display
+
+            IPython.display.clear_output(True)
