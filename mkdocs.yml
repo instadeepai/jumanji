@@ -20,6 +20,7 @@ nav:
       - Logic:
           - Connect4: environments/connect4.md
           - RubiksCube: environments/rubiks_cube.md
+          - Minesweeper: environments/minesweeper.md
       - Packing:
           - BinPack: environments/binpack.md
           - Knapsack: environments/knapsack.md
@@ -39,6 +40,7 @@ nav:
           - Logic:
               - Connect4: api/environments/connect4.md
               - RubiksCube: api/environments/rubiks_cube.md
+              - Minesweeoer: api/environments/minesweeper.md
           - Packing:
               - BinPack: api/environments/binpack.md
               - Knapsack: api/environments/knapsack.md
