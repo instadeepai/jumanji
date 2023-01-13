@@ -1,11 +1,11 @@
 defaults:
     - _self_
-    - agent: a2c  # [random, a2c]
-    - environment: routing  # [binpack, cvrp, knapsack, routing, snake, tsp]
+    - agent: random  # [random, a2c]
+    - environment: rubiks_cube  # [binpack, cvrp, knapsack, routing, rubiks_cube, snake, tsp]
 
 seed: 0
-num_epochs: 1000
-num_learner_steps_per_epoch: 100
+num_epochs: 10
+num_learner_steps_per_epoch: 10
 total_num_eval: 500
 
 n_steps: 10

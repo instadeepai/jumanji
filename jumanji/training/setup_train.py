@@ -20,7 +20,16 @@ from omegaconf import DictConfig
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments import CVRP, TSP, BinPack, Connect4, Knapsack, Routing, Snake
+from jumanji.environments import (
+    CVRP,
+    TSP,
+    BinPack,
+    Connect4,
+    Knapsack,
+    Routing,
+    RubiksCube,
+    Snake,
+)
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
 from jumanji.training.agents.base import Agent
@@ -39,6 +48,7 @@ ENV_FACTORY = {
     "connect4": Connect4,
     "snake": Snake,
     "routing": Routing,
+    "rubiks_cube": RubiksCube,
     "knapsack": Knapsack,
 }
 
@@ -121,6 +131,11 @@ def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
     elif cfg.environment.name == "routing":
         assert isinstance(env.unwrapped, Routing)
         random_policy = networks.make_random_policy_routing(routing=env.unwrapped)
+    elif cfg.environment.name == "rubiks_cube":
+        assert isinstance(env.unwrapped, RubiksCube)
+        random_policy = networks.make_random_policy_rubiks_cube(
+            rubiks_cube=env.unwrapped
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return random_policy
@@ -195,6 +210,9 @@ def _setup_actor_critic_neworks(
             policy_layers=cfg.environment.network.policy_layers,
             value_layers=cfg.environment.network.value_layers,
         )
+    elif cfg.environment.name == "rubiks_cube":
+        assert isinstance(env.unwrapped, RubiksCube)
+        raise NotImplementedError
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return actor_critic_networks

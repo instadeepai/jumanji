@@ -1,0 +1,7 @@
+name: rubiks_cube
+env_kwargs:
+    cube_size: 3
+    step_limit: 100
+    num_scrambles_on_reset: 3
+
+network:
