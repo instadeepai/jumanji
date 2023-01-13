@@ -19,6 +19,7 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.packing.jobshop.env_viewer import JobShopViewer
 from jumanji.environments.packing.jobshop.instance_generator import (
     InstanceGenerator,
     RandomInstanceGenerator,
@@ -53,6 +54,15 @@ class JobShop(Environment[State]):
 
         # Define the "job id" of a no-op action as the number of jobs
         self.no_op_idx = self.num_jobs
+
+        # Create viewer used for rendering
+        self._env_viewer = JobShopViewer(
+            "JobShop",
+            self.num_jobs,
+            self.num_machines,
+            self.max_num_ops,
+            self.max_op_duration,
+        )
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -389,6 +399,15 @@ class JobShop(Environment[State]):
             num_values=jnp.full(self.num_machines, self.num_jobs + 1, jnp.int32),
             name="action",
         )
+
+    def render(self, state: State) -> None:
+        """Render the given state of the environment. This rendering shows which job (or no-op)
+        is running on each machine for the current time step and previous time steps.
+
+        Args:
+            state: `State` object containing the current environment state.
+        """
+        self._env_viewer.render(state)
 
     def _observation_from_state(self, state: State) -> Observation:
         """Converts a job shop environment state to an observation.

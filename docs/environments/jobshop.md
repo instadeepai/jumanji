@@ -1,11 +1,11 @@
 # JobShop Environment
 
 <p align="center">
-        <img src="../img/jobshop.png" height="300"/>
+        <img src="../img/jobshop.gif" height="300"/>
 </p>
 
-We provide here a JAX jittable implementation of the [job shop scheduling problem (JSSP)](https://developers.google.com/optimization/scheduling/job_shop).
-It is an NP-hard problem and one of the most well-known combinatorial optimisation problems. The problem formulation is:
+We provide here a JAX jittable implementation of the [job shop scheduling problem](https://developers.google.com/optimization/scheduling/job_shop).
+It is NP-hard and one of the most well-known combinatorial optimisation problems. The problem formulation is:
 - $N$ **jobs**, each consisting of a sequence of **operations**, need to be scheduled on $M$ machines.
 - For each job, its operations must be processed **in order**. This is called the **precedence constraints**.
 - Only one operation in a job can be processed at any given time.
