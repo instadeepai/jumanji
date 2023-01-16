@@ -25,6 +25,7 @@ from jumanji.environments import (
     TSP,
     BinPack,
     Connect4,
+    JobShop,
     Knapsack,
     Routing,
     RubiksCube,
@@ -50,6 +51,7 @@ ENV_FACTORY = {
     "routing": Routing,
     "rubiks_cube": RubiksCube,
     "knapsack": Knapsack,
+    "jobshop": JobShop,
 }
 
 
@@ -125,6 +127,9 @@ def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
     elif cfg.environment.name == "knapsack":
         assert isinstance(env.unwrapped, Knapsack)
         random_policy = networks.make_random_policy_knapsack()
+    elif cfg.environment.name == "jobshop":
+        assert isinstance(env.unwrapped, JobShop)
+        random_policy = networks.make_random_policy_jobshop()
     elif cfg.environment.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
@@ -189,6 +194,9 @@ def _setup_actor_critic_neworks(
             decoder_key_size=cfg.environment.network.decoder_key_size,
             decoder_model_size=cfg.environment.network.decoder_model_size,
         )
+    elif cfg.environment.name == "jobshop":
+        assert isinstance(env.unwrapped, JobShop)
+        raise NotImplementedError
     elif cfg.environment.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         actor_critic_networks = networks.make_actor_critic_networks_cvrp(

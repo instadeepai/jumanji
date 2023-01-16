@@ -18,6 +18,7 @@ from jumanji.training.networks.binpack.actor_critic import (
 from jumanji.training.networks.binpack.random import make_random_policy_binpack
 from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
+from jumanji.training.networks.jobshop.random import make_random_policy_jobshop
 from jumanji.training.networks.knapsack.actor_critic import (
     make_actor_critic_networks_knapsack,
 )

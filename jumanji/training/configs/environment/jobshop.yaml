@@ -1,0 +1,8 @@
+name: jobshop
+env_kwargs:
+    num_jobs: 10
+    num_machines: 5
+    max_num_ops: 8
+    max_op_duration: 12
+
+network:
