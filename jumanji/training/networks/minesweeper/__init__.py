@@ -11,17 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from jumanji.environments.packing.binpack import BinPack
-from jumanji.training.networks.masked_categorical_random import (
-    make_masked_categorical_random_ndim,
-)
-from jumanji.training.networks.protocols import RandomPolicy
-
-
-def make_random_policy_binpack(binpack: BinPack) -> RandomPolicy:
-    """Make random policy for BinPack."""
-    action_spec_num_values = binpack.action_spec().num_values
-    return make_masked_categorical_random_ndim(
-        action_spec_num_values=action_spec_num_values
-    )

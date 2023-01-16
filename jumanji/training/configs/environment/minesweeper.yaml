@@ -1,0 +1,7 @@
+name: minesweeper
+env_kwargs:
+    board_height: 10
+    board_width: 10
+    num_mines: 10
+
+network:

@@ -23,6 +23,7 @@ from jumanji.training.networks.knapsack.actor_critic import (
     make_actor_critic_networks_knapsack,
 )
 from jumanji.training.networks.knapsack.random import make_random_policy_knapsack
+from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
 from jumanji.training.networks.routing.actor_critic import (
     make_actor_critic_networks_routing,
 )

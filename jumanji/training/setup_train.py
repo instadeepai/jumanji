@@ -27,6 +27,7 @@ from jumanji.environments import (
     Connect4,
     JobShop,
     Knapsack,
+    Minesweeper,
     Routing,
     RubiksCube,
     Snake,
@@ -50,6 +51,7 @@ ENV_FACTORY = {
     "snake": Snake,
     "routing": Routing,
     "rubiks_cube": RubiksCube,
+    "minesweeper": Minesweeper,
     "knapsack": Knapsack,
     "jobshop": JobShop,
 }
@@ -141,6 +143,11 @@ def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
         random_policy = networks.make_random_policy_rubiks_cube(
             rubiks_cube=env.unwrapped
         )
+    elif cfg.environment.name == "minesweeper":
+        assert isinstance(env.unwrapped, Minesweeper)
+        random_policy = networks.make_random_policy_minesweeper(
+            minesweeper=env.unwrapped
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return random_policy
@@ -220,6 +227,9 @@ def _setup_actor_critic_neworks(
         )
     elif cfg.environment.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
+        raise NotImplementedError
+    elif cfg.environment.name == "minesweeper":
+        assert isinstance(env.unwrapped, Minesweeper)
         raise NotImplementedError
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")

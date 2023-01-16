@@ -18,7 +18,10 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.training.networks.protocols import ObservationWithActionMaskProtocol
+from jumanji.training.networks.protocols import (
+    ObservationWithActionMaskProtocol,
+    RandomPolicy,
+)
 
 ObservationWithActionMask = TypeVar(
     "ObservationWithActionMask", bound="ObservationWithActionMaskProtocol"
@@ -36,3 +39,29 @@ def masked_categorical_random(
     )
     action = jax.random.categorical(key, logits)
     return action
+
+
+def make_masked_categorical_random_ndim(
+    action_spec_num_values: chex.Array,
+) -> RandomPolicy:
+    def policy(observation: ObservationWithActionMask, key: chex.PRNGKey) -> chex.Array:
+        """Sample uniformly at random from a joint distribution with masking"""
+        n = action_spec_num_values.shape[0]
+        action_mask = observation.action_mask.reshape(
+            (*observation.action_mask.shape[:-n], -1)
+        )
+        flatten_logits = jnp.where(
+            action_mask,
+            jnp.zeros_like(action_mask),
+            -jnp.finfo("float32").max,
+        )
+        flat_action = jax.random.categorical(key, flatten_logits)
+        action_components = []
+        for i in range(n, 1, -1):
+            flat_action, remainder = jnp.divmod(flat_action, action_spec_num_values[i])
+            action_components.append(remainder)
+        action_components.append(flat_action)
+        action = jnp.stack(list(reversed(action_components)), axis=-1)
+        return action
+
+    return policy
