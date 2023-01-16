@@ -31,6 +31,7 @@ from jumanji.training.setup_train import (
     setup_logger,
     setup_training_state,
 )
+from jumanji.training.timer import Timer
 from jumanji.training.types import TrainingState
 
 
@@ -46,6 +47,9 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     agent = setup_agent(cfg, env)
     evaluator = setup_evaluator(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)
+    num_steps_per_timing = (
+        cfg.n_steps * cfg.total_batch_size * cfg.num_learner_steps_per_epoch
+    )
 
     @functools.partial(jax.pmap, axis_name="devices")
     def epoch_fn(training_state: TrainingState) -> Tuple[TrainingState, Dict]:
@@ -66,7 +70,10 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
 
             # Validation
             key, eval_key = jax.random.split(key)
-            metrics = evaluator.run_evaluation(training_state.params_state, eval_key)
+            with Timer(out_var_name="metrics"):
+                metrics = evaluator.run_evaluation(
+                    training_state.params_state, eval_key
+                )
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="eval",
@@ -74,7 +81,10 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
             )
 
             # Training
-            training_state, metrics = epoch_fn(training_state)
+            with Timer(
+                out_var_name="metrics", num_steps_per_timing=num_steps_per_timing
+            ):
+                training_state, metrics = epoch_fn(training_state)
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="train",

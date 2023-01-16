@@ -18,7 +18,7 @@ import logging
 from types import TracebackType
 from typing import Any, DefaultDict, Dict, Optional, Type
 
-import numpy as np
+import jax
 
 
 class Logger(abc.ABC):
@@ -77,11 +77,10 @@ class NoOpLogger(Logger):
 class TerminalLogger(Logger):
     """Logs to terminal."""
 
-    @staticmethod
-    def _format_values(data: Dict[str, Any]) -> str:
+    def _format_values(self, data: Dict[str, Any]) -> str:
         return " | ".join(
-            f"{key.replace('_', ' ').title()} = "
-            f"{(f'{value:.3f}' if isinstance(value, (float, np.number)) else str(value))}"
+            f"{key.replace('_', ' ').title()}: "
+            f"{(f'{value:.3f}' if isinstance(value, (float, jax.Array)) else f'{value:,}')}"
             for key, value in sorted(data.items())
         )
 
@@ -91,7 +90,9 @@ class TerminalLogger(Logger):
         label: Optional[str] = None,
         env_steps: Optional[int] = None,
     ) -> None:
-        print(f"Env steps: {env_steps:.2e}", label, self._format_values(data))
+        env_steps_str = f"Env steps: {env_steps:.2e}" if env_steps else ""
+        label_str = label or ""
+        print(env_steps_str, label_str, self._format_values(data))
 
     def close(self) -> None:
         pass
