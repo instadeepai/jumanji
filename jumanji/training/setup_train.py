@@ -41,7 +41,7 @@ from jumanji.training.loggers import Logger, TerminalLogger
 from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
-from jumanji.wrappers import AutoResetWrapper, MultiToSingleWrapper, VmapWrapper
+from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
 
 ENV_FACTORY = {
     "binpack": BinPack,
@@ -77,8 +77,7 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
 
 def setup_env(cfg: DictConfig) -> Environment:
     env = _make_raw_env(cfg)
-    env = AutoResetWrapper(env)
-    env = VmapWrapper(env)
+    env = VmapAutoResetWrapper(env)
     return env
 
 

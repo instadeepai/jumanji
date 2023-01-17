@@ -96,7 +96,7 @@ class FakeEnvironment(Environment[FakeState]):
             timestep: TimeStep object corresponding the first timestep returned by the environment,
         """
 
-        state = FakeState(key=key, step=0)
+        state = FakeState(key=key, step=jnp.int32(0))
         observation = self._state_to_obs(state)
         timestep = restart(observation=observation)
         return state, timestep
@@ -119,15 +119,10 @@ class FakeEnvironment(Environment[FakeState]):
         observation = self._state_to_obs(next_state)
         timestep = lax.cond(
             next_step >= self.time_limit,
-            lambda _: termination(
-                reward=jnp.zeros((), float),
-                observation=observation,
-            ),
-            lambda _: transition(
-                reward=jnp.zeros((), float),
-                observation=observation,
-            ),
-            None,
+            termination,
+            transition,
+            jnp.zeros((), float),
+            observation,
         )
         return next_state, timestep
 
