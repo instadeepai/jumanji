@@ -69,7 +69,8 @@ def make_network_routing(
     def network_fn(
         observation: chex.Array,
     ) -> chex.Array:
-        observation = jnp.asarray(observation[..., 0:, :, :], float)
+        # Select the feature map of the first agent.
+        observation = jnp.asarray(observation[..., :1, :, :], float)
         torso = hk.Sequential(
             [
                 hk.Conv2D(conv_n_channels, (2, 2), 2),
