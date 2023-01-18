@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from copy import deepcopy
 import random
+from typing import List
 
 @dataclass
 class Position():
@@ -120,21 +121,21 @@ class Board:
         # Return True if there were no adjacent open spots
         return True
 
-    def connectible_cells(self, x_head: int, y_head: int) -> list:
+    def connectible_cells(self, x_head: int, y_head: int) -> List:
         # Return a list of 2D tuples, cells that are connectible to (x_head, y_head).
         connectible_list = []
         self.add_connectible_cell(x_head, y_head, connectible_list)
         return connectible_list
 
-    def add_connectible_cell(self, x_pos: int, y_pos: int, connectible_list: list) -> list:
+    def add_connectible_cell(self, x_pos: int, y_pos: int, connectible_list: List) -> List:
         """ Add the specified cell to the list, recursively call adjacent cells, and return list.
 
         Args:
             x_pos, y_pos (int, int) : cell to add to the list.
-            connectible_list (list[(int,int)...] : input list of connected cells.
+            connectible_list (List[(int,int)...] : input list of connected cells.
 
         Returns:
-            list[(int,int)...] : output list of connected cells.
+            List[(int,int)...] : output list of connected cells.
         """
         if (x_pos, y_pos) in connectible_list:
             return connectible_list
