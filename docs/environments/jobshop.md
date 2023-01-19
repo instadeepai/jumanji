@@ -60,13 +60,16 @@ The rationale for having a no-op is the following:
 - There may be scenarios where waiting to schedule a job via one or more no-op(s) ultimately minimises the makespan.
 
 ## Reward
-The reward function is configurable, but defaults to a dense reward where -1 is given for each time step. Another natural choice
-would be a sparse reward function with a reward of minus the episode length.
+The reward setting is dense: a reward of `-1` is given each time step if none
+of the termination criteria are met. An episode will terminate in any of the three scenarios below:
+- **Finished schedule**: all operations for every job have been processed.
+- **Illegal action:** the agent ignores the action mask and takes an illegal action.
+- **Simultaneously idle:** all machines are inactive at the same time.
 
-An episode will terminate in any of the following three scenarios:
-- The schedule has finished: all operations for every job have been processed.
-- The agent ignores the action mask and does an illegal action.
-- All machines are idle and do a no-op at the same time.
+If all machines are simultaneously idle or the agent selects an invalid action, this
+is reflected in a large penalty in the reward. This would be `-num_jobs * max_num_ops * max_op_duration`
+which is a higher bound on the makespan, corresponding to if every job had `max_num_ops` operations and
+every operation had a processing time of `max_op_duration`.
 
 ## Registered Versions 📖
 - `JobShop-v0`

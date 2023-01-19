@@ -219,11 +219,15 @@ class JobShop(Environment[State]):
             current_timestep=updated_timestep,
             scheduled_times=updated_scheduled_times,
         )
-        next_obs = self._observation_from_state(state)
+        next_obs = self._observation_from_state(next_state)
 
         # Compute terminal condition
         done = invalid | all_machines_idle | schedule_finished
-        reward = jnp.float32(-1)
+        reward = jnp.where(
+            invalid | all_machines_idle,
+            jnp.float32(-self.num_jobs * self.max_num_ops * self.max_op_duration),
+            jnp.float32(-1),
+        )
 
         timestep = jax.lax.cond(
             done,
@@ -351,7 +355,7 @@ class JobShop(Environment[State]):
             name="operations_durations",
         )
         operations_mask = specs.BoundedArray(
-            shape=(self.num_machines, self.max_num_ops),
+            shape=(self.num_jobs, self.max_num_ops),
             dtype=bool,
             minimum=False,
             maximum=True,
