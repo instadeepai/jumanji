@@ -32,9 +32,8 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class CVRP(Environment[State]):
-    """
-    Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
-    - observation: Observation
+    """Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
+        - observation: Observation
         - coordinates: jax array (float32) of shape (num_nodes + 1, 2)
             the coordinates of each node and the depot.
         - demands: jax array (float32) of shape (num_nodes + 1,)
@@ -90,15 +89,14 @@ class CVRP(Environment[State]):
         )
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
-        """
-        Resets the environment.
+        """Resets the environment.
 
         Args:
             key: used to randomly generate the problem and the start node.
 
         Returns:
-             state: State object corresponding to the new state of the environment.
-             timestep: TimeStep object corresponding to the first timestep returned by the
+             state: `State` object corresponding to the new state of the environment.
+             timestep: `TimeStep` object corresponding to the first timestep returned by the
              environment.
         """
         problem_key, start_key = random.split(key)
@@ -120,8 +118,7 @@ class CVRP(Environment[State]):
         return state, timestep
 
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
-        """
-        Run one timestep of the environment's dynamics.
+        """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
@@ -146,8 +143,7 @@ class CVRP(Environment[State]):
         return state, timestep
 
     def observation_spec(self) -> ObservationSpec:
-        """
-        Returns the observation spec.
+        """Returns the observation spec.
 
         Returns:
             observation_spec: a Tuple containing the spec for each of the constituent fields of an
@@ -185,8 +181,7 @@ class CVRP(Environment[State]):
         )
 
     def action_spec(self) -> specs.DiscreteArray:
-        """
-        Returns the action spec.
+        """Returns the action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.
@@ -194,8 +189,7 @@ class CVRP(Environment[State]):
         return specs.DiscreteArray(self.problem_size + 1, name="action")
 
     def _update_state(self, state: State, next_node: jnp.int32) -> State:
-        """
-        Updates the state of the environment.
+        """Updates the state of the environment.
 
         Args:
             state: State object containing the dynamics of the environment.
@@ -230,14 +224,13 @@ class CVRP(Environment[State]):
         )
 
     def _state_to_observation(self, state: State) -> Observation:
-        """
-        Converts a state into an observation.
+        """Converts a state into an observation.
 
         Args:
-            state: State object containing the dynamics of the environment.
+            state: `State` object containing the dynamics of the environment.
 
         Returns:
-            observation: Observation object containing the observation of the environment.
+            observation: `Observation` object containing the observation of the environment.
         """
         # A node is false if it has been visited or the vehicle does not have enough capacity to
         # cover its demand.
@@ -254,19 +247,26 @@ class CVRP(Environment[State]):
         )
 
     def _state_to_timestep(self, state: State, is_valid: bool) -> TimeStep:
-        """
-        Checks if the state is terminal and converts it into a timestep.
+        """Checks if the state is terminal and converts it into a timestep. The episode
+        terminates if there is no legal action to take, namely if all nodes have been
+        visited or if the last action was not valid. An invalid action is given a large
+        negative penalty.
 
         Args:
-            state: State object containing the dynamics of the environment.
+            state: `State` object containing the dynamics of the environment.
 
         Returns:
-            timestep: TimeStep object containing the timestep of the environment.
+            timestep: `TimeStep` object containing the timestep of the environment.
         """
 
         def make_termination_timestep(state: State) -> TimeStep:
+            reward = jnp.where(
+                is_valid,
+                -compute_tour_length(state.coordinates, state.order),
+                jnp.float32(-self.problem_size * 2 * jnp.sqrt(2)),
+            )
             return termination(
-                reward=-compute_tour_length(state.coordinates, state.order),
+                reward=reward,
                 observation=self._state_to_observation(state),
             )
 
