@@ -78,6 +78,9 @@ class Board:
             if self.layout[head.x, head.y]:
                 invalid_head = True
             else:
+                connectible_list = self.connectible_cells(head.x, head.y)
+                #print(f"connectible list = {len(connectible_list)} cells")
+                #print(connectible_list)
                 position = Position(head.x, head.y)
                 dir_primary, dir_second = self.get_wiring_directions(head)
                 num_steps = max(self.dim.x, self.dim.y)
@@ -98,8 +101,8 @@ class Board:
                         position.y += dir_second.y
                         self.layout[position.x, position.y] = 3*self.num_wires + WIRE 
                         invalid_head = False
-        # Mark the head and target cells
-        # Randomly swap the head and target cells 50% of the time
+        # Mark the head and target cells.
+        # Randomly swap the head and target cells 50% of the time.
         if random.random() > 0.5:
             head, position = position, head
         self.layout[head.x, head.y] = 3*self.num_wires + HEAD
@@ -111,16 +114,119 @@ class Board:
         # Return a boolean if there is no room to fit any more wires on the board.
         for i in range(self.dim.x):
             for j in range(self.dim.y):
-                # Return False if there are any adjacent open spots
+                # Return False if there are any adjacent open spots.
                 if (i < self.dim.x-1):
                     if (self.layout[i, j] == EMPTY) and (self.layout[i+1, j] == EMPTY):
                         return False
                 if (j < self.dim.y-1):
                     if (self.layout[i, j] == EMPTY) and (self.layout[i, j+1] == EMPTY):
                         return False
-        # Return True if there were no adjacent open spots
+        # Return True if there were no adjacent open spots.
         return True
 
+    def add_wire_random_walk(self, max_steps: int) -> None:
+        """ Add a wire by picking a random start point and walking randomly.
+        Args:
+            max_steps (int): The maximum number of steps to take.
+        """
+        invalid_head = True
+        while invalid_head == True:
+            #x_head, y_head = random.randint(0, self.dim.x - 1), random.randint(0, self.dim.y - 1)
+            head = Position(random.randint(0, self.dim.x - 1), random.randint(0, self.dim.y - 1))
+            # Ensure that the start point isn't already in use.
+            if self.layout[head.x, head.y] != EMPTY:
+                continue
+            #Ensure that it has at least one open cell to connect to.
+            wire_list = [(head.x, head.y)]
+            open_adjacent_cells = self.get_open_adjacent_cells(head, wire_list)
+            if len(open_adjacent_cells) > 0:
+                invalid_head = False
+        print("head=",head)
+        # Walk randomly from the head
+        for step in range(max_steps):
+            new_cell = random.choice(open_adjacent_cells)
+            print("step=",step, "cell=", new_cell)
+            wire_list.append(new_cell)
+            position = Position(new_cell[0], new_cell[1])
+            open_adjacent_cells = self.get_open_adjacent_cells(position, wire_list)
+            # Terminate the wire if we are stuck or about to create a loop.
+            print("open_adjacent_cells = ",open_adjacent_cells)
+            if len(open_adjacent_cells) == 0:
+                break
+        # Mark the wiring cells.
+        for cell in wire_list:
+            self.layout[cell[0], cell[1]] = 3 * self.num_wires + WIRE
+        # Mark the head and target cells.
+        # Randomly swap the head and target cells 50% of the time.
+        if random.random() > 0.5:
+            head, position = position, head
+        self.layout[head.x, head.y] = 3 * self.num_wires + HEAD
+        self.layout[position.x, position.y] = 3 * self.num_wires + TARGET
+        self.num_wires += 1
+        return None
+
+    def is_valid_cell(self,input: Position, wire_list: List) -> bool:
+        """ Returns a boolean, true if the cell is valid to add to the wire.
+
+             Args:
+                input (Position): The input cell to investigate.
+                wire_list (List): List of cells already in the wire.
+
+            Returns:
+                bool: False if the cell is already in use,
+                      False if the cell connects the wire in a loop.
+                      True, otherwise.
+        """
+        return (self.layout[input.x, input.y] == EMPTY) and (input.x, input.y) not in wire_list\
+            and (self.number_of_adjacent_wires(input, wire_list) < 2)
+
+    def get_open_adjacent_cells(self, input: Position, wire_list: List) -> List:
+        """ Returns a list of open cells adjacent to the input cell.
+
+        Args:
+            input (Position): The input cell to search adjacent to.
+            wire_list (List): List of cells already in the wire.
+
+        Returns:
+            List: Up to four available cells adjacent to the input cell.
+        """
+        adjacent_list = []
+        # Check above, below, to the left and the right and add those cells to the list if available.
+        if input.x > 0 and self.is_valid_cell(Position(input.x-1, input.y), wire_list):
+            adjacent_list.append((input.x-1, input.y))
+        if input.y > 0 and self.is_valid_cell(Position(input.x, input.y-1), wire_list):
+            adjacent_list.append((input.x, input.y-1))
+        if input.x < self.dim.x-1 and self.is_valid_cell(Position(input.x+1, input.y), wire_list):
+            adjacent_list.append((input.x+1, input.y))
+        if input.y < self.dim.y-1 and self.is_valid_cell(Position(input.x, input.y+1), wire_list):
+            adjacent_list.append((input.x, input.y+1))
+        return adjacent_list
+
+    def number_of_adjacent_wires(self, input: Position, wire_list: List) -> int:
+        """ Returns the number of cells adjacent to the input cell which are in the wire_list.
+
+        Args:
+            input (Position): The input cell to search adjacent to.
+            wire_list (List): List of cells already in the wire.
+
+        Returns:
+            int: Number of adjacent cells that are in the wire_list.
+        """
+        num_adjacent = 0
+        # Check above, below, to the left and the right and count the number in the wire_list.
+        if (input.x-1, input.y) in wire_list:
+            num_adjacent += 1
+        if (input.x+1, input.y) in wire_list:
+            num_adjacent += 1
+        if (input.x, input.y-1) in wire_list:
+            num_adjacent += 1
+        if (input.x, input.y+1) in wire_list:
+            num_adjacent += 1
+        return num_adjacent
+
+    # The next six methods support the add_wire_head_target_erode method.
+    # Currently, that method leaves extraneous loops, so it's in-progress.
+    # Also, the recursive limit on the connectible_cells errors out after 1000.
     def connectible_cells(self, x_head: int, y_head: int) -> List:
         # Return a list of 2D tuples, cells that are connectible to (x_head, y_head).
         connectible_list = []
@@ -140,8 +246,8 @@ class Board:
         if (x_pos, y_pos) in connectible_list:
             return connectible_list
         connectible_list.append((x_pos, y_pos))
-        # Recursively add the cells above, to the right, below, and to the left if they're open
-        if (x_pos < self.dim.x) and (self.layout[x_pos+1, y_pos] == EMPTY) and (x_pos+1, y_pos) not in connectible_list:
+        # Recursively add the cells above, to the right, below, and to the left if they're valid and open
+        if (x_pos < self.dim.x-1) and (self.layout[x_pos+1, y_pos] == EMPTY) and (x_pos+1, y_pos) not in connectible_list:
             self.add_connectible_cell(x_pos+1, y_pos, connectible_list)
         if (y_pos < self.dim.y-1) and (self.layout[x_pos, y_pos+1] == EMPTY) and (x_pos, y_pos+1) not in connectible_list:
             self.add_connectible_cell(x_pos, y_pos+1, connectible_list)
@@ -163,13 +269,8 @@ class Board:
         """
 	    return (x_target, y_target) in self.connectible_cells(x_head, y_head)			
 
-    """
-    The next three methods are for a planned future revision to increase the wire complexity.
-
-    def add_wire2(self) -> None:
+    def add_wire_head_target_erode(self) -> None:
         # Add a wire by listing all connectible cells then stripping them down to a thin wire.
-        #
-        #(x_dim, y_dim) = self.dim
         invalid_head = True 
         while invalid_head == True:
             x_head, y_head = random.randint(0, self.dim.x-1), random.randint(0, self.dim.y-1)
@@ -178,17 +279,22 @@ class Board:
             connectible_list = self.connectible_cells(x_head, y_head)
             # If it's not connectible to anything, try a new random head
             if len(connectible_list) < 2:
-                continue   
+                continue
+            print(f"connectible list = {len(connectible_list)} cells")
+            print(connectible_list)
             invalid_head = False
-            x_target, y_target = random.choice(connectible_list)
-            wire_list = [item for item in connectible_list\
-                if (item != (x_head,y_head)) and (item != (x_target, y_target))]
-            # Remove the outer cells until we can't remove any more
+            # wire_list is a copy of the connectible cells, which will exclude the head and target
+            wire_list = deepcopy(connectible_list)
+            wire_list.remove((x_head, y_head))
+            x_target, y_target = random.choice(wire_list)
+            wire_list.remove((x_target, y_target))
+            # Remove the extraneous cells until we can't remove any more
             not_done_removing = True
             while not_done_removing:
                 not_done_removing = False
                 for cell in wire_list:
-                    if self.three_sides_empty(cell) or self.adjacent_empty_far_full(cell):
+                    if self.three_sides_empty(cell, connectible_list)\
+                            or self.is_extraneous_corner(cell, connectible_list):
                         wire_list.remove(cell)
                         connectible_list.remove(cell)
                         not_done_removing = True
@@ -202,44 +308,61 @@ class Board:
         self.num_wires += 1
         return None
 
-    def three_sides_empty(self, cell: (int,int)) -> bool:
-        # Return a boolean, true if at least three of the four adjacent cells are unconnected.
-        (x,y) = cell
+    def three_sides_empty(self, cell: (int,int), connectible_list: List) -> bool:
+        """ Return a boolean, true if at least three of the four adjacent cells are unconnected.
+
+           Args:
+               cell (int, int) : The cell to be investigated.
+               connectible_list (List[(int,int)...]) : The list of all cells in the wire.
+
+           Returns:
+               bool : True if at least three of the four adjacent cells are unconnected,
+                    e.g. the cell is an extraneous stub.
+        """
+        (x, y) = cell
         num_empty = 0
-        if (x==0) or self.layout[x-1, y]:
+        if (x-1, y) not in connectible_list:
             num_empty +=1
-        if (y==0) or self.layout[x, y-1]:
+        if (x, y-1) not in connectible_list:
             num_empty +=1
-        if (x==self.dim[0]-1) or self.layout[x+1, y]:
+        if (x+1, y) not in connectible_list:
             num_empty +=1
-        if (y==self.dim[1]-1) or self.layout[x, y+1]:
+        if (x, y+1) not in connectible_list:
             num_empty +=1
         return num_empty >= 3
 
-    def adjacent_empty_far_full(self, cell: (int,int)) -> bool:
-        #Return a boolean indicating if the cell is an extraneous corner that can be removed.
-        
+    def is_extraneous_corner(self, cell: (int,int), connectible_list: List) -> bool:
+        """ Return a boolean indicating if the cell is an extraneous corner that can be removed.
+
+           Args:
+               cell (int, int) : The cell to be investigated.
+               connectible_list (List[(int,int)...]) : The list of all cells in the wire.
+
+           Returns:
+               bool : True if the cell is an extraneous corner that can be remove,
+                    e.g. it has two adjacent empty cells, and the cell in the opposite corner is full.
+        """
         # Initialize variables.
         (x,y) = cell
         upper_empty, left_empty, bottom_empty, right_empty = False, False, False, False
         botright_full, botleft_full, upright_full, upleft_full = False, False, False, False
         # Check for empty adjacent cells
-        if (x==0) or self.layout[x-1, y]==0:
+        if (x-1, y) not in connectible_list:
             upper_empty = True
-        if (y==0) or self.layout[x, y-1]==0:
+        if (x, y-1) not in connectible_list:
             left_empty = True
-        if (x==self.dim[0]-1) or self.layout[x+1, y]==0:
+        if (x+1, y) not in connectible_list:
             bottom_empty = True
-        if (y==self.dim[1]-1) or self.layout[x, y+1]==0:
+        if (x, y+1) not in connectible_list:
             right_empty = True
         # Check for full corner cells
-        if (x > 0) and (y > 0) and self.layout[x-1, y-1]:
+        if (x-1, y-1) in connectible_list:
             upleft_full = True
-        if (x > 0) and (y < self.dim[1]-1) and self.layout[x-1, y+1]:
+        if (x-1, y+1) in connectible_list:
             upright_full = True
-        if (x < self.dim[0]-1) and (y > 0) and self.layout[x+1, y-1]:
+        if (x+1, y-1) in connectible_list:
             botleft_full = True
-        if (x < self.dim[0]-1) and (y < self.dim[1] -1) and self.layout[x+1, y+1]:
+        if (x+1, y+1) in connectible_list:
             botright_full = True
         # Check if it's a corner cell we can remove
         # If two neighboring adjacent cells are unconnected, it's a corner
@@ -251,10 +374,8 @@ class Board:
             return True
         else:
             return False
-    """
 
-
-def remove_connections(layout_in: np.ndarray) -> np.ndarray:
+def remove_connecting_wires(layout_in: np.ndarray) -> np.ndarray:
     """
     Return a copy of the input board layout with the connecting wires zeroed out.
     Args:
@@ -303,11 +424,12 @@ def board_generator(x_dim: int, y_dim: int, target_wires: int = None) -> (np.nda
         target_wires = x_dim * y_dim # An impossible target.  Do as many as possible.
     for num_wire in range(target_wires):
         if not board_output.is_full():
-            board_output.add_wire_start_distance_directions()
-            #board_output.add_wire2()
+            #board_output.add_wire_start_distance_directions()
+            #board_output.add_wire_head_target_erode()
+            board_output.add_wire_random_walk(2*max(x_dim, y_dim))
     # Output the training and solution boards and the number of wires
     board_solution = board_output.layout
-    board_training = remove_connections(board_solution)
+    board_training = remove_connecting_wires(board_solution)
     return board_training, board_solution, board_output.num_wires
 
 
