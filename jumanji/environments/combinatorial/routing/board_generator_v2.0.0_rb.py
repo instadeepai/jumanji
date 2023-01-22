@@ -226,9 +226,16 @@ class Board:
 
     # The next six methods support the add_wire_head_target_erode method.
     # Currently, that method leaves extraneous loops, so it's in-progress.
-    # Also, the recursive limit on the connectible_cells errors out after 1000.
+    # Also, the recursive limit on the connectible_cells errors out after 1000 recursions.
     def connectible_cells(self, x_head: int, y_head: int) -> List:
-        # Return a list of 2D tuples, cells that are connectible to (x_head, y_head).
+        """ Return a list of 2D tuples, cells that are connectible to (x_head, y_head).
+
+        Args:
+            x_head, y_head (int, int) : cell to connect to.
+
+        Returns:
+            List[(int,int)...] : output list of connected cells.
+        """
         connectible_list = []
         self.add_connectible_cell(x_head, y_head, connectible_list)
         return connectible_list
@@ -317,7 +324,7 @@ class Board:
 
            Returns:
                bool : True if at least three of the four adjacent cells are unconnected,
-                    e.g. the cell is an extraneous stub.
+                    e.g. the cell is an extraneous stub that can be deleted from the list.
         """
         (x, y) = cell
         num_empty = 0
@@ -339,7 +346,7 @@ class Board:
                connectible_list (List[(int,int)...]) : The list of all cells in the wire.
 
            Returns:
-               bool : True if the cell is an extraneous corner that can be remove,
+               bool : True if the cell is an extraneous corner that can be removed,
                     e.g. it has two adjacent empty cells, and the cell in the opposite corner is full.
         """
         # Initialize variables.
@@ -378,6 +385,7 @@ class Board:
 def remove_connecting_wires(layout_in: np.ndarray) -> np.ndarray:
     """
     Return a copy of the input board layout with the connecting wires zeroed out.
+
     Args:
         layout_in (2D np.ndarray of ints) : layout specifying heads, targets, and connectors.
 
