@@ -8,7 +8,7 @@ import random
 from typing import List
 
 @dataclass
-class Position():
+class Position:
     # Class of 2D tuple of ints, indicating the size of an array or a 2D position or vector.
     x: int
     y: int
@@ -28,7 +28,7 @@ class Board:
         x_dim, ydim (int, int) : Dimensions of the board.
 
     """
-    def __init__(self, x_dim: int, y_dim: int) -> None: 
+    def __init__(self, x_dim: int, y_dim: int):
         self.layout = np.zeros((x_dim, y_dim), int)
         self.dim = Position(x_dim, y_dim)
         self.num_wires = 0
@@ -141,16 +141,15 @@ class Board:
             open_adjacent_cells = self.get_open_adjacent_cells(head, wire_list)
             if len(open_adjacent_cells) > 0:
                 invalid_head = False
-        print("head=",head)
         # Walk randomly from the head
+        #print("head=",head)
         for step in range(max_steps):
             new_cell = random.choice(open_adjacent_cells)
-            print("step=",step, "cell=", new_cell)
+            #print("step=",step, "cell=", new_cell)
             wire_list.append(new_cell)
             position = Position(new_cell[0], new_cell[1])
             open_adjacent_cells = self.get_open_adjacent_cells(position, wire_list)
             # Terminate the wire if we are stuck or about to create a loop.
-            print("open_adjacent_cells = ",open_adjacent_cells)
             if len(open_adjacent_cells) == 0:
                 break
         # Mark the wiring cells.
@@ -443,14 +442,20 @@ def board_generator(x_dim: int, y_dim: int, target_wires: int = None) -> (np.nda
 
 if __name__ == "__main__":
     for i in range(9):
-        board_training, board_solution, num_wires = board_generator(5,5,i)
+        x_dim, y_dim = 5,5
+        board_training, board_solution, num_wires = board_generator(x_dim, y_dim, i)
+        print(f"{x_dim}x{y_dim} BOARD")
         print(num_wires," wires")
         print(board_training)
+        print("Solved board")
         print(board_solution)
     # Test bigger boards
     # Test allowing the number of wires to default to max possible
     for i in range(2):
-        board_training, board_solution, num_wires = board_generator(10,11)
+        x_dim, y_dim = 10,11
+        board_training, board_solution, num_wires = board_generator(x_dim, y_dim)
+        print(f"{x_dim}x{y_dim} BOARD")
         print(num_wires," wires")
         print(board_training)
+        print("Solved board")
         print(board_solution)
