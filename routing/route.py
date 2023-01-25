@@ -25,31 +25,36 @@ class Route:
         else:
             return "other, custom"
 
+    def insantiate_random_board(self, **kwargs):
+        if 'rows' in kwargs:
+            rows = kwargs['rows']
+        if 'cols' in kwargs:
+            cols = kwargs['cols']
+        if 'rows' not in kwargs and 'cols' not in kwargs:
+            print('No `rows` or `cols` provided as **kwarg initialisation, instantiating the usual 8x8.')
+            rows, cols = 8, 8
+
+        if rows not in [8, 12, 16] and cols not in [8, 12, 16]:
+            print('Rows/cols should be one of 8, 12, or 16.')
+
+        if rows == 8 or cols == 8:
+            print('Instantiating the 8x8 Routing Board...')
+            env = jumanji.make('Routing-n3-8x8-v0')
+        elif rows == 12 or cols == 12:
+            print('Instantiating a 12x12 Routing Board...')
+            env = jumanji.make('Routing-n4-12x12-v0')
+        elif rows == 16 or cols == 18:
+            print('Instantiating a 16x16 Routing Board...')
+            env = jumanji.make('Routing-n5-16x16-v0')
+        
+        return env
+
     def insantiate_board(self, **kwargs):
         if 'instance_generator_type' in kwargs:
             self.board_init = kwargs['instance_generator_type']
-        
+
         if self.board_init == 'random':
-            if 'rows' in kwargs:
-                rows = kwargs['rows']
-            if 'cols' in kwargs:
-                cols = kwargs['cols']
-            if 'rows' not in kwargs and 'cols' not in kwargs:
-                print('No `rows` or `cols` provided as **kwarg initialisation, instantiating the usual 8x8.')
-                rows, cols = 8, 8
-
-            if rows not in [8, 12, 16] and cols not in [8, 12, 16]:
-                print('Rows/cols should be one of 8, 12, or 16.')
-
-            if rows == 8 or cols == 8:
-                print('Instantiating the 8x8 Routing Board...')
-                env = jumanji.make('Routing-n3-8x8-v0')
-            elif rows == 12 or cols == 12:
-                print('Instantiating a 12x12 Routing Board...')
-                env = jumanji.make('Routing-n4-12x12-v0')
-            elif rows == 16 or cols == 18:
-                print('Instantiating a 16x16 Routing Board...')
-                env = jumanji.make('Routing-n5-16x16-v0')
+            env = self.insantiate_random_board(**kwargs)
 
         else:
             env = Routing(**kwargs)
