@@ -46,7 +46,6 @@ class Route:
         elif rows == 16 or cols == 18:
             print('Instantiating a 16x16 Routing Board...')
             env = jumanji.make('Routing-n5-16x16-v0')
-        
         return env
 
     def insantiate_board(self, **kwargs):
