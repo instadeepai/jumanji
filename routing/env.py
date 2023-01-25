@@ -176,7 +176,7 @@ class Routing(Environment[State]):
         else:
             raise ValueError(
                 f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
-                "Possible values: 'random', 'randy'."
+                "Possible values: 'random', 'randy'. 'other', or some custom string you define in this function a few lines up."
             )
         return instance_generator_obj
 
