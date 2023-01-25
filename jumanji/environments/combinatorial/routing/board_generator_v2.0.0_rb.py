@@ -5,7 +5,9 @@ from dataclasses import dataclass
 import numpy as np
 from copy import deepcopy
 import random
-from typing import List
+from typing import List, Tuple
+#from jax.numpy import asarray  Currently jaxlib is not supported on windows.  This will have to be sorted.
+#from env_viewer import RoutingViewer  Currently jaxlib is not supported on windows.  This will have to be sorted.
 
 @dataclass
 class Position:
@@ -39,7 +41,7 @@ class Board:
         y_dim = random.randint(0, self.dim.y-1) 
         return Position(x_dim, y_dim)
 
-    def get_wiring_directions(self, head: Position) -> (Position, Position):
+    def get_wiring_directions(self, head: Position) -> Tuple[Position, Position]:
         """ Return two orthogonal directions for the wire to go.
         
         Args:
@@ -278,7 +280,8 @@ class Board:
     def add_wire_head_target_erode(self) -> None:
         # Add a wire by listing all connectible cells then stripping them down to a thin wire.
         invalid_head = True 
-        while invalid_head == True:
+        while invalid_head:
+            # Randomly pick a head until we pick a valid one
             x_head, y_head = random.randint(0, self.dim.x-1), random.randint(0, self.dim.y-1)
             if self.layout[x_head, y_head]:
                 continue
@@ -353,23 +356,15 @@ class Board:
         upper_empty, left_empty, bottom_empty, right_empty = False, False, False, False
         botright_full, botleft_full, upright_full, upleft_full = False, False, False, False
         # Check for empty adjacent cells
-        if (x-1, y) not in connectible_list:
-            upper_empty = True
-        if (x, y-1) not in connectible_list:
-            left_empty = True
-        if (x+1, y) not in connectible_list:
-            bottom_empty = True
-        if (x, y+1) not in connectible_list:
-            right_empty = True
-        # Check for full corner cells
-        if (x-1, y-1) in connectible_list:
-            upleft_full = True
-        if (x-1, y+1) in connectible_list:
-            upright_full = True
-        if (x+1, y-1) in connectible_list:
-            botleft_full = True
-        if (x+1, y+1) in connectible_list:
-            botright_full = True
+        upper_empty = (x - 1, y) not in connectible_list
+        bottom_empty = (x + 1, y) not in connectible_list
+        left_empty = (x, y - 1) not in connectible_list
+        right_empty = (x, y + 1) not in connectible_list
+        # Check for full corner
+        upleft_full = (x  -1, y - 1) in connectible_list
+        upright_full = (x - 1, y + 1) in connectible_list
+        botleft_full = (x + 1, y - 1) in connectible_list
+        botright_full = (x + 1, y + 1) in connectible_list
         # Check if it's a corner cell we can remove
         # If two neighboring adjacent cells are unconnected, it's a corner
         # If the opposite diagonal is connected, this corner is redundant.
@@ -439,23 +434,45 @@ def board_generator(x_dim: int, y_dim: int, target_wires: int = None) -> (np.nda
     board_training = remove_connecting_wires(board_solution)
     return board_training, board_solution, board_output.num_wires
 
+def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_wires: int) -> None:
+    """ Print the training and solution boards with labels """
+    x_dim, y_dim = len(board_training), len(board_training[0])
+    print(f"\n{x_dim}x{y_dim} BOARD")
+    print(num_wires, " wires")
+    print(board_training)
+    print("Solved board")
+    print(board_solution)
+    return
 
 if __name__ == "__main__":
     for i in range(9):
         x_dim, y_dim = 5,5
         board_training, board_solution, num_wires = board_generator(x_dim, y_dim, i)
-        print(f"{x_dim}x{y_dim} BOARD")
-        print(num_wires," wires")
-        print(board_training)
-        print("Solved board")
-        print(board_solution)
+        print_board(board_training, board_solution, num_wires)
     # Test bigger boards
     # Test allowing the number of wires to default to max possible
     for i in range(2):
         x_dim, y_dim = 10,11
         board_training, board_solution, num_wires = board_generator(x_dim, y_dim)
-        print(f"{x_dim}x{y_dim} BOARD")
-        print(num_wires," wires")
-        print(board_training)
-        print("Solved board")
-        print(board_solution)
+        print_board(board_training, board_solution, num_wires)
+
+    x_dim, y_dim = 18,18
+    wires_requested = 10
+    board_training, board_solution, num_wires = board_generator(x_dim, y_dim, wires_requested)
+    print_board(board_training, board_solution, num_wires)
+    """
+    viewer = RoutingViewer(num_agents=num_wires, grid_rows=x_dim, grid_cols=y_dim,
+                           viewer_width=500, viewer_height=500)
+    im_training = f'board_{x_dim}x{y_dim}_w_{num_wires}_wires.png'
+    im_solution = f'solved_board_{x_dim}x{y_dim}_w_{num_wires}_wires.png'
+    viewer.render(board_training, save_img=im_training)
+    viewer.render(board_solution, save_img=im_solution)
+    """
+
+    x_dim, y_dim = 20,20
+    wires_requested = 17
+    board_training, board_solution, num_wires = board_generator(x_dim, y_dim, wires_requested)
+    print_board(board_training, board_solution, num_wires)
+
+
+
