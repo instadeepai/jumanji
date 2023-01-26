@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+We assume the networks handle a batch of observations: shape (B, ...).
+"""
+
 from jumanji.training.networks.binpack.actor_critic import (
     make_actor_critic_networks_binpack,
 )

@@ -135,7 +135,7 @@ class Encoder(EncoderBase):
 def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
     all_items_embedding = jnp.mean(embeddings, axis=-2)
     possible_items_embedding = jnp.mean(
-        embeddings, axis=-2, where=observation.action_mask[..., None]
+        embeddings, axis=-2, where=observation.action_mask[:, :, None]
     )
     return jnp.concatenate(
         [
@@ -143,7 +143,7 @@ def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
             possible_items_embedding,
         ],
         axis=-1,
-    )[..., None, :]
+    )[:, None, :]
 
 
 class PolicyDecoder(PolicyDecoderBase):

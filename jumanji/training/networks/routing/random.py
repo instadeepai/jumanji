@@ -27,10 +27,10 @@ def make_random_policy_routing(routing: Routing) -> RandomPolicy:
     maxval = routing.action_spec().maximum[0]
 
     def random_policy(observation: chex.Array, key: chex.PRNGKey) -> chex.Array:
-        batch_shape = observation.shape[:-3]
+        batch_size = observation.shape[0]
         action = jax.random.randint(
             key,
-            (*batch_shape, routing.num_agents),
+            (batch_size, routing.num_agents),
             minval=minval,
             maxval=maxval,
         )

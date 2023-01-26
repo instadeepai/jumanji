@@ -127,7 +127,7 @@ class A2CAgent(Agent):
             last_observation,
         )
 
-        value = value_apply(params.critic, observation)
+        value = jax.vmap(value_apply, in_axes=(None, 0))(params.critic, observation)
 
         value_tm1 = value[:-1]
         value_t = value[1:]

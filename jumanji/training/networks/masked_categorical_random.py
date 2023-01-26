@@ -48,7 +48,7 @@ def make_masked_categorical_random_ndim(
         """Sample uniformly at random from a joint distribution with masking"""
         n = action_spec_num_values.shape[0]
         action_mask = observation.action_mask.reshape(
-            (*observation.action_mask.shape[:-n], -1)
+            (observation.action_mask.shape[0], -1)
         )
         flatten_logits = jnp.where(
             action_mask,

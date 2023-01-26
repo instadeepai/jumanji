@@ -98,9 +98,9 @@ class TerminalLogger(Logger):
         label: Optional[str] = None,
         env_steps: Optional[int] = None,
     ) -> None:
-        env_steps_str = f"Env steps: {env_steps:.2e}" if env_steps else ""
-        label_str = label or ""
-        logging.info(env_steps_str + label_str + self._format_values(data))
+        env_steps_str = f"Env steps: {env_steps:.2e} | " if env_steps else ""
+        label_str = f"{label} >> " or ""
+        logging.info(label_str + env_steps_str + self._format_values(data))
 
     def close(self) -> None:
         pass

@@ -70,7 +70,7 @@ def make_network_routing(
         observation: chex.Array,
     ) -> chex.Array:
         # Select the feature map of the first agent.
-        observation = jnp.asarray(observation[..., :1, :, :], float)
+        observation = jnp.asarray(observation[:, :1, :, :], float)
         torso = hk.Sequential(
             [
                 hk.Conv2D(conv_n_channels, (2, 2), 2),
@@ -80,8 +80,6 @@ def make_network_routing(
                 hk.Flatten(),
             ]
         )
-        if observation.ndim == 5:
-            torso = jax.vmap(torso)
         x = torso(observation)
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)

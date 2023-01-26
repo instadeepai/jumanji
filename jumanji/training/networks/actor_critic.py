@@ -20,7 +20,7 @@ from jumanji.training.networks.parametric_distribution import ParametricDistribu
 
 class ActorCriticNetworks(NamedTuple):
     """Defines the actor-critic networks, which outputs the logits of a policy, and a value given
-    an observation.
+    an observation. The assumption is that the networks are given a batch of observations.
     """
 
     policy_network: FeedForwardNetwork

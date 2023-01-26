@@ -24,8 +24,8 @@ def make_random_policy_snake() -> RandomPolicy:
     """
 
     def random_policy(observation: chex.Array, key: chex.PRNGKey) -> chex.Array:
-        batch_shape = observation.shape[:-3]
-        action = jax.random.randint(key, batch_shape, minval=0, maxval=4)
+        batch_size = observation.shape[0]
+        action = jax.random.randint(key, (batch_size,), minval=0, maxval=4)
         return action
 
     return random_policy

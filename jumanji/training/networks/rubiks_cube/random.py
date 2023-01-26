@@ -23,13 +23,12 @@ def make_random_policy_rubiks_cube(rubiks_cube: RubiksCube) -> RandomPolicy:
     """Make random policy for RubiksCube."""
     action_minimum = rubiks_cube.action_spec().minimum
     action_maximum = rubiks_cube.action_spec().maximum
-    cube_ndim = len(rubiks_cube.observation_spec().cube.shape)
 
     def random_policy(observation: Observation, key: chex.PRNGKey) -> chex.Array:
-        batch_shape = observation.cube.shape[:-cube_ndim]
+        batch_size = observation.cube.shape[0]
         action = jax.random.randint(
             key,
-            (*batch_shape, len(action_minimum)),
+            (batch_size, len(action_minimum)),
             minval=action_minimum,
             maxval=action_maximum,
         )

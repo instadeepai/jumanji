@@ -72,8 +72,6 @@ def make_network_cnn(
                 hk.Flatten(),
             ]
         )
-        if observation.ndim == 5:
-            torso = jax.vmap(torso)
         x = torso(observation)
         head = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
         if num_outputs == 1:

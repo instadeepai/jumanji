@@ -99,7 +99,7 @@ def make_network_cvrp(
             expand_factor=encoder_expand_factor,
         )
         problem = jnp.concatenate(
-            [observation.coordinates, observation.demands[..., None]], axis=-1
+            [observation.coordinates, observation.demands[:, :, None]], axis=-1
         )
         embedding = encoder(problem)
         if num_outputs == 1:
@@ -139,7 +139,7 @@ class Encoder(EncoderBase):
         proj_depot = hk.Linear(self.model_size, name="depot_encoder")
         proj_nodes = hk.Linear(self.model_size, name="nodes_encoder")
         return jnp.where(
-            jnp.zeros(problem.shape[:-1], bool).at[..., DEPOT_IDX].set(True)[..., None],
+            jnp.zeros(problem.shape[:-1], bool).at[:, DEPOT_IDX].set(True)[:, :, None],
             proj_depot(problem),
             proj_nodes(problem),
         )
@@ -148,10 +148,10 @@ class Encoder(EncoderBase):
 def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
     nodes_embedding = jnp.mean(embeddings, axis=-2)
     position_embedding = jnp.take_along_axis(
-        embeddings, observation.position[..., None, None], axis=-2
+        embeddings, observation.position[:, None, None], axis=-2
     ).squeeze(axis=-2)
     position_embedding = jnp.where(
-        observation.position[..., None] == -1,
+        observation.position[:, None] == -1,
         jnp.zeros_like(nodes_embedding),
         position_embedding,
     )
@@ -159,10 +159,10 @@ def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
         [
             nodes_embedding,
             position_embedding,
-            observation.capacity[..., None],
+            observation.capacity[:, None],
         ],
         axis=-1,
-    )[..., None, :]
+    )[:, None, :]
 
 
 class PolicyDecoder(PolicyDecoderBase):

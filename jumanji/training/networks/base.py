@@ -19,5 +19,7 @@ import haiku as hk
 
 
 class FeedForwardNetwork(NamedTuple):
+    """Networks are meant to take a batch of observations: shape (B, ...)."""
+
     init: Callable[[chex.PRNGKey, Any], hk.Params]
     apply: Callable[[hk.Params, Any], chex.Array]

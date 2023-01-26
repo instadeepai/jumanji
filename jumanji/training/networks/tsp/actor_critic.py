@@ -135,18 +135,18 @@ class Encoder(EncoderBase):
 def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
     cities_embedding = jnp.mean(embeddings, axis=-2)
     position_embedding = jnp.take_along_axis(
-        embeddings, observation.position[..., None, None], axis=-2
+        embeddings, observation.position[:, None, None], axis=-2
     ).squeeze(axis=-2)
     position_embedding = jnp.where(
-        observation.position[..., None] == -1,
+        observation.position[:, None] == -1,
         jnp.zeros_like(cities_embedding),
         position_embedding,
     )
     start_position_embedding = jnp.take_along_axis(
-        embeddings, observation.start_position[..., None, None], axis=-2
+        embeddings, observation.start_position[:, None, None], axis=-2
     ).squeeze(axis=-2)
     start_position_embedding = jnp.where(
-        observation.start_position[..., None] == -1,
+        observation.start_position[:, None] == -1,
         jnp.zeros_like(cities_embedding),
         start_position_embedding,
     )
@@ -157,7 +157,7 @@ def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
             start_position_embedding,
         ],
         axis=-1,
-    )[..., None, :]
+    )[:, None, :]
 
 
 class PolicyDecoder(PolicyDecoderBase):
