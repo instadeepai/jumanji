@@ -117,7 +117,7 @@ class A2CAgent(Agent):
         acting_state, data = self.rollout(
             policy_params=params.actor,
             acting_state=acting_state,
-        )  # data.shape == (T, B)
+        )  # data.shape == (T, B, ...)
         last_observation = jax.tree_util.tree_map(
             lambda x: x[-1], data.next_observation
         )

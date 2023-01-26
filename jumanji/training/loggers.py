@@ -15,13 +15,17 @@
 import abc
 import collections
 import logging
+from contextlib import AbstractContextManager
 from types import TracebackType
 from typing import Any, DefaultDict, Dict, Optional, Type
 
 import jax
+import numpy as np
+import omegaconf
+from neptune import new as neptune
 
 
-class Logger(abc.ABC):
+class Logger(AbstractContextManager):
     @abc.abstractmethod
     def write(
         self,
@@ -77,6 +81,10 @@ class NoOpLogger(Logger):
 class TerminalLogger(Logger):
     """Logs to terminal."""
 
+    def __init__(self, name: Optional[str] = None) -> None:
+        if name:
+            logging.info(name)
+
     def _format_values(self, data: Dict[str, Any]) -> str:
         return " | ".join(
             f"{key.replace('_', ' ').title()}: "
@@ -92,7 +100,7 @@ class TerminalLogger(Logger):
     ) -> None:
         env_steps_str = f"Env steps: {env_steps:.2e}" if env_steps else ""
         label_str = label or ""
-        print(env_steps_str, label_str, self._format_values(data))
+        logging.info(env_steps_str + label_str + self._format_values(data))
 
     def close(self) -> None:
         pass
@@ -115,3 +123,38 @@ class ListLogger(Logger):
 
     def close(self) -> None:
         pass
+
+
+class NeptuneLogger(Logger):
+    def __init__(
+        self,
+        name: str,
+        project: str,
+        cfg: omegaconf.DictConfig,
+    ):
+        self.run = neptune.init_run(project=project, name=name)
+        self.run["config"] = cfg
+        self._env_steps = 0.0
+
+    def write(
+        self,
+        data: Dict[str, Any],
+        label: Optional[str] = None,
+        env_steps: Optional[float] = None,
+    ) -> None:
+        if env_steps:
+            self._env_steps = env_steps
+        prefix = label and f"{label}/"
+        for key, metric in data.items():
+            if np.ndim(metric) == 0:
+                if not np.isnan(metric):
+                    self.run[f"{prefix}/{key}"].log(
+                        float(metric),
+                        step=int(self._env_steps),
+                        wait=True,
+                    )
+            else:
+                raise ValueError(f"Expected metric to be a scalar, got {metric}.")
+
+    def close(self) -> None:
+        self.run.stop()

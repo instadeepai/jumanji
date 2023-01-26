@@ -1,5 +1,6 @@
 dm-haiku==0.0.9
 hydra==2.5
+neptune-client==0.16.15
 optax>=0.1.4
 rlax>=0.1.4
 tqdm>=4.64.1

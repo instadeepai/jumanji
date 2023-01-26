@@ -37,7 +37,7 @@ from jumanji.training.agents.a2c import A2CAgent
 from jumanji.training.agents.base import Agent
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.evaluator import Evaluator
-from jumanji.training.loggers import Logger, TerminalLogger
+from jumanji.training.loggers import Logger, NeptuneLogger, TerminalLogger
 from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
@@ -58,8 +58,17 @@ ENV_FACTORY = {
 
 
 def setup_logger(cfg: DictConfig) -> Logger:
-    # TODO: output correct logger depending on cfg.
-    logger = TerminalLogger()
+    logger: Logger
+    if cfg.logger.type == "neptune":
+        logger = NeptuneLogger(
+            name=cfg.logger.name, project="InstaDeep/jumanji", cfg=cfg
+        )
+    elif cfg.logger.type == "terminal":
+        logger = TerminalLogger(name=cfg.logger.name)
+    else:
+        raise ValueError(
+            f"logger expected in ['neptune', 'terminal'], got {cfg.logger}."
+        )
     return logger
 
 

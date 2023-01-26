@@ -4,9 +4,13 @@ defaults:
     - environment: minesweeper  # [binpack, cvrp, knapsack, jobshop, routing, rubiks_cube, minesweeper, snake, tsp]
 
 seed: 0
-num_epochs: 10
-num_learner_steps_per_epoch: 10
+num_epochs: 20
+num_learner_steps_per_epoch: 100
 total_num_eval: 500
 
 n_steps: 10
 total_batch_size: 64
+
+logger:
+    type: terminal  # [neptune, terminal]
+    name: ${agent.name}_${environment.name}

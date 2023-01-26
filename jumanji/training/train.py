@@ -62,7 +62,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
         metrics = jax.tree_util.tree_map(jnp.mean, metrics)
         return training_state, metrics
 
-    with jax.log_compiles(log_compiles):
+    with jax.log_compiles(log_compiles), logger:
         for _ in trange(cfg.num_epochs, disable=isinstance(logger, TerminalLogger)):
             env_steps = utils.first_from_device(
                 training_state.acting_state.env_step_count
