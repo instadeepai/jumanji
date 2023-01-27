@@ -1,13 +1,12 @@
 import abc
-import routing.randy_route as randy_route
+import ic_routing_board_generation.ic_routing.randy_route as randy_route
 from chex import Array, PRNGKey
-from typing import Any, Tuple
+from typing import Tuple
 import jax
 import jax.numpy as jnp
 from jax import random
-from routing.types import (
-    State,
-)
+
+from jumanji.environments.combinatorial.routing import State
 
 
 class InstanceGenerator(abc.ABC):

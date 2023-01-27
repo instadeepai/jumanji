@@ -22,23 +22,17 @@ from jax import random
 
 from jumanji import specs, wrappers
 from jumanji.env import Environment
-from routing import env_viewer
-from routing.constants import (
-    EMPTY,
-    HEAD,
-    NOOP,
-    SOURCE,
-    TARGET,
-    VIEWER_HEIGHT,
-    VIEWER_WIDTH,
-)
-from routing.types import Position, State
-from routing.instance_generator import (
+
+from ic_routing_board_generation.ic_routing.instance_generator import (
     InstanceGenerator,
     RandomInstanceGenerator, 
     RandyInstanceGenerator,
     CustomInstanceGenerator
 )
+from jumanji.environments.combinatorial.routing import State, Position
+from jumanji.environments.combinatorial.routing.constants import EMPTY, \
+    VIEWER_WIDTH, VIEWER_HEIGHT, HEAD, TARGET, NOOP, SOURCE
+from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 
 
@@ -84,7 +78,7 @@ class Routing(Environment[State]):
         reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
-        renderer: Optional[env_viewer.RoutingViewer] = None,
+        renderer: Optional[RoutingViewer] = None,
         **instance_generator_kwargs: Any
     ):
         """Create the Routing Environment.
@@ -121,7 +115,7 @@ class Routing(Environment[State]):
         self._reward_for_terminal_step = jnp.array(reward_for_terminal_step, float)
 
         if renderer:
-            assert isinstance(renderer, env_viewer.RoutingViewer), (
+            assert isinstance(renderer, RoutingViewer), (
                 "Expected a renderer of type 'RoutingViewer', "
                 f"got {renderer} of type {type(renderer)}."
             )
@@ -368,7 +362,7 @@ class Routing(Environment[State]):
             Array of rgb pixel values in the shape (width, height, rgb).
         """
         if self.viewer is None:
-            self.viewer = env_viewer.RoutingViewer(
+            self.viewer = RoutingViewer(
                 self.num_agents,
                 self.rows,
                 self.cols,

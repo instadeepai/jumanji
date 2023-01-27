@@ -2,7 +2,7 @@ import jax
 import jumanji
 import numpy as np
 import time
-from routing.env import Routing
+from ic_routing_board_generation.ic_routing.env import Routing
 
 
 
