@@ -1,0 +1,28 @@
+name: Deploy ic_board_generator Docs 📚
+on: [push]
+#on:
+#  push:
+#    branches:
+#      - dev
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout jumanji 🐍
+        uses: actions/checkout@v3
+      - name: Install python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Test
+        run: echo "Hello"
+      - name: Install python dependencies 🔧
+        run: pip install -r ic_docs/requirements.txt
+      - name: Build docs
+        run: |
+          make -C ic_docs clean
+          make -C ic_docs html
+
+# TODO: figure out what to do with docs after build
+# for now the docs build but don't go anywhere
