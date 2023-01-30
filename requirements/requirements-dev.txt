@@ -4,7 +4,7 @@ dm-haiku==0.0.5
 flake8==3.9.2
 hydra-core~=1.1
 importlib-metadata<5.0
-isort==5.10.1
+isort==5.11.5
 livereload
 mkdocs==1.2.3
 mkdocs-git-revision-date-plugin
