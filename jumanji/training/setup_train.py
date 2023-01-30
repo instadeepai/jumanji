@@ -211,7 +211,14 @@ def _setup_actor_critic_neworks(
         )
     elif cfg.environment.name == "jobshop":
         assert isinstance(env.unwrapped, JobShop)
-        raise NotImplementedError
+        actor_critic_networks = networks.make_actor_critic_networks_jobshop(
+            jobshop=env.unwrapped,
+            policy_layers=cfg.environment.network.policy_layers,
+            value_layers=cfg.environment.network.value_layers,
+            operations_layers=cfg.environment.network.operations_layers,
+            machines_layers=cfg.environment.network.machines_layers,
+        )
+
     elif cfg.environment.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         actor_critic_networks = networks.make_actor_critic_networks_cvrp(
