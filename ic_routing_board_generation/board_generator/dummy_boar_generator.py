@@ -35,10 +35,11 @@ class DummyBoard:
 
     """
 
-    def __init__(self, x_dim: int, y_dim: int):
+    def __init__(self, x_dim: int, y_dim: int, num_agents: int):
         self.layout = np.zeros((x_dim, y_dim), int)
         self.dim = Position(x_dim, y_dim)
         self.num_wires = 0
+        self.num_agents = num_agents
 
     def get_random_head(self) -> Position:
         # Return a random 2D position, a starting point in the array
@@ -413,7 +414,7 @@ class DummyBoard:
 
     # @staticmethod
     def return_training_board(self):
-        empty_board, _, _ = board_generator(self.dim.x, self.dim.y, self.num_wires)
+        empty_board, _, _ = board_generator(self.dim.x, self.dim.y, self.num_agents)
         return empty_board
 
 
@@ -464,7 +465,7 @@ np.ndarray, np.ndarray, int):
 
     """
     # Initialize the board
-    board_output = DummyBoard(x_dim, y_dim)
+    board_output = DummyBoard(x_dim, y_dim, target_wires)
     # Add wires to the board
     if target_wires is None:
         target_wires = x_dim * y_dim  # An impossible target.  Do as many as possible.
