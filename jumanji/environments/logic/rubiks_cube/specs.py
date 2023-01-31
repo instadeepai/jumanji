@@ -20,8 +20,8 @@ from jumanji.environments.logic.rubiks_cube.types import Observation
 class ObservationSpec(specs.Spec[Observation]):
     def __init__(
         self,
-        cube: specs.Array,
-        step_count: specs.Array,
+        cube: specs.BoundedArray,
+        step_count: specs.BoundedArray,
     ):
         name = (
             "Observation(\n"

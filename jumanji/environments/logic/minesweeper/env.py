@@ -28,6 +28,7 @@ from jumanji.environments.logic.minesweeper.constants import (
     DEFAULT_BOARD_HEIGHT,
     DEFAULT_BOARD_WIDTH,
     DEFAULT_NUM_MINES,
+    PATCH_SIZE,
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.done_functions import (
@@ -229,7 +230,7 @@ class Minesweeper(Environment[State]):
                 shape=(self.board_height, self.board_width),
                 dtype=jnp.int32,
                 minimum=-1,
-                maximum=8,
+                maximum=PATCH_SIZE * PATCH_SIZE - 1,
                 name="board",
             ),
             action_mask=specs.BoundedArray(

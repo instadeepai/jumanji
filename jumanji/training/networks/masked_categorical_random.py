@@ -57,7 +57,7 @@ def make_masked_categorical_random_ndim(
         )
         flat_action = jax.random.categorical(key, flatten_logits)
         action_components = []
-        for i in range(n, 1, -1):
+        for i in range(n - 1, 0, -1):
             flat_action, remainder = jnp.divmod(flat_action, action_spec_num_values[i])
             action_components.append(remainder)
         action_components.append(flat_action)

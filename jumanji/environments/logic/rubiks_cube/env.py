@@ -159,8 +159,8 @@ class RubiksCube(Environment[State]):
         1 = anticlockwise turn
         2 = half turn
         """
-        face_and_depth, amount = divmod(action, len(CubeMovementAmount))
-        face, depth = divmod(face_and_depth, self.cube_size // 2)
+        face_and_depth, amount = jnp.divmod(action, len(CubeMovementAmount))
+        face, depth = jnp.divmod(face_and_depth, self.cube_size // 2)
         return jnp.stack([face, depth, amount], axis=0)
 
     def _flatten_action(self, action: chex.Array) -> chex.Array:

@@ -168,7 +168,7 @@ def _setup_actor_critic_neworks(
     if cfg.environment.name == "binpack":
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_binpack(
-            observation_spec=env.unwrapped.observation_spec(),
+            binpack=env.unwrapped,
             policy_layers=cfg.environment.network.policy_layers,
             value_layers=cfg.environment.network.value_layers,
             transformer_n_blocks=cfg.environment.network.transformer_n_blocks,
@@ -245,7 +245,14 @@ def _setup_actor_critic_neworks(
         raise NotImplementedError
     elif cfg.environment.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
-        raise NotImplementedError
+        actor_critic_networks = networks.make_actor_critic_networks_minesweeper(
+            minesweeper=env.unwrapped,
+            board_embed_dim=cfg.environment.network.board_embed_dim,
+            board_conv_channels=cfg.environment.network.board_conv_channels,
+            board_kernel_shape=cfg.environment.network.board_kernel_shape,
+            num_mines_embed_dim=cfg.environment.network.num_mines_embed_dim,
+            final_layer_dims=cfg.environment.network.final_layer_dims,
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return actor_critic_networks

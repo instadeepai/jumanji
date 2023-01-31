@@ -90,7 +90,10 @@ def count_adjacent_mines(state: State, action: Action) -> chex.Array:
     )
     return (
         dynamic_slice_in_dim(
-            selected_rows, start_index=action_width + 1, slice_size=PATCH_SIZE, axis=-1
+            selected_rows,
+            start_index=action_width + 1,
+            slice_size=PATCH_SIZE,
+            axis=-1,
         ).sum()
         - mined_board[action_height, action_width]
     )

@@ -25,6 +25,41 @@ from jumanji.training.networks.distribution import CategoricalDistribution, Dist
 from jumanji.training.networks.postprocessor import IdentityBijector, Postprocessor
 
 
+class FactorisedActionSpaceReshapeBijector(Postprocessor):
+    """Identity bijector that reshapes (flattens and unflattens)
+    a sequential action"""
+
+    def __init__(self, action_spec_num_values: np.ndarray):
+        super().__init__()
+        self.action_spec_num_values = action_spec_num_values
+
+    def forward(self, x: chex.Array) -> chex.Array:
+        action_components = []
+        flat_action = x
+        n = self.action_spec_num_values.shape[0]
+        for i in range(n - 1, 0, -1):
+            flat_action, remainder = jnp.divmod(
+                flat_action, self.action_spec_num_values[i]
+            )
+            action_components.append(remainder)
+        action_components.append(flat_action)
+        action = jnp.stack(list(reversed(action_components)), axis=-1)
+        return action
+
+    def inverse(self, y: chex.Array) -> chex.Array:
+        n = self.action_spec_num_values.shape[0]
+        action_components = jnp.split(y, n, axis=-1)
+        flat_action = action_components[0]
+        for i in range(1, n):
+            flat_action = (
+                self.action_spec_num_values[i] * flat_action + action_components[i]
+            )
+        return flat_action
+
+    def forward_log_det_jacobian(self, x: chex.Array) -> chex.Array:
+        return jnp.zeros_like(x, x.dtype)
+
+
 class ParametricDistribution(abc.ABC):
     """Abstract class for parametric (action) distribution."""
 
@@ -137,9 +172,28 @@ class MultiCategoricalParametricDistribution(ParametricDistribution):
         assert np.ndim(num_values) == 1
         assert np.all(num_values == num_values[0])
         super().__init__(
-            param_size=np.sum(num_values),
+            param_size=int(np.sum(num_values)),
             postprocessor=IdentityBijector(),
             event_ndims=1,
+        )
+
+    def create_dist(self, parameters: chex.Array) -> CategoricalDistribution:
+        return CategoricalDistribution(logits=parameters)
+
+
+class FactorisedActionSpaceParametricDistribution(ParametricDistribution):
+    """Categorical distribution for a factorised action space"""
+
+    def __init__(self, action_spec_num_values: np.ndarray):
+        """Initialize the distribution.
+        Args:
+            action_spec_num_values: the dimensions of each of the factors in the action space"""
+        num_actions = int(np.prod(action_spec_num_values))
+        posprocessor = FactorisedActionSpaceReshapeBijector(
+            action_spec_num_values=action_spec_num_values
+        )
+        super().__init__(
+            param_size=num_actions, postprocessor=posprocessor, event_ndims=0
         )
 
     def create_dist(self, parameters: chex.Array) -> CategoricalDistribution:

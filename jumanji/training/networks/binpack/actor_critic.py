@@ -18,17 +18,18 @@ import chex
 import haiku as hk
 import jax
 import jax.numpy as jnp
+import numpy as np
 
-from jumanji.environments.packing.binpack.specs import ObservationSpec
+from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.environments.packing.binpack.types import Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
 )
-from jumanji.training.networks.binpack.parametric_distribution import (
-    BinPackParametricDistribution,
-)
 from jumanji.training.networks.binpack.transformer_block import TransformerBlock
+from jumanji.training.networks.parametric_distribution import (
+    FactorisedActionSpaceParametricDistribution,
+)
 
 
 class BinPackTorso(hk.Module):
@@ -111,7 +112,7 @@ class BinPackTorso(hk.Module):
 
 
 def make_actor_critic_networks_binpack(
-    observation_spec: ObservationSpec,
+    binpack: BinPack,
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
     transformer_n_blocks: int,
@@ -120,13 +121,10 @@ def make_actor_critic_networks_binpack(
     transformer_num_heads: int,
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for BinPack."""
+    num_ems = binpack.obs_num_ems
 
-    num_ems = observation_spec.ems_spec.x1_spec.shape[0]
-    num_items = observation_spec.items_spec.x_len_spec.shape[0]
-
-    parametric_action_distribution = BinPackParametricDistribution(
-        num_actions=num_ems * num_items,
-        max_num_items=num_items,
+    parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
+        action_spec_num_values=np.asarray(binpack.action_spec().num_values)
     )
     policy_network = make_binpack_network(
         transformer_n_blocks=transformer_n_blocks,

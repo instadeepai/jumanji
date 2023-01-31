@@ -20,10 +20,10 @@ from jumanji.environments.logic.minesweeper.types import Observation
 class ObservationSpec(specs.Spec[Observation]):
     def __init__(
         self,
-        board: specs.Array,
-        action_mask: specs.Array,
-        num_mines: specs.Array,
-        step_count: specs.Array,
+        board: specs.BoundedArray,
+        action_mask: specs.BoundedArray,
+        num_mines: specs.BoundedArray,
+        step_count: specs.BoundedArray,
     ):
         name = (
             "Observation(\n"
