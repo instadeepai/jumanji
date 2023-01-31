@@ -6,6 +6,8 @@ import jax
 import jax.numpy as jnp
 from jax import random
 
+from ic_routing_board_generation.interface.board_generator_interface import \
+    BoardGenerators, BoardGenerator
 from jumanji.environments.combinatorial.routing import State
 
 
@@ -14,11 +16,35 @@ class InstanceGenerator(abc.ABC):
     for generating an instance when the environment is reset.
     """
     def __init__(
-        self, rows:int=4, cols:int=4, num_agents:int=3
+        self, rows: int = 4, cols: int = 4, num_agents: int = 3,
+        board_generator: BoardGenerators = BoardGenerators.DUMMY,
     ) -> None:
         self.rows = rows
         self.cols = cols
         self.num_agents = num_agents
+        self.board_generator = board_generator
+
+class UniversalInstanceGenerator(InstanceGenerator):
+    """Instance generator using a custom board (none of randy or random)."""
+    def __init__(
+        self, rows: int, cols: int, num_agents: int,
+        board_generator: BoardGenerators,
+    ) -> None:
+        super().__init__(rows, cols, num_agents)
+    def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
+        board_class = BoardGenerator.get_board_generator(board_enum=self.board_generator)
+        board = board_class(self.rows, self.cols, self.num_agents)
+        pins = board.return_training_board() # edit this line here
+        grid = jnp.array(pins, int)
+
+        state = State(
+            key=key,
+            grid=grid,
+            step=jnp.array(0, int),
+            finished_agents=jnp.zeros(self.num_agents, bool)
+        )
+        return grid, state
+
 
 
 class RandomInstanceGenerator(InstanceGenerator):
