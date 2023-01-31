@@ -1,5 +1,5 @@
-from constants import TARGET, HEAD, EMPTY
-from constants import SOURCE as WIRE
+from jumanji.environments.combinatorial.routing.constants import TARGET, HEAD, EMPTY
+from jumanji.environments.combinatorial.routing.constants import SOURCE as WIRE
 # Also available to import from constants OBSTACLE, NOOP, LEFT, LEFT, UP, RIGHT, DOWN
 from dataclasses import dataclass
 import numpy as np
