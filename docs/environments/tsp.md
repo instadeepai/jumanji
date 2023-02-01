@@ -1,7 +1,7 @@
 # Traveling Salesman Problem (TSP) Environment
 
 <p align="center">
-        <img src="../img/tsp_usa.png" width="500"/>
+        <img src="../env_anim/tsp.gif" width="500"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the [traveling salesman

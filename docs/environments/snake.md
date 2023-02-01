@@ -1,7 +1,7 @@
 # Snake Environment 🐍
 
 <p align="center">
-        <img src="../img/snake.gif" width="300"/>
+        <img src="../env_anim/snake.gif" width="300"/>
 </p>
 
 We provide here an implementation of the Snake environment from [(Bonnet et al., 2021)](https://arxiv.org/abs/2111.00206).

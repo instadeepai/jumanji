@@ -1,7 +1,7 @@
 # Routing Environment
 
 <p align="center">
-        <img src="../img/routing.gif" width="300"/>
+        <img src="../env_anim/routing.gif" width="300"/>
 </p>
 
 The Routing environment contains multiple agents spawn in a grid world (default: `(rows=12, cols=12)`) with each agent representing a route that needs to
