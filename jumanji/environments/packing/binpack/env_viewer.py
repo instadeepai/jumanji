@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
 from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.animation
@@ -27,24 +26,19 @@ import jumanji.environments
 from jumanji.environments.packing.binpack.types import State, item_from_space
 
 
-class RenderMode(str, enum.Enum):
-    HUMAN = "human"
-    RGB_ARRAY = "rgb_array"
-
-
 class BinPackViewer:
     FONT_STYLE = "monospace"
     FIGURE_SIZE = (6.0, 6.0)
 
-    def __init__(self, name: str, render_mode: RenderMode = RenderMode.HUMAN) -> None:
+    def __init__(self, name: str, render_mode: str = "human") -> None:
         """
         Viewer for the BinPack environment.
 
         Args:
-            name: The window name to be used when initialising the window.
-            render_mode: The mode used to render the environment. Must be one of:
-                - RenderMode.HUMAN: Render the environment on screen.
-                - RenderMode.RGB_ARRAY: Return a numpy array frame representing the environment.
+            name: the window name to be used when initialising the window.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
         self._name = name
         # You must store the created Animation in a variable that lives as long as the animation
@@ -52,9 +46,9 @@ class BinPackViewer:
         self._animation: Optional[matplotlib.animation.Animation] = None
 
         self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == RenderMode.RGB_ARRAY:
+        if render_mode == "rgb_array":
             self._display = self._display_rgb_array
-        elif render_mode == RenderMode.HUMAN:
+        elif render_mode == "human":
             self._display = self._display_human
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")

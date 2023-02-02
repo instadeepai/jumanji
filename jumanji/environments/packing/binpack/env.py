@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
 from chex import PRNGKey
 from numpy.typing import NDArray
-from typing_extensions import Literal
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -108,9 +107,7 @@ class BinPack(Environment[State]):
         reward_fn: RewardFn = sparse_linear_reward,
         normalize_dimensions: bool = True,
         debug: bool = False,
-        render_mode: Union[
-            Literal["human", "rgb_array"], env_viewer.RenderMode
-        ] = env_viewer.RenderMode.HUMAN,
+        render_mode: str = "human",
         **instance_generator_kwargs: Any,
     ):
         """Instantiate a BinPack environment.
@@ -147,9 +144,7 @@ class BinPack(Environment[State]):
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = env_viewer.BinPackViewer(
-            "BinPack", env_viewer.RenderMode(render_mode)
-        )
+        self._env_viewer = env_viewer.BinPackViewer("BinPack", render_mode)
         self.debug = debug
 
     def __repr__(self) -> str:

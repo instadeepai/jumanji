@@ -1,7 +1,7 @@
 # Capacitated Vehicle Routing Problem (CVRP) Environment
 
 <p align="center">
-        <img src="../img/cvrp_img0.png" width="500"/>
+        <img src="../env_anim/cvrp.gif" width="500"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the capacitated vehicle routing problem

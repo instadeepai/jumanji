@@ -1,7 +1,7 @@
 # Rubik's Cube Environment
 
 <p align="center">
-        <img src="../img/rubiks_cube.png" height="200"/>
+        <img src="../env_img/rubiks_cube.png" height="200"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the _Rubik's cube_. The environment contains an implementation of the classic 3x3x3 cube by default, and configurably other sizes. The goal of the agent is to match all stickers on each face to a single colour. On resetting the environment the cube will be randomly scrambled with a configurable number of turns (by default 100).

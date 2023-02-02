@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import jax
 import jax.numpy as jnp
 from chex import PRNGKey
 from jax import random
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
 from jumanji.environments.routing.cvrp.specs import ObservationSpec
 from jumanji.environments.routing.cvrp.types import Observation, State
 from jumanji.environments.routing.cvrp.utils import (
@@ -71,7 +73,11 @@ class CVRP(Environment[State]):
     """
 
     def __init__(
-        self, problem_size: int = 100, max_capacity: int = 30, max_demand: int = 10
+        self,
+        problem_size: int = 100,
+        max_capacity: int = 30,
+        max_demand: int = 10,
+        render_mode: str = "human",
     ):
         if max_capacity < max_demand:
             raise ValueError(
@@ -81,6 +87,13 @@ class CVRP(Environment[State]):
         self.problem_size = problem_size
         self.max_capacity = max_capacity
         self.max_demand = max_demand
+
+        # Create viewer used for rendering
+        self._env_viewer = CVRPViewer(
+            name="CVRP",
+            num_cities=self.problem_size,
+            render_mode=render_mode,
+        )
 
     def __repr__(self) -> str:
         return (
@@ -187,6 +200,18 @@ class CVRP(Environment[State]):
             action_spec: a `specs.DiscreteArray` spec.
         """
         return specs.DiscreteArray(self.problem_size + 1, name="action")
+
+    def render(self, state: State) -> Optional[NDArray]:
+        """Render the given state of the environment. This rendering shows the layout of the tour so
+         far with the cities as circles, and the depot as a square.
+
+        Args:
+            state: environment state to render.
+
+        Returns:
+            rgb_array: the RGB image of the state as an array.
+        """
+        return self._env_viewer.render(state)
 
     def _update_state(self, state: State, next_node: jnp.int32) -> State:
         """Updates the state of the environment.

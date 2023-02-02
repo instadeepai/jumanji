@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import jax
 import jax.numpy as jnp
 from chex import PRNGKey
 from numpy.typing import NDArray
-from typing_extensions import Literal
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.tsp.env_viewer import RenderMode, TSPViewer
+from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.specs import ObservationSpec
 from jumanji.environments.routing.tsp.types import Observation, State
 from jumanji.environments.routing.tsp.utils import compute_tour_length, generate_problem
@@ -66,14 +65,12 @@ class TSP(Environment[State]):
     def __init__(
         self,
         num_cities: int = 10,
-        render_mode: Union[
-            Literal["human", "rgb_array"], RenderMode
-        ] = RenderMode.HUMAN,
+        render_mode: str = "human",
     ):
         self.num_cities = num_cities
 
         # Create viewer used for rendering
-        self._env_viewer = TSPViewer(name="TSP", render_mode=RenderMode(render_mode))
+        self._env_viewer = TSPViewer(name="TSP", render_mode=render_mode)
 
     def __repr__(self) -> str:
         return f"TSP environment with {self.num_cities} cities."

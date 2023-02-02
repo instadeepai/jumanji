@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation
@@ -24,25 +23,20 @@ import jumanji.environments
 from jumanji.environments.routing.tsp.types import State
 
 
-class RenderMode(str, enum.Enum):
-    HUMAN = "human"
-    RGB_ARRAY = "rgb_array"
-
-
 class TSPViewer:
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "dimgray"
     NODE_SIZE = 150
     ARROW_WIDTH = 0.004
 
-    def __init__(self, name: str, render_mode: RenderMode = RenderMode.HUMAN) -> None:
+    def __init__(self, name: str, render_mode: str = "human") -> None:
         """Viewer for the TSP environment.
 
         Args:
             name: the window name to be used when initialising the window.
             render_mode: the mode used to render the environment. Must be one of:
-                - RenderMode.HUMAN: Render the environment on screen.
-                - RenderMode.RGB_ARRAY: Return a numpy array frame representing the environment.
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
         self._name = name
 
@@ -51,9 +45,9 @@ class TSPViewer:
         self._animation: Optional[matplotlib.animation.Animation] = None
 
         self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == RenderMode.RGB_ARRAY:
+        if render_mode == "rgb_array":
             self._display = self._display_rgb_array
-        elif render_mode == RenderMode.HUMAN:
+        elif render_mode == "human":
             self._display = self._display_human
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
@@ -175,7 +169,7 @@ class TSPViewer:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
             # Block for 2 seconds.
-            fig.canvas.start_event_loop(1.0)
+            fig.canvas.start_event_loop(2.0)
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()
