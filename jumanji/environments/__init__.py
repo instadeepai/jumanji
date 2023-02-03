@@ -24,6 +24,7 @@ from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.routing import connector, cvrp, routing, snake, tsp
 from jumanji.environments.routing.cvrp.env import CVRP
+from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.routing.env import Routing
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
