@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import chex
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
+import pytest_mock
 from jax import jit
 from jax import numpy as jnp
 from jax import random, vmap
@@ -194,3 +196,12 @@ def test_rubiks_cube_env_done(step_limit: int) -> None:
             # Exit condition to make sure tests don't enter infinite loop, should not be hit
             raise Exception("Entered infinite loop")
     assert episode_length == step_limit
+
+
+def test_rubiks_cube_animation(
+    rubiks_cube_env: RubiksCube, mocker: pytest_mock.MockerFixture
+) -> None:
+    """Check that the animation method creates the animation correctly."""
+    states = mocker.MagicMock()
+    animation = rubiks_cube_env.animation(states)
+    assert isinstance(animation, matplotlib.animation.Animation)

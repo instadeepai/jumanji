@@ -15,8 +15,10 @@
 from typing import List, Optional, Tuple
 
 import chex
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
+import pytest_mock
 from jax import jit
 from jax import numpy as jnp
 from jax import random
@@ -204,3 +206,12 @@ def test_minesweeper_env_solved(minesweeper_env: Minesweeper) -> None:
     assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [
         StepType.LAST
     ]
+
+
+def test_minesweeper_animation(
+    minesweeper_env: Minesweeper, mocker: pytest_mock.MockerFixture
+) -> None:
+    """Check that the animation method creates the animation correctly."""
+    states = mocker.MagicMock()
+    animation = minesweeper_env.animation(states)
+    assert isinstance(animation, matplotlib.animation.Animation)

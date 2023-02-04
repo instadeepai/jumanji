@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import chex
+import matplotlib.animation
 import matplotlib.pyplot as plt
 from chex import PRNGKey
 from jax import lax
@@ -125,7 +126,7 @@ class Minesweeper(Environment[State]):
         )
 
         self.cmap = colour_maping if colour_maping else COLOUR_MAPPING
-        self.figure_name = f"{board_height}x{board_width} minesweeper"
+        self.figure_name = f"{board_height}x{board_width} Minesweeper"
         self.figure_size = (6.0, 6.0)
 
     @classmethod
@@ -277,9 +278,7 @@ class Minesweeper(Environment[State]):
 
         """
         self._clear_display()
-        fig, ax = self._get_fig_ax(
-            caption=f"step_count={state.step_count}, num_mines={self.num_mines}"
-        )
+        fig, ax = self._get_fig_ax()
         self._draw(ax, state)
         self._update_display(fig)
 
@@ -291,17 +290,15 @@ class Minesweeper(Environment[State]):
         """
         plt.close(self.figure_name)
 
-    def _get_fig_ax(self, caption: str) -> Tuple[plt.Figure, plt.Axes]:
+    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         exists = plt.fignum_exists(self.figure_name)
         if exists:
             fig = plt.figure(self.figure_name)
             ax = fig.get_axes()[0]
         else:
             fig = plt.figure(self.figure_name, figsize=self.figure_size)
-            plt.figtext(
-                0.5, 0.01, caption, wrap=True, horizontalalignment="center", fontsize=8
-            )
-            fig.set_tight_layout({"pad": True, "w_pad": 1.0, "h_pad": 1.0})
+            plt.suptitle(self.figure_name)
+            plt.tight_layout()
             plt.axis("off")
             if not plt.isinteractive():
                 fig.show()
@@ -367,3 +364,37 @@ class Minesweeper(Environment[State]):
             import IPython.display
 
             IPython.display.clear_output(True)
+
+    def animation(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        blit: bool = False,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            blit: whether to use blitting, which optimises the animation by only re-drawing
+                pieces of the plot that have changed. Defaults to False.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        fig, ax = self._get_fig_ax()
+        plt.tight_layout()
+        plt.close(fig)
+
+        def animate(state_index: int) -> None:
+            state = states[state_index]
+            self._draw(ax, state)
+
+        self._animation = matplotlib.animation.FuncAnimation(
+            fig,
+            animate,
+            frames=len(states),
+            blit=blit,
+            interval=interval,
+        )
+        return self._animation

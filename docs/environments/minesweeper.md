@@ -1,7 +1,7 @@
 # Minesweeper Environment
 
 <p align="center">
-        <img src="../env_img/minesweeper.png" height="200"/>
+        <img src="../env_anim/minesweeper.gif" height="200"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the game _Minesweeper_.

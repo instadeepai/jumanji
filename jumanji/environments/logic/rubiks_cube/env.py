@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import chex
 import jax
 import matplotlib
+import matplotlib.animation
 import matplotlib.pyplot as plt
 from chex import PRNGKey
 from jax import lax
@@ -117,7 +118,7 @@ class RubiksCube(Environment[State]):
         self.num_actions = len(Face) * (cube_size // 2) * len(CubeMovementAmount)
         self.all_moves = generate_all_moves(cube_size=cube_size)
 
-        self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's cube"
+        self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
         self.figure_size = (6.0, 6.0)
 
     @classmethod
@@ -312,7 +313,7 @@ class RubiksCube(Environment[State]):
 
         """
         self._clear_display()
-        fig, ax = self._get_fig_ax(caption=f"step_count={state.step_count}")
+        fig, ax = self._get_fig_ax()
         self._draw(ax, state)
         self._update_display(fig)
 
@@ -324,7 +325,7 @@ class RubiksCube(Environment[State]):
         """
         plt.close(self.figure_name)
 
-    def _get_fig_ax(self, caption: str) -> Tuple[plt.Figure, List[plt.Axes]]:
+    def _get_fig_ax(self) -> Tuple[plt.Figure, List[plt.Axes]]:
         exists = plt.fignum_exists(self.figure_name)
         if exists:
             fig = plt.figure(self.figure_name)
@@ -333,10 +334,7 @@ class RubiksCube(Environment[State]):
             fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
             fig.suptitle(self.figure_name)
             ax = ax.flatten()
-            plt.figtext(
-                0.5, 0.01, caption, wrap=True, horizontalalignment="center", fontsize=8
-            )
-            fig.set_tight_layout({"pad": True, "w_pad": 1.0, "h_pad": 1.0})
+            plt.tight_layout()
             plt.axis("off")
             if not plt.isinteractive():
                 fig.show()
@@ -385,3 +383,39 @@ class RubiksCube(Environment[State]):
             import IPython.display
 
             IPython.display.clear_output(True)
+
+    def animation(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        blit: bool = False,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            blit: whether to use blitting, which optimises the animation by only re-drawing
+                pieces of the plot that have changed. Defaults to False.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
+        fig.suptitle(self.figure_name)
+        plt.tight_layout()
+        ax = ax.flatten()
+        plt.close(fig)
+
+        def animate(state_index: int) -> None:
+            state = states[state_index]
+            self._draw(ax, state)
+
+        self._animation = matplotlib.animation.FuncAnimation(
+            fig,
+            animate,
+            frames=len(states),
+            blit=blit,
+            interval=interval,
+        )
+        return self._animation
