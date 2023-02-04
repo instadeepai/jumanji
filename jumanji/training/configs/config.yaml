@@ -1,7 +1,7 @@
 defaults:
     - _self_
     - agent: random  # [random, a2c]
-    - environment: minesweeper  # [binpack, cvrp, knapsack, jobshop, routing, rubiks_cube, minesweeper, snake, tsp]
+    - environment: rubiks_cube  # [binpack, cvrp, knapsack, jobshop, routing, rubiks_cube, minesweeper, snake, tsp]
 
 seed: 0
 num_epochs: 20

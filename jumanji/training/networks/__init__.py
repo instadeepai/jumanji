@@ -38,6 +38,9 @@ from jumanji.training.networks.routing.actor_critic import (
     make_actor_critic_networks_routing,
 )
 from jumanji.training.networks.routing.random import make_random_policy_routing
+from jumanji.training.networks.rubiks_cube.actor_critic import (
+    make_actor_critic_networks_rubiks_cube,
+)
 from jumanji.training.networks.rubiks_cube.random import make_random_policy_rubiks_cube
 from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,

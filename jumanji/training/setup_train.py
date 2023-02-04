@@ -242,7 +242,12 @@ def _setup_actor_critic_neworks(
         )
     elif cfg.environment.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
-        raise NotImplementedError
+        actor_critic_networks = networks.make_actor_critic_networks_rubiks_cube(
+            rubiks_cube=env.unwrapped,
+            cube_embed_dim=cfg.environment.network.cube_embed_dim,
+            step_count_embed_dim=cfg.environment.network.step_count_embed_dim,
+            dense_layer_dims=cfg.environment.network.dense_layer_dims,
+        )
     elif cfg.environment.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
         actor_critic_networks = networks.make_actor_critic_networks_minesweeper(

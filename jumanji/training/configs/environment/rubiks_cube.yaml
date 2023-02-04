@@ -1,7 +1,10 @@
 name: rubiks_cube
 env_kwargs:
     cube_size: 3
-    step_limit: 200
-    num_scrambles_on_reset: 100
+    step_limit: 20
+    num_scrambles_on_reset: 7
 
 network:
+    cube_embed_dim: 4
+    step_count_embed_dim: 4
+    dense_layer_dims: [32, 64]

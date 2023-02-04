@@ -157,6 +157,11 @@ register(
 
 # Rubik's Cube
 register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
+register(
+    id="RubiksCube-partly-scrambled-v0",
+    entry_point="jumanji.environments:RubiksCube",
+    kwargs={"step_limit": 20, "num_scrambles_on_reset": 7},
+)
 
 # Minesweeper
 register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
