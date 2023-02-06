@@ -38,5 +38,6 @@ module = [
     "tqdm.*",
     "rlax.*",
     "neptune.*",
+    "tensorboardX.*",
 ]
 ignore_missing_imports = true

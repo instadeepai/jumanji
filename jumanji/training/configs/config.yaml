@@ -12,5 +12,5 @@ n_steps: 10
 total_batch_size: 64
 
 logger:
-    type: terminal  # [neptune, terminal]
+    type: terminal  # [neptune, tensorboard, terminal]
     name: ${agent.name}_${environment.name}

@@ -22,6 +22,7 @@ from typing import Any, DefaultDict, Dict, Optional, Type
 import jax
 import numpy as np
 import omegaconf
+import tensorboardX
 from neptune import new as neptune
 
 
@@ -125,7 +126,46 @@ class ListLogger(Logger):
         pass
 
 
+class TensorboardLogger(Logger):
+    """Logs to tensorboard. To view logs, run a command like:
+    tensorboard --logdir jumanji/training/outputs/{date}/{time}/{name}/
+    """
+
+    def __init__(self, name: str) -> None:
+        if name:
+            logging.info(name)
+        self.writer = tensorboardX.SummaryWriter(logdir=name)
+        self._env_steps = 0.0
+
+    def write(
+        self,
+        data: Dict[str, Any],
+        label: Optional[str] = None,
+        env_steps: Optional[int] = None,
+    ) -> None:
+        if env_steps:
+            self._env_steps = env_steps
+        prefix = label and f"{label}/"
+        for key, metric in data.items():
+            if np.ndim(metric) == 0:
+                if not np.isnan(metric):
+                    self.writer.add_scalar(
+                        tag=f"{prefix}/{key}",
+                        scalar_value=metric,
+                        global_step=int(self._env_steps),
+                    )
+            else:
+                raise ValueError(f"Expected metric {key} to be a scalar, got {metric}.")
+
+    def close(self) -> None:
+        self.writer.close()
+
+
 class NeptuneLogger(Logger):
+    """Logs to the [neptune.ai](https://app.neptune.ai/) platform. The user is expected to have
+    their NEPTUNE_API_TOKEN set as an environment variable. This can be done from the Neptune GUI.
+    """
+
     def __init__(
         self,
         name: str,
@@ -154,7 +194,7 @@ class NeptuneLogger(Logger):
                         wait=True,
                     )
             else:
-                raise ValueError(f"Expected metric to be a scalar, got {metric}.")
+                raise ValueError(f"Expected metric {key} to be a scalar, got {metric}.")
 
     def close(self) -> None:
         self.run.stop()

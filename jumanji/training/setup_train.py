@@ -37,7 +37,12 @@ from jumanji.training.agents.a2c import A2CAgent
 from jumanji.training.agents.base import Agent
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.evaluator import Evaluator
-from jumanji.training.loggers import Logger, NeptuneLogger, TerminalLogger
+from jumanji.training.loggers import (
+    Logger,
+    NeptuneLogger,
+    TensorboardLogger,
+    TerminalLogger,
+)
 from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
@@ -59,7 +64,9 @@ ENV_FACTORY = {
 
 def setup_logger(cfg: DictConfig) -> Logger:
     logger: Logger
-    if cfg.logger.type == "neptune":
+    if cfg.logger.type == "tensorboard":
+        logger = TensorboardLogger(name=cfg.logger.name)
+    elif cfg.logger.type == "neptune":
         logger = NeptuneLogger(
             name=cfg.logger.name, project="InstaDeep/jumanji", cfg=cfg
         )
@@ -67,7 +74,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
         logger = TerminalLogger(name=cfg.logger.name)
     else:
         raise ValueError(
-            f"logger expected in ['neptune', 'terminal'], got {cfg.logger}."
+            f"logger expected in ['neptune', 'tensorboard', 'terminal'], got {cfg.logger}."
         )
     return logger
 
