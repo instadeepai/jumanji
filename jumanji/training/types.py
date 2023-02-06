@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 
 import chex
 import haiku as hk
 import jax.numpy as jnp
 import optax
 
-from jumanji.env import State
 from jumanji.types import TimeStep
 
 
@@ -48,10 +47,10 @@ class ParamsState(NamedTuple):
     update_count: jnp.float32  # use float to avoid int32 overflow
 
 
-class ActingState(NamedTuple, Generic[State]):
+class ActingState(NamedTuple):
     """Container for data used during the acting in the environment."""
 
-    state: State
+    state: Any
     timestep: TimeStep
     key: chex.PRNGKey
     episode_count: jnp.float32
