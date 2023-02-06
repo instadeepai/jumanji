@@ -1,7 +1,10 @@
 import abc
+
+import numpy as np
+
 import ic_routing_board_generation.ic_routing.randy_route as randy_route
 from chex import Array, PRNGKey
-from typing import Tuple
+from typing import Tuple, Optional
 import jax
 import jax.numpy as jnp
 from jax import random
@@ -45,7 +48,45 @@ class UniversalInstanceGenerator(InstanceGenerator):
         )
         return grid, state
 
+class NewInstanceGenerator(abc.ABC):
+    def __init__(
+        self, rows:int=4, cols:int=4, num_agents:int=3, board_enum: BoardGenerators= BoardGenerators.DUMMY,
+    ) -> None:
+        self.rows = rows
+        self.cols = cols
+        self.num_agents = num_agents
+        self.board_enum = board_enum
 
+
+class MartasNewInstanceGenerator(NewInstanceGenerator):
+    def __init__(
+        self, rows: int=4, cols: int=4, num_agents: int=3, board_enum: BoardGenerators=BoardGenerators.DUMMY,
+        ) -> None:
+        super().__init__(rows, cols, num_agents, board_enum)
+
+    def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
+        """Call method responsible for generating a new state. It returns a board generated
+        according to randy's v1 board generator.
+
+        Args:
+            key : NOT NECESSARY; here used so that other parts of the code don't crash.
+
+        Returns:
+            A Routing (Randyv1 ~15/01/2023) State.
+        """
+        board_class = BoardGenerator.get_board_generator(board_enum=self.board_enum)
+        board_class_instance = board_class(rows=self.rows, cols=self.cols, num_agents=self.num_agents)
+        pins = board_class_instance.return_empty_board()
+        # pins, _, _ = randy_route.board_generator(x_dim=self.cols, y_dim=self.rows, target_wires=self.num_agents)
+        grid = jnp.array(pins, int)
+
+        state = State(
+            key=key,
+            grid=grid,
+            step=jnp.array(0, int),
+            finished_agents=jnp.zeros(self.num_agents, bool)
+        )
+        return grid, state
 
 class RandomInstanceGenerator(InstanceGenerator):
     """Instance generator that generates random pin locations. This generation works as follows:
@@ -92,59 +133,5 @@ class RandomInstanceGenerator(InstanceGenerator):
             grid=grid,
             step=jnp.array(0, int),
             finished_agents=jnp.zeros(self.num_agents, bool),
-        )
-        return grid, state
-
-
-class RandyInstanceGenerator(InstanceGenerator):
-    """Instance generator that generates pin locations according to Randy's v1 (~15/01/2023) board
-    generation protocol. This generation works as follows: A randomly chosen board location is found,
-    then, in the direction of the side of the board which is furthest away from the random initialisation,
-    an agent moves in that direction. Moving continues until the agent can no longer move, at which point it
-    takes a turn in the minor direction. Movement stops upon a max_length or end_of_board parameter.
-    The process continues until `num_agents` have been placed.
-    """
-    def __init__(
-        self, rows: int, cols: int, num_agents: int
-        ) -> None:
-        super().__init__(rows, cols, num_agents)
-
-    def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
-        """Call method responsible for generating a new state. It returns a board generated 
-        according to randy's v1 board generator.
-
-        Args:
-            key : NOT NECESSARY; here used so that other parts of the code don't crash.
-
-        Returns:
-            A Routing (Randyv1 ~15/01/2023) State.
-        """
-        pins, _, _ = randy_route.board_generator(x_dim=self.cols, y_dim=self.rows, target_wires=self.num_agents)
-        grid = jnp.array(pins, int)
-
-        state = State(
-            key=key,
-            grid=grid,
-            step=jnp.array(0, int),
-            finished_agents=jnp.zeros(self.num_agents, bool)
-        )
-        return grid, state
-
-
-class CustomInstanceGenerator(InstanceGenerator):
-    """Instance generator using a custom board (none of randy or random).
-    """
-    def __init__(self, rows: int, cols: int, num_agents: int) -> None:
-        super().__init__(rows, cols, num_agents)
-
-    def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
-        pins, _, _ = randy_route.board_generator(x_dim=self.cols, y_dim=self.rows, target_wires=self.num_agents) # edit this line here
-        grid = jnp.array(pins, int)
-
-        state = State(
-            key=key,
-            grid=grid,
-            step=jnp.array(0, int),
-            finished_agents=jnp.zeros(self.num_agents, bool)
         )
         return grid, state

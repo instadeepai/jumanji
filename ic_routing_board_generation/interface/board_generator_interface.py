@@ -5,6 +5,7 @@ from ic_routing_board_generation.board_generator.board_generator_v2_0_0_rb impor
 from ic_routing_board_generation.board_generator.board_generator_v1_1_2_rb import Board as BoardV1
 from ic_routing_board_generation.board_generator.dummy_boar_generator import \
     DummyBoard
+from ic_routing_board_generation.board_generator.ugo_generator import BFSBoard
 
 
 class BoardGenerators(str, Enum):
@@ -15,12 +16,12 @@ class BoardGenerators(str, Enum):
     BFS = "BFS"
     DUMMY = "dummy"
 
-
 class BoardGenerator:
     """Maps BoardGeneratorType to class of generator."""
     board_generator_dict = {
         BoardGenerators.RANDY_V1: BoardV1,
         BoardGenerators.RANDOM_ROUTE: Board,
+        BoardGenerators.BFS: BFSBoard,
         BoardGenerators.DUMMY: DummyBoard,
     }
 
@@ -28,3 +29,7 @@ class BoardGenerator:
     def get_board_generator(cls, board_enum: BoardGenerators):
         """Return class of desired board generator."""
         return cls.board_generator_dict[board_enum]
+
+if __name__ == '__main__':
+    for el in BoardGenerators:
+        print(el)
