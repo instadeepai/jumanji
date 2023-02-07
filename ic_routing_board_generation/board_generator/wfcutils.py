@@ -18,9 +18,29 @@ def check_side(side1, side2):
         return True
 
 
+def all_valid_choices(i, j, rows, cols, num_tiles):
+    """
+    Used to initialise the choices dictionary.
+    Also used in reduce_prob to remove invalid choices.
+    """
+    choices = np.arange(num_tiles).tolist()
+    # TODO: Remove some boundary tiles from the choices
+    if i == 0:
+        choices = [x for x in choices if x not in [1,3,4,7]]
+    if i == rows - 1:
+        choices = [x for x in choices if x not in [1,5,6,9]]
+    if j == 0:
+        choices = [x for x in choices if x not in [2,3,6,10]]
+    if j == cols - 1:
+        choices = [x for x in choices if x not in [2,4,5,8]]
+    return choices
+
+
 def reduce_prob(choices, tiles, row, col, rows, cols, TILE_IDX_LIST):
     neighbor_choices = []
-    valid_choices = deepcopy(TILE_IDX_LIST)
+    # Changed this to be a function of the tile
+    valid_choices = all_valid_choices(row, col, rows, cols, len(TILE_IDX_LIST))
+    # Check the top, bottom, left, right neighbors
     for i, j, direction in [[row-1, col, 'bottom'], [row+1, col, 'top'], [row, col-1, 'right'], [row, col+1, 'left']]:
         exclusion_idx_list = []
         if 0 <= i < rows and 0 <= j < cols:
@@ -83,11 +103,13 @@ def step(info, row_col = None):
     tiles           = info['tiles']
     rows            = info['rows']
     cols            = info['cols']
-    
+    print(choices[(0, 0)])
     if row_col:
         row, col = row_col
     else:
         row, col = get_min_entropy_coord(entropy_board, observed)
+    # TODO: change here to weighted random choice, include
+    # custom weights for each tile
     state = np.random.choice(choices[(row,  col)])
     history.append((row, col, state, choices[(row,  col)]))
     choices_temp = deepcopy(choices)

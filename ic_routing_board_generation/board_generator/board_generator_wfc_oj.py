@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 from copy import deepcopy
 
-from wfcutils import step, update_entropy
+from wfcutils import step, update_entropy, all_valid_choices
 
 
 ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), 
@@ -148,7 +148,7 @@ class Board:
         choices = {}
         for i in range(rows):
             for j in range(cols):
-                choices[(i, j)] = np.arange(num_tiles).tolist()
+                choices[(i, j)] = all_valid_choices(i, j, rows, cols, num_tiles)
 
         info = dict(
             entropy_board = entropy_board,
@@ -171,6 +171,7 @@ class Board:
             info_history_full.append(deepcopy(info))
             
             while retract:
+                print("retracto baby")
                 # undo one step
                 last_step = info['history'].pop()
                 last_row, last_col, last_choice, valid_choices = last_step
@@ -199,6 +200,11 @@ class Board:
                 else:
                     output[i,j] = 1
         print(canvas)
+        print(canvas[1][0])
+        print("zoowee")
+        print(info_history_full[0]['canvas'])
+        print("zoowoow")
+        print(info_history_full[8]['canvas'])
         
 
 
@@ -207,6 +213,10 @@ class Board:
 if __name__ == "__main__":
     board = Board(4, 4)
     board.wfc()
+
+    tiley = Tile((3,180))
+    tiley.add_neighbours_exclusions()
+    print(tiley.exclusions)
 
 """
    # Correct descriptor here?
