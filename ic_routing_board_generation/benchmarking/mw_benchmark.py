@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 import jax.numpy as jnp
 
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
-    BoardGenerationParameters, Benchmark
+    BoardGenerationParameters, BenchmarkData
 from ic_routing_board_generation.benchmarking.benchmark_utils import \
     make_benchmark_folder
 from ic_routing_board_generation.ic_routing.route import Route
@@ -19,7 +19,7 @@ from ic_routing_board_generation.interface.board_generator_interface import \
 class BasicBenchmark:
     def __init__(
         self,
-        benchmark_data: List[Benchmark],
+        benchmark_data: List[BenchmarkData],
         directory_string: Optional[str] = None,
     ):
         self.benchmark_data = self._process_raw_benchmark_data(benchmark_data)
@@ -68,7 +68,7 @@ class BasicBenchmark:
                 step_limit=number_of_cells,
             )
             simulation_outputs = router.route_for_benchmarking(number_of_boards=number_of_runs, **router.__dict__)
-            benchmark = Benchmark(*simulation_outputs, generator_type=board_parameters)
+            benchmark = BenchmarkData(*simulation_outputs, generator_type=board_parameters)
 
             if save_outputs:
                 filename = \

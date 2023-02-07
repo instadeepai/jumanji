@@ -18,7 +18,7 @@ class BoardGenerationParameters:
 
 
 @dataclass
-class Benchmark:
+class BenchmarkData:
     total_reward: List[Array]
     was_board_filled: List[bool]
     total_wire_lengths: List[int]
@@ -43,6 +43,6 @@ class Benchmark:
 
 if __name__ == '__main__':
     test = BoardGenerationParameters
-    for field in dataclasses.fields(Benchmark):
+    for field in dataclasses.fields(BenchmarkData):
         print(field.name)
-    print(dataclasses.fields(Benchmark))
+    print(dataclasses.fields(BenchmarkData))
