@@ -1,9 +1,28 @@
 import random
 from typing import List, Tuple
+import numpy as np
+from copy import deepcopy
+
+from wfcutils import step, update_entropy
+
 
 ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), 
             (2, 180), (2, 270), (3, 0), (3, 90), 
             (3, 180), (3, 270)]
+
+TILE_IDX = {
+    (0, 0): 0,
+    (1, 0): 1,
+    (1, 90): 2,
+    (2, 0): 3,
+    (2, 90): 4,
+    (2, 180): 5,
+    (2, 270): 6,
+    (3, 0): 7,
+    (3, 90): 8,
+    (3, 180): 9,
+    (3, 270): 10
+}
 
 ALL_DIRECTIONS = ['top', 'bottom', 'left', 'right']
 
@@ -32,16 +51,23 @@ ALL_CONNECTS = {
 class Tile():
     def __init__(self, piece):
         self.piece = piece
+        self.idx = TILE_IDX[piece]
         self.neighbours = {
             'top':    set(),
             'bottom': set(),
             'left':   set(),
             'right':  set()
         }
-        # Add neighbours
-        # Loop through all possible tiles
+        self.exclusions = {
+            'top':    set(),
+            'bottom': set(),
+            'left':   set(),
+            'right':  set()
+        }
+        
     
-    def add_neighbours(self):
+    def add_neighbours_exclusions(self):
+        # Add the neighbours
         for TILE in ALL_TILES:
             tiley = Tile(TILE)
             # Loop through all possible directions to connect to the tile
@@ -55,6 +81,10 @@ class Tile():
                 # Also ok if neither tile trying to connect to the other
                 elif DIRECTION not in ALL_CONNECTS[self.piece] and REVERSE_DIRECTION not in ALL_CONNECTS[tiley.piece]:
                     self.neighbours[DIRECTION].add(tiley.piece)
+                # Otherwise, add the other tile to the exclusions
+                else:
+                    self.exclusions[DIRECTION].add(tiley.piece)
+
 
 
 
@@ -75,13 +105,14 @@ class Board:
         """
         self.x = x
         self.y = y
-        self.grid = [[Tile((0, 0)) for i in range(x)] for j in range(y)]
-        # Hand specify the tile set for now, could change later
-        #self.
-        self.tile_set = self.tile_set_generation()
+        self.grid = [[None for i in range(x)] for j in range(y)]
+        # Generate the tile set. This includes how tiles can connect to each other
+        self.tile_set_generation()
+        # Add exclusions for boundary tiles
+        self.add_boundary_exclusions()
+
     
-    @staticmethod
-    def tile_set_generation() -> List[Tuple[int, int]]:
+    def tile_set_generation(self):
         """
         For each tile, need to specify type and rotation.
         Empty cells are coded 0.
@@ -93,30 +124,89 @@ class Board:
         Returns:
             List of tuples, where each tuple is of the form (type, rotation)
         """
-        initial_set = ALL_TILES
-        
-        
+        self.tiles = [Tile(TILE) for TILE in ALL_TILES]
+        for tile in self.tiles:
+            tile.add_neighbours_exclusions()
     
-    def adjacency_data(self):
-        """
-        Returns a list of tuples, where each tuple contains two tiles which can appear next to each other.
+    def add_boundary_exclusions(self):
+        pass
 
-        For easy mode, I will start without any rotations
-        """
 
-"""
+
+
     def wfc(self, seed: int = None):
-        if seed is not None:
-            random.seed(seed)
+        cols = self.x
+        rows = self.y
+        tiles = self.tiles
+        tile_idx_list = [tile.idx for tile in tiles]
+        history = []
+        retract = False
+        num_tiles = len(tiles)
+        observed = np.zeros(shape = (rows, cols))
+        canvas = np.zeros(shape = (rows, cols), dtype = int) - 1
+        entropy_board = np.zeros(shape = (rows, cols)) + num_tiles
+        choices = {}
+        for i in range(rows):
+            for j in range(cols):
+                choices[(i, j)] = np.arange(num_tiles).tolist()
+
+        info = dict(
+            entropy_board = entropy_board,
+            observed = observed,
+            choices = choices,
+            history = history,
+            canvas = canvas,
+            tiles = tiles,
+            rows = rows,
+            cols = cols,
+            tile_idx_list = tile_idx_list
+        )
+
+        info_history = []
+        info_history_full = []
+
+        while not np.all(info['observed'] == True):
+            info_history.append(deepcopy(info))
+            info, retract = step(info)
+            info_history_full.append(deepcopy(info))
+            
+            while retract:
+                # undo one step
+                last_step = info['history'].pop()
+                last_row, last_col, last_choice, valid_choices = last_step
+                valid_choices.remove(last_choice)
+                if len(valid_choices) > 0:
+                    info['choices'][(last_row, last_col)] = valid_choices
+                else:
+                    info = info_history.pop()
+                info, retract = step(info, (last_row, last_col))
+                info_history_full.append(deepcopy(info))
+                
+            entropy_board = update_entropy(choices, rows, cols)
+        info_history.append(deepcopy(info))
+        print(info['canvas'])
+        canvas = info['canvas']
+        print(canvas.shape)
+        output = np.zeros(shape = (rows, cols), dtype = int)
+        # Convert this into a nice image
+        for i in range(rows):
+            for j in range(cols):
+                element = canvas[i][j]
+                if element == 0:
+                    output[i,j] = 0
+                elif 7 <= element <= 10:
+                    output[i,j] = 2
+                else:
+                    output[i,j] = 1
+        print(canvas)
         
-        self.wfc.run()
-"""
+
+
+
 
 if __name__ == "__main__":
-    tiley = Tile((0, 0))
-    print(tiley.neighbours)
-    tiley.add_neighbours()
-    print(tiley.neighbours)
+    board = Board(4, 4)
+    board.wfc()
 
 """
    # Correct descriptor here?
