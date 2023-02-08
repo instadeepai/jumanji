@@ -10,10 +10,10 @@ class BFSBoard:
         """Constructor for the Board class.
 
         Args:
-            rows (int): number of rows in the board
-            columns (int): number of columns in the board
-            num_agents (int): number of wires in the board
-            max_attempts (int): maximum number of attempts to fill the board
+            rows: number of rows in the board
+            columns: number of columns in the board
+            num_agents: number of wires in the board
+            max_attempts: maximum number of attempts to fill the board
         Returns:
             None
             """
@@ -37,9 +37,9 @@ class BFSBoard:
     def pick_start_end(self, min_dist: Optional[int] = None) -> Tuple:
         """Picks a random start and end point for a wire.
         Args:
-            min_dist (int): minimum distance between start and end points
+            min_dist: minimum distance between start and end points
         Returns:
-            tuple: start and end points
+            tuple containing start and end points
         """
         options = np.argwhere(self.grid.layout == 0).tolist()
         assert len(options) >= 2, "Not enough empty spaces to place a wire."
@@ -53,9 +53,9 @@ class BFSBoard:
         """Places wire on the board if possible and returns a BFS path.
         Args:
             start: start point
-            end (tuple): end point
+            end: end point
         Returns:
-            tuple: whether a path was found, the path, and the number of steps
+            tuple containing whether a path was found, the path, and the number of steps
             """
         found, path, num = self.grid.bfs_maze(start, end)
         return found, path, num
@@ -76,7 +76,7 @@ class BFSBoard:
         Routes: encoded as 2, 5, 8,... (z%3==2)
 
         Args:
-            hard_fill (bool): whether to hard fill the grid
+            hard_fill: whether to hard fill the grid
         Returns:
             None
         """
@@ -93,7 +93,7 @@ class BFSBoard:
     def remove_routes(self, input_board: Optional[np.ndarray] = None) -> np.ndarray:
         """Removes the routes from the board.
         Args:
-            input_board (np.array): the board to remove the routes from
+            input_board: the board to remove the routes from
         Returns:
             np.array: the board with the routes removed
         """
@@ -106,9 +106,9 @@ class BFSBoard:
     def append_all(self, start: Tuple[int, int], end: Tuple[int, int], path: List[Tuple[int, int]]) -> None:
         """Appends the start, end and path to the corresponding lists.
         Args:
-            start (tuple): start point
-            end (tuple): end point
-            path (list): path
+            start: start point
+            end: end point
+            path: path
         Returns:
             None
         """
@@ -146,7 +146,7 @@ class BFSBoard:
     def remove_wire(self, wire: int) -> None:
         """Removes a wire from the board.
         Args:
-            wire (int): index of the wire to remove
+            wire: index of the wire to remove
         Returns:
             None
         """
@@ -160,9 +160,9 @@ class BFSBoard:
     def count_bends(path: List[tuple]) -> int:
         """Counts the number of bends in a path.
         Args:
-            path (list[tuple]): the path to count the bends in
+            path: the path to count the bends in
         Returns:
-            int: the number of bends in the path
+            the number of bends in the path
         """
         bends = 0
         for i in range(1, len(path) - 1):
@@ -196,7 +196,7 @@ class BFSBoard:
     def remove_fewest_bends(self, num: int) -> None:
         """Removes the wires with the fewest bends.
         Args:
-            num (int): number of wires to remove
+            num: number of wires to remove
         Returns:
             None
         """
@@ -209,7 +209,7 @@ class BFSBoard:
     def remove_shortest(self, num: int) -> None:
         """Removes the shortest wires.
         Args:
-            num (int): number of wires to remove
+            num: number of wires to remove
         Returns:
             None
         """
@@ -222,7 +222,7 @@ class BFSBoard:
     def remove_longest(self, num: int) -> None:
         """Removes the longest wires.
         Args:
-            num (int): number of wires to remove
+            num: number of wires to remove
         Returns:
             None
         """
@@ -235,7 +235,7 @@ class BFSBoard:
     def remove_random(self, num: int) -> None:
         """Removes random wires.
             Args:
-                num (int): number of wires to remove
+                num: number of wires to remove
             Returns:
                 None
             """
@@ -248,7 +248,7 @@ class BFSBoard:
     def remove_k_bends(self, k: int) -> None:
         """Removes all wires with fewer than k bends.
         Args:
-            k (int): number of bends
+            k: number of bends
         Returns:
             None
         """
@@ -267,7 +267,7 @@ class BFSBoard:
     def remove_first_k(self, k: int) -> None:
         """Removes the first k wires.
         Args:
-            k (int): number of wires to remove
+            k: number of wires to remove
         Returns:
             None
         """
@@ -280,7 +280,7 @@ class BFSBoard:
     def get_clip_method_dict(self) -> Dict[str, Callable]:
         """Creates a dictionary of the methods.
         Returns:
-            dict[str, function]: the dictionary of methods
+            a dictionary of methods
         """
         return dict(min_bends=self.remove_fewest_bends, shortest=self.remove_shortest, longest=self.remove_longest,
                     random=self.remove_random, bends=self.remove_k_bends, fifo=self.remove_first_k)
@@ -288,8 +288,8 @@ class BFSBoard:
     def clip(self, method: str, num: int) -> None:
         """Removes wires using the given method.
         Args:
-            method (str): the method to use
-            num (int): the number of wires to remove
+            method: the method to use
+            num: the number of wires to remove
         Returns:
             None
         """
@@ -304,10 +304,10 @@ class BFSBoard:
     def pick_and_place(self, i: int = 0, verbose: Optional[bool] = False) -> Tuple[bool, int]:
         """Picks a random start and end point and tries to place a wire.
         Args:
-            i (int): index of the wire to place
-            verbose (bool): whether to print the progress
+            i: index of the wire to place
+            verbose: whether to print the progress
         Returns:
-            tuple[bool, list[tuple], int]: if the wire was successfully placed, the path and the number of filled wires
+            a tuple containing if the wire was successfully placed, the path and the number of filled wires
         """
         attempts = 0
         found = False
@@ -331,7 +331,7 @@ class BFSBoard:
     def place_wires(self, verbose: Optional[bool] = False) -> None:
         """Places wires on the board.
         Args:
-            verbose (bool): whether to print the progress
+            verbose: whether to print the progress
         Returns:
             None
         """
@@ -341,8 +341,6 @@ class BFSBoard:
         while i < self.wires and found:
             found, _ = self.pick_and_place(i, verbose=verbose)
             i += 1
-
-        return None
 
     def announce_failure(self):
         """Announces that board unable to be filled after max attempts."""
@@ -357,7 +355,7 @@ class BFSBoard:
     def return_boards(self, verbose: Optional[bool] = False) -> Tuple[np.ndarray, np.ndarray, int]:
         """Returns the board and the solved board.
         Returns:
-            tuple[np.array, np.array]: the board, the solved board
+            tuple containing the board, the solved board
         """
         assert self.filled_wires <= self.wires, "Too many wires have been placed."
         if self.filled_wires < self.wires:
@@ -380,11 +378,11 @@ class BFSBoard:
             Tuple[np.ndarray, np.ndarray, int]:
         """Fills the board, clips the wires and then tries to fill again.
         Args:
-            num_clips (int): number of wires to remove
-            method (str): method to remove the wires
-            verbose (bool): if True, prints the progress
+            num_clips: number of wires to remove
+            method: method to remove the wires
+            verbose: if True, prints the progress
         Returns:
-            tuple[np.array, np.array, int]: the board, the solved board and the number of filled wires
+            tuple containing the board, the solved board and the number of filled wires
         """
         self.place_wires(verbose=verbose)
         self.clip(method, num_clips)
@@ -397,7 +395,7 @@ class BFSBoard:
     def return_training_board(self) -> np.ndarray:
         """Returns the empty board with heads and targets but not wires.
         Returns:
-            np.array: the empty board
+            the empty board
         """
         if self.filled:
             return self.empty_board
@@ -419,12 +417,12 @@ class BFSBoard:
             Tuple[np.ndarray, np.ndarray, int]:
         """ Performs a number of fill, clip, fill loops.
         Args:
-            num_clips (int): number of wires to remove
-            methods (str): method to remove the wires
-            num_loops (int): number of loops to perform
-            verbose (bool): if True, prints the progress
+            num_clips: number of wires to remove
+            methods: method to remove the wires
+            num_loops: number of loops to perform
+            verbose: if True, prints the progress
         Returns:
-            tuple[np.array, np.array, int]: the board, the solved board and the number of filled wires
+            tuple containing the board, the solved board and the number of filled wires
         """
         if isinstance(num_clips, int):
             num_clips = [num_clips] * num_loops
