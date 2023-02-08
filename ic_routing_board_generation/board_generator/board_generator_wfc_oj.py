@@ -10,6 +10,22 @@ ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90),
             (2, 180), (2, 270), (3, 0), (3, 90), 
             (3, 180), (3, 270)]
 
+# List of tile indexes, with their connections
+ALL_TILES2 = {
+    0: set(),
+    1: {'top', 'bottom'},
+    2: {'left', 'right'},
+    3: {'top', 'left'},
+    4: {'top', 'right'},
+    5: {'bottom', 'right'},
+    6: {'bottom', 'left'},
+    7: {'top'},
+    8: {'right'},
+    9: {'bottom'},
+    10: {'left'}
+}
+
+
 TILE_IDX = {
     (0, 0): 0,
     (1, 0): 1,
@@ -169,9 +185,10 @@ class Board:
             info_history.append(deepcopy(info))
             info, retract = step(info)
             info_history_full.append(deepcopy(info))
+            #print("info choice is", info['choices'])
             
             while retract:
-                print("retracto baby")
+                #print("retracto baby")
                 # undo one step
                 last_step = info['history'].pop()
                 last_row, last_col, last_choice, valid_choices = last_step
@@ -187,7 +204,7 @@ class Board:
         info_history.append(deepcopy(info))
         print(info['canvas'])
         canvas = info['canvas']
-        print(canvas.shape)
+        #print(canvas.shape)
         output = np.zeros(shape = (rows, cols), dtype = int)
         # Convert this into a nice image
         for i in range(rows):
@@ -199,12 +216,13 @@ class Board:
                     output[i,j] = 2
                 else:
                     output[i,j] = 1
-        print(canvas)
-        print(canvas[1][0])
-        print("zoowee")
-        print(info_history_full[0]['canvas'])
-        print("zoowoow")
-        print(info_history_full[8]['canvas'])
+        #print(canvas)
+        #print(canvas[1][0])
+        #print("zoowee")
+        #print(info_history_full[0]['canvas'])
+        #print("zoowoow")
+        #print(info_history_full[8]['canvas'])
+        #print(canvas)
         
 
 
@@ -213,10 +231,17 @@ class Board:
 if __name__ == "__main__":
     board = Board(4, 4)
     board.wfc()
+    print(board.tiles[4].exclusions)
 
     tiley = Tile((3,180))
     tiley.add_neighbours_exclusions()
-    print(tiley.exclusions)
+    #print(tiley.exclusions)
+
+    #print("looking at neighbours / exclusions of tile 6")
+    tileo = Tile((2, 270))
+    tileo.add_neighbours_exclusions()
+    #print(tileo.neighbours)
+    #print(tileo.exclusions)
 
 """
    # Correct descriptor here?
