@@ -44,12 +44,10 @@ def reduce_prob(choices, tiles, row, col, rows, cols, TILE_IDX_LIST):
     for i, j, direction in [[row-1, col, 'bottom'], [row+1, col, 'top'], [row, col-1, 'right'], [row, col+1, 'left']]:
         exclusion_idx_list = []
         if 0 <= i < rows and 0 <= j < cols:
-            print("i, j = ", i, j)
             # Look at every choice for the neighbor
             for tile_idx in choices[(i, j)]:
                 tile = tiles[tile_idx]
                 exclusion_idx_list.append(tile.exclusions[direction])
-        print("exclusion idx list is ", exclusion_idx_list)
         total_num = len(exclusion_idx_list)
         if len(exclusion_idx_list) > 0:
             for idx in TILE_IDX_LIST:
@@ -61,13 +59,11 @@ def reduce_prob(choices, tiles, row, col, rows, cols, TILE_IDX_LIST):
                         vote += 1
                 # If every neighbor has this tile as an exclusion, remove it
                 if (vote == total_num) and (idx in valid_choices):
-                    print("removing ", idx, " from valid choices")
                     valid_choices.remove(idx)
     if len(valid_choices) == 0:
         return None
     else:
         choices[(row, col)] = valid_choices
-        print("this is what reduce prob is saying the choices are: ", choices)
         return choices
 
 
@@ -111,7 +107,6 @@ def step(info, row_col = None):
     tiles           = info['tiles']
     rows            = info['rows']
     cols            = info['cols']
-    print(" doing a step!! \o/")
     if row_col:
         row, col = row_col
     else:
@@ -131,7 +126,6 @@ def step(info, row_col = None):
     for i, j in [[row-1, col], [row+1, col], [row, col-1], [row, col+1]]:
         if 0 <= i < rows and 0 <= j < cols:
             if not observed[i, j]:
-                print("Reducing the prob for i, j: ", i, j)
                 attempt = reduce_prob(choices_temp, tiles, i, j, rows, cols, tile_idx_list)
                 if attempt:
                     choices_temp = attempt
@@ -150,119 +144,3 @@ def step(info, row_col = None):
     info['tiles']           = tiles
     
     return info, retract
-
-
-if __name__ == '__main__':
-    ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), 
-            (2, 180), (2, 270), (3, 0), (3, 90), 
-            (3, 180), (3, 270)]
-
-    # List of tile indexes, with their connections
-    ALL_TILES2 = {
-        0: set(),
-        1: {'top', 'bottom'},
-        2: {'left', 'right'},
-        3: {'top', 'left'},
-        4: {'top', 'right'},
-        5: {'bottom', 'right'},
-        6: {'bottom', 'left'},
-        7: {'top'},
-        8: {'right'},
-        9: {'bottom'},
-        10: {'left'}
-    }
-
-
-    TILE_IDX = {
-        (0, 0): 0,
-        (1, 0): 1,
-        (1, 90): 2,
-        (2, 0): 3,
-        (2, 90): 4,
-        (2, 180): 5,
-        (2, 270): 6,
-        (3, 0): 7,
-        (3, 90): 8,
-        (3, 180): 9,
-        (3, 270): 10
-    }
-
-    ALL_DIRECTIONS = ['top', 'bottom', 'left', 'right']
-
-    REVERSE_DIRECTIONS = {
-        'top': 'bottom',
-        'bottom': 'top',
-        'left': 'right',
-        'right': 'left'
-    }
-
-    # For each tile, specifies where it needs a connection
-    ALL_CONNECTS = {
-        (0, 0): set(),
-        (1, 0): {'top', 'bottom'},
-        (1, 90): {'left', 'right'},
-        (2, 0): {'top', 'left'},
-        (2, 90): {'top', 'right'},
-        (2, 180): {'bottom', 'right'},
-        (2, 270): {'bottom', 'left'},
-        (3, 0): {'top'},
-        (3, 90): {'right'},
-        (3, 180): {'bottom'},
-        (3, 270): {'left'}
-    }
-
-    class Tile():
-        def __init__(self, piece):
-            self.piece = piece
-            self.idx = TILE_IDX[piece]
-            self.neighbours = {
-                'top':    set(),
-                'bottom': set(),
-                'left':   set(),
-                'right':  set()
-            }
-            self.exclusions = {
-                'top':    set(),
-                'bottom': set(),
-                'left':   set(),
-                'right':  set()
-            }
-            
-        
-        def add_neighbours_exclusions(self):
-            # Add the neighbours
-            for TILE in ALL_TILES:
-                tiley = Tile(TILE)
-                # Loop through all possible directions to connect to the tile
-                for DIRECTION in ALL_DIRECTIONS:
-                    # Reverse the directions for the other tile
-                    REVERSE_DIRECTION = REVERSE_DIRECTIONS[DIRECTION]
-                    # Check if the tile can connect to the other tile
-                    if DIRECTION in ALL_CONNECTS[self.piece] and REVERSE_DIRECTION in ALL_CONNECTS[tiley.piece]:
-                        # Add the other tile to the neighbours
-                        self.neighbours[DIRECTION].add(tiley.piece)
-                    # Also ok if neither tile trying to connect to the other
-                    elif DIRECTION not in ALL_CONNECTS[self.piece] and REVERSE_DIRECTION not in ALL_CONNECTS[tiley.piece]:
-                        self.neighbours[DIRECTION].add(tiley.piece)
-                    # Otherwise, add the other tile to the exclusions
-                    else:
-                        self.exclusions[DIRECTION].add(tiley.piece)       
-            
-        def add_neighbour(self, direction, tile):
-            self.neighbours[direction].add(tile.piece)
-        
-        def remove_neighbour(self, direction, tile):
-            self.neighbours[direction].remove(tile.piece)
-
-
-    choices = {(0, 0): [0, 5, 8, 9], (0, 1): [6], (0, 2): [0, 2, 5, 6, 8, 9, 10], (0, 3): [0, 6, 9, 10], 
-                (1, 0): [0, 1, 4, 5, 7, 8, 9], (1, 1): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                (1, 2): [0], (1, 3): [0, 1, 3, 6, 7, 9, 10], (2, 0): [0, 1, 4, 5, 7, 8, 9],
-                (2, 1): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (2, 2): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                (2, 3): [0, 1, 3, 6, 7, 9, 10], (3, 0): [8], (3, 1): [0, 2, 3, 4, 7, 8, 10],
-                (3, 2): [0, 2, 3, 4, 7, 8, 10], (3, 3): [0, 3, 7, 10]
-                }
-    tiles = [Tile(TILE) for TILE in ALL_TILES]
-    for tile in tiles:
-        tile.add_neighbours_exclusions()
-    reduce_prob(choices, tiles, 1, 1, 4, 4, np.arange(0,11))
