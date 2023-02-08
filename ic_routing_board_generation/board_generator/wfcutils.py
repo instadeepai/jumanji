@@ -107,16 +107,16 @@ def step(info, row_col = None):
     tiles           = info['tiles']
     rows            = info['rows']
     cols            = info['cols']
+    weights         = info['weights']
     if row_col:
         row, col = row_col
     else:
         row, col = get_min_entropy_coord(entropy_board, observed)
     # TODO: change here to weighted random choice, include
     # custom weights for each tile
-    # This is just choosing a random tile from the choices
-    # However, the choices variable is only based on positional data!
-    # Think this is the problem
-    state = np.random.choice(choices[(row,  col)])
+    relevant_weights = [weights[tile_idx] for tile_idx in choices[(row, col)]]
+    relevant_weights = np.array(relevant_weights) / np.sum(relevant_weights)
+    state = np.random.choice(choices[(row,  col)], p = relevant_weights)
     history.append((row, col, state, choices[(row,  col)]))
     choices_temp = deepcopy(choices)
     choices_temp[(row, col)] = [state]
