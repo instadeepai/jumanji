@@ -1,7 +1,8 @@
 import random
 from typing import List, Tuple, Union, Optional, Dict, Callable
 import numpy as np
-from grid import Grid
+
+from ic_routing_board_generation.board_generator.grid import Grid
 
 
 class BFSBoard:
@@ -31,6 +32,7 @@ class BFSBoard:
         self.max_attempts = max_attempts
         self.filled_wires = 0
         self.clip_method_dict = self.get_clip_method_dict()
+        self.fill_board(verbose=False)
 
     def pick_start_end(self, min_dist: Optional[int] = None) -> Tuple:
         """Picks a random start and end point for a wire.
@@ -299,7 +301,7 @@ class BFSBoard:
         # Remove the wires using the given method
         clip_func(num)
 
-    def pick_and_place(self, i: int = 0, verbose: Optional[bool] = False) -> tuple[bool, int]:
+    def pick_and_place(self, i: int = 0, verbose: Optional[bool] = False) -> Tuple[bool, int]:
         """Picks a random start and end point and tries to place a wire.
         Args:
             i (int): index of the wire to place
@@ -392,7 +394,7 @@ class BFSBoard:
 
         return self.return_boards(verbose=verbose)
 
-    def return_empty_board(self) -> np.ndarray:
+    def return_training_board(self) -> np.ndarray:
         """Returns the empty board with heads and targets but not wires.
         Returns:
             np.array: the empty board
@@ -450,18 +452,18 @@ if __name__ == '__main__':
     # Perform a standard fill
     board.fill_board(verbose=True)
     print(board.return_solved_board())
-    print(board.return_empty_board())
+    print(board.return_training_board())
 
     # Reset the board
     board.reset_board()
     # Fill the board with 2 wires removed using the 'min_bends' method
     board.fill_board_with_clipping(2, 'min_bends', verbose=True)
     print(board.return_solved_board())
-    print(board.return_empty_board())
+    print(board.return_training_board())
 
     # Reset the board
     board.reset_board()
     # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
     board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
     print(board.return_solved_board())
-    print(board.return_empty_board())
+    print(board.return_training_board())

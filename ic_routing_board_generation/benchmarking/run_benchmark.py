@@ -1,10 +1,11 @@
 from typing import List
 
+from ic_routing_board_generation.benchmarking.basic_benchmark import \
+    BasicBenchmark
 from ic_routing_board_generation.benchmarking.benchmark_utils import \
     generate_board_generation_params, files_list_from_benchmark_experiment, \
     return_directory_string
-from ic_routing_board_generation.benchmarking.mw_benchmark import \
-    BasicBenchmark
+
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters
 
@@ -36,13 +37,13 @@ def run_benchmark_from_file(
 
 if __name__ == '__main__':
     # set to True if you want to simulate the board, False if you want to run from file
-    simulation = False
+    simulation = True
 
     if simulation:
 
         ######### Change these parameters are required
         grid_params = [(8, 8, 3), (12, 12, 4)]
-        save_plots = True  # Change this to False if you want to just see the plots without saving
+        save_plots = False  # Change this to False if you want to just see the plots without saving
         save_simulation_data = True
         number_of_boards = 5
         #########
