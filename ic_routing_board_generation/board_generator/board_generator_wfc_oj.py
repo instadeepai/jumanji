@@ -114,7 +114,7 @@ class Tile():
         self.neighbours[direction].remove(tile.piece)
 
 class Board:
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, weights: List[float]):
         """
         x: width of the board
         y: height of the board
@@ -124,6 +124,7 @@ class Board:
         self.grid = [[None for i in range(x)] for j in range(y)]
         # Generate the tile set. This includes how tiles can connect to each other
         self.tile_set_generation()
+        self.weights = weights
 
     
     def tile_set_generation(self):
@@ -252,6 +253,7 @@ class Board:
         observed = np.zeros(shape = (rows, cols))
         canvas = np.zeros(shape = (rows, cols), dtype = int) - 1
         entropy_board = np.zeros(shape = (rows, cols)) + num_tiles
+        weights = self.weights
         choices = {}
         for i in range(rows):
             for j in range(cols):
@@ -266,7 +268,8 @@ class Board:
             tiles = tiles,
             rows = rows,
             cols = cols,
-            tile_idx_list = tile_idx_list
+            tile_idx_list = tile_idx_list,
+            weights = weights,
         )
 
         info_history = []
@@ -304,7 +307,15 @@ class Board:
 
 
 if __name__ == "__main__":
-    board = Board(5, 5)
+    # These correspond to the weights we will use to pick tiles
+    # Organised by index
+    weights = [
+        0.5,
+        4, 4,
+        4, 4, 4, 4,
+        0.5, 0.5, 0.5, 0.5
+    ]
+    board = Board(10, 10, weights)
     info, output = board.wfc()
     print(output)
 
@@ -317,23 +328,3 @@ if __name__ == "__main__":
     tileo.add_neighbours_exclusions()
     #print(tileo.neighbours)
     #print(tileo.exclusions)
-
-"""
-   # Correct descriptor here?
-    @staticmethod
-    def tile_set_generation() -> List[Tuple(int, int)]:
-        
-        For each tile, need to specify type and rotation.
-        Empty cells are coded 0.
-        Wires are coded 1.
-        Turns are coded 2.
-        Heads / Targets are encoded 3.
-
-        Rotation is specified in degrees, and is a multiple of 90.
-        Returns:
-            List of tuples, where each tuple is of the form (type, rotation)
-        
-        tile_set = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), (2, 180), (2, 270), (3, 0), (3, 90), (3, 180), (3, 270)]
-        return tile_set
-
-"""
