@@ -124,8 +124,6 @@ class Board:
         self.grid = [[None for i in range(x)] for j in range(y)]
         # Generate the tile set. This includes how tiles can connect to each other
         self.tile_set_generation()
-        # Add exclusions for boundary tiles
-        self.add_boundary_exclusions()
 
     
     def tile_set_generation(self):
@@ -144,8 +142,101 @@ class Board:
         for tile in self.tiles:
             tile.add_neighbours_exclusions()
     
-    def add_boundary_exclusions(self):
-        pass
+    def wire_separator(self, final_canvas):
+        """ 
+        Given a solved board, separate the wires into individual wires.
+
+        Pseudo code:
+        1. Whilst there are still wires on the board:
+            1.1. Find the first wire
+            1.2. Follow the wire until it ends
+            1.3. Add the wire to the output board
+            1.4. Remove the wire from the input board
+        """
+        canvas = deepcopy(final_canvas)
+        # Initialise the output board
+        output_board = np.zeros(shape = (self.y, self.x), dtype = int)
+        # Initialise the wire counter
+        wire_counter = 0
+        # Loop through the board, looking for wires
+        while np.any(canvas > 6):
+            # Find the first start of a wire
+            # This corresponds to values 7, 8, 9, 10
+            print(canvas)
+            start = tuple(np.argwhere(canvas > 6)[0])
+            print("start is", start)
+            # Follow the wire until it ends
+            wire = self.follow_wire(start, canvas)
+            # Add the wire to the output board
+            # Change this to be proper values, not just the wire counter
+            output_board[start] = 4 + 3 * wire_counter
+            canvas[start] = 0
+            output_board[wire[-1]] = 3 + 3 * wire_counter
+            canvas[wire[-1]] = 0
+            wire = wire[1:-1]
+            for part in wire:
+                output_board[part] = 2 + 3 * wire_counter
+                # Remove the wire from the input board
+                canvas[part] = 0
+            # Increment the wire counter
+            wire_counter += 1
+            print("wire_counter is", wire_counter)
+
+        return output_board
+    
+    def follow_wire(self, start, canvas):
+        """
+        From a given start, follow the wire until it ends.
+        Returns:
+            List of coordinates of the wire
+        """
+        # Initialise the wire
+        wire = [start]
+        # Initialise the current position
+        current_position = start
+        # Initialise the current direction
+        print(canvas[tuple(start)])
+        current_direction = tuple(ALL_TILES2[canvas[tuple(start)]])[0]
+        # Loop until the wire ends
+        while True:
+            directions = {
+                'top':    (-1, 0),
+                'bottom': (1, 0),
+                'left':   (0, -1),
+                'right':  (0, 1)
+            }
+            print("current direction is", current_direction)
+            print("current piece is", canvas[tuple(current_position)])
+            # Find the next position
+            next_position = tuple([current_position[i] + directions[current_direction][i] for i in range(2)])
+            # Check if the next position is an end point
+            print("boobeee", next_position)
+            print(canvas[next_position])
+            if 7 <= canvas[next_position] <= 10:
+                # Add the end point to the wire
+                wire.append(next_position)
+                # Break the loop
+                break
+            # Otherwise, add the next position to the wire
+            wire.append(next_position)
+            # Update the current position
+            current_position = next_position
+            # Update the current direction
+            possible_directions = deepcopy(ALL_TILES2[canvas[next_position]])
+            print(canvas[next_position])
+            print(possible_directions)
+            if current_direction == 'top':
+                possible_directions.remove('bottom')
+            elif current_direction == 'bottom':
+                possible_directions.remove('top')
+            elif current_direction == 'left':
+                possible_directions.remove('right')
+            elif current_direction == 'right':
+                possible_directions.remove('left')
+            current_direction = list(possible_directions)[0]
+        
+        return wire
+
 
 
 
@@ -202,36 +293,20 @@ class Board:
                 
             entropy_board = update_entropy(choices, rows, cols)
         info_history.append(deepcopy(info))
-        print(info['canvas'])
         canvas = info['canvas']
-        #print(canvas.shape)
-        output = np.zeros(shape = (rows, cols), dtype = int)
-        # Convert this into a nice image
-        for i in range(rows):
-            for j in range(cols):
-                element = canvas[i][j]
-                if element == 0:
-                    output[i,j] = 0
-                elif 7 <= element <= 10:
-                    output[i,j] = 2
-                else:
-                    output[i,j] = 1
-        #print(canvas)
-        #print(canvas[1][0])
-        #print("zoowee")
-        #print(info_history_full[0]['canvas'])
-        #print("zoowoow")
-        #print(info_history_full[8]['canvas'])
-        #print(canvas)
+        print(canvas)
+        # Need to separate the individual wires
+        output = self.wire_separator(canvas)
+        return info, output
         
 
 
 
 
 if __name__ == "__main__":
-    board = Board(4, 4)
-    board.wfc()
-    print(board.tiles[4].exclusions)
+    board = Board(5, 5)
+    info, output = board.wfc()
+    print(output)
 
     tiley = Tile((3,180))
     tiley.add_neighbours_exclusions()
