@@ -52,7 +52,7 @@ class BFSBoard:
     def find_path(self, start: Tuple[int, int], end: Tuple[int, int]) -> Tuple[bool, List[Tuple[int, int]], int]:
         """Places wire on the board if possible and returns a BFS path.
         Args:
-            start (tuple): start point
+            start: start point
             end (tuple): end point
         Returns:
             tuple: whether a path was found, the path, and the number of steps
