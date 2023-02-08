@@ -3,11 +3,15 @@ import jumanji
 import numpy as np
 import time
 from ic_routing_board_generation.ic_routing.env import Routing
-
+from ic_routing_board_generation.interface.board_generator_interface import \
+    BoardGenerators
+from jumanji.environments.combinatorial.routing.evaluation import \
+    is_board_complete, wire_length, proportion_connected
+from jumanji.types import StepType
 
 
 class Route:
-    def __init__(self, board_init:str='random', **kwargs):
+    def __init__(self, board_init: BoardGenerators=BoardGenerators.DUMMY, **kwargs):
         """Class attribute instantation.
 
         Args:
@@ -16,8 +20,10 @@ class Route:
         """
         self.board_init = board_init
         self.__dict__.update(kwargs)
+        self.reinitialisation_counter = 0
 
     def bootstrap(self):
+        # TODO (DK): You can now gate this using the enum (use .value from an enum)
         if self.board_init == 'random':
             return "random pins"
         elif self.board_init == 'randy':
@@ -57,6 +63,7 @@ class Route:
 
         else:
             env = Routing(**kwargs)
+            print(kwargs["instance_generator_type"])
             print(f"Instantiating the {env.rows}x{env.cols} Routing Board for {env.num_agents} agents...")
 
         key = jax.random.PRNGKey(0)
@@ -85,7 +92,49 @@ class Route:
         time.sleep(1)
         env.close() # I am having issues here figuring out how to close pygame correctly.
         print(f'Routed {time_steps} time steps.')
-pass
+
+    def route_for_benchmarking(self, number_of_boards: int = 100, **kwargs):
+        env, key, state, timestep = self.insantiate_board(**kwargs)
+        env = jumanji.wrappers.AutoResetWrapper(env)
+        total_reward = 0
+        state_grid = None
+        step_counter = 0
+        board_counter = 0
+
+        total_rewards = []
+        was_board_filled = []
+        total_wire_lengths = []
+        proportion_wires_connected = []
+        number_of_steps = []
+        # TODO (MW): replace step counter with state.step - related to bug on timestep.LAST
+        while board_counter < number_of_boards:
+            action = self.act(env)
+            state, timestep = self.step(env, state, action)
+
+            # TODO (Marta / Danila): The timestep never goes to timestep.LAST which causes a bug
+            if timestep.step_type == StepType.FIRST:
+                was_board_filled.append(is_board_complete(env, state_grid))
+                total_wire_lengths.append(int(wire_length(env, state_grid)))
+                total_rewards.append(total_reward)
+                number_of_steps.append(step_counter)
+                proportion_wires_connected.append(
+                    proportion_connected(env, state_grid))
+                total_reward = 0
+                step_counter = 0
+                board_counter += 1
+                self.reinitialisation_counter += 1
+            else:
+                # workaround to keep track of grid before it resets
+                state_grid = state.grid  # TODO (MW): remove this workaround after timestep.LAST bug is fixed
+                total_reward += timestep.reward
+                # print(total_reward)
+                state_grid = state.grid
+                step_counter += 1
+
+        time.sleep(1)
+        env.close()
+        print(len(total_wire_lengths))
+        return total_rewards, was_board_filled, total_wire_lengths, proportion_wires_connected, number_of_steps
 
 
 # a prior version of route subclassed:
