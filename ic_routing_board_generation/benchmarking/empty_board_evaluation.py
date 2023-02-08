@@ -1,16 +1,10 @@
-import time
-
 import numpy as np
 from matplotlib import pyplot as plt
 
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters
-from ic_routing_board_generation.board_generator.bfs_2 import BFS_Board
-from ic_routing_board_generation.board_generator.ugo_generator import BFSBoard
-from ic_routing_board_generation.ic_routing.instance_generator import \
-    UniversalInstanceGenerator
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerator, BoardGenerators
+    BoardGenerator
 
 
 class EvaluateEmptyBoard:
@@ -79,5 +73,27 @@ def generate_n_boards(
 
 
 if __name__ == '__main__':
-    board_params = BoardGenerationParameters(8, 8, 5, BoardGenerators.BFS)
-    generate_n_boards(board_params, 1)
+    # board_params = BoardGenerationParameters(8, 8, 5, BoardGenerators.BFS)
+    # generate_n_boards(board_params, 1)
+ #    board = np.array([[0, 0 ,0 ,7 ,5 ,5 ,5 ,5],
+ # [ 0  ,0  ,0  ,0  ,4  ,0  ,0  ,5],
+ # [ 0 ,10 , 8 , 8 , 2 , 0 , 0  ,5],
+ # [ 0 , 0, 16 , 8 , 2 , 0 ,13  ,5],
+ # [ 0 , 0 ,15 , 8 , 2 , 0 ,11 , 6],
+ # [ 0 , 0 , 0 , 8 , 2 , 0 ,11  ,0],
+ # [ 0 , 0 , 0 , 9 , 2 , 0 ,11 , 0],
+ # [ 0 , 0 , 3 , 2 , 2, 12 ,11  ,0]])
+
+    board = np.array([[12, 11, 11 ,11 ,11 ,11, 11, 11],
+ [ 8 , 8 , 8 , 8 , 8  ,9 , 0 ,11],
+ [ 8 , 2 , 2 , 2 , 2 , 2 , 2, 11],
+ [ 8 , 2, 15 ,14 , 0 , 0 , 2 ,11],
+ [ 8 , 2 , 2 ,14  ,0 , 0 , 4 ,13],
+ [ 8,  0 , 3 ,14 , 6  ,0 , 0 , 0],
+ [ 8 , 0 , 0, 14 , 5  ,0 , 0 , 0],
+ [10 , 0 , 0 ,16  ,7  ,0  ,0 , 0],]
+
+
+    )
+    scores = EvaluateEmptyBoard(board).score_from_neighbours()
+    plot_heatmap(scores)

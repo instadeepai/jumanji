@@ -6,7 +6,7 @@ from chex import Array
 import jax.numpy as jnp
 
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerators
+    BoardName
 
 
 @dataclass
@@ -14,7 +14,7 @@ class BoardGenerationParameters:
     rows: int
     columns: int
     number_of_wires: int
-    generator_type: BoardGenerators
+    generator_type: BoardName
 
 
 @dataclass
@@ -27,7 +27,7 @@ class BenchmarkData:
     generator_type: Optional[BoardGenerationParameters] = None
 
     def average_reward_per_wire(self):
-        return jnp.mean(jnp.array(self.total_reward), axis=(0,1))
+        return jnp.mean(jnp.array(self.total_reward), axis=(0, 1))
 
     def average_total_wire_length(self):
         return jnp.mean(jnp.array(self.total_wire_lengths), axis=0)

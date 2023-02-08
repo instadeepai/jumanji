@@ -2,7 +2,6 @@ import abc
 
 import numpy as np
 
-import ic_routing_board_generation.ic_routing.randy_route as randy_route
 from chex import Array, PRNGKey
 from typing import Tuple, Optional
 import jax
@@ -10,7 +9,7 @@ import jax.numpy as jnp
 from jax import random
 
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerators, BoardGenerator
+    BoardName, BoardGenerator
 from jumanji.environments.combinatorial.routing import State
 
 
@@ -20,7 +19,7 @@ class InstanceGenerator(abc.ABC):
     """
     def __init__(
         self, rows: int = 4, cols: int = 4, num_agents: int = 3,
-        board_generator: BoardGenerators = BoardGenerators.DUMMY,
+        board_generator: BoardName = BoardName.BFS_BASE,
     ) -> None:
         self.rows = rows
         self.cols = cols
@@ -31,9 +30,9 @@ class UniversalInstanceGenerator(InstanceGenerator):
     """Instance generator using a custom board (none of randy or random)."""
     def __init__(
         self, rows: int, cols: int, num_agents: int,
-        board_generator: BoardGenerators,
+        board_generator: BoardName,
     ) -> None:
-        super().__init__(rows, cols, num_agents)
+        super().__init__(rows, cols, num_agents, board_generator)
     def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
         board_class = BoardGenerator.get_board_generator(board_enum=self.board_generator)
         board = board_class(self.rows, self.cols, self.num_agents)
@@ -50,7 +49,7 @@ class UniversalInstanceGenerator(InstanceGenerator):
 
 class NewInstanceGenerator(abc.ABC):
     def __init__(
-        self, rows:int=4, cols:int=4, num_agents:int=3, board_enum: BoardGenerators= BoardGenerators.DUMMY,
+        self, rows:int=4, cols:int=4, num_agents:int=3, board_enum: BoardName = BoardName.BFS_BASE,
     ) -> None:
         self.rows = rows
         self.cols = cols
@@ -60,7 +59,7 @@ class NewInstanceGenerator(abc.ABC):
 
 class MartasNewInstanceGenerator(NewInstanceGenerator):
     def __init__(
-        self, rows: int=4, cols: int=4, num_agents: int=3, board_enum: BoardGenerators=BoardGenerators.DUMMY,
+        self, rows: int=4, cols: int=4, num_agents: int=3, board_enum: BoardName=BoardName.BFS_BASE,
         ) -> None:
         super().__init__(rows, cols, num_agents, board_enum)
 
@@ -76,7 +75,7 @@ class MartasNewInstanceGenerator(NewInstanceGenerator):
         """
         board_class = BoardGenerator.get_board_generator(board_enum=self.board_enum)
         board_class_instance = board_class(rows=self.rows, cols=self.cols, num_agents=self.num_agents)
-        pins = board_class_instance.return_empty_board()
+        pins = board_class_instance.return_training_board()
         # pins, _, _ = randy_route.board_generator(x_dim=self.cols, y_dim=self.rows, target_wires=self.num_agents)
         grid = jnp.array(pins, int)
 
