@@ -3,7 +3,7 @@ import sys
 import time
 from copy import deepcopy
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
 def check_side(side1, side2):
