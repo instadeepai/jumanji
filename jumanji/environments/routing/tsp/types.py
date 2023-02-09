@@ -29,14 +29,14 @@ from chex import Array
 @dataclass
 class State:
     """
-    problem: array of coordinates for all cities
-    position: index of current city
-    visited_mask: binary mask (False/True <--> unvisited/visited)
-    order: array of city indices denoting route (-1 --> not filled yet)
-    num_visited: how many cities have been visited
+    coordinates: array of coordinates for all cities.
+    position: index of current city.
+    visited_mask: binary mask (False/True <--> unvisited/visited).
+    order: array of city indices denoting route (-1 --> not filled yet).
+    num_visited: how many cities have been visited.
     """
 
-    problem: Array  # (num_cities, 2)
+    coordinates: Array  # (num_cities, 2)
     position: jnp.int32
     visited_mask: Array  # (num_cities,)
     order: Array  # (num_cities,)
@@ -46,13 +46,12 @@ class State:
 
 class Observation(NamedTuple):
     """
-    problem: array of coordinates for all cities
-    start_position: index of starting city
-    position: index of current city
-    action_mask: binary mask (False/True <--> illegal/legal)
+    coordinates: array of coordinates for all cities.
+    start_position: index of starting city.
+    position: index of current city.
+    action_mask: binary mask (False/True <--> illegal/legal).
     """
 
-    problem: Array
-    start_position: jnp.int32
+    coordinates: Array
     position: jnp.int32
     action_mask: Array

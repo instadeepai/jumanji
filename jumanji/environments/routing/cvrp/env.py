@@ -74,30 +74,39 @@ class CVRP(Environment[State]):
 
     def __init__(
         self,
-        problem_size: int = 100,
+        num_nodes: int = 100,
         max_capacity: int = 30,
         max_demand: int = 10,
         render_mode: str = "human",
     ):
+        """Instantiates a CVRP environment.
+
+        Args:
+            num_nodes: the number of city nodes in the environment.
+            max_capacity: the maximum capacity of the vehicle.
+            max_demand: the maximum demand of each node.
+            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
+        """
+
         if max_capacity < max_demand:
             raise ValueError(
                 f"The demand associated with each node must be lower than the maximum capacity, "
                 f"hence the maximum capacity must be >= {max_demand}."
             )
-        self.problem_size = problem_size
+        self.num_nodes = num_nodes
         self.max_capacity = max_capacity
         self.max_demand = max_demand
 
         # Create viewer used for rendering
         self._env_viewer = CVRPViewer(
             name="CVRP",
-            num_cities=self.problem_size,
+            num_cities=self.num_nodes,
             render_mode=render_mode,
         )
 
     def __repr__(self) -> str:
         return (
-            f"CVRP(problem_size={self.problem_size}, max_capacity={self.max_capacity}, "
+            f"CVRP(num_nodes={self.num_nodes}, max_capacity={self.max_capacity}, "
             f"max_demand={self.max_demand})"
         )
 
@@ -105,7 +114,7 @@ class CVRP(Environment[State]):
         """Resets the environment.
 
         Args:
-            key: used to randomly generate the problem and the start node.
+            key: used to randomly generate the coordinates.
 
         Returns:
              state: `State` object corresponding to the new state of the environment.
@@ -114,17 +123,17 @@ class CVRP(Environment[State]):
         """
         problem_key, start_key = random.split(key)
         coordinates, demands = generate_problem(
-            problem_key, self.problem_size, self.max_demand
+            problem_key, self.num_nodes, self.max_demand
         )
         state = State(
             coordinates=coordinates,
             demands=demands,
             position=jnp.int32(DEPOT_IDX),
-            capacity=jnp.int32(self.max_capacity),
-            visited_mask=jnp.zeros(self.problem_size + 1, dtype=bool)
+            capacity=self.max_capacity,
+            visited_mask=jnp.zeros(self.num_nodes + 1, dtype=bool)
             .at[DEPOT_IDX]
             .set(True),
-            order=jnp.zeros(2 * self.problem_size, jnp.int32),
+            order=jnp.zeros(2 * self.num_nodes, jnp.int32),
             num_total_visits=jnp.int32(1),
         )
         timestep = restart(observation=self._state_to_observation(state))
@@ -163,27 +172,27 @@ class CVRP(Environment[State]):
             observation.
         """
         coordinates_obs = specs.BoundedArray(
-            shape=(self.problem_size + 1, 2),
+            shape=(self.num_nodes + 1, 2),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="coordinates",
         )
         demands_obs = specs.BoundedArray(
-            shape=(self.problem_size + 1,),
+            shape=(self.num_nodes + 1,),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="demands",
         )
         position_obs = specs.DiscreteArray(
-            self.problem_size + 1, dtype=jnp.int32, name="position"
+            self.num_nodes + 1, dtype=jnp.int32, name="position"
         )
         capacity_obs = specs.BoundedArray(
             shape=(), minimum=0.0, maximum=1.0, dtype=jnp.float32, name="capacity"
         )
         action_mask = specs.BoundedArray(
-            shape=(self.problem_size + 1,),
+            shape=(self.num_nodes + 1,),
             dtype=jnp.bool_,
             minimum=False,
             maximum=True,
@@ -199,7 +208,7 @@ class CVRP(Environment[State]):
         Returns:
             action_spec: a `specs.DiscreteArray` spec.
         """
-        return specs.DiscreteArray(self.problem_size + 1, name="action")
+        return specs.DiscreteArray(self.num_nodes + 1, name="action")
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment. This rendering shows the layout of the tour so
@@ -260,6 +269,7 @@ class CVRP(Environment[State]):
         # A node is false if it has been visited or the vehicle does not have enough capacity to
         # cover its demand.
         action_mask = ~state.visited_mask & (state.capacity >= state.demands)
+
         # The depot is valid (True) if we are not at it, else it is invalid (False).
         action_mask = action_mask.at[DEPOT_IDX].set(state.position != DEPOT_IDX)
 
@@ -288,7 +298,7 @@ class CVRP(Environment[State]):
             reward = jnp.where(
                 is_valid,
                 -compute_tour_length(state.coordinates, state.order),
-                jnp.float32(-self.problem_size * 2 * jnp.sqrt(2)),
+                jnp.float32(-self.num_nodes * 2 * jnp.sqrt(2)),
             )
             return termination(
                 reward=reward,

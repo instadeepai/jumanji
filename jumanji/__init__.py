@@ -167,36 +167,36 @@ register(
 register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
 
 
-# CVRP - problem size, maximum capacity and maximum demand are derived from [1, 2]
+# CVRP - number of nodes, maximum capacity and maximum demand are derived from [1, 2]
 # [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with
 # Multiple Optima for Reinforcement Learning".
 # [2] Grinsztajn N., Furelos-Blanco D., Barrett T. (2022). "Population-Based Reinforcement
-# Learning for Combinatorial Optimization Problem".
+# Learning for Combinatorial Optimization Problems".
 register(
     id="CVRP20-v0",
     entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 20, "max_capacity": 30, "max_demand": 10},
+    kwargs={"num_nodes": 20, "max_capacity": 30, "max_demand": 10},
 )
 
 register(
     id="CVRP50-v0",
     entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 50, "max_capacity": 40, "max_demand": 10},
+    kwargs={"num_nodes": 50, "max_capacity": 40, "max_demand": 10},
 )
 register(
     id="CVRP100-v0",
     entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 100, "max_capacity": 50, "max_demand": 10},
+    kwargs={"num_nodes": 100, "max_capacity": 50, "max_demand": 10},
 )
 
 register(
     id="CVRP125-v0",
     entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 125, "max_capacity": 55, "max_demand": 10},
+    kwargs={"num_nodes": 125, "max_capacity": 55, "max_demand": 10},
 )
 
 register(
     id="CVRP150-v0",
     entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 150, "max_capacity": 60, "max_demand": 10},
+    kwargs={"num_nodes": 150, "max_capacity": 60, "max_demand": 10},
 )

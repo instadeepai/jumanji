@@ -161,7 +161,7 @@ class CVRPViewer:
 
     def _draw_route(self, ax: plt.Axes, coords: Array, col_id: int) -> None:
         """Draw the arrows and nodes for each route in the given colour."""
-        x, y = coords[:, 0], coords[:, 1]
+        x, y = coords.T
 
         # Compute the difference in the x- and y-coordinates to determine the distance between
         # consecutive cities.
@@ -186,7 +186,7 @@ class CVRPViewer:
         colour. The tour is the entire trajectory between the visited cities and a route is a
         trajectory either starting and ending at the depot or starting at the depot and ending at
         the current city."""
-        x_coords, y_coords = state.coordinates[:, 0], state.coordinates[:, 1]
+        x_coords, y_coords = state.coordinates.T
 
         # Draw the cities
         ax.scatter(x_coords[1:], y_coords[1:], s=self.NODE_SIZE, color=self.NODE_COLOUR)

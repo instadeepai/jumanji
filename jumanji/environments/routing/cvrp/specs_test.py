@@ -45,7 +45,7 @@ class TestObservationSpec:
         """Test that a different shape of an observation element breaks the
         validation given the observation spec."""
         observation = observation_spec.validate(observation)
-        modified_shape_observation = observation._replace(
+        modified_shape_observation = observation._replace(  # type: ignore
             coordinates=observation.coordinates[None, ...]
         )
         with pytest.raises(ValueError):
@@ -57,7 +57,7 @@ class TestObservationSpec:
         """Test that a different dtype of an observation element breaks the
         validation given the observation spec."""
         observation = observation_spec.validate(observation)
-        modified_dtype_observation = observation._replace(
+        modified_dtype_observation = observation._replace(  # type: ignore
             coordinates=observation.coordinates.astype(jnp.float16)
         )
         with pytest.raises(ValueError):

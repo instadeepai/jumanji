@@ -14,8 +14,6 @@
 
 from typing import Any
 
-import jax
-
 from jumanji import specs
 from jumanji.environments.packing.knapsack.types import Observation
 
@@ -23,41 +21,37 @@ from jumanji.environments.packing.knapsack.types import Observation
 class ObservationSpec(specs.Spec[Observation]):
     def __init__(
         self,
-        problem_obs: specs.BoundedArray,
-        first_item_obs: specs.DiscreteArray,
-        last_item_obs: specs.DiscreteArray,
-        action_mask: specs.BoundedArray,
+        weights_spec: specs.BoundedArray,
+        values_spec: specs.BoundedArray,
+        action_mask_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
-        self.problem_obs = problem_obs
-        self.first_item_obs = first_item_obs
-        self.last_item_obs = last_item_obs
-        self.action_mask = action_mask
+        self.weights_spec = weights_spec
+        self.values_spec = values_spec
+        self.action_mask_spec = action_mask_spec
 
     def __repr__(self) -> str:
         return (
             "ObservationSpec(\n"
-            f"\tproblem_obs={repr(self.problem_obs)},\n"
-            f"\tfirst_item_obs={repr(self.first_item_obs)},\n"
-            f"\tlast_item_obs={repr(self.last_item_obs)},\n"
-            f"\taction_mask={repr(self.action_mask)},\n"
+            f"\tweights_spec={repr(self.weights_spec)},\n"
+            f"\tvalues_spec={repr(self.values_spec)},\n"
+            f"\taction_mask_spec={repr(self.action_mask_spec)},\n"
             ")"
         )
 
     def generate_value(self) -> Observation:
         """Generate a value which conforms to this spec."""
         return Observation(
-            problem=self.problem_obs.generate_value(),
-            first_item=self.first_item_obs.generate_value(),
-            last_item=self.last_item_obs.generate_value(),
-            action_mask=self.action_mask.generate_value(),
+            weights=self.weights_spec.generate_value(),
+            values=self.values_spec.generate_value(),
+            action_mask=self.action_mask_spec.generate_value(),
         )
 
     def validate(self, value: Observation) -> Observation:
         """Checks if a Knapsack Observation conforms to the spec.
 
         Args:
-            value: a Knapsack Observation
+            value: a Knapsack Observation.
 
         Returns:
             value.
@@ -65,19 +59,11 @@ class ObservationSpec(specs.Spec[Observation]):
         Raises:
             ValueError: if value doesn't conform to this spec.
         """
-        observation = Observation(
-            *jax.tree_map(
-                lambda spec, v: spec.validate(v),
-                (
-                    self.problem_obs,
-                    self.first_item_obs,
-                    self.last_item_obs,
-                    self.action_mask,
-                ),
-                (value.problem, value.first_item, value.last_item, value.action_mask),
-            )
+        return Observation(
+            weights=self.weights_spec.validate(value.weights),
+            values=self.values_spec.validate(value.values),
+            action_mask=self.action_mask_spec.validate(value.action_mask),
         )
-        return observation
 
     def replace(self, **kwargs: Any) -> "ObservationSpec":
         """Returns a new copy of `ObservationSpec` with specified attributes replaced.
@@ -89,10 +75,9 @@ class ObservationSpec(specs.Spec[Observation]):
             A new copy of `ObservationSpec`.
         """
         all_kwargs = {
-            "problem_obs": self.problem_obs,
-            "first_item_obs": self.first_item_obs,
-            "last_item_obs": self.last_item_obs,
-            "action_mask": self.action_mask,
+            "weights_spec": self.weights_spec,
+            "values_spec": self.values_spec,
+            "action_mask_spec": self.action_mask_spec,
         }
         all_kwargs.update(kwargs)
         return ObservationSpec(**all_kwargs)  # type: ignore

@@ -21,14 +21,13 @@ A trajectory terminates when no further item can be added to the knapsack, or th
 is invalid.
 
 ## Observation
-The observation given to the agent provides information on the total problem, the items already added
-to the knapsack and environment meta info such as number of steps taken and the remaining budget.
+The observation given to the agent provides information regarding the weights and the values of all the items,
+as well as, which items have been packed into the knapsack.
 
 **Observation Spec**:
 
-- `problem` jax array (float32) of shape `(num_items, 2)`, shows an array of weights/values of the items to be packed into the knapsack.
-- `first_item`: jax array (int32), gives the index of the last item added.
-- `last_item`: jax array (int32), gives the index of the first item added.
+- `weights` jax array (float32) of shape `(num_items,)`, shows an array of weights of the items to be packed into the knapsack.
+- `values` jax array (float32) of shape `(num_items,)`, shows an array of values of the items to be packed into the knapsack.
 - `action_mask`: jax array (bool) of shape `(num_items,)`, array of binary values denoting which items can be packed into the knapsack.
 
 ## Action

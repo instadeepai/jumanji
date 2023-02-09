@@ -97,7 +97,7 @@ def make_network_tsp(
             model_size=encoder_model_size,
             expand_factor=encoder_expand_factor,
         )
-        embedding = encoder(observation.problem)
+        embedding = encoder(observation.coordinates)
         if num_outputs == 1:
             decoder = CriticDecoder(
                 num_heads=decoder_num_heads,
@@ -142,19 +142,10 @@ def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
         jnp.zeros_like(cities_embedding),
         position_embedding,
     )
-    start_position_embedding = jnp.take_along_axis(
-        embeddings, observation.start_position[:, None, None], axis=-2
-    ).squeeze(axis=-2)
-    start_position_embedding = jnp.where(
-        observation.start_position[:, None] == -1,
-        jnp.zeros_like(cities_embedding),
-        start_position_embedding,
-    )
     return jnp.concatenate(
         [
             cities_embedding,
             position_embedding,
-            start_position_embedding,
         ],
         axis=-1,
     )[:, None, :]

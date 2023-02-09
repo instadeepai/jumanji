@@ -33,36 +33,30 @@ class Knapsack(Environment[State]):
     """
     Knapsack environment as described in [1].
     - observation: Observation
-        - problem: jax array (float32) of shape (num_items, 2)
-            the weights and values of the items.
-        - first_item: jax array (int32)
-            index of first added item (useless, but [1] does it to match TSP environment)
-        - last_item: jax array (int32)
-            index of the last added item (useless, but [1] does it to match TSP environment)
+        - weights: jax array (float32) of shape (num_items,)
+            the weights of the items.
+        - values: jax array (float32) of shape (num_items,)
+            the values of the items.
         - action_mask: jax array (bool) of shape (num_items,)
-            binary mask (False/True <--> invalid/valid)
+            binary mask (False/True <--> invalid/valid).
 
     - reward: jax array (float)
-        the sum of the values of the items put in the bag at the end of the episode
+        the sum of the values of the items put in the bag at the end of the episode.
 
     - episode termination:
-        - if no action can be performed (all items remaining are larger than the bag capacity)
-        - if an illegal action is performed (item is larger than the bag capacity or already taken)
+        - if no action can be performed (all items remaining are larger than the bag capacity).
+        - if an illegal action is performed (item is larger than the bag capacity or already taken).
 
     - state: State
     the state of the environment.
-        - problem: jax array (float32) of shape (num_items, 2)
-            the weights and values of the items.
-        - last_item: jax array (int32)
-            index of the last added item (useless, but [1] does it to match TSP environment)
-        - first item: jax array (int32)
-            index of the first added item (useless, but Pomo paper does it to match TSP setting)
-        - used_mask: jax array (bool) of shape (num_items,)
-            binary mask indicating if an item is in the knapsack or not (False/True <--> out/in)
-        - num_steps: jax array (int32)
-            how many steps have been taken
+        - weights: jax array (float32) of shape (num_items,)
+            the weights of the items.
+        - values: jax array (float32) of shape (num_items,)
+            the values of the items.
+        - packed_items: jax array (bool) of shape (num_items,)
+            binary mask indicating if an item is in the knapsack or not (False/True <--> out/in).
         - remaining_budget: jax array (float32)
-            the budget currently remaining
+            the budget currently remaining.
 
     [1] https://arxiv.org/abs/2010.16011
     """
@@ -81,19 +75,17 @@ class Knapsack(Environment[State]):
         """Resets the environment.
 
         Args:
-            key: useful to pick the first item randomly.
+            key: used to randomly generate the weights abd values of the items.
 
         Returns:
-            state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            state: the new state of the environment.
+            timestep: the first timestep returned by the environment.
         """
-        problem = generate_problem(key, self.num_items)
+        weights, values = generate_problem(key, self.num_items)
         state = State(
-            problem=problem,
-            last_item=jnp.array(-1, jnp.int32),
-            first_item=jnp.array(-1, jnp.int32),
-            used_mask=jnp.zeros(self.num_items, dtype=bool),
-            num_steps=jnp.int32(0),
+            weights=weights,
+            values=values,
+            packed_items=jnp.zeros(self.num_items, dtype=bool),
             remaining_budget=jnp.float32(self.total_budget),
         )
         timestep = restart(observation=self._state_to_observation(state))
@@ -110,8 +102,8 @@ class Knapsack(Environment[State]):
             state: next state of the environment.
             timestep: the timestep to be observed.
         """
-        state_budget_fits = state.remaining_budget >= state.problem[action, 0]
-        new_item = state.used_mask[action] == 0
+        state_budget_fits = state.remaining_budget >= state.weights[action]
+        new_item = state.packed_items[action] == 0
         is_valid = state_budget_fits & new_item
         state = jax.lax.cond(
             pred=is_valid,
@@ -129,18 +121,19 @@ class Knapsack(Environment[State]):
             observation_spec: a tree of specs containing the spec for each of the constituent fields
                 of an observation.
         """
-        problem_obs = specs.BoundedArray(
-            shape=(self.num_items, 2),
+        weights_obs = specs.BoundedArray(
+            shape=(self.num_items,),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
-            name="problem",
+            name="weights",
         )
-        first_item_obs = specs.DiscreteArray(
-            self.num_items, dtype=jnp.int32, name="first_item"
-        )
-        last_item_obs = specs.DiscreteArray(
-            self.num_items, dtype=jnp.int32, name="last_item"
+        values_obs = specs.BoundedArray(
+            shape=(self.num_items,),
+            minimum=0.0,
+            maximum=1.0,
+            dtype=jnp.float32,
+            name="values",
         )
         action_mask = specs.BoundedArray(
             shape=(self.num_items,),
@@ -150,9 +143,8 @@ class Knapsack(Environment[State]):
             name="action_mask",
         )
         return ObservationSpec(
-            problem_obs,
-            first_item_obs,
-            last_item_obs,
+            weights_obs,
+            values_obs,
             action_mask,
         )
 
@@ -175,14 +167,10 @@ class Knapsack(Environment[State]):
             state: State object corresponding to the new state of the environment.
         """
         return State(
-            problem=state.problem,
-            last_item=next_item,
-            first_item=jax.lax.select(
-                state.first_item == -1, next_item, state.first_item
-            ),
-            used_mask=state.used_mask.at[next_item].set(True),
-            num_steps=state.num_steps + 1,
-            remaining_budget=state.remaining_budget - state.problem[next_item, 0],
+            weights=state.weights,
+            values=state.values,
+            packed_items=state.packed_items.at[next_item].set(True),
+            remaining_budget=state.remaining_budget - state.weights[next_item],
         )
 
     def _state_to_observation(self, state: State) -> Observation:
@@ -196,11 +184,10 @@ class Knapsack(Environment[State]):
         """
 
         return Observation(
-            problem=state.problem,
-            first_item=state.first_item,
-            last_item=state.last_item,
+            weights=state.weights,
+            values=state.values,
             action_mask=jnp.logical_not(
-                state.used_mask | (state.remaining_budget < state.problem[:, 0])
+                state.packed_items | (state.remaining_budget < state.weights)
             ),
         )
 
@@ -217,13 +204,13 @@ class Knapsack(Environment[State]):
                 the last action was invalid.
         """
         is_done = (
-            jnp.min(jnp.where(state.used_mask == 0, state.problem[:, 0], 1))
+            jnp.min(jnp.where(state.packed_items == 0, state.weights, 1))
             > state.remaining_budget
         ) | (~is_valid)
 
         def make_termination_timestep(state: State) -> TimeStep:
             return termination(
-                reward=compute_value_items(state.problem, state.used_mask),
+                reward=compute_value_items(state.values, state.packed_items),
                 observation=self._state_to_observation(state),
             )
 

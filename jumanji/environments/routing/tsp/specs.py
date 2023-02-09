@@ -14,8 +14,6 @@
 
 from typing import Any
 
-import jax
-
 from jumanji import specs
 from jumanji.environments.routing.tsp.types import Observation
 
@@ -23,41 +21,37 @@ from jumanji.environments.routing.tsp.types import Observation
 class ObservationSpec(specs.Spec[Observation]):
     def __init__(
         self,
-        problem_obs: specs.BoundedArray,
-        start_position_obs: specs.DiscreteArray,
-        position_obs: specs.DiscreteArray,
-        action_mask: specs.BoundedArray,
+        coordinates_spec: specs.BoundedArray,
+        position_spec: specs.DiscreteArray,
+        action_mask_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
-        self.problem_obs = problem_obs
-        self.start_position_obs = start_position_obs
-        self.position_obs = position_obs
-        self.action_mask = action_mask
+        self.coordinates_spec = coordinates_spec
+        self.position_spec = position_spec
+        self.action_mask_spec = action_mask_spec
 
     def __repr__(self) -> str:
         return (
             "ObservationSpec(\n"
-            f"\tproblem_obs={repr(self.problem_obs)},\n"
-            f"\tstart_position_obs={repr(self.start_position_obs)},\n"
-            f"\tposition_obs={repr(self.position_obs)},\n"
-            f"\taction_mask={repr(self.action_mask)},\n"
+            f"\tcoordinates_spec={repr(self.coordinates_spec)},\n"
+            f"\tposition_spec={repr(self.position_spec)},\n"
+            f"\taction_mask_spec={repr(self.action_mask_spec)},\n"
             ")"
         )
 
     def generate_value(self) -> Observation:
         """Generate a value which conforms to this spec."""
         return Observation(
-            problem=self.problem_obs.generate_value(),
-            start_position=self.start_position_obs.generate_value(),
-            position=self.position_obs.generate_value(),
-            action_mask=self.action_mask.generate_value(),
+            coordinates=self.coordinates_spec.generate_value(),
+            position=self.position_spec.generate_value(),
+            action_mask=self.action_mask_spec.generate_value(),
         )
 
     def validate(self, value: Observation) -> Observation:
         """Checks if a TSP Observation conforms to the spec.
 
         Args:
-            value: a TSP Observation
+            value: a TSP Observation.
 
         Returns:
             value.
@@ -65,24 +59,11 @@ class ObservationSpec(specs.Spec[Observation]):
         Raises:
             ValueError: if value doesn't conform to this spec.
         """
-        observation = Observation(
-            *jax.tree_map(
-                lambda spec, v: spec.validate(v),
-                (
-                    self.problem_obs,
-                    self.start_position_obs,
-                    self.position_obs,
-                    self.action_mask,
-                ),
-                (
-                    value.problem,
-                    value.start_position,
-                    value.position,
-                    value.action_mask,
-                ),
-            )
+        return Observation(
+            coordinates=self.coordinates_spec.validate(value.coordinates),
+            position=self.position_spec.validate(value.position),
+            action_mask=self.action_mask_spec.validate(value.action_mask),
         )
-        return observation
 
     def replace(self, **kwargs: Any) -> "ObservationSpec":
         """Returns a new copy of `ObservationSpec` with specified attributes replaced.
@@ -94,10 +75,9 @@ class ObservationSpec(specs.Spec[Observation]):
             A new copy of `ObservationSpec`.
         """
         all_kwargs = {
-            "problem_obs": self.problem_obs,
-            "start_position_obs": self.start_position_obs,
-            "position_obs": self.position_obs,
-            "action_mask": self.action_mask,
+            "coordinates_spec": self.coordinates_spec,
+            "position_spec": self.position_spec,
+            "action_mask_spec": self.action_mask_spec,
         }
         all_kwargs.update(kwargs)
         return ObservationSpec(**all_kwargs)  # type: ignore

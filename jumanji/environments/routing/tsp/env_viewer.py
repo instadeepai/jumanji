@@ -133,17 +133,14 @@ class TSPViewer:
 
     def _add_tour(self, ax: plt.Axes, state: State) -> None:
         """Add all the cities and the current tour between the visited cities to the plot."""
-        x_coords, y_coords = state.problem[:, 0], state.problem[:, 1]
+        x_coords, y_coords = state.coordinates.T
 
         # Draw the cities as nodes
         ax.scatter(x_coords, y_coords, s=self.NODE_SIZE, color=self.NODE_COLOUR)
 
         # Draw the arrows between cities
         if state.num_visited > 1:
-            xs, ys = (
-                state.problem[state.order[: state.num_visited], 0],
-                state.problem[state.order[: state.num_visited], 1],
-            )
+            xs, ys = state.coordinates[state.order[: state.num_visited]].T
             dx = xs[1:] - xs[:-1]
             dy = ys[1:] - ys[:-1]
             ax.quiver(

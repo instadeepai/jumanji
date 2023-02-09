@@ -18,8 +18,6 @@ import jax
 from chex import Array, PRNGKey
 from jax import numpy as jnp
 
-from jumanji.environments.routing.utils import get_coordinates_augmentations
-
 DEPOT_IDX = 0
 
 
@@ -41,29 +39,3 @@ def generate_problem(
     )
     demands = demands.at[DEPOT_IDX].set(0)
     return coords, demands
-
-
-def generate_start_position(key: PRNGKey, num_nodes: jnp.int32) -> jnp.int32:
-    return jax.random.randint(key, (), minval=1, maxval=num_nodes + 1)
-
-
-def get_augmentations(coordinates: Array, demands: Array) -> Tuple[Array, Array]:
-    """Returns the 8 augmentations of a given instance problem described in [1]. This function
-    leverages the existing augmentation method for TSP and appends the costs/demands used in CVRP.
-    [1] https://arxiv.org/abs/2010.16011
-
-    Args:
-        coordinates: Array of coordinates for all nodes [num_nodes, 2]
-        demands: Array of demands for all nodes [num_nodes]
-
-    Returns:
-        coord_augmentations: Array with 8 coordinates augmentations [8, num_nodes, 2]
-        demands_augmentations: Array with 8 demands augmentations [8, num_nodes]
-    """
-    coord_augmentations = get_coordinates_augmentations(coordinates)
-
-    num_augmentations = coord_augmentations.shape[0]
-
-    demands_augmentations = jnp.tile(demands, (num_augmentations, 1))
-
-    return coord_augmentations, demands_augmentations

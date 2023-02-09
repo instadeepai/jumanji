@@ -12,20 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Tuple
+
 from chex import Array, PRNGKey
 from jax import numpy as jnp
 from jax import random
 
 
-def compute_value_items(problem: Array, used_mask: Array) -> Array:
+def compute_value_items(values: Array, packed_items: Array) -> Array:
     """
     Compute the value of the items in the knapsack.
     """
-    return jnp.dot(used_mask, problem[:, 1])
+    return jnp.dot(packed_items, values)
 
 
-def generate_problem(problem_key: PRNGKey, problem_size: jnp.int32) -> Array:
-    return random.uniform(problem_key, (problem_size, 2), minval=0, maxval=1)
+def generate_problem(problem_key: PRNGKey, num_items: jnp.int32) -> Tuple[Array, Array]:
+    weights, values = random.uniform(problem_key, (2, num_items), minval=0, maxval=1)
+    return weights, values
 
 
 def generate_first_item(start_key: PRNGKey, problem_size: jnp.int32) -> jnp.int32:

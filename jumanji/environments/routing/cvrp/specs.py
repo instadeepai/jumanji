@@ -14,8 +14,6 @@
 
 from typing import Any
 
-import jax
-
 from jumanji import specs
 from jumanji.environments.routing.cvrp.types import Observation
 
@@ -61,7 +59,7 @@ class ObservationSpec(specs.Spec[Observation]):
         """Checks if a CVRP Observation conforms to the spec.
 
         Args:
-            value: a CVRP Observation
+            value: a CVRP Observation.
 
         Returns:
             value.
@@ -69,26 +67,13 @@ class ObservationSpec(specs.Spec[Observation]):
         Raises:
             ValueError: if value doesn't conform to this spec.
         """
-        observation = Observation(
-            *jax.tree_map(
-                lambda spec, v: spec.validate(v),
-                (
-                    self.coordinates_spec,
-                    self.demands_spec,
-                    self.position_spec,
-                    self.capacity_spec,
-                    self.action_mask_spec,
-                ),
-                (
-                    value.coordinates,
-                    value.demands,
-                    value.position,
-                    value.capacity,
-                    value.action_mask,
-                ),
-            )
+        return Observation(
+            coordinates=self.coordinates_spec.validate(value.coordinates),
+            demands=self.demands_spec.validate(value.demands),
+            position=self.position_spec.validate(value.position),
+            capacity=self.capacity_spec.validate(value.capacity),
+            action_mask=self.action_mask_spec.validate(value.action_mask),
         )
-        return observation
 
     def replace(self, **kwargs: Any) -> "ObservationSpec":
         """Returns a new copy of `ObservationSpec` with specified attributes replaced.

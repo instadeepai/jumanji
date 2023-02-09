@@ -19,11 +19,7 @@ from jax import numpy as jnp
 
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.cvrp.types import State
-from jumanji.environments.routing.cvrp.utils import (
-    DEPOT_IDX,
-    compute_tour_length,
-    get_augmentations,
-)
+from jumanji.environments.routing.cvrp.utils import DEPOT_IDX, compute_tour_length
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
@@ -132,7 +128,7 @@ def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
         else:
             # Select the next position. If we don't have enough capacity, set it
             # as pending and go to the depot (0) to recharge.
-            next_position = (state.position % cvrp_env.problem_size) + 1
+            next_position = (state.position % cvrp_env.num_nodes) + 1
             if state.capacity < state.demands[next_position]:
                 pending_position = next_position
                 next_position = DEPOT_IDX
@@ -161,7 +157,7 @@ def test_cvrp__invalid_revisit_node(cvrp_env: CVRP) -> None:
     first_position = state.position
     actions = (
         jnp.array([first_position + 1, first_position + 2, first_position + 2])
-        % cvrp_env.problem_size
+        % cvrp_env.num_nodes
     )
 
     for a in actions:
@@ -220,109 +216,12 @@ def test_cvrp__tour_length() -> None:
         ]
     )
 
-    demands = jnp.array(
-        [
-            [0.0],
-            [0.26666668],
-            [0.2],
-            [0.13333334],
-            [0.3],
-            [0.03333334],
-            [0.23333333],
-            [0.06666667],
-            [0.23333333],
-            [0.13333334],
-            [0.2],
-        ]
-    )
-
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0, 0, 0, 0, 0])
     tour_length = compute_tour_length(coords, order)
     assert jnp.isclose(tour_length, 6.8649917)
-
-    # Check augmentations have same tour length
-    coords_aug, demands_aug = get_augmentations(coords, demands)
-    lengths = jax.vmap(compute_tour_length, in_axes=(0, None))(coords_aug, order)
-    assert jnp.allclose(
-        lengths, jnp.ones(coords_aug.shape[0], dtype=jnp.float32) * tour_length
-    )
 
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6])
     assert compute_tour_length(coords, order) == 6.8649917
 
     order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0])
     assert compute_tour_length(coords, order) == 6.8649917
-
-
-def test_cvrp__augmentations() -> None:
-    """Checks that the augmentations of a given instance problem is computed properly."""
-    coords = jnp.array([[0.65, 0.85], [0.18, 0.06], [0.41, 0.19], [0.92, 0.27]])
-    demands = jnp.array([0.00, 0.27, 0.20, 0.13])
-
-    expected_coords = jnp.array(
-        [
-            coords,
-            jnp.array(
-                [
-                    [0.35, 0.85],
-                    [0.82, 0.06],
-                    [0.59, 0.19],
-                    [0.08, 0.27],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.65, 0.15],
-                    [0.18, 0.94],
-                    [0.41, 0.81],
-                    [0.92, 0.73],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.35, 0.15],
-                    [0.82, 0.94],
-                    [0.59, 0.81],
-                    [0.08, 0.73],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.85, 0.65],
-                    [0.06, 0.18],
-                    [0.19, 0.41],
-                    [0.27, 0.92],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.85, 0.35],
-                    [0.06, 0.82],
-                    [0.19, 0.59],
-                    [0.27, 0.08],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.15, 0.65],
-                    [0.94, 0.18],
-                    [0.81, 0.41],
-                    [0.73, 0.92],
-                ]
-            ),
-            jnp.array(
-                [
-                    [0.15, 0.35],
-                    [0.94, 0.82],
-                    [0.81, 0.59],
-                    [0.73, 0.08],
-                ]
-            ),
-        ]
-    )
-
-    expected_demands = jnp.tile(demands, (8, 1))
-
-    coords_aug, demands_aug = get_augmentations(coords, demands)
-    assert jnp.allclose(expected_coords, coords_aug)
-    assert jnp.allclose(expected_demands, demands_aug)

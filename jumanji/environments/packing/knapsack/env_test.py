@@ -39,8 +39,7 @@ def test_knapsack__reset(knapsack_env: Knapsack) -> None:
     assert isinstance(state, State)
     assert state.remaining_budget == knapsack_env.total_budget
     assert state.remaining_budget > 0
-    assert jnp.all(state.used_mask == 0)
-    assert state.first_item == -1
+    assert jnp.all(state.packed_items == 0)
 
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
@@ -64,13 +63,12 @@ def test_knapsack__step(knapsack_env: Knapsack) -> None:
     new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
-    assert not jnp.array_equal(new_state.used_mask, state.used_mask)
-    assert not jnp.array_equal(new_state.last_item, state.last_item)
+    assert not jnp.array_equal(new_state.packed_items, state.packed_items)
     assert not jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 
     # Check token was inserted as expected
-    assert new_state.used_mask[action] == 1
-    assert new_state.used_mask.sum() == 1
+    assert new_state.packed_items[action] == 1
+    assert new_state.packed_items.sum() == 1
 
     # New step with same action should be invalid
     state = new_state
@@ -78,8 +76,7 @@ def test_knapsack__step(knapsack_env: Knapsack) -> None:
     new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has not changed
-    assert jnp.array_equal(new_state.used_mask, state.used_mask)
-    assert jnp.array_equal(new_state.last_item, state.last_item)
+    assert jnp.array_equal(new_state.packed_items, state.packed_items)
     assert jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 
 
@@ -105,7 +102,6 @@ def test_knapsackenv__trajectory_action(knapsack_env: Knapsack) -> None:
         action = jnp.argmax(timestep.observation.action_mask)
 
         state, timestep = knapsack_env.step(state, action)
-        assert state.first_item >= 0
 
     # check that the reward is positive when trajectory is done
     assert timestep.reward > 0

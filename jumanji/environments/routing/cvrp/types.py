@@ -14,51 +14,50 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
-import jax.random
+import chex
+import jax
+import jax.numpy as jnp
+from chex import Array
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
 
-import chex
-import jax.numpy as jnp
-from chex import Array
-
 
 @dataclass
 class State:
     """
-    coordinates: array with the coordinates of all nodes (+ depot)
-    demands: array with the demands of all nodes (+ depot)
-    position: index of the current node
-    capacity: current capacity of the vehicle
-    visited_mask: binary mask (False/True <--> unvisited/visited)
-    order: array of node indices denoting route (-1 --> not filled yet)
-    num_total_visits: number of performed visits (it can count depot multiple times)
+    coordinates: array with the coordinates of all nodes (+ depot).
+    demands: array with the demands of all nodes (+ depot).
+    position: index of the current node.
+    capacity: current capacity of the vehicle.
+    visited_mask: binary mask (False/True <--> unvisited/visited).
+    order: array of node indices denoting route (-1 --> not filled yet).
+    num_total_visits: number of performed visits (it can count depot multiple times).
     """
 
-    coordinates: Array  # (problem_size + 1, 2)
-    demands: Array  # (problem_size + 1,)
+    coordinates: Array  # (num_nodes + 1, 2)
+    demands: Array  # (num_nodes + 1,)
     position: jnp.int32
     capacity: jnp.int32
-    visited_mask: Array  # (problem_size + 1,)
-    order: Array  # (2 * problem_size,) - this size is worst-case (visit depot after each node)
+    visited_mask: Array  # (num_nodes + 1,)
+    order: Array  # (2 * num_nodes,) - this size is worst-case (visit depot after each node)
     num_total_visits: jnp.int32
     key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):
     """
-    coordinates: array with the coordinates of all nodes (+ depot)
-    demands: array with the demands of all nodes (+ depot)
-    position: index of the current node
-    capacity: current capacity of the vehicle
-    action_mask: binary mask (False/True <--> invalid/valid action)
+    coordinates: array with the coordinates of all nodes (+ depot).
+    demands: array with the demands of all nodes (+ depot).
+    position: index of the current node.
+    capacity: current capacity of the vehicle.
+    action_mask: binary mask (False/True <--> invalid/valid action).
     """
 
-    coordinates: Array  # (problem_size + 1, 2)
-    demands: Array  # (problem_size + 1,)
+    coordinates: Array  # (num_nodes + 1, 2)
+    demands: Array  # (num_nodes + 1,)
     position: jnp.int32
     capacity: jnp.float32
-    action_mask: Array  # (problem_size + 1,)
+    action_mask: Array  # (num_nodes + 1,)

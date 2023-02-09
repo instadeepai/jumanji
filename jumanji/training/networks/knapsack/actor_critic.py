@@ -97,7 +97,11 @@ def make_network_knapsack(
             model_size=encoder_model_size,
             expand_factor=encoder_expand_factor,
         )
-        embedding = encoder(observation.problem)
+        problem = jnp.concatenate(
+            (observation.weights.reshape(-1, 1), observation.values.reshape(-1, 1)),
+            axis=-1,
+        )
+        embedding = encoder(problem)
         if num_outputs == 1:
             decoder = CriticDecoder(
                 num_heads=decoder_num_heads,

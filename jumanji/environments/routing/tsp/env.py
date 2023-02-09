@@ -24,7 +24,10 @@ from jumanji.env import Environment
 from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.specs import ObservationSpec
 from jumanji.environments.routing.tsp.types import Observation, State
-from jumanji.environments.routing.tsp.utils import compute_tour_length, generate_problem
+from jumanji.environments.routing.tsp.utils import (
+    compute_tour_length,
+    generate_coordinates,
+)
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
@@ -32,31 +35,29 @@ class TSP(Environment[State]):
     """Traveling Salesman Problem (TSP) environment as described in [1].
 
     - observation: Observation
-        - problem: jax array (float32) of shape (num_cities, 2)
-            the coordinates of each city
-        - start_position: int32
-            the identifier (index) of the first visited city
+        - coordinates: jax array (float32) of shape (num_cities, 2)
+            the coordinates of each city.
         - position: int32
-            the identifier (index) of the last visited city
+            the index corresponding to the last visited city.
         - action_mask: jax array (bool) of shape (num_cities,)
-            binary mask (False/True <--> illegal/legal <--> cannot be visited/can be visited)
+            binary mask (False/True <--> illegal/legal <--> cannot be visited/can be visited).
 
     - reward: jax array (float32)
         the negative sum of the distances between consecutive cities at the end of the episode
-        (the reward is 0 if a previously selected city is selected again)
+        (the reward is 0 if a previously selected city is selected again).
 
     - state: State
-        - problem: jax array (float32) of shape (num_cities, 2)
-            the coordinates of each city
+        - coordinates: jax array (float32) of shape (num_cities, 2)
+            the coordinates of each city.
         - position: int32
-            the identifier (index) of the last visited city
+            the identifier (index) of the last visited city.
         - visited_mask: jax array (bool) of shape (num_cities,)
-            binary mask (False/True <--> not visited/visited)
+            binary mask (False/True <--> not visited/visited).
         - order: jax array (int32) of shape (num_cities,)
             the identifiers of the cities that have been visited (-1 means that no city has been
-            visited yet at that time in the sequence)
+            visited yet at that time in the sequence).
         - num_visited: int32
-            number of cities that have been visited
+            number of cities that have been visited.
 
     [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization
         with Multiple Optima for Reinforcement Learning".
@@ -79,16 +80,16 @@ class TSP(Environment[State]):
         """Resets the environment.
 
         Args:
-            key: used to randomly generate the problem and the start position.
+            key: used to randomly generate the coordinates.
 
         Returns:
             state: State object corresponding to the new state of the environment.
             timestep: TimeStep object corresponding to the first timestep returned
                 by the environment.
         """
-        problem = generate_problem(key, self.num_cities)
+        coordinates = generate_coordinates(key, self.num_cities)
         state = State(
-            problem=problem,
+            coordinates=coordinates,
             position=jnp.array(-1, jnp.int32),
             visited_mask=jnp.zeros(self.num_cities, dtype=bool),
             order=-1 * jnp.ones(self.num_cities, jnp.int32),
@@ -125,15 +126,12 @@ class TSP(Environment[State]):
             observation_spec: a tree of specs containing the spec for each of the constituent fields
                 of an observation.
         """
-        problem_obs = specs.BoundedArray(
+        coordinates_obs = specs.BoundedArray(
             shape=(self.num_cities, 2),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
-            name="problem",
-        )
-        start_position_obs = specs.DiscreteArray(
-            self.num_cities, dtype=jnp.int32, name="start position"
+            name="coordinates",
         )
         position_obs = specs.DiscreteArray(
             self.num_cities, dtype=jnp.int32, name="position"
@@ -146,8 +144,7 @@ class TSP(Environment[State]):
             name="action mask",
         )
         return ObservationSpec(
-            problem_obs,
-            start_position_obs,
+            coordinates_obs,
             position_obs,
             action_mask,
         )
@@ -184,7 +181,7 @@ class TSP(Environment[State]):
             state: State object corresponding to the new state of the environment.
         """
         return State(
-            problem=state.problem,
+            coordinates=state.coordinates,
             position=next_position,
             visited_mask=state.visited_mask.at[next_position].set(True),
             order=state.order.at[state.num_visited].set(next_position),
@@ -201,8 +198,7 @@ class TSP(Environment[State]):
             observation: `Observation` object containing the observation of the environment.
         """
         return Observation(
-            problem=state.problem,
-            start_position=state.order[0],
+            coordinates=state.coordinates,
             position=state.position,
             action_mask=jnp.logical_not(state.visited_mask),
         )
@@ -225,7 +221,7 @@ class TSP(Environment[State]):
         def make_termination_timestep(state: State) -> TimeStep:
             reward = jnp.where(
                 is_valid,
-                -compute_tour_length(state.problem, state.order),
+                -compute_tour_length(state.coordinates, state.order),
                 jnp.float32(-self.num_cities * jnp.sqrt(2)),
             )
             return termination(
