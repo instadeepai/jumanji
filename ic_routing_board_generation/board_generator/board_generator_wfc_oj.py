@@ -3,10 +3,13 @@ from typing import List, Tuple
 import numpy as np
 from copy import deepcopy
 
-from wfcutils import step, update_entropy, all_valid_choices
+#from wfcutils import step, update_entropy, all_valid_choices
 
-from abstract_board import AbstractBoard
+from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
 
+from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
+
+from ic_routing_board_generation.board_generator.wfcutils import step, update_entropy, all_valid_choices
 
 
 ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), 
@@ -325,16 +328,29 @@ if __name__ == "__main__":
     # These correspond to the weights we will use to pick tiles
     # Organised by index
     weights = [
-        0.5,
-        4, 4,
-        4, 4, 4, 4,
-        0.5, 0.5, 0.5, 0.5
+        4,
+        7, 7,
+        2, 2, 2, 2,
+        1, 1, 1, 1
     ]
-    board = WFCBoard(10, 10, weights)
+    board = WFCBoard(7, 7, weights)
     info, wired_output, unwired_output = board.wfc()
     print(wired_output)
     print(unwired_output)
 
+"""
+    board_rb = np.array([[12, 11, 11, 11, 11, 11, 11, 11],
+                         [8, 8, 8, 8, 8, 9, 0, 11],
+                         [8, 2, 2, 2, 2, 2, 2, 11],
+                         [8, 2, 15, 14, 0, 0, 2, 11],
+                         [8, 2, 2, 14, 0, 0, 4, 13],
+                         [8, 0, 3, 14, 6, 0, 0, 0],
+                         [8, 0, 0, 14, 5, 0, 0, 0],
+                         [10, 0, 0, 16, 7, 0, 0, 0]])
+
+    viewer = RoutingViewer(num_agents=5, grid_rows=8, grid_cols=8,viewer_width=1500, viewer_height=1500)
+    viewer.render(np.asarray(board_rb))
+"""
 
 """
 Requirements to work with numpy:
