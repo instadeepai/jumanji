@@ -5,6 +5,9 @@ from copy import deepcopy
 
 from wfcutils import step, update_entropy, all_valid_choices
 
+from abstract_board import AbstractBoard
+
+
 
 ALL_TILES = [(0,0), (1, 0), (1, 90), (2, 0), (2, 90), 
             (2, 180), (2, 270), (3, 0), (3, 90), 
@@ -113,7 +116,7 @@ class Tile():
     def remove_neighbour(self, direction, tile):
         self.neighbours[direction].remove(tile.piece)
 
-class Board:
+class WFCBoard(AbstractBoard):
     def __init__(self, x: int, y: int, weights: List[float]):
         """
         x: width of the board
@@ -299,8 +302,20 @@ class Board:
         canvas = info['canvas']
         print(canvas)
         # Need to separate the individual wires
-        output = self.wire_separator(canvas)
-        return info, output
+        wired_output = self.wire_separator(canvas)
+        unwired_output = np.zeros(shape = (rows, cols))
+        for i in range(rows):
+            for j in range(cols):
+                if wired_output[i, j] % 3 == 2:
+                    unwired_output[i, j] = 0
+                else:
+                    unwired_output[i, j] = wired_output[i,j]
+        return info, wired_output, unwired_output
+    
+
+    def return_training_board(self) -> np.ndarray:
+        _, _, unwired_output = self.wfc()
+        return unwired_output
         
 
 
@@ -315,16 +330,30 @@ if __name__ == "__main__":
         4, 4, 4, 4,
         0.5, 0.5, 0.5, 0.5
     ]
-    board = Board(10, 10, weights)
-    info, output = board.wfc()
-    print(output)
+    board = WFCBoard(10, 10, weights)
+    info, wired_output, unwired_output = board.wfc()
+    print(wired_output)
+    print(unwired_output)
 
-    tiley = Tile((3,180))
-    tiley.add_neighbours_exclusions()
-    #print(tiley.exclusions)
 
-    #print("looking at neighbours / exclusions of tile 6")
-    tileo = Tile((2, 270))
-    tileo.add_neighbours_exclusions()
-    #print(tileo.neighbours)
-    #print(tileo.exclusions)
+"""
+Requirements to work with numpy:
+return training board; return empty 
+
+
+"""
+
+"""
+    from env_viewer import RoutingViewer
+    board_rb = np.array([[12, 11, 11, 11, 11, 11, 11, 11],
+                            [8, 8, 8, 8, 8, 9, 0, 11],
+                            [8, 2, 2, 2, 2, 2, 2, 11],
+                            [8, 2, 15, 14, 0, 0, 2, 11],
+                            [8, 2, 2, 14, 0, 0, 4, 13],
+                            [8, 0, 3, 14, 6, 0, 0, 0],
+                            [8, 0, 0, 14, 5, 0, 0, 0],
+                            [10, 0, 0, 16, 7, 0, 0, 0]])
+
+        viewer = RoutingViewer(num_agents=5, grid_rows=8, grid_cols=8,viewer_width=500, viewer_height=500)
+        viewer.render(asarray(board_rb), save_img='images/board_bfs.png')
+"""
