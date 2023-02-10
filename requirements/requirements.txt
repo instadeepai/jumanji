@@ -5,6 +5,7 @@ gym>=0.22.0
 jax>=0.2.26
 jaxlib>=0.1.74
 matplotlib>=3.3.4
+networkx>=2.6.3
 numpy>=1.19.5
 Pillow>=9.0.0
 pygame>=2.0.0

@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 import chex
 import jax
+import matplotlib.pyplot as plt
 from jax import numpy as jnp
 
 from jumanji import specs
@@ -27,6 +28,7 @@ from jumanji.environments.logic.planar.reward import (
 )
 from jumanji.environments.logic.planar.specs import ObservationSpec
 from jumanji.environments.logic.planar.types import Observation, State
+from jumanji.environments.logic.planar.viewer import Viewer, networkx_viewer
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
@@ -45,6 +47,7 @@ class PlanarGraph(Environment[State]):
         self,
         generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
+        viewer: Viewer = networkx_viewer,
         time_limit: int = 100,
     ):
         """Instantiates a PlanarGraph environment.
@@ -54,11 +57,13 @@ class PlanarGraph(Environment[State]):
                 Defaults to `RandomGenerator` with `num_nodes=10` and `num_edges=15`.
             reward_fn: callable to compute the reward of the environment's transition.
                 Defaults to `IntersectionCountChangeRewardFn`.
+            viewer: function to render an environment state. This used when calling `render`.
             time_limit: horizon of an episode, i.e. number of environment steps before
                 the episode ends. Defaults to 100.
         """
         self.generator = generator or RandomGenerator(num_nodes=10, num_edges=15)
         self.reward_fn = reward_fn or IntersectionCountChangeRewardFn()
+        self.viewer = viewer
         self.time_limit = time_limit
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
@@ -131,6 +136,5 @@ class PlanarGraph(Environment[State]):
     def reward_spec(self) -> specs.Array:
         return self.reward_fn.spec()
 
-    def render(self, state: State) -> Any:
-        # TODO(alex) the content has been moved away for now. Will do it in another PR.
-        return None
+    def render(self, state: State) -> plt.Figure:
+        return self.viewer(state)
