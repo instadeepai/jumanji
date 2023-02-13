@@ -42,7 +42,11 @@ class TestObservationSpec:
             maximum=True,
             name="action_mask",
         )
-        return ObservationSpec(grid_spec, action_mask_spec)
+
+        step_spec = specs.BoundedArray(
+            shape=(), dtype=int, minimum=0, maximum=50, name="step"
+        )
+        return ObservationSpec(grid_spec, action_mask_spec, step_spec)
 
     @pytest.fixture
     def observation(self, observation_spec: ObservationSpec) -> Observation:

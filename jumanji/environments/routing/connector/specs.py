@@ -25,16 +25,19 @@ class ObservationSpec(specs.Spec[Observation]):
         self,
         grid_spec: specs.BoundedArray,
         action_mask_spec: specs.BoundedArray,
+        step_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
         self.grid_spec = grid_spec
         self.action_mask_spec = action_mask_spec
+        self.step_spec = step_spec
 
     def __repr__(self) -> str:
         return (
             "ObservationSpec(\n"
             f"\tgrid_spec={repr(self.grid_spec)},\n"
             f"\taction_mask_spec={repr(self.action_mask_spec)},\n"
+            f"\tstep_spec={repr(self.step_spec)},\n"
             ")"
         )
 
@@ -43,6 +46,7 @@ class ObservationSpec(specs.Spec[Observation]):
         return Observation(
             grid=self.grid_spec.generate_value(),
             action_mask=self.action_mask_spec.generate_value(),
+            step=self.step_spec.generate_value(),
         )
 
     def validate(self, value: Observation) -> Observation:
@@ -60,8 +64,8 @@ class ObservationSpec(specs.Spec[Observation]):
         observation = Observation(
             *jax.tree_map(
                 lambda spec, v: spec.validate(v),
-                (self.grid_spec, self.action_mask_spec),
-                (value.grid, value.action_mask),
+                (self.grid_spec, self.action_mask_spec, self.step_spec),
+                (value.grid, value.action_mask, value.step),
             )
         )
         return observation
@@ -78,6 +82,7 @@ class ObservationSpec(specs.Spec[Observation]):
         all_kwargs = {
             "grid_spec": self.grid_spec,
             "action_mask_spec": self.action_mask_spec,
+            "step_spec": self.step_spec,
         }
         all_kwargs.update(kwargs)
 

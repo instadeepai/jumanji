@@ -32,7 +32,7 @@ class Agent:
     position: the current position of this agent.
     """
 
-    id: jnp.int16  # ()
+    id: chex.Array  # ()
     start: chex.Array  # (2,)
     target: chex.Array  # (2,)
     position: chex.Array  # (2,)
@@ -53,7 +53,7 @@ class State:
     """
 
     grid: chex.Array  # (grid_size, grid_size)
-    step: jnp.int32  # ()
+    step: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
     key: chex.PRNGKey
 
@@ -73,7 +73,9 @@ class Observation(NamedTuple):
     bottom right corner and is aiming to get to the middle bottom cell
 
     action_mask: boolean array representing whether each of the 5 actions is legal, for each agent.
+    step: (int) the current episode step.
     """
 
     grid: chex.Array  # (num_agents, grid_size, grid_size)
     action_mask: chex.Array  # (num_agents, 5)
+    step: chex.Array  # ()
