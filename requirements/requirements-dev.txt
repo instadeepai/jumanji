@@ -25,4 +25,5 @@ pytest-mock
 pytest-parallel
 pytest-xdist
 pytype
+scipy>=1.7.3
 testfixtures

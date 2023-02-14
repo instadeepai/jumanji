@@ -40,5 +40,6 @@ module = [
     "neptune.*",
     "tensorboardX.*",
     "networkx.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true
