@@ -1,11 +1,14 @@
 import random
 from typing import List, Tuple, Union, Optional, Dict, Callable
 import numpy as np
+from grid import Grid
+from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
 
 from ic_routing_board_generation.board_generator.grid import Grid
 
 
 class BFSBoard:
+class BFSBoard(AbstractBoard):
     def __init__(self, rows: int, columns: int, num_agents: int, max_attempts: int = 10) -> None:
         """Constructor for the Board class.
 
@@ -314,6 +317,8 @@ class BFSBoard:
         while not found and attempts < self.max_attempts:
             if verbose:
                 print(f"Fitting wire {i + 1} - attempt {attempts + 1}")
+                # Create To Do
+                # TODO: Change print to logging
             attempts += 1
             # first pick random start and end
             start, end = self.pick_start_end()
