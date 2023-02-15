@@ -35,7 +35,8 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connect4(Environment[State]):
-    """A JAX implementation of the 'Connect 4' game.
+    """This environment is DEPRECIATED and will be REMOVED in a future release.
+    A JAX implementation of the 'Connect 4' game.
 
     - observation: Observation
         - board: jax array (int8) of shape (6, 7):
