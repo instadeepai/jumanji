@@ -18,7 +18,7 @@ class Position:
     x: int
     y: int
 
-class Board:
+class Board_rb:
     """ The boards are 2D np.ndarrays of wiring routes on a printed circuit board.
 
     The coding of the boards is as follows:
@@ -31,12 +31,15 @@ class Board:
 
     Args:
         rows, cols (int, int) : Dimensions of the board.
+        num_agents (int) : Number of wires to add to the board  THIS IS A PROBLEM TO BE RESOLVED
 
     """
-    def __init__(self, rows: int, cols: int):
+    #def __init__(self, rows: int, cols: int):
+    def __init__(self, rows: int, cols: int, num_agents:int = 0): # INITIALIZING A NON-ZERO NUMBER OF AGENTS IS A PROBLEM TO BE RESOLVED
         self.layout = np.zeros((rows, cols), int)
         self.dim = Position(rows, cols)
-        self.num_agents = 0
+        #self.num_agents = 0
+        self.num_agents = num_agents
 
     def get_random_head(self) -> Position:
         # Return a random 2D position, a starting point in the array
@@ -235,10 +238,10 @@ class Board:
         """ Return a list of 2D tuples, cells that are connectible to (x_head, y_head).
 
         Args:
-            x_head, y_head (int, int) : cell to connect to.
+            x_head, y_head (int, int) : 2D position of the cell to connect to.
 
         Returns:
-            List[(int,int)...] : output list of connected cells.
+            List[Tuple[int,int]...] : output list of connected cells.
         """
         connectible_list = []
         self.add_connectible_cell(x_head, y_head, connectible_list)
@@ -248,32 +251,38 @@ class Board:
         """ Add the specified cell to the list, recursively call adjacent cells, and return list.
 
         Args:
-            x_pos, y_pos (int, int) : cell to add to the list.
-            connectible_list (List[(int,int)...] : input list of connected cells.
+            x_pos, y_pos (int, int) : 2D position of the cell to add to the list.
+            connectible_list (List[Tuple[int,int]...] : input list of connected cells.
 
         Returns:
-            List[(int,int)...] : output list of connected cells.
+            List[Tuple[int,int]...] : output list of connected cells.
         """
         if (x_pos, y_pos) in connectible_list:
             return connectible_list
         connectible_list.append((x_pos, y_pos))
         # Recursively add the cells above, to the right, below, and to the left if they're valid and open
-        if (x_pos < self.dim.x-1) and (self.layout[x_pos+1, y_pos] == EMPTY) and (x_pos+1, y_pos) not in connectible_list:
-            self.add_connectible_cell(x_pos+1, y_pos, connectible_list)
-        if (y_pos < self.dim.y-1) and (self.layout[x_pos, y_pos+1] == EMPTY) and (x_pos, y_pos+1) not in connectible_list:
+        if self.is_available_cell(x_pos + 1, y_pos, connectible_list):
+            self.add_connectible_cell(x_pos + 1, y_pos, connectible_list)
+        if self.is_available_cell(x_pos, y_pos + 1, connectible_list):
             self.add_connectible_cell(x_pos, y_pos+1, connectible_list)
-        if (x_pos > 0) and (self.layout[x_pos-1, y_pos] == EMPTY) and (x_pos-1, y_pos) not in connectible_list:
+        if self.is_available_cell(x_pos - 1, y_pos, connectible_list):
             self.add_connectible_cell(x_pos-1, y_pos, connectible_list)
-        if (y_pos > 0) and (self.layout[x_pos, y_pos-1] == EMPTY) and (x_pos, y_pos-1) not in connectible_list:
-            self.add_connectible_cell(x_pos, y_pos-1, connectible_list)
+        if self.is_available_cell(x_pos, y_pos - 1, connectible_list):
+            self.add_connectible_cell(x_pos, y_pos - 1, connectible_list)
         return connectible_list
+
+    def is_available_cell(self, x_coord, y_coord, connectible_list):
+        if x_coord not in range(0, self.dim.x) or y_coord not in range(0, self.dim.y):
+            return False
+        return (self.layout[x_coord, y_coord] == EMPTY) and ((x_coord, y_coord) not in connectible_list)
+
 
     def is_connectible(self, x_head: int, y_head: int, x_target: int, y_target: int) -> bool:
             """ Return a boolean indicating if the two cells are connectible on the board.
 
         Args:
-            x_head, y_head (int, int) : cell at one end of the proposed wire.
-            x_target, y_target (int, int) : cell at the other end of the proposed wire.
+            x_head, y_head (int, int) : 2D position of one end of the proposed wire.
+            x_target, y_target (int, int) : 2D position of the other end of the proposed wire.
 
         Returns:
             bool : True if the two are connectible on the board.
@@ -292,8 +301,8 @@ class Board:
             # If it's not connectible to anything, try a new random head
             if len(connectible_list) < 2:
                 continue
-            print(f"connectible list = {len(connectible_list)} cells")
-            print(connectible_list)
+            #print(f"connectible list = {len(connectible_list)} cells")
+            #print(connectible_list)
             invalid_head = False
             # wire_list is a copy of the connectible cells, which will exclude the head and target
             wire_list = deepcopy(connectible_list)
@@ -325,7 +334,7 @@ class Board:
 
            Args:
                cell (int, int) : The cell to be investigated.
-               connectible_list (List[(int,int)...]) : The list of all cells in the wire.
+               connectible_list (List[Tuple[int,int]...]) : The list of all cells in the wire.
 
            Returns:
                bool : True if at least three of the four adjacent cells are unconnected,
@@ -348,7 +357,7 @@ class Board:
 
            Args:
                cell (int, int) : The cell to be investigated.
-               connectible_list (List[(int,int)...]) : The list of all cells in the wire.
+               connectible_list (List[Tuple[int,int]...]) : The list of all cells in the wire.
 
            Returns:
                bool : True if the cell is an extraneous corner that can be removed,
@@ -395,8 +404,130 @@ class Board:
             layout_out.append(row_out)
         return np.array(layout_out)
 
+    def is_valid_board(self) -> (bool):
+        # Return a boolean indicating if the board is valid.  Raise an exception if not.
+        is_valid = True
+        if not self.verify_board_size():
+            raise IncorrectBoardSizeError
+            is_valid = False
+        if self.num_agents < 0:
+            raise NumAgentsOutOfRangeError
+            is_valid = False
+        if not self.verify_indices_range():
+            raise IndicesOutOfRangeError
+            is_valid = False
+        if not self.verify_number_heads_tails():
+            is_valid = False
+        if not self.verify_wire_validity():
+            raise InvalidWireStructureError
+            is_valid = False
+        return is_valid
 
-def board_generator(rows: int, cols: int, num_agents: int = None) -> (np.ndarray, np.ndarray, int):
+    def verify_board_size(self) -> (bool):
+        # Verify that the size of a board layout matches the specified dimensions.
+        return np.shape(self.layout) == (self.dim.x, self.dim.y)
+
+    def verify_indices_range(self) -> (bool):
+        # Verify that all the indices on the board are either 0 or in the range 2 to 3 * self.num_agents + 1.
+        wires_only = np.setdiff1d(self.layout, np.array([EMPTY]))
+        if self.num_agents == 0:
+            # if no wires, we should have nothing left of the board
+            return (len(wires_only) == 0)
+        if np.min(self.layout) < 0:
+            return False
+        if np.max(self.layout) > 3 * self.num_agents + 1:
+            return False
+        return True
+
+    def verify_number_heads_tails(self) -> (bool):
+        # Verify that each wire has exactly one head and one target.
+        wires_only = np.setdiff1d(self.layout, np.array([EMPTY]))
+        is_valid = True
+        for num_wire in range(self.num_agents):
+            heads = np.count_nonzero(wires_only == (num_wire*3 + HEAD))
+            tails = np.count_nonzero(wires_only == (num_wire*3 + TARGET))
+            if heads < 1 or tails < 1:
+                is_valid = False
+                raise MissingHeadTailError
+            if heads > 1 or tails > 1:
+                is_valid = False
+                raise DuplicateHeadsTailsError
+        return is_valid
+
+    def verify_wire_validity(self) -> (bool):
+        # Verify that each wire has a valid shape,
+        # ie, each head/target is connected to one wire cell, and each wire cell is connected to two.
+        for row in range(self.dim.x):
+            for col in range(self.dim.y):
+                cell = self.layout[row, col]
+                if cell > 0:
+                    # Don't check empty cells
+                    if (cell % 3) == WIRE:
+                        # Wire cells should have two neighbors of the same wire
+                        if self.num_wire_neighbors(cell, row, col) != 2:
+                            #print(f"{row},{col} == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors" )
+                            return False
+                    else:
+                        # Head and target cells should only have one neighbor of the same wire.
+                        if self.num_wire_neighbors(cell, row, col) != 1:
+                            #print(f"HT{row},{col} == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors")
+                            return False
+        return True
+
+    def num_wire_neighbors(self, cell: int, row:int, col: int) -> (int):
+        """ Return the number of adjacent cells belonging to the same wire.
+
+            Args:
+                cell (int) : value of the cell to investigate
+                row, col (int, int) : 2D position of the cell to investigate
+
+                Returns:
+                (int) : The number of adjacent cells belonging to the same wire.
+        """
+        neighbors = 0
+        wire_num = (cell-2) // 3 # Members of the same wire will be in the range (3*wire_num+2, 3*wire_num+4)
+        min_val = 3 * wire_num + 2
+        max_val = 3 * wire_num + 4
+        if row > 0:
+            if min_val <= self.layout[row-1, col] <= max_val: # same wire above
+                neighbors +=1
+        if col > 0:
+            if min_val <= self.layout[row, col-1] <= max_val: # same wire to the left
+                neighbors += 1
+        if row < self.dim.x - 1:
+            if min_val <= self.layout[row + 1, col] <= max_val: # same wire below
+                neighbors += 1
+        if col < self.dim.y - 1:
+            if min_val <= self.layout[row, col + 1] <= max_val: # same wire to the right
+                neighbors += 1
+        #if neighbors == 0:
+            #print(row,col, cell, "min_val = ",min_val,"max_val =",max_val)
+        return neighbors
+
+class IncorrectBoardSizeError(Exception):
+    #Raised when a board size does not match the specified dimensions."
+    pass
+
+class NumAgentsOutOfRangeError(Exception):
+    "Raised when self.num_agents is negative."
+    pass
+class IndicesOutOfRangeError(Exception):
+    "Raised when one or more cells on the board have an invalid index."
+    pass
+
+class DuplicateHeadsTailsError(Exception):
+    "Raised when one of the heads or tails of a wire is duplicated."
+    pass
+
+class MissingHeadTailError(Exception):
+    "Raised when one of the heads or tails of a wire is missing."
+    pass
+
+class InvalidWireStructureError(Exception):
+    "Raised when one or more of the wires has an invalid structure, eg looping or branching."
+    pass
+
+def board_generator_rb(rows: int, cols: int, num_agents: int = None) -> (np.ndarray, np.ndarray, int):
     """ Generate a circuit board of the specified size and number of wires.
 
     The circuit board will be of dimensions rows by cols.
@@ -414,10 +545,10 @@ def board_generator(rows: int, cols: int, num_agents: int = None) -> (np.ndarray
                 Default (None) => Fit as many wiring pairs as possible.
 
     Returns:
-        (Board) : Board class is defined above with attributes .layout, .dim and .num_agents
+        (Board_rb) : Board class is defined above with attributes .layout, .dim and .num_agents
     """
     # Initialize the board
-    board_output = Board(rows, cols)
+    board_output = Board_rb(rows, cols)
     # Add wires to the board
     if num_agents is None:
         num_agents = rows * cols # An impossible target.  Do as many as possible.
@@ -444,20 +575,20 @@ def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_agen
 if __name__ == "__main__":
     for num_agents in range(9):
         rows, cols = 5,5
-        my_board = board_generator(rows, cols, num_agents)
+        my_board = board_generator_rb(rows, cols, num_agents)
         board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
         print_board(board_training, board_solution, num_agents)
     # Test bigger boards
     # Test allowing the number of wires to default to max possible
     for num_agents in range(2):
         rows, cols = 10,11
-        my_board = board_generator(rows, cols, num_agents)
+        my_board = board_generator_rb(rows, cols, num_agents)
         board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
         print_board(board_training, board_solution, num_agents)
 
     rows, cols = 18,18
     wires_requested = 10
-    my_board = board_generator(rows, cols, wires_requested)
+    my_board = board_generator_rb(rows, cols, wires_requested)
     board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
     print_board(board_training, board_solution, num_agents)
     """
@@ -471,6 +602,88 @@ if __name__ == "__main__":
 
     rows, cols = 20,20
     wires_requested = 17
-    my_board = board_generator(rows, cols, wires_requested)
+    my_board = board_generator_rb(rows, cols, wires_requested)
     board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
     print_board(board_training, board_solution, num_agents)
+
+    for i in range(1000):
+        rows = random.randint(3,20)
+        cols = random.randint(3,20)
+        wires_requested = random.randint(1,rows)
+        my_board = board_generator_rb(rows, cols, wires_requested)
+        valid = my_board.is_valid_board()
+        #print(i, valid)
+        if not valid:
+            print("BAD BOARD")
+            print(my_board.layout)
+
+    """ 
+    # The following are tests of the board.is_valid_board() function
+    # to ensure that it picks up errors
+        
+    my_board = board_generator(4,4,0)
+    #print(my_board.layout)
+    #print(my_board.dim)
+    valid = my_board.is_valid_board()
+    #size, num_agents, indices, headstails, valid shape
+    #my_board.dim.x = 3
+    #valid = my_board.is_valid_board()
+    #my_board.dim = Position(4,5)
+    #valid = my_board.is_valid_board()
+    #my_board.num_agents = -1
+    #valid = my_board.is_valid_board()
+    #my_board.num_agents = 1
+    #valid = my_board.is_valid_board()
+    #my_board = board_generator(4, 4, 2)
+    #my_board.num_agents -= 1
+    #valid = my_board.is_valid_board()
+    #my_board = board_generator(4, 4, 0)
+    #my_board.layout[0,0] = 2
+    #valid = my_board.is_valid_board()
+    my_board = board_generator(4, 4, 1)
+    my_board.layout = np.array([[0, 0, 0, 0],
+                                [0, 0, 0, 0],
+                                [0, 0, 0, 0],
+                                [0, 0, 0, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 4, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 2, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[0, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 4, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 2, 3]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 4, 4]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [2, 0, 4, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 0, 0, 0],
+                                [0, 2, 2, 0],
+                                [0, 0, 2, 0],
+                                [0, 0, 4, 0]])
+    #valid = my_board.is_valid_board()
+    my_board.layout = np.array([[3, 2, 0, 0],
+                                [0, 2, 2, 2],
+                                [0, 0, 2, 0],
+                                [0, 0, 4, 0]])
+    #valid = my_board.is_valid_board()
+    """
