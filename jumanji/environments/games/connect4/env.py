@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+import warnings
+from typing import Any, Tuple
 
 from chex import Array, PRNGKey
 from jax import lax
@@ -67,7 +68,23 @@ class Connect4(Environment[State]):
 
     """
 
-    n_players: int = 2
+    def __init_subclass__(cls, **kwargs: Any):
+        """Throw a deprecation warning on subclassing Connect4."""
+        warnings.warn(
+            f"{cls.__name__} will be deprecated in release 0.2.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init_subclass__(**kwargs)
+
+    def __init__(self, n_players: int = 2):
+        """Throw a deprecation warning on initialization of Connect4."""
+        warnings.warn(
+            f"{self.__class__.__name__} will be deprecated in release 0.2.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.n_players = n_players
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
