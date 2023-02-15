@@ -183,3 +183,9 @@ def test_connect4__render(connect4_env: Connect4, empty_board: Array) -> None:
     expected_board_render = str(empty_board)
 
     assert expected_board_render in render
+
+
+def test_connect4__depreciation() -> None:
+    """Check that instantiating the environment triggers a depreciation warning."""
+    with pytest.deprecated_call():
+        Connect4()
