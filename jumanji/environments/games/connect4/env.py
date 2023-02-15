@@ -72,7 +72,7 @@ class Connect4(Environment[State]):
     def __init_subclass__(cls, **kwargs: Any):
         """Throw a deprecation warning on subclassing Connect4."""
         warnings.warn(
-            f"{cls.__name__} will be deprecated in release 0.2.0.",
+            f"{cls.__name__} is deprecated and will be removed in release 0.2.0.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -81,7 +81,7 @@ class Connect4(Environment[State]):
     def __init__(self, n_players: int = 2):
         """Throw a deprecation warning on initialization of Connect4."""
         warnings.warn(
-            f"{self.__class__.__name__} will be deprecated in release 0.2.0.",
+            f"{self.__class__.__name__} is deprecated and will be removed in release 0.2.0.",
             DeprecationWarning,
             stacklevel=2,
         )
