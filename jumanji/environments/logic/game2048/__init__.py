@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# from jumanji.environments.logic.game2048.env import Game2048
+from jumanji.environments.logic.game2048.env import Game2048
 from jumanji.environments.logic.game2048.types import Observation, State
