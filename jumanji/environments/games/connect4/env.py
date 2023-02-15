@@ -82,7 +82,7 @@ class Connect4(Environment[State]):
         """
         del key
         board = jnp.zeros((BOARD_HEIGHT, BOARD_WIDTH), dtype=jnp.int8)
-        action_mask = jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
+        action_mask = jnp.ones((BOARD_WIDTH,), dtype=bool)
 
         obs = Observation(
             board=board, action_mask=action_mask, current_player=jnp.int8(0)
@@ -177,9 +177,9 @@ class Connect4(Environment[State]):
             action_mask=specs.BoundedArray(
                 shape=(7,),
                 dtype=bool,
-                minimum=0,
-                maximum=1,
-                name="invalid_mask",
+                minimum=False,
+                maximum=True,
+                name="action_mask",
             ),
             current_player=specs.DiscreteArray(
                 num_values=self.n_players, dtype=jnp.int8, name="current_player"

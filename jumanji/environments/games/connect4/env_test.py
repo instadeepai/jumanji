@@ -44,7 +44,7 @@ def test_connect4__reset(connect4_env: Connect4, empty_board: Array) -> None:
     assert timestep.observation.current_player == 0
     assert jnp.array_equal(state.board, empty_board)
     assert jnp.array_equal(
-        timestep.observation.action_mask, jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
+        timestep.observation.action_mask, jnp.ones((BOARD_WIDTH,), dtype=bool)
     )
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
@@ -122,9 +122,9 @@ def test_connect4__invalid_action(connect4_env: Connect4) -> None:
         state, timestep = connect4_env.step(state, action)
 
     # check that the action is flagged as illegal
-    assert timestep.observation.action_mask[0] == 0
+    assert not timestep.observation.action_mask[0]
     # check the other actions are still legal
-    assert jnp.all(timestep.observation.action_mask[1:] == 1)
+    assert jnp.all(timestep.observation.action_mask[1:])
 
     bad_player = state.current_player
     good_player = (bad_player + 1) % 2
