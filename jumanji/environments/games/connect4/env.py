@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import warnings
-from typing import Any, Tuple
+from typing import Tuple
 
 from chex import Array, PRNGKey
 from jax import lax
@@ -35,7 +35,7 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connect4(Environment[State]):
-    """This environment is DEPRECIATED and will be REMOVED in a future release.
+    """This environment is DEPRECIATED and will be REMOVED in release 0.2.0.
     A JAX implementation of the 'Connect 4' game.
 
     - observation: Observation
@@ -68,15 +68,6 @@ class Connect4(Environment[State]):
             - (-1) if it contains a token placed by the other player.
 
     """
-
-    def __init_subclass__(cls, **kwargs: Any):
-        """Throw a deprecation warning on subclassing Connect4."""
-        warnings.warn(
-            f"{cls.__name__} is deprecated and will be removed in release 0.2.0.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init_subclass__(**kwargs)
 
     def __init__(self, n_players: int = 2):
         """Throw a deprecation warning on initialization of Connect4."""
