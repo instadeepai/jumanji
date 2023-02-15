@@ -35,7 +35,7 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connect4(Environment[State]):
-    """This environment is DEPRECIATED and will be REMOVED in release 0.2.0.
+    """This environment is DEPRECATED and will be REMOVED in release 0.2.0.
     A JAX implementation of the 'Connect 4' game.
 
     - observation: Observation
