@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from typing import Tuple
 
 from chex import Array, PRNGKey
@@ -34,7 +35,8 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connect4(Environment[State]):
-    """A JAX implementation of the 'Connect 4' game.
+    """This environment is DEPRECATED and will be REMOVED in release 0.2.0.
+    A JAX implementation of the 'Connect 4' game.
 
     - observation: Observation
         - board: jax array (int8) of shape (6, 7):
@@ -67,7 +69,14 @@ class Connect4(Environment[State]):
 
     """
 
-    n_players: int = 2
+    def __init__(self, n_players: int = 2):
+        """Throw a deprecation warning on initialization of Connect4."""
+        warnings.warn(
+            f"{self.__class__.__name__} is deprecated and will be removed in release 0.2.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.n_players = n_players
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -82,7 +91,7 @@ class Connect4(Environment[State]):
         """
         del key
         board = jnp.zeros((BOARD_HEIGHT, BOARD_WIDTH), dtype=jnp.int8)
-        action_mask = jnp.ones((BOARD_WIDTH,), dtype=jnp.int8)
+        action_mask = jnp.ones((BOARD_WIDTH,), dtype=bool)
 
         obs = Observation(
             board=board, action_mask=action_mask, current_player=jnp.int8(0)
@@ -177,9 +186,9 @@ class Connect4(Environment[State]):
             action_mask=specs.BoundedArray(
                 shape=(7,),
                 dtype=bool,
-                minimum=0,
-                maximum=1,
-                name="invalid_mask",
+                minimum=False,
+                maximum=True,
+                name="action_mask",
             ),
             current_player=specs.DiscreteArray(
                 num_values=self.n_players, dtype=jnp.int8, name="current_player"

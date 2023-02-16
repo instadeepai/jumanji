@@ -53,4 +53,4 @@ try:
 except ImportError as exc:
     import warnings
 
-    warnings.warn(f"Error importing IPython: {exc}")
+    warnings.warn(f"Error importing IPython: {exc}", stacklevel=2)
