@@ -25,6 +25,7 @@ from jumanji.environments import (
     TSP,
     BinPack,
     Connect4,
+    Game2048,
     JobShop,
     Knapsack,
     Minesweeper,
@@ -59,6 +60,7 @@ ENV_FACTORY = {
     "minesweeper": Minesweeper,
     "knapsack": Knapsack,
     "jobshop": JobShop,
+    "game2048": Game2048,
 }
 
 
@@ -130,7 +132,9 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
     return agent
 
 
-def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
+def _setup_random_policy(  # noqa: CCR001
+    cfg: DictConfig, env: Environment
+) -> RandomPolicy:
     assert cfg.agent.network == "random"
     if cfg.environment.name == "binpack":
         assert isinstance(env.unwrapped, BinPack)
@@ -163,6 +167,9 @@ def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
         random_policy = networks.make_random_policy_minesweeper(
             minesweeper=env.unwrapped
         )
+    elif cfg.environment.name == "game2048":
+        assert isinstance(env.unwrapped, Game2048)
+        random_policy = networks.make_random_policy_game2048()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
     return random_policy

@@ -1,0 +1,3 @@
+name: game2048
+env_kwargs:
+    board_size: 4
