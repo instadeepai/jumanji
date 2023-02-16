@@ -18,7 +18,6 @@ nav:
   - Home: index.md
   - Environments:
       - Logic:
-          - Connect4: environments/connect4.md
           - RubiksCube: environments/rubiks_cube.md
           - Minesweeper: environments/minesweeper.md
       - Packing:
@@ -38,7 +37,6 @@ nav:
       - Environments:
           - Base: api/env.md
           - Logic:
-              - Connect4: api/environments/connect4.md
               - RubiksCube: api/environments/rubiks_cube.md
               - Minesweeoer: api/environments/minesweeper.md
           - Packing:

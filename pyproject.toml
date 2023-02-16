@@ -32,7 +32,6 @@ module = [
     "dm_env.*",
     "tree.*",
     "pytest.*",
-    "pygame.*",
     "IPython.*",
     "optax.*",
     "tqdm.*",

@@ -14,8 +14,7 @@
 
 import sys
 
-from jumanji.environments.logic import connect4, game2048
-from jumanji.environments.logic.connect4.env import Connect4
+from jumanji.environments.logic import game2048
 from jumanji.environments.logic.game2048.env import Game2048
 from jumanji.environments.logic.minesweeper import Minesweeper
 from jumanji.environments.logic.rubiks_cube import RubiksCube

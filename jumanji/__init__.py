@@ -148,13 +148,6 @@ register(
     kwargs={"rows": 16, "cols": 16, "num_agents": 5, "step_limit": 256},
 )
 
-
-# Connect4
-register(
-    id="Connect4-v0",
-    entry_point="jumanji.environments:Connect4",
-)
-
 # Rubik's Cube
 register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
 register(
