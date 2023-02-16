@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import chex
 import jax.numpy as jnp
 
 from jumanji.environments.routing.snake.types import Position
 
 
-def position_from_coordinates(coordinates: jnp.ndarray) -> Position:
+def position_from_coordinates(coordinates: chex.Array) -> Position:
     """Transforms an array of coordinates into a Position.
 
     Args:

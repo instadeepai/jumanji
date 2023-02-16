@@ -36,7 +36,7 @@ from jumanji.training.types import TrainingState
 
 
 @hydra.main(config_path="configs", config_name="config.yaml")
-def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
+def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
     logging.info(omegaconf.OmegaConf.to_yaml(cfg))
     logging.getLogger().setLevel(logging.INFO)
     logging.info({"devices": jax.local_devices()})
@@ -47,7 +47,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     agent = setup_agent(cfg, env)
     evaluator = setup_evaluator(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)
-    num_steps_per_timing = (
+    num_steps_per_epoch = (
         cfg.n_steps * cfg.total_batch_size * cfg.num_learner_steps_per_epoch
     )
 
@@ -63,10 +63,8 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
         return training_state, metrics
 
     with jax.log_compiles(log_compiles), logger:
-        for _ in trange(cfg.num_epochs, disable=isinstance(logger, TerminalLogger)):
-            env_steps = utils.first_from_device(
-                training_state.acting_state.env_step_count
-            )
+        for i in trange(cfg.num_epochs, disable=isinstance(logger, TerminalLogger)):
+            env_steps = i * num_steps_per_epoch
 
             # Validation
             key, eval_key = jax.random.split(key)
@@ -82,7 +80,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
 
             # Training
             with Timer(
-                out_var_name="metrics", num_steps_per_timing=num_steps_per_timing
+                out_var_name="metrics", num_steps_per_timing=num_steps_per_epoch
             ):
                 training_state, metrics = epoch_fn(training_state)
             logger.write(

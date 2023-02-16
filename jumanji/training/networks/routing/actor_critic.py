@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence, Union
+from typing import Optional, Sequence
 
 import chex
 import haiku as hk
@@ -62,7 +62,7 @@ def make_actor_critic_networks_routing(
 
 def make_network_routing(
     critic: bool,
-    num_values: Union[None, np.ndarray],
+    num_values: Optional[chex.ArrayNumpy],
     mlp_units: Sequence[int],
     conv_n_channels: int,
 ) -> FeedForwardNetwork:

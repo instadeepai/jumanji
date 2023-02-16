@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://prod.instadeep.ichorai.io/schema/latest/manifest.schema.json
+kind: "IchorManifest"
+version: "0.0.2"
+docker:
+  image: jumanji
+  dockerfile: ./Dockerfile
+  context: .
+  buildArgs:
+    USE_CUDA: "true"
+spec:
+  operator: tf
+  image: jumanji
+  command: python jumanji/training/train.py
+  types:
+    Worker:
+      replicas: 1
+      cpus: 4
+      # mandatory (must be >= 2): RAM ratio wanted (in GB)
+      ramRatio: 5
+      # optional: number of GPUs wanted
+      gpus: 0
+      # options: gpu
+      gpuType: gpu
+      # options: Quadro-RTX-4000
+      gpuProduct: Quadro-RTX-4000

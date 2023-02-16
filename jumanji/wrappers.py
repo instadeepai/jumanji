@@ -24,6 +24,7 @@ from typing import (
     Union,
 )
 
+import chex
 import dm_env.specs
 import gym
 import jax
@@ -651,7 +652,7 @@ class JumanjiToGymWrapper(gym.Env):
             return obs  # type: ignore
 
     def step(
-        self, action: np.ndarray
+        self, action: chex.ArrayNumpy
     ) -> Tuple[GymObservation, float, bool, Optional[Any]]:
         """Updates the environment according to the action and returns an `Observation`.
 
@@ -712,7 +713,7 @@ def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
     Returns:
         Numpy array or nested dictionary of numpy arrays.
     """
-    if isinstance(observation, jnp.ndarray):
+    if isinstance(observation, chex.Array):
         return np.asarray(observation)
     elif hasattr(observation, "__dict__"):
         # Applies to various containers including `chex.dataclass`

@@ -19,7 +19,7 @@ from contextlib import AbstractContextManager
 from types import TracebackType
 from typing import Any, DefaultDict, Dict, Optional, Type
 
-import jax
+import chex
 import numpy as np
 import omegaconf
 import tensorboardX
@@ -89,7 +89,7 @@ class TerminalLogger(Logger):
     def _format_values(self, data: Dict[str, Any]) -> str:
         return " | ".join(
             f"{key.replace('_', ' ').title()}: "
-            f"{(f'{value:.3f}' if isinstance(value, (float, jax.Array)) else f'{value:,}')}"
+            f"{(f'{value:.3f}' if isinstance(value, (float, chex.Array)) else f'{value:,}')}"
             for key, value in sorted(data.items())
         )
 

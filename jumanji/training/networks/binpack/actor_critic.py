@@ -71,7 +71,7 @@ class BinPackTorso(hk.Module):
             for _ in range(transformer_n_blocks)
         ]
 
-    def __call__(self, observation: Observation) -> jnp.ndarray:
+    def __call__(self, observation: Observation) -> chex.Array:
         # Setup ems embedding
         ems = jax.tree_util.tree_flatten(observation.ems)[0]
         ems = jnp.stack(ems, axis=-1)  # stack the elements of ems into a single vector

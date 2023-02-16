@@ -1,0 +1,13 @@
+venv
+.neptune
+nul
+checkpoints
+.git/*
+__pycache__
+idea/*
+**/outputs
+build
+3.7
+3.8
+3.9
+.pytest_cache

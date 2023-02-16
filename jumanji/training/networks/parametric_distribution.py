@@ -29,7 +29,7 @@ class FactorisedActionSpaceReshapeBijector(Postprocessor):
     """Identity bijector that reshapes (flattens and unflattens)
     a sequential action"""
 
-    def __init__(self, action_spec_num_values: np.ndarray):
+    def __init__(self, action_spec_num_values: chex.ArrayNumpy):
         super().__init__()
         self.action_spec_num_values = action_spec_num_values
 
@@ -163,7 +163,7 @@ class CategoricalParametricDistribution(ParametricDistribution):
 class MultiCategoricalParametricDistribution(ParametricDistribution):
     """Multi categorical distribution for multi discrete action spaces."""
 
-    def __init__(self, num_values: np.ndarray):
+    def __init__(self, num_values: chex.ArrayNumpy):
         """Initialize the distribution.
         Args:
             num_values: ndarray of integers specifying the number of possible values to represent
@@ -184,7 +184,7 @@ class MultiCategoricalParametricDistribution(ParametricDistribution):
 class FactorisedActionSpaceParametricDistribution(ParametricDistribution):
     """Categorical distribution for a factorised action space"""
 
-    def __init__(self, action_spec_num_values: np.ndarray):
+    def __init__(self, action_spec_num_values: chex.ArrayNumpy):
         """Initialize the distribution.
         Args:
             action_spec_num_values: the dimensions of each of the factors in the action space"""

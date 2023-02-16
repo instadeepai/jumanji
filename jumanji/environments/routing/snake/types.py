@@ -15,6 +15,8 @@
 from enum import IntEnum
 from typing import TYPE_CHECKING, NamedTuple, Union
 
+import chex
+
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
@@ -39,7 +41,7 @@ class Position(NamedTuple):
 @dataclass
 class State:
     key: PRNGKey
-    body_state: jnp.ndarray
+    body_state: chex.Array
     head_pos: Position
     fruit_pos: Position
     length: int

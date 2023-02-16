@@ -271,8 +271,8 @@ class TestJumanjiEnvironmentToGymEnv:
         state2 = fake_gym_env._state
 
         # Observation is typically numpy array
-        assert isinstance(observation1, np.ndarray)
-        assert isinstance(observation2, np.ndarray)
+        assert isinstance(observation1, chex.ArrayNumpy)
+        assert isinstance(observation2, chex.ArrayNumpy)
 
         # Check that the observations are equal
         chex.assert_trees_all_equal(observation1, observation2)
@@ -791,8 +791,8 @@ class TestJumanjiToGymObservation:
 
     @chex.dataclass
     class DummyChexDataclass:
-        x: jnp.ndarray
-        y: jnp.ndarray
+        x: chex.Array
+        y: chex.Array
 
     def test_jumanji_to_gym_obs__correct_observation(self) -> None:
         """Check that a NamedTuple containing a JAX array and a chex dataclass of two
@@ -813,10 +813,10 @@ class TestJumanjiToGymObservation:
 
         chex.assert_trees_all_equal(converted_obs, correct_obs)
         assert isinstance(converted_obs, dict)
-        assert isinstance(converted_obs["jax_array"], np.ndarray)
+        assert isinstance(converted_obs["jax_array"], chex.ArrayNumpy)
         assert isinstance(converted_obs["chex_dataclass"], dict)
-        assert isinstance(converted_obs["chex_dataclass"]["x"], np.ndarray)
-        assert isinstance(converted_obs["chex_dataclass"]["y"], np.ndarray)
+        assert isinstance(converted_obs["chex_dataclass"]["x"], chex.ArrayNumpy)
+        assert isinstance(converted_obs["chex_dataclass"]["y"], chex.ArrayNumpy)
 
     def test_jumanji_to_gym_obs__wrong_observation(self) -> None:
         """Check that a NotImplementedError is raised when the wrong datatype is passed

@@ -204,8 +204,8 @@ class TestBoundedArray:
 
     def test_min_max_attributes(self) -> None:
         spec = specs.BoundedArray((1, 2, 3), jnp.float32, 0, (5, 5, 5))
-        assert isinstance(spec.minimum, jnp.ndarray)
-        assert isinstance(spec.maximum, jnp.ndarray)
+        assert isinstance(spec.minimum, chex.Array)
+        assert isinstance(spec.maximum, chex.Array)
 
     @pytest.mark.parametrize(
         "spec_dtype, min_dtype, max_dtype",
@@ -331,8 +331,8 @@ class TestBoundedArray:
     def test_scalar_bounds(self) -> None:
         spec = specs.BoundedArray((), float, minimum=0.0, maximum=1.0)
 
-        assert isinstance(spec.minimum, jnp.ndarray)
-        assert isinstance(spec.maximum, jnp.ndarray)
+        assert isinstance(spec.minimum, chex.Array)
+        assert isinstance(spec.maximum, chex.Array)
 
         # Sanity check that jax compares correctly to a scalar for an empty shape.
         assert spec.minimum == 0.0
