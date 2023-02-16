@@ -1227,7 +1227,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.environments.combinatorial.knapsack.env.Knapsack.reset_from_state" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">first_item</span><span class="p">:</span> <span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">reset_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">],</span> <span class="n">first_item</span><span class="p">:</span> <span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.environments.combinatorial.knapsack.env.Knapsack.reset_from_state" class="headerlink" title="Permanent link">#</a></h3>
@@ -1249,7 +1249,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
   <tbody>
       <tr>
         <td><code>problem</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>jax array (float32) of shape (problem_size, 2) the weights
 and values of the items.</p></td>
         <td><em>required</em></td>
@@ -1290,7 +1290,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.environments.combinatorial.knapsack.env.Knapsack.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.environments.combinatorial.knapsack.env.Knapsack.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1318,7 +1318,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the index of next item to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1430,7 +1430,7 @@ timestep: the timestep to be observed.</p></td>
   <small>
     
       Last update:
-      2023-01-04
+      2023-02-16
     
   </small>
 </div>

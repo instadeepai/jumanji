@@ -1246,7 +1246,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.Wrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1274,7 +1274,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1607,7 +1607,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1635,7 +1635,7 @@ has been constructed and <code>reset</code> has not been called. Again, in this 
   <tbody>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>A NumPy array, or a nested dict, list or tuple of arrays
 corresponding to <code>action_spec()</code>.</p></td>
         <td><em>required</em></td>
@@ -1762,7 +1762,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f33cc9f5940</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f33cc9fb280</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f95b4ca4d30</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f95b4cb0670</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1796,14 +1796,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x7f33cc9f5940&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f95b4ca4d30&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x7f33cc9fb280&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f95b4cb0670&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -1873,7 +1873,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.MultiToSingleWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1904,7 +1904,7 @@ essentially means that if any single agent is alive, the discount value won't be
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2043,7 +2043,7 @@ timestep: TimeStep object corresponding the first timesteps returned by the
 
 
 <h4 id="jumanji.wrappers.VmapWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.VmapWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2074,7 +2074,7 @@ environments.</p>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the actions to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2307,7 +2307,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.BraxToJumanjiWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.BraxToJumanjiWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2335,7 +2335,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2502,7 +2502,7 @@ if the episode has terminated.</p>
 
 
 <h4 id="jumanji.wrappers.AutoResetWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.AutoResetWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2921,7 +2921,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2023-01-04
+      2023-02-16
     
   </small>
 </div>

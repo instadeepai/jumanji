@@ -951,8 +951,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#jumanji.environments.games.connect4.env.Connect4.n_players" class="md-nav__link">
-    n_players
+  <a href="#jumanji.environments.games.connect4.env.Connect4.__init__" class="md-nav__link">
+    __init__()
   </a>
   
 </li>
@@ -1096,7 +1096,8 @@ Connect4            (<a class="autorefs autorefs-internal" title="jumanji.env.En
 
     <div class="doc doc-contents first">
 
-      <p>A JAX implementation of the 'Connect 4' game.</p>
+      <p>This environment is DEPRECATED and will be REMOVED in release 0.2.0.
+A JAX implementation of the 'Connect 4' game.</p>
 <ul>
 <li>
 <p>observation: Observation</p>
@@ -1156,24 +1157,29 @@ and the game ends.</li>
 
 
 
-  <div class="doc doc-object doc-attribute">
 
 
 
-<h3 id="jumanji.environments.games.connect4.env.Connect4.n_players" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">n_players</span><span class="p">:</span> <span class="nb">int</span></code>
+  <div class="doc doc-object doc-method">
 
 
-<a href="#jumanji.environments.games.connect4.env.Connect4.n_players" class="headerlink" title="Permanent link">#</a></h3>
+
+<h3 id="jumanji.environments.games.connect4.env.Connect4.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_players</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+<a href="#jumanji.environments.games.connect4.env.Connect4.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
+
+      <p>Throw a deprecation warning on initialization of Connect4.</p>
 
     </div>
 
   </div>
-
-
-
 
 
 
@@ -1238,7 +1244,7 @@ environment. Its <code>observation</code> attribute contains a field for the cur
 
 
 <h3 id="jumanji.environments.games.connect4.env.Connect4.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">connect4</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">connect4</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">connect4</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">games</span><span class="o">.</span><span class="n">connect4</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.environments.games.connect4.env.Connect4.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1266,7 +1272,7 @@ environment. Its <code>observation</code> attribute contains a field for the cur
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the column to insert the token into {0, 1, 2, 3, 4, 5, 6}</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1453,7 +1459,7 @@ to be done to close, therefore, this method does not do anything.</p>
   <small>
     
       Last update:
-      2023-01-04
+      2023-02-16
     
   </small>
 </div>
