@@ -15,7 +15,7 @@
 
 To be usable with Jax transformations, data structures must have fixed shape.
 A stack can be represented by a 2D array, each row containing the flatten representation of an
-element. For example, in a stack of chambers (as in the instance generator), each row should
+element. For example, in a stack of chambers (as in the maze generation), each row should
 contain 4 digits: x0, y0, width and height.
 We also need an upper bound to the number of elements the stack can contain, so that we always
 have a fixed number of row.

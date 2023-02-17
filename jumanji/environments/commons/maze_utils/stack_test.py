@@ -16,7 +16,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.multi_agent_cleaner.stack import (
+from jumanji.environments.commons.maze_utils.stack import (
     Stack,
     create_stack,
     empty_stack,

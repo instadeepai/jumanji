@@ -40,5 +40,8 @@ module = [
     "tensorboardX.*",
     "networkx.*",
     "scipy.*",
+    "haiku.*",
+    "hydra.*",
+    "omegaconf.*",
 ]
 ignore_missing_imports = true
