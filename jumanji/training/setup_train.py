@@ -80,10 +80,10 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    env_name = cfg.environment.name
-    env_kwargs = cfg.environment.env_kwargs
-    if "instance_generator_kwargs" in cfg.environment.keys():
-        instance_generator_kwargs = cfg.environment.instance_generator_kwargs
+    env_name = cfg.env.name
+    env_kwargs = cfg.env.env_kwargs
+    if "instance_generator_kwargs" in cfg.env.keys():
+        instance_generator_kwargs = cfg.env.instance_generator_kwargs
         env_kwargs.update(instance_generator_kwargs or {})
     env: Environment = ENV_FACTORY[env_name](**env_kwargs)
     if isinstance(env.action_spec(), specs.MultiDiscreteArray):
@@ -99,33 +99,33 @@ def setup_env(cfg: DictConfig) -> Environment:
 
 def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
     agent: Agent
-    if cfg.agent.name == "random":
+    if cfg.agent == "random":
         random_policy = _setup_random_policy(cfg, env)
         agent = RandomAgent(
             env=env,
-            n_steps=cfg.n_steps,
-            total_batch_size=cfg.total_batch_size,
+            n_steps=cfg.env.training.n_steps,
+            total_batch_size=cfg.env.training.total_batch_size,
             random_policy=random_policy,
         )
-    elif cfg.agent.name == "a2c":
+    elif cfg.agent == "a2c":
         actor_critic_networks = _setup_actor_critic_neworks(cfg, env)
-        optimizer = optax.adam(cfg.agent.learning_rate)
+        optimizer = optax.adam(cfg.env.a2c.learning_rate)
         agent = A2CAgent(
             env=env,
-            n_steps=cfg.n_steps,
-            total_batch_size=cfg.total_batch_size,
+            n_steps=cfg.env.training.n_steps,
+            total_batch_size=cfg.env.training.total_batch_size,
             actor_critic_networks=actor_critic_networks,
             optimizer=optimizer,
-            normalize_advantage=cfg.agent.normalize_advantage,
-            discount_factor=cfg.agent.discount_factor,
-            bootstrapping_factor=cfg.agent.bootstrapping_factor,
-            l_pg=cfg.agent.l_pg,
-            l_td=cfg.agent.l_td,
-            l_en=cfg.agent.l_en,
+            normalize_advantage=cfg.env.a2c.normalize_advantage,
+            discount_factor=cfg.env.a2c.discount_factor,
+            bootstrapping_factor=cfg.env.a2c.bootstrapping_factor,
+            l_pg=cfg.env.a2c.l_pg,
+            l_td=cfg.env.a2c.l_td,
+            l_en=cfg.env.a2c.l_en,
         )
     else:
         raise ValueError(
-            f"Expected agent name to be in ['random', 'a2c'], got {cfg.agent.name}."
+            f"Expected agent name to be in ['random', 'a2c'], got {cfg.agent}."
         )
     return agent
 
@@ -133,145 +133,145 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
 def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> RandomPolicy:
-    assert cfg.agent.network == "random"
-    if cfg.environment.name == "binpack":
+    assert cfg.agent == "random"
+    if cfg.env.name == "binpack":
         assert isinstance(env.unwrapped, BinPack)
         random_policy = networks.make_random_policy_binpack(binpack=env.unwrapped)
-    elif cfg.environment.name == "snake":
+    elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         random_policy = networks.make_random_policy_snake()
-    elif cfg.environment.name == "tsp":
+    elif cfg.env.name == "tsp":
         assert isinstance(env.unwrapped, TSP)
         random_policy = networks.make_random_policy_tsp()
-    elif cfg.environment.name == "knapsack":
+    elif cfg.env.name == "knapsack":
         assert isinstance(env.unwrapped, Knapsack)
         random_policy = networks.make_random_policy_knapsack()
-    elif cfg.environment.name == "jobshop":
+    elif cfg.env.name == "jobshop":
         assert isinstance(env.unwrapped, JobShop)
         random_policy = networks.make_random_policy_jobshop()
-    elif cfg.environment.name == "cvrp":
+    elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
-    elif cfg.environment.name == "routing":
+    elif cfg.env.name == "routing":
         assert isinstance(env.unwrapped, Routing)
         random_policy = networks.make_random_policy_routing(routing=env.unwrapped)
-    elif cfg.environment.name == "rubiks_cube":
+    elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         random_policy = networks.make_random_policy_rubiks_cube(
             rubiks_cube=env.unwrapped
         )
-    elif cfg.environment.name == "minesweeper":
+    elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
         random_policy = networks.make_random_policy_minesweeper(
             minesweeper=env.unwrapped
         )
-    elif cfg.environment.name == "game2048":
+    elif cfg.env.name == "game2048":
         assert isinstance(env.unwrapped, Game2048)
         random_policy = networks.make_random_policy_game2048()
     else:
-        raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
+        raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
 
 
 def _setup_actor_critic_neworks(
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
-    assert cfg.agent.network == "actor_critic"
-    if cfg.environment.name == "binpack":
+    assert cfg.agent == "a2c"
+    if cfg.env.name == "binpack":
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_binpack(
             binpack=env.unwrapped,
-            policy_layers=cfg.environment.network.policy_layers,
-            value_layers=cfg.environment.network.value_layers,
-            transformer_n_blocks=cfg.environment.network.transformer_n_blocks,
-            transformer_mlp_units=cfg.environment.network.transformer_mlp_units,
-            transformer_key_size=cfg.environment.network.transformer_key_size,
-            transformer_num_heads=cfg.environment.network.transformer_num_heads,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+            transformer_n_blocks=cfg.env.network.transformer_n_blocks,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
         )
-    elif cfg.environment.name == "snake":
+    elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         actor_critic_networks = networks.make_actor_critic_networks_snake(
-            num_channels=cfg.environment.network.num_channels,
-            policy_layers=cfg.environment.network.policy_layers,
-            value_layers=cfg.environment.network.value_layers,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
         )
-    elif cfg.environment.name == "tsp":
+    elif cfg.env.name == "tsp":
         assert isinstance(env.unwrapped, TSP)
         actor_critic_networks = networks.make_actor_critic_networks_tsp(
             tsp=env.unwrapped,
-            encoder_num_layers=cfg.environment.network.encoder_num_layers,
-            encoder_num_heads=cfg.environment.network.encoder_num_heads,
-            encoder_key_size=cfg.environment.network.encoder_key_size,
-            encoder_model_size=cfg.environment.network.encoder_model_size,
-            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
-            decoder_num_heads=cfg.environment.network.decoder_num_heads,
-            decoder_key_size=cfg.environment.network.decoder_key_size,
-            decoder_model_size=cfg.environment.network.decoder_model_size,
+            encoder_num_layers=cfg.env.network.encoder_num_layers,
+            encoder_num_heads=cfg.env.network.encoder_num_heads,
+            encoder_key_size=cfg.env.network.encoder_key_size,
+            encoder_model_size=cfg.env.network.encoder_model_size,
+            encoder_expand_factor=cfg.env.network.encoder_expand_factor,
+            decoder_num_heads=cfg.env.network.decoder_num_heads,
+            decoder_key_size=cfg.env.network.decoder_key_size,
+            decoder_model_size=cfg.env.network.decoder_model_size,
         )
-    elif cfg.environment.name == "knapsack":
+    elif cfg.env.name == "knapsack":
         assert isinstance(env.unwrapped, Knapsack)
         actor_critic_networks = networks.make_actor_critic_networks_knapsack(
             knapsack=env.unwrapped,
-            encoder_num_layers=cfg.environment.network.encoder_num_layers,
-            encoder_num_heads=cfg.environment.network.encoder_num_heads,
-            encoder_key_size=cfg.environment.network.encoder_key_size,
-            encoder_model_size=cfg.environment.network.encoder_model_size,
-            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
-            decoder_num_heads=cfg.environment.network.decoder_num_heads,
-            decoder_key_size=cfg.environment.network.decoder_key_size,
-            decoder_model_size=cfg.environment.network.decoder_model_size,
+            encoder_num_layers=cfg.env.network.encoder_num_layers,
+            encoder_num_heads=cfg.env.network.encoder_num_heads,
+            encoder_key_size=cfg.env.network.encoder_key_size,
+            encoder_model_size=cfg.env.network.encoder_model_size,
+            encoder_expand_factor=cfg.env.network.encoder_expand_factor,
+            decoder_num_heads=cfg.env.network.decoder_num_heads,
+            decoder_key_size=cfg.env.network.decoder_key_size,
+            decoder_model_size=cfg.env.network.decoder_model_size,
         )
-    elif cfg.environment.name == "jobshop":
+    elif cfg.env.name == "jobshop":
         assert isinstance(env.unwrapped, JobShop)
         actor_critic_networks = networks.make_actor_critic_networks_jobshop(
             jobshop=env.unwrapped,
-            policy_layers=cfg.environment.network.policy_layers,
-            value_layers=cfg.environment.network.value_layers,
-            operations_layers=cfg.environment.network.operations_layers,
-            machines_layers=cfg.environment.network.machines_layers,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+            operations_layers=cfg.env.network.operations_layers,
+            machines_layers=cfg.env.network.machines_layers,
         )
 
-    elif cfg.environment.name == "cvrp":
+    elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         actor_critic_networks = networks.make_actor_critic_networks_cvrp(
             cvrp=env.unwrapped,
-            encoder_num_layers=cfg.environment.network.encoder_num_layers,
-            encoder_num_heads=cfg.environment.network.encoder_num_heads,
-            encoder_key_size=cfg.environment.network.encoder_key_size,
-            encoder_model_size=cfg.environment.network.encoder_model_size,
-            encoder_expand_factor=cfg.environment.network.encoder_expand_factor,
-            decoder_num_heads=cfg.environment.network.decoder_num_heads,
-            decoder_key_size=cfg.environment.network.decoder_key_size,
-            decoder_model_size=cfg.environment.network.decoder_model_size,
+            encoder_num_layers=cfg.env.network.encoder_num_layers,
+            encoder_num_heads=cfg.env.network.encoder_num_heads,
+            encoder_key_size=cfg.env.network.encoder_key_size,
+            encoder_model_size=cfg.env.network.encoder_model_size,
+            encoder_expand_factor=cfg.env.network.encoder_expand_factor,
+            decoder_num_heads=cfg.env.network.decoder_num_heads,
+            decoder_key_size=cfg.env.network.decoder_key_size,
+            decoder_model_size=cfg.env.network.decoder_model_size,
         )
-    elif cfg.environment.name == "routing":
+    elif cfg.env.name == "routing":
         assert isinstance(env.unwrapped, Routing)
         actor_critic_networks = networks.make_actor_critic_networks_routing(
             routing=env.unwrapped,
-            num_channels=cfg.environment.network.num_channels,
-            policy_layers=cfg.environment.network.policy_layers,
-            value_layers=cfg.environment.network.value_layers,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
         )
-    elif cfg.environment.name == "rubiks_cube":
+    elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         actor_critic_networks = networks.make_actor_critic_networks_rubiks_cube(
             rubiks_cube=env.unwrapped,
-            cube_embed_dim=cfg.environment.network.cube_embed_dim,
-            step_count_embed_dim=cfg.environment.network.step_count_embed_dim,
-            dense_layer_dims=cfg.environment.network.dense_layer_dims,
+            cube_embed_dim=cfg.env.network.cube_embed_dim,
+            step_count_embed_dim=cfg.env.network.step_count_embed_dim,
+            dense_layer_dims=cfg.env.network.dense_layer_dims,
         )
-    elif cfg.environment.name == "minesweeper":
+    elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
         actor_critic_networks = networks.make_actor_critic_networks_minesweeper(
             minesweeper=env.unwrapped,
-            board_embed_dim=cfg.environment.network.board_embed_dim,
-            board_conv_channels=cfg.environment.network.board_conv_channels,
-            board_kernel_shape=cfg.environment.network.board_kernel_shape,
-            num_mines_embed_dim=cfg.environment.network.num_mines_embed_dim,
-            final_layer_dims=cfg.environment.network.final_layer_dims,
+            board_embed_dim=cfg.env.network.board_embed_dim,
+            board_conv_channels=cfg.env.network.board_conv_channels,
+            board_kernel_shape=cfg.env.network.board_kernel_shape,
+            num_mines_embed_dim=cfg.env.network.num_mines_embed_dim,
+            final_layer_dims=cfg.env.network.final_layer_dims,
         )
     else:
-        raise ValueError(f"Environment name not found. Got {cfg.environment.name}.")
+        raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return actor_critic_networks
 
 
@@ -280,7 +280,7 @@ def setup_evaluator(cfg: DictConfig, agent: Agent) -> Evaluator:
     evaluator = Evaluator(
         eval_env=env,
         agent=agent,
-        total_num_eval=cfg.total_num_eval,
+        total_num_eval=cfg.env.training.total_num_eval,
     )
     return evaluator
 

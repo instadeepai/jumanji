@@ -1,0 +1,29 @@
+name: jobshop
+env_kwargs:
+    instance_generator_type: "random"  # [random, toy]
+    num_jobs: 6
+    num_machines: 3
+    max_num_ops: 3
+    max_op_duration: 5
+
+network:
+    policy_layers: [64, 64]
+    value_layers: [64, 64]
+    operations_layers: [128, 128]
+    machines_layers: [128, 128]
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+    total_num_eval: 500
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4

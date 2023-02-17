@@ -48,7 +48,13 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
     evaluator = setup_evaluator(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)
     num_steps_per_epoch = (
-        cfg.n_steps * cfg.total_batch_size * cfg.num_learner_steps_per_epoch
+        cfg.env.training.n_steps
+        * cfg.env.training.total_batch_size
+        * cfg.env.training.num_learner_steps_per_epoch
+    )
+    eval_timer = Timer(out_var_name="metrics")
+    train_timer = Timer(
+        out_var_name="metrics", num_steps_per_timing=num_steps_per_epoch
     )
 
     @functools.partial(jax.pmap, axis_name="devices")
@@ -57,18 +63,21 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
             lambda training_state, _: agent.run_epoch(training_state),
             training_state,
             None,
-            cfg.num_learner_steps_per_epoch,
+            cfg.env.training.num_learner_steps_per_epoch,
         )
         metrics = jax.tree_util.tree_map(jnp.mean, metrics)
         return training_state, metrics
 
     with jax.log_compiles(log_compiles), logger:
-        for i in trange(cfg.num_epochs, disable=isinstance(logger, TerminalLogger)):
+        for i in trange(
+            cfg.env.training.num_epochs,
+            disable=isinstance(logger, TerminalLogger),
+        ):
             env_steps = i * num_steps_per_epoch
 
             # Validation
             key, eval_key = jax.random.split(key)
-            with Timer(out_var_name="metrics"):
+            with eval_timer:
                 metrics = evaluator.run_evaluation(
                     training_state.params_state, eval_key
                 )
@@ -79,9 +88,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
             )
 
             # Training
-            with Timer(
-                out_var_name="metrics", num_steps_per_timing=num_steps_per_epoch
-            ):
+            with train_timer:
                 training_state, metrics = epoch_fn(training_state)
             logger.write(
                 data=utils.first_from_device(metrics),

@@ -1,0 +1,29 @@
+name: tsp
+env_kwargs:
+    num_cities: 10
+
+network:
+    encoder_num_layers: 1
+    encoder_num_heads: 4
+    encoder_key_size: 8
+    encoder_expand_factor: 2
+    encoder_model_size: 128
+    decoder_num_heads: 4
+    decoder_key_size: 8
+    decoder_model_size: 128
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+    total_num_eval: 500
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4

@@ -1,0 +1,30 @@
+name: binpack
+env_kwargs:
+    instance_generator_type: toy
+    obs_num_ems: 40
+instance_generator_kwargs:
+
+
+network:
+    policy_layers: [32, 32]
+    value_layers: [64, 64]
+    transformer_n_blocks: 2
+    transformer_mlp_units: [32,]
+    transformer_key_size: 16
+    transformer_num_heads: 8
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+    total_num_eval: 500
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4
