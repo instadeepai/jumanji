@@ -1,25 +1,43 @@
-# yaml-language-server: $schema=https://prod.instadeep.ichorai.io/schema/latest/manifest.schema.json
-kind: "IchorManifest"
-version: "0.0.2"
-docker:
+# yaml-language-server: $schema=https://instadeep.aichor.ai/schema/latest/manifest.schema.json
+kind: AIchorManifest
+apiVersion: 0.2.1
+
+builder:
   image: jumanji
   dockerfile: ./Dockerfile
   context: .
   buildArgs:
     USE_CUDA: "true"
+
 spec:
-  operator: tf
+  operator: jax
   image: jumanji
   command: python jumanji/training/train.py
+
+  tensorboard: # optional, disabled by default
+    enabled: false
+
+#  storage: # optional
+#    sharedVolume: # optional
+#      mountPoint: "/mnt/shared"
+#      sizeGB: 10
+#    attachExistingPVCs: # optional, array
+#      - name: "my-awesome-pvc"
+#        mountPoint: "/mnt/my-60tib-dataset"
+
   types:
     Worker:
-      replicas: 1
-      cpus: 4
-      # mandatory (must be >= 2): RAM ratio wanted (in GB)
-      ramRatio: 5
-      # optional: number of GPUs wanted
-      gpus: 0
-      # options: gpu
-      gpuType: gpu
-      # options: Quadro-RTX-4000
-      gpuProduct: Quadro-RTX-4000
+      count: 1
+
+      resources:
+        cpus: 4
+        ramRatio: 5 # RAM per CPU
+
+#        accelerators: # optional
+#          gpu:
+#            count: 1
+#            product: Quadro-RTX-4000 # options: Quadro-RTX-4000
+#            type: gpu
+
+#        machineName: "dgx" # optional
+#        shmSizeGB: null # optional
