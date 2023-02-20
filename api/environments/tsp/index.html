@@ -1225,7 +1225,7 @@ timestep: TimeStep object corresponding to the first timestep returned
 
 
 <h3 id="jumanji.environments.combinatorial.tsp.env.TSP.reset_from_state" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">],</span> <span class="n">start_position</span><span class="p">:</span> <span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">tsp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">reset_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">],</span> <span class="n">start_position</span><span class="p">:</span> <span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">tsp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.environments.combinatorial.tsp.env.TSP.reset_from_state" class="headerlink" title="Permanent link">#</a></h3>
@@ -1247,7 +1247,7 @@ timestep: TimeStep object corresponding to the first timestep returned
   <tbody>
       <tr>
         <td><code>problem</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax._src.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>jax array (float32) of shape (problem_size, 2)
 the coordinates of each city</p></td>
         <td><em>required</em></td>
@@ -1289,7 +1289,7 @@ timestep: TimeStep object corresponding to the first timestep returned by the
 
 
 <h3 id="jumanji.environments.combinatorial.tsp.env.TSP.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">tsp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">tsp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.environments.combinatorial.tsp.env.TSP.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1317,7 +1317,7 @@ timestep: TimeStep object corresponding to the first timestep returned by the
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax._src.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>Array containing the index of the next position to visit.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1429,7 +1429,7 @@ timestep: the timestep to be observed.</p></td>
   <small>
     
       Last update:
-      2023-02-16
+      2023-02-20
     
   </small>
 </div>

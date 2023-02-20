@@ -1173,7 +1173,7 @@ following properties:
 
 
 <h3 id="jumanji.environments.combinatorial.binpack.env.BinPack.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_generator_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;toy&#39;</span><span class="p">,</span> <span class="n">obs_num_ems</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">RewardFn</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">sparse_linear_reward</span> <span class="n">at</span> <span class="mh">0x7f95703eeaf0</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">normalize_dimensions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">instance_generator_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_generator_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;toy&#39;</span><span class="p">,</span> <span class="n">obs_num_ems</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">RewardFn</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">sparse_linear_reward</span> <span class="n">at</span> <span class="mh">0x7fd7a4090700</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">normalize_dimensions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">instance_generator_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1223,7 +1223,7 @@ number of items (given by the instance generator).</p></td>
 and outputs a scalar, namely the reward. Default: sparse_linear, meaning a
 sparse reward is given at the end of the episode, corresponding to the volume
 utilization of the container.</p></td>
-        <td><code>&lt;function sparse_linear_reward at 0x7f95703eeaf0&gt;</code></td>
+        <td><code>&lt;function sparse_linear_reward at 0x7fd7a4090700&gt;</code></td>
       </tr>
       <tr>
         <td><code>normalize_dimensions</code></td>
@@ -1413,7 +1413,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.environments.combinatorial.binpack.env.BinPack.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">binpack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">binpack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">binpack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">combinatorial</span><span class="o">.</span><span class="n">binpack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.environments.combinatorial.binpack.env.BinPack.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1442,7 +1442,7 @@ is not updated, i.e. the action is not taken, and the episode terminates.</p>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, jax.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, jax._src.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
         <td><p>jax array of shape (2,) (ems_id, item_id). This means placing the given item
 at the location of the given ems. If the action is not feasible, the flag
 <code>invalid_action_taken</code> will be set to True in <code>timestep.extras</code> and the episode
@@ -1555,7 +1555,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2023-02-16
+      2023-02-20
     
   </small>
 </div>
