@@ -203,7 +203,7 @@ If you use Jumanji in your work, please cite the library using:
         and Nathan Grinsztajn and Thomas D. Barrett and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
   url = {https://github.com/instadeepai/jumanji},
-  version = {0.1.4},
+  version = {0.1.5},
   year = {2022},
 }
 ```
