@@ -568,6 +568,7 @@ class VmapAutoResetWrapper(Wrapper):
             state,
             timestep,
         )
+
         return state, timestep
 
     def render(self, state: State) -> Any:

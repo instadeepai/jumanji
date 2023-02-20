@@ -18,7 +18,7 @@ from typing import List
 import setuptools
 from setuptools import setup
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 

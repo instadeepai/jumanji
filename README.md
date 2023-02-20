@@ -22,9 +22,9 @@
 
 
 <p float="left" align="center">
-  <img src="docs/img/snake.gif" alt="Snake" width="30%" />
-  <img src="docs/img/binpack.gif" alt="BinPack" width="30%" />
-  <img src="docs/img/routing.gif" alt="Routing" width="30%" />
+  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/binpack.gif" alt="BinPack" width="30%" />
+  <img src="docs/env_anim/routing.gif" alt="Routing" width="30%" />
 </p>
 
 
@@ -205,7 +205,7 @@ If you use Jumanji in your work, please cite the library using:
         and Nathan Grinsztajn and Thomas D. Barrett and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
   url = {https://github.com/instadeepai/jumanji},
-  version = {0.1.4},
+  version = {0.1.5},
   year = {2022},
 }
 ```
