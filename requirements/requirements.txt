@@ -1,6 +1,6 @@
-brax>=0.0.10
 chex>=0.1.3
 dm-env>=1.5
+git+https://github.com/google/brax.git
 gym>=0.22.0
 jax>=0.2.26
 jaxlib>=0.1.74
