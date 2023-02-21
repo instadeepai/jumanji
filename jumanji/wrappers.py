@@ -29,14 +29,12 @@ import gym
 import jax
 import jax.numpy as jnp
 import numpy as np
-from brax.envs import Env as BraxEnv
-from brax.envs import State as BraxState
 from chex import Array, PRNGKey
 from jax import jit, random
 
 from jumanji import specs, tree_utils
 from jumanji.env import Environment, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import Action, TimeStep
 
 Observation = TypeVar("Observation")
 
@@ -347,88 +345,6 @@ class VmapWrapper(Wrapper):
         """
         state_0 = tree_utils.tree_slice(state, 0)
         return super().render(state_0)
-
-
-class BraxToJumanjiWrapper(Environment):
-    """A wrapper that converts a Brax environment to an `Environment` for standardisation and to
-    augment the API (add timesteps, metrics...).
-    """
-
-    def __init__(self, brax_env: BraxEnv):
-        """Creates the Environment wrapper for Brax environments.
-
-        Args:
-            brax_env: Brax Env object that is not wrapped by a ResetWrapper
-        """
-        self._env = brax_env
-
-    def reset(self, key: PRNGKey) -> Tuple[BraxState, TimeStep]:
-        """Resets the environment to an initial state.
-
-        Args:
-            key: random key used to reset the environment.
-
-        Returns:
-            state: Brax State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
-        """
-        state = self._env.reset(key)
-        timestep = restart(observation=state.obs, extras=state.metrics)
-        return state, timestep
-
-    def step(self, state: BraxState, action: Action) -> Tuple[State, TimeStep]:
-        """Run one timestep of the environment's dynamics.
-
-        Args:
-            state: Brax State object containing the dynamics of the environment.
-            action: Array containing the action to take.
-
-        Returns:
-            state: Brax State object corresponding to the next state of the environment,
-            timestep: TimeStep object corresponding the timestep returned by the environment,
-        """
-        state = self._env.step(state, action)
-        timestep = jax.lax.cond(
-            state.done,
-            lambda _state: termination(
-                reward=_state.reward, observation=_state.obs, extras=_state.metrics
-            ),
-            lambda _state: transition(
-                reward=_state.reward, observation=_state.obs, extras=_state.metrics
-            ),
-            state,
-        )
-        return state, timestep
-
-    def observation_spec(self) -> specs.Array:
-        """Returns the observation spec.
-
-        Returns:
-            observation_spec: a `specs.Array` spec.
-        """
-        return specs.Array(
-            shape=(self._env.observation_size,),
-            dtype=float,
-            name="observation",
-        )
-
-    def action_spec(self) -> specs.BoundedArray:
-        """Returns the action spec.
-
-        Returns:
-            action_spec: a `specs.BoundedArray` spec.
-        """
-        return specs.BoundedArray(
-            shape=(self._env.action_size,),
-            dtype=float,
-            minimum=-1.0,
-            maximum=1.0,
-            name="action",
-        )
-
-    @property
-    def unwrapped(self) -> BraxEnv:
-        return self._env
 
 
 class AutoResetWrapper(Wrapper):

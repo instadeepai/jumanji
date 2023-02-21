@@ -25,7 +25,6 @@ follow_imports = "skip"
 module = [
     "matplotlib.*",
     "mpl_toolkits.*",
-    "brax.*",
     "gym.*",
     "pytest_mock.*",
     "numpy.*",
