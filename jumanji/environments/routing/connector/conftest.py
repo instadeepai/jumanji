@@ -18,6 +18,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.connector.constants import EMPTY
+from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
     get_path,
@@ -74,3 +75,9 @@ def state(key: chex.PRNGKey, grid: chex.Array) -> State:
     state = State(key=key, grid=grid, step=0, agents=agents)
 
     return state
+
+
+@pytest.fixture
+def env() -> Connector:
+    """Returns a Connector environment of size 6 with 3 agents."""
+    return Connector(size=6, num_agents=3)

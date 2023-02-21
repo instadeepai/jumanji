@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
 import jax.numpy as jnp
-from chex import Array
 
 from jumanji.environments.routing.connector.constants import (
     DOWN,
@@ -23,13 +23,17 @@ from jumanji.environments.routing.connector.constants import (
     RIGHT,
     UP,
 )
+from jumanji.environments.routing.connector.types import State
 from jumanji.environments.routing.connector.utils import (
     get_agent_grid,
     get_path,
     get_position,
     get_target,
+    is_valid_position,
     move,
+    switch_perspective,
 )
+from jumanji.tree_utils import tree_slice
 
 
 def test_get_path() -> None:
@@ -63,7 +67,21 @@ def test_move() -> None:
     assert (move(pos, LEFT) == jnp.array([1, 0])).all()
 
 
-def test_get_agent_grid(grid: Array) -> None:
+def test_is_valid_position(state: State) -> None:
+    """Tests that the _is_valid_move method flags invalid moves."""
+    agent1 = tree_slice(state.agents, 1)
+    valid_move = is_valid_position(
+        grid=state.grid, agent=agent1, position=jnp.array([2, 2])
+    )
+    move_into_path = is_valid_position(
+        grid=state.grid, agent=agent1, position=jnp.array([4, 2])
+    )
+
+    assert valid_move
+    assert not move_into_path
+
+
+def test_get_agent_grid(grid: chex.Array) -> None:
     """Test that the agent grid only contains items related to a single agent."""
     agent_0_grid = get_agent_grid(0, grid)
     agent_1_grid = get_agent_grid(1, grid)
@@ -82,3 +100,49 @@ def test_get_agent_grid(grid: Array) -> None:
         | (agent_2_grid == get_target(2))
         | (agent_2_grid == get_position(2))
     )
+
+
+def test_switch_perspective(grid: chex.Array) -> None:
+    """Tests that observations are correctly generated given the grid."""
+    observations0 = switch_perspective(grid, agent_id=0, num_agents=3)
+    observations1 = switch_perspective(grid, agent_id=1, num_agents=3)
+    observations2 = switch_perspective(grid, agent_id=2, num_agents=3)
+
+    path0 = get_path(0)
+    path1 = get_path(1)
+    path2 = get_path(2)
+
+    targ0 = get_target(0)
+    targ1 = get_target(1)
+    targ2 = get_target(2)
+
+    posi0 = get_position(0)
+    posi1 = get_position(1)
+    posi2 = get_position(2)
+
+    empty = EMPTY
+
+    expected_agent_1 = jnp.array(
+        [
+            [empty, empty, targ2, empty, empty, empty],
+            [empty, empty, posi2, path2, path2, empty],
+            [empty, empty, empty, targ1, posi1, empty],
+            [targ0, empty, posi0, empty, path1, empty],
+            [empty, empty, path0, empty, path1, empty],
+            [empty, empty, path0, empty, empty, empty],
+        ]
+    )
+    expected_agent_2 = jnp.array(
+        [
+            [empty, empty, targ1, empty, empty, empty],
+            [empty, empty, posi1, path1, path1, empty],
+            [empty, empty, empty, targ0, posi0, empty],
+            [targ2, empty, posi2, empty, path0, empty],
+            [empty, empty, path2, empty, path0, empty],
+            [empty, empty, path2, empty, empty, empty],
+        ]
+    )
+
+    assert (grid == observations0).all()
+    assert (expected_agent_1 == observations1).all()
+    assert (expected_agent_2 == observations2).all()

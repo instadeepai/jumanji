@@ -14,6 +14,8 @@
 
 from typing import Any, Tuple, Type
 
+import chex
+import jax
 import jax.numpy as jnp
 from chex import PRNGKey
 
@@ -26,8 +28,13 @@ from jumanji.environments.routing.connector.generator import (
 )
 from jumanji.environments.routing.connector.reward import RewardFn, SparseRewardFn
 from jumanji.environments.routing.connector.specs import ObservationSpec
-from jumanji.environments.routing.connector.types import State
-from jumanji.types import Action, TimeStep
+from jumanji.environments.routing.connector.types import Agent, Observation, State
+from jumanji.environments.routing.connector.utils import (
+    is_valid_position,
+    move,
+    switch_perspective,
+)
+from jumanji.types import Action, TimeStep, restart
 
 
 class Connector(Environment[State]):
@@ -100,7 +107,7 @@ class Connector(Environment[State]):
         self._reward_fn = reward_fn(**reward_fn_kwargs)
         self._generator = generator(size, num_agents)
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:  # type: ignore
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment.
 
         Args:
@@ -110,7 +117,23 @@ class Connector(Environment[State]):
             state: `State` object corresponding to the new state of the environment.
             timestep: `TimeStep` object corresponding to the initial environment timestep.
         """
-        pass
+        generator_key, key = jax.random.split(key)
+        state = self._generator(generator_key)
+
+        action_mask = jax.vmap(self._get_action_mask, (0, None))(
+            state.agents, state.grid
+        )
+        observation = Observation(
+            grid=self._obs_from_grid(state.grid),
+            action_mask=action_mask,
+            step=state.step,
+        )
+        timestep = restart(observation=observation, shape=(self._num_agents,))
+
+        return (
+            State(key=key, grid=state.grid, step=jnp.int32(0), agents=state.agents),
+            timestep,
+        )
 
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:  # type: ignore
         """Perform an environment step.
@@ -129,6 +152,25 @@ class Connector(Environment[State]):
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
         pass
+
+    def _obs_from_grid(self, grid: chex.Array) -> chex.Array:
+        """Gets the observation vector for all agents."""
+        return jax.vmap(switch_perspective, (None, 0, None))(
+            grid, self.agent_ids, self._num_agents
+        )
+
+    def _get_action_mask(self, agent: Agent, grid: chex.Array) -> chex.Array:
+        """Gets an agent's action mask."""
+        # Don't check action 0 because no-op is always valid
+        actions = jnp.arange(1, 5)
+
+        def is_valid_action(action: int) -> chex.Array:
+            agent_pos = move(agent.position, action)
+            return is_valid_position(grid, agent, agent_pos)
+
+        mask = jnp.ones(5, dtype=bool)
+        mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
+        return mask
 
     def observation_spec(self) -> ObservationSpec:
         """Returns the observation spec for Connector environment.
