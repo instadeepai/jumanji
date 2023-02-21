@@ -33,11 +33,11 @@ spec:
         cpus: 4
         ramRatio: 5 # RAM per CPU
 
-#        accelerators: # optional
-#          gpu:
-#            count: 1
-#            product: Quadro-RTX-4000 # options: Quadro-RTX-4000
-#            type: gpu
+        accelerators: # optional
+          gpu:
+            count: 0
+            product: Quadro-RTX-4000 # options: Quadro-RTX-4000
+            type: gpu
 
 #        machineName: "dgx" # optional
 #        shmSizeGB: null # optional

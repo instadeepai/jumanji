@@ -18,7 +18,10 @@ training:
     num_learner_steps_per_epoch: 500
     n_steps: 10
     total_batch_size: 128
-    total_num_eval: 500
+
+evaluation:
+    eval_total_batch_size: 500
+    greedy_eval_total_batch_size: 500
 
 a2c:
     normalize_advantage: False

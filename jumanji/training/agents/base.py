@@ -46,5 +46,6 @@ class Agent(abc.ABC):
     def make_policy(
         self,
         policy_params: Optional[hk.Params],
+        stochastic: bool = True,
     ) -> Callable:
         pass

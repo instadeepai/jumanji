@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple
 
 import chex
 import jax
@@ -275,14 +276,21 @@ def _setup_actor_critic_neworks(
     return actor_critic_networks
 
 
-def setup_evaluator(cfg: DictConfig, agent: Agent) -> Evaluator:
+def setup_evaluators(cfg: DictConfig, agent: Agent) -> Tuple[Evaluator, Evaluator]:
     env = _make_raw_env(cfg)
-    evaluator = Evaluator(
+    stochastic_eval = Evaluator(
         eval_env=env,
         agent=agent,
-        total_num_eval=cfg.env.training.total_num_eval,
+        total_batch_size=cfg.env.evaluation.eval_total_batch_size,
+        stochastic=True,
     )
-    return evaluator
+    greedy_eval = Evaluator(
+        eval_env=env,
+        agent=agent,
+        total_batch_size=cfg.env.evaluation.greedy_eval_total_batch_size,
+        stochastic=False,
+    )
+    return stochastic_eval, greedy_eval
 
 
 def setup_training_state(

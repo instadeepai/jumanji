@@ -180,6 +180,7 @@ class A2CAgent(Agent):
     def make_policy(
         self,
         policy_params: hk.Params,
+        stochastic: bool = True,
     ) -> Callable[
         [Any, chex.PRNGKey], Tuple[chex.Array, Tuple[chex.Array, chex.Array]]
     ]:
@@ -192,10 +193,20 @@ class A2CAgent(Agent):
             observation: Any, key: chex.PRNGKey
         ) -> Tuple[chex.Array, Tuple[chex.Array, chex.Array]]:
             logits = policy_network.apply(policy_params, observation)
-            raw_action = parametric_action_distribution.sample_no_postprocessing(
-                logits, key
-            )
-            log_prob = parametric_action_distribution.log_prob(logits, raw_action)
+            if stochastic:
+                raw_action = parametric_action_distribution.sample_no_postprocessing(
+                    logits, key
+                )
+                log_prob = parametric_action_distribution.log_prob(logits, raw_action)
+            else:
+                del key
+                raw_action = parametric_action_distribution.mode_no_postprocessing(
+                    logits
+                )
+                # log_prob = log(1) = 0 for a greedy policy (deterministic distribution)
+                log_prob = jnp.zeros_like(
+                    parametric_action_distribution.log_prob(logits, raw_action)
+                )
             action = parametric_action_distribution.postprocess(raw_action)
             return action, (log_prob, logits)
 
@@ -210,7 +221,7 @@ class A2CAgent(Agent):
         Returns:
             shape (n_steps, batch_size_per_device, *)
         """
-        policy = self.make_policy(policy_params=policy_params)
+        policy = self.make_policy(policy_params=policy_params, stochastic=True)
 
         def run_one_step(
             acting_state: ActingState, key: chex.PRNGKey

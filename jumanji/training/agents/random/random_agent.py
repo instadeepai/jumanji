@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Tuple
 
 import chex
-import haiku as hk
 import jax
 
 from jumanji.env import Environment
@@ -54,8 +53,10 @@ class RandomAgent(Agent):
 
     def make_policy(
         self,
-        policy_params: Optional[hk.Params] = None,
+        policy_params: None = None,
+        stochastic: bool = True,
     ) -> Callable[[Any, chex.PRNGKey], chex.Array]:
+        del stochastic
         return self.random_policy
 
     def random_rollout(

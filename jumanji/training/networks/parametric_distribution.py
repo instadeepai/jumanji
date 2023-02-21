@@ -100,15 +100,20 @@ class ParametricDistribution(abc.ABC):
     def sample_no_postprocessing(
         self, parameters: chex.Array, seed: chex.PRNGKey
     ) -> Any:
+        """Returns a sample of the distribution before postprocessing it."""
         return self.create_dist(parameters).sample(seed=seed)
 
     def sample(self, parameters: chex.Array, seed: chex.PRNGKey) -> chex.Array:
         """Returns a sample from the postprocessed distribution."""
         return self.postprocess(self.sample_no_postprocessing(parameters, seed))
 
+    def mode_no_postprocessing(self, parameters: chex.Array) -> chex.Array:
+        """Returns the mode of the distribution before postprocessing it."""
+        return self.create_dist(parameters).mode()
+
     def mode(self, parameters: chex.Array) -> chex.Array:
         """Returns the mode of the postprocessed distribution."""
-        return self.postprocess(self.create_dist(parameters).mode())
+        return self.postprocess(self.mode_no_postprocessing(parameters))
 
     def log_prob(self, parameters: chex.Array, raw_actions: chex.Array) -> chex.Array:
         """Compute the log probability of actions."""

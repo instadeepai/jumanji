@@ -23,11 +23,12 @@ import omegaconf
 from tqdm.auto import trange
 
 from jumanji.training import utils
+from jumanji.training.agents.random import RandomAgent
 from jumanji.training.loggers import TerminalLogger
 from jumanji.training.setup_train import (
     setup_agent,
     setup_env,
-    setup_evaluator,
+    setup_evaluators,
     setup_logger,
     setup_training_state,
 )
@@ -45,7 +46,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
     logger = setup_logger(cfg)
     env = setup_env(cfg)
     agent = setup_agent(cfg, env)
-    evaluator = setup_evaluator(cfg, agent)
+    stochastic_eval, greedy_eval = setup_evaluators(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)
     num_steps_per_epoch = (
         cfg.env.training.n_steps
@@ -75,12 +76,22 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
         ):
             env_steps = i * num_steps_per_epoch
 
-            # Validation
-            key, eval_key = jax.random.split(key)
+            # Evaluation
+            key, eval_key, greedy_eval_key = jax.random.split(key, 3)
             with eval_timer:
-                metrics = evaluator.run_evaluation(
+                metrics = stochastic_eval.run_evaluation(
                     training_state.params_state, eval_key
                 )
+                if not isinstance(agent, RandomAgent):
+                    greedy_metrics = greedy_eval.run_evaluation(
+                        training_state.params_state, greedy_eval_key
+                    )
+                    metrics.update(
+                        {
+                            f"greedy_{key}": value
+                            for key, value in greedy_metrics.items()
+                        }
+                    )
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="eval",
