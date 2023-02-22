@@ -139,12 +139,13 @@ def split_vertically(
     key, wall_key, passage_key = jax.random.split(state.key, num=3)
 
     # Randomly draw a vertical wall to split the chamber
-    wall_y = random_odd(wall_key, height)
+    wall_dy = random_odd(wall_key, height)
+    wall_y = y + wall_dy
     maze = draw_horizontal_wall(state.maze, x, wall_y, width)
 
     # Create chambers above and below the wall
-    chambers = create_chamber(state.chambers, x, y, width, wall_y - y)
-    chambers = create_chamber(chambers, x, wall_y + 1, width, height - wall_y - y - 1)
+    chambers = create_chamber(state.chambers, x, y, width, wall_dy)
+    chambers = create_chamber(chambers, x, wall_y + 1, width, height - wall_dy - 1)
 
     # Randomly position a passage opening within the wall
     passage_x = random_even(passage_key, width)
@@ -166,12 +167,13 @@ def split_horizontally(
     key, wall_key, passage_key = jax.random.split(state.key, num=3)
 
     # Randomly draw a vertical wall to split the chamber
-    wall_x = random_odd(wall_key, width)
+    wall_dx = random_odd(wall_key, width)
+    wall_x = x + wall_dx
     maze = draw_vertical_wall(state.maze, wall_x, y, height)
 
     # Create chambers left and right of the wall
-    chambers = create_chamber(state.chambers, x, y, wall_x - x, height)
-    chambers = create_chamber(chambers, wall_x + 1, y, width - wall_x - x - 1, height)
+    chambers = create_chamber(state.chambers, x, y, wall_dx, height)
+    chambers = create_chamber(chambers, wall_x + 1, y, width - wall_dx - 1, height)
 
     # Randomly position a passage opening withing the wall
     passage_y = random_even(passage_key, height)

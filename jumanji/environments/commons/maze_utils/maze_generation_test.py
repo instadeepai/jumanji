@@ -64,8 +64,8 @@ def all_tiles_connected(maze: Maze) -> bool:
 
 
 class TestMazeGeneration:
-    WIDTH = 5
-    HEIGHT = 7
+    WIDTH = 15
+    HEIGHT = 15
 
     @pytest.fixture
     def maze(self) -> Maze:
