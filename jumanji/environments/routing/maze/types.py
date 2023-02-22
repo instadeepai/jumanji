@@ -38,9 +38,7 @@ class State:
     """
     agent_position: current 2D Position of agent.
     target_position: 2D Position of target cell.
-    walls: array specifying the walls of the maze. For each position, it specifies
-        whether there is a wall in each direction (up, right, down, left).
-        True indicates there is a wall in that direction and False indicates no wall.
+    walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
     action_mask: array specifying which directions the agent can move in from its current position.
     step_count: (int32) step number of the episode.
     key: PRNGKey random key (uint) of shape (2,).
@@ -48,7 +46,7 @@ class State:
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (n_rows, n_cols, 4)
+    walls: chex.Array  # Shape (n_rows, n_cols)
     action_mask: chex.Array  # Shape (4,)
     step_count: jnp.int32  # Shape ()
     key: chex.PRNGKey
@@ -59,15 +57,13 @@ class Observation(NamedTuple):
 
     agent_position: current 2D Position of agent.
     target_position: 2D Position of target cell.
-    walls: array specifying the walls of the maze. For each position, it specifies
-        whether there is a wall in each direction (up, right, down, left).
-        True indicates there is a wall in that direction and False indicates no wall.
+    walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
     action_mask: array specifying which directions the agent can move in from its current position.
     step_count: (int32) step number of the episode.
     """
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (n_rows, n_cols, 4)
+    walls: chex.Array  # Shape (n_rows, n_cols)
     action_mask: chex.Array  # Shape (4,)
     step_count: jnp.int32  # Shape ()

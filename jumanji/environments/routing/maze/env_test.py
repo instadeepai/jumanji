@@ -28,7 +28,7 @@ class TestMazeEnvironment:
     @pytest.fixture(scope="module")
     def maze_env(self) -> Maze:
         """Instantiates a default Maze environment."""
-        return Maze(n_rows=3, n_cols=3, step_limit=50)
+        return Maze(n_rows=5, n_cols=5, step_limit=15)
 
     def test_env_maze__reset(self, maze_env: Maze) -> None:
         reset_fn = jax.jit(maze_env.reset)
@@ -57,6 +57,8 @@ class TestMazeEnvironment:
         """Confirm that the step is only compiled once when jitted."""
         key = jax.random.PRNGKey(0)
         state, timestep = maze_env.reset(key)
+        assert isinstance(timestep, TimeStep)
+        assert isinstance(state, State)
         action = jnp.int32(2)
 
         chex.clear_trace_counter()
@@ -90,29 +92,29 @@ class TestMazeEnvironment:
         assert timestep.step_type == StepType.MID
         assert state.agent_position == Position(row=2, col=0)
 
+        # Agent takes a step down
+        action = jnp.int32(2)
+        state, timestep = step_fn(state, action)
+
+        assert timestep.reward == 0
+        assert timestep.step_type == StepType.MID
+        assert state.agent_position == Position(row=3, col=0)
+
         # Agent takes a step right
         action = jnp.int32(1)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
         assert timestep.step_type == StepType.MID
-        assert state.agent_position == Position(row=2, col=1)
-
-        # Agent takes a step right
-        action = jnp.int32(1)
-        state, timestep = step_fn(state, action)
-
-        assert timestep.reward == 0
-        assert timestep.step_type == StepType.MID
-        assert state.agent_position == Position(row=2, col=2)
+        assert state.agent_position == Position(row=3, col=1)
 
         # Agent fails to take a step up due to wall
-        action = jnp.int32(1)
+        action = jnp.int32(0)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
         assert timestep.step_type == StepType.MID
-        assert state.agent_position == Position(row=2, col=2)
+        assert state.agent_position == Position(row=3, col=1)
 
     def test_env_maze__action_mask(self, maze_env: Maze) -> None:
         key = jax.random.PRNGKey(0)
@@ -121,7 +123,8 @@ class TestMazeEnvironment:
         # The agent can only move down in the initial state
         expected_action_mask = jnp.array([False, False, True, False])
 
-        action_mask = ~state.walls[state.agent_position.row, state.agent_position.col]
+        action_mask = maze_env._compute_action_mask(state.walls, state.agent_position)
+
         assert jnp.all(action_mask == expected_action_mask)
         assert jnp.all(state.action_mask == expected_action_mask)
 
@@ -129,7 +132,7 @@ class TestMazeEnvironment:
         key = jax.random.PRNGKey(0)
         state, timestep = maze_env.reset(key)
 
-        actions = [2, 2, 1, 0, 0, 1]
+        actions = [2, 2, 2, 1, 1, 0, 0, 0, 1, 1]
 
         for a in actions:
             assert timestep.reward == 0

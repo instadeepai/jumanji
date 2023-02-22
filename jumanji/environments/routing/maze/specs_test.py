@@ -23,7 +23,7 @@ from jumanji.environments.routing.maze.types import Observation
 
 
 class TestObservationSpec:
-    env = Maze(n_rows=3, n_cols=3)
+    env = Maze(n_rows=5, n_cols=5)
     observation_spec = env.observation_spec()
     observation = observation_spec.generate_value()
 
@@ -55,7 +55,7 @@ class TestObservationSpec:
         [
             (
                 "walls_spec",
-                observation_spec.walls_spec.replace(shape=(6, 6, 4)),
+                observation_spec.walls_spec.replace(shape=(6, 6)),
             ),
             (
                 "agent_position_spec",

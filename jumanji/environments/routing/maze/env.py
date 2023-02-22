@@ -20,6 +20,7 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.routing.maze.constants import MOVES
 from jumanji.environments.routing.maze.specs import ObservationSpec, PositionSpec
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
@@ -32,9 +33,7 @@ class Maze(Environment[State]):
     - observation:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: array specifying the walls of the maze. For each position, it specifies
-            whether there is a wall in each direction (up, right, down, left).
-            True indicates there is a wall in that direction and False indicates no wall.
+        - walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
         - action_mask: array specifying which directions the agent can move in from its
             current position.
         - step_count: (int32) step number of the episode.
@@ -52,9 +51,7 @@ class Maze(Environment[State]):
     - state: State:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: array (bool) of shape (n_rows, n_cols, 4)
-            defining the walls of the maze in all locations, i.e. [Up, Right, Down, Left]
-            True indicates there is a wall in that direction. False indicates no wall.
+        - walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
         - action_mask: array (bool) of shape (4,)
             defining the available actions in the current position.
         - step_count: (int32), step number of the episode.
@@ -106,7 +103,7 @@ class Maze(Environment[State]):
             - target_position_spec : PositionSpec:
                 - row_spec: specs.BoundedArray
                 - col_spec: specs.BoundedArray
-            - walls_spec : specs.BoundedArray (bool) of shape (n_rows, n_cols, 4),
+            - walls_spec : specs.BoundedArray (bool) of shape (n_rows, n_cols),
             - step_count_spec : specs.Array int of shape ()
             - action_mask_spec : specs.BoundedArray (bool) of shape (4,).
         """
@@ -119,7 +116,7 @@ class Maze(Environment[State]):
             ),
         )
         walls_spec = specs.BoundedArray(
-            shape=(self.n_rows, self.n_cols, 4),
+            shape=(self.n_rows, self.n_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
@@ -160,34 +157,22 @@ class Maze(Environment[State]):
         key, state_key, agent_key = jax.random.split(key, 3)
 
         # Generate a Toy instance.
-        walls = jnp.ones((self.n_rows, self.n_cols, 4), bool)
-
-        # Col 1
-        walls = walls.at[0, 0].set([1, 1, 0, 1], bool)  # START: TOP LEFT
-        walls = walls.at[1, 0].set([0, 1, 0, 1], bool)
-        walls = walls.at[2, 0].set([0, 0, 1, 1], bool)
-
-        # Col 2
-        walls = walls.at[0, 1].set([1, 0, 0, 1], bool)
-        walls = walls.at[1, 1].set([0, 0, 0, 1], bool)
-        walls = walls.at[2, 1].set([0, 0, 1, 0], bool)
-
-        # Col 3
-        walls = walls.at[0, 2].set([1, 1, 1, 1], bool)  # GOAL: TOP RIGHT
-        walls = walls.at[1, 2].set([1, 1, 0, 0], bool)
-        walls = walls.at[2, 2].set([1, 1, 1, 0], bool)
+        walls = jnp.ones((self.n_rows, self.n_cols), bool)
+        walls = walls.at[0, :].set((False, True, False, False, False))
+        walls = walls.at[1, :].set((False, True, False, True, True))
+        walls = walls.at[2, :].set((False, True, False, False, False))
+        walls = walls.at[3, :].set((False, False, False, True, True))
+        walls = walls.at[4, :].set((False, False, False, False, False))
 
         agent_position = Position(row=0, col=0)
-        target_position = Position(row=0, col=2)
-
-        action_mask = ~walls[agent_position.row, agent_position.col]
+        target_position = Position(row=0, col=4)
 
         # Build the state.
         state = State(
             agent_position=agent_position,
             target_position=target_position,
             walls=walls,
-            action_mask=action_mask,
+            action_mask=self._compute_action_mask(walls, agent_position),
             key=key,
             step_count=jnp.int32(0),
         )
@@ -203,6 +188,9 @@ class Maze(Environment[State]):
     def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
         """
         Run one timestep of the environment's dynamics.
+
+        If an action is invalid, the agent does not move, i.e. the episode does not
+        automatically terminate.
 
         Args:
             state: State object containing the dynamics of the environment.
@@ -233,7 +221,7 @@ class Maze(Environment[State]):
 
         # Generate action mask to keep in the state for the next step and
         # to provide to the agent in the observation.
-        action_mask = ~state.walls[agent_position.row, agent_position.col]
+        action_mask = self._compute_action_mask(state.walls, agent_position)
 
         # Build the state.
         state = State(
@@ -267,7 +255,30 @@ class Maze(Environment[State]):
         )
         return state, timestep
 
+    def _compute_action_mask(
+        self, walls: chex.Array, agent_position: Position
+    ) -> chex.Array:
+        """Compute the action mask.
+        An action is considered invalid if it leads to a WALL or goes outside of the maze.
+        """
+
+        def is_move_valid(agent_position: Position, move: chex.Array) -> chex.Array:
+            x, y = jnp.array([agent_position.row, agent_position.col]) + move
+            return (
+                (x >= 0)
+                & (x < self.n_cols)
+                & (y >= 0)
+                & (y < self.n_rows)
+                & ~(walls[x, y])
+            )
+
+        # vmap over the moves
+        action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(agent_position, MOVES)
+
+        return action_mask
+
     def _observation_from_state(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
         return Observation(
             agent_position=state.agent_position,
             target_position=state.target_position,
