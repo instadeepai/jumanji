@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Grid state
+import jax.numpy as jnp
+
+# Observation
 DIRTY = 0
 CLEAN = 1
 WALL = 2
+
+# Actions
+MOVES = jnp.array([[-1, 0], [0, 1], [1, 0], [0, -1]])  # Up, right, down, left

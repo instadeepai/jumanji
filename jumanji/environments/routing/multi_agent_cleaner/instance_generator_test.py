@@ -20,8 +20,7 @@ import pytest
 
 from jumanji.environments.routing.multi_agent_cleaner.constants import DIRTY, WALL
 from jumanji.environments.routing.multi_agent_cleaner.instance_generator import (
-    Maze,
-    generate_random_instance,
+    RandomGenerator,
 )
 
 
@@ -34,8 +33,11 @@ class TestRandomInstanceGenerator:
         return jax.random.PRNGKey(0)
 
     @pytest.fixture
-    def instance(self, key: chex.PRNGKey) -> Maze:
-        return generate_random_instance(self.WIDTH, self.HEIGHT, key)
+    def instance_generator(self) -> RandomGenerator:
+        return RandomGenerator(self.WIDTH, self.HEIGHT)
 
-    def test_random_instance_generator_values(self, instance: Maze) -> None:
+    def test_random_instance_generator_values(
+        self, key: chex.PRNGKey, instance_generator: RandomGenerator
+    ) -> None:
+        instance = instance_generator(key)
         assert jnp.all(jnp.logical_or(instance == DIRTY, instance == WALL))

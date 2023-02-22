@@ -12,15 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import chex
+import jax.numpy as jnp
+from brax.jumpy import jax
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.routing.multi_agent_cleaner.constants import (
+    CLEAN,
+    DIRTY,
+    MOVES,
+    WALL,
+)
+from jumanji.environments.routing.multi_agent_cleaner.instance_generator import (
+    Generator,
+    RandomGenerator,
+)
 from jumanji.environments.routing.multi_agent_cleaner.specs import ObservationSpec
-from jumanji.environments.routing.multi_agent_cleaner.types import State
-from jumanji.types import Action, TimeStep
+from jumanji.environments.routing.multi_agent_cleaner.types import Observation, State
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Cleaner(Environment[State]):
@@ -60,6 +72,8 @@ class Cleaner(Environment[State]):
         grid_width: int,
         grid_height: int,
         num_agents: int,
+        step_limit: Optional[int] = None,
+        generator: Optional[Generator] = None,
     ) -> None:
         """Instantiate an Cleaner environment.
 
@@ -67,11 +81,14 @@ class Cleaner(Environment[State]):
             grid_width: width of the grid.
             grid_height: height of the grid.
             num_agents: number of agents.
+            step_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
         """
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.grid_shape = (self.grid_width, self.grid_height)
         self.num_agents = num_agents
+        self.step_limit = step_limit or (self.grid_width * self.grid_height)
+        self.generator = generator or RandomGenerator(grid_width, grid_height)
 
     def __repr__(self) -> str:
         return (
@@ -115,8 +132,172 @@ class Cleaner(Environment[State]):
         """
         return specs.BoundedArray((self.num_agents,), int, 0, 3, "actions")
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:  # type: ignore
-        pass  # type: ignore
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+        """Reset the environment to its initial state.
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:  # type: ignore
-        pass  # type: ignore
+        All the tiles except upper left are dirty, and the agents start in the upper left
+        corner of the grid.
+
+        Args:
+            key: random key used to reset the environment.
+
+        Returns:
+            state: State object corresponding to the new state of the environment after a reset.
+            timestep: TimeStep object corresponding to the first timestep returned by the
+                environment after a reset.
+        """
+        key, subkey = jax.random.split(key)
+
+        # Agents start in upper left corner
+        agents_locations = jnp.zeros((self.num_agents, 2), int)
+
+        grid = self.generator(subkey)
+        # Clean the tile in upper left corner
+        grid = self._clean_tiles_containing_agents(grid, agents_locations)
+
+        state = State(
+            grid=grid,
+            agents_locations=agents_locations,
+            action_mask=self._compute_action_mask(grid, agents_locations),
+            step_count=jnp.int32(0),
+            key=key,
+        )
+
+        observation = self._observation_from_state(state)
+
+        timestep = restart(observation)
+
+        return state, timestep
+
+    def step(self, state: State, actions: Action) -> Tuple[State, TimeStep]:
+        """Run one timestep of the environment's dynamics.
+
+        If an action is invalid, the corresponding agent does not move and
+        the episode terminates.
+
+        Args:
+            state: current environment state.
+            actions: Jax array of shape (num_agents,). Each agent moves one step in
+                the specified direction (0: up, 1: righ, 2: down, 3: left).
+
+        Returns:
+            state: State object corresponding to the next state of the environment.
+            timestep: TimeStep object corresponding to the timestep returned by the environment.
+        """
+        are_actions_valid = self._are_actions_valid(actions, state.action_mask)
+
+        agents_locations = self._update_agents_locations(
+            state.agents_locations, actions, are_actions_valid
+        )
+
+        grid = self._clean_tiles_containing_agents(state.grid, agents_locations)
+
+        prev_state = state
+
+        state = State(
+            agents_locations=agents_locations,
+            grid=grid,
+            action_mask=self._compute_action_mask(grid, agents_locations),
+            step_count=state.step_count + 1,
+            key=state.key,
+        )
+
+        reward = self._compute_reward(prev_state, state)
+
+        observation = self._observation_from_state(state)
+
+        done = self._should_terminate(state, are_actions_valid)
+
+        # Return either a MID or a LAST timestep depending on done.
+        timestep = jax.lax.cond(
+            done,
+            termination,
+            transition,
+            reward,
+            observation,
+        )
+
+        return state, timestep
+
+    def _compute_reward(self, prev_state: State, state: State) -> chex.Array:
+        """Compute the reward by counting the number of tiles which changed from previous state.
+
+        Since walls and dirty tiles do not change, counting the tiles which changed since previeous
+        step is the same as counting the tiles which were cleaned.
+        """
+        return jnp.sum(prev_state.grid != state.grid)
+
+    def _compute_action_mask(
+        self, grid: chex.Array, agents_locations: chex.Array
+    ) -> chex.Array:
+        """Compute the action mask.
+
+        An action is masked if it leads to a WALL or outside of the maze.
+        """
+
+        def is_move_valid(agent_location: chex.Array, move: chex.Array) -> chex.Array:
+            y, x = agent_location + move
+            return (
+                (x >= 0)
+                & (x < self.grid_width)
+                & (y >= 0)
+                & (y < self.grid_height)
+                & (grid[y, x] != WALL)
+            )
+
+        # vmap over the moves and agents
+        action_mask = jax.vmap(
+            jax.vmap(is_move_valid, in_axes=(None, 0)), in_axes=(0, None)
+        )(agents_locations, MOVES)
+
+        return action_mask
+
+    def _observation_from_state(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            grid=state.grid,
+            agents_locations=state.agents_locations,
+            action_mask=state.action_mask,
+        )
+
+    def _are_actions_valid(
+        self, actions: Action, action_mask: chex.Array
+    ) -> chex.Array:
+        """Compute, for the action of each agent, whether said action is valid.
+
+        Args:
+            actions: Jax array containing the actions to validate.
+            action_mask: Jax array containing the action mask.
+
+        Returns:
+            An array of booleans representing which agents took a valid action.
+        """
+        return action_mask[jnp.arange(self.num_agents), actions]
+
+    def _update_agents_locations(
+        self, prev_locations: chex.Array, actions: Action, actions_are_valid: chex.Array
+    ) -> chex.Array:
+        """Update the agents locations based on the actions if they are valid."""
+        moves = jnp.where(actions_are_valid[:, None], MOVES[actions], 0)
+        return prev_locations + moves
+
+    def _clean_tiles_containing_agents(
+        self, grid: chex.Array, agents_locations: chex.Array
+    ) -> chex.Array:
+        """Clean all tiles containing an agent."""
+        return grid.at[agents_locations[:, 0], agents_locations[:, 1]].set(CLEAN)
+
+    def _should_terminate(self, state: State, valid_actions: chex.Array) -> chex.Array:
+        """Whether the episode should terminate from a given state.
+
+        Returns True if:
+            - An action was invalid.
+            - There are no more dirty tiles left, i.e. all tiles have been cleaned.
+            - The maximum number of steps (`self.step_limit`) is reached.
+        Returns False otherwise.
+        """
+        return (
+            ~valid_actions.all()
+            | ~(state.grid == DIRTY).any()
+            | (state.step_count >= self.step_limit)
+        )
