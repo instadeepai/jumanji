@@ -5,7 +5,6 @@
         - JumanjiToDMEnvWrapper
         - MultiToSingleWrapper
         - VmapWrapper
-        - BraxToJumanjiWrapper
         - AutoResetWrapper
         - JumanjiToGymWrapper
         - JumanjiToGymWrapper

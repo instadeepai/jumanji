@@ -1,26 +1,7 @@
 # Wrappers
 
 The `Wrapper` interface is used for extending Jumanji `Environment` to add features like auto reset and vectorised environments.
-Jumanji provides wrappers to convert a Jumanji `Environment` to a DeepMind or Gym environment, and a Brax environment into a Jumanji `Environment`.
-
-## Brax to Jumanji
-Below is an example of how to convert a [Brax](https://github.com/google/brax) environment into a Jumanji environment. In this example Walker2d
-terminates when 1000 steps are reached.
-
-```python
-import brax.envs
-import jax.random
-import jumanji.wrappers
-
-brax_env = brax.envs.create("walker2d")
-env = jumanji.wrappers.BraxToJumanjiWrapper(brax_env)
-
-key = jax.random.PRNGKey(0)
-state, timestep = env.reset(key)
-action = jax.random.normal(key, [brax_env.action_size])
-state, timestep = env.step(state, action)
-...
-```
+Jumanji provides wrappers to convert a Jumanji `Environment` to a DeepMind or Gym environment.
 
 ## Jumanji to DeepMind Environment
 We can also convert our Jumanji environments to a DeepMind environment:
