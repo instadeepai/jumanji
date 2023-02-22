@@ -676,13 +676,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#brax-to-jumanji" class="md-nav__link">
-    Brax to Jumanji
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#jumanji-to-deepmind-environment" class="md-nav__link">
     Jumanji to DeepMind Environment
   </a>
@@ -1047,34 +1040,7 @@
 
 <h1 id="wrappers">Wrappers<a class="headerlink" href="#wrappers" title="Permanent link">#</a></h1>
 <p>The <code>Wrapper</code> interface is used for extending Jumanji <code>Environment</code> to add features like auto reset and vectorised environments.
-Jumanji provides wrappers to convert a Jumanji <code>Environment</code> to a DeepMind or Gym environment, and a Brax environment into a Jumanji <code>Environment</code>.</p>
-<h2 id="brax-to-jumanji">Brax to Jumanji<a class="headerlink" href="#brax-to-jumanji" title="Permanent link">#</a></h2>
-<p>Below is an example of how to convert a <a href="https://github.com/google/brax">Brax</a> environment into a Jumanji environment. In this example Walker2d
-terminates when 1000 steps are reached.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">brax.envs</span>
-<span class="kn">import</span> <span class="nn">jax.random</span>
-<span class="kn">import</span> <span class="nn">jumanji.wrappers</span>
-
-<span class="n">brax_env</span> <span class="o">=</span> <span class="n">brax</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;walker2d&quot;</span><span class="p">)</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">wrappers</span><span class="o">.</span><span class="n">BraxToJumanjiWrapper</span><span class="p">(</span><span class="n">brax_env</span><span class="p">)</span>
-
-<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[</span><span class="n">brax_env</span><span class="o">.</span><span class="n">action_size</span><span class="p">])</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
-<span class="o">...</span>
-</code></pre></div></td></tr></table></div>
+Jumanji provides wrappers to convert a Jumanji <code>Environment</code> to a DeepMind or Gym environment.</p>
 <h2 id="jumanji-to-deepmind-environment">Jumanji to DeepMind Environment<a class="headerlink" href="#jumanji-to-deepmind-environment" title="Permanent link">#</a></h2>
 <p>We can also convert our Jumanji environments to a DeepMind environment:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1155,7 +1121,7 @@ The Snake game terminates when the snake hits the wall, using the <code>AutoRese
   <small>
     
       Last update:
-      2023-02-20
+      2023-02-22
     
   </small>
 </div>

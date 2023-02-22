@@ -998,13 +998,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#jumanji.wrappers.BraxToJumanjiWrapper" class="md-nav__link">
-    BraxToJumanjiWrapper
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#jumanji.wrappers.AutoResetWrapper" class="md-nav__link">
     AutoResetWrapper
   </a>
@@ -1762,7 +1755,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7fd7dd98baf0</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7fd7dd992310</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f9a70558160</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f9a70558940</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1796,14 +1789,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x7fd7dd98baf0&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f9a70558160&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x7fd7dd992310&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f9a70558940&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -2134,297 +2127,6 @@ The remaining elements of the batched state are ignored.</p>
         <td><p>State object containing the current dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-class">
-
-
-
-<h3 id="jumanji.wrappers.BraxToJumanjiWrapper" class="doc doc-heading">
-        <code>
-BraxToJumanjiWrapper            (<a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../env/#jumanji.env.Environment">Environment</a>)
-        </code>
-
-
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>A wrapper that converts a Brax environment to an <code>Environment</code> for standardisation and to
-augment the API (add timesteps, metrics...).</p>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.unwrapped" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Env</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-property"><code>property</code></small>
-      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
-  </span>
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.unwrapped" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-    </div>
-
-  </div>
-
-
-
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">brax_env</span><span class="p">:</span> <span class="n">Env</span><span class="p">)</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-special"><code>special</code></small>
-  </span>
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.__init__" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Creates the Environment wrapper for Brax environments.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>brax_env</code></td>
-        <td><code>Env</code></td>
-        <td><p>Brax Env object that is not wrapped by a ResetWrapper</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">brax</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Resets the environment to an initial state.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
-        <td><p>random key used to reset the environment.</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>state</code></td>
-      <td><p>Brax State object corresponding to the new state of the environment,
-timestep: TimeStep object corresponding the first timestep returned by the environment,</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">interpreters</span><span class="o">.</span><span class="n">batching</span><span class="o">.</span><span class="n">BatchTracer</span><span class="p">,</span> <span class="n">jaxlib</span><span class="o">.</span><span class="n">xla_extension</span><span class="o">.</span><span class="n">pmap_lib</span><span class="o">.</span><span class="n">ShardedDeviceArrayBase</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Run one timestep of the environment's dynamics.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>state</code></td>
-        <td><code>State</code></td>
-        <td><p>Brax State object containing the dynamics of the environment.</p></td>
-        <td><em>required</em></td>
-      </tr>
-      <tr>
-        <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, jax._src.interpreters.batching.BatchTracer, jaxlib.xla_extension.pmap_lib.ShardedDeviceArrayBase]</code></td>
-        <td><p>Array containing the action to take.</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>state</code></td>
-      <td><p>Brax State object corresponding to the next state of the environment,
-timestep: TimeStep object corresponding the timestep returned by the environment,</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
-
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.observation_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the observation spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>observation_spec</code></td>
-      <td><p>a <code>specs.Array</code> spec.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.BraxToJumanjiWrapper.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoundedArray</span></code>
-
-
-<a href="#jumanji.wrappers.BraxToJumanjiWrapper.action_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p>a <code>specs.BoundedArray</code> spec.</p></td>
-    </tr>
   </tbody>
 </table>
     </div>
@@ -2921,7 +2623,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2023-02-20
+      2023-02-22
     
   </small>
 </div>
