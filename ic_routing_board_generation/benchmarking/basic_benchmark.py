@@ -1,16 +1,18 @@
+import dataclasses
 import time
 from datetime import date, datetime
 from pathlib import Path
 from typing import List, Optional, Iterable, Union
 import pickle
 
+import numpy as np
 from matplotlib import pyplot as plt
 import jax.numpy as jnp
 
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters, BenchmarkData
 from ic_routing_board_generation.benchmarking.benchmark_utils import \
-    make_benchmark_folder
+    make_benchmark_folder, files_list_from_benchmark_experiment
 from ic_routing_board_generation.ic_routing.route import Route
 from ic_routing_board_generation.interface.board_generator_interface import \
     BoardName
@@ -29,7 +31,7 @@ class BasicBenchmark:
     @classmethod
     def from_file(cls,
         file_name_parameters: Union[List[BoardGenerationParameters], List[str]],
-        directory_string: Optional[str] = None,
+        directory_string: Optional[str] = "",
     ):
         benchmark_data = []
         if isinstance(file_name_parameters[0], BoardGenerationParameters):
@@ -95,9 +97,11 @@ class BasicBenchmark:
         for board_size in self.benchmark_data.keys():
             mean_rewards = []
             labels = []
+            stds = []
             for benchmark in self.benchmark_data[board_size]:
                 labels.append(benchmark.generator_type.generator_type.value)
                 mean_rewards.append(benchmark.average_reward_per_wire())
+                stds.append(benchmark.std_reward_per_wire())
 
             file_name = f"/total_rewards_{board_size}" if self.save_plots else None
             self._plot_bar_chart(
@@ -106,16 +110,19 @@ class BasicBenchmark:
                 y_label="Total average rewards per wire",
                 data=mean_rewards,
                 labels=labels,
-                file_name=file_name
+                file_name=file_name,
+                stds=stds
             )
 
     def plot_total_wire_lengths(self):
         for board_size in self.benchmark_data.keys():
             mean_lengths = []
             labels = []
+            stds = []
             for benchmark in self.benchmark_data[board_size]:
                 labels.append(benchmark.generator_type.generator_type.value)
                 mean_lengths.append(benchmark.average_total_wire_length())
+                stds.append(benchmark.std_total_wire_length())
 
             file_name = f"/total_wire_lenghts_{board_size}" if self.save_plots else None
             self._plot_bar_chart(
@@ -124,33 +131,39 @@ class BasicBenchmark:
                 y_label="Total wire lengths",
                 data=mean_lengths,
                 labels=labels,
-                file_name=file_name
+                file_name=file_name,
+                stds=stds
             )
 
     def plot_proportion_wires_connected(self):
         for board_size in self.benchmark_data.keys():
             mean_proportion = []
+            stds = []
             labels = []
             for benchmark in self.benchmark_data[board_size]:
                 labels.append(benchmark.generator_type.generator_type.value)
                 mean_proportion.append(benchmark.average_proportion_of_wires_connected())
+                stds.append(benchmark.std_proportion_of_wires_connected())
             file_name = f"/proportion_of_wires_{board_size}" if self.save_plots else None
             self._plot_bar_chart(
                 title=f"Proportion of wires connected over 1000 boards, {board_size}",
                 x_label="Generator type",
                 y_label="Proportion of wires connected",
-                data=mean_proportion,
+                data=np.array(mean_proportion),
                 labels=labels,
-                file_name=file_name
+                file_name=file_name,
+                stds=np.array(stds)
             )
 
     def plot_number_of_steps(self):
         for board_size in self.benchmark_data.keys():
             mean_proportion = []
             labels = []
+            stds = []
             for benchmark in self.benchmark_data[board_size]:
                 labels.append(benchmark.generator_type.generator_type.value)
                 mean_proportion.append(benchmark.average_steps_till_board_terminates())
+                stds.append(benchmark.std_steps_till_board_terminates())
 
             file_name = f"/steps_till_termination_{board_size}" if self.save_plots else None
             self._plot_bar_chart(
@@ -184,7 +197,8 @@ class BasicBenchmark:
     def _plot_bar_chart(self,
         x_label: str, y_label: str, title: str,
         data: Iterable, labels:  List[str],
-        file_name: Optional[str] = None
+        file_name: Optional[str] = None,
+        stds = None
     ):
         fig, ax = plt.subplots()
         ax.bar(labels, data)
