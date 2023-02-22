@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Sequence, Tuple
 
 import jax
 import jax.numpy as jnp
+import matplotlib.animation as animation
 from chex import Array, PRNGKey
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.logic.game2048.env_viewer import Game2048Viewer
 from jumanji.environments.logic.game2048.specs import ObservationSpec
 from jumanji.environments.logic.game2048.types import Board, Observation, State
 from jumanji.environments.logic.game2048.utils import (
@@ -55,13 +57,18 @@ class Game2048(Environment[State]):
     - episode termination: when no more valid moves exist (this can happen when the board is full).
     """
 
-    def __init__(self, board_size: int = 4) -> None:
+    def __init__(
+        self, board_size: int = 4, env_viewer: Optional[Game2048Viewer] = None
+    ) -> None:
         """Initialize the 2048 game.
 
         Args:
             board_size: size of the board (default: 4).
         """
         self.board_size = board_size
+
+        # Create viewer used for rendering
+        self._env_viewer = env_viewer or Game2048Viewer("2048", board_size)
 
     def __repr__(self) -> str:
         """String representation of the environment.
@@ -120,7 +127,11 @@ class Game2048(Environment[State]):
         timestep = restart(observation=obs)
 
         state = State(
-            board=board, step_count=jnp.int32(0), action_mask=action_mask, key=key
+            board=board,
+            step_count=jnp.int32(0),
+            action_mask=action_mask,
+            key=key,
+            score=jnp.array(0, float),
         )
 
         return state, timestep
@@ -156,7 +167,7 @@ class Game2048(Environment[State]):
         # Update the state of the board by adding a new random cell.
         updated_board = jax.lax.cond(
             done,
-            lambda board, key: updated_board,
+            lambda board, key: board,
             self._add_random_cell,
             updated_board,
             random_cell_key,
@@ -168,6 +179,7 @@ class Game2048(Environment[State]):
             action_mask=action_mask,
             step_count=state.step_count + 1,
             key=new_state_key,
+            score=state.score + additional_reward.astype(float),
         )
 
         # Generate the observation from the environment state.
@@ -259,3 +271,39 @@ class Game2048(Environment[State]):
             ],
         )
         return action_mask
+
+    def render(self, state: State, save: bool = True, path: str = "./2048.png") -> None:
+        """Renders the current state of the game board.
+
+        Args:
+            state: is the current game state to be rendered.
+            save: whether to save the rendered image to a file.
+            path: the path to save the rendered image file.
+        """
+        self._env_viewer.render(state=state, save=save, path=path)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 400,
+        blit: bool = False,
+        save: bool = True,
+        path: str = "./2048.gif",
+    ) -> animation.FuncAnimation:
+        """Creates an animated gif of the 2048 game board based on the sequence of game states.
+
+        Args:
+            states: is a list of `State` objects representing the sequence of game states.
+            interval: the delay between frames in milliseconds.
+            blit: whether to use blitting to optimize the animation.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        animation_gif = self._env_viewer.animate(
+            states=states, interval=interval, blit=blit, save=save, path=path
+        )
+
+        return animation_gif

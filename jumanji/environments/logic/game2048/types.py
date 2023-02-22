@@ -31,6 +31,7 @@ class State:
     step_count: chex.Numeric
     action_mask: chex.Array
     key: chex.PRNGKey
+    score: chex.Numeric
 
 
 class Observation(NamedTuple):
