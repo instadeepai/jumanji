@@ -139,6 +139,15 @@ class BoardProcessor:
             return False
         return True
 
+    def proportion_filled(self) -> float:
+        # Returns the percentage of the board that is filled
+        # Get the number of filled positions
+        filled_positions = np.count_nonzero(self.board_layout)
+        # Get the total number of positions
+        total_positions = self.board_layout.shape[0] * self.board_layout.shape[1]
+        # Return the percentage of filled positions
+        return filled_positions / total_positions
+
     def remove_wire(self, wire_index: int) -> None:
         # Removes a wire from the board
         # Returns None
@@ -172,6 +181,7 @@ class BoardProcessor:
         avg_wire_length = sum(wire_lengths) / num_wires
         wire_bends = [self.count_path_bends(path) for path in self.paths]
         avg_wire_bends = sum(wire_bends) / num_wires
+        proportion_filled = self.proportion_filled()
 
         # Print summary
         # print(f'Number of wires: {num_wires}')
@@ -182,7 +192,7 @@ class BoardProcessor:
 
         # Return summary dict
         summary_dict = dict(num_wires=num_wires, wire_lengths=wire_lengths, avg_wire_length=avg_wire_length,
-                            wire_bends=wire_bends, avg_wire_bends=avg_wire_bends)
+                            wire_bends=wire_bends, avg_wire_bends=avg_wire_bends, percent_filled=proportion_filled)
 
         return summary_dict
 

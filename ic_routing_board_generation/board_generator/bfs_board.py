@@ -285,8 +285,8 @@ class BFSBoard(AbstractBoard):
         Returns:
             a dictionary of methods
         """
-        return dict(min_bends=self.remove_fewest_bends, shortest=self.remove_shortest, longest=self.remove_longest,
-                    random=self.remove_random, bends=self.remove_k_bends, fifo=self.remove_first_k)
+        return dict(min_bends=self.remove_k_bends, shortest=self.remove_shortest, longest=self.remove_longest,
+                    random=self.remove_random, bends=self.remove_fewest_bends, fifo=self.remove_first_k)
 
     def clip(self, method: str, num: int) -> None:
         """Removes wires using the given method.
@@ -446,27 +446,149 @@ class BFSBoard(AbstractBoard):
         # Return the boards
         return self.return_boards(verbose=verbose)
 
+    def fill_clip_with_thresholds(self, num_clips: Union[int, List[int]], methods: Union[str, List[str]],
+                                  num_loops: Optional[int] = 1, verbose: Optional[bool] = False,
+                                  threshold_dict: Dict[str, int] = {
+                                      'min_bends', 2}) -> \
+            Tuple[np.ndarray, np.ndarray, int]:
+        """ Performs a number of fill, clip, fill loops.
+        Args:
+            num_clips: number of wires to remove
+            methods: method to remove the wires
+            num_loops: number of loops to perform
+            verbose: if True, prints the progress
+            threshold_dict: dictionary containing the thresholds for the different metrics
+
+
+        Returns:
+            tuple containing the board, the solved board and the number of filled wires
+        """
+        if isinstance(num_clips, int):
+            num_clips = [num_clips] * num_loops
+        if isinstance(methods, str):
+            methods = [methods] * num_loops
+        assert len(num_clips) == len(methods), "Number of clips and methods must be the same."
+        # update num_loops
+        num_loops = len(num_clips)
+        if verbose:
+            print(f"Performing {num_loops} loops of fill-clip-fill.")
+        for i in range(num_loops):
+            if verbose:
+                print(f"Loop {i + 1} of {num_loops}.")
+            self.place_wires(verbose=verbose)
+            if i > 0:
+                threshold_met = self.check_threshold(threshold_dict)
+                if threshold_met:
+                    break
+            self.clip(methods[i], num_clips[i])
+            # Perform the final fill
+        self.place_wires(verbose=verbose)
+        # Perform final check
+        threshold_met = self.check_threshold(threshold_dict)
+        if not threshold_met and verbose:
+            print(f"Threshold not met for {self.count_non_threshold_paths(threshold_dict, verbose)} path(s).")
+
+        return self.return_boards(verbose=verbose)
+
+    def check_min_bends(self, min_bends: int) -> bool:
+        """ Returns the number of bends in the path with the fewest bends
+        Args:
+            min_bends: minimum number of bends"""
+        min_bends_met = True
+        for path in self.paths:
+            if self.count_bends(path) < min_bends:
+                min_bends_met = False
+                break
+        return min_bends_met
+
+    def check_min_length(self, min_length: int) -> bool:
+        """ Returns the number of bends in the path with the fewest bends
+        Args:
+            min_length: minimum length of the path"""
+        min_length_met = True
+        for path in self.paths:
+            if len(path) < min_length:
+                min_length_met = False
+                break
+        return min_length_met
+
+    def check_threshold(self, threshold_dict: Dict[str, int]) -> bool:
+        """ Checks if the thresholds are met"""
+        if len(self.paths) < self.wires:
+            return False
+        threshold_met = True
+        for metric, threshold in threshold_dict.items():
+            if metric == 'min_bends':
+                if not self.check_min_bends(threshold):
+                    threshold_met = False
+                    break
+            elif metric == 'min_length':
+                if not self.check_min_length(threshold):
+                    threshold_met = False
+                    break
+            else:
+                raise ValueError(f"Metric {metric} not recognised.")
+
+        return threshold_met
+
+    def count_non_threshold_paths(self, threshold_dict: Dict[str, int], verbose: Optional[bool]=False) -> int:
+        """ Counts the number of paths that do not meet the thresholds
+        Args:
+            threshold_dict: dictionary containing the thresholds for the different metrics
+            """
+        non_threshold_paths = 0
+        for path in self.paths:
+            for key in threshold_dict.keys():
+
+                if key == 'min_length':
+                    if len(path) < threshold_dict[key]:
+                        if verbose:
+                            print(f"Path of length {len(path)} does not meet the threshold.")
+                        non_threshold_paths += 1
+                        break
+
+                elif key == 'min_bends':
+                    if self.count_bends(path) < threshold_dict[key]:
+                        if verbose:
+                            print(f"Path with {self.count_bends(path)} bend(s) does not meet the threshold.")
+                        non_threshold_paths += 1
+                        break
+                else:
+                    raise ValueError(f"Metric {key} not recognised.")
+        return non_threshold_paths
+
 
 if __name__ == '__main__':
     # Example usage
     # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
     board = BFSBoard(rows=10, columns=10, num_agents=10, max_attempts=10)
 
-    # Perform a standard fill
-    board.fill_board(verbose=True)
-    print(board.return_solved_board())
-    print(board.return_training_board())
+    # # Perform a standard fill
+    # board.fill_board(verbose=True)
+    # print(board.return_solved_board())
+    # print(board.return_training_board())
+    #
+    # # Reset the board
+    # board.reset_board()
+    # # Fill the board with 2 wires removed using the 'min_bends' method
+    # board.fill_board_with_clipping(2, 'min_bends', verbose=True)
+    # print(board.return_solved_board())
+    # print(board.return_training_board())
+    #
+    # # Reset the board
+    # board.reset_board()
+    # # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
+    # board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
+    # print(board.return_solved_board())
+    # print(board.return_training_board())
+    #
+    # # Reset the board
+    # board.reset_board()
+    # Test fill_clip_with_thresholds
+    threshold_dict = {'min_bends': 2, 'min_length': 5}
+    clip_nums = [2, 2]*10
+    clip_methods = ['fifo', 'min_bends']*10
 
-    # Reset the board
-    board.reset_board()
-    # Fill the board with 2 wires removed using the 'min_bends' method
-    board.fill_board_with_clipping(2, 'min_bends', verbose=True)
-    print(board.return_solved_board())
-    print(board.return_training_board())
-
-    # Reset the board
-    board.reset_board()
-    # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
-    board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
+    board.fill_clip_with_thresholds(clip_nums,clip_methods, verbose=True, threshold_dict=threshold_dict)
     print(board.return_solved_board())
     print(board.return_training_board())
