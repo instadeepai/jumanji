@@ -193,3 +193,10 @@ register(
     entry_point="jumanji.environments:CVRP",
     kwargs={"num_nodes": 150, "max_capacity": 60, "max_demand": 10},
 )
+
+# 2048
+register(
+    id="Game2048-v0",
+    entry_point="jumanji.environments:Game2048",
+    kwargs={"board_size": 4},
+)

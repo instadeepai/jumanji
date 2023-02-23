@@ -179,7 +179,7 @@ from single-agent to multi-agent and turn-by-turn games.
 | 📦 BinPack (3D BinPacking Problem)             | Packing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)     |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
 | 🏭 JobShop (Job Shop Scheduling Problem)       | Packing  | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/jobshop)  | [doc](https://instadeepai.github.io/jumanji/environments/jobshop/)     |
-
+| 🔢 Game2048   | Logic  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game2048/)     | [doc](https://instadeepai.github.io/jumanji/environments/game2048/)     |
 
 ### Registry and Versioning 📖
 
