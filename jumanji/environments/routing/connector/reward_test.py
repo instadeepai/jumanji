@@ -13,101 +13,10 @@
 # limitations under the License.
 
 import chex
-import jax
 import jax.numpy as jnp
-import pytest
 
-from jumanji.environments.routing.connector.constants import EMPTY, LEFT, NOOP, UP
 from jumanji.environments.routing.connector.reward import DenseRewardFn, SparseRewardFn
-from jumanji.environments.routing.connector.types import Agent, State
-from jumanji.environments.routing.connector.utils import (
-    get_path,
-    get_position,
-    get_target,
-)
-
-
-@pytest.fixture
-def state1(key: chex.PRNGKey) -> State:
-    """Creates the state (with 3 agents) that results from taking the action [UP, LEFT, LEFT] in the
-    state defined in conftest.py. Results in agent 0 and 2 reaching their targets."""
-    path0 = get_path(0)
-    path1 = get_path(1)
-    path2 = get_path(2)
-
-    targ1 = get_target(1)
-
-    posi0 = get_position(0)
-    posi1 = get_position(1)
-    posi2 = get_position(2)
-
-    empty = EMPTY
-
-    grid = jnp.array(
-        [
-            [empty, empty, posi0, empty, empty, empty],
-            [empty, empty, path0, path0, path0, empty],
-            [empty, empty, empty, posi2, path2, empty],
-            [targ1, posi1, path1, empty, path2, empty],
-            [empty, empty, path1, empty, path2, empty],
-            [empty, empty, path1, empty, empty, empty],
-        ]
-    )
-    agents = jax.vmap(Agent)(
-        id=jnp.arange(3),
-        start=jnp.array([(1, 4), (5, 2), (4, 4)]),
-        target=jnp.array([(0, 2), (3, 0), (2, 3)]),
-        position=jnp.array([(0, 2), (3, 1), (2, 3)]),
-    )
-
-    return State(grid=grid, step=1, agents=agents, key=key)
-
-
-@pytest.fixture
-def state2(key: chex.PRNGKey) -> State:
-    """Creates the state (with 3 agents) that results from taking the action [NOOP, LEFT, NOOP] in
-    state1 defined in the fixture above. Leads to agent 1 reaching its target."""
-    path0 = get_path(0)
-    path1 = get_path(1)
-    path2 = get_path(2)
-
-    posi0 = get_position(0)
-    posi1 = get_position(1)
-    posi2 = get_position(2)
-
-    empty = EMPTY
-
-    grid = jnp.array(
-        [
-            [empty, empty, posi0, empty, empty, empty],
-            [empty, empty, path0, path0, path0, empty],
-            [empty, empty, empty, posi2, path2, empty],
-            [posi1, path1, path1, empty, path2, empty],
-            [empty, empty, path1, empty, path2, empty],
-            [empty, empty, path1, empty, empty, empty],
-        ]
-    )
-
-    agents = jax.vmap(Agent)(
-        id=jnp.arange(3),
-        start=jnp.array([(1, 4), (5, 2), (4, 4)]),
-        target=jnp.array([(0, 2), (3, 0), (2, 3)]),
-        position=jnp.array([(0, 2), (3, 0), (2, 3)]),
-    )
-
-    return State(grid=grid, step=2, agents=agents, key=key)
-
-
-@pytest.fixture
-def action1() -> chex.Array:
-    """Action to move to state1."""
-    return jnp.array([UP, LEFT, LEFT])
-
-
-@pytest.fixture
-def action2() -> chex.Array:
-    """Action to move to state2."""
-    return jnp.array([NOOP, LEFT, NOOP])
+from jumanji.environments.routing.connector.types import State
 
 
 def test_sparse_reward(

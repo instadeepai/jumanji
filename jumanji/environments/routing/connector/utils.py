@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Tuple
+
 import chex
 import jax
 import jax.numpy as jnp
@@ -41,13 +43,12 @@ def get_target(agent_id: jnp.int32) -> jnp.int32:
     return TARGET + 3 * agent_id
 
 
-def move(position: chex.Array, action: jnp.int32) -> chex.Array:
+def move_position(position: chex.Array, action: jnp.int32) -> chex.Array:
     """Use a position and an action to return a new position.
 
     Args:
         position: a position representing row and column.
         action: the action representing cardinal directions.
-
     Returns:
         The new position after the move.
     """
@@ -62,6 +63,26 @@ def move(position: chex.Array, action: jnp.int32) -> chex.Array:
     return jax.lax.switch(
         action, [move_noop, move_up, move_right, move_down, move_left], row, col
     )
+
+
+def move_agent(
+    agent: Agent, grid: chex.Array, new_pos: chex.Array
+) -> Tuple[Agent, chex.Array]:
+    """Moves `agent` to `new_pos` on `grid`. Sets `agent`'s position to `new_pos`.
+
+    Returns:
+        An agent and grid representing the agent at the new_pos.
+    """
+    grid = grid.at[tuple(new_pos)].set(get_position(agent.id))
+    grid = grid.at[tuple(agent.position)].set(get_path(agent.id))
+
+    new_agent = Agent(
+        id=agent.id,
+        start=agent.start,
+        target=agent.target,
+        position=jnp.array(new_pos),
+    )
+    return new_agent, grid
 
 
 def is_valid_position(
@@ -88,6 +109,11 @@ def is_valid_position(
     not_connected = ~agent.connected
 
     return in_bounds & open_cell & not_connected
+
+
+def connected_or_blocked(agent: Agent, action_mask: chex.Array) -> chex.Array:
+    """Returns: `True` if an agent is connected or blocked, `False` otherwise."""
+    return agent.connected.all() | jnp.logical_not(action_mask[1:].any())
 
 
 def get_agent_grid(agent_id: jnp.int32, grid: chex.Array) -> chex.Array:

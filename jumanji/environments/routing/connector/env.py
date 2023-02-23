@@ -31,7 +31,7 @@ from jumanji.environments.routing.connector.specs import ObservationSpec
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     is_valid_position,
-    move,
+    move_position,
     switch_perspective,
 )
 from jumanji.types import Action, TimeStep, restart
@@ -165,7 +165,7 @@ class Connector(Environment[State]):
         actions = jnp.arange(1, 5)
 
         def is_valid_action(action: int) -> chex.Array:
-            agent_pos = move(agent.position, action)
+            agent_pos = move_position(agent.position, action)
             return is_valid_position(grid, agent, agent_pos)
 
         mask = jnp.ones(5, dtype=bool)

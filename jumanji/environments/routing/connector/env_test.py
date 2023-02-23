@@ -19,14 +19,10 @@ import jax
 import jax.numpy as jnp
 from dm_env import StepType
 
-from jumanji.environments.routing.connector import constants
+from jumanji.environments.routing.connector.constants import EMPTY
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.types import Agent, State
-from jumanji.environments.routing.connector.utils import (
-    get_path,
-    get_position,
-    get_target,
-)
+from jumanji.environments.routing.connector.utils import get_position, get_target
 from jumanji.types import TimeStep
 
 
@@ -74,41 +70,40 @@ def test_connector__reset_jit(env: Connector) -> None:
     assert isinstance(state, State)
 
 
-def test_connector__obs_from_grid(env: Connector, grid: chex.Array) -> None:
+def test_connector__obs_from_grid(
+    env: Connector,
+    grid: chex.Array,
+    path0: int,
+    path1: int,
+    path2: int,
+    targ0: int,
+    targ1: int,
+    targ2: int,
+    posi0: int,
+    posi1: int,
+    posi2: int,
+) -> None:
     """Tests that observations are correctly generated given the grid."""
     observations = env._obs_from_grid(grid)
-    path0 = get_path(0)
-    path1 = get_path(1)
-    path2 = get_path(2)
-
-    targ0 = get_target(0)
-    targ1 = get_target(1)
-    targ2 = get_target(2)
-
-    posi0 = get_position(0)
-    posi1 = get_position(1)
-    posi2 = get_position(2)
-
-    empty = constants.EMPTY
 
     expected_agent_1 = jnp.array(
         [
-            [empty, empty, targ2, empty, empty, empty],
-            [empty, empty, posi2, path2, path2, empty],
-            [empty, empty, empty, targ1, posi1, empty],
-            [targ0, empty, posi0, empty, path1, empty],
-            [empty, empty, path0, empty, path1, empty],
-            [empty, empty, path0, empty, empty, empty],
+            [EMPTY, EMPTY, targ2, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, posi2, path2, path2, EMPTY],
+            [EMPTY, EMPTY, EMPTY, targ1, posi1, EMPTY],
+            [targ0, EMPTY, posi0, EMPTY, path1, EMPTY],
+            [EMPTY, EMPTY, path0, EMPTY, path1, EMPTY],
+            [EMPTY, EMPTY, path0, EMPTY, EMPTY, EMPTY],
         ]
     )
     expected_agent_2 = jnp.array(
         [
-            [empty, empty, targ1, empty, empty, empty],
-            [empty, empty, posi1, path1, path1, empty],
-            [empty, empty, empty, targ0, posi0, empty],
-            [targ2, empty, posi2, empty, path0, empty],
-            [empty, empty, path2, empty, path0, empty],
-            [empty, empty, path2, empty, empty, empty],
+            [EMPTY, EMPTY, targ1, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, posi1, path1, path1, EMPTY],
+            [EMPTY, EMPTY, EMPTY, targ0, posi0, EMPTY],
+            [targ2, EMPTY, posi2, EMPTY, path0, EMPTY],
+            [EMPTY, EMPTY, path2, EMPTY, path0, EMPTY],
+            [EMPTY, EMPTY, path2, EMPTY, EMPTY, EMPTY],
         ]
     )
 
