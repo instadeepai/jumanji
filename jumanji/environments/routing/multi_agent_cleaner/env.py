@@ -26,6 +26,7 @@ from jumanji.environments.routing.multi_agent_cleaner.constants import (
     MOVES,
     WALL,
 )
+from jumanji.environments.routing.multi_agent_cleaner.env_viewer import CleanerViewer
 from jumanji.environments.routing.multi_agent_cleaner.instance_generator import (
     Generator,
     RandomGenerator,
@@ -74,6 +75,7 @@ class Cleaner(Environment[State]):
         num_agents: int,
         step_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
+        render_mode: str = "human",
     ) -> None:
         """Instantiate an Cleaner environment.
 
@@ -82,6 +84,7 @@ class Cleaner(Environment[State]):
             grid_height: height of the grid.
             num_agents: number of agents.
             step_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
+            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
         self.grid_width = grid_width
         self.grid_height = grid_height
@@ -89,6 +92,9 @@ class Cleaner(Environment[State]):
         self.num_agents = num_agents
         self.step_limit = step_limit or (self.grid_width * self.grid_height)
         self.generator = generator or RandomGenerator(grid_width, grid_height)
+
+        # Create viewer used for rendering
+        self._env_viewer = CleanerViewer("Cleaner", render_mode)
 
     def __repr__(self) -> str:
         return (
@@ -131,6 +137,14 @@ class Cleaner(Environment[State]):
             BoundedArray (int) between 0 and 3 (inclusive) of shape (num_agents,).
         """
         return specs.BoundedArray((self.num_agents,), int, 0, 3, "actions")
+
+    def render(self, state: State) -> None:
+        """Render the given state of the environment.
+
+        Args:
+            state: `State` object containing the current environment state.
+        """
+        self._env_viewer.render(state)
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Reset the environment to its initial state.
