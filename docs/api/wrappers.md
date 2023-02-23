@@ -5,9 +5,7 @@
         - JumanjiToDMEnvWrapper
         - MultiToSingleWrapper
         - VmapWrapper
-        - BraxToJumanjiWrapper
         - AutoResetWrapper
-        - JumanjiToGymWrapper
         - JumanjiToGymWrapper
         - jumanji_to_gym_obs
       filters:

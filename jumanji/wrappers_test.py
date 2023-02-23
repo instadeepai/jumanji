@@ -15,7 +15,6 @@
 from collections import namedtuple
 from typing import Tuple, Type, TypeVar
 
-import brax
 import chex
 import dm_env.specs
 import gym
@@ -24,8 +23,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 import pytest_mock
-from brax.envs import Env as BraxEnv
-from brax.envs import State as BraxState
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -36,7 +33,6 @@ from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import StepType, TimeStep
 from jumanji.wrappers import (
     AutoResetWrapper,
-    BraxToJumanjiWrapper,
     JumanjiToDMEnvWrapper,
     JumanjiToGymWrapper,
     MultiToSingleWrapper,
@@ -507,74 +503,6 @@ class TestVmapWrapper:
         """Validates unwrapped property of the vmap environment."""
         assert isinstance(fake_vmap_environment.unwrapped, Environment)
         assert fake_vmap_environment._env is fake_environment
-
-
-class TestBraxEnvToJumanjiEnvironment:
-    """
-    Test the BraxEnvToJumanjiEnvironment wrapper that transforms a Brax Env into an Environment
-    format.
-    """
-
-    @pytest.fixture
-    def fake_brax_env(self, time_limit: int = 10) -> BraxEnv:
-        """Creates a trivial Brax Env meant for unit testing."""
-        return brax.envs.create("fast", auto_reset=False, episode_length=time_limit)
-
-    @pytest.fixture
-    def jumanji_environment_from_brax(self, fake_brax_env: BraxEnv) -> Environment:
-        """Instantiates an Environment wrapped from a Brax env."""
-        return BraxToJumanjiWrapper(fake_brax_env)
-
-    def test_brax_env_to_jumanji_environment__init(
-        self, fake_brax_env: BraxEnv
-    ) -> None:
-        """Validates initialization of the wrapper."""
-        environment = BraxToJumanjiWrapper(fake_brax_env)
-        assert isinstance(environment, Environment)
-
-    def test_brax_env_to_jumanji_environment__reset(
-        self,
-        jumanji_environment_from_brax: Environment,
-        key: chex.PRNGKey,
-    ) -> None:
-        """Validates (jitted) reset function and timestep type of the wrapped environment."""
-        state, timestep = jax.jit(jumanji_environment_from_brax.reset)(key)
-        assert isinstance(state, BraxState)
-        assert isinstance(timestep, TimeStep)
-        assert timestep.step_type == StepType.FIRST
-        assert timestep.extras == {}
-
-    def test_brax_env_to_jumanji_environment__step(
-        self,
-        jumanji_environment_from_brax: Environment,
-        key: chex.PRNGKey,
-    ) -> None:
-        """Validates (jitted) step function of the wrapped environment."""
-        state, timestep = jumanji_environment_from_brax.reset(key)
-        action = jumanji_environment_from_brax.action_spec().generate_value()
-        next_state, next_timestep = jax.jit(jumanji_environment_from_brax.step)(
-            state, action
-        )
-        assert_trees_are_different(timestep, next_timestep)
-        assert_trees_are_different(state, next_state)
-
-    def test_brax_env_to_jumanji_environment__observation_spec(
-        self, jumanji_environment_from_brax: Environment
-    ) -> None:
-        """Validates observation_spec property of the wrapped environment."""
-        assert isinstance(jumanji_environment_from_brax.observation_spec(), specs.Array)
-
-    def test_brax_env_to_jumanji_environment__action_spec(
-        self, jumanji_environment_from_brax: Environment
-    ) -> None:
-        """Validates action_spec property of the wrapped environment."""
-        assert isinstance(jumanji_environment_from_brax.action_spec(), specs.Array)
-
-    def test_brax_env_to_jumanji_environment__unwrapped(
-        self, jumanji_environment_from_brax: Environment
-    ) -> None:
-        """Validates unwrapped property of the wrapped environment."""
-        assert isinstance(jumanji_environment_from_brax.unwrapped, BraxEnv)
 
 
 class TestAutoResetWrapper:

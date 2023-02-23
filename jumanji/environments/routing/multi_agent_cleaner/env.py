@@ -15,8 +15,8 @@
 from typing import Optional, Tuple
 
 import chex
+import jax
 import jax.numpy as jnp
-from brax.jumpy import jax
 
 from jumanji import specs
 from jumanji.env import Environment
