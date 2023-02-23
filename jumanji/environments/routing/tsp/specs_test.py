@@ -58,6 +58,7 @@ class TestObservationSpec:
                 observation_spec.coordinates_spec.replace(shape=(3, 4)),
             ),
             ("position_spec", observation_spec.position_spec.replace(name="new_name")),
+            ("trajectory", observation_spec.trajectory.replace(name="new_name")),
             (
                 "action_mask_spec",
                 observation_spec.action_mask_spec.replace(shape=(3, 4)),
@@ -72,6 +73,7 @@ class TestObservationSpec:
         for attr_name in {
             "coordinates_spec",
             "position_spec",
+            "trajectory",
             "action_mask_spec",
         }.difference([arg_name]):
             chex.assert_equal(

@@ -23,11 +23,13 @@ class ObservationSpec(specs.Spec[Observation]):
         self,
         coordinates_spec: specs.BoundedArray,
         position_spec: specs.DiscreteArray,
+        trajectory: specs.BoundedArray,
         action_mask_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
         self.coordinates_spec = coordinates_spec
         self.position_spec = position_spec
+        self.trajectory = trajectory
         self.action_mask_spec = action_mask_spec
 
     def __repr__(self) -> str:
@@ -35,6 +37,7 @@ class ObservationSpec(specs.Spec[Observation]):
             "ObservationSpec(\n"
             f"\tcoordinates_spec={repr(self.coordinates_spec)},\n"
             f"\tposition_spec={repr(self.position_spec)},\n"
+            f"\ttrajectory={repr(self.trajectory)},\n"
             f"\taction_mask_spec={repr(self.action_mask_spec)},\n"
             ")"
         )
@@ -44,6 +47,7 @@ class ObservationSpec(specs.Spec[Observation]):
         return Observation(
             coordinates=self.coordinates_spec.generate_value(),
             position=self.position_spec.generate_value(),
+            trajectory=self.trajectory.generate_value(),
             action_mask=self.action_mask_spec.generate_value(),
         )
 
@@ -62,6 +66,7 @@ class ObservationSpec(specs.Spec[Observation]):
         return Observation(
             coordinates=self.coordinates_spec.validate(value.coordinates),
             position=self.position_spec.validate(value.position),
+            trajectory=self.trajectory.validate(value.trajectory),
             action_mask=self.action_mask_spec.validate(value.action_mask),
         )
 
@@ -77,6 +82,7 @@ class ObservationSpec(specs.Spec[Observation]):
         all_kwargs = {
             "coordinates_spec": self.coordinates_spec,
             "position_spec": self.position_spec,
+            "trajectory": self.trajectory,
             "action_mask_spec": self.action_mask_spec,
         }
         all_kwargs.update(kwargs)

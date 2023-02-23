@@ -22,36 +22,34 @@ if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
 else:
     from chex import dataclass
 
-import jax.numpy as jnp
-from chex import Array
-
 
 @dataclass
 class State:
     """
-    coordinates: array of coordinates for all cities.
+    coordinates: array of 2D coordinates for all cities.
     position: index of current city.
     visited_mask: binary mask (False/True <--> unvisited/visited).
-    order: array of city indices denoting route (-1 --> not filled yet).
+    trajectory: array of city indices defining the route (-1 --> not filled yet).
     num_visited: how many cities have been visited.
     """
 
-    coordinates: Array  # (num_cities, 2)
-    position: jnp.int32
-    visited_mask: Array  # (num_cities,)
-    order: Array  # (num_cities,)
-    num_visited: jnp.int32
+    coordinates: chex.Array  # (num_cities, 2)
+    position: chex.Numeric  # ()
+    visited_mask: chex.Array  # (num_cities,)
+    trajectory: chex.Array  # (num_cities,)
+    num_visited: chex.Numeric  # ()
     key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):
     """
-    coordinates: array of coordinates for all cities.
-    start_position: index of starting city.
+    coordinates: array of 2D coordinates for all cities.
     position: index of current city.
+    trajectory: array of city indices defining the route (-1 --> not filled yet).
     action_mask: binary mask (False/True <--> illegal/legal).
     """
 
-    coordinates: Array
-    position: jnp.int32
-    action_mask: Array
+    coordinates: chex.Array  # (num_cities, 2)
+    position: chex.Numeric  # ()
+    trajectory: chex.Array  # (num_cities,)
+    action_mask: chex.Array  # (num_cities,)

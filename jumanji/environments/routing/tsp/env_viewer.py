@@ -140,7 +140,7 @@ class TSPViewer:
 
         # Draw the arrows between cities
         if state.num_visited > 1:
-            xs, ys = state.coordinates[state.order[: state.num_visited]].T
+            xs, ys = state.coordinates[state.trajectory[: state.num_visited]].T
             dx = xs[1:] - xs[:-1]
             dy = ys[1:] - ys[:-1]
             ax.quiver(
