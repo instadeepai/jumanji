@@ -21,6 +21,7 @@ import jax.numpy as jnp
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.maze.constants import MOVES
+from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -65,7 +66,8 @@ class Maze(Environment[State]):
         n_rows: int,
         n_cols: int,
         step_limit: Optional[int] = None,
-    ):
+        generator: Optional[Generator] = None,
+    ) -> None:
         """Instantiates a Maze environment.
 
         Args:
@@ -78,8 +80,9 @@ class Maze(Environment[State]):
 
         self.n_rows = n_rows
         self.n_cols = n_cols
-        self.maze_shape = (self.n_rows, self.n_cols)
+        self.shape = (self.n_rows, self.n_cols)
         self.step_limit = step_limit or 2 * self.n_rows * self.n_cols
+        self.generator = generator or RandomGenerator(self.n_rows, self.n_cols)
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -145,7 +148,7 @@ class Maze(Environment[State]):
         """Resets the environment by calling the instance generator for a new instance.
 
         Args:
-            key: random key used to reset the environment.
+            key: random key used to reset the environment since it is stochastic.
 
         Returns:
             state: State object corresponding to the new state of the environment after a reset.
@@ -153,18 +156,24 @@ class Maze(Environment[State]):
                 after a reset.
         """
 
-        key, state_key, agent_key = jax.random.split(key, 3)
+        key, maze_key, agent_key = jax.random.split(key, 3)
 
-        # Generate a Toy instance.
-        walls = jnp.ones((self.n_rows, self.n_cols), bool)
-        walls = walls.at[0, :].set((False, True, False, False, False))
-        walls = walls.at[1, :].set((False, True, False, True, True))
-        walls = walls.at[2, :].set((False, True, False, False, False))
-        walls = walls.at[3, :].set((False, False, False, True, True))
-        walls = walls.at[4, :].set((False, False, False, False, False))
+        walls = self.generator(maze_key)
 
-        agent_position = Position(row=0, col=0)
-        target_position = Position(row=0, col=4)
+        # Randomise agent start and target positions.
+        start_and_target_indices = jax.random.choice(
+            agent_key,
+            jnp.arange(self.n_rows * self.n_cols),
+            (2,),
+            replace=False,
+            p=~walls.flatten(),
+        )
+        (agent_row, target_row), (agent_col, target_col) = jnp.divmod(
+            start_and_target_indices, self.n_cols
+        )
+
+        agent_position = Position(row=agent_row, col=agent_col)
+        target_position = Position(row=target_row, col=target_col)
 
         # Build the state.
         state = State(
@@ -179,7 +188,7 @@ class Maze(Environment[State]):
         # Generate the observation from the environment state.
         observation = self._observation_from_state(state)
 
-        # Return a restart timestep whose step type is FIRST
+        # Return a restart timestep whose step type is FIRST.
         timestep = restart(observation)
 
         return state, timestep
@@ -271,7 +280,7 @@ class Maze(Environment[State]):
                 & ~(walls[x, y])
             )
 
-        # vmap over the moves
+        # vmap over the moves.
         action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(agent_position, MOVES)
 
         return action_mask
