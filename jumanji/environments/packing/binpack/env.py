@@ -31,11 +31,6 @@ from jumanji.environments.packing.binpack.instance_generator import (
 )
 from jumanji.environments.packing.binpack.reward import RewardFn, sparse_linear_reward
 from jumanji.environments.packing.binpack.space import Space
-from jumanji.environments.packing.binpack.specs import (
-    EMSSpec,
-    ItemSpec,
-    ObservationSpec,
-)
 from jumanji.environments.packing.binpack.types import (
     EMS,
     Item,
@@ -197,83 +192,81 @@ class BinPack(Environment[State]):
             )
         return instance_generator_obj
 
-    def observation_spec(self) -> ObservationSpec:
-        """Specifications of the observation of the BinPack environment.
+    def observation_spec(self) -> specs.Spec:
+        """Specifications of the observation of the `BinPack` environment.
 
         Returns:
-            ObservationSpec containing all the specifications for all the Observation fields:
-            - ems_spec: EMSSpec.
+            Spec containing all the specifications for all the `Observation` fields:
+            - ems: spec for `EMS`.
                 - normalize_dimensions: True -> tree of BoundedArray (float)
                     of shape (obs_num_ems,).
                 - normalize_dimensions: False -> tree of BoundedArray (int)
                     of shape (obs_num_ems,).
-            - ems_mask_spec: BoundedArray (bool) of shape (obs_num_ems,).
-            - items_spec: ItemSpec.
+            - ems_mask: BoundedArray (bool) of shape (obs_num_ems,).
+            - items: spec for `Item`.
                 - normalize_dimensions: True -> tree of BoundedArray (float)
                     of shape (max_num_items,).
                 - normalize_dimensions: False -> tree of BoundedArray (int)
                     of shape (max_num_items,).
-            - items_mask_spec: BoundedArray (bool) of shape (max_num_items,).
-            - items_placed_spec: BoundedArray (bool) of shape (max_num_items,).
-            - action_mask_spec: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
+            - items_mask: BoundedArray (bool) of shape (max_num_items,).
+            - items_placed: BoundedArray (bool) of shape (max_num_items,).
+            - action_mask: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
         obs_num_ems = self.obs_num_ems
         max_num_items = self.instance_generator.max_num_items
         max_dim = max(self.instance_generator.container_dims)
 
         if self.normalize_dimensions:
-            ems_spec_dict = {
-                f"{coord_name}_spec": specs.BoundedArray(
+            ems_dict = {
+                f"{coord_name}": specs.BoundedArray(
                     (obs_num_ems,), float, 0.0, 1.0, coord_name
                 )
                 for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
             }
         else:
-            ems_spec_dict = {
-                f"{coord_name}_spec": specs.BoundedArray(
+            ems_dict = {
+                f"{coord_name}": specs.BoundedArray(
                     (obs_num_ems,), jnp.int32, 0, max_dim, coord_name
                 )
                 for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
             }
-        ems_spec = EMSSpec(**ems_spec_dict)
-        ems_mask_spec = specs.BoundedArray(
-            (obs_num_ems,), bool, False, True, "ems_mask"
-        )
+        ems = specs.Spec(EMS, "EMSSpec", **ems_dict)
+        ems_mask = specs.BoundedArray((obs_num_ems,), bool, False, True, "ems_mask")
         if self.normalize_dimensions:
-            items_spec_dict = {
-                f"{axis}_spec": specs.BoundedArray(
-                    (max_num_items,), float, 0.0, 1.0, axis
-                )
+            items_dict = {
+                f"{axis}": specs.BoundedArray((max_num_items,), float, 0.0, 1.0, axis)
                 for axis in ["x_len", "y_len", "z_len"]
             }
         else:
-            items_spec_dict = {
-                f"{axis}_spec": specs.BoundedArray(
+            items_dict = {
+                f"{axis}": specs.BoundedArray(
                     (max_num_items,), jnp.int32, 0, max_dim, axis
                 )
                 for axis in ["x_len", "y_len", "z_len"]
             }
-        items_spec = ItemSpec(**items_spec_dict)
-        items_mask_spec = specs.BoundedArray(
+        items = specs.Spec(Item, "ItemsSpec", **items_dict)
+        items_mask = specs.BoundedArray(
             (max_num_items,), bool, False, True, "items_mask"
         )
-        items_placed_spec = specs.BoundedArray(
+        items_placed = specs.BoundedArray(
             (max_num_items,), bool, False, True, "items_placed"
         )
-        action_mask_spec = specs.BoundedArray(
+        action_mask = specs.BoundedArray(
             (obs_num_ems, max_num_items),
             bool,
             False,
             True,
             "action_mask",
         )
-        return ObservationSpec(
-            ems_spec=ems_spec,
-            ems_mask_spec=ems_mask_spec,
-            items_spec=items_spec,
-            items_mask_spec=items_mask_spec,
-            items_placed_spec=items_placed_spec,
-            action_mask_spec=action_mask_spec,
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            ems=ems,
+            ems_mask=ems_mask,
+            items=items,
+            items_mask=items_mask,
+            items_placed=items_placed,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:

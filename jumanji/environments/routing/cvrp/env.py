@@ -23,7 +23,6 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
-from jumanji.environments.routing.cvrp.specs import ObservationSpec
 from jumanji.environments.routing.cvrp.types import Observation, State
 from jumanji.environments.routing.cvrp.utils import (
     DEPOT_IDX,
@@ -164,31 +163,31 @@ class CVRP(Environment[State]):
         timestep = self._state_to_timestep(state, is_valid)
         return state, timestep
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec.
 
         Returns:
             observation_spec: a Tuple containing the spec for each of the constituent fields of an
             observation.
         """
-        coordinates_obs = specs.BoundedArray(
+        coordinates = specs.BoundedArray(
             shape=(self.num_nodes + 1, 2),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="coordinates",
         )
-        demands_obs = specs.BoundedArray(
+        demands = specs.BoundedArray(
             shape=(self.num_nodes + 1,),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="demands",
         )
-        position_obs = specs.DiscreteArray(
+        position = specs.DiscreteArray(
             self.num_nodes + 1, dtype=jnp.int32, name="position"
         )
-        capacity_obs = specs.BoundedArray(
+        capacity = specs.BoundedArray(
             shape=(), minimum=0.0, maximum=1.0, dtype=jnp.float32, name="capacity"
         )
         action_mask = specs.BoundedArray(
@@ -198,8 +197,14 @@ class CVRP(Environment[State]):
             maximum=True,
             name="action mask",
         )
-        return ObservationSpec(
-            coordinates_obs, demands_obs, position_obs, capacity_obs, action_mask
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            coordinates=coordinates,
+            demands=demands,
+            position=position,
+            capacity=capacity,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.DiscreteArray:

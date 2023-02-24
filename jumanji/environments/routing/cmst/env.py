@@ -19,8 +19,7 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.cmst.specs import ObservationSpec
-from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.cmst.types import Observation, State
 from jumanji.types import Action, TimeStep
 
 
@@ -177,7 +176,7 @@ class CoopMinSpanTree(Environment[State]):
             name="discount",
         )
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec.
 
         Returns:
@@ -212,7 +211,14 @@ class CoopMinSpanTree(Environment[State]):
             maximum=True,
             name="action mask",
         )
-        return ObservationSpec(node_types, edges, position, action_mask)
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            node_types=node_types,
+            edges=edges,
+            position=position,
+            action_mask=action_mask,
+        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:  # type: ignore
         pass  # type: ignore

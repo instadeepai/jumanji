@@ -125,13 +125,3 @@ class Environment(abc.ABC, Generic[State]):
     def __exit__(self, *args: Any) -> None:
         """Calls :meth:`close()`."""
         self.close()
-
-
-def make_environment_spec(environment: Environment) -> specs.EnvironmentSpec:
-    """Returns an `EnvironmentSpec` describing values used by an environment."""
-    return specs.EnvironmentSpec(
-        observations=environment.observation_spec(),
-        actions=environment.action_spec(),
-        rewards=environment.reward_spec(),
-        discounts=environment.discount_spec(),
-    )

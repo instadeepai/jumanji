@@ -21,7 +21,6 @@ import jax.numpy as jnp
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.maze.constants import MOVES
-from jumanji.environments.routing.maze.specs import ObservationSpec, PositionSpec
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -92,7 +91,7 @@ class Maze(Environment[State]):
             ]
         )
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Specifications of the observation of the Maze environment.
 
         Returns: ObservationSpec containing all the specifications for all the Observation fields:
@@ -107,31 +106,31 @@ class Maze(Environment[State]):
             - step_count_spec : specs.Array int of shape ()
             - action_mask_spec : specs.BoundedArray (bool) of shape (4,).
         """
-        position_spec = PositionSpec(
-            row_spec=specs.BoundedArray(
-                (), jnp.int32, 0, self.n_rows - 1, "row_coordinate"
-            ),
-            col_spec=specs.BoundedArray(
-                (), jnp.int32, 0, self.n_cols - 1, "col_coordinate"
-            ),
+        agent_position = specs.Spec(
+            Position,
+            "PositionSpec",
+            row=specs.BoundedArray((), jnp.int32, 0, self.n_rows - 1, "row_coordinate"),
+            col=specs.BoundedArray((), jnp.int32, 0, self.n_cols - 1, "col_coordinate"),
         )
-        walls_spec = specs.BoundedArray(
+        walls = specs.BoundedArray(
             shape=(self.n_rows, self.n_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
             name="walls",
         )
-        step_count_spec = specs.Array((), jnp.int32, "step_count")
-        action_mask_spec = specs.BoundedArray(
+        step_count = specs.Array((), jnp.int32, "step_count")
+        action_mask = specs.BoundedArray(
             shape=(4,), dtype=bool, minimum=False, maximum=True, name="action_mask"
         )
-        return ObservationSpec(
-            agent_position_spec=position_spec,
-            target_position_spec=position_spec,
-            walls_spec=walls_spec,
-            step_count_spec=step_count_spec,
-            action_mask_spec=action_mask_spec,
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            agent_position=agent_position,
+            target_position=agent_position,
+            walls=walls,
+            step_count=step_count,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.DiscreteArray:

@@ -31,7 +31,6 @@ from jumanji.environments.routing.multi_agent_cleaner.instance_generator import 
     Generator,
     RandomGenerator,
 )
-from jumanji.environments.routing.multi_agent_cleaner.specs import ObservationSpec
 from jumanji.environments.routing.multi_agent_cleaner.types import Observation, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -105,29 +104,31 @@ class Cleaner(Environment[State]):
             ")"
         )
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Specification of the observation of the Cleaner environment.
 
         Returns:
             ObservationSpec containing the specifications for all observation fields:
-                - grid_spec: BoundedArray of int between 0 and 2 (inclusive),
+                - grid: BoundedArray of int between 0 and 2 (inclusive),
                     same shape as the grid.
                 - agent_locations_spec: BoundedArray of int, shape is (num_agents, 2).
                     Maximum value for the first column is grid_width,
                     and maximum value for the second is grid_height.
-                - action_mask_spec: BoundedArray of bool, shape is (num_agent, 4).
+                - action_mask: BoundedArray of bool, shape is (num_agent, 4).
         """
-        grid_spec = specs.BoundedArray(self.grid_shape, int, 0, 2, "grid")
-        agents_locations_spec = specs.BoundedArray(
+        grid = specs.BoundedArray(self.grid_shape, int, 0, 2, "grid")
+        agents_locations = specs.BoundedArray(
             (self.num_agents, 2), int, [0, 0], self.grid_shape, "agents_locations"
         )
-        action_mask_spec = specs.BoundedArray(
+        action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
         )
-        return ObservationSpec(
-            grid_spec=grid_spec,
-            agents_locations_spec=agents_locations_spec,
-            action_mask_spec=action_mask_spec,
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            grid=grid,
+            agents_locations=agents_locations,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.BoundedArray:

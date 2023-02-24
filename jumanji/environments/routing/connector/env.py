@@ -27,7 +27,6 @@ from jumanji.environments.routing.connector.generator import (
     UniformRandomGenerator,
 )
 from jumanji.environments.routing.connector.reward import RewardFn, SparseRewardFn
-from jumanji.environments.routing.connector.specs import ObservationSpec
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     is_valid_position,
@@ -172,7 +171,7 @@ class Connector(Environment[State]):
         mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
         return mask
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec for Connector environment.
 
         This observation contains the grid for each agent, the action mask for each agent and
@@ -181,25 +180,29 @@ class Connector(Environment[State]):
         Returns:
             observation_spec: an `ObservationSpec` which contains the grid and the action mask spec.
         """
-        grid_spec = specs.BoundedArray(
+        grid = specs.BoundedArray(
             shape=(self._num_agents, self._size, self._size),
             dtype=int,
             name="observation",
             minimum=0,
             maximum=self._num_agents * 3 + AGENT_INITIAL_VALUE,
         )
-        action_mask_spec = specs.BoundedArray(
+        action_mask = specs.BoundedArray(
             shape=(self._num_agents, 5),
             dtype=bool,
             minimum=False,
             maximum=True,
             name="action_mask",
         )
-        step_spec = specs.BoundedArray(
+        step = specs.BoundedArray(
             shape=(), dtype=int, minimum=0, maximum=self._horizon, name="step"
         )
-        return ObservationSpec(
-            grid_spec=grid_spec, action_mask_spec=action_mask_spec, step_spec=step_spec
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            grid=grid,
+            action_mask=action_mask,
+            step=step,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:

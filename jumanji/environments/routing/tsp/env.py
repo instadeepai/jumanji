@@ -24,7 +24,6 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
-from jumanji.environments.routing.tsp.specs import ObservationSpec
 from jumanji.environments.routing.tsp.types import Observation, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -151,21 +150,21 @@ class TSP(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Returns the observation spec.
 
         Returns:
             observation_spec: a tree of specs containing the spec for each of the constituent fields
                 of an observation.
         """
-        coordinates_obs = specs.BoundedArray(
+        coordinates = specs.BoundedArray(
             shape=(self.num_cities, 2),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="coordinates",
         )
-        position_obs = specs.DiscreteArray(
+        position = specs.DiscreteArray(
             self.num_cities, dtype=jnp.int32, name="position"
         )
         trajectory = specs.BoundedArray(
@@ -182,11 +181,13 @@ class TSP(Environment[State]):
             maximum=True,
             name="action mask",
         )
-        return ObservationSpec(
-            coordinates_obs,
-            position_obs,
-            trajectory,
-            action_mask,
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            coordinates=coordinates,
+            position=position,
+            trajectory=trajectory,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.DiscreteArray:

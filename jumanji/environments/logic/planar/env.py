@@ -26,7 +26,6 @@ from jumanji.environments.logic.planar.reward import (
     IntersectionCountChangeRewardFn,
     RewardFn,
 )
-from jumanji.environments.logic.planar.specs import ObservationSpec
 from jumanji.environments.logic.planar.types import Observation, State
 from jumanji.environments.logic.planar.viewer import Viewer, networkx_viewer
 from jumanji.types import Action, TimeStep, restart, termination, transition
@@ -111,9 +110,11 @@ class PlanarGraph(Environment[State]):
     def termination(self, state: State) -> jnp.bool_:
         return state.step == self.time_limit
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         num_nodes, num_edges = self.generator.specs()
-        return ObservationSpec(
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
             nodes=specs.Array(shape=(num_nodes, 2), dtype=jnp.int_),
             edges=specs.Array(shape=(num_edges, 2), dtype=jnp.int_),
         )

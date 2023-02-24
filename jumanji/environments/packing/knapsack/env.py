@@ -20,7 +20,6 @@ from chex import PRNGKey
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.knapsack.specs import ObservationSpec
 from jumanji.environments.packing.knapsack.types import Observation, State
 from jumanji.environments.packing.knapsack.utils import (
     compute_value_items,
@@ -114,21 +113,20 @@ class Knapsack(Environment[State]):
         timestep = self._state_to_timestep(state, is_valid)
         return state, timestep
 
-    def observation_spec(self) -> ObservationSpec:
-        """Returns the observation spec.
+    def observation_spec(self) -> specs.Spec:
+        """Specifications of the observation of the `Knapsack` environment.
 
         Returns:
-            observation_spec: a tree of specs containing the spec for each of the constituent fields
-                of an observation.
+            Spec containing all the specifications for all the `Observation` fields.
         """
-        weights_obs = specs.BoundedArray(
+        weights = specs.BoundedArray(
             shape=(self.num_items,),
             minimum=0.0,
             maximum=1.0,
             dtype=jnp.float32,
             name="weights",
         )
-        values_obs = specs.BoundedArray(
+        values = specs.BoundedArray(
             shape=(self.num_items,),
             minimum=0.0,
             maximum=1.0,
@@ -142,10 +140,12 @@ class Knapsack(Environment[State]):
             maximum=True,
             name="action_mask",
         )
-        return ObservationSpec(
-            weights_obs,
-            values_obs,
-            action_mask,
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            weights=weights,
+            values=values,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.DiscreteArray:

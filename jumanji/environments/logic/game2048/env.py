@@ -22,7 +22,6 @@ from chex import Array, PRNGKey
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.game2048.env_viewer import Game2048Viewer
-from jumanji.environments.logic.game2048.specs import ObservationSpec
 from jumanji.environments.logic.game2048.types import Board, Observation, State
 from jumanji.environments.logic.game2048.utils import (
     move_down,
@@ -78,17 +77,21 @@ class Game2048(Environment[State]):
         """
         return f"2048 Game(board_size={self.board_size})"
 
-    def observation_spec(self) -> ObservationSpec:
-        """Returns the observation spec containing the board and action_mask arrays.
+    def observation_spec(self) -> specs.Spec:
+        """Specifications of the observation of the `Game2048` environment.
 
         Returns:
-            observation_spec: `ObservationSpec` tree of board and action_mask spec.
+            Spec containing all the specifications for all the `Observation` fields:
+             - board: Array (jnp.int32) of shape (board_size, board_size).
+             - action_mask: BoundedArray (bool) of shape (4,).
         """
-        return ObservationSpec(
-            board_spec=specs.Array(
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            board=specs.Array(
                 shape=(self.board_size, self.board_size), dtype=jnp.int32, name="board"
             ),
-            action_mask_spec=specs.BoundedArray(
+            action_mask=specs.BoundedArray(
                 shape=(4,),
                 dtype=bool,
                 minimum=False,

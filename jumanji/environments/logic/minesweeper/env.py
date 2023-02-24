@@ -40,7 +40,6 @@ from jumanji.environments.logic.minesweeper.reward_functions import (
     DefaultRewardFunction,
     RewardFunction,
 )
-from jumanji.environments.logic.minesweeper.specs import ObservationSpec
 from jumanji.environments.logic.minesweeper.types import Observation, State
 from jumanji.environments.logic.minesweeper.utils import (
     count_adjacent_mines,
@@ -219,14 +218,19 @@ class Minesweeper(Environment[State]):
         )
         return next_state, next_timestep
 
-    def observation_spec(self) -> ObservationSpec:
-        """Returns the observation spec containing the board, number of mines, and step count.
+    def observation_spec(self) -> specs.Spec:
+        """Specifications of the observation of the `Minesweeper` environment.
 
         Returns:
-            observation_spec: ObservationSpec tree of the board, number of mines,
-                and step count spec.
+            Spec containing all the specifications for all the `Observation` fields:
+             - board: BoundedArray (jnp.int32) of shape (board_height, board_width).
+             - action_mask: BoundedArray (bool) of shape (board_height, board_width).
+             - num_mines: BoundedArray (jnp.int32) of shape ().
+             - step_count: BoundedArray (jnp.int32) of shape ().
         """
-        return ObservationSpec(
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
             board=specs.BoundedArray(
                 shape=(self.board_height, self.board_width),
                 dtype=jnp.int32,

@@ -25,7 +25,6 @@ from jumanji.environments.packing.jobshop.instance_generator import (
     RandomInstanceGenerator,
     ToyInstanceGenerator,
 )
-from jumanji.environments.packing.jobshop.specs import ObservationSpec
 from jumanji.environments.packing.jobshop.types import Observation, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -328,17 +327,17 @@ class JobShop(Environment[State]):
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec:
         """Specifications of the observation of the `JobShop` environment.
 
         Returns:
-            `ObservationSpec` containing all the specifications for all the `Observation` fields:
-            - operations_machine_ids: Array (jnp.int32) of shape (num_jobs, max_num_ops).
-            - operations_durations: Array (jnp.int32) of shape (num_jobs, max_num_ops).
-            - operations_mask: Array (bool) of shape (num_jobs, max_num_ops).
-            - machines_job_ids: Array (jnp.int32) of shape (num_machines,).
-            - machines_remaining_times: Array (jnp.int32) of shape (num_machines,).
-            - action_mask: Array (bool) of shape (num_machines, num_jobs + 1).
+            Spec containing the specifications for all the `Observation` fields:
+            - operations_machine_ids: BoundedArray (jnp.int32) of shape (num_jobs, max_num_ops).
+            - operations_durations: BoundedArray (jnp.int32) of shape (num_jobs, max_num_ops).
+            - operations_mask: BoundedArray (bool) of shape (num_jobs, max_num_ops).
+            - machines_job_ids: BoundedArray (jnp.int32) of shape (num_machines,).
+            - machines_remaining_times: BoundedArray (jnp.int32) of shape (num_machines,).
+            - action_mask: BoundedArray (bool) of shape (num_machines, num_jobs + 1).
         """
         operations_machine_ids = specs.BoundedArray(
             shape=(self.num_jobs, self.max_num_ops),
@@ -382,7 +381,9 @@ class JobShop(Environment[State]):
             maximum=True,
             name="action_mask",
         )
-        return ObservationSpec(
+        return specs.Spec(
+            constructor=Observation,
+            name="ObservationSpec",
             operations_machine_ids=operations_machine_ids,
             operations_durations=operations_durations,
             operations_mask=operations_mask,

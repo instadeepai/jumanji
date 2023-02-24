@@ -36,7 +36,6 @@ from jumanji.environments.logic.rubiks_cube.reward_functions import (
     RewardFunction,
     SparseRewardFunction,
 )
-from jumanji.environments.logic.rubiks_cube.specs import ObservationSpec
 from jumanji.environments.logic.rubiks_cube.types import Cube, Observation, State
 from jumanji.environments.logic.rubiks_cube.utils import (
     generate_all_moves,
@@ -267,13 +266,17 @@ class RubiksCube(Environment[State]):
         action_history_index = self.num_scrambles_on_reset + state.step_count
         return state.action_history[:action_history_index]
 
-    def observation_spec(self) -> ObservationSpec:
-        """Returns the observation spec containing the cube and step count.
+    def observation_spec(self) -> specs.Spec:
+        """Specifications of the observation of the `RubiksCube` environment.
 
         Returns:
-            observation_spec: ObservationSpec tree of cube and step_count spec.
+            Spec containing all the specifications for all the `Observation` fields:
+             - cube: BoundedArray (jnp.int8) of shape (num_faces, cube_size, cube_size).
+             - step_count: BoundedArray (jnp.int32) of shape ().
         """
-        return ObservationSpec(
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
             cube=specs.BoundedArray(
                 shape=(len(Face), self.cube_size, self.cube_size),
                 dtype=jnp.int8,

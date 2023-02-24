@@ -17,6 +17,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
+from jumanji import specs
 from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.environments.packing.binpack.instance_generator import (
     TWENTY_FOOT_DIMS,
@@ -24,7 +25,6 @@ from jumanji.environments.packing.binpack.instance_generator import (
     make_container,
 )
 from jumanji.environments.packing.binpack.space import Space
-from jumanji.environments.packing.binpack.specs import ObservationSpec
 from jumanji.environments.packing.binpack.types import Item, Location, State
 
 
@@ -99,7 +99,7 @@ def binpack_env(dummy_instance_generator: DummyInstanceGenerator) -> BinPack:
 
 
 @pytest.fixture
-def obs_spec(binpack_env: BinPack) -> ObservationSpec:
+def obs_spec(binpack_env: BinPack) -> specs.Spec:
     return binpack_env.observation_spec()
 
 
