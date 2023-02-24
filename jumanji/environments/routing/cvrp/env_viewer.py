@@ -193,7 +193,7 @@ class CVRPViewer:
 
         # Draw the arrows between cities
         if state.num_total_visits > 1:
-            coords = state.coordinates[state.order[: state.num_total_visits]]
+            coords = state.coordinates[state.trajectory[: state.num_total_visits]]
             coords_grouped = self._group_tour(coords)
 
             # Draw each route in different colour

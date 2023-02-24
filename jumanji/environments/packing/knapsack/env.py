@@ -70,7 +70,7 @@ class Knapsack(Environment[State]):
             f"and a total budget of {self.total_budget}"
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -90,7 +90,7 @@ class Knapsack(Environment[State]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:

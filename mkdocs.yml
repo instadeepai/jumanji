@@ -39,7 +39,7 @@ nav:
           - Base: api/env.md
           - Logic:
               - RubiksCube: api/environments/rubiks_cube.md
-              - Minesweeoer: api/environments/minesweeper.md
+              - Minesweeper: api/environments/minesweeper.md
               - Game2048: api/environments/game2048.md
           - Packing:
               - BinPack: api/environments/binpack.md

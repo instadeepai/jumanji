@@ -65,7 +65,7 @@ class PlanarGraph(Environment[State]):
         self.viewer = viewer
         self.time_limit = time_limit
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         key, subkey = jax.random.split(key)
         nodes, edges = self.generator(subkey)
 
@@ -77,7 +77,7 @@ class PlanarGraph(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         # Update each node position
         moves = jnp.take(PlanarGraph._MOVES, action, axis=0)
         nodes = state.nodes + moves

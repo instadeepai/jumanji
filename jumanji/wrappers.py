@@ -253,7 +253,7 @@ class MultiToSingleWrapper(Wrapper):
             discount=self._discount_aggregator(timestep.discount),
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -267,7 +267,7 @@ class MultiToSingleWrapper(Wrapper):
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The rewards are aggregated into a single value based on the given reward aggregator.
@@ -297,7 +297,7 @@ class VmapWrapper(Wrapper):
     - discount_spec
     """
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         The first dimension of the key will dictate the number of concurrent environments.
@@ -317,7 +317,7 @@ class VmapWrapper(Wrapper):
         state, timestep = jax.vmap(self._env.reset)(key)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The first dimension of the state will dictate the number of concurrent environments.
@@ -357,7 +357,9 @@ class AutoResetWrapper(Wrapper):
     being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
-    def _auto_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
+    def _auto_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
         """
@@ -380,7 +382,7 @@ class AutoResetWrapper(Wrapper):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Step the environment, with automatic resetting if the episode terminates."""
         state, timestep = self._env.step(state, action)
 
@@ -407,7 +409,7 @@ class VmapAutoResetWrapper(Wrapper):
         within the batch because they have terminated).
     """
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets a batch of environments to initial states.
 
         The first dimension of the key will dictate the number of concurrent environments.
@@ -427,7 +429,7 @@ class VmapAutoResetWrapper(Wrapper):
         state, timestep = jax.vmap(self._env.reset)(key)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of all environments' dynamics. It automatically resets environment(s)
         in which episodes have terminated.
 
@@ -452,7 +454,9 @@ class VmapAutoResetWrapper(Wrapper):
         )
         return state, timestep
 
-    def _auto_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
+    def _auto_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
         """
@@ -475,7 +479,9 @@ class VmapAutoResetWrapper(Wrapper):
 
         return state, timestep
 
-    def _maybe_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
+    def _maybe_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Overwrite the state and timestep appropriately if the episode terminates."""
         state, timestep = jax.lax.cond(
             timestep.last(),

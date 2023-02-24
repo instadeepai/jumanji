@@ -136,11 +136,11 @@ class TSP(Environment[State]):
             action,
         )
 
-        reward = self.reward_fn(state=state, action=action, next_state=next_state)
+        reward = self.reward_fn(state, action, next_state, is_valid)
         observation = self._state_to_observation(next_state)
 
         # Terminate if all cities have been visited or the action is invalid
-        is_done = (next_state.num_visited == self.num_cities) | (~is_valid)
+        is_done = (next_state.num_visited == self.num_cities) | ~is_valid
         timestep = jax.lax.cond(
             is_done,
             termination,
@@ -161,7 +161,7 @@ class TSP(Environment[State]):
             shape=(self.num_cities, 2),
             minimum=0.0,
             maximum=1.0,
-            dtype=jnp.float32,
+            dtype=float,
             name="coordinates",
         )
         position = specs.DiscreteArray(

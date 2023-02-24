@@ -149,7 +149,7 @@ class Snake(Environment[State]):
         timestep = restart(observation=obs)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Array]]:
         """Run one timestep of the environment's dynamics.
 
         Args:

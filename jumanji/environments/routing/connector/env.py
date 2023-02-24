@@ -106,7 +106,7 @@ class Connector(Environment[State]):
         self._reward_fn = reward_fn(**reward_fn_kwargs)
         self._generator = generator(size, num_agents)
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -134,7 +134,11 @@ class Connector(Environment[State]):
             timestep,
         )
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:  # type: ignore
+    def step(  # type: ignore
+        self,
+        state: State,
+        action: Action,
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
         Args:

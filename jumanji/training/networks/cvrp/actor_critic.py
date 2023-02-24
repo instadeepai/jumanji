@@ -17,7 +17,7 @@ import haiku as hk
 import jax.numpy as jnp
 
 from jumanji.environments.routing.cvrp import CVRP, Observation
-from jumanji.environments.routing.cvrp.utils import DEPOT_IDX
+from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,

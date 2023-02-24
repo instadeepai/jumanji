@@ -141,7 +141,7 @@ class Maze(Environment[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment by calling the instance generator for a new instance.
 
         Args:
@@ -184,7 +184,7 @@ class Maze(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 

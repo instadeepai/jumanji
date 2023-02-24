@@ -14,214 +14,348 @@
 
 import chex
 import jax
-import pytest
 from jax import numpy as jnp
 
+from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.cvrp.types import State
-from jumanji.environments.routing.cvrp.utils import DEPOT_IDX, compute_tour_length
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
-@pytest.fixture
-def cvrp_env() -> CVRP:
-    """Instantiates a default CVRP environment."""
-    return CVRP()
+class TestSparseCVRP:
+    def test_cvrp_sparse__reset(self, cvrp_sparse_reward: CVRP) -> None:
+        """Validates the jitted reset of the environment."""
+        chex.clear_trace_counter()
+        reset_fn = jax.jit(chex.assert_max_traces(cvrp_sparse_reward.reset, n=1))
 
+        key = jax.random.PRNGKey(0)
+        state, timestep = reset_fn(key)
+        # Call again to check it does not compile twice.
+        state, timestep = reset_fn(key)
 
-def test_cvrp__reset(cvrp_env: CVRP) -> None:
-    """Validates the jitted reset of the environment."""
-    chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(cvrp_env.reset, n=1))
+        assert isinstance(timestep, TimeStep)
+        assert isinstance(state, State)
 
-    key = jax.random.PRNGKey(0)
-    state, timestep = reset_fn(key)
-    # Call again to check it does not compile twice.
-    state, timestep = reset_fn(key)
+        # Initial position is at depot, so current capacity is max capacity.
+        assert state.capacity == cvrp_sparse_reward.max_capacity
+        # The depot is initially visited.
+        assert state.visited_mask[DEPOT_IDX]
+        assert state.visited_mask.sum() == 1
+        # First visited position is the depot.
+        assert state.trajectory[0] == DEPOT_IDX
+        assert state.num_total_visits == 1
+        # Cost of the depot must be 0.
+        assert state.demands[DEPOT_IDX] == 0
 
-    assert isinstance(timestep, TimeStep)
-    assert isinstance(state, State)
+        assert_is_jax_array_tree(state)
 
-    # Initial position is at depot, so current capacity is max capacity
-    assert state.capacity == cvrp_env.max_capacity
-    # # The depot is initially visited
-    assert state.visited_mask[DEPOT_IDX]
-    assert state.visited_mask.sum() == 1
-    # First visited position is the depot
-    assert state.order[0] == DEPOT_IDX
-    assert state.num_total_visits == 1
-    # Cost of the depot must be 0
-    assert state.demands[DEPOT_IDX] == 0
+    def test_cvrp_sparse__step(self, cvrp_sparse_reward: CVRP) -> None:
+        """Validates the jitted step of the environment."""
+        chex.clear_trace_counter()
 
-    assert_is_jax_array_tree(state)
+        step_fn = chex.assert_max_traces(cvrp_sparse_reward.step, n=1)
+        step_fn = jax.jit(step_fn)
 
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_sparse_reward.reset(key)
 
-def test_cvrp__step(cvrp_env: CVRP) -> None:
-    """Validates the jitted step of the environment."""
-    chex.clear_trace_counter()
+        # Starting position is depot, first action to visit first node.
+        new_action = 1
+        new_state, next_timestep = step_fn(state, new_action)
 
-    step_fn = chex.assert_max_traces(cvrp_env.step, n=1)
-    step_fn = jax.jit(step_fn)
+        # Check that the state has changed.
+        assert not jnp.array_equal(new_state.position, state.position)
+        assert not jnp.array_equal(new_state.capacity, state.capacity)
+        assert not jnp.array_equal(new_state.visited_mask, state.visited_mask)
+        assert not jnp.array_equal(new_state.trajectory, state.trajectory)
+        assert not jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
 
-    key = jax.random.PRNGKey(0)
-    state, timestep = cvrp_env.reset(key)
+        # Check that the state is made of DeviceArrays, this is false for the non-jitted
+        # step function since unpacking random.split returns numpy arrays and not device arrays.
+        assert_is_jax_array_tree(new_state)
 
-    # Starting position is depot, new action to visit first node
-    new_action = 1
-    new_state, next_timestep = step_fn(state, new_action)
+        # Check the state was changed as expected.
+        assert new_state.visited_mask[new_action]
+        assert new_state.visited_mask.sum() == 1
 
-    # Check that the state has changed
-    assert not jnp.array_equal(new_state.position, state.position)
-    assert not jnp.array_equal(new_state.capacity, state.capacity)
-    assert not jnp.array_equal(new_state.visited_mask, state.visited_mask)
-    assert not jnp.array_equal(new_state.order, state.order)
-    assert not jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
+        # New step with same action should be invalid.
+        state = new_state
 
-    # Check that the state is made of DeviceArrays, this is false for the non-jitted
-    # step function since unpacking random.split returns numpy arrays and not device arrays.
-    assert_is_jax_array_tree(new_state)
+        new_state, next_timestep = step_fn(state, new_action)
 
-    # Check the state was changed as expected
-    assert new_state.visited_mask[new_action]
-    assert new_state.visited_mask.sum() == 1
+        # Check that the state has not changed.
+        assert jnp.array_equal(new_state.position, state.position)
+        assert jnp.array_equal(new_state.visited_mask, state.visited_mask)
+        assert jnp.array_equal(new_state.trajectory, state.trajectory)
+        assert jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
 
-    # New step with same action should be invalid
-    state = new_state
+    def test_cvrp_sparse__does_not_smoke(self, cvrp_sparse_reward: CVRP) -> None:
+        """Test that we can run an episode without any errors."""
+        check_env_does_not_smoke(cvrp_sparse_reward)
 
-    new_state, next_timestep = step_fn(state, new_action)
+    def test_cvrp_sparse__trajectory_action(self, cvrp_sparse_reward: CVRP) -> None:
+        """Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot
+        when the next node in the list surpasses the current capacity of the agent.
+        """
+        step_fn = jax.jit(cvrp_sparse_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_sparse_reward.reset(key)
 
-    # Check that the state has not changed
-    assert jnp.array_equal(new_state.position, state.position)
-    assert jnp.array_equal(new_state.visited_mask, state.visited_mask)
-    assert jnp.array_equal(new_state.order, state.order)
-    assert jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
+        # The position from which we will continue visiting after we recharge capacity at the depot.
+        pending_position = None
+        while not timestep.last():
+            # Check that there are nodes that have not been selected yet.
+            assert not state.visited_mask.all()
 
+            # Check that the reward is 0 while the trajectory is not done.
+            assert timestep.reward == 0
 
-def test_cvrp__does_not_smoke(cvrp_env: CVRP) -> None:
-    """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(cvrp_env)
+            if pending_position is not None:
+                next_position = pending_position
+                pending_position = None
+            else:
+                # Select the next position. If we don't have enough capacity, set it
+                # as pending and go to the depot (0) to recharge.
+                next_position = (state.position % cvrp_sparse_reward.num_nodes) + 1
+                if state.capacity < state.demands[next_position]:
+                    pending_position = next_position
+                    next_position = DEPOT_IDX
 
-
-def test_cvrp__trajectory_action(cvrp_env: CVRP) -> None:
-    """
-    Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot when the
-    next node in the list surpasses the current capacity of the agent.
-    """
-    key = jax.random.PRNGKey(0)
-    state, timestep = cvrp_env.reset(key)
-
-    # The position from which we will continue visiting after we recharge capacity at the depot.
-    pending_position = None
-    # actions = jnp.arange(1, cvrp_env.problem_size + 1)
-    while not timestep.last():
-        # Check that there are nodes that have not been selected yet.
-        assert not state.visited_mask.all()
-
-        # Check that the reward is 0 while the trajectory is not done.
-        assert timestep.reward == 0
-
-        if pending_position is not None:
-            next_position = pending_position
-            pending_position = None
-        else:
-            # Select the next position. If we don't have enough capacity, set it
-            # as pending and go to the depot (0) to recharge.
-            next_position = (state.position % cvrp_env.num_nodes) + 1
-            if state.capacity < state.demands[next_position]:
-                pending_position = next_position
+            # If all cities have been visited, go to depot to finish the episode.
+            visited_nodes_other_than_depot = jnp.concatenate(
+                [state.visited_mask[:DEPOT_IDX], state.visited_mask[DEPOT_IDX + 1 :]],
+                axis=0,
+            )
+            if visited_nodes_other_than_depot.all():
                 next_position = DEPOT_IDX
 
-        # If all cities have been visited, go to depot to finish the episode.
-        if state.visited_mask[1:].all():
-            next_position = DEPOT_IDX
+            state, timestep = step_fn(state, next_position)
 
-        state, timestep = cvrp_env.step(state, next_position)
+        # Check that the reward is negative when the trajectory is done.
+        assert timestep.reward < 0
+        assert timestep.last()
 
-    # Check that the reward is negative when the trajectory is done.
-    assert timestep.reward < 0
+        # Check that no action can be taken (all nodes have been selected).
+        assert state.visited_mask.all()
 
-    # Check that no action can be taken (all nodes have been selected).
-    assert state.visited_mask.all()
+    def test_cvrp_sparse__invalid_revisit_node(self, cvrp_sparse_reward: CVRP) -> None:
+        """Checks that an invalid action leads to a termination and the appropriate reward is
+        received.
+        """
+        step_fn = jax.jit(cvrp_sparse_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_sparse_reward.reset(key)
 
-    assert timestep.last()
+        first_position = state.position
+        actions = (
+            jnp.array([first_position + 1, first_position + 2, first_position + 2])
+            % cvrp_sparse_reward.num_nodes
+        )
 
+        for a in actions:
+            assert timestep.reward == 0
+            assert not timestep.last()
+            state, timestep = step_fn(state, a)
 
-def test_cvrp__invalid_revisit_node(cvrp_env: CVRP) -> None:
-    """Checks that an invalid action leads to a termination and the appropriate reward is
-    received."""
-    key = jax.random.PRNGKey(0)
-    state, timestep = cvrp_env.reset(key)
+        # Last action is invalid because it was already taken.
+        assert timestep.reward < 0
+        assert timestep.last()
 
-    first_position = state.position
-    actions = (
-        jnp.array([first_position + 1, first_position + 2, first_position + 2])
-        % cvrp_env.num_nodes
-    )
+    def test_cvrp_sparse__revisit_depot(self, cvrp_sparse_reward: CVRP) -> None:
+        """Checks that the depot can be revisited and that the capacity is set back to the maximum
+        when visited.
+        """
+        step_fn = jax.jit(cvrp_sparse_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_sparse_reward.reset(key)
+        state, timestep = step_fn(state, action=1)
 
-    for a in actions:
+        # Make sure we are not at the depot.
+        assert state.position != DEPOT_IDX
+        # We have moved from the depot, so capacity must be lower than 1.0.
+        assert state.capacity < cvrp_sparse_reward.max_capacity
+
+        state, timestep = step_fn(state, DEPOT_IDX)
+
+        assert state.position == DEPOT_IDX
+        assert state.capacity == cvrp_sparse_reward.max_capacity
         assert timestep.reward == 0
         assert not timestep.last()
-        state, timestep = cvrp_env.step(state, a)
 
-    # Last action is invalid because it was already taken
-    assert timestep.reward < 0
-    assert timestep.last()
+    def test_cvrp_sparse__revisit_depot_invalid(self, cvrp_sparse_reward: CVRP) -> None:
+        """Checks that the depot cannot be revisited if we are already at the depot."""
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_sparse_reward.reset(key)
+        state, timestep = cvrp_sparse_reward.step(state, jnp.int32(DEPOT_IDX))
 
-
-def test_cvrp__revisit_depot(cvrp_env: CVRP) -> None:
-    """Checks that the depot can be revisited and that the capacity is set back to the maximum."""
-    key = jax.random.PRNGKey(0)
-    state, timestep = cvrp_env.reset(key)
-    state, timestep = cvrp_env.step(state, action=1)
-
-    assert state.position != DEPOT_IDX  # Not at the depot
-    assert (
-        state.capacity < cvrp_env.max_capacity
-    )  # We have moved from the depot, so capacity must be lower than 1.0
-
-    state, timestep = cvrp_env.step(state, jnp.int32(DEPOT_IDX))
-
-    assert state.position == DEPOT_IDX
-    assert state.capacity == cvrp_env.max_capacity
-    assert timestep.reward == 0
-    assert not timestep.last()
+        assert timestep.last()
 
 
-def test_cvrp__revisit_depot_invalid(cvrp_env: CVRP) -> None:
-    """Checks that the depot cannot be revisited if we are already at the depot."""
-    key = jax.random.PRNGKey(0)
-    state, timestep = cvrp_env.reset(key)
-    state, timestep = cvrp_env.step(state, jnp.int32(DEPOT_IDX))
+class TestDenseCVRP:
+    def test_cvrp_dense__reset(self, cvrp_dense_reward: CVRP) -> None:
+        """Validates the jitted reset of the environment."""
+        chex.clear_trace_counter()
+        reset_fn = jax.jit(chex.assert_max_traces(cvrp_dense_reward.reset, n=1))
 
-    assert timestep.last()
+        key = jax.random.PRNGKey(0)
+        state, timestep = reset_fn(key)
+        # Call again to check it does not compile twice.
+        state, timestep = reset_fn(key)
 
+        assert isinstance(timestep, TimeStep)
+        assert isinstance(state, State)
 
-def test_cvrp__tour_length() -> None:
-    """Checks that the tour lengths are properly computed."""
-    coords = jnp.array(
-        [
-            [0.65948975, 0.8527372],
-            [0.18317401, 0.06975579],
-            [0.4064678, 0.19167936],
-            [0.92129254, 0.27006388],
-            [0.7105516, 0.9370967],
-            [0.5277389, 0.18168604],
-            [0.47508526, 0.19661963],
-            [0.46782017, 0.6201354],
-            [0.4211073, 0.5530877],
-            [0.94237375, 0.64736927],
-            [0.97507954, 0.43589878],
-        ]
-    )
+        # Initial position is at depot, so current capacity is max capacity.
+        assert state.capacity == cvrp_dense_reward.max_capacity
+        # # The depot is initially visited.
+        assert state.visited_mask[DEPOT_IDX]
+        assert state.visited_mask.sum() == 1
+        # First visited position is the depot.
+        assert state.trajectory[0] == DEPOT_IDX
+        assert state.num_total_visits == 1
+        # Cost of the depot must be 0.
+        assert state.demands[DEPOT_IDX] == 0
 
-    order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0, 0, 0, 0, 0])
-    tour_length = compute_tour_length(coords, order)
-    assert jnp.isclose(tour_length, 6.8649917)
+        assert_is_jax_array_tree(state)
 
-    order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6])
-    assert compute_tour_length(coords, order) == 6.8649917
+    def test_cvrp_dense__step(self, cvrp_dense_reward: CVRP) -> None:
+        """Validates the jitted step of the environment."""
+        chex.clear_trace_counter()
 
-    order = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0])
-    assert compute_tour_length(coords, order) == 6.8649917
+        step_fn = chex.assert_max_traces(cvrp_dense_reward.step, n=1)
+        step_fn = jax.jit(step_fn)
+
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_dense_reward.reset(key)
+
+        # Starting position is depot, new action to visit first node.
+        new_action = 1
+        new_state, next_timestep = step_fn(state, new_action)
+
+        # Check that the state has changed.
+        assert not jnp.array_equal(new_state.position, state.position)
+        assert not jnp.array_equal(new_state.capacity, state.capacity)
+        assert not jnp.array_equal(new_state.visited_mask, state.visited_mask)
+        assert not jnp.array_equal(new_state.trajectory, state.trajectory)
+        assert not jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
+
+        # Check that the state is made of DeviceArrays, this is false for the non-jitted
+        # step function since unpacking random.split returns numpy arrays and not device arrays.
+        assert_is_jax_array_tree(new_state)
+
+        # Check the state was changed as expected.
+        assert new_state.visited_mask[new_action]
+        assert new_state.visited_mask.sum() == 1
+
+        # New step with same action should be invalid.
+        state = new_state
+
+        new_state, next_timestep = step_fn(state, new_action)
+
+        # Check that the state has not changed.
+        assert jnp.array_equal(new_state.position, state.position)
+        assert jnp.array_equal(new_state.visited_mask, state.visited_mask)
+        assert jnp.array_equal(new_state.trajectory, state.trajectory)
+        assert jnp.array_equal(new_state.num_total_visits, state.num_total_visits)
+
+    def test_cvrp_dense__does_not_smoke(self, cvrp_dense_reward: CVRP) -> None:
+        """Test that we can run an episode without any errors."""
+        check_env_does_not_smoke(cvrp_dense_reward)
+
+    def test_cvrp_dense__trajectory_action(self, cvrp_dense_reward: CVRP) -> None:
+        """Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot
+        when the next node in the list surpasses the current capacity of the agent.
+        """
+        step_fn = jax.jit(cvrp_dense_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_dense_reward.reset(key)
+
+        # The position from which we will continue visiting after we recharge capacity at the depot.
+        pending_position = None
+        while not timestep.last():
+            # Check that there are nodes that have not been selected yet.
+            assert not state.visited_mask.all()
+
+            # Check that the reward is always negative.
+            assert timestep.reward < 0 or timestep.first()
+
+            if pending_position is not None:
+                next_position = pending_position
+                pending_position = None
+            else:
+                # Select the next position. If we don't have enough capacity, set it
+                # as pending and go to the depot (0) to recharge.
+                next_position = (state.position % cvrp_dense_reward.num_nodes) + 1
+                if state.capacity < state.demands[next_position]:
+                    pending_position = next_position
+                    next_position = DEPOT_IDX
+
+            # If all cities have been visited, go to depot to finish the episode.
+            visited_nodes_other_than_depot = jnp.concatenate(
+                [state.visited_mask[:DEPOT_IDX], state.visited_mask[DEPOT_IDX + 1 :]],
+                axis=0,
+            )
+            if visited_nodes_other_than_depot.all():
+                next_position = DEPOT_IDX
+
+            state, timestep = step_fn(state, next_position)
+
+        # Check that the reward is negative when the trajectory is done as well.
+        assert timestep.reward < 0
+        assert timestep.last()
+
+        # Check that no action can be taken (all nodes have been selected).
+        assert state.visited_mask.all()
+
+    def test_cvrp_dense__invalid_revisit_node(self, cvrp_dense_reward: CVRP) -> None:
+        """Checks that an invalid action leads to a termination and the appropriate reward is
+        received.
+        """
+        step_fn = jax.jit(cvrp_dense_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_dense_reward.reset(key)
+
+        first_position = state.position
+        actions = (
+            jnp.array([first_position + 1, first_position + 2, first_position + 2])
+            % cvrp_dense_reward.num_nodes
+        )
+
+        for a in actions:
+            assert not timestep.last()
+            state, timestep = step_fn(state, a)
+            assert timestep.reward < 0
+
+        # Last action is invalid because it was already taken.
+        assert timestep.last()
+
+    def test_cvrp_dense__revisit_depot(self, cvrp_dense_reward: CVRP) -> None:
+        """Checks that the depot can be revisited and that the capacity is set back to the maximum
+        when visited.
+        """
+        step_fn = jax.jit(cvrp_dense_reward.step)
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_dense_reward.reset(key)
+        state, timestep = step_fn(state, action=1)
+
+        # Make sure we are not at the depot.
+        assert state.position != DEPOT_IDX
+        # We have moved from the depot, so capacity must be lower than 1.0.
+        assert state.capacity < cvrp_dense_reward.max_capacity
+
+        state, timestep = step_fn(state, DEPOT_IDX)
+
+        assert state.position == DEPOT_IDX
+        assert state.capacity == cvrp_dense_reward.max_capacity
+        assert timestep.reward < 0
+        assert not timestep.last()
+
+    def test_cvrp_dense__revisit_depot_invalid(self, cvrp_dense_reward: CVRP) -> None:
+        """Checks that the depot cannot be revisited if we are already at the depot."""
+        key = jax.random.PRNGKey(0)
+        state, timestep = cvrp_dense_reward.reset(key)
+        state, timestep = cvrp_dense_reward.step(state, DEPOT_IDX)
+
+        assert timestep.last()

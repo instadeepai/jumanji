@@ -147,7 +147,7 @@ class Cleaner(Environment[State]):
         """
         self._env_viewer.render(state)
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Reset the environment to its initial state.
 
         All the tiles except upper left are dirty, and the agents start in the upper left
@@ -184,7 +184,9 @@ class Cleaner(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, actions: Action) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, actions: Action
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         If an action is invalid, the corresponding agent does not move and

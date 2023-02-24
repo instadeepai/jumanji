@@ -515,7 +515,7 @@ class TestAutoResetWrapper:
     @pytest.fixture
     def fake_state_and_timestep(
         self, fake_auto_reset_environment: AutoResetWrapper, key: chex.PRNGKey
-    ) -> Tuple[State, TimeStep]:
+    ) -> Tuple[State, TimeStep[Observation]]:
         state, timestep = jax.jit(fake_auto_reset_environment.reset)(key)
         return state, timestep
 
@@ -527,7 +527,7 @@ class TestAutoResetWrapper:
     def test_auto_reset_wrapper__auto_reset(
         self,
         fake_auto_reset_environment: AutoResetWrapper,
-        fake_state_and_timestep: Tuple[State, TimeStep],
+        fake_state_and_timestep: Tuple[State, TimeStep[Observation]],
     ) -> None:
         """Validates the auto_reset function of the AutoResetWrapper."""
         state, timestep = fake_state_and_timestep
@@ -571,6 +571,7 @@ class TestAutoResetWrapper:
         fake_environment.time_limit = 5
 
         # Loop across time_limit so auto-reset occurs
+        timestep = first_timestep
         for _ in range(fake_environment.time_limit):
             action = fake_auto_reset_environment.action_spec().generate_value()
             state, timestep = jax.jit(fake_auto_reset_environment.step)(state, action)

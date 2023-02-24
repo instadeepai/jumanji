@@ -112,7 +112,7 @@ class JobShop(Environment[State]):
             )
         return instance_generator_obj
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment by calling the instance generator for a new instance.
 
         Args:
@@ -140,7 +140,7 @@ class JobShop(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Updates the status of all machines, the status of the operations, and increments the
         time step. It updates the environment state and the timestep (which contains the new
         observation). It calculates the reward based on the three terminal conditions:

@@ -16,8 +16,6 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import chex
 import jax
-import jax.numpy as jnp
-from chex import Array
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -28,36 +26,38 @@ else:
 @dataclass
 class State:
     """
-    coordinates: array with the coordinates of all nodes (+ depot).
+    coordinates: array of 2D coordinates of all nodes (including depot).
     demands: array with the demands of all nodes (+ depot).
     position: index of the current node.
     capacity: current capacity of the vehicle.
     visited_mask: binary mask (False/True <--> unvisited/visited).
-    order: array of node indices denoting route (-1 --> not filled yet).
+    trajectory: array of node indices denoting route (set to DEPOT_IDX if not filled yet).
     num_total_visits: number of performed visits (it can count depot multiple times).
     """
 
-    coordinates: Array  # (num_nodes + 1, 2)
-    demands: Array  # (num_nodes + 1,)
-    position: jnp.int32
-    capacity: jnp.int32
-    visited_mask: Array  # (num_nodes + 1,)
-    order: Array  # (2 * num_nodes,) - this size is worst-case (visit depot after each node)
-    num_total_visits: jnp.int32
+    coordinates: chex.Array  # (num_nodes + 1, 2)
+    demands: chex.Array  # (num_nodes + 1,)
+    position: chex.Numeric  # ()
+    capacity: chex.Numeric  # ()
+    visited_mask: chex.Array  # (num_nodes + 1,)
+    trajectory: chex.Array  # (2 * num_nodes,)
+    num_total_visits: chex.Numeric  # ()
     key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):
     """
-    coordinates: array with the coordinates of all nodes (+ depot).
-    demands: array with the demands of all nodes (+ depot).
+    coordinates: array of 2D coordinates of all nodes (including depot).
+    demands: array with the demands of all nodes (including depot).
     position: index of the current node.
+    trajectory: array of node indices denoting route (set to DEPOT_IDX if not filled yet).
     capacity: current capacity of the vehicle.
     action_mask: binary mask (False/True <--> invalid/valid action).
     """
 
-    coordinates: Array  # (num_nodes + 1, 2)
-    demands: Array  # (num_nodes + 1,)
-    position: jnp.int32
-    capacity: jnp.float32
-    action_mask: Array  # (num_nodes + 1,)
+    coordinates: chex.Array  # (num_nodes + 1, 2)
+    demands: chex.Array  # (num_nodes + 1,)
+    position: chex.Numeric  # ()
+    trajectory: chex.Array  # (2 * num_nodes,)
+    capacity: chex.Numeric  # ()
+    action_mask: chex.Array  # (num_nodes + 1,)
