@@ -63,7 +63,7 @@ or you can install the latest development version directly from GitHub:
 ```bash
 pip install git+https://github.com/instadeepai/jumanji.git
 ```
-Jumanji has been tested on Python 3.7, 3.8 and 3.9.
+Jumanji has been tested on Python 3.8, 3.9.
 Note that because the installation of JAX differs depending on your hardware accelerator,
 we advise users to explicitly install the correct JAX version (see the [official installation guide](https://github.com/google/jax#installation)).
 

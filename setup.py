@@ -43,7 +43,7 @@ setup(
     long_description_content_type="text/markdown",
     keywords="reinforcement-learning python jax",
     packages=setuptools.find_packages(),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=_parse_requirements(
         os.path.join(_CURRENT_DIR, "requirements", "requirements.txt")
     ),
@@ -58,7 +58,6 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
