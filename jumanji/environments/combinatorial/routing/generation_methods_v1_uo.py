@@ -570,3 +570,6 @@ if __name__ == '__main__':
     board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
     print(board.return_solved_board())
     print(board.return_empty_board())
+
+    # Render the board
+    
