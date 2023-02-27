@@ -1,32 +1,29 @@
 name: tsp
 env_kwargs:
-    num_cities: 10
+    num_cities: 20
 
 network:
-    encoder_num_layers: 1
-    encoder_num_heads: 4
-    encoder_key_size: 8
-    encoder_expand_factor: 2
-    encoder_model_size: 128
-    decoder_num_heads: 4
-    decoder_key_size: 8
-    decoder_model_size: 128
+    transformer_num_blocks: 6
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+    mean_cities_in_query: True
 
 training:
-    num_epochs: 100
-    num_learner_steps_per_epoch: 500
-    n_steps: 10
-    total_batch_size: 128
+    num_epochs: 1000
+    num_learner_steps_per_epoch: 50
+    n_steps: 20
+    total_batch_size: 64
 
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.99
+    discount_factor: 1.0
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0
-    l_en: 0.01
+    l_en: 0.1
     learning_rate: 1e-4

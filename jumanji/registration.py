@@ -95,32 +95,12 @@ def _check_registration_is_allowed(spec: EnvSpec) -> None:
 
     Raises:
         ValueError: if an environment with the same ID is already registered.
-        ValueError: if the previous version of the registered environment doesn't exist
-        (except for v0).
     """
     global _REGISTRY
 
     # Try to overwrite a registered environment
     if spec.id in _REGISTRY:
         raise ValueError(f"Trying to override the registered environment {spec.id}.")
-
-    latest_version = max(
-        (_spec.version for _spec in _REGISTRY.values() if _spec.name == spec.name),
-        default=None,  # if no version of the environment is registered
-    )
-
-    # the first version of an env must be zero.
-    if (latest_version is None) and spec.version != 0:
-        raise ValueError(
-            f"The first version of an unregistered environment must be 0, got {spec.version}"
-        )
-
-    # Verify that version v-1 exists when trying to register version v (except 0)
-    if (latest_version is not None) and latest_version != (spec.version - 1):
-        raise ValueError(
-            f"Trying to register version {spec.version} of {spec.name}. "
-            f"However, the latest registered version of {spec.name} is {latest_version}."
-        )
 
 
 def register(

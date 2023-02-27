@@ -12,7 +12,7 @@ RUN pip install --quiet --upgrade pip setuptools &&  \
 # Need to use specific cuda versions for jax
 ARG USE_CUDA=true
 RUN if [ "$USE_CUDA" = true ] ; \
-    then pip install "jax[cuda]>=0.2.26" -f "https://storage.googleapis.com/jax-releases/jax_cuda_releases.html" ;  \
+    then pip install "jax[cuda]<0.4" -f "https://storage.googleapis.com/jax-releases/jax_cuda_releases.html" ;  \
     fi
 
 #RUN pip install "jax[tpu]" -f "https://storage.googleapis.com/jax-releases/libtpu_releases.html"

@@ -41,23 +41,12 @@ class TestParser:
 
 
 class TestRegistrationRules:
-    def test_registration__first_version(self) -> None:
-        # Env-v0 must exist to register v1
-        env_spec = registration.EnvSpec(id="Env-v1", entry_point="")
-        with pytest.raises(ValueError, match="first version"):
-            registration._check_registration_is_allowed(env_spec)
-
-        # the first version must be zero
-        env_spec = registration.EnvSpec(id="Env-v0", entry_point="")
-        registration._check_registration_is_allowed(env_spec)
-
     def test_registration__next_version(self) -> None:
         # check that the next registrable version is v+1
         registration.register("Env-v0", entry_point="")
 
         env_spec = registration.EnvSpec(id="Env-v2", entry_point="")
-        with pytest.raises(ValueError):
-            registration._check_registration_is_allowed(env_spec)
+        registration._check_registration_is_allowed(env_spec)
 
         env_spec = registration.EnvSpec(id="Env-v1", entry_point="")
         registration._check_registration_is_allowed(env_spec)

@@ -115,7 +115,7 @@ class Evaluator:
             (acting_state, return_),
         )
         eval_metrics = {
-            "episode_reward": return_,
+            "episode_return": return_,
             "episode_length": acting_state.env_step_count,
         }
         return eval_metrics

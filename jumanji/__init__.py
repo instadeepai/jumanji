@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from jumanji.env import Environment
 from jumanji.registration import make, register, registered_environments
 
@@ -33,27 +34,9 @@ register(
 
 # TSP
 register(
-    id="TSP50-v0",
+    id="TSP-v1",
     entry_point="jumanji.environments:TSP",
-    kwargs={"num_cities": 50},
-)
-
-register(
-    id="TSP100-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"num_cities": 100},
-)
-
-register(
-    id="TSP150-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"num_cities": 150},
-)
-
-register(
-    id="TSP200-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"num_cities": 200},
+    kwargs={"num_cities": 20},
 )
 
 

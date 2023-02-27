@@ -146,20 +146,17 @@ class A2CAgent(Agent):
             value_t,
         )
 
+        # Compute the critic loss before potentially normalizing the advantages.
+        critic_loss = jnp.mean(advantage**2)
+
+        # Compute the policy loss with optional advantage normalization.
         metrics: Dict = {}
         if self.normalize_advantage:
             metrics.update(unnormalized_advantage=jnp.mean(advantage))
             advantage = jax.nn.standardize(advantage)
-
-        metrics.update(
-            advantage=jnp.mean(advantage),
-            value=jnp.mean(value),
-        )
-
         policy_loss = -jnp.mean(jax.lax.stop_gradient(advantage) * data.log_prob)
 
-        critic_loss = jnp.mean(advantage**2)
-
+        # Compute the entropy loss, i.e. negative of the entropy.
         entropy = jnp.mean(
             parametric_action_distribution.entropy(data.logits, acting_state.key)
         )
@@ -174,6 +171,8 @@ class A2CAgent(Agent):
             critic_loss=critic_loss,
             entropy_loss=entropy_loss,
             entropy=entropy,
+            advantage=jnp.mean(advantage),
+            value=jnp.mean(value),
         )
         return total_loss, (acting_state, metrics)
 
@@ -203,7 +202,7 @@ class A2CAgent(Agent):
                 raw_action = parametric_action_distribution.mode_no_postprocessing(
                     logits
                 )
-                # log_prob = log(1) = 0 for a greedy policy (deterministic distribution)
+                # log_prob is log(1), i.e. 0, for a greedy policy (deterministic distribution).
                 log_prob = jnp.zeros_like(
                     parametric_action_distribution.log_prob(logits, raw_action)
                 )

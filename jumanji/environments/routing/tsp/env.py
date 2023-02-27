@@ -70,7 +70,7 @@ class TSP(Environment[State]):
 
     def __init__(
         self,
-        num_cities: int = 10,
+        num_cities: int = 20,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
     ):
@@ -78,7 +78,7 @@ class TSP(Environment[State]):
 
         Args:
             num_cities: number of cities to visit.
-                Defaults to 10.
+                Defaults to 20.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
