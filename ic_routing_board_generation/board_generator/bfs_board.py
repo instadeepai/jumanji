@@ -7,7 +7,7 @@ from ic_routing_board_generation.board_generator.abstract_board import AbstractB
 from ic_routing_board_generation.board_generator.grid import Grid
 
 
-class BFSBoard:
+
 class BFSBoard(AbstractBoard):
     def __init__(self, rows: int, columns: int, num_agents: int, max_attempts: int = 10) -> None:
         """Constructor for the Board class.
