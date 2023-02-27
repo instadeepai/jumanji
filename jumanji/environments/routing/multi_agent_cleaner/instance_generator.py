@@ -14,6 +14,7 @@
 import abc
 
 import chex
+import jax.numpy as jnp
 from typing_extensions import TypeAlias
 
 from jumanji.environments.commons.maze_utils import maze_generation
@@ -65,8 +66,8 @@ class RandomGenerator(Generator):
 
     def _adapt_values(self, maze: Maze) -> Maze:
         """Adapt the values of the maze from maze_generation to agent cleaner."""
-        maze = maze.at[maze == maze_generation.EMPTY].set(DIRTY)
+        maze = jnp.where(maze == maze_generation.EMPTY, DIRTY, maze)
         # This line currently doesn't do anything, but avoid breaking this function if either of
         # maze_generation.WALL or WALL is changed.
-        maze = maze.at[maze == maze_generation.WALL].set(WALL)
+        maze = jnp.where(maze == maze_generation.WALL, WALL, maze)
         return maze

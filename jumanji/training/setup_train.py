@@ -25,6 +25,7 @@ from jumanji.environments import (
     CVRP,
     TSP,
     BinPack,
+    Cleaner,
     Game2048,
     JobShop,
     Knapsack,
@@ -60,6 +61,7 @@ ENV_FACTORY = {
     "knapsack": Knapsack,
     "jobshop": JobShop,
     "game2048": Game2048,
+    "cleaner": Cleaner,
 }
 
 
@@ -169,6 +171,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "game2048":
         assert isinstance(env.unwrapped, Game2048)
         random_policy = networks.make_random_policy_game2048()
+    elif cfg.env.name == "cleaner":
+        assert isinstance(env.unwrapped, Cleaner)
+        random_policy = networks.make_random_policy_cleaner()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

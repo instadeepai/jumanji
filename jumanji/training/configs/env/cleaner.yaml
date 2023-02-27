@@ -1,0 +1,25 @@
+name: cleaner
+env_kwargs:
+    grid_width: 15
+    grid_height: 15
+    num_agents: 5
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+
+
+evaluation:
+    eval_total_batch_size: 500
+    greedy_eval_total_batch_size: 500
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4
