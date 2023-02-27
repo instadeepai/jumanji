@@ -252,21 +252,23 @@ class TestSparseTSP:
 def test_tsp__equivalence_dense_sparse_reward(
     tsp_dense_reward: TSP, tsp_sparse_reward: TSP
 ) -> None:
+    dense_step_fn = jax.jit(tsp_dense_reward.step)
+    sparse_step_fn = jax.jit(tsp_sparse_reward.step)
     key = jax.random.PRNGKey(0)
 
     # Dense reward
     state, timestep = tsp_dense_reward.reset(key)
     return_dense = timestep.reward
     while not timestep.last():
-        state, timestep = tsp_dense_reward.step(state, jnp.argmin(state.visited_mask))
+        state, timestep = dense_step_fn(state, jnp.argmin(state.visited_mask))
         return_dense += timestep.reward
 
     # Sparse reward
     state, timestep = tsp_sparse_reward.reset(key)
     return_sparse = timestep.reward
     while not timestep.last():
-        state, timestep = tsp_sparse_reward.step(state, jnp.argmin(state.visited_mask))
+        state, timestep = sparse_step_fn(state, jnp.argmin(state.visited_mask))
         return_sparse += timestep.reward
 
     # Check that both returns are the same and not the invalid action penalty
-    assert return_sparse == return_dense != -tsp_dense_reward.num_cities * jnp.sqrt(2)
+    assert return_sparse == return_dense > -tsp_dense_reward.num_cities * jnp.sqrt(2)

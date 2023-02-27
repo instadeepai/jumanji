@@ -12,132 +12,184 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Tuple
 
+import chex
 import jax
 import jax.numpy as jnp
-from chex import PRNGKey
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
-from jumanji.environments.packing.knapsack.utils import (
-    compute_value_items,
-    generate_problem,
-)
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class Knapsack(Environment[State]):
-    """
-    Knapsack environment as described in [1].
-    - observation: Observation
-        - weights: jax array (float32) of shape (num_items,)
-            the weights of the items.
-        - values: jax array (float32) of shape (num_items,)
-            the values of the items.
-        - action_mask: jax array (bool) of shape (num_items,)
-            binary mask (False/True <--> invalid/valid).
+    """Knapsack environment as described in [1].
 
-    - reward: jax array (float)
-        the sum of the values of the items put in the bag at the end of the episode.
+    - observation: Observation
+        - weights: jax array (float) of shape (num_items,)
+            the weights of the items.
+        - values: jax array (float) of shape (num_items,)
+            the values of the items.
+        - packed_items: jax array (bool) of shape (num_items,)
+            binary mask denoting which items are already packed into the knapsack.
+        - action_mask: jax array (bool) of shape (num_items,)
+            binary mask denoting which items can be packed into the knapsack.
+
+    - reward: jax array (float), could be either:
+        - dense: the value of the item to pack at the current timestep.
+        - sparse: the sum of the values of the items packed in the bag at the end of the episode.
+        In both cases, the reward is 0 if the action is invalid, i.e. an item that was previously
+        selected is selected again or has a weight larger than the bag capacity.
 
     - episode termination:
-        - if no action can be performed (all items remaining are larger than the bag capacity).
-        - if an illegal action is performed (item is larger than the bag capacity or already taken).
+        - if no action can be performed (each remaining item's weight is larger than the bag
+            capacity).
+        - if an invalid action is taken (item is already packed or has a weight larger than the
+            bag capacity).
 
     - state: State
     the state of the environment.
-        - weights: jax array (float32) of shape (num_items,)
+        - weights: jax array (float) of shape (num_items,)
             the weights of the items.
-        - values: jax array (float32) of shape (num_items,)
+        - values: jax array (float) of shape (num_items,)
             the values of the items.
         - packed_items: jax array (bool) of shape (num_items,)
-            binary mask indicating if an item is in the knapsack or not (False/True <--> out/in).
-        - remaining_budget: jax array (float32)
+            binary mask denoting which items are already packed into the knapsack.
+        - remaining_budget: jax array (float)
             the budget currently remaining.
 
     [1] https://arxiv.org/abs/2010.16011
     """
 
-    def __init__(self, num_items: int = 10, total_budget: float = 2):
+    def __init__(
+        self,
+        num_items: int = 10,
+        total_budget: float = 2.0,
+        reward_fn: Optional[RewardFn] = None,
+    ):
+        """Instantiates a `Knapsack` environment.
+
+        Args:
+            num_items: the number of items in the environment.
+            total_budget: the capacity of the knapsack.
+            reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
+                transition. The function must compute the reward based on the current state,
+                the chosen action, the next state and whether the action is valid.
+                Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+        """
+
         self.num_items = num_items
         self.total_budget = total_budget
+        self.reward_fn = reward_fn or DenseReward()
 
     def __repr__(self) -> str:
         return (
-            f"0-1 Knapsack environment with {self.num_items} items, "
-            f"and a total budget of {self.total_budget}"
+            f"Knapsack environment with {self.num_items} items "
+            f"and a total budget of {self.total_budget}."
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
-            key: used to randomly generate the weights abd values of the items.
+            key: used to randomly generate the weights and values of the items.
 
         Returns:
             state: the new state of the environment.
             timestep: the first timestep returned by the environment.
         """
-        weights, values = generate_problem(key, self.num_items)
+        weights, values = jax.random.uniform(
+            key, (2, self.num_items), minval=0, maxval=1
+        )
         state = State(
             weights=weights,
             values=values,
             packed_items=jnp.zeros(self.num_items, dtype=bool),
-            remaining_budget=jnp.float32(self.total_budget),
+            remaining_budget=jnp.array(self.total_budget, float),
         )
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Numeric
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
-            action: Array containing the index of next item to take.
+            action: index of next item to take.
 
         Returns:
             state: next state of the environment.
             timestep: the timestep to be observed.
         """
-        state_budget_fits = state.remaining_budget >= state.weights[action]
-        new_item = state.packed_items[action] == 0
-        is_valid = state_budget_fits & new_item
-        state = jax.lax.cond(
-            pred=is_valid,
-            true_fun=lambda x: self._update_state(x[0], x[1]),
-            false_fun=lambda _: state,
-            operand=[state, action],
+        item_fits = state.remaining_budget >= state.weights[action]
+        item_not_packed = ~state.packed_items[action]
+        is_valid = item_fits & item_not_packed
+        next_state = jax.lax.cond(
+            is_valid,
+            self._update_state,
+            lambda *_: state,
+            state,
+            action,
         )
-        timestep = self._state_to_timestep(state, is_valid)
-        return state, timestep
+
+        observation = self._state_to_observation(next_state)
+
+        no_items_available = ~jnp.any(observation.action_mask)
+        is_done = no_items_available | ~is_valid
+
+        reward = self.reward_fn(state, action, next_state, is_valid, is_done)
+
+        timestep = jax.lax.cond(
+            is_done,
+            termination,
+            transition,
+            reward,
+            observation,
+        )
+
+        return next_state, timestep
 
     def observation_spec(self) -> specs.Spec:
-        """Specifications of the observation of the `Knapsack` environment.
+        """Returns the observation spec.
 
         Returns:
-            Spec containing all the specifications for all the `Observation` fields.
+            Spec for each field in the Observation:
+            - weights: BoundedArray (float) of shape (num_items,).
+            - values: BoundedArray (float) of shape (num_items,).
+            - packed_items: BoundedArray (bool) of shape (num_items,).
+            - action_mask: BoundedArray (bool) of shape (num_items,).
         """
         weights = specs.BoundedArray(
             shape=(self.num_items,),
             minimum=0.0,
             maximum=1.0,
-            dtype=jnp.float32,
+            dtype=float,
             name="weights",
         )
         values = specs.BoundedArray(
             shape=(self.num_items,),
             minimum=0.0,
             maximum=1.0,
-            dtype=jnp.float32,
+            dtype=float,
             name="values",
+        )
+        packed_items = specs.BoundedArray(
+            shape=(self.num_items,),
+            minimum=False,
+            maximum=True,
+            dtype=bool,
+            name="packed_items",
         )
         action_mask = specs.BoundedArray(
             shape=(self.num_items,),
-            dtype=bool,
             minimum=False,
             maximum=True,
+            dtype=bool,
             name="action_mask",
         )
         return specs.Spec(
@@ -145,6 +197,7 @@ class Knapsack(Environment[State]):
             "ObservationSpec",
             weights=weights,
             values=values,
+            packed_items=packed_items,
             action_mask=action_mask,
         )
 
@@ -156,12 +209,12 @@ class Knapsack(Environment[State]):
         """
         return specs.DiscreteArray(self.num_items, name="action")
 
-    def _update_state(self, state: State, next_item: int) -> State:
+    def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.
 
         Args:
             state: State object containing the dynamics of the environment.
-            next_item: int, index of the next item to take.
+            action: index of the next item to take.
 
         Returns:
             state: State object corresponding to the new state of the environment.
@@ -169,8 +222,8 @@ class Knapsack(Environment[State]):
         return State(
             weights=state.weights,
             values=state.values,
-            packed_items=state.packed_items.at[next_item].set(True),
-            remaining_budget=state.remaining_budget - state.weights[next_item],
+            packed_items=state.packed_items.at[action].set(True),
+            remaining_budget=state.remaining_budget - state.weights[action],
         )
 
     def _state_to_observation(self, state: State) -> Observation:
@@ -186,44 +239,6 @@ class Knapsack(Environment[State]):
         return Observation(
             weights=state.weights,
             values=state.values,
-            action_mask=jnp.logical_not(
-                state.packed_items | (state.remaining_budget < state.weights)
-            ),
+            packed_items=state.packed_items,
+            action_mask=~state.packed_items & (state.weights <= state.remaining_budget),
         )
-
-    def _state_to_timestep(self, state: State, is_valid: bool) -> TimeStep:
-        """Checks if the state is terminal and converts it to a timestep.
-
-        Args:
-            state: State object containing the dynamics of the environment.
-            is_valid: Boolean indicating whether the last action was valid.
-
-        Returns:
-            timestep: TimeStep object containing the timestep of the environment.
-                The episode terminates if there is no legal item to take or if
-                the last action was invalid.
-        """
-        is_done = (
-            jnp.min(jnp.where(state.packed_items == 0, state.weights, 1))
-            > state.remaining_budget
-        ) | (~is_valid)
-
-        def make_termination_timestep(state: State) -> TimeStep:
-            return termination(
-                reward=compute_value_items(state.values, state.packed_items),
-                observation=self._state_to_observation(state),
-            )
-
-        def make_transition_timestep(state: State) -> TimeStep:
-            return transition(
-                reward=jnp.float32(0), observation=self._state_to_observation(state)
-            )
-
-        timestep: TimeStep = jax.lax.cond(
-            is_done,
-            make_termination_timestep,
-            make_transition_timestep,
-            state,
-        )
-
-        return timestep

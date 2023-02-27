@@ -26,7 +26,7 @@ class RewardFn(abc.ABC):
     def __call__(
         self,
         state: State,
-        action: chex.Array,
+        action: chex.Numeric,
         next_state: State,
         is_valid: bool,
     ) -> chex.Numeric:

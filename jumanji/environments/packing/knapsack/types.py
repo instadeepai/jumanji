@@ -22,22 +22,20 @@ if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
 else:
     from chex import dataclass
 
-from chex import Array
-
 
 @dataclass
 class State:
     """
     weights: array of weights of the items.
     values: array of values of the items.
-    packed_items: binary mask indicating if an item is in the knapsack (False/True <--> out/in).
+    packed_items: binary mask denoting which items are already packed into the knapsack.
     remaining_budget: the budget currently remaining.
     """
 
-    weights: Array  # (num_items,)
-    values: Array  # (num_items,)
-    packed_items: Array  # (num_items,)
-    remaining_budget: chex.Array  # (), jnp.float32
+    weights: chex.Array  # (num_items,)
+    values: chex.Array  # (num_items,)
+    packed_items: chex.Array  # (num_items,)
+    remaining_budget: chex.Array  # ()
     key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
@@ -45,9 +43,11 @@ class Observation(NamedTuple):
     """
     weights: array of weights of the items.
     values: array of values of the items.
-    action_mask: binary mask (False/True <--> illegal/legal).
+    packed_items: binary mask denoting which items are already packed into the knapsack.
+    action_mask: binary mask denoting which items can be packed into the knapsack.
     """
 
-    weights: Array
-    values: Array
-    action_mask: Array
+    weights: chex.Array  # (num_items,)
+    values: chex.Array  # (num_items,)
+    packed_items: chex.Array  # (num_items,)
+    action_mask: chex.Array  # (num_items,)

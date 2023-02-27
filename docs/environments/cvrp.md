@@ -20,20 +20,21 @@ coordinates for each node sampled from a uniform distribution between 0 and 1, a
 distribution between 1 and the maximum demand (which is a parameter of the CVRP environment).
 The number of nodes with demand is a parameter of the environment.
 
+
 ## Observation
 The observation given to the agent provides information on the problem layout, the visited/unvisited
 cities and the current position of the agent as well as the current capacity.
-- **coordinates**: jax array (float) of shape (num_nodes + 1, 2), shows an array of the coordinates
-of each city node and the depot node.
-- **demands**: jax array (float) of shape (num_nodes + 1,), shows an array of the demands of each
-city node (and depot node where the demand is set to 0).
-- **position**: jax array (int32) of shape (), gives the identifier (index) of the current visited
-city or depot.
-- **trajectory**: jax array (int32) of shape (2 * num_nodes,), identifiers of the nodes that have
-been visited (set to DEPOT_IDX if not filled yet).
-- **current capacity**: jax array (float) of shape (), gives the current capacity of the vehicle.
-- **action_mask**: jax array (bool) of shape (num_nodes + 1,), denoting which actions are possible
-(True) and which are not (False).
+- `coordinates`: jax array (float) of shape (num_nodes + 1, 2), array of coordinates of each city
+node and the depot node.
+- `demands`: jax array (float) of shape (num_nodes + 1,), array of the demands of each city node
+and the depot node whose demand is set to 0.
+- `position`: jax array (int32) of shape (), identifier (index) of the current visited node (city
+or depot).
+- `trajectory`: jax array (int32) of shape (2 * num_nodes,), identifiers of the nodes that have
+been visited (set to `DEPOT_IDX` if not filled yet).
+- `capacity`: jax array (float) of shape (), current capacity of the vehicle.
+- `action_mask`: jax array (bool) of shape (num_nodes + 1,), array denoting which actions are
+possible (True) and which are not (False).
 
 
 ## Action
@@ -47,6 +48,7 @@ The reward could be either:
     For the last node, it also includes the distance to the depot to complete the tour.
 - **Sparse**: the negative tour length at the end of the episode. The tour length is defined
     as the sum of the distances between consecutive nodes.
+
 In both cases, the reward is a large negative penalty of `-2 * num_nodes * sqrt(2)` if the
 action is invalid, e.g. a previously selected node other than the depot is selected again.
 

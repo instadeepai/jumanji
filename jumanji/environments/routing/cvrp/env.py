@@ -24,7 +24,7 @@ from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class CVRP(Environment[State]):
@@ -148,7 +148,9 @@ class CVRP(Environment[State]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Numeric
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:

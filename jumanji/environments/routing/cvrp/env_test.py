@@ -359,3 +359,30 @@ class TestDenseCVRP:
         state, timestep = cvrp_dense_reward.step(state, DEPOT_IDX)
 
         assert timestep.last()
+
+
+def test_cvrp__equivalence_dense_sparse_reward(
+    cvrp_dense_reward: CVRP, cvrp_sparse_reward: CVRP
+) -> None:
+    dense_step_fn = jax.jit(cvrp_dense_reward.step)
+    sparse_step_fn = jax.jit(cvrp_sparse_reward.step)
+    key = jax.random.PRNGKey(0)
+
+    # Dense reward
+    state, timestep = cvrp_dense_reward.reset(key)
+    return_dense = timestep.reward
+    while not timestep.last():
+        state, timestep = dense_step_fn(state, jnp.argmin(state.visited_mask))
+        return_dense += timestep.reward
+
+    # Sparse reward
+    state, timestep = cvrp_sparse_reward.reset(key)
+    return_sparse = timestep.reward
+    while not timestep.last():
+        state, timestep = sparse_step_fn(state, jnp.argmin(state.visited_mask))
+        return_sparse += timestep.reward
+
+    # Check that both returns are the same and not the invalid action penalty
+    assert (
+        return_sparse == return_dense > -2 * cvrp_dense_reward.num_nodes * jnp.sqrt(2)
+    )

@@ -25,7 +25,7 @@ from jumanji.env import Environment
 from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class TSP(Environment[State]):
@@ -116,7 +116,9 @@ class TSP(Environment[State]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Numeric
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:

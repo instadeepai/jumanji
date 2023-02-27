@@ -24,13 +24,13 @@ def test_dense_reward(tsp_dense_reward: TSP, dense_reward: DenseReward) -> None:
     step_fn = jax.jit(tsp_dense_reward.step)
     state, timestep = tsp_dense_reward.reset(jax.random.PRNGKey(0))
 
-    # Check that the first action leads to 0 reward
+    # Check that the first action leads to 0 reward.
     for action in range(tsp_dense_reward.num_cities):
         next_state, _ = step_fn(state, action)
         reward = dense_reward(state, action, next_state, is_valid=True)
         assert reward == 0
 
-    # Check that the reward is correct for the next city
+    # Check that the reward is correct for the next city.
     state, timestep = step_fn(state, 0)
     for action in range(1, tsp_dense_reward.num_cities):
         next_state, _ = step_fn(state, action)
@@ -40,7 +40,7 @@ def test_dense_reward(tsp_dense_reward: TSP, dense_reward: DenseReward) -> None:
         reward = dense_reward(state, action, next_state, is_valid=True)
         assert reward == -distance
 
-    # Check the reward for invalid action
+    # Check the reward for invalid action.
     next_state, _ = step_fn(state, 0)
     penalty = -jnp.sqrt(2) * tsp_dense_reward.num_cities
     reward = dense_reward(state, 0, next_state, is_valid=False)
