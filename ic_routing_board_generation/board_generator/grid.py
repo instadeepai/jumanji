@@ -6,22 +6,22 @@ import numpy as np
 
 
 class Grid:
-    def __init__(self, rows: int, cols: int, grid: Optional[np.ndarray] = None) -> None:
+    def __init__(self, rows: int, cols: int, grid_layout: Optional[np.ndarray] = None) -> None:
         """
         Constructor for the Grid class.
         Args:
-            rows (int): number of rows in the grid
-            cols (int): number of columns in the grid
-            grid (np.array): grid layout
+            rows: number of rows in the grid
+            cols: number of columns in the grid
+            grid_layout: grid layout
         Returns:
             None
         """
         self.rows = rows
         self.cols = cols
-        if grid is None:
+        if grid_layout is None:
             self.layout = np.zeros((rows, cols), dtype=np.int32)
         else:
-            self.layout = grid
+            self.layout = grid_layout
         self.path = []
         self.visited = np.full((rows, cols), False)
 
@@ -29,10 +29,10 @@ class Grid:
         """
         Function to find the shortest path between two points in a grid using BFS.
         Args:
-            start (tuple[int, int]): start position
-            end (tuple[int, int]): end position
+            start: start position
+            end: end position
         Returns:
-            tuple[bool, list[tuple[int, int]], int]: tuple containing whether a path exists, the path,
+            tuple containing whether a path exists, the path,
             and the number of steps
         """
         # Initialize queue, visited set, and path dictionary
@@ -81,10 +81,10 @@ class Grid:
         """
         Function to fill the grid with the path.
         Args:
-            path (list[tuple[int, int]]): path to fill
-            str_num (int): number to fill the start position with
-            fill_num (int): number to fill the path with
-            end_num (int): number to fill the end position with
+            path: path to fill
+            str_num: number to fill the start position with
+            fill_num: number to fill the path with
+            end_num: number to fill the end position with
         Returns:
             None
         """
@@ -102,7 +102,7 @@ class Grid:
         """
         Function to remove a path from the grid.
         Args:
-            path (list[tuple[int, int]]): path to remove
+            path: path to remove
         Returns:
             None
         """
