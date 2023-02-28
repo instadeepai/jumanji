@@ -21,7 +21,7 @@ from chex import PRNGKey
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE
+from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE, NOOP
 from jumanji.environments.routing.connector.generator import (
     InstanceGenerator,
     UniformRandomGenerator,
@@ -29,11 +29,15 @@ from jumanji.environments.routing.connector.generator import (
 from jumanji.environments.routing.connector.reward import RewardFn, SparseRewardFn
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
+    connected_or_blocked,
+    get_agent_grid,
+    get_correction_mask,
     is_valid_position,
+    move_agent,
     move_position,
     switch_perspective,
 )
-from jumanji.types import Action, TimeStep, restart
+from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connector(Environment[State]):
@@ -134,7 +138,7 @@ class Connector(Environment[State]):
             timestep,
         )
 
-    def step(  # type: ignore
+    def step(
         self,
         state: State,
         action: Action,
@@ -154,7 +158,93 @@ class Connector(Environment[State]):
             state: `State` object corresponding to the next state of the environment.
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
-        pass
+        agents, grid = self._step_agents(state, action)
+        new_state = State(key=state.key, grid=grid, step=state.step + 1, agents=agents)
+
+        # Construct timestep: get observations, rewards, discounts
+        grids = self._obs_from_grid(grid)
+        reward = self._reward_fn(state, new_state, action)
+        action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
+        observation = Observation(
+            grid=grids, action_mask=action_mask, step=new_state.step
+        )
+
+        dones = jax.vmap(connected_or_blocked)(agents, action_mask)
+        discount = jnp.asarray(jnp.logical_not(dones), dtype=float)
+
+        timestep = jax.lax.cond(
+            dones.all() | (new_state.step >= self._horizon),
+            lambda: termination(
+                reward=reward, observation=observation, shape=self._num_agents
+            ),
+            lambda: transition(
+                reward=reward,
+                observation=observation,
+                discount=discount,
+                shape=self._num_agents,
+            ),
+        )
+
+        return new_state, timestep
+
+    def _step_agents(self, state: State, action: Action) -> Tuple[Agent, chex.Array]:
+        """Steps all agents at the same time correcting for possible collisions.
+
+        If a collision occurs we place the agent with the lower `agent_id` in its previous position.
+
+        Returns:
+            Tuple: (agents, grid) after having applied each agents action
+        """
+        agent_ids = jnp.arange(self._num_agents)
+        # Step all agents at the same time (separately) and return all of the grids
+        agents, grids = jax.vmap(self._step_agent, in_axes=(0, None, 0))(
+            state.agents, state.grid, action
+        )
+
+        # Get grids with only values related to a single agent.
+        # For example: remove all other agents from agent 1's grid. Do this for all agents.
+        agent_grids = jax.vmap(get_agent_grid)(agent_ids, grids)
+        joined_grid = jnp.max(agent_grids, 0)  # join the grids
+
+        # Create a correction mask for possible collisions (see the docs of `get_correction_mask`)
+        correction_fn = jax.vmap(get_correction_mask, in_axes=(None, None, 0))
+        correction_masks, collided_agents = correction_fn(
+            state.grid, joined_grid, agent_ids
+        )
+        correction_mask = jnp.sum(correction_masks, 0)
+
+        # Correct state.agents
+        # Get the correct agents, either old agents (if collision) or new agents if no collision
+        agents = jax.vmap(
+            lambda collided, old_agent, new_agent: jax.lax.cond(
+                collided,
+                lambda: old_agent,
+                lambda: new_agent,
+            )
+        )(collided_agents, state.agents, agents)
+        # Create the new grid by fixing old one with correction mask and adding the obstacles
+        return agents, joined_grid + correction_mask
+
+    def _step_agent(
+        self, agent: Agent, grid: chex.Array, action: chex.Numeric
+    ) -> Tuple[Agent, chex.Array]:
+        """Moves the agent according to the given action if it is possible.
+
+        Returns:
+            Tuple: (agent, grid) after having applied the given action.
+        """
+        new_pos = move_position(agent.position, action)
+
+        new_agent, new_grid = jax.lax.cond(
+            is_valid_position(grid, agent, new_pos) & (action != NOOP),
+            move_agent,
+            lambda *_: (agent, grid),
+            agent,
+            grid,
+            new_pos,
+        )
+
+        return new_agent, new_grid
 
     def _obs_from_grid(self, grid: chex.Array) -> chex.Array:
         """Gets the observation vector for all agents."""

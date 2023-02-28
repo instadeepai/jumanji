@@ -17,13 +17,15 @@ from functools import partial
 import chex
 import jax
 import jax.numpy as jnp
-from dm_env import StepType
 
+from jumanji.environments.routing.connector import constants
 from jumanji.environments.routing.connector.constants import EMPTY
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import get_position, get_target
-from jumanji.types import TimeStep
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.tree_utils import tree_slice
+from jumanji.types import StepType, TimeStep
 
 
 @partial(jax.vmap, in_axes=(0, None))
@@ -68,6 +70,160 @@ def test_connector__reset_jit(env: Connector) -> None:
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
+
+
+def test_connector__step_connected(
+    env: Connector,
+    state: State,
+    state1: State,
+    state2: State,
+    action1: chex.Array,
+    action2: chex.Array,
+) -> None:
+    """Tests that timestep is done when all agents connect"""
+    real_state1, timestep = env.step(state, action1)
+
+    assert (timestep.reward == jnp.array([1.0, 0.0, 1.0])).all()
+    chex.assert_trees_all_equal(real_state1, state1)
+
+    real_state2, timestep = env.step(real_state1, action2)
+    chex.assert_trees_all_equal(real_state2, state2)
+
+    assert timestep.step_type == StepType.LAST
+    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
+    assert (timestep.reward == jnp.array([0.0, 1.0, 0.0])).all()
+
+    assert all(is_head_on_grid(state.agents, state.grid))
+    # None of the targets should be on the grid because everyone is connected
+    assert not any(is_target_on_grid(real_state2.agents, real_state2.grid))
+
+
+def test_connector__step_blocked(
+    env: Connector,
+    state: State,
+    path0: int,
+    path1: int,
+    path2: int,
+    targ0: int,
+    targ1: int,
+    targ2: int,
+    posi0: int,
+    posi1: int,
+    posi2: int,
+) -> None:
+    """Tests that timestep is done when all agents are blocked"""
+    # Actions that will block all agents
+    actions = jnp.array(
+        [
+            [constants.LEFT, constants.LEFT, constants.RIGHT],
+            [constants.DOWN, constants.DOWN, constants.UP],
+            [constants.RIGHT, constants.LEFT, constants.UP],
+            [constants.NOOP, constants.DOWN, constants.LEFT],
+            [constants.NOOP, constants.RIGHT, constants.LEFT],
+        ]
+    )
+
+    # Take the actions that will block all agents
+    for action in actions:
+        state, timestep = env.step(state, action)
+
+    expected_grid = jnp.array(
+        [
+            [EMPTY, EMPTY, targ0, posi2, path2, path2],
+            [EMPTY, path0, path0, path0, path0, path2],
+            [EMPTY, path0, posi0, targ2, path2, path2],
+            [targ1, path1, path1, EMPTY, path2, EMPTY],
+            [path1, path1, path1, EMPTY, path2, EMPTY],
+            [path1, posi1, path1, EMPTY, EMPTY, EMPTY],
+        ]
+    )
+
+    assert (state.grid == expected_grid).all()
+    assert timestep.step_type == StepType.LAST
+    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
+
+    assert all(is_head_on_grid(state.agents, state.grid))
+    assert all(is_target_on_grid(state.agents, state.grid))
+
+
+def test_connector__step_horizon(env: Connector, state: State) -> None:
+    """Tests that the timestep is done, but discounts are not all 0 past"""
+    # env has a horizon of 5
+    actions = jnp.zeros(3, int)
+    # step 1
+    state, timestep = env.step(state, actions)
+
+    # step 2, 3, 4
+    for _ in range(3):
+        state, timestep = env.step(state, actions)
+
+        assert timestep.step_type != StepType.LAST
+        assert (timestep.discount == jnp.ones(env._num_agents)).all()
+
+    # step 5
+    state, timestep = env.step(state, actions)
+    assert timestep.step_type == StepType.LAST
+    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
+
+
+def test_connector__step_agents_collision(
+    env: Connector,
+    state: State,
+    path0: int,
+    path1: int,
+    path2: int,
+    targ0: int,
+    targ1: int,
+    targ2: int,
+    posi0: int,
+    posi1: int,
+    posi2: int,
+) -> None:
+    """Tests _step_agents function when there is a collision."""
+    action = jnp.array([constants.DOWN, constants.UP, constants.NOOP])
+    agents, grid = env._step_agents(state, action)
+
+    expected_grid = jnp.array(
+        [
+            [EMPTY, EMPTY, targ0, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, posi0, path0, path0, EMPTY],
+            [EMPTY, EMPTY, posi1, targ2, posi2, EMPTY],
+            [targ1, EMPTY, path1, EMPTY, path2, EMPTY],
+            [EMPTY, EMPTY, path1, EMPTY, path2, EMPTY],
+            [EMPTY, EMPTY, path1, EMPTY, EMPTY, EMPTY],
+        ]
+    )
+
+    assert (grid == expected_grid).all()
+    assert all(is_target_on_grid(agents, grid))
+    assert all(is_head_on_grid(agents, grid))
+
+
+def test_connector__step_agent_valid(env: Connector, state: State) -> None:
+    """Test _step_agent method given valid position."""
+    agent0 = tree_slice(state.agents, 0)
+    agent, grid = env._step_agent(agent0, state.grid, constants.LEFT)
+
+    assert (agent.position == jnp.array([1, 1])).all()
+    # agent should have moved
+    assert (agent.position != agent0.position).any()
+    assert grid[1, 1] == get_position(0)
+
+
+def test_connector__step_agent_invalid(env: Connector, state: State) -> None:
+    """Test _step_agent method given invalid position."""
+    agent0 = tree_slice(state.agents, 0)
+    agent, grid = env._step_agent(agent0, state.grid, constants.RIGHT)
+
+    assert (agent.position == jnp.array([1, 2])).all()
+    # agent should not have moved
+    assert (agent.position == agent0.position).all()
+    assert grid[1, 2] == get_position(0)
+
+
+def test_connector__does_not_smoke(env: Connector) -> None:
+    """Test that we can run an episode without any errors."""
+    check_env_does_not_smoke(env)
 
 
 def test_connector__obs_from_grid(
