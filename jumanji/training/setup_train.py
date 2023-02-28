@@ -184,7 +184,7 @@ def _setup_random_policy(  # noqa: CCR001
     return random_policy
 
 
-def _setup_actor_critic_neworks(
+def _setup_actor_critic_neworks(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
@@ -256,6 +256,14 @@ def _setup_actor_critic_neworks(
         assert isinstance(env.unwrapped, Routing)
         actor_critic_networks = networks.make_actor_critic_networks_routing(
             routing=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "game2048":
+        assert isinstance(env.unwrapped, Game2048)
+        actor_critic_networks = networks.make_actor_critic_networks_2048(
+            game_2048=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,

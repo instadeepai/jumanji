@@ -2,6 +2,11 @@ name: game2048
 env_kwargs:
     board_size: 4
 
+network:
+    num_channels: 32
+    policy_layers: [64, 64]
+    value_layers: [128, 128]
+
 training:
     num_epochs: 100
     num_learner_steps_per_epoch: 500

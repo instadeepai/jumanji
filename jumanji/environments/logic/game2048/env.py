@@ -89,7 +89,9 @@ class Game2048(Environment[State]):
             Observation,
             "ObservationSpec",
             board=specs.Array(
-                shape=(self.board_size, self.board_size), dtype=jnp.int32, name="board"
+                shape=(self.board_size, self.board_size),
+                dtype=jnp.int32,
+                name="board",
             ),
             action_mask=specs.BoundedArray(
                 shape=(4,),
@@ -308,5 +310,4 @@ class Game2048(Environment[State]):
         animation_gif = self._env_viewer.animate(
             states=states, interval=interval, blit=blit, save=save, path=path
         )
-
         return animation_gif
