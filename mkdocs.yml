@@ -30,6 +30,7 @@ nav:
           - Routing: environments/routing.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
+          - Maze: environments/maze.md
   - User Guides:
       - Registration: guides/registration.md
       - Examples: guides/anakin_snake.ipynb
@@ -50,6 +51,7 @@ nav:
               - Routing: api/environments/routing.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
+              - Maze: api/environments/maze.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
