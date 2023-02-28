@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.maze.constants import MOVES
+from jumanji.environments.routing.maze.env_viewer import MazeEnvViewer
 from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
@@ -67,6 +69,7 @@ class Maze(Environment[State]):
         n_cols: int,
         step_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
+        render_mode: str = "human",
     ) -> None:
         """Instantiates a Maze environment.
 
@@ -76,13 +79,16 @@ class Maze(Environment[State]):
             step_limit: the horizon of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default,
                 `step_limit = 2 * self.n_rows * self.n_cols`.
+            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
-
         self.n_rows = n_rows
         self.n_cols = n_cols
         self.shape = (self.n_rows, self.n_cols)
         self.step_limit = step_limit or 2 * self.n_rows * self.n_cols
         self.generator = generator or RandomGenerator(self.n_rows, self.n_cols)
+
+        # Create viewer used for rendering
+        self._env_viewer = MazeEnvViewer("Maze", render_mode)
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -294,3 +300,23 @@ class Maze(Environment[State]):
             step_count=state.step_count,
             action_mask=state.action_mask,
         )
+
+    def render(self, state: State) -> None:
+        """Render the given state of the environment.
+
+        Args:
+            state: `State` object containing the current environment state.
+        """
+        self._env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        blit: bool = False,
+        save: bool = True,
+        path: str = "./maze.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+
+        mazes = [self._env_viewer._overlay_agent_and_target(state) for state in states]
+        return self._env_viewer.animation(mazes, interval, blit, save, path)

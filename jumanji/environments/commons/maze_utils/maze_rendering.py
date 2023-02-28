@@ -76,6 +76,8 @@ class MazeViewer:
         mazes: Sequence[Maze],
         interval: int = 200,
         blit: bool = False,
+        save: bool = True,
+        path: str = "./maze/gif",
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of mazes.
 
@@ -103,6 +105,10 @@ class MazeViewer:
             blit=blit,
             interval=interval,
         )
+
+        # Save the animation as a gif.
+        if save:
+            self._animation.save(path)
         return self._animation
 
     def close(self) -> None:
