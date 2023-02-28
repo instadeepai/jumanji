@@ -29,6 +29,7 @@ from jumanji.environments import (
     Game2048,
     JobShop,
     Knapsack,
+    Maze,
     Minesweeper,
     Routing,
     RubiksCube,
@@ -62,6 +63,7 @@ ENV_FACTORY = {
     "jobshop": JobShop,
     "game2048": Game2048,
     "cleaner": Cleaner,
+    "maze": Maze,
 }
 
 
@@ -174,6 +176,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cleaner":
         assert isinstance(env.unwrapped, Cleaner)
         random_policy = networks.make_random_policy_cleaner()
+    elif cfg.env.name == "maze":
+        assert isinstance(env.unwrapped, Maze)
+        random_policy = networks.make_random_policy_maze()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

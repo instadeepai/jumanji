@@ -1,0 +1,20 @@
+name: maze
+env_kwargs:
+    n_rows: 10
+    n_cols: 10
+    step_limit: 50
+
+network:
+    num_channels: 16
+    policy_layers: [32, 32]
+    value_layers: [64, 64]
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 500
+    greedy_eval_total_batch_size: 500

@@ -1,6 +1,6 @@
 defaults:
     - _self_
-    - env: rubiks_cube  # [binpack, cvrp, knapsack, jobshop, routing, rubiks_cube, minesweeper, snake, tsp, game2048]
+    - env: rubiks_cube  # [binpack, cvrp, game2048, jobshop, knapsack, maze, minesweeper, routing, rubiks_cube, snake, tsp]
 
 agent: random  # [random, a2c]
 
