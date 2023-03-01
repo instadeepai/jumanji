@@ -30,7 +30,7 @@ from neptune import new as neptune
 
 class Logger(AbstractContextManager):
     def __init__(
-        self, save_checkpoint: bool, checkpoint_file_name: str = "training_state.pickle"
+        self, save_checkpoint: bool, checkpoint_file_name: str = "training_state"
     ):
         self.save_checkpoint = save_checkpoint
         self.checkpoint_file_name = checkpoint_file_name

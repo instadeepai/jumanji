@@ -75,7 +75,7 @@ class A2CAgent(Agent):
         params_state = ParamsState(
             params=params,
             opt_state=opt_state,
-            update_count=jnp.float32(0),
+            update_count=jnp.array(0, float),
         )
         return params_state
 
@@ -108,7 +108,7 @@ class A2CAgent(Agent):
         self,
         params: ActorCriticParams,
         acting_state: ActingState,
-    ) -> Tuple[jnp.float_, Tuple[ActingState, Dict]]:
+    ) -> Tuple[float, Tuple[ActingState, Dict]]:
         parametric_action_distribution = (
             self.actor_critic_networks.parametric_action_distribution
         )
@@ -128,7 +128,7 @@ class A2CAgent(Agent):
         )
 
         value = jax.vmap(value_apply, in_axes=(None, 0))(params.critic, observation)
-
+        discounts = jnp.asarray(self.discount_factor * data.discount, float)
         value_tm1 = value[:-1]
         value_t = value[1:]
         advantage = jax.vmap(
@@ -142,7 +142,7 @@ class A2CAgent(Agent):
         )(
             value_tm1,
             data.reward,
-            data.discount,
+            discounts,
             value_t,
         )
 
