@@ -37,7 +37,7 @@ from jumanji.training.types import TrainingState
 
 
 @hydra.main(config_path="configs", config_name="config.yaml")
-def train(cfg: omegaconf.DictConfig, log_compiles: bool = True) -> None:
+def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     logging.info(omegaconf.OmegaConf.to_yaml(cfg))
     logging.getLogger().setLevel(logging.INFO)
     logging.info({"devices": jax.local_devices()})

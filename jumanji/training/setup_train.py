@@ -70,13 +70,20 @@ ENV_FACTORY = {
 def setup_logger(cfg: DictConfig) -> Logger:
     logger: Logger
     if cfg.logger.type == "tensorboard":
-        logger = TensorboardLogger(name=cfg.logger.name)
+        logger = TensorboardLogger(
+            name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
+        )
     elif cfg.logger.type == "neptune":
         logger = NeptuneLogger(
-            name=cfg.logger.name, project="InstaDeep/jumanji", cfg=cfg
+            name=cfg.logger.name,
+            project="InstaDeep/jumanji",
+            cfg=cfg,
+            save_checkpoint=cfg.logger.save_checkpoint,
         )
     elif cfg.logger.type == "terminal":
-        logger = TerminalLogger(name=cfg.logger.name)
+        logger = TerminalLogger(
+            name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
+        )
     else:
         raise ValueError(
             f"logger expected in ['neptune', 'tensorboard', 'terminal'], got {cfg.logger}."

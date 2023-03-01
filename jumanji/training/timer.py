@@ -38,7 +38,7 @@ class Timer(AbstractContextManager):
         self.out_var_name = out_var_name
         self.num_steps_per_timing = num_steps_per_timing
 
-    def _variables(self) -> Dict:
+    def _get_variables(self) -> Dict:
         """Returns the local variables that are accessible in the context of the context manager.
         This function gets the locals 2 stacks above. Index 0 is this very function, 1 is the
         __init__/__exit__ level, 2 is the context manager level.
@@ -46,13 +46,13 @@ class Timer(AbstractContextManager):
         return {(k, id(v)): v for k, v in inspect.stack()[2].frame.f_locals.items()}
 
     def __enter__(self) -> "Timer":
-        self._variables_enter = self._variables()
+        self._variables_enter = self._get_variables()
         self._start_time = time.perf_counter()
         return self
 
     def __exit__(self, *exc: Any) -> Literal[False]:
         elapsed_time = time.perf_counter() - self._start_time
-        self._variables_exit = self._variables()
+        self._variables_exit = self._get_variables()
         self.data = {"time": elapsed_time}
         if self.num_steps_per_timing is not None:
             self.data.update(
@@ -62,10 +62,10 @@ class Timer(AbstractContextManager):
         return False
 
     def _write_in_variable(self, data: Dict[str, float]) -> None:
-        created_variables = dict(
+        in_context_variables = dict(
             set(self._variables_exit).difference(self._variables_enter)
         )
-        metrics_id = created_variables.get(self.out_var_name, None)
+        metrics_id = in_context_variables.get(self.out_var_name, None)
         if metrics_id is not None:
             self._variables_exit[("metrics", metrics_id)].update(data)
         else:

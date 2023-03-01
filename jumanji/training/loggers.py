@@ -14,7 +14,9 @@
 
 import abc
 import collections
+import inspect
 import logging
+import pickle
 from contextlib import AbstractContextManager
 from types import TracebackType
 from typing import Any, DefaultDict, Dict, Optional, Type
@@ -27,6 +29,12 @@ from neptune import new as neptune
 
 
 class Logger(AbstractContextManager):
+    def __init__(
+        self, save_checkpoint: bool, checkpoint_file_name: str = "training_state.pickle"
+    ):
+        self.save_checkpoint = save_checkpoint
+        self.checkpoint_file_name = checkpoint_file_name
+
     @abc.abstractmethod
     def write(
         self,
@@ -42,12 +50,15 @@ class Logger(AbstractContextManager):
             env_steps: optional env step count.
         """
 
-    @abc.abstractmethod
     def close(self) -> None:
         """Closes the logger, not expecting any further write."""
 
+    def upload_checkpoint(self) -> None:
+        """Uploads a checkpoint when exiting the logger."""
+
     def __enter__(self) -> "Logger":
         logging.info("Starting logger.")
+        self._variables_enter = self._get_variables()
         return self
 
     def __exit__(
@@ -56,33 +67,49 @@ class Logger(AbstractContextManager):
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
-        logging.info("Closing logger.")
+        if self.save_checkpoint:
+            self._variables_exit = self._get_variables()
+            self._save_and_upload_checkpoint()
+        logging.info("Closing logger...")
         self.close()
 
+    def _save_and_upload_checkpoint(self) -> None:
+        """Grabs the `training_state` variable from within the context manager, pickles it and
+        saves it. This will break if the desired variable to checkpoint is not called
+        `training_state`.
+        """
+        logging.info("Saving checkpoint...")
+        in_context_variables = dict(
+            set(self._variables_exit).difference(self._variables_enter)
+        )
+        variable_id = in_context_variables.get("training_state", None)
+        if variable_id is not None:
+            training_state = self._variables_exit[("training_state", variable_id)]
+        else:
+            training_state = None
+            logging.debug(
+                "Logger did not find variable 'training_state' at the context manager level."
+            )
+        with open(self.checkpoint_file_name, "wb") as file_:
+            pickle.dump(training_state, file_)
+        self.upload_checkpoint()
+        logging.info(f"Checkpoint saved at '{self.checkpoint_file_name}'.")
 
-class NoOpLogger(Logger):
-    """Simple Logger which does nothing and outputs no logs.
-
-    This should be used sparingly, but it can prove useful if we want to quiet an
-    individual component and have it produce no logging whatsoever.
-    """
-
-    def write(
-        self,
-        data: Dict[str, Any],
-        label: Optional[str] = None,
-        env_steps: Optional[int] = None,
-    ) -> None:
-        pass
-
-    def close(self) -> None:
-        pass
+    def _get_variables(self) -> Dict:
+        """Returns the local variables that are accessible in the context of the context manager.
+        This function gets the locals 2 stacks above. Index 0 is this very function, 1 is the
+        __init__/__exit__ level, 2 is the context manager level.
+        """
+        return {(k, id(v)): v for k, v in inspect.stack()[2].frame.f_locals.items()}
 
 
 class TerminalLogger(Logger):
     """Logs to terminal."""
 
-    def __init__(self, name: Optional[str] = None) -> None:
+    def __init__(
+        self, name: Optional[str] = None, save_checkpoint: bool = False
+    ) -> None:
+        super().__init__(save_checkpoint=save_checkpoint)
         if name:
             logging.info(name)
 
@@ -103,14 +130,12 @@ class TerminalLogger(Logger):
         label_str = f"{label} >> " or ""
         logging.info(label_str + env_steps_str + self._format_values(data))
 
-    def close(self) -> None:
-        pass
-
 
 class ListLogger(Logger):
     """Logs to a dictionary of histories as lists."""
 
-    def __init__(self) -> None:
+    def __init__(self, save_checkpoint: bool = False) -> None:
+        super().__init__(save_checkpoint=save_checkpoint)
         self.history: DefaultDict = collections.defaultdict(list)
 
     def write(
@@ -122,16 +147,14 @@ class ListLogger(Logger):
         for key, value in data.items():
             self.history[key].append(value)
 
-    def close(self) -> None:
-        pass
-
 
 class TensorboardLogger(Logger):
     """Logs to tensorboard. To view logs, run a command like:
     tensorboard --logdir jumanji/training/outputs/{date}/{time}/{name}/
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, save_checkpoint: bool = False) -> None:
+        super().__init__(save_checkpoint=save_checkpoint)
         if name:
             logging.info(name)
         self.writer = tensorboardX.SummaryWriter(logdir=name)
@@ -171,7 +194,9 @@ class NeptuneLogger(Logger):
         name: str,
         project: str,
         cfg: omegaconf.DictConfig,
+        save_checkpoint: bool = False,
     ):
+        super().__init__(save_checkpoint=save_checkpoint)
         self.run = neptune.init_run(project=project, name=name)
         self.run["config"] = cfg
         self._env_steps = 0.0
@@ -198,3 +223,8 @@ class NeptuneLogger(Logger):
 
     def close(self) -> None:
         self.run.stop()
+
+    def upload_checkpoint(self) -> None:
+        self.run[f"checkpoint/{self.checkpoint_file_name}"].upload(
+            self.checkpoint_file_name
+        )
