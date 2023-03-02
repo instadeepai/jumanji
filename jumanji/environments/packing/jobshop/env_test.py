@@ -18,6 +18,7 @@ import jax.numpy as jnp
 
 from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.jobshop.types import State
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.types import TimeStep
 
 
@@ -776,3 +777,7 @@ class TestJobShop:
         next_state, next_timestep = step_fn(state, action)
         assert isinstance(next_timestep, TimeStep)
         assert isinstance(next_state, State)
+
+    def test_jobshop_env__does_not_smoke(self, job_shop_env: JobShop) -> None:
+        """Test that we can run an episode without any errors."""
+        check_env_does_not_smoke(job_shop_env)

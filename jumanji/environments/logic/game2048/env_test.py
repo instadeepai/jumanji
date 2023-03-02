@@ -19,6 +19,7 @@ import pytest
 
 from jumanji.environments.logic.game2048.env import Game2048
 from jumanji.environments.logic.game2048.types import Board, State
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -113,3 +114,8 @@ def test_get_action_mask(game2048: Game2048, board: Board) -> None:
     action_mask = action_mask_fn(board)
     expected_action_mask = jnp.array([False, True, True, True])
     assert jnp.array_equal(action_mask, expected_action_mask)
+
+
+def test_2048__does_not_smoke(game2048: Game2048) -> None:
+    """Test that we can run an episode without any errors."""
+    check_env_does_not_smoke(game2048)
