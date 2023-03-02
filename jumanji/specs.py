@@ -44,9 +44,9 @@ T = TypeVar("T")
 
 
 class Spec(abc.ABC, Generic[T]):
-    """Adapted from dm_env.spec.Array. This is an augmentation of the Array spec to allow for nested
+    """Adapted from `dm_env.spec.Array`. This is an augmentation of the `Array` spec to allow for nested
     specs. `self.name`, `self.generate_value` and `self.validate` methods are adapted from the
-    dm_env object."""
+    `dm_env` object."""
 
     def __init__(
         self,
@@ -139,7 +139,7 @@ class Spec(abc.ABC, Generic[T]):
 
 
 class Array(Spec[chex.Array]):
-    """Describes a jax array spec. This is adapted from dm_env.specs.Array to suit Jax environments.
+    """Describes a jax array spec. This is adapted from `dm_env.specs.Array` to suit Jax environments.
 
     An `Array` spec allows an API to describe the arrays that it accepts or returns, before that
     array exists.
@@ -247,7 +247,7 @@ class Array(Spec[chex.Array]):
 
 class BoundedArray(Array):
     """Bounded array spec that specifies minimum and maximum values for an environment. This is
-    adapted from dm_env.specs.BoundedArray to suit Jax environments.
+    adapted from `dm_env.specs.BoundedArray` to suit Jax environments.
 
     Example usage:
     ```python
@@ -374,7 +374,7 @@ class BoundedArray(Array):
 
 class DiscreteArray(BoundedArray):
     """Represents a discrete, scalar, zero-based space. This is adapted from
-    dm_env.specs.BoundedArray to suit Jax environments.
+    `dm_env.specs`.BoundedArray to suit Jax environments.
 
     This is a special case of the parent `BoundedArray` class. It represents a 0-dimensional jax
     array  containing a single integer value between 0 and num_values - 1 (inclusive), and exposes
@@ -513,11 +513,11 @@ def jumanji_specs_to_dm_env_specs(
         spec: jumanji spec of type `jumanji.specs.Array`. It breaks if spec is nested.
 
     Returns:
-        dm_env.specs.Array object corresponding to the equivalent jumanji specs implementation.
+        `dm_env.specs.Array` object corresponding to the equivalent jumanji specs implementation.
 
     Raises:
         ValueError if spec is not a jumanji specs Array. In that case, one must override the spec
-            method to output specs of type dm_env.specs.Array.
+            method to output specs of type `dm_env.specs.Array`.
     """
     if isinstance(spec, DiscreteArray):
         return dm_env.specs.DiscreteArray(

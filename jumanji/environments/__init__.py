@@ -14,15 +14,23 @@
 
 import sys
 
-from jumanji.environments.logic import game2048
+from jumanji.environments.logic import game2048, minesweeper, rubiks_cube
 from jumanji.environments.logic.game2048.env import Game2048
 from jumanji.environments.logic.minesweeper import Minesweeper
 from jumanji.environments.logic.rubiks_cube import RubiksCube
-from jumanji.environments.packing import binpack, knapsack
+from jumanji.environments.packing import binpack, jobshop, knapsack
 from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
-from jumanji.environments.routing import connector, cvrp, snake, tsp
+from jumanji.environments.routing import (
+    connector,
+    cvrp,
+    maze,
+    multi_agent_cleaner,
+    snake,
+    tsp,
+)
+from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.multi_agent_cleaner.env import Cleaner

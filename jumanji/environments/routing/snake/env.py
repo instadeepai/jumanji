@@ -97,7 +97,7 @@ class Snake(Environment[State]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: dm_env.specs object
+            observation_spec: primitive jumanji `Spec` (i.e. `Array`) for the observation.
         """
         return specs.Array(
             shape=(*self.board_shape, 5), dtype=jnp.float32, name="observation"
@@ -107,7 +107,7 @@ class Snake(Environment[State]):
         """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 
         Returns:
-            action_spec: dm_env.specs object
+            action_spec: primitive jumanji `Spec` (i.e. `DiscreteArray`) for the action.
         """
         return specs.DiscreteArray(4, name="action")
 
