@@ -26,6 +26,7 @@ from jumanji.environments import (
     TSP,
     BinPack,
     Cleaner,
+    Connector,
     Game2048,
     JobShop,
     Knapsack,
@@ -62,6 +63,7 @@ ENV_FACTORY = {
     "game2048": Game2048,
     "cleaner": Cleaner,
     "maze": Maze,
+    "connector": Connector,
 }
 
 
@@ -181,6 +183,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "maze":
         assert isinstance(env.unwrapped, Maze)
         random_policy = networks.make_random_policy_maze()
+    elif cfg.env.name == "connector":
+        assert isinstance(env.unwrapped, Connector)
+        random_policy = networks.make_random_policy_connector()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

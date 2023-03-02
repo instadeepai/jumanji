@@ -21,6 +21,7 @@ from jumanji.training.networks.binpack.actor_critic import (
 )
 from jumanji.training.networks.binpack.random import make_random_policy_binpack
 from jumanji.training.networks.cleaner.random import make_random_policy_cleaner
+from jumanji.training.networks.connector.random import make_random_policy_connector
 from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
 from jumanji.training.networks.game2048.actor_critic import (

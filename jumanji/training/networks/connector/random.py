@@ -12,5 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.connector.env import Connector
-from jumanji.environments.routing.connector.types import Observation, State
+from jumanji.training.networks.masked_categorical_random import (
+    masked_categorical_random,
+)
+from jumanji.training.networks.protocols import RandomPolicy
+
+
+def make_random_policy_connector() -> RandomPolicy:
+    """Make random policy for `Connector`."""
+    return masked_categorical_random
