@@ -124,3 +124,10 @@ register(
     entry_point="jumanji.environments:Game2048",
     kwargs={"board_size": 4},
 )
+
+# Maze
+register(
+    id="Maze-v0",
+    entry_point="jumanji.environments:Maze",
+    kwargs={"n_rows": 10, "n_cols": 10},
+)

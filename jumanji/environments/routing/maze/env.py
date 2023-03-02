@@ -65,8 +65,8 @@ class Maze(Environment[State]):
 
     def __init__(
         self,
-        n_rows: int,
-        n_cols: int,
+        n_rows: int = 10,
+        n_cols: int = 10,
         step_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
         render_mode: str = "human",
@@ -74,17 +74,17 @@ class Maze(Environment[State]):
         """Instantiates a Maze environment.
 
         Args:
-            n_rows: number of rows, i.e. height of the maze.
-            n_cols: number of columns, i.e. width of the maze.
+            n_rows: number of rows, i.e. height of the maze. By default, `n_rows = 10`.
+            n_cols: number of columns, i.e. width of the maze. By default, `n_cols = 10`.
             step_limit: the horizon of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default,
-                `step_limit = 2 * self.n_rows * self.n_cols`.
+                `step_limit = n_rows * n_cols`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
         self.n_rows = n_rows
         self.n_cols = n_cols
         self.shape = (self.n_rows, self.n_cols)
-        self.step_limit = step_limit or 2 * self.n_rows * self.n_cols
+        self.step_limit = step_limit or self.n_rows * self.n_cols
         self.generator = generator or RandomGenerator(self.n_rows, self.n_cols)
 
         # Create viewer used for rendering
