@@ -21,14 +21,14 @@ from jumanji.environments.packing.jobshop.types import State
 from jumanji.types import TimeStep
 
 
-class TestJobShopEnvironment:
+class TestJobShop:
     def test_env__reset(self, job_shop_env: JobShop) -> None:
         """Test that the environment is reset correctly."""
         key = jax.random.PRNGKey(0)
         state, timestep = job_shop_env.reset(key)
 
         assert jnp.all(
-            state.operations_machine_ids
+            state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -38,7 +38,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            state.operations_durations
+            state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -60,7 +60,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            state.operations_mask
+            state.ops_mask
             == jnp.array([[True, True, True], [True, True, True], [True, True, False]])
         )
         assert jnp.all(
@@ -98,7 +98,7 @@ class TestJobShopEnvironment:
         next_state, next_timestep = job_shop_env.step(state, action)
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -108,7 +108,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -130,7 +130,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[True, True, True], [False, True, True], [False, True, False]]
             )
@@ -153,7 +153,7 @@ class TestJobShopEnvironment:
             state=next_state, action=next_action
         )
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -163,7 +163,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -185,7 +185,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[True, True, True], [False, True, True], [False, True, False]]
             )
@@ -209,7 +209,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -219,7 +219,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -241,7 +241,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, True], [False, True, False]]
             )
@@ -265,7 +265,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -275,7 +275,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -297,7 +297,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, True], [False, True, False]]
             )
@@ -321,7 +321,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -331,7 +331,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -353,7 +353,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, False], [False, False, False]]
             )
@@ -377,7 +377,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -387,7 +387,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -409,7 +409,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, False], [False, False, False]]
             )
@@ -433,7 +433,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -443,7 +443,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -465,7 +465,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, False], [False, False, False]]
             )
@@ -489,7 +489,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -499,7 +499,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -521,7 +521,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, True, True], [False, False, False], [False, False, False]]
             )
@@ -545,7 +545,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -555,7 +555,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -577,7 +577,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, False, True], [False, False, False], [False, False, False]]
             )
@@ -601,7 +601,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -611,7 +611,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -633,7 +633,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, False, True], [False, False, False], [False, False, False]]
             )
@@ -657,7 +657,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -667,7 +667,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -689,7 +689,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, False, False], [False, False, False], [False, False, False]]
             )
@@ -713,7 +713,7 @@ class TestJobShopEnvironment:
         )
 
         assert jnp.all(
-            next_state.operations_machine_ids
+            next_state.ops_machine_ids
             == jnp.array(
                 [
                     [0, 1, 2],
@@ -723,7 +723,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_durations
+            next_state.ops_durations
             == jnp.array(
                 [
                     [3, 2, 2],
@@ -745,7 +745,7 @@ class TestJobShopEnvironment:
             )
         )
         assert jnp.all(
-            next_state.operations_mask
+            next_state.ops_mask
             == jnp.array(
                 [[False, False, False], [False, False, False], [False, False, False]]
             )
@@ -770,7 +770,7 @@ class TestJobShopEnvironment:
 
         chex.clear_trace_counter()
         step_fn = jax.jit(chex.assert_max_traces(job_shop_env.step, n=1))
-        next_state, next_timestep = step_fn(state, action)
+        _, _ = step_fn(state, action)
 
         # Call again to check it does not compile twice
         next_state, next_timestep = step_fn(state, action)

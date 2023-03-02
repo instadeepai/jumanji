@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Tuple
+
+from typing import Any, Optional, Tuple
 
 import chex
 import jax
@@ -20,36 +21,34 @@ import jax.numpy as jnp
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.packing.jobshop.env_viewer import JobShopViewer
-from jumanji.environments.packing.jobshop.instance_generator import (
-    InstanceGenerator,
-    RandomInstanceGenerator,
-    ToyInstanceGenerator,
-)
+from jumanji.environments.packing.jobshop.generator import Generator, RandomGenerator
 from jumanji.environments.packing.jobshop.types import Observation, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class JobShop(Environment[State]):
-    def __init__(
-        self, instance_generator_type: str = "toy", **instance_generator_kwargs: Any
-    ):
-        """Instantiate a JobShop environment.
+    """The Job Shop Scheduling Problem, as described in [1], is one of the best known
+    combinatorial optimization problems. We are given `num_jobs` jobs, each consisting
+    of at most `max_num_ops` ops, which need to be processed on `num_machines` machines.
+    Each operation (op) has a specific machine that it needs to be processed on and a
+    duration (which must be less than or equal to `max_duration_op`). The goal is to
+    minimise the total length of the schedule, also known as the makespan.
+
+    [1] https://developers.google.com/optimization/scheduling/job_shop.
+    """
+
+    def __init__(self, generator: Optional[Generator] = None):
+        """Instantiate a `JobShop` environment.
 
         Args:
-            instance_generator_type: string representing the `InstanceGenerator` responsible for
-                resetting the environment. E.g. can be a random generator to learn generalisation
-                or one that outputs a hardcoded instance. Defaults to "toy" which creates the
-                `ToyInstanceGenerator` that always resets to the same hardcoded instance.
-                Possible values: 'toy' (default) or 'random'.
-            instance_generator_kwargs: keyword arguments for the specified instance generator.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Defaults to `RandomGenerator` with its default parameters.
         """
-        self.instance_generator = self._create_instance_generator(
-            instance_generator_type, **instance_generator_kwargs
-        )
-        self.num_jobs = self.instance_generator.num_jobs
-        self.num_machines = self.instance_generator.num_machines
-        self.max_num_ops = self.instance_generator.max_num_ops
-        self.max_op_duration = self.instance_generator.max_op_duration
+        self.generator = generator or RandomGenerator()
+        self.num_jobs = self.generator.num_jobs
+        self.num_machines = self.generator.num_machines
+        self.max_num_ops = self.generator.max_num_ops
+        self.max_op_duration = self.generator.max_op_duration
 
         # Define the "job id" of a no-op action as the number of jobs
         self.no_op_idx = self.num_jobs
@@ -67,7 +66,7 @@ class JobShop(Environment[State]):
         return "\n".join(
             [
                 "JobShop environment:",
-                f" - instance_generator: {self.instance_generator}",
+                f" - generator: {self.generator}",
                 f" - num_jobs: {self.num_jobs}",
                 f" - num_machines: {self.num_machines}",
                 f" - max_num_ops: {self.max_num_ops}",
@@ -75,63 +74,26 @@ class JobShop(Environment[State]):
             ]
         )
 
-    @classmethod
-    def _create_instance_generator(
-        cls, instance_generator_type: str, **instance_generator_kwargs: Any
-    ) -> InstanceGenerator:
-        """
-        Factory method for creating an instance generator.
-
-        This method can be overridden to add new instance generator types.
-
-        Args:
-            instance_generator_type: the type of instance generator to create. Possible values:
-                - 'toy': create a toy instance generator.
-                - 'random': create a random instance generator.
-            **instance_generator_kwargs: additional keyword arguments to pass to the instance
-                generator constructor.
-
-        Returns:
-            An instance of `InstanceGenerator`.
-
-        Raises:
-            ValueError: If an unexpected value is provided for `instance_generator_type`.
-        """
-        instance_generator_obj: InstanceGenerator
-
-        if instance_generator_type == "toy":
-            instance_generator_obj = ToyInstanceGenerator()
-        elif instance_generator_type == "random":
-            instance_generator_obj = RandomInstanceGenerator(
-                **instance_generator_kwargs
-            )
-        else:
-            raise ValueError(
-                f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
-                "Possible values: 'toy', 'random'."
-            )
-        return instance_generator_obj
-
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
-        """Resets the environment by calling the instance generator for a new instance.
+        """Resets the environment by creating a new problem instance and initialising the state
+        and timestep.
 
         Args:
             key: random key used to reset the environment.
 
         Returns:
-            state: `State` object corresponding to the new state of the environment after the reset.
-            timestep: `TimeStep` object corresponding the first timestep returned by the environment
-                after a reset.
+            state: the environment state after the reset.
+            timestep: the first timestep returned by the environment after the reset.
         """
-        # Generate a new instance
-        state = self.instance_generator(key)
+        # Generate a new problem instance
+        state = self.generator(key)
 
         # Create the action mask and update the state
         state.action_mask = self._create_action_mask(
             state.machines_job_ids,
             state.machines_remaining_times,
-            state.operations_machine_ids,
-            state.operations_mask,
+            state.ops_machine_ids,
+            state.ops_mask,
         )
 
         # Get the observation and the timestep
@@ -149,19 +111,18 @@ class JobShop(Environment[State]):
             - All machines do a no-op that leads to all machines being simultaneously idle.
 
         Args:
-            state (State): the current state of the system.
-            action (Action): the action to take.
+            state: the environment state.
+            action: the action to take.
 
         Returns:
-            state: `State` object corresponding to the new state of the environment after the step.
-            timestep: `TimeStep` object of the updated timestep. Contains the reward and observation
-                the current timestep in the `extras` field.
+            state: the updated environment state.
+            timestep: the updated timestep.
         """
         # Check the action is legal
         invalid = ~jnp.all(state.action_mask[jnp.arange(self.num_machines), action])  # type: ignore
 
         # Obtain the id for every job's next operation
-        op_ids = jnp.argmax(state.operations_mask, axis=-1)
+        op_ids = jnp.argmax(state.ops_mask, axis=-1)
 
         # Update the status of all machines
         (
@@ -172,24 +133,24 @@ class JobShop(Environment[State]):
             op_ids,
             state.machines_job_ids,
             state.machines_remaining_times,
-            state.operations_durations,
+            state.ops_durations,
         )
 
         # Update the status of operations that have been scheduled
-        updated_operations_mask, updated_scheduled_times = self._update_operations(
+        updated_ops_mask, updated_scheduled_times = self._update_operations(
             action,
             op_ids,
             state.current_timestep,
             state.scheduled_times,
-            state.operations_mask,
+            state.ops_mask,
         )
 
         # Update the action_mask
         updated_action_mask = self._create_action_mask(
             updated_machines_job_ids,
             updated_machines_remaining_times,
-            state.operations_machine_ids,
-            updated_operations_mask,
+            state.ops_machine_ids,
+            updated_ops_mask,
         )
 
         # Increment the time step
@@ -202,16 +163,16 @@ class JobShop(Environment[State]):
         )
 
         # Check if the schedule has finished
-        all_operations_scheduled = ~jnp.any(updated_operations_mask)
+        all_operations_scheduled = ~jnp.any(updated_ops_mask)
         schedule_finished = all_operations_scheduled & jnp.all(
             updated_machines_remaining_times == 0
         )
 
         # Update the state and extract the next observation
         next_state = State(
-            operations_machine_ids=state.operations_machine_ids,
-            operations_durations=state.operations_durations,
-            operations_mask=updated_operations_mask,
+            ops_machine_ids=state.ops_machine_ids,
+            ops_durations=state.ops_durations,
+            ops_mask=updated_ops_mask,
             machines_job_ids=updated_machines_job_ids,
             machines_remaining_times=updated_machines_remaining_times,
             action_mask=updated_action_mask,
@@ -243,7 +204,7 @@ class JobShop(Environment[State]):
         op_ids: chex.Array,
         current_timestep: int,
         scheduled_times: chex.Array,
-        operations_mask: chex.Array,
+        ops_mask: chex.Array,
     ) -> Any:
         """Update the operations mask and schedule times based on the newly scheduled
          operations as detailed by the action.
@@ -254,10 +215,10 @@ class JobShop(Environment[State]):
             current_timestep: the current time.
             scheduled_times: specifies the time step at which each operation was
                 scheduled. Set to -1 if the operation has not been scheduled yet.
-            operations_mask: specifies which operations have yet to be scheduled.
+            ops_mask: specifies which operations have yet to be scheduled.
 
         Returns:
-            updated_operations_mask: specifies which operations have yet to be scheduled.
+            updated_ops_mask: specifies which operations have yet to be scheduled.
             updated_scheduled_times: specifies the time step at which each operation was
                 scheduled. Set to -1 if the operation has not been scheduled yet.
         """
@@ -270,10 +231,8 @@ class JobShop(Environment[State]):
         updated_scheduled_times = jnp.where(
             is_new_job_and_next_op, current_timestep, scheduled_times
         )
-        updated_operations_mask = jnp.where(
-            is_new_job_and_next_op, False, operations_mask
-        )
-        return updated_operations_mask, updated_scheduled_times
+        updated_ops_mask = ops_mask & ~is_new_job_and_next_op
+        return updated_ops_mask, updated_scheduled_times
 
     def _update_machines(
         self,
@@ -281,7 +240,7 @@ class JobShop(Environment[State]):
         op_ids: chex.Array,
         machines_job_ids: chex.Array,
         machines_remaining_times: chex.Array,
-        operations_durations: chex.Array,
+        ops_durations: chex.Array,
     ) -> Any:
         """Update the status of all machines based on the action, specifically:
             - The specific job (or no-op) processed by each machine.
@@ -293,7 +252,7 @@ class JobShop(Environment[State]):
             machines_job_ids: array containing the job (or no-op) processed by each machine.
             machines_remaining_times: array containing the time remaining until available
                 for each machine.
-            operations_durations: for each job, it specifies the processing time of each
+            ops_durations: for each job, it specifies the processing time of each
                 operation.
 
         Returns:
@@ -317,7 +276,7 @@ class JobShop(Environment[State]):
         remaining_times = jnp.where(
             action == self.no_op_idx,
             machines_remaining_times,
-            operations_durations[action, op_ids[action]],
+            ops_durations[action, op_ids[action]],
         )
 
         # For busy machines, decrement the remaining time by one
@@ -332,33 +291,33 @@ class JobShop(Environment[State]):
 
         Returns:
             Spec containing the specifications for all the `Observation` fields:
-            - operations_machine_ids: BoundedArray (jnp.int32) of shape (num_jobs, max_num_ops).
-            - operations_durations: BoundedArray (jnp.int32) of shape (num_jobs, max_num_ops).
-            - operations_mask: BoundedArray (bool) of shape (num_jobs, max_num_ops).
-            - machines_job_ids: BoundedArray (jnp.int32) of shape (num_machines,).
-            - machines_remaining_times: BoundedArray (jnp.int32) of shape (num_machines,).
+            - ops_machine_ids: BoundedArray (int32) of shape (num_jobs, max_num_ops).
+            - ops_durations: BoundedArray (int32) of shape (num_jobs, max_num_ops).
+            - ops_mask: BoundedArray (bool) of shape (num_jobs, max_num_ops).
+            - machines_job_ids: BoundedArray (int32) of shape (num_machines,).
+            - machines_remaining_times: BoundedArray (int32) of shape (num_machines,).
             - action_mask: BoundedArray (bool) of shape (num_machines, num_jobs + 1).
         """
-        operations_machine_ids = specs.BoundedArray(
+        ops_machine_ids = specs.BoundedArray(
             shape=(self.num_jobs, self.max_num_ops),
             dtype=jnp.int32,
             minimum=-1,
             maximum=self.num_machines - 1,
-            name="operations_machine_ids",
+            name="ops_machine_ids",
         )
-        operations_durations = specs.BoundedArray(
+        ops_durations = specs.BoundedArray(
             shape=(self.num_jobs, self.max_num_ops),
             dtype=jnp.int32,
             minimum=-1,
             maximum=self.max_op_duration,
-            name="operations_durations",
+            name="ops_durations",
         )
-        operations_mask = specs.BoundedArray(
+        ops_mask = specs.BoundedArray(
             shape=(self.num_jobs, self.max_num_ops),
             dtype=bool,
             minimum=False,
             maximum=True,
-            name="operations_mask",
+            name="ops_mask",
         )
         machines_job_ids = specs.BoundedArray(
             shape=(self.num_machines,),
@@ -384,9 +343,9 @@ class JobShop(Environment[State]):
         return specs.Spec(
             constructor=Observation,
             name="ObservationSpec",
-            operations_machine_ids=operations_machine_ids,
-            operations_durations=operations_durations,
-            operations_mask=operations_mask,
+            ops_machine_ids=ops_machine_ids,
+            ops_durations=ops_durations,
+            ops_mask=ops_mask,
             machines_job_ids=machines_job_ids,
             machines_remaining_times=machines_remaining_times,
             action_mask=action_mask,
@@ -425,9 +384,9 @@ class JobShop(Environment[State]):
         """
 
         return Observation(
-            operations_machine_ids=state.operations_machine_ids,
-            operations_durations=state.operations_durations,
-            operations_mask=state.operations_mask,
+            ops_machine_ids=state.ops_machine_ids,
+            ops_durations=state.ops_durations,
+            ops_mask=state.ops_mask,
             machines_job_ids=state.machines_job_ids,
             machines_remaining_times=state.machines_remaining_times,
             action_mask=state.action_mask,
@@ -440,8 +399,8 @@ class JobShop(Environment[State]):
         machine_id: jnp.int32,
         machines_job_ids: chex.Array,
         machines_remaining_times: chex.Array,
-        operations_machine_ids: chex.Array,
-        updated_operations_mask: chex.Array,
+        ops_machine_ids: chex.Array,
+        updated_ops_mask: chex.Array,
     ) -> Any:
         """Check whether a particular action is valid, specifically the action of scheduling
          the specified operation of the specified job on the specified machine given the
@@ -459,19 +418,19 @@ class JobShop(Environment[State]):
             machine_id: the machine in question.
             machines_job_ids: array giving which job (or no-op) each machine is working on.
             machines_remaining_times: array giving the time until available for each machine.
-            operations_machine_ids: array specifying the machine needed by each operation.
-            updated_operations_mask: a boolean mask indicating which operations for each job
+            ops_machine_ids: array specifying the machine needed by each operation.
+            updated_ops_mask: a boolean mask indicating which operations for each job
                 remain to be scheduled.
 
         Returns:
             Boolean representing whether the action in question is valid.
         """
         is_machine_available = machines_remaining_times[machine_id] == 0
-        is_correct_machine = operations_machine_ids[job_id, op_id] == machine_id
+        is_correct_machine = ops_machine_ids[job_id, op_id] == machine_id
         is_job_ready = ~jnp.any(
             (machines_job_ids == job_id) & (machines_remaining_times > 0)
         )
-        is_job_finished = jnp.all(~updated_operations_mask[job_id])
+        is_job_finished = jnp.all(~updated_ops_mask[job_id])
         return (
             is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
         )
@@ -494,8 +453,8 @@ class JobShop(Environment[State]):
         self,
         machines_job_ids: chex.Array,
         machines_remaining_times: chex.Array,
-        operations_machine_ids: chex.Array,
-        operations_mask: chex.Array,
+        ops_machine_ids: chex.Array,
+        ops_mask: chex.Array,
     ) -> chex.Array:
         """Create the action mask based on the current status of all machines and which
         operations remain to be scheduled. Specifically, for each machine, it is checked
@@ -505,8 +464,8 @@ class JobShop(Environment[State]):
         Args:
             machines_job_ids: array giving which job (or no-op) each machine is working on.
             machines_remaining_times: array giving the time until available for each machine.
-            operations_machine_ids: array specifying the machine needed by each operation.
-            operations_mask: a boolean mask indicating which operations for each job
+            ops_machine_ids: array specifying the machine needed by each operation.
+            ops_mask: a boolean mask indicating which operations for each job
                 remain to be scheduled.
 
         Returns:
@@ -517,7 +476,7 @@ class JobShop(Environment[State]):
         machine_indexes = jnp.arange(self.num_machines)
 
         # Get the ID of the next operation for each job
-        next_op_ids = jnp.argmax(operations_mask, axis=-1)
+        next_op_ids = jnp.argmax(ops_mask, axis=-1)
 
         # vmap over the jobs (and their ops) and vmap over the machines
         action_mask = jax.vmap(
@@ -531,8 +490,8 @@ class JobShop(Environment[State]):
             machine_indexes,
             machines_job_ids,
             machines_remaining_times,
-            operations_machine_ids,
-            operations_mask,
+            ops_machine_ids,
+            ops_mask,
         )
         no_op_mask = jnp.ones((self.num_machines, 1), bool)
         full_action_mask = jnp.concatenate([action_mask, no_op_mask], axis=-1)

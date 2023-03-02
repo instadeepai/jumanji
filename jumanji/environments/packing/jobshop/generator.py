@@ -21,8 +21,8 @@ import jax.numpy as jnp
 from jumanji.environments.packing.jobshop.types import State
 
 
-class InstanceGenerator(abc.ABC):
-    """Defines the abstract `InstanceGenerator` base class. An `InstanceGenerator` is responsible
+class Generator(abc.ABC):
+    """Defines the abstract `Generator` base class. A `Generator` is responsible
     for generating a problem instance when the environment is reset.
     """
 
@@ -55,12 +55,12 @@ class InstanceGenerator(abc.ABC):
             key: jax random key in case stochasticity is used in the instance generation process.
 
         Returns:
-            A JobShop State.
+            A `JobShop` environment state.
         """
 
 
-class ToyInstanceGenerator(InstanceGenerator):
-    """`InstanceGenerator` that can be used as an example. It deterministically outputs a hardcoded
+class ToyGenerator(Generator):
+    """`Generator` that can be used as an example. It deterministically outputs a hardcoded
     instance with 9 jobs, 5 machines, a max of 7 ops for any job, and max duration of 8 time steps
     for any operation.
     """
@@ -74,19 +74,9 @@ class ToyInstanceGenerator(InstanceGenerator):
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Call method responsible for generating a new state. It returns a job shop scheduling
-        instance without any scheduled jobs.
-
-        Args:
-            key: jax random key for any stochasticity used in the generation process. Not used
-                in this instance generator.
-
-        Returns:
-            A JobShop State.
-        """
         del key
 
-        operations_machine_ids = jnp.array(
+        ops_machine_ids = jnp.array(
             [
                 [1, 0, 2, 4, 0, 3, 3],
                 [1, 0, 4, 3, 0, 4, -1],
@@ -100,7 +90,7 @@ class ToyInstanceGenerator(InstanceGenerator):
             ],
             jnp.int32,
         )
-        operations_durations = jnp.array(
+        ops_durations = jnp.array(
             [
                 [2, 3, 8, 5, 7, 4, 4],
                 [3, 4, 7, 7, 2, 7, -1],
@@ -119,13 +109,13 @@ class ToyInstanceGenerator(InstanceGenerator):
         machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
         machines_remaining_times = jnp.full(self.num_machines, 0, jnp.int32)
         scheduled_times = jnp.full((self.num_jobs, self.max_num_ops), -1, jnp.int32)
-        operations_mask = operations_machine_ids != -1
+        ops_mask = ops_machine_ids != -1
         current_timestep = jnp.int32(0)
 
         state = State(
-            operations_machine_ids=operations_machine_ids,
-            operations_durations=operations_durations,
-            operations_mask=operations_mask,
+            ops_machine_ids=ops_machine_ids,
+            ops_durations=ops_durations,
+            ops_mask=ops_mask,
             machines_job_ids=machines_job_ids,
             machines_remaining_times=machines_remaining_times,
             action_mask=None,
@@ -136,7 +126,7 @@ class ToyInstanceGenerator(InstanceGenerator):
         return state
 
 
-class RandomInstanceGenerator(InstanceGenerator):
+class RandomGenerator(Generator):
     """Instance generator that generates random instances of the job shop scheduling problem. Given
     the number of machines, number of jobs, max number of operations for any job, and max duration
     of any operation, the generation works as follows: for each job, we sample the number of ops
@@ -147,12 +137,12 @@ class RandomInstanceGenerator(InstanceGenerator):
 
     def __init__(
         self,
-        num_jobs: int,
-        num_machines: int,
-        max_num_ops: int,
-        max_op_duration: int,
+        num_jobs: int = 10,
+        num_machines: int = 5,
+        max_num_ops: int = 12,
+        max_op_duration: int = 3,
     ):
-        """Instantiate a `RandomInstanceGenerator`.
+        """Instantiate a `RandomGenerator`.
 
         Args:
             num_jobs: the number of jobs that need to be scheduled.
@@ -168,25 +158,16 @@ class RandomInstanceGenerator(InstanceGenerator):
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Call method responsible for generating a new state. It returns a job shop scheduling
-        instance without any scheduled jobs.
-
-        Args:
-            key: jax random key for the stochasticity used in the generation process.
-
-        Returns:
-            A JobShop State.
-        """
         key, machine_key, duration_key, ops_key = jax.random.split(key, num=4)
 
         # Randomly sample machine IDs and durations
-        operations_machine_ids = jax.random.randint(
+        ops_machine_ids = jax.random.randint(
             machine_key,
             shape=(self.num_jobs, self.max_num_ops),
             minval=0,
             maxval=self.num_machines,
         )
-        operations_durations = jax.random.randint(
+        ops_durations = jax.random.randint(
             duration_key,
             shape=(self.num_jobs, self.max_num_ops),
             minval=1,
@@ -204,8 +185,8 @@ class RandomInstanceGenerator(InstanceGenerator):
             jnp.tile(jnp.arange(self.max_num_ops), reps=(self.num_jobs, 1)),
             jnp.expand_dims(num_ops_per_job, axis=-1),
         )
-        operations_machine_ids = jnp.where(mask, operations_machine_ids, jnp.int32(-1))
-        operations_durations = jnp.where(mask, operations_durations, jnp.int32(-1))
+        ops_machine_ids = jnp.where(mask, ops_machine_ids, jnp.int32(-1))
+        ops_durations = jnp.where(mask, ops_durations, jnp.int32(-1))
 
         # Initially, all machines are available (the value self.num_jobs corresponds to no-op)
         machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
@@ -213,15 +194,15 @@ class RandomInstanceGenerator(InstanceGenerator):
 
         # Initially, none of the operations have been scheduled
         scheduled_times = jnp.full((self.num_jobs, self.max_num_ops), -1, jnp.int32)
-        operations_mask = operations_machine_ids != -1
+        ops_mask = ops_machine_ids != -1
 
         # Time starts at 0
         current_timestep = jnp.int32(0)
 
         state = State(
-            operations_machine_ids=operations_machine_ids,
-            operations_durations=operations_durations,
-            operations_mask=operations_mask,
+            ops_machine_ids=ops_machine_ids,
+            ops_durations=ops_durations,
+            ops_mask=ops_mask,
             machines_job_ids=machines_job_ids,
             machines_remaining_times=machines_remaining_times,
             action_mask=None,

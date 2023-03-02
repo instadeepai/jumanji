@@ -35,7 +35,7 @@ class JobShopViewer:
         max_num_ops: int,
         max_op_duration: int,
     ) -> None:
-        """Viewer for the JobShop environment.
+        """Viewer for the `JobShop` environment.
 
         Args:
             name: the window name to be used when initialising the window.
@@ -166,8 +166,8 @@ class JobShopViewer:
         for job_id in range(self._num_jobs):
             for op_id in range(self._max_num_ops):
                 start_time = state.scheduled_times[job_id, op_id]
-                machine_id = state.operations_machine_ids[job_id, op_id]
-                duration = state.operations_durations[job_id, op_id]
+                machine_id = state.ops_machine_ids[job_id, op_id]
+                duration = state.ops_durations[job_id, op_id]
                 colour = self._cmap(job_id)
                 line_height = 0.8
                 if start_time >= 0:
@@ -186,7 +186,7 @@ class JobShopViewer:
                     cx = rx + rectangle.get_width() / 2.0
                     cy = ry + rectangle.get_height() / 2.0
                     ax.annotate(
-                        rf"J{job_id}",
+                        f"J{job_id}",
                         (cx, cy),
                         color="black",
                         fontsize=10,

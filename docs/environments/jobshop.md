@@ -1,10 +1,10 @@
 # JobShop Environment
 
 <p align="center">
-        <img src="../env_anim/jobshop.gif" height="300"/>
+        <img src="../env_anim/jobshop.gif" height="600"/>
 </p>
 
-We provide here a JAX jittable implementation of the [job shop scheduling problem](https://developers.google.com/optimization/scheduling/job_shop).
+We provide here a JAX jit-able implementation of the [job shop scheduling problem](https://developers.google.com/optimization/scheduling/job_shop).
 It is NP-hard and one of the most well-known combinatorial optimisation problems. The problem formulation is:
 - $N$ **jobs**, each consisting of a sequence of **operations**, need to be scheduled on $M$ machines.
 - For each job, its operations must be processed **in order**. This is called the **precedence constraints**.
@@ -17,13 +17,13 @@ The length of the schedule is also known as its _makespan_.
 
 ## Observation
 The **observation** seen by the agent is a `NamedTuple` containing the following:
-- `operations_machine_ids`: for each job, it specifies the machine each op must be processed on.
+- `ops_machine_ids`: for each job, it specifies the machine each op must be processed on.
     Note that a -1 corresponds to padded ops since not all jobs have the same number of ops.
     Has shape `(num_jobs, max_num_ops)`
-- `operations_durations`: for each job, it specifies the processing time of each operation.
+- `ops_durations`: for each job, it specifies the processing time of each operation.
     Note that a -1 corresponds to padded ops since not all jobs have the same number of ops.
     Has shape `(num_jobs, max_num_ops)`
-- `operations_mask`: for each job, indicates which operations remain to be scheduled. False if the
+- `ops_mask`: for each job, indicates which operations remain to be scheduled. False if the
     op has been scheduled or if the op was added for padding, True otherwise. The first True in
     each row (i.e. each job) identifies the next operation for that job.
     Has shape `(num_jobs, max_num_ops)`

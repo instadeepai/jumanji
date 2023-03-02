@@ -17,11 +17,11 @@ import pytest
 from chex import PRNGKey
 
 from jumanji.environments.packing.jobshop.env import JobShop
-from jumanji.environments.packing.jobshop.instance_generator import InstanceGenerator
+from jumanji.environments.packing.jobshop.generator import Generator
 from jumanji.environments.packing.jobshop.types import State
 
 
-class DummyInstanceGenerator(InstanceGenerator):
+class DummyGenerator(Generator):
     """Hardcoded `InstanceGenerator` mainly used for testing and debugging. It deterministically
     outputs a hardcoded instance with 3 jobs, 3 machines, a max of 3 ops for any job, and a max
     duration of 4 time steps for any operation.
@@ -48,7 +48,7 @@ class DummyInstanceGenerator(InstanceGenerator):
         """
         del key
 
-        operations_machine_ids = jnp.array(
+        ops_machine_ids = jnp.array(
             [
                 [0, 1, 2],
                 [0, 2, 1],
@@ -56,7 +56,7 @@ class DummyInstanceGenerator(InstanceGenerator):
             ],
             jnp.int32,
         )
-        operations_durations = jnp.array(
+        ops_durations = jnp.array(
             [
                 [3, 2, 2],
                 [2, 1, 4],
@@ -82,7 +82,7 @@ class DummyInstanceGenerator(InstanceGenerator):
         )
 
         # Initially, all ops have yet to be scheduled (ignore the padded element)
-        operations_mask = jnp.array(
+        ops_mask = jnp.array(
             [[True, True, True], [True, True, True], [True, True, False]], bool
         )
 
@@ -99,9 +99,9 @@ class DummyInstanceGenerator(InstanceGenerator):
         current_timestep = jnp.int32(0)
 
         state = State(
-            operations_machine_ids=operations_machine_ids,
-            operations_durations=operations_durations,
-            operations_mask=operations_mask,
+            ops_machine_ids=ops_machine_ids,
+            ops_durations=ops_durations,
+            ops_mask=ops_mask,
             machines_job_ids=machines_job_ids,
             machines_remaining_times=machines_remaining_times,
             action_mask=action_mask,
@@ -114,11 +114,5 @@ class DummyInstanceGenerator(InstanceGenerator):
 
 @pytest.fixture
 def job_shop_env() -> JobShop:
-    env = JobShop()
-    env.instance_generator = DummyInstanceGenerator()
-    env.num_jobs = env.instance_generator.num_jobs
-    env.num_machines = env.instance_generator.num_machines
-    env.max_num_ops = env.instance_generator.max_num_ops
-    env.max_op_duration = env.instance_generator.max_op_duration
-    env.no_op_idx = env.num_jobs
-    return env
+    generator = DummyGenerator()
+    return JobShop(generator)

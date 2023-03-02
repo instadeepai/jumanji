@@ -83,7 +83,7 @@ def make_actor_network_jobshop(
         network_torso = NetworkTorso(operations_layers, machines_layers)
         x = network_torso(observation)
 
-        num_jobs = observation.operations_machine_ids.shape[1]
+        num_jobs = observation.ops_machine_ids.shape[1]
         num_machines = observation.machines_job_ids.shape[1]
         batch_size = observation.machines_job_ids.shape[0]
         head = hk.nets.MLP(
@@ -132,8 +132,8 @@ class NetworkTorso(hk.Module):
     def __call__(self, observation: Observation) -> jnp.array:
         """Call the network torso module. The following attributes of `observation`
         are flattened (except along the batch axis):
-            - operations_machine_ids
-            - operations_durations
+            - ops_machine_ids
+            - ops_durations
             - machines_job_ids
             - machines_remaining_times
 
@@ -145,11 +145,9 @@ class NetworkTorso(hk.Module):
         """
         # Flatten, apply operations mask, and obtain operations embedding
         batch_size = observation.machines_job_ids.shape[0]
-        machine_ids_flattened = observation.operations_machine_ids.reshape(
-            batch_size, -1
-        )
-        durations_flattened = observation.operations_durations.reshape(batch_size, -1)
-        ops_mask = observation.operations_mask.reshape(batch_size, -1)
+        machine_ids_flattened = observation.ops_machine_ids.reshape(batch_size, -1)
+        durations_flattened = observation.ops_durations.reshape(batch_size, -1)
+        ops_mask = observation.ops_mask.reshape(batch_size, -1)
         machine_ids_flattened = jnp.where(ops_mask, machine_ids_flattened, -1)
         durations_flattened = jnp.where(ops_mask, durations_flattened, -1)
         ops_embedding = jnp.concatenate(
