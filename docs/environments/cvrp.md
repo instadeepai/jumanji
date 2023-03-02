@@ -28,6 +28,8 @@ cities and the current position of the agent as well as the current capacity.
 node and the depot node.
 - `demands`: jax array (float) of shape (num_nodes + 1,), array of the demands of each city node
 and the depot node whose demand is set to 0.
+- `unvisited_nodes`: jax array (bool) of shape (num_nodes + 1,), array denoting which nodes
+remain to be visited.
 - `position`: jax array (int32) of shape (), identifier (index) of the current visited node (city
 or depot).
 - `trajectory`: jax array (int32) of shape (2 * num_nodes,), identifiers of the nodes that have

@@ -156,8 +156,11 @@ class TSP(Environment[State]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a tree of specs containing the spec for each of the constituent fields
-                of an observation.
+            Spec for the `Observation` whose fields are:
+            - coordinates: BoundedArray (float) of shape (num_cities,).
+            - position: DiscreteArray (num_values = num_cities) of shape ().
+            - trajectory: BoundedArray (int32) of shape (num_cities,).
+            - action_mask: BoundedArray (bool) of shape (num_cities,).
         """
         coordinates = specs.BoundedArray(
             shape=(self.num_cities, 2),
@@ -181,7 +184,7 @@ class TSP(Environment[State]):
             dtype=bool,
             minimum=False,
             maximum=True,
-            name="action mask",
+            name="action_mask",
         )
         return specs.Spec(
             Observation,

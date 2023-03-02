@@ -49,6 +49,7 @@ class Observation(NamedTuple):
     """
     coordinates: array of 2D coordinates of all nodes (including depot).
     demands: array with the demands of all nodes (including depot).
+    unvisited_nodes: array of booleans that indicates nodes that remain to be visited.
     position: index of the current node.
     trajectory: array of node indices denoting route (set to DEPOT_IDX if not filled yet).
     capacity: current capacity of the vehicle.
@@ -57,6 +58,7 @@ class Observation(NamedTuple):
 
     coordinates: chex.Array  # (num_nodes + 1, 2)
     demands: chex.Array  # (num_nodes + 1,)
+    unvisited_nodes: chex.Array  # (num_nodes + 1,)
     position: chex.Numeric  # ()
     trajectory: chex.Array  # (2 * num_nodes,)
     capacity: chex.Numeric  # ()

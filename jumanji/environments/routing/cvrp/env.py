@@ -29,11 +29,13 @@ from jumanji.types import TimeStep, restart, termination, transition
 
 class CVRP(Environment[State]):
     """Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
-        - observation: Observation
+    - observation: Observation
         - coordinates: jax array (float) of shape (num_nodes + 1, 2)
             the coordinates of each node and the depot.
         - demands: jax array (float) of shape (num_nodes + 1,)
             the associated cost of each node and the depot (0.0 for the depot).
+        - unvisited_nodes: jax array (bool) of shape (num_nodes + 1,)
+            indicates nodes that remain to be visited.
         - position: jax array (int32)
             the index of the last visited node.
         - trajectory: jax array (int32) of shape (2 * num_nodes,)
@@ -72,9 +74,9 @@ class CVRP(Environment[State]):
 
     def __init__(
         self,
-        num_nodes: int = 10,
-        max_capacity: int = 4,
-        max_demand: int = 3,
+        num_nodes: int = 20,
+        max_capacity: int = 30,
+        max_demand: int = 10,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
     ):
@@ -82,11 +84,11 @@ class CVRP(Environment[State]):
 
         Args:
             num_nodes: number of city nodes in the environment.
-                Defaults to 10.
+                Defaults to 20.
             max_capacity: maximum capacity of the vehicle.
-                Defaults to 4.
+                Defaults to 30.
             max_demand: maximum demand of each node.
-                Defaults to 3.
+                Defaults to 10.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
@@ -140,7 +142,7 @@ class CVRP(Environment[State]):
             coordinates=coordinates,
             demands=demands,
             position=jnp.array(DEPOT_IDX, jnp.int32),
-            capacity=self.max_capacity,
+            capacity=jnp.array(self.max_capacity, jnp.int32),
             visited_mask=visited_mask,
             trajectory=jnp.full(2 * self.num_nodes, DEPOT_IDX, jnp.int32),
             num_total_visits=jnp.array(1, jnp.int32),
@@ -191,13 +193,14 @@ class CVRP(Environment[State]):
         """Returns the observation spec.
 
         Returns:
-            ObservationSpec containing all the specifications for all the Observation fields:
-            - coordinates: BoundedArray (float) of shape (self.num_nodes + 1, 2).
-            - demands: BoundedArray (float) of shape (self.num_nodes + 1,).
-            - position: DiscreteArray (num_values = self.num_nodes + 1) of shape ().
-            - trajectory: BoundedArray (int32) of shape (2 * self.num_nodes,).
+            Spec for the `Observation` whose fields are:
+            - coordinates: BoundedArray (float) of shape (num_nodes + 1, 2).
+            - demands: BoundedArray (float) of shape (num_nodes + 1,).
+            - unvisited_nodes: BoundedArray (bool) of shape (num_nodes + 1,).
+            - position: DiscreteArray (num_values = num_nodes + 1) of shape ().
+            - trajectory: BoundedArray (int32) of shape (2 * num_nodes,).
             - capacity: BoundedArray (float) of shape ().
-            - action_mask: BoundedArray (bool) of shape (self.num_nodes + 1,).
+            - action_mask: BoundedArray (bool) of shape (num_nodes + 1,).
         """
         coordinates = specs.BoundedArray(
             shape=(self.num_nodes + 1, 2),
@@ -212,6 +215,13 @@ class CVRP(Environment[State]):
             maximum=1.0,
             dtype=float,
             name="demands",
+        )
+        unvisited_nodes = specs.BoundedArray(
+            shape=(self.num_nodes + 1,),
+            dtype=bool,
+            minimum=False,
+            maximum=True,
+            name="unvisited_nodes",
         )
         position = specs.DiscreteArray(
             self.num_nodes + 1, dtype=jnp.int32, name="position"
@@ -231,13 +241,14 @@ class CVRP(Environment[State]):
             dtype=bool,
             minimum=False,
             maximum=True,
-            name="action mask",
+            name="action_mask",
         )
         return specs.Spec(
             Observation,
             "ObservationSpec",
             coordinates=coordinates,
             demands=demands,
+            unvisited_nodes=unvisited_nodes,
             position=position,
             trajectory=trajectory,
             capacity=capacity,
@@ -312,6 +323,7 @@ class CVRP(Environment[State]):
         return Observation(
             coordinates=state.coordinates,
             demands=jnp.asarray(state.demands / self.max_capacity, float),
+            unvisited_nodes=~state.visited_mask,
             position=state.position,
             trajectory=state.trajectory,
             capacity=jnp.asarray(state.capacity / self.max_capacity, float),

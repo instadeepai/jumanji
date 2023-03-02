@@ -240,19 +240,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             operations_layers=cfg.env.network.operations_layers,
             machines_layers=cfg.env.network.machines_layers,
         )
-
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         actor_critic_networks = networks.make_actor_critic_networks_cvrp(
             cvrp=env.unwrapped,
-            encoder_num_layers=cfg.env.network.encoder_num_layers,
-            encoder_num_heads=cfg.env.network.encoder_num_heads,
-            encoder_key_size=cfg.env.network.encoder_key_size,
-            encoder_model_size=cfg.env.network.encoder_model_size,
-            encoder_expand_factor=cfg.env.network.encoder_expand_factor,
-            decoder_num_heads=cfg.env.network.decoder_num_heads,
-            decoder_key_size=cfg.env.network.decoder_key_size,
-            decoder_model_size=cfg.env.network.decoder_model_size,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+            mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
         )
     elif cfg.env.name == "game2048":
         assert isinstance(env.unwrapped, Game2048)

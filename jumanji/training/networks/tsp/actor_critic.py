@@ -23,11 +23,6 @@ from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
 )
-from jumanji.training.networks.encoder_decoder import (
-    CriticDecoderBase,
-    EncoderBase,
-    PolicyDecoderBase,
-)
 from jumanji.training.networks.parametric_distribution import (
     CategoricalParametricDistribution,
 )
@@ -88,9 +83,7 @@ class TSPTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, coordinates: chex.Array, mask: chex.Array) -> chex.Array:
-        embeddings = hk.Linear(self.transformer_num_heads * self.transformer_key_size)(
-            coordinates
-        )
+        embeddings = hk.Linear(self.model_size)(coordinates)
         for block_id in range(self.transformer_num_blocks):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -241,64 +234,3 @@ def make_tsp_query(
     else:
         query = jnp.concatenate([current_city, initial_city], axis=-1)
     return jnp.expand_dims(query, axis=-2)
-
-
-class Encoder(EncoderBase):
-    def __init__(
-        self,
-        num_layers: int,
-        num_heads: int,
-        key_size: int,
-        model_size: int,
-        expand_factor: int,
-    ):
-        super().__init__(num_layers, num_heads, key_size, model_size, expand_factor)
-
-    def get_problem_projection(self, problem: chex.Array) -> chex.Array:
-        proj = hk.Linear(self.model_size, name="encoder")
-        return proj(problem)
-
-
-def get_context(observation: Observation, embeddings: chex.Array) -> chex.Array:
-    cities_embedding = jnp.mean(embeddings, axis=-2)
-    position_embedding = jnp.take_along_axis(
-        embeddings, observation.position[:, None, None], axis=-2
-    ).squeeze(axis=-2)
-    position_embedding = jnp.where(
-        observation.position[:, None] == -1,
-        jnp.zeros_like(cities_embedding),
-        position_embedding,
-    )
-    return jnp.concatenate(
-        [
-            cities_embedding,
-            position_embedding,
-        ],
-        axis=-1,
-    )[:, None, :]
-
-
-class PolicyDecoder(PolicyDecoderBase):
-    def __init__(self, num_heads: int, key_size: int, model_size: int):
-        super().__init__(num_heads, key_size, model_size)
-
-    def get_context(  # type: ignore[override]
-        self, observation: Observation, embeddings: chex.Array
-    ) -> chex.Array:
-        return get_context(observation, embeddings)
-
-    def get_transformed_attention_mask(self, attention_mask: chex.Array) -> chex.Array:
-        return attention_mask
-
-
-class CriticDecoder(CriticDecoderBase):
-    def __init__(self, num_heads: int, key_size: int, model_size: int):
-        super().__init__(num_heads, key_size, model_size)
-
-    def get_context(  # type: ignore[override]
-        self, observation: Observation, embeddings: chex.Array
-    ) -> chex.Array:
-        return get_context(observation, embeddings)
-
-    def get_transformed_attention_mask(self, attention_mask: chex.Array) -> chex.Array:
-        return attention_mask
