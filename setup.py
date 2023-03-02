@@ -51,6 +51,9 @@ setup(
         "dev": _parse_requirements(
             os.path.join(_CURRENT_DIR, "requirements", "requirements-dev.txt")
         ),
+        "train": _parse_requirements(
+            os.path.join(_CURRENT_DIR, "requirements", "requirements-train.txt")
+        ),
     },
     classifiers=[
         "Development Status :: 4 - Beta",
