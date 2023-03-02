@@ -22,11 +22,10 @@ from jumanji.environments.packing import binpack, knapsack
 from jumanji.environments.packing.binpack.env import BinPack
 from jumanji.environments.packing.jobshop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
-from jumanji.environments.routing import connector, cvrp, routing, snake, tsp
+from jumanji.environments.routing import connector, cvrp, snake, tsp
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.multi_agent_cleaner.env import Cleaner
-from jumanji.environments.routing.routing.env import Routing
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
 

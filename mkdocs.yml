@@ -27,7 +27,6 @@ nav:
           - JobShop: environments/jobshop.md
       - Routing:
           - CVRP: environments/cvrp.md
-          - Routing: environments/routing.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
           - Maze: environments/maze.md
@@ -48,7 +47,6 @@ nav:
               - JobShop: api/environments/jobshop.md
           - Routing:
               - CVRP: api/environments/cvrp.md
-              - Routing: api/environments/routing.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
               - Maze: api/environments/maze.md

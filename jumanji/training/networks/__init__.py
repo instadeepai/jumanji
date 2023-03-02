@@ -40,10 +40,6 @@ from jumanji.training.networks.minesweeper.actor_critic import (
     make_actor_critic_networks_minesweeper,
 )
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
-from jumanji.training.networks.routing.actor_critic import (
-    make_actor_critic_networks_routing,
-)
-from jumanji.training.networks.routing.random import make_random_policy_routing
 from jumanji.training.networks.rubiks_cube.actor_critic import (
     make_actor_critic_networks_rubiks_cube,
 )

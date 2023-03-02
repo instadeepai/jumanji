@@ -31,7 +31,6 @@ from jumanji.environments import (
     Knapsack,
     Maze,
     Minesweeper,
-    Routing,
     RubiksCube,
     Snake,
 )
@@ -56,7 +55,6 @@ ENV_FACTORY = {
     "cvrp": CVRP,
     "tsp": TSP,
     "snake": Snake,
-    "routing": Routing,
     "rubiks_cube": RubiksCube,
     "minesweeper": Minesweeper,
     "knapsack": Knapsack,
@@ -164,9 +162,6 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
-    elif cfg.env.name == "routing":
-        assert isinstance(env.unwrapped, Routing)
-        random_policy = networks.make_random_policy_routing(routing=env.unwrapped)
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         random_policy = networks.make_random_policy_rubiks_cube(
@@ -258,14 +253,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             decoder_num_heads=cfg.env.network.decoder_num_heads,
             decoder_key_size=cfg.env.network.decoder_key_size,
             decoder_model_size=cfg.env.network.decoder_model_size,
-        )
-    elif cfg.env.name == "routing":
-        assert isinstance(env.unwrapped, Routing)
-        actor_critic_networks = networks.make_actor_critic_networks_routing(
-            routing=env.unwrapped,
-            num_channels=cfg.env.network.num_channels,
-            policy_layers=cfg.env.network.policy_layers,
-            value_layers=cfg.env.network.value_layers,
         )
     elif cfg.env.name == "game2048":
         assert isinstance(env.unwrapped, Game2048)

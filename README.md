@@ -24,7 +24,7 @@
 <p float="left" align="center">
   <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
   <img src="docs/env_anim/binpack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/routing.gif" alt="Routing" width="30%" />
+  <img src="docs/env_anim/2048.gif" alt="2048" width="30%" />
 </p>
 
 
@@ -175,7 +175,6 @@ from single-agent to multi-agent and turn-by-turn games.
 | 💣 Minesweeper                                  | Logic    | Single-agent |[code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | 🎒 Knapsack                                    | Packing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
-| 🪢 Routing                                     | Routing  | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/routing)  | [doc](https://instadeepai.github.io/jumanji/environments/routing/)     |
 | 📦 BinPack (3D BinPacking Problem)             | Packing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)     |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
 | 🏭 JobShop (Job Shop Scheduling Problem)       | Packing  | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/jobshop)  | [doc](https://instadeepai.github.io/jumanji/environments/jobshop/)     |
