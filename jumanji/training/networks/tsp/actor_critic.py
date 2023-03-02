@@ -83,7 +83,9 @@ class TSPTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, coordinates: chex.Array, mask: chex.Array) -> chex.Array:
-        embeddings = hk.Linear(self.model_size)(coordinates)
+        embeddings = hk.Linear(self.model_size, name="coordinates_projection")(
+            coordinates
+        )
         for block_id in range(self.transformer_num_blocks):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,

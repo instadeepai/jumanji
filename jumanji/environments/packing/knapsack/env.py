@@ -67,8 +67,8 @@ class Knapsack(Environment[State]):
 
     def __init__(
         self,
-        num_items: int = 10,
-        total_budget: float = 2.0,
+        num_items: int = 50,
+        total_budget: float = 12.5,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
     ):
@@ -76,7 +76,9 @@ class Knapsack(Environment[State]):
 
         Args:
             num_items: the number of items in the environment.
+                Defaults to 50.
             total_budget: the capacity of the knapsack.
+                Defaults to 12.5.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.

@@ -42,27 +42,9 @@ register(
 
 # Knapsack
 register(
-    id="Knapsack50-v0",
+    id="Knapsack-v1",
     entry_point="jumanji.environments:Knapsack",
-    kwargs={"num_items": 50, "total_budget": 25},
-)
-
-register(
-    id="Knapsack100-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"num_items": 100, "total_budget": 25},
-)
-
-register(
-    id="Knapsack200-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"num_items": 200, "total_budget": 25},
-)
-
-register(
-    id="Knapsack250-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"num_items": 250, "total_budget": 25},
+    kwargs={"num_items": 50, "total_budget": 12.5},
 )
 
 
@@ -130,33 +112,11 @@ register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
 # [2] Grinsztajn N., Furelos-Blanco D., Barrett T. (2022). "Population-Based Reinforcement
 # Learning for Combinatorial Optimization Problems".
 register(
-    id="CVRP20-v0",
+    id="CVRP-v1",
     entry_point="jumanji.environments:CVRP",
     kwargs={"num_nodes": 20, "max_capacity": 30, "max_demand": 10},
 )
 
-register(
-    id="CVRP50-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"num_nodes": 50, "max_capacity": 40, "max_demand": 10},
-)
-register(
-    id="CVRP100-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"num_nodes": 100, "max_capacity": 50, "max_demand": 10},
-)
-
-register(
-    id="CVRP125-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"num_nodes": 125, "max_capacity": 55, "max_demand": 10},
-)
-
-register(
-    id="CVRP150-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"num_nodes": 150, "max_capacity": 60, "max_demand": 10},
-)
 
 # 2048
 register(
