@@ -272,6 +272,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             num_mines_embed_dim=cfg.env.network.num_mines_embed_dim,
             final_layer_dims=cfg.env.network.final_layer_dims,
         )
+    elif cfg.env.name == "maze":
+        assert isinstance(env.unwrapped, Maze)
+        actor_critic_networks = networks.make_actor_critic_networks_maze(
+            maze=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return actor_critic_networks
