@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import chex
 import jax
@@ -20,6 +20,7 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.packing.knapsack.env_viewer import KnapsackViewer
 from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
 from jumanji.types import TimeStep, restart, termination, transition
@@ -69,6 +70,7 @@ class Knapsack(Environment[State]):
         num_items: int = 10,
         total_budget: float = 2.0,
         reward_fn: Optional[RewardFn] = None,
+        render_mode: str = "human",
     ):
         """Instantiates a `Knapsack` environment.
 
@@ -79,11 +81,18 @@ class Knapsack(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+            render_mode: string that defines the mode of rendering.
+                Choices are ["human, "rgb"], defaults to "human".
         """
 
         self.num_items = num_items
         self.total_budget = total_budget
         self.reward_fn = reward_fn or DenseReward()
+        self.env_viewer = KnapsackViewer(
+            name="Knapsack",
+            render_mode=render_mode,
+            total_budget=total_budget,
+        )
 
     def __repr__(self) -> str:
         return (
@@ -209,6 +218,15 @@ class Knapsack(Environment[State]):
         """
         return specs.DiscreteArray(self.num_items, name="action")
 
+    def render(self, state: State) -> Any:
+        """Render the environment state, displaying which items have been picked so far,
+        their value, and the remaining budget.
+
+        Args:
+            state: the environment state to be rendered.
+        """
+        self.env_viewer.render(state)
+
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.
 
@@ -235,7 +253,6 @@ class Knapsack(Environment[State]):
         Returns:
             observation: Observation object containing the observation of the environment.
         """
-
         return Observation(
             weights=state.weights,
             values=state.values,

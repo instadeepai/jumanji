@@ -1,7 +1,7 @@
 # Knapskack Environment
 
 <p align="center">
-        <img src="../img/knapsack.png" width="350"/>
+        <img src="../env_anim/knapsack.gif" width="350"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the [knapskack problem](https://en.wikipedia.org/wiki/Knapsack_problem).
