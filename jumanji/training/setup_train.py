@@ -19,7 +19,6 @@ import jax.numpy as jnp
 import optax
 from omegaconf import DictConfig
 
-from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
@@ -98,7 +97,7 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
         instance_generator_kwargs = cfg.env.instance_generator_kwargs
         env_kwargs.update(instance_generator_kwargs or {})
     env: Environment = ENV_FACTORY[env_name](**env_kwargs)
-    if isinstance(env.action_spec(), specs.MultiDiscreteArray):
+    if isinstance(env, Connector):
         env = MultiToSingleWrapper(env)
     return env
 

@@ -83,7 +83,7 @@ class Evaluator:
             acting_state, return_ = carry
             key, action_key = jax.random.split(acting_state.key)
             observation = jax.tree_util.tree_map(
-                lambda x: x[None, ...], acting_state.timestep.observation
+                lambda x: x[None], acting_state.timestep.observation
             )
             action = acting_policy(observation, action_key)
             state, timestep = self.eval_env.step(
@@ -109,7 +109,7 @@ class Evaluator:
             env_step_count=jnp.int32(0),
         )
         return_ = jnp.array(0, float)
-        acting_state, return_ = jax.lax.while_loop(
+        final_acting_state, return_ = jax.lax.while_loop(
             cond_fun,
             body_fun,
             (acting_state, return_),
@@ -118,6 +118,9 @@ class Evaluator:
             "episode_return": return_,
             "episode_length": acting_state.env_step_count,
         }
+        extras = final_acting_state.timestep.extras
+        if extras:
+            eval_metrics.update(extras)
         return eval_metrics
 
     def _generate_evaluations(
