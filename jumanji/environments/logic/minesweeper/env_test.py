@@ -213,5 +213,5 @@ def test_minesweeper_animation(
 ) -> None:
     """Check that the animation method creates the animation correctly."""
     states = mocker.MagicMock()
-    animation = minesweeper_env.animation(states)
+    animation = minesweeper_env.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)

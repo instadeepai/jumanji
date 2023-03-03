@@ -386,40 +386,23 @@ class Snake(Environment[State]):
         """
         plt.close(self.FIGURE_NAME)
 
-    def animation(
+    def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
+        save: bool = False,
+        path: str = "./snake.gif",
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
         Args:
             states: sequence of `State` corresponding to subsequent timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting to optimize drawing, default to False.
-                Note: when using blitting, any animated artists will be drawn according to their
-                zorder. However, they will be drawn on top of any previous artists, regardless
-                of their zorder.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
 
         Returns:
             animation that can export to gif, mp4, or render with HTML.
-
-        Example:
-            ```python
-            env = Snake(6, 6)
-            states = []
-            state, _ = env.reset(jax.random.PRNGKey(0))
-            states.append(state)
-            state, _ = env.step(state, env.action_spec().generate_value())
-            states.append(state)
-            state, _ = env.step(state, env.action_spec().generate_value())
-            states.append(state)
-            state, _ = env.step(state, env.action_spec().generate_value())
-            states.append(state)
-            animation = env.animation(states)
-            animation.save("anim.gif", writer=matplotlib.animation.FFMpegWriter(fps=10), dpi=60)
-            ```
         """
         fig, ax = plt.subplots(num=f"{self.FIGURE_NAME}Anim", figsize=self.FIGURE_SIZE)
         self._draw_board(ax)
@@ -427,7 +410,7 @@ class Snake(Environment[State]):
 
         patches: List[matplotlib.patches.Patch] = []
 
-        def animate(state: State) -> Any:
+        def make_frame(state: State) -> Any:
             while patches:
                 patches.pop().remove()
             patches.extend(self._create_entities(state))
@@ -438,11 +421,13 @@ class Snake(Environment[State]):
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate,
+            make_frame,
             frames=states,
-            blit=blit,
             interval=interval,
         )
+        if save:
+            self._animation.save(path)
+
         return self._animation
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:

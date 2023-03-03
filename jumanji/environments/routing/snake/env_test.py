@@ -154,7 +154,7 @@ def test_snake__animation(snake: Snake, tmpdir: py.path.local) -> None:
     action = snake.action_spec().generate_value()
     state, _ = step_fn(state, action)
     states.append(state)
-    animation = snake.animation(states)
+    animation = snake.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)
 
     path = str(tmpdir.join("/anim.gif"))

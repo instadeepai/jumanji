@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
 from chex import PRNGKey
 from numpy.typing import NDArray
 
@@ -389,6 +390,28 @@ class BinPack(Environment[State]):
             state: State object containing the current dynamics of the environment.
         """
         return self._env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./binpack.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animated gif of the `BinPack` environment based on the sequence of states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        return self._env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
+        )
 
     def close(self) -> None:
         """Perform any necessary cleanup.

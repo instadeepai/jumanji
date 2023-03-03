@@ -69,21 +69,20 @@ class BinPackViewer:
         self._add_overlay(fig, ax, state)
         return self._display(fig)
 
-    def animation(
+    def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
+        save: bool = False,
+        path: str = "./binpack.gif",
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
         Args:
-            states: sequence of `State` corresponding to consecutive timesteps.
+            states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting to optimize drawing, default to False.
-                Note: when using blitting, any animated artists will be drawn according to their
-                zorder. However, they will be drawn on top of any previous artists, regardless
-                of their zorder.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
 
         Returns:
             animation that can export to gif, mp4, or render with HTML.
@@ -94,7 +93,7 @@ class BinPackViewer:
 
         entities: List[mpl_toolkits.mplot3d.art3d.Poly3DCollection] = []
 
-        def animate(state_index: int) -> None:
+        def make_frame(state_index: int) -> None:
             state = states[state_index]
             for entity in entities:
                 entity.remove()
@@ -107,11 +106,13 @@ class BinPackViewer:
         matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate,
+            make_frame,
             frames=len(states),
-            blit=blit,
             interval=interval,
         )
+        if save:
+            self._animation.save(path)
+
         return self._animation
 
     def close(self) -> None:

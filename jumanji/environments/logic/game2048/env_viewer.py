@@ -88,16 +88,14 @@ class Game2048Viewer:
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
-        save: bool = True,
+        save: bool = False,
         path: str = "./2048.gif",
     ) -> matplotlib.animation.FuncAnimation:
         """Creates an animated gif of the 2048 game board based on the sequence of game states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
-            interval: the delay between frames in milliseconds.
-            blit: whether to use blitting to optimize the animation.
+            interval: the delay between frames in milliseconds, default to 200.
             save: whether to save the animation to a file.
             path: the path to save the animation file.
 
@@ -110,7 +108,7 @@ class Game2048Viewer:
         plt.tight_layout()
 
         # Define a function to animate a single game state.
-        def animate_state(state_index: int) -> None:
+        def make_frame(state_index: int) -> None:
             state = states[state_index]
             self.draw_board(ax, state)
             fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
@@ -118,15 +116,15 @@ class Game2048Viewer:
         # Create the animation object using FuncAnimation.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate_state,
+            make_frame,
             frames=len(states),
-            blit=blit,
             interval=interval,
         )
 
         # Save the animation as a gif.
         if save:
             self._animation.save(path)
+
         return self._animation
 
     def get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:

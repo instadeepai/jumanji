@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -282,6 +283,28 @@ class CVRP(Environment[State]):
             rgb_array: the RGB image of the state as an array.
         """
         return self._env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./cvrp.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animated gif of the CVRP environment based on the sequence of states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        return self._env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
+        )
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

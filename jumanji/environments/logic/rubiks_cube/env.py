@@ -320,6 +320,45 @@ class RubiksCube(Environment[State]):
         self._draw(ax, state)
         self._update_display(fig)
 
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./rubiks_cube.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
+        fig.suptitle(self.figure_name)
+        plt.tight_layout()
+        ax = ax.flatten()
+        plt.close(fig)
+
+        def make_frame(state_index: int) -> None:
+            state = states[state_index]
+            self._draw(ax, state)
+
+        self._animation = matplotlib.animation.FuncAnimation(
+            fig,
+            make_frame,
+            frames=len(states),
+            interval=interval,
+        )
+        if save:
+            self._animation.save(path)
+
+        return self._animation
+
     def close(self) -> None:
         """Perform any necessary cleanup.
 
@@ -386,39 +425,3 @@ class RubiksCube(Environment[State]):
             import IPython.display
 
             IPython.display.clear_output(True)
-
-    def animation(
-        self,
-        states: Sequence[State],
-        interval: int = 200,
-        blit: bool = False,
-    ) -> matplotlib.animation.FuncAnimation:
-        """Create an animation from a sequence of environment states.
-
-        Args:
-            states: sequence of environment states corresponding to consecutive timesteps.
-            interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting, which optimises the animation by only re-drawing
-                pieces of the plot that have changed. Defaults to False.
-
-        Returns:
-            Animation that can be saved as a GIF, MP4, or rendered with HTML.
-        """
-        fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
-        fig.suptitle(self.figure_name)
-        plt.tight_layout()
-        ax = ax.flatten()
-        plt.close(fig)
-
-        def animate(state_index: int) -> None:
-            state = states[state_index]
-            self._draw(ax, state)
-
-        self._animation = matplotlib.animation.FuncAnimation(
-            fig,
-            animate,
-            frames=len(states),
-            blit=blit,
-            interval=interval,
-        )
-        return self._animation

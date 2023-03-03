@@ -203,5 +203,5 @@ def test_rubiks_cube_animation(
 ) -> None:
     """Check that the animation method creates the animation correctly."""
     states = mocker.MagicMock()
-    animation = rubiks_cube_env.animation(states)
+    animation = rubiks_cube_env.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)

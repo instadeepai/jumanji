@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Sequence
 
+import matplotlib
 from numpy.typing import NDArray
 
 from jumanji.environments.commons.maze_utils.maze_generation import Maze
@@ -55,6 +56,27 @@ class CleanerViewer(MazeViewer):
         """
         maze = self._overlay_agents_on_grid(state)
         return super().render(maze)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./cleaner.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        mazes = [self._overlay_agents_on_grid(state) for state in states]
+        return super().animate(mazes, interval, save, path)
 
     def _overlay_agents_on_grid(self, state: State) -> Maze:
         agents_locations = state.agents_locations

@@ -285,29 +285,26 @@ class Game2048(Environment[State]):
             save: whether to save the rendered image to a file.
             path: the path to save the rendered image file.
         """
-        self._env_viewer.render(state=state, save=save, path=path)
+        return self._env_viewer.render(state=state, save=save, path=path)
 
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 400,
-        blit: bool = False,
-        save: bool = True,
+        interval: int = 200,
+        save: bool = False,
         path: str = "./2048.gif",
     ) -> animation.FuncAnimation:
         """Creates an animated gif of the 2048 game board based on the sequence of game states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
-            interval: the delay between frames in milliseconds.
-            blit: whether to use blitting to optimize the animation.
+            interval: the delay between frames in milliseconds, default to 200.
             save: whether to save the animation to a file.
             path: the path to save the animation file.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        animation_gif = self._env_viewer.animate(
-            states=states, interval=interval, blit=blit, save=save, path=path
+        return self._env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
         )
-        return animation_gif

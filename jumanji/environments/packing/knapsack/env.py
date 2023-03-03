@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -222,14 +224,36 @@ class Knapsack(Environment[State]):
         """
         return specs.DiscreteArray(self.num_items, name="action")
 
-    def render(self, state: State) -> Any:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the environment state, displaying which items have been picked so far,
         their value, and the remaining budget.
 
         Args:
             state: the environment state to be rendered.
         """
-        self.env_viewer.render(state)
+        return self.env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./knapsack.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animated gif of the `Knapsack` environment based on the sequence of states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        return self.env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
+        )
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

@@ -18,6 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib.animation
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -301,22 +302,32 @@ class Maze(Environment[State]):
             action_mask=state.action_mask,
         )
 
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment.
 
         Args:
             state: `State` object containing the current environment state.
         """
-        self._env_viewer.render(state)
+        return self._env_viewer.render(state)
 
     def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
-        save: bool = True,
+        save: bool = False,
         path: str = "./maze.gif",
     ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animated gif of the `Maze` environment based on the sequence of states.
 
-        mazes = [self._env_viewer._overlay_agent_and_target(state) for state in states]
-        return self._env_viewer.animation(mazes, interval, blit, save, path)
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        return self._env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
+        )

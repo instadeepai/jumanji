@@ -76,11 +76,10 @@ class KnapsackViewer:
         )
         plt.show()
 
-    def animation(
+    def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
         save: bool = False,
         path: str = "./knapsack.gif",
     ) -> matplotlib.animation.FuncAnimation:
@@ -89,8 +88,6 @@ class KnapsackViewer:
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting, which optimises the animation by only re-drawing
-                pieces of the plot that have changed. Defaults to False.
             save: whether to save the animation to a file.
             path: the path to save the animation file.
 
@@ -101,21 +98,21 @@ class KnapsackViewer:
         ax = fig.add_subplot(111)
         self._prepare_figure(ax)
 
-        def animate(state_index: int) -> None:
+        def make_frame(state_index: int) -> None:
             state = states[state_index]
             self._show_value_and_budget(ax, state)
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate,
+            make_frame,
             frames=len(states),
-            blit=blit,
             interval=interval,
         )
 
         # Save the animation as a gif.
         if save:
             self._animation.save(path)
+
         return self._animation
 
     def close(self) -> None:

@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -139,14 +141,6 @@ class Cleaner(Environment[State]):
         """
         return specs.BoundedArray((self.num_agents,), int, 0, 3, "actions")
 
-    def render(self, state: State) -> None:
-        """Render the given state of the environment.
-
-        Args:
-            state: `State` object containing the current environment state.
-        """
-        self._env_viewer.render(state)
-
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Reset the environment to its initial state.
 
@@ -235,6 +229,36 @@ class Cleaner(Environment[State]):
         )
 
         return state, timestep
+
+    def render(self, state: State) -> Optional[NDArray]:
+        """Render the given state of the environment.
+
+        Args:
+            state: `State` object containing the current environment state.
+        """
+        return self._env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./cleaner.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animated gif of the `Cleaner` environment based on the sequence of states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
+
+        Returns:
+            animation.FuncAnimation: the animation object that was created.
+        """
+        return self._env_viewer.animate(
+            states=states, interval=interval, save=save, path=path
+        )
 
     def _compute_reward(self, prev_state: State, state: State) -> chex.Array:
         """Compute the reward by counting the number of tiles which changed from previous state.

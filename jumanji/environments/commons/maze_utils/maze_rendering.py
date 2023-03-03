@@ -71,21 +71,20 @@ class MazeViewer:
         self._add_grid_image(maze, ax)
         return self._display(fig)
 
-    def animation(
+    def animate(
         self,
         mazes: Sequence[Maze],
         interval: int = 200,
-        blit: bool = False,
-        save: bool = True,
-        path: str = "./maze/gif",
+        save: bool = False,
+        path: str = "./common_maze.gif",
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of mazes.
 
         Args:
             mazes: sequence of `Maze` corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting, which optimises the animation by only re-drawing
-                pieces of the plot that have changed. Defaults to False.
+            save: whether to save the animation to a file.
+            path: the path to save the animation file.
 
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
@@ -93,22 +92,22 @@ class MazeViewer:
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         plt.close(fig)
 
-        def animate(maze_index: int) -> None:
+        def make_frame(maze_index: int) -> None:
             ax.clear()
             maze = mazes[maze_index]
             self._add_grid_image(maze, ax)
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate,
+            make_frame,
             frames=len(mazes),
-            blit=blit,
             interval=interval,
         )
 
         # Save the animation as a gif.
         if save:
             self._animation.save(path)
+
         return self._animation
 
     def close(self) -> None:
