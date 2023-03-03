@@ -33,4 +33,4 @@ class SparseRewardFunction(RewardFunction):
 
     def __call__(self, state: Union[State, FakeState]) -> chex.Array:
         solved = is_solved(state.cube)
-        return jnp.float32(solved)
+        return jnp.array(solved, float)

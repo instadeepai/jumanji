@@ -66,7 +66,7 @@ def process_observation(observation: Observation) -> chex.Array:
     """Add the agent and the target to the walls array."""
     agent = 2
     target = 3
-    obs = observation.walls.astype(jnp.float32)
+    obs = observation.walls.astype(float)
     obs = obs.at[tuple(observation.agent_position)].set(agent)
     obs = obs.at[tuple(observation.target_position)].set(target)
     return jnp.expand_dims(obs, axis=-1)  # Adding a channels axis.

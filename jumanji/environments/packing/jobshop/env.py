@@ -185,8 +185,8 @@ class JobShop(Environment[State]):
         done = invalid | all_machines_idle | schedule_finished
         reward = jnp.where(
             invalid | all_machines_idle,
-            jnp.float32(-self.num_jobs * self.max_num_ops * self.max_op_duration),
-            jnp.float32(-1),
+            jnp.array(-self.num_jobs * self.max_num_ops * self.max_op_duration, float),
+            jnp.array(-1, float),
         )
 
         timestep = jax.lax.cond(

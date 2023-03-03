@@ -257,7 +257,7 @@ class Maze(Environment[State]):
         done = no_actions_available | target_reached | step_limit_exceeded
 
         # Compute the reward.
-        reward = jnp.float32(state.agent_position == state.target_position)
+        reward = jnp.array(state.agent_position == state.target_position, float)
 
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(

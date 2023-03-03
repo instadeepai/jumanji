@@ -206,8 +206,8 @@ def test_step_type__helpers(
 ) -> None:
     """Test TimeStep and StepType methods first, mid and last."""
     time_step = TimeStep(
-        reward=jnp.float32(0.0),
-        discount=jnp.float32(1.0),
+        reward=jnp.array(0.0, float),
+        discount=jnp.array(1.0, float),
         observation=jnp.array(()),
         step_type=step_type,
     )

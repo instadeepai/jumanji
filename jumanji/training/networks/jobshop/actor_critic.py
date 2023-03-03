@@ -151,7 +151,7 @@ class NetworkTorso(hk.Module):
         machine_ids_flattened = jnp.where(ops_mask, machine_ids_flattened, -1)
         durations_flattened = jnp.where(ops_mask, durations_flattened, -1)
         ops_embedding = jnp.concatenate(
-            [machine_ids_flattened, durations_flattened], axis=-1, dtype=jnp.float32
+            [machine_ids_flattened, durations_flattened], axis=-1, dtype=float
         )
         ops_embedding_layer = hk.nets.MLP(self.operations_layers, activate_final=True)
         ops_embedding = ops_embedding_layer(ops_embedding)
@@ -163,7 +163,7 @@ class NetworkTorso(hk.Module):
             *batch_shape, -1
         )
         machines_embedding = jnp.concatenate(
-            [job_ids_flattened, remaining_times_flattened], axis=-1, dtype=jnp.float32
+            [job_ids_flattened, remaining_times_flattened], axis=-1, dtype=float
         )
         machines_embedding_layer = hk.nets.MLP(
             self.machines_layers, activate_final=True

@@ -242,7 +242,7 @@ class Cleaner(Environment[State]):
         Since walls and dirty tiles do not change, counting the tiles which changed since previeous
         step is the same as counting the tiles which were cleaned.
         """
-        return jnp.sum(prev_state.grid != state.grid, dtype=jnp.float32)
+        return jnp.sum(prev_state.grid != state.grid, dtype=float)
 
     def _compute_action_mask(
         self, grid: chex.Array, agents_locations: chex.Array

@@ -328,8 +328,8 @@ def setup_training_state(
         state=env_state,
         timestep=timestep,
         key=acting_key_per_device,
-        episode_count=jnp.zeros(num_devices, jnp.float32),
-        env_step_count=jnp.zeros(num_devices, jnp.float32),
+        episode_count=jnp.zeros(num_devices, float),
+        env_step_count=jnp.zeros(num_devices, float),
     )
 
     # Build the training state.

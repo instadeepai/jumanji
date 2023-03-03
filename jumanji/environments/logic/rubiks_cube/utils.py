@@ -53,7 +53,7 @@ def is_solved(cube: Cube) -> chex.Array:
 
 def sparse_reward_function(state: Union[State, FakeState]) -> chex.Array:
     solved = is_solved(state.cube)
-    return jnp.float32(solved)
+    return jnp.array(solved, float)
 
 
 def do_rotation(

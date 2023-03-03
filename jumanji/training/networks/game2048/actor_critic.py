@@ -20,7 +20,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments import Game2048
+from jumanji.environments.logic.game2048 import Game2048, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -64,7 +64,7 @@ def make_network_cnn(
     conv_n_channels: int,
 ) -> FeedForwardNetwork:
     def network_fn(
-        observation: chex.Array,
+        observation: Observation,
     ) -> chex.Array:
         torso = hk.Sequential(
             [
@@ -75,7 +75,7 @@ def make_network_cnn(
                 hk.Flatten(),
             ]
         )
-        embedding = torso(observation.board.astype(jnp.float32))
+        embedding = torso(observation.board.astype(float))
         head = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
         if num_outputs == 1:
             return jnp.squeeze(head(embedding), axis=-1)

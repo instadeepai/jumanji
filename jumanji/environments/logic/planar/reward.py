@@ -14,6 +14,7 @@
 
 import abc
 
+import chex
 from jax import numpy as jnp
 
 from jumanji import specs
@@ -23,7 +24,7 @@ from jumanji.environments.logic.planar.types import State
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, state: State, prev_state: State) -> jnp.float32:
+    def __call__(self, state: State, prev_state: State) -> chex.Numeric:
         """Compute the reward based on the current and previous states."""
 
     @abc.abstractmethod
@@ -37,12 +38,12 @@ class IntersectionCountRewardFn(RewardFn):
     def spec(self) -> specs.Array:
         return specs.Array(shape=(), dtype=float, name="reward")
 
-    def __call__(self, state: State, prev_state: State) -> jnp.float32:
+    def __call__(self, state: State, prev_state: State) -> chex.Numeric:
         del prev_state
 
         segments = jnp.take(state.nodes, state.edges, axis=0)
         num_intersections = utils.intersection_count(segments, state.edges)
-        reward = -jnp.float32(num_intersections)
+        reward = -jnp.array(num_intersections, float)
 
         return reward
 
@@ -58,7 +59,7 @@ class IntersectionCountChangeRewardFn(RewardFn):
     def spec(self) -> specs.Array:
         return specs.Array(shape=(), dtype=float, name="reward")
 
-    def __call__(self, state: State, prev_state: State) -> jnp.float32:
+    def __call__(self, state: State, prev_state: State) -> chex.Numeric:
         # Previous number of intersections
         segments = jnp.take(prev_state.nodes, prev_state.edges, axis=0)
         prev_num_intersections = utils.intersection_count(segments, prev_state.edges)

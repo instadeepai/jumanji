@@ -41,8 +41,8 @@ class DefaultRewardFunction(RewardFunction):
             is_valid_action(state=state, action=action),
             jnp.where(
                 explored_mine(state=state, action=action),
-                jnp.float32(REVEALED_MINE_OR_INVALID_ACTION_REWARD),
-                jnp.float32(REVEALED_EMPTY_SQUARE_REWARD),
+                jnp.array(REVEALED_MINE_OR_INVALID_ACTION_REWARD, float),
+                jnp.array(REVEALED_EMPTY_SQUARE_REWARD, float),
             ),
-            jnp.float32(REVEALED_MINE_OR_INVALID_ACTION_REWARD),
+            jnp.array(REVEALED_MINE_OR_INVALID_ACTION_REWARD, float),
         )

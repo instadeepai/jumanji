@@ -16,7 +16,6 @@ from typing import Any, NamedTuple, Optional
 
 import chex
 import haiku as hk
-import jax.numpy as jnp
 import optax
 
 from jumanji.types import TimeStep
@@ -44,7 +43,7 @@ class ParamsState(NamedTuple):
 
     params: ActorCriticParams
     opt_state: optax.OptState
-    update_count: jnp.float32  # use float to avoid int32 overflow
+    update_count: float
 
 
 class ActingState(NamedTuple):
@@ -53,8 +52,8 @@ class ActingState(NamedTuple):
     state: Any
     timestep: TimeStep
     key: chex.PRNGKey
-    episode_count: jnp.float32
-    env_step_count: jnp.float32
+    episode_count: float
+    env_step_count: float
 
 
 class TrainingState(NamedTuple):

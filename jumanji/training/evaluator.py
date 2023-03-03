@@ -73,13 +73,13 @@ class Evaluator:
         else:
             acting_policy = policy
 
-        def cond_fun(carry: Tuple[ActingState, jnp.float32]) -> jnp.bool_:
+        def cond_fun(carry: Tuple[ActingState, float]) -> jnp.bool_:
             acting_state, _ = carry
             return ~acting_state.timestep.last()
 
         def body_fun(
-            carry: Tuple[ActingState, jnp.float32],
-        ) -> Tuple[ActingState, jnp.float32]:
+            carry: Tuple[ActingState, float],
+        ) -> Tuple[ActingState, float]:
             acting_state, return_ = carry
             key, action_key = jax.random.split(acting_state.key)
             observation = jax.tree_util.tree_map(
@@ -108,7 +108,7 @@ class Evaluator:
             episode_count=jnp.int32(0),
             env_step_count=jnp.int32(0),
         )
-        return_ = jnp.float32(0)
+        return_ = jnp.array(0, float)
         acting_state, return_ = jax.lax.while_loop(
             cond_fun,
             body_fun,
