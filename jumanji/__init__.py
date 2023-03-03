@@ -131,3 +131,10 @@ register(
     entry_point="jumanji.environments:Maze",
     kwargs={"n_rows": 10, "n_cols": 10},
 )
+
+# Cleaner
+register(
+    id="Cleaner-v0",
+    entry_point="jumanji.environments:Cleaner",
+    kwargs={"grid_width": 10, "grid_height": 10, "num_agents": 5},
+)

@@ -133,13 +133,17 @@ class Cleaner(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.BoundedArray:
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Specification of the actions for the Cleaner environment.
 
         Returns:
-            BoundedArray (int) between 0 and 3 (inclusive) of shape (num_agents,).
+            action_spec: a `specs.MultiDiscreteArray` spec.
         """
-        return specs.BoundedArray((self.num_agents,), int, 0, 3, "actions")
+        return specs.MultiDiscreteArray(
+            num_values=jnp.full(self.num_agents, 4, jnp.int32),
+            dtype=jnp.int32,
+            name="action_spec",
+        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Reset the environment to its initial state.

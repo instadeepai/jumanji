@@ -30,6 +30,7 @@ nav:
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
           - Maze: environments/maze.md
+          - Cleaner: environments/cleaner.md
   - User Guides:
       - Registration: guides/registration.md
       - Examples: guides/anakin_snake.ipynb
@@ -75,14 +76,14 @@ theme:
         name: Switch to light mode
   favicon: img/instadeep_logo.png
   features:
-    - navigation.tracking       # the URL is automatically updated with the active anchor
-    - navigation.sections       # top-level sections are rendered as groups in the sidebar
-    - navigation.tabs           # horizontal tabs at the top of the page
-    - navigation.tabs.sticky    # navigation tabs will lock below the header and always remain visible when scrolling
-    - navigation.indexes        # documents can be directly attached to sections
-    - search.highlight          # highlight search result
-    - search.share              # share button
-    - search.suggest            # smart suggestion
+    - navigation.tracking # the URL is automatically updated with the active anchor
+    - navigation.sections # top-level sections are rendered as groups in the sidebar
+    - navigation.tabs # horizontal tabs at the top of the page
+    - navigation.tabs.sticky # navigation tabs will lock below the header and always remain visible when scrolling
+    - navigation.indexes # documents can be directly attached to sections
+    - search.highlight # highlight search result
+    - search.share # share button
+    - search.suggest # smart suggestion
     - toc.integrate
     - toc.follow
     - content.code.annotate
@@ -119,9 +120,9 @@ plugins:
   - autorefs
   - git-revision-date
   - include-markdown
-  - mknotebooks:       # enable Jupyter notebooks
+  - mknotebooks: # enable Jupyter notebooks
       enable_default_jupyter_cell_styling: false
-  - mermaid2          # Class diagrams, flowcharts and more
+  - mermaid2 # Class diagrams, flowcharts and more
   - mkdocstrings:
       default_handler: python
       handlers:
