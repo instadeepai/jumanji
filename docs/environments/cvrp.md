@@ -40,7 +40,7 @@ possible (True) and which are not (False).
 
 
 ## Action
-Action space is a `DiscreteArray` of integer values in the range of `[0, num_nodes]`. An action
+The action space is a `DiscreteArray` of integer values in the range of `[0, num_nodes]`. An action
 is the index of the next node to visit, and an action value of 0 corresponds to visiting the depot.
 
 
@@ -56,8 +56,5 @@ action is invalid, e.g. a previously selected node other than the depot is selec
 
 
 ## Registered Versions 📖
-- `CVRP20-v0`, CVRP problem with 20 nodes (randomly generated), maximum capacity of 30, and maximum demand of 10.
-- `CVRP50-v0`, CVRP problem with 50 nodes (randomly generated), maximum capacity of 40, and maximum demand of 10.
-- `CVRP100-v0`, CVRP problem with 100 nodes (randomly generated), maximum capacity of 50, and maximum demand of 10.
-- `CVRP125-v0`, CVRP problem with 125 nodes (randomly generated), maximum capacity of 55, and maximum demand of 10.
-- `CVRP150-v0`, CVRP problem with 150 nodes (randomly generated), maximum capacity of 60, and maximum demand of 10.
+- `CVRP-v1`: CVRP problem with 20 randomly generated nodes, a maximum capacity of 30, a maximum
+demand for each node of 10 and a dense reward function.

@@ -39,20 +39,22 @@ class Knapsack(Environment[State]):
         - action_mask: jax array (bool) of shape (num_items,)
             binary mask denoting which items can be packed into the knapsack.
 
-    - reward: jax array (float), could be either:
+    - action: jax array (int32) of shape ()
+        [0, ..., num_items - 1] -> item to pack.
+
+    - reward: jax array (float) of shape (), could be either:
         - dense: the value of the item to pack at the current timestep.
         - sparse: the sum of the values of the items packed in the bag at the end of the episode.
         In both cases, the reward is 0 if the action is invalid, i.e. an item that was previously
         selected is selected again or has a weight larger than the bag capacity.
 
     - episode termination:
-        - if no action can be performed (each remaining item's weight is larger than the bag
-            capacity).
-        - if an invalid action is taken (item is already packed or has a weight larger than the
-            bag capacity).
+        - if no action can be performed, i.e. all items are packed or each remaining item's weight
+            is larger than the bag capacity.
+        - if an invalid action is taken, i.e. the chosen item is already packed or has a weight
+            larger than the bag capacity.
 
-    - state: State
-    the state of the environment.
+    - state: `State`
         - weights: jax array (float) of shape (num_items,)
             the weights of the items.
         - values: jax array (float) of shape (num_items,)
@@ -165,7 +167,7 @@ class Knapsack(Environment[State]):
 
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:

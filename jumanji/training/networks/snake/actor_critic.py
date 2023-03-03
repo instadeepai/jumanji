@@ -19,6 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
+from jumanji.environments.routing.snake import Observation, Snake
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -29,24 +30,27 @@ from jumanji.training.networks.parametric_distribution import (
 
 
 def make_actor_critic_networks_snake(
+    snake: Snake,
     num_channels: int,
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for Snake."""
-    num_actions = 4
+    """Make actor-critic networks for the `Snake` environment."""
+    num_actions = snake.action_spec().num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )
-    policy_network = make_network_cnn(
+    policy_network = make_snake_cnn(
         num_outputs=num_actions,
         mlp_units=policy_layers,
         conv_n_channels=num_channels,
+        time_limit=snake.time_limit,
     )
-    value_network = make_network_cnn(
+    value_network = make_snake_cnn(
         num_outputs=1,
         mlp_units=value_layers,
         conv_n_channels=num_channels,
+        time_limit=snake.time_limit,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -55,14 +59,13 @@ def make_actor_critic_networks_snake(
     )
 
 
-def make_network_cnn(
+def make_snake_cnn(
     num_outputs: int,
     mlp_units: Sequence[int],
     conv_n_channels: int,
+    time_limit: int,
 ) -> FeedForwardNetwork:
-    def network_fn(
-        observation: chex.Array,
-    ) -> chex.Array:
+    def network_fn(observation: Observation) -> chex.Array:
         torso = hk.Sequential(
             [
                 hk.Conv2D(conv_n_channels, (2, 2), 2),
@@ -72,12 +75,19 @@ def make_network_cnn(
                 hk.Flatten(),
             ]
         )
-        x = torso(observation)
+        embedding = torso(observation.grid)
+        norm_step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
+        embedding = jnp.concatenate([embedding, norm_step_count], axis=-1)
         head = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
         if num_outputs == 1:
-            return jnp.squeeze(head(x), axis=-1)
+            value = jnp.squeeze(head(embedding), axis=-1)
+            return value
         else:
-            return head(x)
+            logits = head(embedding)
+            logits = jnp.where(
+                observation.action_mask, logits, jnp.finfo(jnp.float32).min
+            )
+            return logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

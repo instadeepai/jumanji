@@ -209,6 +209,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
     elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         actor_critic_networks = networks.make_actor_critic_networks_snake(
+            snake=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,

@@ -104,7 +104,7 @@ class Cleaner(Environment[State]):
             ")"
         )
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specification of the observation of the Cleaner environment.
 
         Returns:

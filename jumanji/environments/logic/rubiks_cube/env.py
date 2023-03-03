@@ -266,7 +266,7 @@ class RubiksCube(Environment[State]):
         action_history_index = self.num_scrambles_on_reset + state.step_count
         return state.action_history[:action_history_index]
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `RubiksCube` environment.
 
         Returns:

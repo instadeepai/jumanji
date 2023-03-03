@@ -265,7 +265,7 @@ class Connector(Environment[State]):
         mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
         return mask
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec for Connector environment.
 
         This observation contains the grid for each agent, the action mask for each agent and

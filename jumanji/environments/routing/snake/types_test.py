@@ -19,8 +19,14 @@ def test_position__eq() -> None:
     """Validates the equality check of the Position type.
     Checks whether some positions are equal or not.
     """
-    pos1 = Position(3, 5)
-    pos2 = Position(3, 5)
-    assert pos1 == pos2
-    pos3 = Position(4, 5)
-    assert pos3 != pos1
+    position = Position(3, 5)
+    assert position == Position(3, 5)
+    assert position != Position(4, 5)
+    assert position != Position(3, 4)
+
+
+def test_position__add() -> None:
+    """Validates the addition of two `Position` instances."""
+    assert Position(3, 5) + Position(3, 5) == Position(6, 10)
+    assert Position(0, 1) + Position(2, 3) == Position(2, 4)
+    assert Position(-2, 1) + Position(1, -4) != Position(0, 0)

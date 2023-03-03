@@ -37,7 +37,7 @@ def make_actor_critic_networks_cvrp(
     transformer_mlp_units: Sequence[int],
     mean_nodes_in_query: bool,
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for CVRP."""
+    """Make actor-critic networks for the `CVRP` environment."""
     num_actions = cvrp.action_spec().num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions

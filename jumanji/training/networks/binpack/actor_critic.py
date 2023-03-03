@@ -120,7 +120,7 @@ def make_actor_critic_networks_binpack(
     transformer_key_size: int,
     transformer_num_heads: int,
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for BinPack."""
+    """Make actor-critic networks for the `BinPack` environment."""
     num_ems = binpack.obs_num_ems
 
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(

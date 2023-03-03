@@ -42,7 +42,7 @@ class State:
     visited_mask: chex.Array  # (num_nodes + 1,)
     trajectory: chex.Array  # (2 * num_nodes,)
     num_total_visits: chex.Numeric  # ()
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
 
 
 class Observation(NamedTuple):

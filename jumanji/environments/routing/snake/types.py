@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from enum import IntEnum
-from typing import TYPE_CHECKING, NamedTuple, Union
+from typing import TYPE_CHECKING, NamedTuple
 
 import chex
 
@@ -22,30 +22,20 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
-import jax.numpy as jnp
-from chex import Array, PRNGKey
-
 
 class Position(NamedTuple):
-    row: Array
-    col: Array
+    row: chex.Array
+    col: chex.Array
 
-    def __eq__(self, other: object) -> Union[bool, Array]:
+    def __eq__(self, other: "Position") -> chex.Array:  # type: ignore[override]
         if not isinstance(other, Position):
             return NotImplemented
-        return jnp.logical_and(
-            jnp.all(self.row == other.row), jnp.all(self.col == other.col)
-        )
+        return (self.row == other.row) & (self.col == other.col)
 
-
-@dataclass
-class State:
-    key: PRNGKey
-    body_state: chex.Array
-    head_pos: Position
-    fruit_pos: Position
-    length: int
-    step: int
+    def __add__(self, other: "Position") -> "Position":  # type: ignore[override]
+        if not isinstance(other, Position):
+            return NotImplemented
+        return Position(row=self.row + other.row, col=self.col + other.col)
 
 
 class Actions(IntEnum):
@@ -53,3 +43,40 @@ class Actions(IntEnum):
     RIGHT: int = 1
     DOWN: int = 2
     LEFT: int = 3
+
+
+@dataclass
+class State:
+    """
+    key: random key used to sample a new fruit when one is eaten.
+    body: array indicating the snake's body cells.
+    body_state: array ordering the snake's body cells.
+    head_position: position of the snake's head on the 2D grid.
+    tail: array indicating the snake's tail.
+    fruit_position: position of the fruit on the 2D grid.
+    length: current length of the snake.
+    step_count: current number of steps in the episode.
+    action_mask: array specifying which directions the snake can move in from its current position.
+    """
+
+    key: chex.PRNGKey  # (2,)
+    body: chex.Array  # (num_rows, num_cols)
+    body_state: chex.Array  # (num_rows, num_cols)
+    head_position: Position  # leaves of shape ()
+    tail: chex.Array  # (num_rows, num_cols)
+    fruit_position: Position  # ()
+    length: chex.Numeric  # ()
+    step_count: chex.Numeric  # ()
+    action_mask: chex.Array  # (4,)
+
+
+class Observation(NamedTuple):
+    """
+    grid: feature maps that include information about the fruit, the snake head, its body and tail.
+    step_count: current number of steps in the episode.
+    action_mask: array specifying which directions the snake can move in from its current position.
+    """
+
+    grid: chex.Array  # (num_rows, num_cols, 5)
+    step_count: chex.Numeric  # Shape ()
+    action_mask: chex.Array  # (4,)

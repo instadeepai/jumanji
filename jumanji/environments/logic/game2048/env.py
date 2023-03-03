@@ -77,7 +77,7 @@ class Game2048(Environment[State]):
         """
         return f"2048 Game(board_size={self.board_size})"
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Game2048` environment.
 
         Returns:

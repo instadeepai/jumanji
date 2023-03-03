@@ -34,7 +34,7 @@ items can be packed into the knapsack.
 
 
 ## Action
-Action space is a `DiscreteArray` of integer values in the range of `[0, num_items-1]`. An action
+The action space is a `DiscreteArray` of integer values in the range of `[0, num_items-1]`. An action
 is the index of the next item to pack.
 
 
@@ -48,7 +48,5 @@ selected is selected again or has a weight larger than the bag capacity.
 
 
 ## Registered Versions 📖
-- `Knapsack50-v0`
-- `Knapsack100-v0`
-- `Knapsack200-v0`
-- `Knapsack250-v0`
+- `Knapsack-v1`: Knapsack problem with 50 randomly generated items, a total budget of 12.5 and a
+dense reward function.

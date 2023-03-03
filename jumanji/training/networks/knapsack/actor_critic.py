@@ -35,7 +35,7 @@ def make_actor_critic_networks_knapsack(
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for Knapsack."""
+    """Make actor-critic networks for the `Knapsack` environment."""
     num_actions = knapsack.action_spec().num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions

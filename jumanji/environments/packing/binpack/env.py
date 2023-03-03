@@ -192,7 +192,7 @@ class BinPack(Environment[State]):
             )
         return instance_generator_obj
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `BinPack` environment.
 
         Returns:

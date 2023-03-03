@@ -110,7 +110,7 @@ class PlanarGraph(Environment[State]):
     def termination(self, state: State) -> jnp.bool_:
         return state.step == self.time_limit
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         num_nodes, num_edges = self.generator.specs()
         return specs.Spec(
             Observation,

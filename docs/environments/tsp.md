@@ -33,8 +33,8 @@ can be visited.
 
 
 ## Action
-The action space is a `DiscreteArray` of integer values in the range of [0, num_cities-1]. An action is
-the index of the next city to visit.
+The action space is a `DiscreteArray` of integer values in the range of [0, num_cities-1]. An action
+is the index of the next city to visit.
 
 
 ## Reward
@@ -51,7 +51,4 @@ the action is invalid, i.e. a previously selected city is selected again.
 
 
 ## Registered Versions 📖
-- `TSP50-v0`, TSP problem with 50 cities (randomly generated).
-- `TSP100-v0`, TSP problem with 100 cities (randomly generated).
-- `TSP150-v0`, TSP problem with 150 cities (randomly generated).
-- `TSP200-v0`, TSP problem with 200 cities (randomly generated).
+- `TSP-v1`: TSP problem with 20 randomly generated cities and a dense reward function.

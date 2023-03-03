@@ -36,6 +36,7 @@ def make_actor_critic_networks_rubiks_cube(
     step_count_embed_dim: int,
     dense_layer_dims: Sequence[int],
 ) -> ActorCriticNetworks:
+    """Make actor-critic networks for the `RubiksCube` environment."""
     action_spec_num_values = np.asarray(rubiks_cube.action_spec().num_values)
     num_actions = int(np.prod(action_spec_num_values))
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(

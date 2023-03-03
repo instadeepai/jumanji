@@ -1,7 +1,8 @@
 name: snake
 env_kwargs:
-    n_rows: 6
-    n_cols: 6
+    num_rows: 12
+    num_cols: 12
+    time_limit: 4000
 
 network:
     num_channels: 32
@@ -11,18 +12,18 @@ network:
 training:
     num_epochs: 100
     num_learner_steps_per_epoch: 500
-    n_steps: 10
+    n_steps: 20
     total_batch_size: 128
 
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 200
+    greedy_eval_total_batch_size: 200
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.99
+    discount_factor: 0.997
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 1e-4
+    learning_rate: 4e-4

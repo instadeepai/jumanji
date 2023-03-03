@@ -37,7 +37,7 @@ def make_actor_critic_networks_tsp(
     transformer_mlp_units: Sequence[int],
     mean_cities_in_query: bool,
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for TSP."""
+    """Make actor-critic networks for the `TSP` environment."""
     num_actions = tsp.action_spec().num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions

@@ -36,7 +36,7 @@ class State:
     values: chex.Array  # (num_items,)
     packed_items: chex.Array  # (num_items,)
     remaining_budget: chex.Array  # ()
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
 
 
 class Observation(NamedTuple):

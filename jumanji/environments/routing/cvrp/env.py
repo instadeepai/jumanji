@@ -36,16 +36,19 @@ class CVRP(Environment[State]):
             the associated cost of each node and the depot (0.0 for the depot).
         - unvisited_nodes: jax array (bool) of shape (num_nodes + 1,)
             indicates nodes that remain to be visited.
-        - position: jax array (int32)
+        - position: jax array (int32) of shape ()
             the index of the last visited node.
         - trajectory: jax array (int32) of shape (2 * num_nodes,)
             array of node indices defining the route (set to DEPOT_IDX if not filled yet).
-        - capacity: jax array (float)
+        - capacity: jax array (float) of shape ()
             the current capacity of the vehicle.
         - action_mask: jax array (bool) of shape (num_nodes + 1,)
             binary mask (False/True <--> invalid/valid action).
 
-    - reward: jax array (float), could be either:
+    - action: jax array (int32) of shape ()
+        [0, ..., num_nodes] -> node to visit. 0 corresponds to visiting the depot.
+
+    - reward: jax array (float) of shape (), could be either:
         - dense: the negative distance between the current node and the chosen next node to go to.
             For the last node, it also includes the distance to the depot to complete the tour.
         - sparse: the negative tour length at the end of the episode. The tour length is defined
@@ -53,7 +56,12 @@ class CVRP(Environment[State]):
         In both cases, the reward is a large negative penalty of `-2 * num_nodes * sqrt(2)` if the
         action is invalid, e.g. a previously selected node other than the depot is selected again.
 
-    - state: State
+    - episode termination:
+        - if no action can be performed, i.e. all nodes have been visited.
+        - if an invalid action is taken, i.e. a previously visited city other than the depot is
+            chosen.
+
+    - state: `State`
         - coordinates: jax array (float) of shape (num_nodes + 1, 2)
             the coordinates of each node and the depot.
         - demands: jax array (int32) of shape (num_nodes + 1,)
@@ -80,7 +88,7 @@ class CVRP(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
     ):
-        """Instantiates a CVRP environment.
+        """Instantiates a `CVRP` environment.
 
         Args:
             num_nodes: number of city nodes in the environment.
@@ -127,7 +135,7 @@ class CVRP(Environment[State]):
         Returns:
              state: `State` object corresponding to the new state of the environment.
              timestep: `TimeStep` object corresponding to the first timestep returned by the
-             environment.
+                environment.
         """
         coordinates_key, demands_key = jax.random.split(key)
         coordinates = jax.random.uniform(
@@ -189,7 +197,7 @@ class CVRP(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:

@@ -34,14 +34,17 @@ class TSP(Environment[State]):
     - observation: Observation
         - coordinates: jax array (float) of shape (num_cities, 2)
             the coordinates of each city.
-        - position: int32
+        - position: jax array (int32)  of shape ()
             the index corresponding to the last visited city.
         - trajectory: jax array (int32) of shape (num_cities,)
             array of city indices defining the route (-1 --> not filled yet).
         - action_mask: jax array (bool) of shape (num_cities,)
             binary mask (False/True <--> illegal/legal <--> cannot be visited/can be visited).
 
-    - reward: jax array (float), could be either:
+    - action: jax array (int32) of shape ()
+        [0, ..., num_cities - 1] -> city to visit.
+
+    - reward: jax array (float) of shape (), could be either:
         - dense: the negative distance between the current city and the chosen next city to go to.
             It is 0 for the first chosen city, and for the last city, it also includes the distance
             to the initial city to complete the tour.
@@ -51,7 +54,11 @@ class TSP(Environment[State]):
         In both cases, the reward is a large negative penalty of `-num_cities * sqrt(2)` if
         the action is invalid, i.e. a previously selected city is selected again.
 
-    - state: State
+    - episode termination:
+        - if no action can be performed, i.e. all cities have been visited.
+        - if an invalid action is taken, i.e. an already visited city is chosen.
+
+    - state: `State`
         - coordinates: jax array (float) of shape (num_cities, 2)
             the coordinates of each city.
         - position: int32
@@ -74,7 +81,7 @@ class TSP(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
     ):
-        """Instantiates a TSP environment.
+        """Instantiates a `TSP` environment.
 
         Args:
             num_cities: number of cities to visit.
@@ -152,7 +159,7 @@ class TSP(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:

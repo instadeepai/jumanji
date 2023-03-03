@@ -38,7 +38,7 @@ class State:
     visited_mask: chex.Array  # (num_cities,)
     trajectory: chex.Array  # (num_cities,)
     num_visited: chex.Numeric  # ()
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
 
 
 class Observation(NamedTuple):

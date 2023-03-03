@@ -286,7 +286,7 @@ class JobShop(Environment[State]):
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `JobShop` environment.
 
         Returns:

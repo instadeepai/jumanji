@@ -28,7 +28,7 @@ register(
 register(
     id="Snake-12x12-v0",
     entry_point="jumanji.environments:Snake",
-    kwargs={"n_rows": 12, "n_cols": 12, "time_limit": 5000},
+    kwargs={"n_rows": 12, "n_cols": 12, "time_limit": 4000},
 )
 
 

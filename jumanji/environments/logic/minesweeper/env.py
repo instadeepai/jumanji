@@ -218,7 +218,7 @@ class Minesweeper(Environment[State]):
         )
         return next_state, next_timestep
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Minesweeper` environment.
 
         Returns:

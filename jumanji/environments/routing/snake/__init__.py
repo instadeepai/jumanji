@@ -13,4 +13,4 @@
 # limitations under the License.
 
 from jumanji.environments.routing.snake.env import Snake
-from jumanji.environments.routing.snake.types import Actions, Position, State
+from jumanji.environments.routing.snake.types import Observation, State

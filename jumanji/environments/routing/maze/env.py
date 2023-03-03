@@ -100,7 +100,7 @@ class Maze(Environment[State]):
             ]
         )
 
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the Maze environment.
 
         Returns: ObservationSpec containing all the specifications for all the Observation fields:

@@ -1,12 +1,12 @@
 defaults:
     - _self_
-    - env: connector  # [binpack, cvrp, game2048, jobshop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp, connector]
+    - env: snake  # [binpack, cvrp, game2048, jobshop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp, connector]
 
-agent: random  # [random, a2c]
+agent: a2c  # [random, a2c]
 
 seed: 0
 
 logger:
-    type: terminal  # [neptune, tensorboard, terminal]
-    save_checkpoint: false  # [false, true]
-    name: ${agent}_${env.name}
+    type: neptune  # [neptune, tensorboard, terminal]
+    save_checkpoint: true  # [false, true]
+    name: ${agent}_${env.name}_gamma_0.997_lr_4e-4_n_steps_20
