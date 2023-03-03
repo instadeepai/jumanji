@@ -3,10 +3,10 @@ FROM user7382/lightweight-cuda:11.4.1-cudnn8-ubuntu20.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install git libcusolver10 python3.8 python3-pip ffmpeg libsm6 libxext6 cmake swig -y && ln -s /usr/bin/python3 /usr/bin/python;
 
-COPY ./requirements/requirements.txt ./requirements/requirements-training.txt /tmp/
+COPY ./requirements/requirements.txt ./requirements/requirements-train.txt /tmp/
 
 RUN pip install --quiet --upgrade pip setuptools &&  \
-    pip install --quiet -r /tmp/requirements.txt -r /tmp/requirements-training.txt && \
+    pip install --quiet -r /tmp/requirements.txt -r /tmp/requirements-train.txt && \
     rm -rf /tmp/*
 
 # Need to use specific cuda versions for jax
