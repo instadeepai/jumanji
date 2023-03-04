@@ -1,11 +1,10 @@
 import random
 from typing import List, Tuple, Union, Optional, Dict, Callable
+
 import numpy as np
-from grid import Grid
+
 from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
-
 from ic_routing_board_generation.board_generator.grid import Grid
-
 
 
 class BFSBoard(AbstractBoard):
@@ -20,6 +19,7 @@ class BFSBoard(AbstractBoard):
         Returns:
             None
             """
+        super().__init__(rows=rows, cols=columns, num_agents=num_agents)
         self.rows = rows
         self.columns = columns
         self.grid = Grid(rows, columns)
@@ -144,7 +144,8 @@ class BFSBoard(AbstractBoard):
         # shuffle all
         zipped = list(zip(self.starts, self.ends, self.paths))
         random.shuffle(zipped)
-        self.starts, self.ends, self.paths = zip(*zipped)
+        # Return shuffled lists
+        self.starts, self.ends, self.paths = map(list, zip(*zipped))
 
     def remove_wire(self, wire: int) -> None:
         """Removes a wire from the board.
@@ -275,7 +276,7 @@ class BFSBoard(AbstractBoard):
             None
         """
         # Check that there are enough wires to remove
-        extra_wires = min(k, len(self.paths))
+        # extra_wires = min(k, len(self.paths))
         for _ in range(k):
             self.grid.remove_path(self.paths[0])
             self.remove_wire(0)
@@ -448,18 +449,15 @@ class BFSBoard(AbstractBoard):
 
     def fill_clip_with_thresholds(self, num_clips: Union[int, List[int]], methods: Union[str, List[str]],
                                   num_loops: Optional[int] = 1, verbose: Optional[bool] = False,
-                                  threshold_dict: Dict[str, int] = {
-                                      'min_bends', 2}) -> \
+                                  threshold_dict: Optional[Dict[str, int]] = {'min_bends', 2}) -> \
             Tuple[np.ndarray, np.ndarray, int]:
-        """ Performs a number of fill, clip, fill loops.
+        """ Performs a number of fill, clip, fill loops and stops when the number of bends is below a threshold.
         Args:
             num_clips: number of wires to remove
             methods: method to remove the wires
             num_loops: number of loops to perform
             verbose: if True, prints the progress
             threshold_dict: dictionary containing the thresholds for the different metrics
-
-
         Returns:
             tuple containing the board, the solved board and the number of filled wires
         """
@@ -481,7 +479,7 @@ class BFSBoard(AbstractBoard):
                 if threshold_met:
                     break
             self.clip(methods[i], num_clips[i])
-            # Perform the final fill
+        # Perform the final fill
         self.place_wires(verbose=verbose)
         # Perform final check
         threshold_met = self.check_threshold(threshold_dict)
@@ -531,10 +529,11 @@ class BFSBoard(AbstractBoard):
 
         return threshold_met
 
-    def count_non_threshold_paths(self, threshold_dict: Dict[str, int], verbose: Optional[bool]=False) -> int:
+    def count_non_threshold_paths(self, threshold_dict: Dict[str, int], verbose: Optional[bool] = False) -> int:
         """ Counts the number of paths that do not meet the thresholds
         Args:
             threshold_dict: dictionary containing the thresholds for the different metrics
+            verbose: if True, prints the progress
             """
         non_threshold_paths = 0
         for path in self.paths:
@@ -563,32 +562,36 @@ if __name__ == '__main__':
     # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
     board = BFSBoard(rows=10, columns=10, num_agents=10, max_attempts=10)
 
-    # # Perform a standard fill
-    # board.fill_board(verbose=True)
-    # print(board.return_solved_board())
-    # print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
-    # # Fill the board with 2 wires removed using the 'min_bends' method
-    # board.fill_board_with_clipping(2, 'min_bends', verbose=True)
-    # print(board.return_solved_board())
-    # print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
-    # # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
-    # board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
-    # print(board.return_solved_board())
-    # print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
-    # Test fill_clip_with_thresholds
-    threshold_dict = {'min_bends': 2, 'min_length': 5}
-    clip_nums = [2, 2]*10
-    clip_methods = ['fifo', 'min_bends']*10
+    # Perform a standard fill
+    board.fill_board(verbose=True)
+    print(board.return_solved_board())
+    print(board.return_training_board())
 
-    board.fill_clip_with_thresholds(clip_nums,clip_methods, verbose=True, threshold_dict=threshold_dict)
+    # Reset the board
+    board.reset_board()
+
+    # Fill the board with 2 wires removed using the 'min_bends' method
+    board.fill_board_with_clipping(2, 'min_bends', verbose=True)
+    print(board.return_solved_board())
+    print(board.return_training_board())
+
+    # Reset the board
+    board.reset_board()
+
+    # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
+    board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=True)
+    print(board.return_solved_board())
+    print(board.return_training_board())
+
+    # Reset the board
+    board.reset_board()
+
+    # Fill the board and in 10 attempts, successively remove and fill wires until the number of bends in the shortest
+    # path is not below 2 and the length of the shortest path is not below 5
+    board_threshold_dict = {'min_bends': 2, 'min_length': 5}
+    clip_nums = [2, 2] * 10
+    clip_methods = ['fifo', 'min_bends'] * 10
+
+    board.fill_clip_with_thresholds(clip_nums, clip_methods, verbose=True, threshold_dict=board_threshold_dict)
     print(board.return_solved_board())
     print(board.return_training_board())
