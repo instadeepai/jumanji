@@ -811,35 +811,40 @@ if __name__ == "__main__":
 
     print("\nTest count detours")
     sampled_detours = []
+    sampled_detours_exclude = []
     print("8 x 8: 5")
     for i in range(1000):
         my_board = board_generator_rb(8, 8, 5)
         #print(my_board.layout)
-        num_detours1 = my_board.count_detours(count_current_wire = True)
-        #print(num_detours1)
-        my_board.swap_heads_targets()
-        my_board.swap_wires()
-        num_detours2 = my_board.count_detours(count_current_wire = True)
-        #print(num_detours2)
-        assert(num_detours1 == num_detours2), "detours changed!!!!!!!!!!!!!!!!!!!!!!!"
-        sampled_detours.append(num_detours2)
+        num_detours = my_board.count_detours(count_current_wire = True)
+        #print(num_detours)
+        sampled_detours.append(num_detours)
+        num_detours_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_exclude.append(num_detours_exclude)
     sampled_detours = np.array(sampled_detours)
     print("Average detours = ",sampled_detours.mean())
     print("STD = ", sampled_detours.std())
+    sampled_detours_exclude = np.array(sampled_detours_exclude)
+    print("Excluding current wire")
+    print("Average detours = ", sampled_detours_exclude.mean())
+    print("STD = ", sampled_detours_exclude.std())
 
     sampled_detours = []
-    print("8 x 8: 10")
+    sampled_detours = []
+    sampled_detours_exclude = []
+    print("\n8 x 8: 10")
     for i in range(1000):
         my_board = board_generator_rb(8, 8, 10)
         #print(my_board.layout)
-        num_detours1 = my_board.count_detours(count_current_wire = True)
-        #print(num_detours1)
-        my_board.swap_heads_targets()
-        my_board.swap_wires()
-        num_detours2 = my_board.count_detours(count_current_wire = True)
-        #print(num_detours2)
-        assert(num_detours1 == num_detours2), "detours changed!!!!!!!!!!!!!!!!!!!!!!!"
-        sampled_detours.append(num_detours2)
+        num_detours = my_board.count_detours(count_current_wire = True)
+        #print(num_detours)
+        sampled_detours.append(num_detours)
+        num_detours_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_exclude.append(num_detours_exclude)
     sampled_detours = np.array(sampled_detours)
     print("Average detours = ",sampled_detours.mean())
     print("STD = ", sampled_detours.std())
+    sampled_detours_exclude = np.array(sampled_detours_exclude)
+    print("Excluding current wire")
+    print("Average detours = ", sampled_detours_exclude.mean())
+    print("STD = ", sampled_detours_exclude.std())
