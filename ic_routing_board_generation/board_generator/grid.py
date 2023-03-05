@@ -67,14 +67,23 @@ class Grid:
                 new_row = curr_pos[0] + row[i]
                 new_col = curr_pos[1] + col[i]
 
-                # Check if the new position is valid and not visited
+                # Check if the new position is valid and not visited only valid positions have value 0
                 if (0 <= new_row < self.layout.shape[0]) and (0 <= new_col < self.layout.shape[1]) and (
-                        self.layout[new_row, new_col] != 1) and (new_row, new_col) not in visited:
+                        self.layout[new_row, new_col] == 0) and (new_row, new_col) not in visited:
                     # Add the new position to the queue and mark it as visited
                     queue.append((new_row, new_col))
                     visited[(new_row, new_col)] = curr_pos
                     steps[(new_row, new_col)] = steps[curr_pos] + 1
         return False, [], 0
+
+        #         # Check if the new position is valid and not visited
+        #         if (0 <= new_row < self.layout.shape[0]) and (0 <= new_col < self.layout.shape[1]) and (
+        #                 self.layout[new_row, new_col] != 1) and (new_row, new_col) not in visited:
+        #             # Add the new position to the queue and mark it as visited
+        #             queue.append((new_row, new_col))
+        #             visited[(new_row, new_col)] = curr_pos
+        #             steps[(new_row, new_col)] = steps[curr_pos] + 1
+        # return False, [], 0
 
     def fill_grid(self, path: List[Tuple[int, int]], str_num: int = None, fill_num: int = None,
                   end_num: int = None) -> None:
@@ -91,6 +100,10 @@ class Grid:
         if str_num is None:
             str_num = end_num = fill_num = 1
         for i, pt in enumerate(path):
+            if self.layout[pt[0]][pt[1]] != 0 and self.layout[pt[0]][pt[1]] != 1:
+                print("Replacing {} with {}".format(self.layout[pt[0]][pt[1]], fill_num))
+                raise ValueError("ERROR: Path already exists at position: {}".format(pt))
+
             if i == 0:
                 self.layout[pt[0]][pt[1]] = str_num
             elif i == len(path) - 1:
@@ -108,3 +121,14 @@ class Grid:
         """
         for i, pt in enumerate(path):
             self.layout[pt[0]][pt[1]] = 0
+
+    def reset_maze(self) -> None:
+        """
+        Function to reset the maze.
+        Args:
+            None
+        Returns:
+            None
+        """
+        # Want to set non zero cells to 1
+        self.layout[self.layout != 0] = 1
