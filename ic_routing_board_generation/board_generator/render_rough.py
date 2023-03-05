@@ -40,19 +40,32 @@ def render_my_array(array: Union[AbstractBoard, np.ndarray], num_agents: int, ro
         viewer = RoutingViewer(num_agents=num_agents, grid_rows=rows, grid_cols=columns, viewer_width=viewer_width,
                                viewer_height=viewer_height)
         save_img_ = save_img
-        if save_img is None:
+
+        if save_img_ is None:
             save_img_ = 'board_' + str(rows) + 'x' + str(columns) + 'x' + str(num_agents) + '.png'
-        if prefix != '':
-            save_img_ = prefix + '_' + save_img
+        else:
+            # Remove the folder name and add it to the prefix
+            if '/' in save_img_:  # If there is a folder in the name, only take the file name and the folders to the prefix
+                prefix = save_img_[:save_img_.rfind('/')] + '/' + prefix
+                save_img_ = save_img_[save_img_.rfind('/') + 1:]
+
+        if prefix != '' and len(prefix) > 1:
+            save_img_ = prefix + '_' + save_img_
+        else:
+            save_img_ = prefix + save_img_
         # If save exists in location, append a number to the end or increments the number
 
         if os.path.exists(save_img_):
             num = 1
             while os.path.exists(save_img_):
-                save_img_ = save_img_[:-4] + '_' + str(num) + '.png'
-                num += 1 # Increment the number
-        viewer.render(asarray(render), save_img=save_img_)
+                # Look for _{num}.png in the name
+                if '_' + str(num) + '.png' in save_img_:  # If the number is already in the name, increment it
+                    num += 1
+                    save_img_ = save_img_.replace('_' + str(num - 1) + '.png', '_' + str(num) + '.png')
+                else:  # If the number is not in the name, add it
+                    save_img_ = save_img_.replace('.png', '_' + str(num) + '.png')
 
+        viewer.render(asarray(render), save_img=save_img_)
 
 
 if __name__ == '__main__':
@@ -79,7 +92,7 @@ if __name__ == '__main__':
     # 2. Render a board object
     # Create a board object
     board_2 = BFSBoard(num_agents=10, rows=8, columns=8, max_attempts=20)
-    board_2.fill_board_with_clipping(2, 'min_bends', verbose=True)
+    board_2.fill_board_with_clipping(2, 'min_bends', verbose=False)
 
     # Render the solved board and save it as board_2.png
     render_my_array(board_2, 10, 8, 8, 500, 500, 'board_2.png')
