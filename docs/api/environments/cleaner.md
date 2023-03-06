@@ -1,1 +1,1 @@
-::: jumanji.environments.routing.multi_agent_cleaner.env.Cleaner
+::: jumanji.environments.routing.cleaner.env.Cleaner

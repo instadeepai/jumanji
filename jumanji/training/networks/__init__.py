@@ -16,22 +16,22 @@
 We assume the networks handle a batch of observations: shape (B, ...).
 """
 
-from jumanji.training.networks.binpack.actor_critic import (
-    make_actor_critic_networks_binpack,
+from jumanji.training.networks.bin_pack.actor_critic import (
+    make_actor_critic_networks_bin_pack,
 )
-from jumanji.training.networks.binpack.random import make_random_policy_binpack
+from jumanji.training.networks.bin_pack.random import make_random_policy_bin_pack
 from jumanji.training.networks.cleaner.random import make_random_policy_cleaner
 from jumanji.training.networks.connector.random import make_random_policy_connector
 from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
-from jumanji.training.networks.game2048.actor_critic import (
-    make_actor_critic_networks_2048,
+from jumanji.training.networks.game_2048.actor_critic import (
+    make_actor_critic_networks_game_2048,
 )
-from jumanji.training.networks.game2048.random import make_random_policy_game2048
-from jumanji.training.networks.jobshop.actor_critic import (
-    make_actor_critic_networks_jobshop,
+from jumanji.training.networks.game_2048.random import make_random_policy_game_2048
+from jumanji.training.networks.job_shop.actor_critic import (
+    make_actor_critic_networks_job_shop,
 )
-from jumanji.training.networks.jobshop.random import make_random_policy_jobshop
+from jumanji.training.networks.job_shop.random import make_random_policy_job_shop
 from jumanji.training.networks.knapsack.actor_critic import (
     make_actor_critic_networks_knapsack,
 )

@@ -24,18 +24,18 @@ The number of nodes with demand is a parameter of the environment.
 ## Observation
 The observation given to the agent provides information on the problem layout, the visited/unvisited
 cities and the current position of the agent as well as the current capacity.
-- `coordinates`: jax array (float) of shape (num_nodes + 1, 2), array of coordinates of each city
+- `coordinates`: jax array (float) of shape `(num_nodes + 1, 2)`, array of coordinates of each city
 node and the depot node.
-- `demands`: jax array (float) of shape (num_nodes + 1,), array of the demands of each city node
+- `demands`: jax array (float) of shape `(num_nodes + 1,)`, array of the demands of each city node
 and the depot node whose demand is set to 0.
-- `unvisited_nodes`: jax array (bool) of shape (num_nodes + 1,), array denoting which nodes
+- `unvisited_nodes`: jax array (bool) of shape `(num_nodes + 1,)`, array denoting which nodes
 remain to be visited.
 - `position`: jax array (int32) of shape (), identifier (index) of the current visited node (city
 or depot).
-- `trajectory`: jax array (int32) of shape (2 * num_nodes,), identifiers of the nodes that have
+- `trajectory`: jax array (int32) of shape `(2 * num_nodes,)`, identifiers of the nodes that have
 been visited (set to `DEPOT_IDX` if not filled yet).
 - `capacity`: jax array (float) of shape (), current capacity of the vehicle.
-- `action_mask`: jax array (bool) of shape (num_nodes + 1,), array denoting which actions are
+- `action_mask`: jax array (bool) of shape `(num_nodes + 1,)`, array denoting which actions are
 possible (True) and which are not (False).
 
 

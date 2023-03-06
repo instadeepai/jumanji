@@ -15,11 +15,11 @@ Each maze is randomly generated using a recursive division function. By default,
 As an observation, the agent has access to the current maze configuration in the array named `walls`. It also has access to its
 current position `agent_position`, the target's `target_position`, the number of steps `step_count` elapsed in the current episode
 and the action mask `action_mask`.
-- `agent_position`: Position(row, col) (int32) each of shape (), agent position in the maze.
-- `target_position`: Position(row, col) (int32) each of shape (), target position in the maze.
-- `walls`: jax array (bool) of shape (n_rows, n_cols), indicates whether a grid cell is a wall.
-- `step_count`: jax array (int32) of shape (), number of steps elapsed in the current episode.
-- `action_mask`: jax array (bool) of shape (4,), binary values denoting whether each action is possible.
+- `agent_position`: Position(row, col) (int32) each of shape `()`, agent position in the maze.
+- `target_position`: Position(row, col) (int32) each of shape `()`, target position in the maze.
+- `walls`: jax array (bool) of shape `(n_rows, n_cols)`, indicates whether a grid cell is a wall.
+- `step_count`: jax array (int32) of shape `()`, number of steps elapsed in the current episode.
+- `action_mask`: jax array (bool) of shape `(4,)`, binary values denoting whether each action is possible.
 
 An example 5x5 observation `walls` array, is shown below. 1 represents a wall, and 0 represents free space.
 

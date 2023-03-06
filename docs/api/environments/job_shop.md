@@ -1,4 +1,4 @@
-::: jumanji.environments.logic.rubiks_cube.env.RubiksCube
+::: jumanji.environments.packing.job_shop.env.JobShop
     selection:
       members:
         - __init__

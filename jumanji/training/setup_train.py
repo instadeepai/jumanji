@@ -51,15 +51,15 @@ from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
 
 ENV_FACTORY = {
-    "binpack": BinPack,
+    "bin_pack": BinPack,
     "cvrp": CVRP,
     "tsp": TSP,
     "snake": Snake,
     "rubiks_cube": RubiksCube,
     "minesweeper": Minesweeper,
     "knapsack": Knapsack,
-    "jobshop": JobShop,
-    "game2048": Game2048,
+    "job_shop": JobShop,
+    "game_2048": Game2048,
     "cleaner": Cleaner,
     "maze": Maze,
     "connector": Connector,
@@ -145,9 +145,9 @@ def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> RandomPolicy:
     assert cfg.agent == "random"
-    if cfg.env.name == "binpack":
+    if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
-        random_policy = networks.make_random_policy_binpack(binpack=env.unwrapped)
+        random_policy = networks.make_random_policy_bin_pack(bin_pack=env.unwrapped)
     elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         random_policy = networks.make_random_policy_snake()
@@ -157,9 +157,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "knapsack":
         assert isinstance(env.unwrapped, Knapsack)
         random_policy = networks.make_random_policy_knapsack()
-    elif cfg.env.name == "jobshop":
+    elif cfg.env.name == "job_shop":
         assert isinstance(env.unwrapped, JobShop)
-        random_policy = networks.make_random_policy_jobshop()
+        random_policy = networks.make_random_policy_job_shop()
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
@@ -173,9 +173,9 @@ def _setup_random_policy(  # noqa: CCR001
         random_policy = networks.make_random_policy_minesweeper(
             minesweeper=env.unwrapped
         )
-    elif cfg.env.name == "game2048":
+    elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
-        random_policy = networks.make_random_policy_game2048()
+        random_policy = networks.make_random_policy_game_2048()
     elif cfg.env.name == "cleaner":
         assert isinstance(env.unwrapped, Cleaner)
         random_policy = networks.make_random_policy_cleaner()
@@ -194,10 +194,10 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
-    if cfg.env.name == "binpack":
+    if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
-        actor_critic_networks = networks.make_actor_critic_networks_binpack(
-            binpack=env.unwrapped,
+        actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
+            bin_pack=env.unwrapped,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
             transformer_n_blocks=cfg.env.network.transformer_n_blocks,
@@ -232,10 +232,10 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
-    elif cfg.env.name == "jobshop":
+    elif cfg.env.name == "job_shop":
         assert isinstance(env.unwrapped, JobShop)
-        actor_critic_networks = networks.make_actor_critic_networks_jobshop(
-            jobshop=env.unwrapped,
+        actor_critic_networks = networks.make_actor_critic_networks_job_shop(
+            job_shop=env.unwrapped,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
             operations_layers=cfg.env.network.operations_layers,
@@ -251,9 +251,9 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
         )
-    elif cfg.env.name == "game2048":
+    elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
-        actor_critic_networks = networks.make_actor_critic_networks_2048(
+        actor_critic_networks = networks.make_actor_critic_networks_game_2048(
             game_2048=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,

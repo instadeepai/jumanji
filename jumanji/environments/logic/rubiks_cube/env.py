@@ -52,7 +52,7 @@ def state_to_observation(state: State) -> Observation:
 class RubiksCube(Environment[State]):
     """A JAX implementation of the Rubik's Cube.
 
-    - observation: Observation
+    - observation: `Observation`
         - cube: jax array (int8) of shape (6, cube_size, cube_size):
             each cell contains the index of the corresponding colour of the sticker in the scramble.
         - step_count: jax array (int32):
@@ -67,7 +67,7 @@ class RubiksCube(Environment[State]):
     - episode termination:
         if either the cube is solved or a horizon is reached
 
-    - state: State
+    - state: `State`
         - cube: as in observation.
         - step_count: as in observation.
         - key: jax array (int32) of shape (2) used for seeding the sampling for scrambling on reset.
@@ -87,7 +87,7 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = DEFAULT_CUBE_SIZE,
         step_limit: int = 200,
-        reward_function_type: str = "sparse",
+        reward_function: Optional[RewardFunction] = None,
         num_scrambles_on_reset: int = 100,
         sticker_colours: Optional[list] = None,
     ):
@@ -107,9 +107,7 @@ class RubiksCube(Environment[State]):
             )
         self.cube_size = cube_size
         self.step_limit = step_limit
-        self.reward_function = self.create_reward_function(
-            reward_function_type=reward_function_type
-        )
+        self.reward_function = reward_function or SparseRewardFunction()
         self.num_scrambles_on_reset = num_scrambles_on_reset
         self.sticker_colours_cmap = matplotlib.colors.ListedColormap(
             sticker_colours if sticker_colours else DEFAULT_STICKER_COLOURS
@@ -119,16 +117,6 @@ class RubiksCube(Environment[State]):
 
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
         self.figure_size = (6.0, 6.0)
-
-    @classmethod
-    def create_reward_function(cls, reward_function_type: str) -> RewardFunction:
-        if reward_function_type == "sparse":
-            return SparseRewardFunction()
-        else:
-            raise ValueError(
-                f"Unexpected value for reward_function_type, got {reward_function_type}. "
-                f"Possible values: 'sparse'"
-            )
 
     def _unflatten_action(self, action: chex.Array) -> chex.Array:
         """Turn a flat action (index into the sequence of all moves) into a tuple:

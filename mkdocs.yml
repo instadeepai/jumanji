@@ -20,11 +20,11 @@ nav:
       - Logic:
           - RubiksCube: environments/rubiks_cube.md
           - Minesweeper: environments/minesweeper.md
-          - Game2048: environments/game2048.md
+          - Game2048: environments/game_2048.md
       - Packing:
-          - BinPack: environments/binpack.md
+          - BinPack: environments/bin_pack.md
           - Knapsack: environments/knapsack.md
-          - JobShop: environments/jobshop.md
+          - JobShop: environments/job_shop.md
       - Routing:
           - CVRP: environments/cvrp.md
           - Snake: environments/snake.md
@@ -42,11 +42,11 @@ nav:
           - Logic:
               - RubiksCube: api/environments/rubiks_cube.md
               - Minesweeper: api/environments/minesweeper.md
-              - Game2048: api/environments/game2048.md
+              - Game2048: api/environments/game_2048.md
           - Packing:
-              - BinPack: api/environments/binpack.md
+              - BinPack: api/environments/bin_pack.md
               - Knapsack: api/environments/knapsack.md
-              - JobShop: api/environments/jobshop.md
+              - JobShop: api/environments/job_shop.md
           - Routing:
               - CVRP: api/environments/cvrp.md
               - Snake: api/environments/snake.md

@@ -19,15 +19,15 @@ A new maze is randomly generated using a recursive division method for each new 
 
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 
-- `grid`: jax array (int) of shape (height, width), array representing the grid, each tile is either dirty (0),
+- `grid`: jax array (int) of shape `(height, width)`, array representing the grid, each tile is either dirty (0),
   clean (1), or a wall (2).
-- `agents_locations`: jax array (int) of shape (num_agents, 2), array specifying the x and y coordinates of every agent.
-- `action_mask`: jax array (bool) of shape (num_agents, 4), array specifying, for each agent, which action
+- `agents_locations`: jax array (int) of shape `(num_agents, 2)`, array specifying the x and y coordinates of every agent.
+- `action_mask`: jax array (bool) of shape `(num_agents, 4)`, array specifying, for each agent, which action
   (up, right, down, left) is legal.
 
 ## Action
 
-The action space is a `MultiDiscreteArray` containing an integer value in [0, 1, 2, 3] for each agent.
+The action space is a `MultiDiscreteArray` containing an integer value in `[0, 1, 2, 3]` for each agent.
 Each agent can take one of four actions: up (`0`), right (`1`), down (`2`), or left (`3`).
 
 The episode terminates if any agent meets one of the following conditions:

@@ -61,35 +61,35 @@ def state_to_observation(state: State, num_mines: int) -> Observation:
 class Minesweeper(Environment[State]):
     """A JAX implementation of the minesweeper game.
 
-    - observation: Observation
+    - observation: `Observation`
         - board: jax array (int32) of shape (board_height, board_width):
             each cell contains -1 if not yet explored, or otherwise the number of mines in
             the 8 adjacent squares.
         - action_mask: jax array (bool) of same shape as board:
             indicates which actions are valid (not yet explored squares).
-        - num_mines: the number of mines to find, which can be read from the env
+        - num_mines: the number of mines to find, which can be read from the env.
         - step_count: jax array (int32):
-            specifies how many timesteps have elapsed since environment reset
+            specifies how many timesteps have elapsed since environment reset.
 
     - action:
-        multi discrete array containing the square to explore (height and width)
+        multi discrete array containing the square to explore (height and width).
 
     - reward: jax array (float32):
         Configurable function of state and action. By default:
-            1 for every timestep where a valid action is chosen that doesn't reveal a mine
+            1 for every timestep where a valid action is chosen that doesn't reveal a mine,
             0 for revealing a mine or selecting an already revealed square
-                (and terminate the episode)
+                (and terminate the episode).
 
     - episode termination:
         Configurable function of state, next_state, and action. By default:
             Stop the episode if a mine is explored, an invalid action is selected
             (exploring an already explored square), or the board is solved.
 
-    - state: State
+    - state: `State`
         - board: as in observation.
         - step_count: as in observation.
         - flat_mine_locations: jax array (int32) of shape (board_height * board_width):
-            indicates the (flat) locations of all of the mines on the board.
+            indicates the (flat) locations of all the mines on the board.
             Will be of length num_mines.
         - key: jax array (int32) of shape (2) used for seeding the sampling of mine placement
             on reset.
@@ -99,10 +99,10 @@ class Minesweeper(Environment[State]):
         self,
         board_height: int = DEFAULT_BOARD_HEIGHT,
         board_width: int = DEFAULT_BOARD_WIDTH,
-        reward_function_type: str = "default",
-        done_function_type: str = "default",
+        reward_function: Optional[RewardFunction] = None,
+        done_function: Optional[DoneFunction] = None,
         num_mines: int = DEFAULT_NUM_MINES,
-        colour_maping: Optional[List[str]] = None,
+        color_mapping: Optional[List[str]] = None,
     ):
         if board_height <= 1 or board_width <= 1:
             raise ValueError(
@@ -117,36 +117,12 @@ class Minesweeper(Environment[State]):
         self.board_height = board_height
         self.board_width = board_width
         self.num_mines = num_mines
-        self.reward_function = self.create_reward_function(
-            reward_function_type=reward_function_type
-        )
-        self.done_function = self.create_done_function(
-            done_function_type=done_function_type
-        )
+        self.reward_function = reward_function or DefaultRewardFunction()
+        self.done_function = done_function or DefaultDoneFunction()
 
-        self.cmap = colour_maping if colour_maping else COLOUR_MAPPING
+        self.cmap = color_mapping if color_mapping else COLOUR_MAPPING
         self.figure_name = f"{board_height}x{board_width} Minesweeper"
         self.figure_size = (6.0, 6.0)
-
-    @classmethod
-    def create_reward_function(cls, reward_function_type: str) -> RewardFunction:
-        if reward_function_type == "default":
-            return DefaultRewardFunction()
-        else:
-            raise ValueError(
-                f"Unexpected value for reward_function_type, got {reward_function_type}. "
-                f"Possible values: 'default'"
-            )
-
-    @classmethod
-    def create_done_function(cls, done_function_type: str) -> DoneFunction:
-        if done_function_type == "default":
-            return DefaultDoneFunction()
-        else:
-            raise ValueError(
-                f"Unexpected value for done_function_type, "
-                f"got {done_function_type}. Possible values: 'default'"
-            )
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -155,8 +131,8 @@ class Minesweeper(Environment[State]):
             key: needed for placing mines.
 
         Returns:
-            state: State corresponding to the new state of the environment,
-            timestep: TimeStep corresponding to the first timestep returned by the
+            state: `State` corresponding to the new state of the environment,
+            timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
         board = jnp.full(
@@ -185,12 +161,12 @@ class Minesweeper(Environment[State]):
         """Run one timestep of the environment's dynamics.
 
         Args:
-            state: State object containing the dynamics of the environment.
-            action: Array containing the height and width of the square to be explored.
+            state: `State` object containing the dynamics of the environment.
+            action: `Array` containing the height and width of the square to be explored.
 
         Returns:
-            next_state: State corresponding to the next state of the environment,
-            next_timestep: TimeStep corresponding to the timestep returned by the environment.
+            next_state: `State` corresponding to the next state of the environment,
+            next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         board = state.board
         action_height, action_width = action
@@ -266,7 +242,7 @@ class Minesweeper(Environment[State]):
         An action consists of the height and width of the square to be explored.
 
         Returns:
-            action_spec: specs.MultiDiscreteArray object
+            action_spec: `specs.MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
             num_values=jnp.array([self.board_height, self.board_width]),
@@ -275,10 +251,10 @@ class Minesweeper(Environment[State]):
         )
 
     def render(self, state: State) -> None:
-        """Render frames of the environment for a given state using matplotlib.
+        """Render the given environment state using matplotlib.
 
         Args:
-            state: State object corresponding to the new state of the environment.
+            state: environment state to be rendered.
 
         """
         self._clear_display()

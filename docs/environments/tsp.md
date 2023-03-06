@@ -24,16 +24,16 @@ action was invalid (i.e., the agent attempted to revisit a city).
 ## Observation
 The observation given to the agent provides information on the problem layout, the visited/unvisited
 cities and the current position (city) of the agent.
-- `coordinates`: jax array (float) of shape (num_cities, 2), array of coordinates of each city.
-- `position`: jax array (int32) of shape (), identifier (index) of the last visited city.
-- `trajectory`: jax array (int32) of shape (num_cities,), city indices defining the route
-(-1 --> not filled yet).
-- `action_mask`: jax array (bool) of shape (num_cities,), binary values denoting whether a city
+- `coordinates`: jax array (float) of shape `(num_cities, 2)`, array of coordinates of each city.
+- `position`: jax array (int32) of shape `()`, identifier (index) of the last visited city.
+- `trajectory`: jax array (int32) of shape `(num_cities,)`, city indices defining the route
+(`-1` --> not filled yet).
+- `action_mask`: jax array (bool) of shape `(num_cities,)`, binary values denoting whether a city
 can be visited.
 
 
 ## Action
-The action space is a `DiscreteArray` of integer values in the range of [0, num_cities-1]. An action
+The action space is a `DiscreteArray` of integer values in the range of `[0, num_cities-1]`. An action
 is the index of the next city to visit.
 
 

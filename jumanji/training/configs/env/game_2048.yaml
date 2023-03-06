@@ -1,0 +1,27 @@
+name: game_2048
+env_kwargs:
+    board_size: 4
+
+network:
+    num_channels: 32
+    policy_layers: [64, 64]
+    value_layers: [128, 128]
+
+training:
+    num_epochs: 100
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 500
+    greedy_eval_total_batch_size: 500
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4

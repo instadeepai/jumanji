@@ -10,10 +10,10 @@ fruits as possible without colliding with its own body (i.e. looping on itself).
 
 
 ## Observation
-- `grid`: jax array (float) of shape (num_rows, num_cols, 5), feature maps (image) that include
+- `grid`: jax array (float) of shape `(num_rows, num_cols, 5)`, feature maps (image) that include
     information about the fruit, the snake head, its body and tail.
-- `step_count`: jax array (int32) of shape (), current number of steps in the episode.
-- `action_mask`: jax array (bool) of shape (4,), array specifying which directions the snake can
+- `step_count`: jax array (int32) of shape `()`, current number of steps in the episode.
+- `action_mask`: jax array (bool) of shape `(4,)`, array specifying which directions the snake can
     move in from its current position.
 
 
@@ -22,8 +22,8 @@ The action space is a `DiscreteArray` of integer values: `[0,1,2,3]` -> `[Up, Ri
 
 
 ## Reward
-The reward is 1.0 upon collection of a fruit, otherwise it is 0.0.
+The reward is `+1` upon collection of a fruit and `0` otherwise.
 
 
 ## Registered Versions 📖
-- `Snake-v1`: Snake game on a board of size 12x12 with a time limit of 4000.
+- `Snake-v1`: Snake game on a board of size 12x12 with a time limit of `4000`.

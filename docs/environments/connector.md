@@ -12,15 +12,15 @@ An episode ends when all agents have connected to their targets or no agents can
 
 At each step observation contains 3 items: a grid for each agent, an action mask for each agent and the step.
 
- - `grid`: jax array (int32) of shape (grid\_size, grid\_size), a size-configurable 2D matrix that represents pairs of points that need to be connected. The **position** of an agent has to connect to its **target**, leaving a **path** behind it as it moves across the grid forming its route. Each agent connects to only 1 target.
- - `action_mask`: jax array (bool) of shape (num\_agents,), indicates which actions each agent can take.
- - `step`: jax array (int32) of shape (), represents how many steps have been taken in the environment since the last reset.
+ - `grid`: jax array (int32) of shape `(grid_size, grid_size)`, a size-configurable 2D matrix that represents pairs of points that need to be connected. The **position** of an agent has to connect to its **target**, leaving a **path** behind it as it moves across the grid forming its route. Each agent connects to only 1 target.
+ - `action_mask`: jax array (bool) of shape `(num_agents,)`, indicates which actions each agent can take.
+ - `step`: jax array (int32) of shape `()`, represents how many steps have been taken in the environment since the last reset.
 
 Each agent is passed their own grid so the grid observation is of shape `(num_agents, grid_size, grid_size)`, similarly action masks are of shape `(num_agents, 5)`, however the step is a common value for all agents and thus is a scalar.
 
 
 ### Encoding
-Each agent has 3 components represented in the observation space: Position, Target, Path. Each agent in the environment will have an integer representing their components.
+Each agent has 3 components represented in the observation space: position, target, and path. Each agent in the environment will have an integer representing their components.
 
  - Positions are encoded starting from 2 in multiples of 3: 2, 5, 8, …
  - Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …

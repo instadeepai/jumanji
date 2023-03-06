@@ -23,8 +23,8 @@
 
 <p float="left" align="center">
   <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
-  <img src="docs/env_anim/binpack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/2048.gif" alt="2048" width="30%" />
+  <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
+  <img src="docs/env_anim/game_2048.gif" alt="2048" width="30%" />
 </p>
 
 

@@ -23,13 +23,13 @@ is invalid.
 ## Observation
 The observation given to the agent provides information regarding the weights and the values of all the items,
 as well as, which items have been packed into the knapsack.
-- `weights`: jax array (float) of shape (num_items,), array of weights of the items to be
+- `weights`: jax array (float) of shape `(num_items,)`, array of weights of the items to be
 packed into the knapsack.
-- `values`: jax array (float) of shape (num_items,), array of values of the items to be packed
+- `values`: jax array (float) of shape `(num_items,)`, array of values of the items to be packed
 into the knapsack.
-- `packed_items`: jax array (bool) of shape (num_items,), array of binary values denoting which
+- `packed_items`: jax array (bool) of shape `(num_items,)`, array of binary values denoting which
 items are already packed into the knapsack.
-- `action_mask`: jax array (bool) of shape (num_items,), array of binary values denoting which
+- `action_mask`: jax array (bool) of shape `(num_items,)`, array of binary values denoting which
 items can be packed into the knapsack.
 
 
