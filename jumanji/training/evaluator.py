@@ -116,7 +116,7 @@ class Evaluator:
         )
         eval_metrics = {
             "episode_return": return_,
-            "episode_length": acting_state.env_step_count,
+            "episode_length": final_acting_state.env_step_count,
         }
         extras = final_acting_state.timestep.extras
         if extras:
