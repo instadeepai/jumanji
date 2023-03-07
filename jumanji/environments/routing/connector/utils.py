@@ -43,6 +43,26 @@ def get_target(agent_id: jnp.int32) -> jnp.int32:
     return TARGET + 3 * agent_id
 
 
+def is_target(value: int) -> bool:
+    """Returns: True if the value on the grid is used to represent a target, false otherwise."""
+    return (value > 0) and ((value - TARGET) % 3 == 0)
+
+
+def is_position(value: int) -> bool:
+    """Returns: True if the value on the grid is used to represent a position, false otherwise."""
+    return (value > 0) and ((value - POSITION) % 3 == 0)
+
+
+def is_path(value: int) -> bool:
+    """Returns: True if the value on the grid is used to represent a path, false otherwise."""
+    return (value > 0) and ((value - PATH) % 3 == 0)
+
+
+def get_agent_id(value: int) -> int:
+    """Returns: The ID of an agent given it's target, path or position."""
+    return 0 if value == 0 else (value - 1) // 3 + 1
+
+
 def move_position(position: chex.Array, action: jnp.int32) -> chex.Array:
     """Use a position and an action to return a new position.
 

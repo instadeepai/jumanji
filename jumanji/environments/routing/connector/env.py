@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Tuple, Type
+from typing import Any, Optional, Sequence, Tuple, Type
 
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
 from chex import PRNGKey
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE, NOOP
+from jumanji.environments.routing.connector.env_viewer import ConnectorViewer
 from jumanji.environments.routing.connector.generator import (
     InstanceGenerator,
     UniformRandomGenerator,
@@ -87,6 +90,7 @@ class Connector(Environment[State]):
         reward_fn: Type[RewardFn] = SparseRewardFn,
         horizon: int = 50,
         generator: Type[InstanceGenerator] = UniformRandomGenerator,
+        render_mode: str = "human",
         **reward_fn_kwargs: Any
     ) -> None:
         """Create the Connector Environment.
@@ -109,6 +113,8 @@ class Connector(Environment[State]):
 
         self._reward_fn = reward_fn(**reward_fn_kwargs)
         self._generator = generator(size, num_agents)
+
+        self._renderer = ConnectorViewer("Connector", num_agents, render_mode)
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -264,6 +270,36 @@ class Connector(Environment[State]):
         mask = jnp.ones(5, dtype=bool)
         mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
         return mask
+
+    def render(self, state: State) -> Optional[NDArray]:
+        """Render the given state of the environment.
+
+        Args:
+            state: `State` object containing the current environment state.
+        """
+        return self._renderer.render(state.grid)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save: bool = False,
+        path: str = "./connector.gif",
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of states.
+
+        Args:
+            states: sequence of `State` corresponding to subsequent timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save: whether to save the animation (as a gif).
+            path: where to save the animation (as a gif).
+
+        Returns:
+            animation that can export to gif, mp4, or render with HTML.
+        """
+
+        grids = [state.grid for state in states]
+        return self._renderer.animate(grids, interval, save, path)
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec for Connector environment.
