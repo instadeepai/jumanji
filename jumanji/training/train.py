@@ -78,24 +78,27 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
 
             # Evaluation
             key, stochastic_eval_key, greedy_eval_key = jax.random.split(key, 3)
+            # Stochastic evaluation
             with eval_timer:
                 metrics = stochastic_eval.run_evaluation(
                     training_state.params_state, stochastic_eval_key
                 )
-                logger.write(
-                    data=utils.first_from_device(metrics),
-                    label="eval_stochastic",
-                    env_steps=env_steps,
-                )
-                if not isinstance(agent, RandomAgent):
+            logger.write(
+                data=utils.first_from_device(metrics),
+                label="eval_stochastic",
+                env_steps=env_steps,
+            )
+            if not isinstance(agent, RandomAgent):
+                # Greedy evaluation
+                with eval_timer:
                     metrics = greedy_eval.run_evaluation(
                         training_state.params_state, greedy_eval_key
                     )
-                    logger.write(
-                        data=utils.first_from_device(metrics),
-                        label="eval_greedy",
-                        env_steps=env_steps,
-                    )
+                logger.write(
+                    data=utils.first_from_device(metrics),
+                    label="eval_greedy",
+                    env_steps=env_steps,
+                )
 
             # Training
             with train_timer:

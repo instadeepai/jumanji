@@ -34,7 +34,6 @@ nav:
           - Cleaner: environments/cleaner.md
   - User Guides:
       - Registration: guides/registration.md
-      - Examples: guides/anakin_snake.ipynb
       - Wrapper: guides/wrappers.md
   - API Reference:
       - Environments:

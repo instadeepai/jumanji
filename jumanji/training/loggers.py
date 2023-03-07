@@ -111,7 +111,7 @@ class TerminalLogger(Logger):
     ) -> None:
         super().__init__(save_checkpoint=save_checkpoint)
         if name:
-            logging.info(name)
+            logging.info(f"Experiment: {name}.")
 
     def _format_values(self, data: Dict[str, Any]) -> str:
         return " | ".join(
@@ -126,8 +126,11 @@ class TerminalLogger(Logger):
         label: Optional[str] = None,
         env_steps: Optional[int] = None,
     ) -> None:
-        env_steps_str = f"Env steps: {env_steps:.2e} | " if env_steps else ""
-        label_str = f"{label} >> " or ""
+        if env_steps is not None:
+            env_steps_str = f"Env steps: {env_steps:.2e} | "
+        else:
+            env_steps_str = ""
+        label_str = f"{label.replace('_', ' ').title()} >> " if label else ""
         logging.info(label_str + env_steps_str + self._format_values(data))
 
 
