@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:Generate any board filled with wires;
+:Assign score to each grid point:
+empty slot : -1
+wire: 2
+head / target: 3;
+
+:Score each point by summing scores of
+ top, bottom, left & right neighbours;
+:Plot heatmap;
+
+
+stop
+
+@enduml
