@@ -20,15 +20,9 @@ from jumanji.registration import make, register, registered_environments
 
 # Snake
 register(
-    id="Snake-6x6-v0",
+    id="Snake-v1",
     entry_point="jumanji.environments:Snake",
-    kwargs={"n_rows": 6, "n_cols": 6, "time_limit": 500},
-)
-
-register(
-    id="Snake-12x12-v0",
-    entry_point="jumanji.environments:Snake",
-    kwargs={"n_rows": 12, "n_cols": 12, "time_limit": 4000},
+    kwargs={"num_rows": 12, "num_cols": 12, "time_limit": 4000},
 )
 
 
