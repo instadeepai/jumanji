@@ -26,7 +26,7 @@ import pytest_mock
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.bin_pack.conftest import DummyInstanceGenerator
+from jumanji.environments.packing.bin_pack import conftest as bin_pack_conftest
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
 from jumanji.testing.pytrees import assert_trees_are_different
@@ -767,7 +767,7 @@ class TestJumanjiToGymObservation:
     def test_jumanji_to_gym_obs__bin_pack(self) -> None:
         """Check that an example bin_pack observation is correctly converted."""
         env = BinPack(obs_num_ems=1)
-        env.instance_generator = DummyInstanceGenerator()
+        env.generator = bin_pack_conftest.DummyGenerator()
         obs = env.observation_spec().generate_value()
 
         converted_obs = jumanji_to_gym_obs(obs)

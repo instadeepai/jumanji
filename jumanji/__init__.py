@@ -43,50 +43,19 @@ register(
 
 
 # BinPack
-
-# Toy instance of the BinPack environment
 register(
-    id="BinPack-toy-v0",
+    id="BinPack-v1",
     entry_point="jumanji.environments:BinPack",
     kwargs={
-        "instance_generator_type": "toy",
-        "obs_num_ems": 40,
-    },
-)
-
-# Random Instance Generator
-register(
-    id="BinPack-rand20-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 20,
-        "max_num_ems": 80,
-        "obs_num_ems": 40,
-    },
-)
-
-register(
-    id="BinPack-rand40-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 40,
-        "max_num_ems": 200,
+        "generator": None,  # defaults to RandomGenerator()
         "obs_num_ems": 60,
+        "reward_fn": None,  # defaults to DenseRewardFn()
+        "normalize_dimensions": True,
+        "debug": False,
+        "render_mode": "human",
     },
 )
 
-register(
-    id="BinPack-rand100-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 100,
-        "max_num_ems": 300,
-        "obs_num_ems": 150,
-    },
-)
 
 # Rubik's Cube
 register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")

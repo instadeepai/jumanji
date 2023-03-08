@@ -22,7 +22,7 @@ from jumanji.environments.routing.cleaner.constants import DIRTY, WALL
 from jumanji.environments.routing.cleaner.instance_generator import RandomGenerator
 
 
-class TestRandomInstanceGenerator:
+class TestRandomGenerator:
     WIDTH = 5
     HEIGHT = 7
 

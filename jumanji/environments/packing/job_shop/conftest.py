@@ -22,7 +22,7 @@ from jumanji.environments.packing.job_shop.types import State
 
 
 class DummyGenerator(Generator):
-    """Hardcoded `InstanceGenerator` mainly used for testing and debugging. It deterministically
+    """Hardcoded `Generator` mainly used for testing and debugging. It deterministically
     outputs a hardcoded instance with 3 jobs, 3 machines, a max of 3 ops for any job, and a max
     duration of 4 time steps for any operation.
     """

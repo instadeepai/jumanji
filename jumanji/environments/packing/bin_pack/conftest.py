@@ -19,29 +19,32 @@ import pytest
 
 from jumanji import specs
 from jumanji.environments.packing.bin_pack.env import BinPack
-from jumanji.environments.packing.bin_pack.instance_generator import (
+from jumanji.environments.packing.bin_pack.generator import (
     TWENTY_FOOT_DIMS,
-    InstanceGenerator,
+    Generator,
+    RandomGenerator,
+    ToyGenerator,
     make_container,
 )
+from jumanji.environments.packing.bin_pack.reward import DenseReward, SparseReward
 from jumanji.environments.packing.bin_pack.space import Space
 from jumanji.environments.packing.bin_pack.types import Item, Location, State
 
 
-class DummyInstanceGenerator(InstanceGenerator):
+class DummyGenerator(Generator):
     """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
-    container and three items: two identical items and a different third one to be able to
+    container and 3 items: two identical items and a different third one to be able to
     test item aggregation.
     """
 
     def __init__(self) -> None:
-        """Instantiate a dummy `InstanceGenerator` with three items and one EMS maximum."""
-        super(DummyInstanceGenerator, self).__init__(
+        """Instantiate a dummy `Generator` with 3 items and 10 EMSs maximum."""
+        super(DummyGenerator, self).__init__(
             max_num_items=3, max_num_ems=10, container_dims=TWENTY_FOOT_DIMS
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Returns a fixed instance with three items, one EMS and a 20-ft container.
+        """Returns a fixed instance with 3 items, 10 EMSs and a 20-ft container.
 
         Args:
             key: random key not used here but kept for consistency with parent signature.
@@ -53,7 +56,7 @@ class DummyInstanceGenerator(InstanceGenerator):
         container = make_container(TWENTY_FOOT_DIMS)
         return State(
             container=container,
-            ems=jax.tree_map(
+            ems=jax.tree_util.tree_map(
                 lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
                 container,
             ),
@@ -66,7 +69,7 @@ class DummyInstanceGenerator(InstanceGenerator):
             ),
             items_mask=jnp.array([True, True, True], bool),
             items_placed=jnp.array([False, False, False], bool),
-            items_location=jax.tree_map(
+            items_location=jax.tree_util.tree_map(
                 lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
             ),
             action_mask=None,
@@ -77,32 +80,71 @@ class DummyInstanceGenerator(InstanceGenerator):
 
 
 @pytest.fixture
-def dummy_instance_generator() -> DummyInstanceGenerator:
-    return DummyInstanceGenerator()
+def dummy_generator() -> DummyGenerator:
+    return DummyGenerator()
 
 
 @pytest.fixture
-def dummy_instance(dummy_instance_generator: DummyInstanceGenerator) -> State:
-    state = dummy_instance_generator(key=jax.random.PRNGKey(0))
-    state.action_mask = jnp.ones(
-        (dummy_instance_generator.max_num_ems, dummy_instance_generator.max_num_items),
-        bool,
-    )
+def toy_generator() -> ToyGenerator:
+    return ToyGenerator()
+
+
+@pytest.fixture
+def random_generator() -> RandomGenerator:
+    return RandomGenerator()
+
+
+@pytest.fixture
+def dummy_state(dummy_generator: DummyGenerator) -> State:
+    state = dummy_generator(key=jax.random.PRNGKey(0))
+    num_ems = dummy_generator.max_num_ems
+    num_items = dummy_generator.max_num_items
+    state.action_mask = jnp.ones((num_ems, num_items), bool)
     return state
 
 
 @pytest.fixture
-def bin_pack_env(dummy_instance_generator: DummyInstanceGenerator) -> BinPack:
-    env = BinPack(obs_num_ems=5)
-    env.instance_generator = dummy_instance_generator
-    return env
+def bin_pack(dummy_generator: DummyGenerator) -> BinPack:
+    return BinPack(generator=dummy_generator, obs_num_ems=5)
 
 
 @pytest.fixture
-def obs_spec(bin_pack_env: BinPack) -> specs.Spec:
-    return bin_pack_env.observation_spec()
+def obs_spec(bin_pack: BinPack) -> specs.Spec:
+    return bin_pack.observation_spec()
 
 
 @pytest.fixture
 def space() -> Space:
     return Space(x1=0, x2=1, y1=0, y2=1, z1=0, z2=1).astype(jnp.int32)
+
+
+@pytest.fixture
+def dense_reward() -> DenseReward:
+    return DenseReward()
+
+
+@pytest.fixture
+def bin_pack_dense_reward(
+    dummy_generator: DummyGenerator, dense_reward: DenseReward
+) -> BinPack:
+    return BinPack(
+        generator=dummy_generator,
+        obs_num_ems=5,
+        reward_fn=dense_reward,
+    )
+
+
+@pytest.fixture
+def sparse_reward() -> SparseReward:
+    return SparseReward()
+
+
+@pytest.fixture
+def bin_pack_sparse_reward(
+    dummy_generator: DummyGenerator, sparse_reward: SparseReward
+) -> BinPack:
+    return BinPack(
+        generator=dummy_generator,
+        obs_num_ems=5,
+        reward_fn=sparse_reward,
+    )

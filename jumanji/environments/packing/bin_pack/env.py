@@ -11,26 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import itertools
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
-from chex import PRNGKey
 from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.packing.bin_pack import env_viewer
-from jumanji.environments.packing.bin_pack.instance_generator import (
-    CSVInstanceGenerator,
-    InstanceGenerator,
-    RandomInstanceGenerator,
-    ToyInstanceGenerator,
-)
-from jumanji.environments.packing.bin_pack.reward import RewardFn, sparse_linear_reward
+from jumanji.environments.packing.bin_pack.generator import Generator, RandomGenerator
+from jumanji.environments.packing.bin_pack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.bin_pack.space import Space
 from jumanji.environments.packing.bin_pack.types import (
     EMS,
@@ -44,15 +39,16 @@ from jumanji.environments.packing.bin_pack.types import (
     space_from_item_and_location,
 )
 from jumanji.tree_utils import tree_add_element, tree_slice
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class BinPack(Environment[State]):
+    # TODO: docstring
     """
     RL Environment for the problem of bin packing. We use the Empty Maximal Space (EMS) formulation
     of this problem. An EMS is a 3D-rectangular space that lives inside the container and has the
     following properties:
-        - It does not intersect any items, and it is not fully included into any other EMS.
+        - It does not intersect any items, and it is not fully included into any other EMSs.
         - It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
         the first point corresponding to its bottom-left location while the second defining its
         top-right corner.
@@ -62,9 +58,9 @@ class BinPack(Environment[State]):
     - observation: Observation
         - ems: EMS dataclass of jax arrays (float if normalize_dimensions else int)
             of shape (obs_num_ems,).
-            (x1, x2, y1, y2, z1, z2): the coordinates of all ems at the current timestep.
+            (x1, x2, y1, y2, z1, z2): the coordinates of all EMSs at the current timestep.
         - ems_mask: jax array (bool) of shape (obs_num_ems,).
-            True if the ems exists.
+            True for each EMS that exists.
         - items: Item dataclass of jax arrays (float if normalize_dimensions else int)
             of shape (max_num_items,).
             (x_len, y_len, z_len): characteristics of all items for this instance.
@@ -73,7 +69,7 @@ class BinPack(Environment[State]):
         - items_placed: jax array (bool) of shape (max_num_items,).
             True if the item is placed in the container.
         - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items).
-            Mask of the joint action space: True if the action (ems_id, item_id) is feasible.
+            Mask of the joint action space: True if the action (ems_id, item_id) is valid.
 
     - action: BoundedArray
         - ems_id: int between 0 and obs_num_ems - 1 (included).
@@ -83,7 +79,7 @@ class BinPack(Environment[State]):
         Default (sparse_linear): volume utilization of the container at the end of the episode.
 
     - episode termination:
-        if no other actions are possible (no items fit in any ems).
+        if no other actions are possible (no items fit in any EMSs).
 
     ```python
     env = BinPack()
@@ -98,47 +94,41 @@ class BinPack(Environment[State]):
 
     def __init__(
         self,
-        instance_generator_type: str = "toy",
+        generator: Optional[Generator] = None,
         obs_num_ems: int = 60,
-        reward_fn: RewardFn = sparse_linear_reward,
+        reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
         render_mode: str = "human",
-        **instance_generator_kwargs: Any,
     ):
-        """Instantiate a BinPack environment.
+        """Instantiate a `BinPack` environment.
 
         Args:
-            instance_generator_type: string representing the InstanceGenerator responsible for
-                resetting the environment. E.g. can be a random generator to learn generalisation
-                or one that outputs the same instance to do active search on that instance.
-                Defaults to "toy" which creates a ToyInstanceGenerator that always resets to
-                the same instance with 20 items.
-                Possible values: 'toy' (default), 'csv' or 'random'.
-            obs_num_ems: number of ems to show to the agent. If `obs_num_ems` is smaller than
-                `generator.max_num_ems`, the first `obs_num_ems` biggest ems will be returned
-                in the observation. Default to 60, but the good number heavily depends on the
-                number of items (given by the instance generator).
-            reward_fn: function of the state, the next state, the action taken and the done flag,
-                and outputs a scalar, namely the reward. Default: sparse_linear, meaning a
-                sparse reward is given at the end of the episode, corresponding to the volume
-                utilization of the container.
-            normalize_dimensions: if True (default), the observation is normalized to a unit cubic
-                container. If False, the observation is returned in integers (both items and EMS).
-            debug: if True, will output an `invalid_ems_from_env` field in the extras returned
-                within timestep. Default to False as computing this metric slows down the
-                environment.
-            render_mode: The mode used to render the environment. Must be one of:
-                - RenderMode.HUMAN: Render the environment on screen.
-                - RenderMode.RGB_ARRAY: Return a numpy array frame representing the environment.
-            instance_generator_kwargs: Keyword arguments for the specified instance generator.
+            generator: `Generator` whose `__call__` instantiates an environment
+                instance. Implemented options are [`RandomGenerator`,
+                `ToyGenerator`, `CSVGenerator`]. Defaults to
+                `RandomGenerator`.
+            obs_num_ems: number of EMSs (possible spaces in which to place an item) to show to the
+                agent. If `obs_num_ems` is smaller than `generator.max_num_ems`, the first
+                `obs_num_ems` largest EMSs (in terms of volume) will be returned in the observation.
+                The good number heavily depends on the number of items (given by the instance
+                generator). Default to 60 EMSs observable.
+            reward_fn: compute the reward based on the current state, the chosen action, the next
+                state, whether the transition is valid and if it is terminal. Implemented options
+                are [`DenseReward`, `SparseReward`]. In each case, the total return at the end of
+                an episode is the volume utilization of the container. Defaults to `DenseReward`.
+            normalize_dimensions: if True, the observation is normalized (float) along each
+                dimension into a unit cubic container. If False, the observation is returned in
+                millimeters, i.e. integers (for both items and EMSs). Default to True.
+            debug: if True, will add to timestep.extras an `invalid_ems_from_env` field that checks
+                if an invalid EMS was created by the environment, which should not happen. Computing
+                this metric slows down the environment. Default to False.
+            render_mode: string that defines the mode of rendering.
+                Choices are ["human, "rgb"], defaults to "human".
         """
-        self.instance_generator = self.create_instance_generator(
-            instance_generator_type, **instance_generator_kwargs
-        )
-
+        self.generator = generator or RandomGenerator()
         self.obs_num_ems = obs_num_ems
-        self.reward_fn = reward_fn
+        self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions
         self._env_viewer = env_viewer.BinPackViewer("BinPack", render_mode)
         self.debug = debug
@@ -147,53 +137,18 @@ class BinPack(Environment[State]):
         return "\n".join(
             [
                 "BinPack environment:",
-                f" - instance_generator: {self.instance_generator}",
-                f" - max_num_items: {self.instance_generator.max_num_items}",
+                f" - generator: {self.generator}",
+                f" - max_num_items: {self.generator.max_num_items}",
                 f" - obs_num_ems: {self.obs_num_ems}",
-                f" - max_num_ems: {self.instance_generator.max_num_ems}",
+                f" - max_num_ems: {self.generator.max_num_ems}",
                 f" - reward_fn: {self.reward_fn}",
                 f" - normalize_dimensions: {self.normalize_dimensions}",
                 f" - debug: {self.debug}",
             ]
         )
 
-    @classmethod
-    def create_instance_generator(
-        cls, instance_generator_type: str, **instance_generator_kwargs: Any
-    ) -> InstanceGenerator:
-        """
-        Factory method for creating an instance generator.
-        This method can be overridden to add new instance generator types.
-        Args:
-            instance_generator_type: The type of instance generator to create. Possible values:
-                - 'toy': Create a toy instance generator.
-                - 'csv': Create a CSV instance generator.
-                - 'random': Create a random instance generator.
-            **instance_generator_kwargs:
-                Additional keyword arguments to pass to the instance generator constructor.
-        Returns:
-            An instance of `InstanceGenerator`.
-        Raises:
-            ValueError: If an unexpected value is provided for `instance_generator_type`.
-        """
-        instance_generator_obj: InstanceGenerator
-
-        if instance_generator_type == "toy":
-            instance_generator_obj = ToyInstanceGenerator()
-        elif instance_generator_type == "csv":
-            instance_generator_obj = CSVInstanceGenerator(**instance_generator_kwargs)
-        elif instance_generator_type == "random":
-            instance_generator_obj = RandomInstanceGenerator(
-                **instance_generator_kwargs
-            )
-        else:
-            raise ValueError(
-                f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
-                "Possible values: 'toy', 'csv', 'random'."
-            )
-        return instance_generator_obj
-
     def observation_spec(self) -> specs.Spec[Observation]:
+        # TODO: docstring
         """Specifications of the observation of the `BinPack` environment.
 
         Returns:
@@ -214,8 +169,8 @@ class BinPack(Environment[State]):
             - action_mask: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
         obs_num_ems = self.obs_num_ems
-        max_num_items = self.instance_generator.max_num_items
-        max_dim = max(self.instance_generator.container_dims)
+        max_num_items = self.generator.max_num_items
+        max_dim = max(self.generator.container_dims)
 
         if self.normalize_dimensions:
             ems_dict = {
@@ -271,114 +226,110 @@ class BinPack(Environment[State]):
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
-        """Specifications of the action expected by the BinPack environment.
+        """Specifications of the action expected by the `BinPack` environment.
 
         Returns:
-            MultiDiscreteArray (int) of shape (obs_num_ems, max_num_items).
+            MultiDiscreteArray (int32) of shape (obs_num_ems, max_num_items).
             - ems_id: int between 0 and obs_num_ems - 1 (included).
             - item_id: int between 0 and max_num_items - 1 (included).
         """
-        return specs.MultiDiscreteArray(
-            num_values=jnp.array(
-                [self.obs_num_ems, self.instance_generator.max_num_items], int
-            ),
-            name="action",
+        num_values = jnp.array(
+            [self.obs_num_ems, self.generator.max_num_items], jnp.int32
         )
+        return specs.MultiDiscreteArray(num_values=num_values, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment by calling the instance generator for a new instance.
 
         Args:
             key: random key used to reset the environment.
 
         Returns:
-            state: State object corresponding to the new state of the environment after a reset.
-            timestep: TimeStep object corresponding the first timestep returned by the environment
-                after a reset. Also contains metrics in the `extras` field:
+            state: `State` object corresponding to the new state of the environment after a reset.
+            timestep: `TimeStep` object corresponding the first timestep returned by the environment
+                after a reset. Also contains the following metrics in the `extras` field:
                 - volume_utilization: utilization (in [0, 1]) of the container.
                 - packed_items: number of items that are packed in the container.
                 - ratio_packed_items: ratio (in [0, 1]) of items that are packed in the container.
-                - active_ems: number of EMS in the current instance.
-                - invalid_action_taken: True if the action that was just taken was invalid.
+                - active_ems: number of active EMSs in the current instance.
+                - invalid_action: True if the action that was just taken was invalid.
                 - invalid_ems_from_env (optional): True if the environment produced an EMS that was
                     invalid. Only available in debug mode.
         """
         # Generate a new instance.
-        state = self.instance_generator(key)
+        state = self.generator(key)
 
         # Make the observation.
-        state, observation, extras = self._make_observation_and_metrics(state)
+        state, observation, extras = self._make_observation_and_extras(state)
 
-        extras.update(invalid_action_taken=jnp.array(False))
+        extras.update(invalid_action=jnp.array(False))
         if self.debug:
             extras.update(invalid_ems_from_env=jnp.array(False))
-        timestep = restart(observation=observation, extras=extras)
+        timestep = restart(observation, extras)
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics. If the action is invalid, the state
         is not updated, i.e. the action is not taken, and the episode terminates.
 
         Args:
-            state: State object containing the data of the current instance.
-            action: jax array of shape (2,) (ems_id, item_id). This means placing the given item
-                at the location of the given ems. If the action is not feasible, the flag
-                `invalid_action_taken` will be set to True in `timestep.extras` and the episode
+            state: `State` object containing the data of the current instance.
+            action: jax array (int32) of shape (2,): (ems_id, item_id). This means placing the given
+                item at the location of the given EMS. If the action is not valid, the flag
+                `invalid_action` will be set to True in `timestep.extras` and the episode
                 terminates.
 
         Returns:
-            state: State object corresponding to the next state of the environment.
-            timestep: TimeStep object corresponding to the timestep returned by the environment.
+            state: `State` object corresponding to the next state of the environment.
+            timestep: `TimeStep` object corresponding to the timestep returned by the environment.
                 Also contains metrics in the `extras` field:
                 - volume_utilization: utilization (in [0, 1]) of the container.
                 - packed_items: number of items that are packed in the container.
                 - ratio_packed_items: ratio (in [0, 1]) of items that are packed in the container.
-                - active_ems: number of EMS in the current instance.
-                - invalid_action_taken: True if the action that was just taken was invalid.
+                - active_ems: number of EMSs in the current instance.
+                - invalid_action: True if the action that was just taken was invalid.
                 - invalid_ems_from_env (optional): True if the environment produced an EMS that was
                     invalid. Only available in debug mode.
         """
-        chex.assert_shape(action, (2,))
         action_is_valid = state.action_mask[tuple(action)]  # type: ignore
 
         obs_ems_id, item_id = action
         ems_id = state.sorted_ems_indexes[obs_ems_id]
 
-        # Pack the item is the provided action is valid.
+        # Pack the item if the provided action is valid.
         next_state = jax.lax.cond(
             action_is_valid,
-            lambda state: self._pack_item(state, ems_id, item_id),
-            lambda state: state,
+            lambda s: self._pack_item(s, ems_id, item_id),
+            lambda s: s,
             state,
         )
 
         # Make the observation.
-        next_state, observation, extras = self._make_observation_and_metrics(next_state)
+        next_state, observation, extras = self._make_observation_and_extras(next_state)
 
         done = ~jnp.any(next_state.action_mask) | ~action_is_valid
-        reward = self.reward_fn(state, next_state, action, done)
+        reward = self.reward_fn(state, action, next_state, action_is_valid, done)
 
-        extras.update(invalid_action_taken=~action_is_valid)
+        extras.update(invalid_action=~action_is_valid)
         if self.debug:
-            ems_are_valid = self._ems_are_valid(next_state)
-            extras.update(invalid_ems_from_env=~ems_are_valid)
+            ems_are_all_valid = self._ems_are_all_valid(next_state)
+            extras.update(invalid_ems_from_env=~ems_are_all_valid)
 
-        timestep: TimeStep[Observation] = jax.lax.cond(
+        timestep = jax.lax.cond(
             done,
-            lambda reward, observation, extras: termination(
+            lambda: termination(
                 reward=reward,
                 observation=observation,
                 extras=extras,
             ),
-            lambda reward, observation, extras: transition(
+            lambda: transition(
                 reward=reward,
                 observation=observation,
                 extras=extras,
             ),
-            reward,
-            observation,
-            extras,
         )
 
         return next_state, timestep
@@ -409,9 +360,7 @@ class BinPack(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
-            states=states, interval=interval, save=save, path=path
-        )
+        return self._env_viewer.animate(states, interval, save, path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -421,20 +370,20 @@ class BinPack(Environment[State]):
         """
         self._env_viewer.close()
 
-    def _make_observation_and_metrics(
+    def _make_observation_and_extras(
         self, state: State
     ) -> Tuple[State, Observation, Dict]:
-        """Computes the observation and the environment metrics. Also updates the `action_mask` and
-        `sorted_ems_indexes` in the state. The observation is obtained by selecting a subset of
-        all EMS, namely the `obs_num_ems` largest ones.
+        """Computes the observation and the environment metrics to include in `timestep.extras`. Also
+        updates the `action_mask` and `sorted_ems_indexes` in the state. The observation is obtained
+        by selecting a subset of all EMSs, namely the `obs_num_ems` largest ones.
         """
-        obs_ems, obs_ems_mask, sorted_ems_indexes = self._subset_of_ems(
+        obs_ems, obs_ems_mask, sorted_ems_indexes = self._get_set_of_largest_ems(
             state.ems, state.ems_mask
         )
         state.sorted_ems_indexes = sorted_ems_indexes
 
         items = state.items
-        action_mask = self._action_mask(
+        action_mask = self._get_action_mask(
             obs_ems,
             obs_ems_mask,
             items,
@@ -454,62 +403,54 @@ class BinPack(Environment[State]):
             action_mask=action_mask,
         )
 
-        metrics = self.get_metrics(state)
-        return state, observation, metrics
+        extras = self._get_extras(state)
+        return state, observation, extras
 
-    def get_metrics(self, state: State) -> Dict:
-        """Computes environment metrics.
+    def _get_extras(self, state: State) -> Dict:
+        """Computes the environment metrics to return in `timestep.extras`.
             - volume_utilization: utilization (in [0, 1]) of the container.
             - packed_items: number of items that are packed in the container.
             - ratio_packed_items: ratio (in [0, 1]) of items that are packed in the container.
-            - active_ems: number of EMS in the current instance.
+            - active_ems: number of active EMSs in the current instance.
 
         Args:
-            state: BinPack state containing the current dynamics of the environment.
+            state: `BinPack` state containing the current dynamics of the environment.
 
         Returns:
             dictionary of metrics.
         """
         items_volume = jnp.sum(item_volume(state.items) * state.items_placed)
-        container_volume = state.container.volume()
-        volume_utilization = items_volume / container_volume
+        volume_utilization = items_volume / state.container.volume()
         packed_items = jnp.sum(state.items_placed)
-        nb_items = jnp.sum(state.items_mask)
-        ratio_packed_items = packed_items / nb_items
+        ratio_packed_items = packed_items / jnp.sum(state.items_mask)
         active_ems = jnp.sum(state.ems_mask)
-        metrics = {
+        extras = {
             "volume_utilization": volume_utilization,
             "packed_items": packed_items,
             "ratio_packed_items": ratio_packed_items,
             "active_ems": active_ems,
         }
-        return metrics
+        return extras
 
     def _normalize_ems_and_items(
         self, state: State, obs_ems: EMS, items: Item
     ) -> Tuple[EMS, Item]:
-        """Normalize the EMS and items in the observation. Each dimension is divided by the
+        """Normalize the EMSs and items in the observation. Each dimension is divided by the
         container length so that they are all between 0.0 and 1.0. Hence, the ratio is not kept.
         """
-        container_space_to_normalize = Space(
-            x1=state.container.x2,
-            x2=state.container.x2,
-            y1=state.container.y2,
-            y2=state.container.y2,
-            z1=state.container.z2,
-            z2=state.container.z2,
+        x_len, y_len, z_len = container_item = item_from_space(state.container)
+        norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
+        obs_ems = jax.tree_util.tree_map(
+            lambda ems, container: ems / container, obs_ems, norm_space
         )
-        obs_ems = jax.tree_map(
-            lambda x, c: x / c, obs_ems, container_space_to_normalize
-        )
-        items = jax.tree_map(
-            lambda x, c: x / c, items, item_from_space(state.container)
+        items = jax.tree_util.tree_map(
+            lambda item, container: item / container, items, container_item
         )
         return obs_ems, items
 
-    def _ems_are_valid(self, state: State) -> jnp.bool_:
-        """Checks if all EMS are valid, i.e. they don't intersect items and do not stick out of the
-        container.
+    def _ems_are_all_valid(self, state: State) -> chex.Array:
+        """Checks if all EMSs are valid, i.e. they don't intersect items and do not stick out of the
+        container. This check is only done in debug mode.
         """
         item_spaces = space_from_item_and_location(state.items, state.items_location)
         ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(
@@ -522,17 +463,20 @@ class BinPack(Environment[State]):
         )
         return ~ems_intersection_with_items & ~ems_outside_container
 
-    def _subset_of_ems(
+    def _get_set_of_largest_ems(
         self, ems: EMS, ems_mask: chex.Array
     ) -> Tuple[EMS, chex.Array, chex.Array]:
-        """Returns a subset of EMS by selecting the `obs_num_ems` biggest EMS."""
+        """Returns a subset of EMSs by selecting the `obs_num_ems` largest EMSs."""
         ems_volumes = ems.volume() * ems_mask
-        sorted_ems_indexes = jnp.flip(jnp.argsort(ems_volumes))
-        obs_ems = jax.tree_map(lambda x: x[sorted_ems_indexes][: self.obs_num_ems], ems)
-        obs_ems_mask = ems_mask[sorted_ems_indexes][: self.obs_num_ems]
+        sorted_ems_indexes = jnp.argsort(
+            -ems_volumes
+        )  # minus sign to sort in decreasing order
+        obs_ems_indexes = sorted_ems_indexes[: self.obs_num_ems]
+        obs_ems = jax.tree_util.tree_map(lambda x: x[obs_ems_indexes], ems)
+        obs_ems_mask = ems_mask[obs_ems_indexes]
         return obs_ems, obs_ems_mask, sorted_ems_indexes
 
-    def _action_mask(
+    def _get_action_mask(
         self,
         obs_ems: EMS,
         obs_ems_mask: chex.Array,
@@ -540,11 +484,11 @@ class BinPack(Environment[State]):
         items_mask: chex.Array,
         items_placed: chex.Array,
     ) -> chex.Array:
-        """Compute the mask of legal actions.
+        """Compute the mask of valid actions.
 
         Args:
-            obs_ems: tree of ems from the observation.
-            obs_ems_mask: mask of ems.
+            obs_ems: tree of EMSs from the observation.
+            obs_ems_mask: mask of EMSs.
             items: all items.
             items_mask: mask of items.
             items_placed: placing mask of items.
@@ -555,11 +499,11 @@ class BinPack(Environment[State]):
 
         def is_action_allowed(
             ems: EMS,
-            ems_mask: jnp.bool_,
+            ems_mask: chex.Array,
             item: Item,
-            item_mask: jnp.bool_,
-            item_placed: jnp.bool_,
-        ) -> jnp.bool_:
+            item_mask: chex.Array,
+            item_placed: chex.Array,
+        ) -> chex.Array:
             item_fits_in_ems = item_fits_in_item(item, item_from_space(ems))
             return ~item_placed & item_mask & ems_mask & item_fits_in_ems
 
@@ -569,37 +513,33 @@ class BinPack(Environment[State]):
         )(obs_ems, obs_ems_mask, items, items_mask, items_placed)
         return action_mask
 
-    def _pack_item(
-        self, state: State, ems_id: chex.Numeric, item_id: chex.Numeric
-    ) -> State:
+    def _pack_item(self, state: State, ems_id: int, item_id: chex.Numeric) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
-        state.items_location = Location(
-            x=state.items_location.x.at[item_id].set(state.ems.x1[ems_id]),
-            y=state.items_location.y.at[item_id].set(state.ems.y1[ems_id]),
-            z=state.items_location.z.at[item_id].set(state.ems.z1[ems_id]),
+        ems = tree_slice(state.ems, ems_id)
+        state.items_location = tree_add_element(
+            state.items_location, item_id, Location(ems.x1, ems.y1, ems.z1)
         )
         state.items_placed = state.items_placed.at[item_id].set(True)
-
         state = self._update_ems(state, item_id)
         return state
 
     def _update_ems(self, state: State, item_id: chex.Numeric) -> State:
-        """Update the EMS after packing the item."""
+        """Update the EMSs after packing the item."""
 
         item_space = space_from_item_and_location(
             tree_slice(state.items, item_id), tree_slice(state.items_location, item_id)
         )
 
-        # Delete ems that intersect the new item.
+        # Delete EMSs that intersect the new item.
         ems_mask_after_intersect = ~item_space.intersect(state.ems) & state.ems_mask
 
-        # Get the EMS created by splitting the intersected EMS.
+        # Get the EMSs created by splitting the intersected EMSs.
         intersections_ems_dict, intersections_mask_dict = self._get_intersections_dict(
             state, item_space, ems_mask_after_intersect
         )
 
-        # Loop over intersection EMS from all directions to add them to the current set of EMS.
+        # Loop over intersection EMSs from all directions to add them to the current set of EMSs.
         new_ems = state.ems
         new_ems_mask = ems_mask_after_intersect
         for intersection_ems, intersection_mask in zip(
@@ -616,10 +556,10 @@ class BinPack(Environment[State]):
     def _get_intersections_dict(
         self, state: State, item_space: Space, ems_mask_after_intersect: chex.Array
     ) -> Tuple[Dict[str, Space], Dict[str, chex.Array]]:
-        """Creates two dictionaries of intersection EMS and intersection masks for each direction
+        """Creates two dictionaries of intersection EMSs and intersection masks for each direction
         (lower/upper and x/y/z).
         """
-        # Create new ems from ems that intersect the new item
+        # Create new EMSs from EMSs that intersect the new item
         intersections_ems_dict: Dict[str, Space] = {
             f"{axis}_{direction}": item_space.hyperplane(axis, direction).intersection(
                 state.ems
@@ -631,7 +571,7 @@ class BinPack(Environment[State]):
 
         # A new EMS is added if the intersection is not empty and if it is not fully included in
         # the EMS that do not intersect with the item.
-        intersections_mask_dict: Dict[str, chex.Array] = jax.tree_map(
+        intersections_mask_dict: Dict[str, chex.Array] = jax.tree_util.tree_map(
             lambda intersections_ems: state.ems_mask
             & ~intersections_ems.is_empty()
             & ~(intersections_ems.is_included(state.ems) & ems_mask_after_intersect),
@@ -639,9 +579,9 @@ class BinPack(Environment[State]):
             is_leaf=lambda x: isinstance(x, Space),
         )
 
-        # Remove intersection EMS that are included in other intersection EMS. The process is cyclic
-        # but we can do it only once since is_included is a transitive operation.
-        # This does not remove EMS that are equal <=> both included in each other.
+        # Remove intersection EMSs that are included in other intersection EMSs. The process is
+        # cyclic but we can do it only once since is_included is a transitive operation.
+        # This does not remove EMSs that are equal <=> both included in each other.
         num_ems = len(state.ems_mask)
         # Outer loop iterates through directions.
         for (direction, direction_intersections_ems), (
@@ -672,7 +612,7 @@ class BinPack(Environment[State]):
                     )
                 )
 
-                # The alternative EMS are included in the current direction EMS.
+                # The alternative EMSs are included in the current direction EMSs.
                 alt_directions_included_in_directions = jax.vmap(
                     jax.vmap(Space.is_included, in_axes=(None, 0)), in_axes=(0, None)
                 )(alt_direction_intersections_ems, direction_intersections_ems)
@@ -689,8 +629,8 @@ class BinPack(Environment[State]):
                     )
                 )
 
-                # Remove EMS that are strictly included in another EMS. This does not remove
-                # EMS that are identical and included into each other.
+                # Remove EMSs that are strictly included in other EMSs. This does not remove
+                # EMSs that are identical and included into each other.
                 to_remove = jnp.any(
                     directions_included_in_alt_directions
                     & ~alt_directions_included_in_directions.T,
@@ -707,38 +647,36 @@ class BinPack(Environment[State]):
         ems: EMS,
         ems_mask: chex.Array,
     ) -> Tuple[EMS, chex.Array]:
-        """Add the intersection EMS to the current set of EMS."""
+        """Add the intersection EMSs to the current set of EMSs."""
 
         def add_one_ems(
             carry: Tuple[EMS, chex.Array], x: Tuple[EMS, chex.Array]
         ) -> Tuple[Tuple[EMS, chex.Array], None]:
-            """For loop body that goes through all EMS to add."""
+            """For loop body that goes through all EMSs to add."""
             intersection_ems, intersection_mask = x
 
-            def add_the_ems(carry: Tuple[EMS, chex.Array]) -> Tuple[EMS, chex.Array]:
+            def add_the_ems(ems: EMS, ems_mask: chex.Array) -> Tuple[EMS, chex.Array]:
                 """Function that adds the EMS conditioned on the intersection_mask value."""
-                ems, ems_mask = carry
-                i_ems = jnp.argmin(ems_mask)
-                ems = tree_add_element(ems, i_ems, intersection_ems)
-                ems_mask = ems_mask.at[i_ems].set(True)
+                # TODO: store the current ems_index instead of recomputing the argmax.
+                ems_index = jnp.argmin(ems_mask)
+                ems = tree_add_element(ems, ems_index, intersection_ems)
+                ems_mask = ems_mask.at[ems_index].set(True)
                 return ems, ems_mask
 
-            def inclusion_check(carry: Tuple[EMS, chex.Array]) -> jnp.bool_:
-                """Only add EMS that are not included in others."""
-                ems, ems_mask = carry
+            def inclusion_check(ems: EMS, ems_mask: chex.Array) -> chex.Array:
+                """Only add EMSs that are not included in others."""
                 is_included = intersection_ems.is_included(ems) & ems_mask
                 return ~(is_included.any())
 
-            carry = jax.lax.cond(
-                intersection_mask & inclusion_check(carry),
+            (ems, ems_mask) = jax.lax.cond(
+                intersection_mask & inclusion_check(*carry),
                 add_the_ems,
-                lambda _: _,
-                carry,
+                lambda *_: _,
+                *carry,
             )
-            return carry, None
+            return (ems, ems_mask), None
 
-        init_carry = ems, ems_mask
         (ems, ems_mask), _ = jax.lax.scan(
-            add_one_ems, init_carry, (intersection_ems, intersection_mask)
+            add_one_ems, (ems, ems_mask), (intersection_ems, intersection_mask)
         )
         return ems, ems_mask

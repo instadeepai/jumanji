@@ -165,8 +165,8 @@ class CVRP(Environment[State]):
         """Run one timestep of the environment's dynamics.
 
         Args:
-            state: State object containing the dynamics of the environment.
-            action: Array containing the index of the next node to visit.
+            state: `State` object containing the dynamics of the environment.
+            action: jax array (int32) of shape () containing the index of the next node to visit.
 
         Returns:
             state, timestep: next state of the environment and timestep to be observed.

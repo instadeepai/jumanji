@@ -569,7 +569,7 @@ class JumanjiToGymWrapper(gym.Env):
         obs = jumanji_to_gym_obs(obs)
 
         if return_info:
-            info = jax.tree_map(np.asarray, extras)
+            info = jax.tree_util.tree_map(np.asarray, extras)
             return obs, info
         else:
             return obs  # type: ignore
@@ -596,7 +596,7 @@ class JumanjiToGymWrapper(gym.Env):
         obs = jumanji_to_gym_obs(obs)
         reward = float(reward)
         terminated = bool(done)
-        info = jax.tree_map(np.asarray, extras)
+        info = jax.tree_util.tree_map(np.asarray, extras)
 
         return obs, reward, terminated, info
 

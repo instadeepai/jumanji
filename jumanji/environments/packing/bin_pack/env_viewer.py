@@ -31,18 +31,17 @@ class BinPackViewer:
     FIGURE_SIZE = (6.0, 6.0)
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
-        """
-        Viewer for the BinPack environment.
+        """Viewer for the `BinPack` environment.
 
         Args:
-            name: the window name to be used when initialising the window.
+            name: the window name to be used when initializing the window.
             render_mode: the mode used to render the environment. Must be one of:
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
         self._name = name
         # You must store the created Animation in a variable that lives as long as the animation
-        # should run. Otherwise the animation will get garbage-collected.
+        # should run. Otherwise, the animation will get garbage-collected.
         self._animation: Optional[matplotlib.animation.Animation] = None
 
         self._display: Callable[[plt.Figure], Optional[NDArray]]
@@ -54,11 +53,10 @@ class BinPackViewer:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
     def render(self, state: State) -> Optional[NDArray]:
-        """
-        Render the given state of the BinPack environment.
+        """Render the given state of the `BinPack` environment.
 
         Args:
-            state: the State to render.
+            state: the `State` to render.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -167,15 +165,13 @@ class BinPackViewer:
         colour: Union[matplotlib.cm.ScalarMappable, str],
         alpha: float,
     ) -> mpl_toolkits.mplot3d.art3d.Poly3DCollection:
-        """
-        Add a box to the artist.
+        """Add a box to the artist.
 
         Args:
             pos: (x, y, z)
             lens: lengths for the x, y and z dimensions.
             colour: colour of the box
             alpha: transparency of the box, 0 is completely transparent and 1 is opaque.
-
         """
         verts = self._create_box_vertices(pos, lens)
         poly3d = mpl_toolkits.mplot3d.art3d.Poly3DCollection(
@@ -184,11 +180,10 @@ class BinPackViewer:
         return poly3d
 
     def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
-        """
-        Sets the bounds of the scene and displays text about the scene.
-        Args:
-            state: State of the environment
+        """Sets the bounds of the scene and displays text about the scene.
 
+        Args:
+            state: `State` of the environment
         """
         eps = 0.05
         container = item_from_space(state.container)

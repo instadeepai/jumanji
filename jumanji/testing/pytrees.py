@@ -96,7 +96,7 @@ def assert_is_jax_array_tree(input_tree: chex.ArrayTree) -> None:
 def has_at_least_rank(input_tree: chex.ArrayTree, rank: int) -> bool:
     """Indicate if all leaves have a rank greater or equal to `rank`."""
     has_rank_greater, _ = jax.tree_util.tree_flatten(
-        jax.tree_map(lambda x: x.ndim >= rank, input_tree)
+        jax.tree_util.tree_map(lambda x: x.ndim >= rank, input_tree)
     )
     has_at_least_rank_result = np.all(has_rank_greater)
     return bool(has_at_least_rank_result)

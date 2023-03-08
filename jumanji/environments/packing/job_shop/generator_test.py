@@ -73,7 +73,7 @@ class TestToyGenerator:
         assert_trees_are_equal(state1, state2)
 
 
-class TestRandomInstanceGenerator:
+class TestRandomGenerator:
     @pytest.fixture
     def random_generator(self) -> RandomGenerator:
         return RandomGenerator(

@@ -14,18 +14,21 @@
 
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
+from typing_extensions import TypeAlias
+
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
     from chex import dataclass
 
 import chex
+import jax
 import jax.numpy as jnp
 
 from jumanji.environments.packing.bin_pack.space import Space
 
-Container = Space
-EMS = Space
+Container: TypeAlias = Space
+EMS: TypeAlias = Space
 
 
 def empty_ems() -> EMS:
@@ -48,7 +51,7 @@ def item_from_space(space: Space) -> Item:
     )
 
 
-def item_fits_in_item(item: Item, other_item: Item) -> jnp.bool_:
+def item_fits_in_item(item: Item, other_item: Item) -> chex.Array:
     """Check if an item is smaller than another one."""
     return (
         (item.x_len <= other_item.x_len)
@@ -57,11 +60,11 @@ def item_fits_in_item(item: Item, other_item: Item) -> jnp.bool_:
     )
 
 
-def item_volume(item: Item) -> jnp.float_:
+def item_volume(item: Item) -> chex.Array:
     """Returns the volume as a float to prevent from overflow with 32 bits."""
-    x_len = jnp.float_(item.x_len)
-    y_len = jnp.float_(item.y_len)
-    z_len = jnp.float_(item.z_len)
+    x_len = jnp.asarray(item.x_len, float)
+    y_len = jnp.asarray(item.y_len, float)
+    z_len = jnp.asarray(item.z_len, float)
     return x_len * y_len * z_len
 
 
@@ -104,36 +107,45 @@ def space_from_item_and_location(item: Item, location: Location) -> Space:
 
 @dataclass
 class State:
-    container: Container  # Dimension of the container for the current episode | shape (,)
-    ems: EMS  # Leaves (x1, x2, y1, y2, z1, z2) | shape (max_num_ems,)
-    ems_mask: chex.Array  # True if the ems exists | shape (max_num_ems,)
-    items: Item  # Leaves (x_len, y_len, z_len) | shape (max_num_items,)
-    items_mask: chex.Array  # True if items exist | shape (max_num_items,)
-    items_placed: chex.Array  # True if items are placed in the container | shape (max_num_items,)
-    items_location: Location  # Leaves (x, y, z) | shape (max_num_items,)
-    action_mask: Optional[chex.Array]  # Array | shape (obs_num_ems, max_num_items)
-    sorted_ems_indexes: chex.Array  # Array | shape (max_num_ems,)
-    key: chex.Array  # Source of randomness for instances with a random reset.
+    """
+    container: space defined by 2 points, i.e. 6 coordinates.
+    ems: empty maximal spaces (EMSs) in the container, each defined by 2 points (6 coordinates).
+    ems_mask: array of booleans that indicate the EMSs that are valid.
+    items: defined by 3 attributes (x, y, z).
+    items_mask: array of booleans that indicate the items that can be packed.
+    items_placed: array of booleans that indicate the items that have been placed so far.
+    items_location: locations of items in the container, defined by 3 coordinates (x, y, x).
+    action_mask: array of booleans that indicate the valid actions, i.e. EMSs and items that can
+        be chosen.
+    sorted_ems_indexes: EMS indexes that are sorted by decreasing volume order.
+    """
 
-    def __repr__(self) -> str:
-        class_name = f"{self.__class__.__name__}("
-        attribute_values = [
-            f"\n\t{key}={repr(value)}," for key, value in self.__dict__.items()
-        ]
-        end_str = "\n)"
-        return "".join(
-            [
-                class_name,
-                *attribute_values,
-                end_str,
-            ]
-        )
+    container: Container  # leaves of shape ()
+    ems: EMS  # leaves of shape (max_num_ems,)
+    ems_mask: chex.Array  # (max_num_ems,)
+    items: Item  # leaves of shape (max_num_items,)
+    items_mask: chex.Array  # (max_num_items,)
+    items_placed: chex.Array  # (max_num_items,)
+    items_location: Location  # leaves of shape (max_num_items,)
+    action_mask: Optional[chex.Array]  # (obs_num_ems, max_num_items)
+    sorted_ems_indexes: chex.Array  # (max_num_ems,)
+    key: chex.Array = jax.random.PRNGKey(0)  # (2,)
 
 
 class Observation(NamedTuple):
-    ems: EMS  # Leaves (x1, x2, y1, y2, z1, z2) | shape (obs_num_ems,)
-    ems_mask: chex.Array  # True if ems exist | shape (obs_num_ems,)
-    items: Item  # Leaves (x_len, y_len, z_len) | shape (max_num_items,)
-    items_mask: chex.Array  # True if items exist | shape (max_num_items,)
-    items_placed: chex.Array  # True if items are placed in the container | shape (max_num_items,)
-    action_mask: chex.Array  # Joint action mask | shape (obs_num_ems, max_num_items)
+    """
+    ems: empty maximal spaces (EMSs) in the container, defined by 2 points (6 coordinates).
+    ems_mask: array of booleans that indicate the EMSs that are valid.
+    items: defined by 3 attributes (x, y, z).
+    items_mask: array of booleans that indicate the items that are valid.
+    items_placed: array of booleans that indicate the items that are placed.
+    action_mask: array of booleans that indicate the feasible actions, i.e. EMSs and items that can
+        be chosen.
+    """
+
+    ems: EMS  # leaves of shape (obs_num_ems,)
+    ems_mask: chex.Array  # (obs_num_ems,)
+    items: Item  # leaves of shape (max_num_items,)
+    items_mask: chex.Array  # (max_num_items,)
+    items_placed: chex.Array  # (max_num_items,)
+    action_mask: chex.Array  # (obs_num_ems, max_num_items)

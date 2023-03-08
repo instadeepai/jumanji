@@ -83,11 +83,11 @@ class Space:
             ")"
         )
 
-    def volume(self) -> jnp.float_:
+    def volume(self) -> chex.Numeric:
         """Returns the volume as a float to prevent from overflow with 32 bits."""
-        x_len = jnp.float_(self.x2 - self.x1)
-        y_len = jnp.float_(self.y2 - self.y1)
-        z_len = jnp.float_(self.z2 - self.z1)
+        x_len = jnp.asarray(self.x2 - self.x1, float)
+        y_len = jnp.asarray(self.y2 - self.y1, float)
+        z_len = jnp.asarray(self.z2 - self.z1, float)
         return x_len * y_len * z_len
 
     def intersection(self, space: "Space") -> "Space":
@@ -102,15 +102,15 @@ class Space:
         z2 = jnp.minimum(self.z2, space.z2)
         return Space(x1=x1, x2=x2, y1=y1, y2=y2, z1=z1, z2=z2)
 
-    def intersect(self, space: "Space") -> jnp.bool_:
+    def intersect(self, space: "Space") -> chex.Numeric:
         """Returns whether a space intersect another space or not."""
         return ~(self.intersection(space).is_empty())
 
-    def is_empty(self) -> jnp.bool_:
+    def is_empty(self) -> chex.Numeric:
         """A space is empty if at least one dimension is negative or zero."""
         return (self.x1 >= self.x2) | (self.y1 >= self.y2) | (self.z1 >= self.z2)
 
-    def is_included(self, space: "Space") -> jnp.bool_:
+    def is_included(self, space: "Space") -> chex.Numeric:
         """Returns whether self is included into another space."""
         return (
             (self.x1 >= space.x1)
