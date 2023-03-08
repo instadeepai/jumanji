@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, Dict
+from typing import List, Tuple, Union, Dict, Optional, Tuple
 import numpy as np
 from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
 
@@ -75,7 +75,7 @@ class BoardProcessor:
 
         return path
 
-    def get_next_pos(self, i: int, j: int, head_num: int) -> tuple[bool, tuple[int, int]] | None:
+    def get_next_pos(self, i: int, j: int, head_num: int) -> Optional[Tuple[bool, Tuple[int, int]]]:
         # Gets the next position in the path
         # Returns the next position
         # Define possible movements
@@ -173,7 +173,7 @@ class BoardProcessor:
         # Returns the board layout
         return self.board_layout
 
-    def get_board_statistics(self) -> Dict[str, int | list[int] | float]:
+    def get_board_statistics(self) -> Dict[str, Union[int, float]]:
         # Returns, number of wires, lengths of wires, average length of wires, number of bends in each wire,
         # average number of bends in each wire
         num_wires = len(self.heads)
