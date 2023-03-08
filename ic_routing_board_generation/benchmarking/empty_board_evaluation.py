@@ -4,15 +4,17 @@ from matplotlib import pyplot as plt
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerator
+    BoardGenerator, BoardName
 
 
 class EvaluateEmptyBoard:
     def __init__(self, empty_board: np.ndarray):
         self.training_board = empty_board
-        self.empty_slot_score = -1
+        self.empty_slot_score = -2
         self.end_score = 3
         self.wire_score = 2
+        self.max_score = 14 * 4
+        self.min_score = -6
 
     def assess_board(self):
         is_zero_mask = self.training_board == 0
@@ -27,19 +29,27 @@ class EvaluateEmptyBoard:
 
     def score_from_neighbours(self):
         individual_score = self.assess_board()
+        padded_starting_board = np.pad(self.training_board, 1, mode="constant")
         padded_array = np.pad(individual_score, 1, mode="constant")
         filter = np.array(
             [
                 [0, 1, 0],
-                [1, 0, 1],
+                [1, 2, 1],
                 [0, 1, 0],
             ]
         )
         scores = []
         for row in range(1, len(padded_array) - 1):
             for column in range(1, len(padded_array[0]) - 1):
+                training_board_filtered = padded_starting_board[row - 1: row + 2, column - 1: column + 2]  * filter
+                print(training_board_filtered)
+                diversity = len(np.unique(training_board_filtered / 3))
+                print(diversity)
+
                 window = padded_array[row - 1: row + 2, column - 1: column + 2]
-                scores.append(np.sum(window * filter))
+                score = np.sum(window * filter * diversity)
+                normalized_score = (score-self.min_score)/(self.max_score - self.min_score)
+                scores.append(normalized_score)
         scored_array = np.array(scores).reshape((len(self.training_board), len(self.training_board[0])))
         return scored_array
 
@@ -72,8 +82,10 @@ def generate_n_boards(
     plot_heatmap(scores=mean_scored_board)
 
 
+
+
 if __name__ == '__main__':
-    # board_params = BoardGenerationParameters(8, 8, 5, BoardGenerators.BFS)
+    # board_params = BoardGenerationParameters(8, 8, 8, BoardName.BFS)
     # generate_n_boards(board_params, 1)
  #    board = np.array([[0, 0 ,0 ,7 ,5 ,5 ,5 ,5],
  # [ 0  ,0  ,0  ,0  ,4  ,0  ,0  ,5],
@@ -95,5 +107,10 @@ if __name__ == '__main__':
 
 
     )
+    # board = np.array(
+    #     [
+    #         []
+    #     ]
+    # )
     scores = EvaluateEmptyBoard(board).score_from_neighbours()
     plot_heatmap(scores)
