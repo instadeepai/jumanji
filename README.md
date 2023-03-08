@@ -63,14 +63,13 @@ or you can install the latest development version directly from GitHub:
 ```bash
 pip install git+https://github.com/instadeepai/jumanji.git
 ```
-Jumanji has been tested on Python 3.8, 3.9.
+Jumanji has been tested on Python 3.8 and 3.9.
 Note that because the installation of JAX differs depending on your hardware accelerator,
 we advise users to explicitly install the correct JAX version (see the [official installation guide](https://github.com/google/jax#installation)).
 
-**Rendering:** Matplotlib is used for rendering the `BinPack` and `Snake` environments.
-To visualize the environments you will need a GUI backend.
-For example, on Linux, you can install Tk via: `apt-get install python3-tk`, or using conda: `conda install tk`.
-Check out [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of backends you could use.
+**Rendering:** Matplotlib is used for rendering all the environments. To visualize the environments
+you will need a GUI backend. For example, on Linux, you can install Tk via: `apt-get install python3-tk`, or using conda: `conda install tk`.
+Check out [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of backends you can use.
 
 ## Quickstart ⚡
 
@@ -87,7 +86,7 @@ import jax
 import jumanji
 
 # Instantiate a Jumanji environment using the registry
-env = jumanji.make('Snake-6x6-v0')
+env = jumanji.make('Snake-v1')
 
 # Reset your (jit-able) environment
 key = jax.random.PRNGKey(0)
@@ -123,8 +122,8 @@ import jax
 import jumanji
 from jumanji.wrappers import AutoResetWrapper
 
-env = jumanji.make("Snake-6x6-v0")  # Creates the snake environment.
-env = AutoResetWrapper(env)         # Automatically reset the environment when an episode terminates.
+env = jumanji.make("Snake-v1")  # Creates the snake environment.
+env = AutoResetWrapper(env)     # Automatically reset the environment when an episode terminates.
 
 batch_size, rollout_length = 7, 5
 num_actions = env.action_spec().num_values
@@ -165,32 +164,44 @@ For more in-depth examples of running with Jumanji environments, check out our C
 
 ## Environments 🌍
 
-Jumanji implements different types of environments ranging from simple games to NP-hard problems,
-from single-agent to multi-agent and turn-by-turn games.
+Jumanji implements a diverse range of environments ranging from simple games to NP-hard problems.
 
-| Environment                                    | Category | Type         | Source                                                                                         | Description                                                            |
-|------------------------------------------------|----------|--------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| 🐍 Snake                                       | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake)    | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
-| 🎲 RubiksCube                                  | Logic    | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube) | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
-| 💣 Minesweeper                                  | Logic    | Single-agent |[code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
-| 📬 TSP (Travelling Salesman Problem)           | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
-| 🎒 Knapsack                                    | Packing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
-| 📦 BinPack (3D BinPacking Problem)             | Packing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)     |
-| 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
-| 🏭 JobShop (Job Shop Scheduling Problem)       | Packing  | Multi-agent  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/jobshop)  | [doc](https://instadeepai.github.io/jumanji/environments/jobshop/)     |
-| 🔢 Game2048   | Logic  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game2048/)     | [doc](https://instadeepai.github.io/jumanji/environments/game2048/)     |
-| :mag: Maze   | Routing  | Single-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)     | [doc](https://instadeepai.github.io/jumanji/environments/maze/)     |
-| :link: Connector   | Routing  | Multi-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/)     | [doc](https://instadeepai.github.io/jumanji/environments/connector/)     |
-| 🧹 Cleaner   | Routing  | Multi-agent | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/multi_agent_cleaner/)     | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
+| Environment                                    | Category | Registered Version(s) | Source                                                                                         | Description                                                            |
+|------------------------------------------------|----------|-----------------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| 🐍 Snake                                       | Routing  | `Snake-v1`              | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake)    | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
+| 🎲 RubiksCube                                  | Logic    | `RubiksCube-v0`         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube) | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
+| 💣 Minesweeper                                 | Logic    | `Minesweeper-v0`        |[code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
+| 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp)      | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
+| 🎒 Knapsack                                    | Packing  | `Knapsack-v1`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack) | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
+| 📦 BinPack (3D BinPacking Problem)             | Packing  | `BinPack-v1`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/binpack)  | [doc](https://instadeepai.github.io/jumanji/environments/binpack/)     |
+| 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp)     | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
+| 🏭 JobShop (Job Shop Scheduling Problem)       | Packing  | `JobShop-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/jobshop)  | [doc](https://instadeepai.github.io/jumanji/environments/jobshop/)     |
+| 🔢 Game2048   | Logic  | `Game2048-v0`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game2048/)     | [doc](https://instadeepai.github.io/jumanji/environments/game2048/)     |
+| :mag: Maze   | Routing  | `Maze-v0`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)     | [doc](https://instadeepai.github.io/jumanji/environments/maze/)     |
+| :link: Connector   | Routing  | `Connector-v0`          | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/)     | [doc](https://instadeepai.github.io/jumanji/environments/connector/)     |
+| 🧹 Cleaner   | Routing  | `Cleaner-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/multi_agent_cleaner/)     | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
 
 ### Registry and Versioning 📖
 
-Similarly to OpenAI Gym, Jumanji keeps a strict versioning of its environments for reproducibility reasons.
+Like OpenAI Gym, Jumanji keeps a strict versioning of its environments for reproducibility reasons.
 We maintain a registry of standard environments with their configuration.
-For each environment, a version suffix is appended, e.g. `Snake-6x6-v0`.
+For each environment, a version suffix is appended, e.g. `Snake-v1`.
 When changes are made to environments that might impact learning results,
 the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
+
+## Training 🏎️
+To make Jumanji more accessible, we have provided the following example agents for each environment:
+- Random agent.
+- A2C agent.
+
+These are also the agents that our benchmark performance across all environments are based on.
+We encourage you to implement your own agent and beat our benchmarks!
+> ⚠️ The training pipelines and agents in the subpackage `jumanji/training` are purely meant to provide
+> inspiration for how you can implement your own agent. Jumanji is first and foremost a library of
+> environments - as such, the agents and networks will not be maintained to a production standard.
+
+For more information on how to use the example agents, see the [training guide](docs/guides/training.md).
 
 ## Contributing 🤝
 Contributions are welcome! See our issue tracker for [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue).
@@ -201,14 +212,14 @@ how to submit pull requests, our Contributor License Agreement, and community gu
 If you use Jumanji in your work, please cite the library using:
 ```
 @software{jumanji2022github,
-  author = {Clément Bonnet and Donal Byrne and Victor Le and Laurence Midgley
-        and Daniel Luo and Cemlyn Waters and Sasha Abramowitz and Edan Toledo
-        and Cyprien Courtot and Matthew Morris and Daniel Furelos-Blanco
-        and Nathan Grinsztajn and Thomas D. Barrett and Alexandre Laterre},
+  author = {Clément Bonnet and Daniel Luo and Donal Byrne and Sasha Abramowitz
+        and Vincent Coyette and Paul Duckworth and Daniel Furelos-Blanco and
+        Nathan Grinsztajn and Tristan Kalloniatis and Victor Le and Omayma Mahjoub
+        and Laurence Midgley and Shikha Surana and Cemlyn Waters and Alexandre Laterre},
   title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
   url = {https://github.com/instadeepai/jumanji},
-  version = {0.1.5},
-  year = {2022},
+  version = {0.2.0},
+  year = {2023},
 }
 ```
 
