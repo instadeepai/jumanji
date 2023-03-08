@@ -277,34 +277,41 @@ class Game2048(Environment[State]):
         )
         return action_mask
 
-    def render(self, state: State, save: bool = True, path: str = "./2048.png") -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> None:
         """Renders the current state of the game board.
 
         Args:
             state: is the current game state to be rendered.
-            save: whether to save the rendered image to a file.
-            path: the path to save the rendered image file.
+            save_path: the path where the image should be saved. If it is None, the plot
+            will not be stored.
         """
-        return self._env_viewer.render(state=state, save=save, path=path)
+        return self._env_viewer.render(state=state, save_path=save_path)
 
     def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./2048.gif",
+        save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
         """Creates an animated gif of the 2048 game board based on the sequence of game states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+            will not be stored.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
         return self._env_viewer.animate(
-            states=states, interval=interval, save=save, path=path
+            states=states, interval=interval, save_path=save_path
         )
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()

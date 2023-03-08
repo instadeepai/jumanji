@@ -64,13 +64,13 @@ class Game2048Viewer:
         # animation should run. Otherwise, the animation will get garbage-collected.
         self._animation: Optional[matplotlib.animation.Animation] = None
 
-    def render(self, state: State, save: bool = True, path: str = "./2048.png") -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> None:
         """Renders the current state of the game board.
 
         Args:
             state: is the current game state to be rendered.
-            save: whether to save the rendered image to a file.
-            path: the path to save the rendered image file.
+            save_path: the path where the image should be saved. If it is None, the plot
+            will not be stored.
         """
         # Get the figure and axes for the game board.
         fig, ax = self.get_fig_ax()
@@ -79,8 +79,8 @@ class Game2048Viewer:
         # Draw the game board
         self.draw_board(ax, state)
         # Save the figure as an image file.
-        if save:
-            fig.savefig(path, bbox_inches="tight", pad_inches=0.5)
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.5)
 
         self._display_human(fig)
 
@@ -88,16 +88,15 @@ class Game2048Viewer:
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./2048.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Creates an animated gif of the 2048 game board based on the sequence of game states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+            will not be stored.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
@@ -120,10 +119,9 @@ class Game2048Viewer:
             frames=len(states),
             interval=interval,
         )
-
         # Save the animation as a gif.
-        if save:
-            self._animation.save(path)
+        if save_path:
+            self._animation.save(save_path)
 
         return self._animation
 
@@ -244,8 +242,7 @@ class Game2048Viewer:
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 2 seconds.
-            fig.canvas.start_event_loop(2.0)
+            fig.canvas.flush_events()
 
     def _clear_display(self) -> None:
         if jumanji.environments.is_colab():
