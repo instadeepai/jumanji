@@ -18,6 +18,29 @@ class Position:
     x: int
     y: int
 
+class IncorrectBoardSizeError(Exception):
+    #Raised when a board size does not match the specified dimensions."
+    pass
+
+class NumAgentsOutOfRangeError(Exception):
+    "Raised when self.num_agents is negative."
+    pass
+class IndicesOutOfRangeError(Exception):
+    "Raised when one or more cells on the board have an invalid index."
+    pass
+
+class DuplicateHeadsTailsError(Exception):
+    "Raised when one of the heads or tails of a wire is duplicated."
+    pass
+
+class MissingHeadTailError(Exception):
+    "Raised when one of the heads or tails of a wire is missing."
+    pass
+
+class InvalidWireStructureError(Exception):
+    "Raised when one or more of the wires has an invalid structure, eg looping or branching."
+    pass
+
 class Board_rb:
     """ The boards are 2D np.ndarrays of wiring routes on a printed circuit board.
 
@@ -502,30 +525,117 @@ class Board_rb:
                 neighbors += 1
         #if neighbors == 0:
             #print(row,col, cell, "min_val = ",min_val,"max_val =",max_val)
-        return neighbors
+        return neighbors#
 
-class IncorrectBoardSizeError(Exception):
-    #Raised when a board size does not match the specified dimensions."
-    pass
+    def swap_heads_targets(self):
+        """ Randomly swap 50% of the heads with their respective targets.  self.layout is modified in-place."""
+        for wire_num in range(num_agents):
+            if random.choice([True, False]):
+                head_cell = 3 * wire_num + HEAD
+                target_cell = 3 * wire_num + TARGET
+                #print(f"swap {head_cell} with {target_cell}")
+                for x in range(self.dim.x):
+                    for y in range(self.dim.y):
+                        if self.layout[x, y] == head_cell:
+                            self.layout[x, y] = target_cell
+                        elif self.layout[x, y] == target_cell:
+                            self.layout[x, y] = head_cell
+        return # Nothing returned.  self.layout is modified in-place.
 
-class NumAgentsOutOfRangeError(Exception):
-    "Raised when self.num_agents is negative."
-    pass
-class IndicesOutOfRangeError(Exception):
-    "Raised when one or more cells on the board have an invalid index."
-    pass
+    def swap_wires(self, num:int = None):
+        """ Randomly swap the numbering of pairs of wires.  Self.layout in modified in-place
 
-class DuplicateHeadsTailsError(Exception):
-    "Raised when one of the heads or tails of a wire is duplicated."
-    pass
+            Args:
+                num (int) : number of swaps to perform, defaults to self.num_agents
+        """
+        if self.num_agents < 2:
+            return
+        if num == None:
+            num = self.num_agents
+        #print("num=", num)
+        for i in range(num):
+            wire_num_a = np.random.randint(self.num_agents)
+            wire_num_b = np.random.randint(self.num_agents)
+            #print(f"{i}Swap wire {wire_num_a} with {wire_num_b}, {3*wire_num_a + 2}-{3*wire_num_a + 4}<->{3*wire_num_b + 2}-{3*wire_num_b+4}")
+            for x in range(self.dim.x):
+                for y in range(self.dim.y):
+                    cell = self.layout[x, y]
+                    # If cell in wire A, renumber to wire B
+                    if (3*wire_num_a + 2) <= cell <= (3*wire_num_a + 4):
+                        self.layout[x,y] += 3*(wire_num_b - wire_num_a)
+                    # If cell in wire B, renumber to wire A
+                    if (3 * wire_num_b + 2) <= cell <= (3 * wire_num_b + 4):
+                        self.layout[x, y] += 3 * (wire_num_a - wire_num_b)
+        return # Nothing to return.  self.layout is modified in-place
 
-class MissingHeadTailError(Exception):
-    "Raised when one of the heads or tails of a wire is missing."
-    pass
+    def get_wire_num(self, cell_label: int) -> (int):
+        """ Returns the wire number of the given cell value
 
-class InvalidWireStructureError(Exception):
-    "Raised when one or more of the wires has an invalid structure, eg looping or branching."
-    pass
+            Args:
+                cell_label (int) : the value of the cell in self.layout
+
+            Returns:
+                (int) : The wire number that the cell belongs to. Returns -1 if not part of a wire.
+        """
+        if cell_label < 2:
+            return -1
+        else:
+            return ((cell_label-2) // 3)
+
+
+    def count_detours(self, count_current_wire: bool = False)  -> (int):
+        """ Returns the number of wires that have to detour around a head or target cell.
+
+            Args:
+                count_current_wire (bool): Should we count wires that wrap around their own heads/targets? (default = False)
+
+            Returns:
+                (int) : The number of wires that have to detour around a head or target cell.
+        """
+        num_detours = 0
+        for x in range(self.dim.x):
+            for y in range(self.dim.y):
+                cell_label = self.layout[x,y]
+                if (cell_label < 2) or ((cell_label % 3) == WIRE):
+                    continue
+                current_wire = self.get_wire_num(cell_label)
+                #print("\n",x,y,"wire",current_wire)
+                #
+                above = self.layout[:x, y]
+                #print("above = ", above)
+                above = [self.get_wire_num(cell) for cell in above if cell != 0]
+                if not count_current_wire:
+                    above = [wire_num for wire_num in above if wire_num != current_wire]
+                #print("above = ", above)
+                below = self.layout[x + 1:, y]
+                #print("below = ", below)
+                below = [self.get_wire_num(cell) for cell in below if cell != 0]
+                if not count_current_wire:
+                    below = [wire_num for wire_num in below if wire_num != current_wire]
+                #print("below = ", below)
+                common = (set(above) & set(below))
+                #print("common items = ",common)
+                num_detours += len(common)
+                #
+                left = self.layout[x, :y].tolist()
+                #print("left = ", left)
+                left = [self.get_wire_num(cell) for cell in left if cell != 0]
+                if not count_current_wire:
+                    left = [wire_num for wire_num in left if wire_num != current_wire]
+                #print("left = ", left)
+                right = self.layout[x, y+1 :].tolist()
+                #print("right = ", right)
+                right = [self.get_wire_num(cell) for cell in right if cell != 0]
+                if not count_current_wire:
+                    right = [wire_num for wire_num in right if wire_num != current_wire]
+                #print("right = ",right)
+                common = (set(right) & set(left))
+                #print("common items = ",common)
+                num_detours += len(common)
+        #print("num_detours = ", num_detours)
+        return num_detours
+
+
 
 def board_generator_rb(rows: int, cols: int, num_agents: int = None) -> (np.ndarray, np.ndarray, int):
     """ Generate a circuit board of the specified size and number of wires.
@@ -603,6 +713,17 @@ if __name__ == "__main__":
     rows, cols = 20,20
     wires_requested = 17
     my_board = board_generator_rb(rows, cols, wires_requested)
+    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
+    valid = my_board.is_valid_board()
+    print_board(board_training, board_solution, num_agents)
+    print("\nSwap some Heads and Tails")
+    my_board.swap_heads_targets()
+    valid = my_board.is_valid_board()
+    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
+    print_board(board_training, board_solution, num_agents)
+    print("\nSwap some wires")
+    my_board.swap_wires()
+    valid = my_board.is_valid_board()
     board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
     print_board(board_training, board_solution, num_agents)
 
@@ -687,3 +808,48 @@ if __name__ == "__main__":
                                 [0, 0, 4, 0]])
     #valid = my_board.is_valid_board()
     """
+
+    print("\nTest count detours")
+    sampled_detours = []
+    sampled_detours_exclude = []
+    num_agents = 5
+    print("8 x 8: ", num_agents)
+    for i in range(1000):
+        my_board = board_generator_rb(8, 8, num_agents)
+        #print(my_board.layout)
+        num_detours = my_board.count_detours(count_current_wire = True)
+        #print(num_detours)
+        sampled_detours.append(num_detours)
+        num_detours_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_exclude.append(num_detours_exclude)
+    sampled_detours = np.array(sampled_detours)
+    mean = sampled_detours.mean()
+    print("Average detours = ",mean," = ", int(100*mean/num_agents),"%")
+    print("STD = ", sampled_detours.std())
+    sampled_detours_exclude = np.array(sampled_detours_exclude)
+    mean_exclude = sampled_detours_exclude.mean()
+    print("Excluding current wire")
+    print("Average detours = ",mean_exclude," = ", int(100*mean_exclude/num_agents),"%")
+    print("STD = ", sampled_detours_exclude.std())
+
+    sampled_detours = []
+    sampled_detours_exclude = []
+    num_agents = 10
+    print("8 x 8: ", num_agents)
+    for i in range(1000):
+        my_board = board_generator_rb(8, 8, num_agents)
+        # print(my_board.layout)
+        num_detours = my_board.count_detours(count_current_wire=True)
+        # print(num_detours)
+        sampled_detours.append(num_detours)
+        num_detours_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_exclude.append(num_detours_exclude)
+    sampled_detours = np.array(sampled_detours)
+    mean = sampled_detours.mean()
+    print("Average detours = ",mean," = ", int(100*mean/num_agents),"%")
+    print("STD = ", sampled_detours.std())
+    sampled_detours_exclude = np.array(sampled_detours_exclude)
+    mean_exclude = sampled_detours_exclude.mean()
+    print("Excluding current wire")
+    print("Average detours = ",mean_exclude," = ", int(100*mean_exclude)/num_agents,"%")
+    print("STD = ", sampled_detours_exclude.std())
