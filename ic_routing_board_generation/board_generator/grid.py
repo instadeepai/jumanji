@@ -124,11 +124,10 @@ class Grid:
 
     def reset_maze(self) -> None:
         """
-        Function to reset the maze.
+        Function to reset the maze. Called after a partial fill and resets previously filled paths to 1.
         Args:
             None
         Returns:
             None
         """
-        # Want to set non zero cells to 1
         self.layout[self.layout != 0] = 1

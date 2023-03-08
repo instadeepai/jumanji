@@ -567,32 +567,32 @@ if __name__ == '__main__':
     # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
     board = BFSBoard(rows=10, columns=10, num_agents=10, max_attempts=10)
 
-    # # Perform a standard fill
-    # board.fill_board(verbose=True)
-    # print(board.return_solved_board())
-    # print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
-    # # Fill the board with 2 wires removed using the 'min_bends' method
-    # board.fill_board_with_clipping(2, 'min_bends', verbose=True)
-    # print(board.return_solved_board())
-    # print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
-    # # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
-    # board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=False)
+    # Perform a standard fill
+    board.fill_board(verbose=False)
     print(board.return_solved_board())
     print(board.return_training_board())
-    #
-    # # Reset the board
-    # board.reset_board()
+
+    # Reset the board
+    board.reset_board()
+    # Fill the board with 2 wires removed using the 'min_bends' method
+    board.fill_board_with_clipping(2, 'min_bends', verbose=False)
+    print(board.return_solved_board())
+    print(board.return_training_board())
+
+    # Reset the board
+    board.reset_board()
+    # Fill the board with 2 wires removed using the 'min_bends' method and 2 wires removed using the 'random' method
+    board.fill_clip_fill([2, 2], ['min_bends', 'random'], num_loops=2, verbose=False)
+    print(board.return_solved_board())
+    print(board.return_training_board())
+
+    # Reset the board
+    board.reset_board()
     # Test fill_clip_with_thresholds
-    threshold_dict = {'min_bends': 2, 'min_length': 5}
+    test_threshold_dict = {'min_bends': 2, 'min_length': 5}
     clip_nums = [2, 2] * 10
     clip_methods = ['fifo', 'min_bends'] * 10
 
-    board.fill_clip_with_thresholds(clip_nums, clip_methods, verbose=False, threshold_dict=threshold_dict)
+    board.fill_clip_with_thresholds(clip_nums, clip_methods, verbose=False, threshold_dict=test_threshold_dict)
     print(board.return_solved_board())
     print(board.return_training_board())
