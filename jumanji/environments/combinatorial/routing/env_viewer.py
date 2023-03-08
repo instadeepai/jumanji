@@ -49,7 +49,7 @@ class RoutingViewer:
 
         self.width = viewer_width
         self.height = viewer_height
-
+        # Change for Ole to be able to run on ssh
         self.screen = pygame.display.set_mode((viewer_width, viewer_height))
         self.grid_unit = grid_unit
         self.xoff = (viewer_width - self.grid_unit * grid_cols) // 2
