@@ -55,6 +55,7 @@ setup(
             os.path.join(_CURRENT_DIR, "requirements", "requirements-train.txt")
         ),
     },
+    package_data={"jumanji": ["py.typed"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
