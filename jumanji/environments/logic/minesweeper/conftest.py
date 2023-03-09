@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import jax
 import jax.numpy as jnp
 import pytest
-from jax import random
 
 from jumanji.environments.logic.minesweeper.constants import UNEXPLORED_ID
 from jumanji.environments.logic.minesweeper.env import Minesweeper
@@ -32,10 +32,10 @@ def manual_start_state() -> State:
     """Fixture for a start state chosen manually to verify the impact of certain actions"""
     empty_board = jnp.full(shape=(4, 4), fill_value=UNEXPLORED_ID, dtype=jnp.int32)
     flat_mine_locations = jnp.array([0, 1, 2, 4, 6, 8, 9, 10], dtype=jnp.int32)
-    key = random.PRNGKey(0)
+    key = jax.random.PRNGKey(0)
     return State(
         board=empty_board,
         flat_mine_locations=flat_mine_locations,
         key=key,
-        step_count=jnp.int32(0),
+        step_count=jnp.array(0, jnp.int32),
     )

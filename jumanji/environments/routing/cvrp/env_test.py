@@ -188,7 +188,9 @@ class TestSparseCVRP:
         """Checks that the depot cannot be revisited if we are already at the depot."""
         key = jax.random.PRNGKey(0)
         state, timestep = cvrp_sparse_reward.reset(key)
-        state, timestep = cvrp_sparse_reward.step(state, jnp.int32(DEPOT_IDX))
+        state, timestep = cvrp_sparse_reward.step(
+            state, jnp.array(DEPOT_IDX, jnp.int32)
+        )
 
         assert timestep.last()
 

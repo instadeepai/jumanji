@@ -122,7 +122,7 @@ def state(key: chex.PRNGKey, grid: chex.Array) -> State:
         position=jnp.array([(1, 2), (3, 2), (2, 4)]),
     )
 
-    state = State(key=key, grid=grid, step=jnp.int32(0), agents=agents)
+    state = State(key=key, grid=grid, step=jnp.array(0, jnp.int32), agents=agents)
 
     return state
 
@@ -159,7 +159,7 @@ def state1(
         position=jnp.array([(0, 2), (3, 1), (2, 3)]),
     )
 
-    return State(grid=grid, step=jnp.int32(1), agents=agents, key=key)
+    return State(grid=grid, step=jnp.array(1, jnp.int32), agents=agents, key=key)
 
 
 @pytest.fixture
@@ -194,7 +194,7 @@ def state2(
         position=jnp.array([(0, 2), (3, 0), (2, 3)]),
     )
 
-    return State(grid=grid, step=jnp.int32(2), agents=agents, key=key)
+    return State(grid=grid, step=jnp.array(2, jnp.int32), agents=agents, key=key)
 
 
 @pytest.fixture

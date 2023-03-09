@@ -94,7 +94,7 @@ class Evaluator:
                 state=state,
                 timestep=timestep,
                 key=key,
-                episode_count=jnp.int32(0),
+                episode_count=jnp.array(0, jnp.int32),
                 env_step_count=acting_state.env_step_count + 1,
             )
             return acting_state, return_
@@ -105,8 +105,8 @@ class Evaluator:
             state=state,
             timestep=timestep,
             key=init_key,
-            episode_count=jnp.int32(0),
-            env_step_count=jnp.int32(0),
+            episode_count=jnp.array(0, jnp.int32),
+            env_step_count=jnp.array(0, jnp.int32),
         )
         return_ = jnp.array(0, float)
         final_acting_state, return_ = jax.lax.while_loop(

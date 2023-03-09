@@ -30,13 +30,13 @@ spec:
       count: 1
 
       resources:
-        cpus: 1
-        ramRatio: 20 # RAM per CPU
+        cpus: 2
+        ramRatio: 10 # RAM per CPU
 
         accelerators: # optional
           gpu:
             count: 1
-            product: Tesla-V100-SXM3-32GB # options: Quadro-RTX-4000
+            product: A100-SXM4-80GB # options: Quadro-RTX-4000
             type: gpu
 
 #        machineName: "dgx" # optional

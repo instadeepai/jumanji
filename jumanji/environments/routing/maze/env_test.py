@@ -66,7 +66,7 @@ class TestMazeEnvironment:
         state, timestep = maze_env.reset(key)
         assert isinstance(timestep, TimeStep)
         assert isinstance(state, State)
-        action = jnp.int32(2)
+        action = jnp.array(2, jnp.int32)
 
         chex.clear_trace_counter()
         step_fn = jax.jit(chex.assert_max_traces(maze_env.step, n=1))
@@ -98,13 +98,13 @@ class TestMazeEnvironment:
             walls=state.walls,
             action_mask=maze_env._compute_action_mask(state.walls, agent_position),
             key=state.key,
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
         )
 
         step_fn = jax.jit(maze_env.step)
 
         # Agent takes a step right
-        action = jnp.int32(1)
+        action = jnp.array(1, jnp.int32)
         state, timestep = step_fn(initial_state, action)
 
         assert timestep.reward == 0
@@ -112,7 +112,7 @@ class TestMazeEnvironment:
         assert state.agent_position == Position(row=4, col=1)
 
         # Agent takes a step right
-        action = jnp.int32(1)
+        action = jnp.array(1, jnp.int32)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
@@ -120,7 +120,7 @@ class TestMazeEnvironment:
         assert state.agent_position == Position(row=4, col=2)
 
         # Agent takes a step up
-        action = jnp.int32(0)
+        action = jnp.array(0, jnp.int32)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
@@ -128,7 +128,7 @@ class TestMazeEnvironment:
         assert state.agent_position == Position(row=3, col=2)
 
         # Agent takes a step up
-        action = jnp.int32(0)
+        action = jnp.array(0, jnp.int32)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
@@ -136,7 +136,7 @@ class TestMazeEnvironment:
         assert state.agent_position == Position(row=2, col=2)
 
         # Agent fails to take a step left due to wall
-        action = jnp.int32(3)
+        action = jnp.array(3, jnp.int32)
         state, timestep = step_fn(state, action)
 
         assert timestep.reward == 0
@@ -177,7 +177,7 @@ class TestMazeEnvironment:
             walls=state.walls,
             action_mask=maze_env._compute_action_mask(state.walls, agent_position),
             key=state.key,
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
         )
 
         actions = [1, 1, 0, 0, 0, 0]
@@ -209,7 +209,7 @@ class TestMazeEnvironment:
             walls=state.walls,
             action_mask=maze_env._compute_action_mask(state.walls, agent_position),
             key=state.key,
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
         )
 
         actions = [1, 1, 0, 0, 0, 0, 1]

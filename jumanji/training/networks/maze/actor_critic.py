@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments.routing.maze.env import Maze, Observation
+from jumanji.environments.routing.maze import Maze, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,

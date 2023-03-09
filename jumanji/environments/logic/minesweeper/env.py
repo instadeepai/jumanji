@@ -53,7 +53,7 @@ def state_to_observation(state: State, num_mines: int) -> Observation:
     return Observation(
         board=state.board,
         action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-        num_mines=jnp.int32(num_mines),
+        num_mines=jnp.array(num_mines, jnp.int32),
         step_count=state.step_count,
     )
 
@@ -65,10 +65,10 @@ class Minesweeper(Environment[State]):
         - board: jax array (int32) of shape (board_height, board_width):
             each cell contains -1 if not yet explored, or otherwise the number of mines in
             the 8 adjacent squares.
-        - action_mask: jax array (bool) of same shape as board:
+        - action_mask: jax array (bool) of shape (board_height, board_width):
             indicates which actions are valid (not yet explored squares).
         - num_mines: the number of mines to find, which can be read from the env.
-        - step_count: jax array (int32):
+        - step_count: jax array (int32) of shape ():
             specifies how many timesteps have elapsed since environment reset.
 
     - action:
@@ -91,8 +91,19 @@ class Minesweeper(Environment[State]):
         - flat_mine_locations: jax array (int32) of shape (board_height * board_width):
             indicates the (flat) locations of all the mines on the board.
             Will be of length num_mines.
-        - key: jax array (int32) of shape (2) used for seeding the sampling of mine placement
+        - key: jax array (int32) of shape (2,) used for seeding the sampling of mine placement
             on reset.
+
+    ```python
+    from jumanji.environments import Minesweeper
+    env = Minesweeper()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -140,7 +151,7 @@ class Minesweeper(Environment[State]):
             fill_value=UNEXPLORED_ID,
             dtype=jnp.int32,
         )
-        step_count = jnp.int32(0)
+        step_count = jnp.array(0, jnp.int32)
         flat_mine_locations = create_flat_mine_locations(
             key=key,
             board_height=self.board_height,

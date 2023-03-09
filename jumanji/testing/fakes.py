@@ -96,7 +96,7 @@ class FakeEnvironment(Environment[FakeState]):
             timestep: TimeStep object corresponding the first timestep returned by the environment,
         """
 
-        state = FakeState(key=key, step=jnp.int32(0))
+        state = FakeState(key=key, step=jnp.array(0, jnp.int32))
         observation = self._state_to_obs(state)
         timestep = restart(observation=observation)
         return state, timestep

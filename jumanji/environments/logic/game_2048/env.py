@@ -54,6 +54,17 @@ class Game2048(Environment[State]):
     the value. In this case, the reward is the value of the new tile.
 
     - episode termination: when no more valid moves exist (this can happen when the board is full).
+
+    ```python
+    from jumanji.environments import Game2048
+    env = Game2048()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -62,7 +73,8 @@ class Game2048(Environment[State]):
         """Initialize the 2048 game.
 
         Args:
-            board_size: size of the board (default: 4).
+            board_size: size of the board.
+                Defaults to 4.
         """
         self.board_size = board_size
 
@@ -133,7 +145,7 @@ class Game2048(Environment[State]):
 
         state = State(
             board=board,
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
             action_mask=action_mask,
             key=key,
             score=jnp.array(0, float),

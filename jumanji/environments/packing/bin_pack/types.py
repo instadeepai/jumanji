@@ -138,7 +138,7 @@ class Observation(NamedTuple):
     ems_mask: array of booleans that indicate the EMSs that are valid.
     items: defined by 3 attributes (x, y, z).
     items_mask: array of booleans that indicate the items that are valid.
-    items_placed: array of booleans that indicate the items that are placed.
+    items_placed: array of booleans that indicate the items that have been placed so far.
     action_mask: array of booleans that indicate the feasible actions, i.e. EMSs and items that can
         be chosen.
     """

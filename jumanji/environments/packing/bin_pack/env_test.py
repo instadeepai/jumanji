@@ -218,8 +218,8 @@ def test_bin_pack__optimal_policy_toy_instance(
     [
         (False, 5, 20, 10),
         (True, 5, 20, 10),
-        (False, 40, 60, 40),
-        (True, 40, 60, 40),
+        (False, 20, 80, 50),
+        (True, 20, 80, 50),
     ],
 )
 def test_bin_pack__optimal_policy_random_instance(
@@ -231,7 +231,7 @@ def test_bin_pack__optimal_policy_random_instance(
 ) -> None:
     """Functional test to check that random instances can be optimally packed with an optimal
     policy. Checks for both options: normalizing dimensions and not normalizing, and checks for
-    two different sizes: 5 items and 40 items, with respectively 20 and 60 max number of EMSs.
+    two different sizes: 5 items and 20 items, with respectively 20 and 80 max number of EMSs.
     """
     num_trial_episodes = 3
     random_bin_pack = BinPack(

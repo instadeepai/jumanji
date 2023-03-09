@@ -51,8 +51,9 @@ class Connector(Environment[State]):
 
     - observation - Observation
         - action mask: jax array (bool) of shape (num_agents, 5).
-        - step: (int) the current episode step.
-        - grid: jax array (int) of shape (num_agents, size, size):
+        - step: jax array (int32) of shape ()
+            the current episode step.
+        - grid: jax array (int32) of shape (num_agents, size, size)
             - each 2d array (size, size) along axis 0 is the agent's local observation.
             - agents have ids from 0 to (num_agents - 1)
             - with 2 agents you might have a grid like this:
@@ -66,7 +67,7 @@ class Connector(Environment[State]):
               This would just be agent 0's view, the numbers would be flipped for agent 1's view.
               So the full observation would be of shape (2, 3, 3).
 
-    - action: jax array (int) of shape (num_agents,):
+    - action: jax array (int32) of shape (num_agents,):
         - can take the values [0,1,2,3,4] which correspond to [No Op, Up, Right, Down, Left].
         - each value in the array corresponds to an agent's action.
 
@@ -79,8 +80,19 @@ class Connector(Environment[State]):
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
-        - grid: jax array (int) of shape (size, size) which corresponds to agent 0's observation.
-        - step: (int) number of steps passed in the current episode.
+        - grid: jax array (int32) of shape (size, size) which corresponds to agent 0's observation.
+        - step: jax array (int32) of shape () number of steps passed in the current episode.
+
+    ```python
+    from jumanji.environments import Connector
+    env = Connector()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -142,7 +154,12 @@ class Connector(Environment[State]):
         timestep = restart(observation=observation, shape=(self._num_agents,))
 
         return (
-            State(key=key, grid=state.grid, step=jnp.int32(0), agents=state.agents),
+            State(
+                key=key,
+                grid=state.grid,
+                step=jnp.array(0, jnp.int32),
+                agents=state.agents,
+            ),
             timestep,
         )
 

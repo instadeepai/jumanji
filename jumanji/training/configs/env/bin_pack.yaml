@@ -1,31 +1,28 @@
 name: bin_pack
 env_kwargs:
-    instance_generator_type: toy
-    obs_num_ems: 40
-instance_generator_kwargs:
-
+    obs_num_ems: 50
+    generator: null  # Defaults to RandomGenerator with max_num_items=20 and max_num_ems=80
 
 network:
-    policy_layers: [32, 32]
-    value_layers: [64, 64]
-    transformer_n_blocks: 2
-    transformer_mlp_units: [32,]
-    transformer_key_size: 16
+    num_independent_transformer_layers: 4
+    num_joint_transformer_layers: 4
     transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
 
 training:
-    num_epochs: 100
-    num_learner_steps_per_epoch: 500
-    n_steps: 10
+    num_epochs: 500
+    num_learner_steps_per_epoch: 50
+    n_steps: 20
     total_batch_size: 128
 
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.99
+    discount_factor: 1.0
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0

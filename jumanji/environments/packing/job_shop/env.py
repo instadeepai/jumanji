@@ -36,6 +36,17 @@ class JobShop(Environment[State]):
     minimise the total length of the schedule, also known as the makespan.
 
     [1] https://developers.google.com/optimization/scheduling/job_shop.
+
+    ```python
+    from jumanji.environments import JobShop
+    env = JobShop()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(self, generator: Optional[Generator] = None):
@@ -155,7 +166,7 @@ class JobShop(Environment[State]):
         )
 
         # Increment the time step
-        updated_timestep = jnp.int32(state.current_timestep + 1)
+        updated_timestep = jnp.array(state.current_timestep + 1, jnp.int32)
 
         # Check if all machines are idle simultaneously
         all_machines_idle = jnp.all(

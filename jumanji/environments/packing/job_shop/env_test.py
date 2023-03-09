@@ -74,7 +74,7 @@ class TestJobShop:
                 ],
             )
         )
-        assert state.current_timestep == jnp.int32(0)
+        assert state.current_timestep == jnp.array(0, jnp.int32)
 
     def test_env__reset_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the reset is only compiled once when jitted."""

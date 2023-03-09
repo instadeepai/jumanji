@@ -30,18 +30,18 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Cleaner(Environment[State]):
-    """A JAX implementation of the 'Multi-Agent Cleaner' game.
+    """A JAX implementation of the 'Cleaner' game. # TODO: need a better description here.
 
     - observation: `Observation`
-        - grid: jax array (int) containing the state of the board:
-            0 for dirty tile, 1 for clean tile, 2 for wall.
-        - agents_locations: jax array (int) of size (num_agents, 2) containing
-            the location of each agent on the board.
-        - action_mask: jax array (bool) of size (num_agents, 4) stating for each agent
-            if each of the four actions (up, right, down, left) is allowed.
+        - grid: jax array (int32) of shape (grid_width, grid_height)
+            contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int32) of shape (num_agents, 2)
+            contains the location of each agent on the board.
+        - action_mask: jax array (bool) of shape (num_agents, 4)
+            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
 
-    - action: jax array (int) of shape (num_agents,) containing the action for each agent.
-        (0: up, 1: right, 2: down, 3: left)
+    - action: jax array (int32) of shape (num_agents,) containing the action for each agent
+        (0: up, 1: right, 2: down, 3: left).
 
     - reward: global reward, +1 every time a tile is cleaned.
 
@@ -51,14 +51,25 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int) containing the state of the board:
-            0 for dirty tile, 1 for clean tile, 2 for a wall.
-        - agents_locations: jax array (int) of size (num_agents, 2) containing
-            the location of each agent on the board.
-        - action_mask: jax array (bool) of size (num_agents, 4) stating for each agent
-            if each of the four actions (up, right, down, left) is allowed.
+        - grid: jax array (int32) of shape (grid_width, grid_height)
+            contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int32) of shape (num_agents, 2)
+            contains the location of each agent on the board.
+        - action_mask: jax array (bool) of shape (num_agents, 4)
+            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
         - step_count: the number of steps from the beginning of the environment.
         - key: jax random generation key. Ignored since the environment is deterministic.
+
+    ```python
+    from jumanji.environments import Cleaner
+    env = Cleaner()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -112,9 +123,9 @@ class Cleaner(Environment[State]):
                     and maximum value for the second is grid_height.
                 - action_mask: BoundedArray of bool, shape is (num_agent, 4).
         """
-        grid = specs.BoundedArray(self.grid_shape, int, 0, 2, "grid")
+        grid = specs.BoundedArray(self.grid_shape, jnp.int32, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
-            (self.num_agents, 2), int, [0, 0], self.grid_shape, "agents_locations"
+            (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
         )
         action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
@@ -166,7 +177,7 @@ class Cleaner(Environment[State]):
             grid=grid,
             agents_locations=agents_locations,
             action_mask=self._compute_action_mask(grid, agents_locations),
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
             key=key,
         )
 

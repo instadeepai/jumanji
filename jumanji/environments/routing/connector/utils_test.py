@@ -110,13 +110,13 @@ def test_connected_or_blocked() -> None:
     is neither connected nor blocked.
     """
     not_connected_agent = Agent(
-        id=jnp.int32(0),
+        id=jnp.array(0, jnp.int32),
         start=jnp.array([1, 1]),
         target=jnp.array([1, 3]),
         position=jnp.array([1, 2]),
     )
     connected_agent = Agent(
-        id=jnp.int32(0),
+        id=jnp.array(0, jnp.int32),
         start=jnp.array([1, 2]),
         target=jnp.array([1, 2]),
         position=jnp.array([1, 2]),

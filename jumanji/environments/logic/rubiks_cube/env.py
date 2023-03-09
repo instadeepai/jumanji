@@ -55,7 +55,7 @@ class RubiksCube(Environment[State]):
     - observation: `Observation`
         - cube: jax array (int8) of shape (6, cube_size, cube_size):
             each cell contains the index of the corresponding colour of the sticker in the scramble.
-        - step_count: jax array (int32):
+        - step_count: jax array (int32) of shape ():
             specifies how many timesteps have elapsed since environment reset
 
     - action:
@@ -70,7 +70,8 @@ class RubiksCube(Environment[State]):
     - state: `State`
         - cube: as in observation.
         - step_count: as in observation.
-        - key: jax array (int32) of shape (2) used for seeding the sampling for scrambling on reset.
+        - key: jax array (int32) of shape (2,) used for seeding the sampling for scrambling on
+            reset.
         - action_history: jax array (int16) of shape (max_num_scrambles, 3):
             indicates the entire history of applied moves
             (including those taken on scrambling the cube in the environment reset).
@@ -81,6 +82,17 @@ class RubiksCube(Environment[State]):
             The second axis indexes over the component of the action (face, depth, amount).
             The number of scrambles applied for each state is given by
             env.num_scrambles_on_reset + state.step_count
+
+    ```python
+    from jumanji.environments import RubiksCube
+    env = RubiksCube()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -202,7 +214,7 @@ class RubiksCube(Environment[State]):
         action_history = action_history.at[: self.num_scrambles_on_reset].set(
             self._unflatten_action(flat_actions_in_scramble).transpose()
         )
-        step_count = jnp.int32(0)
+        step_count = jnp.array(0, jnp.int32)
         state = State(
             cube=cube,
             step_count=step_count,

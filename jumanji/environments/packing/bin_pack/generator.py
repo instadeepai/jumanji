@@ -571,12 +571,13 @@ class RandomGenerator(Generator):
         env.render(reset_state)
         solution = generator.generate_solution(key)
         env.render(solution)
-        ```"""
+        ```
+    """
 
     def __init__(
         self,
-        max_num_items: int = 40,
-        max_num_ems: int = 100,
+        max_num_items: int = 20,
+        max_num_ems: int = 80,
         split_eps: float = 0.3,
         prob_split_one_item: float = 0.7,
         split_num_same_items: int = 5,
@@ -588,10 +589,10 @@ class RandomGenerator(Generator):
             max_num_items: maximum number of items the generator will ever generate when creating
                 a new instance. This defines the shapes of arrays related to items in the
                 environment state. The more items the more difficult the environment will be.
-                Default to 40.
+                Default to 20.
             max_num_ems: maximum number of ems the environment will handle. This defines the shape
                 of the EMS buffer that is kept in the environment state. The good number heavily
-                depends on the number of items (given by `max_num_items`). Default to 100.
+                depends on the number of items (given by `max_num_items`). Default to 80.
             split_eps: fraction of edges of a space that cannot be chosen as a split point. This
                 prevents from infinitely small items and biases the distribution towards
                 reasonable-size items. Defaults to 0.3.
@@ -796,8 +797,10 @@ class RandomGenerator(Generator):
         space axis length with paddings equal to `_split_eps`% on each side of the space.
         """
         axis_min, axis_max = (
-            item_space.get_axis_value(axis, 1) + jnp.int32(self._split_eps * axis_len),
-            item_space.get_axis_value(axis, 2) - jnp.int32(self._split_eps * axis_len),
+            item_space.get_axis_value(axis, 1)
+            + jnp.array(self._split_eps * axis_len, jnp.int32),
+            item_space.get_axis_value(axis, 2)
+            - jnp.array(self._split_eps * axis_len, jnp.int32),
         )
         axis_split = jax.random.randint(split_key, (), axis_min, axis_max, jnp.int32)
         free_index = jnp.argmin(items_mask)
@@ -831,7 +834,7 @@ class RandomGenerator(Generator):
         new_items_axis_2 = (
             items_spaces.get_axis_value(axis, 2)
             .at[item_id]
-            .set(initial_item_axis_1 + jnp.int32(axis_len / num_split))
+            .set(initial_item_axis_1 + jnp.array(axis_len / num_split, jnp.int32))
         )
         items_spaces.set_axis_value(axis, 2, new_items_axis_2)
 
@@ -844,9 +847,11 @@ class RandomGenerator(Generator):
                 lambda coord: coord.at[free_index].set(coord[item_id]),
                 items_spaces,
             )
-            item_axis_1 = initial_item_axis_1 + jnp.int32(i * axis_len / num_split)
-            item_axis_2 = initial_item_axis_1 + jnp.int32(
-                (i + 1) * axis_len / num_split
+            item_axis_1 = initial_item_axis_1 + jnp.array(
+                i * axis_len / num_split, jnp.int32
+            )
+            item_axis_2 = initial_item_axis_1 + jnp.array(
+                (i + 1) * axis_len / num_split, jnp.int32
             )
             new_items_axis_1 = (
                 items_spaces.get_axis_value(axis, 1).at[free_index].set(item_axis_1)

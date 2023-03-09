@@ -31,21 +31,23 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 class Maze(Environment[State]):
     """A JAX implementation of a 2D Maze. The goal is to navigate the maze to find the target
-       position.
+    position.
 
     - observation:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
-        - action_mask: array specifying which directions the agent can move in from its
-            current position.
-        - step_count: (int32) step number of the episode.
+        - walls: jax array (bool) of shape (n_rows, n_cols)
+            whose values are `True` where walls are and `False` for empty cells.
+        - action_mask: array (bool) of shape (4,)
+            defining the available actions in the current position.
+        - step_count: jax array (int32) of shape ()
+            step number of the episode.
 
-    - action: (int32) specifying which action to take: [0,1,2,3] correspond to
+    - action: jax array (int32) of shape () specifying which action to take: [0,1,2,3] correspond to
         [Up, Right, Down, Left]. If an invalid action is taken, i.e. there is a wall blocking the
         action, then no action (no-op) is taken.
 
-    - reward: (float32) 1 if target reached, 0 otherwise.
+    - reward: jax array (float32) of shape (): 1 if the target is reached, 0 otherwise.
 
     - episode termination (if any):
         - agent reaches the target position.
@@ -54,11 +56,24 @@ class Maze(Environment[State]):
     - state: State:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
+        - walls: jax array (bool) of shape (n_rows, n_cols)
+            whose values are `True` where walls are and `False` for empty cells.
         - action_mask: array (bool) of shape (4,)
             defining the available actions in the current position.
-        - step_count: (int32), step number of the episode.
+        - step_count: jax array (int32) of shape ()
+            step number of the episode.
         - key: random key (uint) of shape (2,).
+
+    ```python
+    from jumanji.environments import Maze
+    env = Maze()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     FIGURE_NAME = "Maze"
@@ -75,8 +90,10 @@ class Maze(Environment[State]):
         """Instantiates a Maze environment.
 
         Args:
-            n_rows: number of rows, i.e. height of the maze. By default, `n_rows = 10`.
-            n_cols: number of columns, i.e. width of the maze. By default, `n_cols = 10`.
+            n_rows: number of rows, i.e. height of the maze.
+                Defaults to 10.
+            n_cols: number of columns, i.e. width of the maze.
+                Defaults to 10.
             step_limit: the horizon of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default,
                 `step_limit = n_rows * n_cols`.
@@ -189,7 +206,7 @@ class Maze(Environment[State]):
             walls=walls,
             action_mask=self._compute_action_mask(walls, agent_position),
             key=key,
-            step_count=jnp.int32(0),
+            step_count=jnp.array(0, jnp.int32),
         )
 
         # Generate the observation from the environment state.

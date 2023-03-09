@@ -19,8 +19,7 @@ import haiku as hk
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments.packing.job_shop import JobShop
-from jumanji.environments.packing.job_shop.types import Observation
+from jumanji.environments.packing.job_shop import JobShop, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,

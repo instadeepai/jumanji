@@ -91,12 +91,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    env_name = cfg.env.name
-    env_kwargs = cfg.env.env_kwargs
-    if "instance_generator_kwargs" in cfg.env.keys():
-        instance_generator_kwargs = cfg.env.instance_generator_kwargs
-        env_kwargs.update(instance_generator_kwargs or {})
-    env: Environment = ENV_FACTORY[env_name](**env_kwargs)
+    env: Environment = ENV_FACTORY[cfg.env.name](**cfg.env.env_kwargs)
     if isinstance(env, Connector):
         env = MultiToSingleWrapper(env)
     return env
@@ -198,12 +193,11 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
             bin_pack=env.unwrapped,
-            policy_layers=cfg.env.network.policy_layers,
-            value_layers=cfg.env.network.value_layers,
-            transformer_n_blocks=cfg.env.network.transformer_n_blocks,
-            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
-            transformer_key_size=cfg.env.network.transformer_key_size,
+            num_independent_transformer_layers=cfg.env.network.num_independent_transformer_layers,
+            num_joint_transformer_layers=cfg.env.network.num_joint_transformer_layers,
             transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)

@@ -110,7 +110,7 @@ class ToyGenerator(Generator):
         machines_remaining_times = jnp.full(self.num_machines, 0, jnp.int32)
         scheduled_times = jnp.full((self.num_jobs, self.max_num_ops), -1, jnp.int32)
         ops_mask = ops_machine_ids != -1
-        current_timestep = jnp.int32(0)
+        current_timestep = jnp.array(0, jnp.int32)
 
         state = State(
             ops_machine_ids=ops_machine_ids,
@@ -185,8 +185,8 @@ class RandomGenerator(Generator):
             jnp.tile(jnp.arange(self.max_num_ops), reps=(self.num_jobs, 1)),
             jnp.expand_dims(num_ops_per_job, axis=-1),
         )
-        ops_machine_ids = jnp.where(mask, ops_machine_ids, jnp.int32(-1))
-        ops_durations = jnp.where(mask, ops_durations, jnp.int32(-1))
+        ops_machine_ids = jnp.where(mask, ops_machine_ids, jnp.array(-1, jnp.int32))
+        ops_durations = jnp.where(mask, ops_durations, jnp.array(-1, jnp.int32))
 
         # Initially, all machines are available (the value self.num_jobs corresponds to no-op)
         machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
@@ -197,7 +197,7 @@ class RandomGenerator(Generator):
         ops_mask = ops_machine_ids != -1
 
         # Time starts at 0
-        current_timestep = jnp.int32(0)
+        current_timestep = jnp.array(0, jnp.int32)
 
         state = State(
             ops_machine_ids=ops_machine_ids,

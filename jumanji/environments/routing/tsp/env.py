@@ -74,6 +74,17 @@ class TSP(Environment[State]):
 
     [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization
         with Multiple Optima for Reinforcement Learning".
+
+    ```python
+    from jumanji.environments import TSP
+    env = TSP()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(

@@ -43,9 +43,8 @@ from jumanji.types import TimeStep, restart, termination, transition
 
 
 class BinPack(Environment[State]):
-    # TODO: docstring
-    """
-    RL Environment for the problem of bin packing. We use the Empty Maximal Space (EMS) formulation
+    """Problem of bin packing, where a set of items have to be placed in a 3D container with the goal of
+    maximizing its volume utilization. We use the Empty Maximal Space (EMS) formulation
     of this problem. An EMS is a 3D-rectangular space that lives inside the container and has the
     following properties:
         - It does not intersect any items, and it is not fully included into any other EMSs.
@@ -53,35 +52,54 @@ class BinPack(Environment[State]):
         the first point corresponding to its bottom-left location while the second defining its
         top-right corner.
 
-    The environment has the following characteristics.
+    - observation: `Observation`
+        - ems: `EMS` tree of jax arrays (float if `normalize_dimensions` else int) each of
+            shape (obs_num_ems,),
+            coordinates of all EMSs at the current timestep.
+        - ems_mask: jax array (bool) of shape (obs_num_ems,)
+            indicates the EMSs that are valid.
+        - items: `Item` tree of jax arrays (float if `normalize_dimensions` else int) each of
+            shape (max_num_items,),
+            characteristics of all items for this instance.
+        - items_mask: jax array (bool) of shape (max_num_items,)
+            indicates the items that are valid.
+        - items_placed: jax array (bool) of shape (max_num_items,)
+            indicates the items that have been placed so far.
+        - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items)
+            mask of the joint action space: `True` if the action (ems_id, item_id) is valid.
 
-    - observation: Observation
-        - ems: EMS dataclass of jax arrays (float if normalize_dimensions else int)
-            of shape (obs_num_ems,).
-            (x1, x2, y1, y2, z1, z2): the coordinates of all EMSs at the current timestep.
-        - ems_mask: jax array (bool) of shape (obs_num_ems,).
-            True for each EMS that exists.
-        - items: Item dataclass of jax arrays (float if normalize_dimensions else int)
-            of shape (max_num_items,).
-            (x_len, y_len, z_len): characteristics of all items for this instance.
-        - items_mask: jax array (bool) of shape (max_num_items,).
-            True if the item exists.
-        - items_placed: jax array (bool) of shape (max_num_items,).
-            True if the item is placed in the container.
-        - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items).
-            Mask of the joint action space: True if the action (ems_id, item_id) is valid.
-
-    - action: BoundedArray
+    - action: `MultiDiscreteArray` (int32) of shape (obs_num_ems, max_num_items).
         - ems_id: int between 0 and obs_num_ems - 1 (included).
         - item_id: int between 0 and max_num_items - 1 (included).
 
-    - reward: jax array (float).
-        Default (sparse_linear): volume utilization of the container at the end of the episode.
+    - reward: jax array (float) of shape (), could be either:
+        - dense: increase in volume utilization of the container due to packing the chosen item.
+        - sparse: volume utilization of the container at the end of the episode.
 
     - episode termination:
-        if no other actions are possible (no items fit in any EMSs).
+        - if no action can be performed, i.e. no items fit in any EMSs, or all items have been
+            packed.
+        - if an invalid action is taken, i.e. an item that does not fit in an EMS or one that is
+            already packed.
+
+    - state: `State`
+        - coordinates: jax array (float) of shape (num_nodes + 1, 2)
+            the coordinates of each node and the depot.
+        - demands: jax array (int32) of shape (num_nodes + 1,)
+            the associated cost of each node and the depot (0.0 for the depot).
+        - position: jax array (int32)
+            the index of the last visited node.
+        - capacity: jax array (int32)
+            the current capacity of the vehicle.
+        - visited_mask: jax array (bool) of shape (num_nodes + 1,)
+            binary mask (False/True <--> not visited/visited).
+        - trajectory: jax array (int32) of shape (2 * num_nodes,)
+            identifiers of the nodes that have been visited (set to DEPOT_IDX if not filled yet).
+        - num_visits: int32
+            number of actions that have been taken (i.e., unique visits).
 
     ```python
+    from jumanji.environments import BinPack
     env = BinPack()
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
@@ -95,24 +113,24 @@ class BinPack(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
-        obs_num_ems: int = 60,
+        obs_num_ems: int = 50,
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
         render_mode: str = "human",
     ):
-        """Instantiate a `BinPack` environment.
+        """Instantiates a `BinPack` environment.
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment
                 instance. Implemented options are [`RandomGenerator`,
-                `ToyGenerator`, `CSVGenerator`]. Defaults to
-                `RandomGenerator`.
+                `ToyGenerator`, `CSVGenerator`]. Defaults to `RandomGenerator` that generates up to
+                20 items maximum and that can handle 80 EMSs by default.
             obs_num_ems: number of EMSs (possible spaces in which to place an item) to show to the
                 agent. If `obs_num_ems` is smaller than `generator.max_num_ems`, the first
                 `obs_num_ems` largest EMSs (in terms of volume) will be returned in the observation.
                 The good number heavily depends on the number of items (given by the instance
-                generator). Default to 60 EMSs observable.
+                generator). Default to 50 EMSs observable.
             reward_fn: compute the reward based on the current state, the chosen action, the next
                 state, whether the transition is valid and if it is terminal. Implemented options
                 are [`DenseReward`, `SparseReward`]. In each case, the total return at the end of
@@ -148,22 +166,21 @@ class BinPack(Environment[State]):
         )
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        # TODO: docstring
         """Specifications of the observation of the `BinPack` environment.
 
         Returns:
-            Spec containing all the specifications for all the `Observation` fields:
-            - ems: spec for `EMS`.
-                - normalize_dimensions: True -> tree of BoundedArray (float)
-                    of shape (obs_num_ems,).
-                - normalize_dimensions: False -> tree of BoundedArray (int)
-                    of shape (obs_num_ems,).
+            Spec for the `Observation` whose fields are:
+            - ems:
+                - if normalize_dimensions:
+                    tree of BoundedArray (float) of shape (obs_num_ems,).
+                - else:
+                    tree of BoundedArray (int32) of shape (obs_num_ems,).
             - ems_mask: BoundedArray (bool) of shape (obs_num_ems,).
-            - items: spec for `Item`.
-                - normalize_dimensions: True -> tree of BoundedArray (float)
-                    of shape (max_num_items,).
-                - normalize_dimensions: False -> tree of BoundedArray (int)
-                    of shape (max_num_items,).
+            - items:
+                - if normalize_dimensions:
+                    tree of BoundedArray (float) of shape (max_num_items,).
+                - else:
+                    tree of BoundedArray (int32) of shape (max_num_items,).
             - items_mask: BoundedArray (bool) of shape (max_num_items,).
             - items_placed: BoundedArray (bool) of shape (max_num_items,).
             - action_mask: BoundedArray (bool) of shape (obs_num_ems, max_num_items).

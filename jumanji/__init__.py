@@ -48,7 +48,7 @@ register(
     entry_point="jumanji.environments:BinPack",
     kwargs={
         "generator": None,  # defaults to RandomGenerator()
-        "obs_num_ems": 60,
+        "obs_num_ems": 50,
         "reward_fn": None,  # defaults to DenseRewardFn()
         "normalize_dimensions": True,
         "debug": False,

@@ -112,9 +112,9 @@ def test_solved_reward(
     solved_cube: chex.Array, differently_stickered_cube: chex.Array
 ) -> None:
     """Test that the cube fixtures have the expected rewards"""
-    solved_state = FakeState(cube=solved_cube, step_count=jnp.int32(0))
+    solved_state = FakeState(cube=solved_cube, step_count=jnp.array(0, jnp.int32))
     differently_stickered_state = FakeState(
-        cube=differently_stickered_cube, step_count=jnp.int32(0)
+        cube=differently_stickered_cube, step_count=jnp.array(0, jnp.int32)
     )
     assert jnp.equal(SparseRewardFunction()(solved_state), 1.0)
     assert jnp.equal(SparseRewardFunction()(differently_stickered_state), 0.0)
@@ -135,7 +135,9 @@ def test_moves_nontrivial(
 ) -> None:
     """Test that all moves leave the cube in a non-solved state"""
     move_solved_cube = move(solved_cube)
-    move_solved_state = FakeState(cube=move_solved_cube, step_count=jnp.int32(0))
+    move_solved_state = FakeState(
+        cube=move_solved_cube, step_count=jnp.array(0, jnp.int32)
+    )
     assert jnp.equal(SparseRewardFunction()(move_solved_state), 0.0)
     assert (
         jnp.not_equal(solved_cube, move_solved_cube).sum()

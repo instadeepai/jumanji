@@ -79,6 +79,17 @@ class Snake(Environment[State]):
             current number of steps in the episode.
         - action_mask: jax array (bool) of shape (4,)
             array specifying which directions the snake can move in from its current position.
+
+    ```python
+    from jumanji.environments import Snake
+    env = Snake()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     FIGURE_NAME = "Snake"

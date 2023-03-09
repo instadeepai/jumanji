@@ -10,7 +10,6 @@ training:
     n_steps: 10
     total_batch_size: 128
 
-
 evaluation:
     eval_total_batch_size: 500
     greedy_eval_total_batch_size: 500
