@@ -99,5 +99,5 @@ register(
 register(
     id="Cleaner-v0",
     entry_point="jumanji.environments:Cleaner",
-    kwargs={"grid_width": 10, "grid_height": 10, "num_agents": 5},
+    kwargs={"grid_width": 10, "grid_height": 10, "num_agents": 3},
 )

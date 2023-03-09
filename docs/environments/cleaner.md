@@ -24,6 +24,7 @@ The **observation** seen by the agent is a `NamedTuple` containing the following
 - `agents_locations`: jax array (int) of shape `(num_agents, 2)`, array specifying the x and y coordinates of every agent.
 - `action_mask`: jax array (bool) of shape `(num_agents, 4)`, array specifying, for each agent, which action
   (up, right, down, left) is legal.
+- `step_count`: jax array (int32) of shape `()`, number of steps elapsed in the current episode.
 
 ## Action
 
@@ -39,8 +40,8 @@ In both cases, the agent's position remains unchanged.
 
 ## Reward
 
-The reward is global and shared among the agents. It is equal to the number of tiles which were cleaned during the time step.
+The reward is global and shared among the agents. It is equal to the number of tiles which were cleaned during the time step, minus a penalty (0.5 by default) to encourage agents to clean the maze faster.
 
 ## Registered Versions 📖
 
-- `Cleaner-v0`, a room of shape 10 by 10 with 5 agents.
+- `Cleaner-v0`, a room of shape 10 by 10 with 3 agents.

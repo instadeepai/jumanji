@@ -279,6 +279,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
+    elif cfg.env.name == "cleaner":
+        assert isinstance(env.unwrapped, Cleaner)
+        actor_critic_networks = networks.make_actor_critic_networks_cleaner(
+            cleaner=env.unwrapped,
+            num_conv_channels=cfg.env.network.num_conv_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return actor_critic_networks

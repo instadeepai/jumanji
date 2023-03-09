@@ -51,8 +51,10 @@ class Observation(NamedTuple):
     agents_locations: array which specifies the x and y coordinates of every agent.
     action_mask: boolean array specifying, for each agent, which action
         (up, right, down, left) is legal.
+    step_count: the number of steps elapsed since the beginning of the episode.
     """
 
     grid: chex.Array  # (grid_width, grid_height)
     agents_locations: chex.Array  # (num_agent, 2)
     action_mask: chex.Array  # (num_agent, 4)
+    step_count: jnp.int32

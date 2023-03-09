@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -33,17 +33,22 @@ class Cleaner(Environment[State]):
     """A JAX implementation of the 'Cleaner' game. # TODO: need a better description here.
 
     - observation: `Observation`
-        - grid: jax array (int32) of shape (grid_width, grid_height)
-            contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
-        - agents_locations: jax array (int32) of shape (num_agents, 2)
-            contains the location of each agent on the board.
+
+        - grid: jax array (int) of shape (grid_height, grid_width)
+            the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int) of shape (num_agents, 2)
+            the location of each agent on the board.
         - action_mask: jax array (bool) of shape (num_agents, 4)
-            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
+            binary mask (False/True <--> invalid/valid action).
+        - step_count: (int32)
+            the number of step since the beginning of the episode.
 
-    - action: jax array (int32) of shape (num_agents,) containing the action for each agent
-        (0: up, 1: right, 2: down, 3: left).
+    - action: jax array (int) of shape (num_agents,)
+        the action for each agent: (0: up, 1: right, 2: down, 3: left)
 
-    - reward: global reward, +1 every time a tile is cleaned.
+    - reward: jax array (float) of shape ()
+        +1 every time a tile is cleaned and a configurable penalty (-0.5 by default) for
+        each timestep.
 
     - episode termination:
         - All tiles are clean.
@@ -51,14 +56,16 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int32) of shape (grid_width, grid_height)
-            contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
-        - agents_locations: jax array (int32) of shape (num_agents, 2)
-            contains the location of each agent on the board.
+        - grid: jax array (int) of shape (grid_height, grid_width)
+            the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int) of shape (num_agents, 2)
+            the location of each agent on the board.
         - action_mask: jax array (bool) of shape (num_agents, 4)
-            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
-        - step_count: the number of steps from the beginning of the environment.
-        - key: jax random generation key. Ignored since the environment is deterministic.
+            binary mask (False/True <--> invalid/valid action).
+        - step_count: (int32)
+            the number of step since the beginning of the episode.
+        - key: jax array (int) of shape (2,)
+            jax random generation key. Ignored since the environment is deterministic.
 
     ```python
     from jumanji.environments import Cleaner
@@ -74,23 +81,25 @@ class Cleaner(Environment[State]):
 
     def __init__(
         self,
-        grid_width: int,
-        grid_height: int,
-        num_agents: int,
+        grid_width: int = 10,
+        grid_height: int = 10,
+        num_agents: int = 3,
         step_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
         render_mode: str = "human",
+        penalty_per_timestep: float = 0.5,
     ) -> None:
         """Instantiates a `Cleaner` environment.
 
         Args:
-            grid_width: width of the grid.
-            grid_height: height of the grid.
-            num_agents: number of agents.
+            grid_width: width of the grid. Defaults to 10.
+            grid_height: height of the grid. Defaults to 10.
+            num_agents: number of agents. Defaults to 3.
             step_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
+            penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
         self.grid_width = grid_width
         self.grid_height = grid_height
@@ -98,6 +107,7 @@ class Cleaner(Environment[State]):
         self.num_agents = num_agents
         self.step_limit = step_limit or (self.grid_width * self.grid_height)
         self.generator = generator or RandomGenerator(grid_width, grid_height)
+        self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
         self._env_viewer = CleanerViewer("Cleaner", render_mode)
@@ -122,6 +132,7 @@ class Cleaner(Environment[State]):
                     Maximum value for the first column is grid_width,
                     and maximum value for the second is grid_height.
                 - action_mask: BoundedArray of bool, shape is (num_agent, 4).
+                - step_count_spec : specs.BoundedArray int of shape ().
         """
         grid = specs.BoundedArray(self.grid_shape, jnp.int32, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
@@ -130,12 +141,14 @@ class Cleaner(Environment[State]):
         action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
         )
+        step_count = specs.BoundedArray((), jnp.int32, 0, self.step_limit, "step_count")
         return specs.Spec(
             Observation,
             "ObservationSpec",
             grid=grid,
             agents_locations=agents_locations,
             action_mask=action_mask,
+            step_count=step_count,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -183,7 +196,8 @@ class Cleaner(Environment[State]):
 
         observation = self._observation_from_state(state)
 
-        timestep = restart(observation)
+        extras = self._compute_extras(state)
+        timestep = restart(observation, extras)
 
         return state, timestep
 
@@ -228,13 +242,23 @@ class Cleaner(Environment[State]):
 
         done = self._should_terminate(state, are_actions_valid)
 
+        extras = self._compute_extras(state)
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
             done,
-            termination,
-            transition,
+            lambda reward, observation, extras: termination(
+                reward=reward,
+                observation=observation,
+                extras=extras,
+            ),
+            lambda reward, observation, extras: transition(
+                reward=reward,
+                observation=observation,
+                extras=extras,
+            ),
             reward,
             observation,
+            extras,
         )
 
         return state, timestep
@@ -275,7 +299,10 @@ class Cleaner(Environment[State]):
         Since walls and dirty tiles do not change, counting the tiles which changed since previeous
         step is the same as counting the tiles which were cleaned.
         """
-        return jnp.sum(prev_state.grid != state.grid, dtype=float)
+        return (
+            jnp.sum(prev_state.grid != state.grid, dtype=float)
+            - self.penalty_per_timestep
+        )
 
     def _compute_action_mask(
         self, grid: chex.Array, agents_locations: chex.Array
@@ -308,6 +335,7 @@ class Cleaner(Environment[State]):
             grid=state.grid,
             agents_locations=state.agents_locations,
             action_mask=state.action_mask,
+            step_count=state.step_count,
         )
 
     def _are_actions_valid(
@@ -351,3 +379,12 @@ class Cleaner(Environment[State]):
             | ~(state.grid == DIRTY).any()
             | (state.step_count >= self.step_limit)
         )
+
+    def _compute_extras(self, state: State) -> Dict[str, Any]:
+        grid = state.grid
+        ratio_dirty_tiles = jnp.sum(grid == DIRTY) / jnp.sum(grid != WALL)
+        num_dirty_tiles = jnp.sum(grid == DIRTY)
+        return {
+            "ratio_dirty_tiles": ratio_dirty_tiles,
+            "num_dirty_tiles": num_dirty_tiles,
+        }

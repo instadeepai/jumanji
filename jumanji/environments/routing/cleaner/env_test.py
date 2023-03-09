@@ -102,7 +102,7 @@ class TestCleaner:
         # Assert only one tile changed, on the right of the initial pos
         assert jnp.sum(state.grid != initial_state.grid) == 1
         assert state.grid[0, 1] == CLEAN
-        assert timestep.reward == 1
+        assert timestep.reward == 1 - env.penalty_per_timestep
         assert jnp.all(state.agents_locations == jnp.array([0, 1]))
 
         # Second action: agent 0 and 2 move down, agent 1 moves left
@@ -112,7 +112,7 @@ class TestCleaner:
         assert jnp.sum(state.grid != initial_state.grid) == 2
         assert state.grid[0, 1] == CLEAN
         assert state.grid[1, 1] == CLEAN
-        assert timestep.reward == 1
+        assert timestep.reward == 1 - env.penalty_per_timestep
         assert timestep.step_type == StepType.MID
 
         assert jnp.all(state.agents_locations[0] == jnp.array([1, 1]))
@@ -135,7 +135,7 @@ class TestCleaner:
         assert jnp.all(state.agents_locations[1] == jnp.array([0, 1]))
         assert jnp.all(state.agents_locations[2] == jnp.array([0, 1]))
 
-        assert timestep.reward == 1
+        assert timestep.reward == 1 - env.penalty_per_timestep
 
     def test_env_cleaner__initial_action_mask(
         self, env: Cleaner, key: chex.PRNGKey
@@ -177,3 +177,15 @@ class TestCleaner:
             return select_action(subkeys, observation.action_mask)
 
         check_env_does_not_smoke(env, select_actions)
+
+    def test_env_cleaner__compute_extras(self, env: Cleaner, key: chex.PRNGKey) -> None:
+        state, _ = env.reset(key)
+
+        extras = env._compute_extras(state)
+        assert list(extras.keys()) == ["ratio_dirty_tiles", "num_dirty_tiles"]
+        assert 0 <= extras["ratio_dirty_tiles"] <= 1
+        grid = state.grid
+        assert extras["ratio_dirty_tiles"] == jnp.sum(grid == DIRTY) / jnp.sum(
+            grid != WALL
+        )
+        assert extras["num_dirty_tiles"] == jnp.sum(grid == DIRTY)
