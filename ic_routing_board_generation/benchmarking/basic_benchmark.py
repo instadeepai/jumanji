@@ -11,6 +11,8 @@ from ic_routing_board_generation.benchmarking.benchmark_utils import \
     make_benchmark_folder, files_list_from_benchmark_experiment
 from ic_routing_board_generation.ic_routing.route import Route
 
+# TODO (Marta): create master plotting loop for bar charts
+# TODO (Marta): refactor [plotting functions into plotting utils
 
 class BasicBenchmark:
     def __init__(

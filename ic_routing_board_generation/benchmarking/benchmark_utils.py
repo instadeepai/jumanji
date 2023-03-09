@@ -1,18 +1,12 @@
-import math
-import os
 import pickle
 from datetime import date, datetime
 from pathlib import Path
 from typing import List, Tuple
 
-import numpy as np
-from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1 import AxesGrid
-
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardName
+    BoardName, BoardGenerator
 
 
 def load_pickle(filename: str):
@@ -29,7 +23,7 @@ def make_benchmark_folder(with_time: bool = True):
     return path / experiment_folder
 
 
-def generate_board_generation_params(
+def board_generation_params_from_grid_params(
     grid_parameters: List[Tuple[int, int, int]],
 ) -> List[BoardGenerationParameters]:
     benchmarks_list = []
@@ -43,62 +37,37 @@ def generate_board_generation_params(
             benchmarks_list.append(benchmark)
     return benchmarks_list
 
-
 def files_list_from_benchmark_experiment(
         benchmark_experiment: str) -> List[str]:
-    directory = return_directory_string(benchmark_experiment)
+    directory = directory_string_from_benchamrk_experiement(benchmark_experiment)
     path = directory.glob('**/*')
     return [file_path.name for file_path in path if file_path.is_file()]
 
-
-def return_directory_string(benchmark_experiment: str) -> Path:
+def directory_string_from_benchamrk_experiement(benchmark_experiment: str) -> Path:
     dir_string = Path(__file__).parent.parent.parent
     folder = f"ic_experiments/benchmarks/{benchmark_experiment}/"
     return dir_string / folder
 
 
-def plot_heatmap(scores: np.ndarray):
-    # TODO (Marta): Add saving capability
-    fig, ax = plt.subplots()
-    im = ax.imshow(scores, cmap='Purples', interpolation='nearest')
-    # Create colorbar
-    cbar = ax.figure.colorbar(im, ax=ax)
-    plt.show()
-
-
-def plot_comparison_heatmap(
-    list_of_scores: List[np.ndarray],
-    list_of_titles: List[str],
-    num_agents: int,
-    number_of_boards_averaged: int,
+def generate_n_boards(
+    board_parameters: BoardGenerationParameters,
+    number_of_boards: int,
 ):
+    # TODO (Marta): add exception of all board_gen_parameters are not the same (with the exception of board_type
+    board_list = []
+    board_class = BoardGenerator.get_board_generator(board_parameters.generator_type)
+    board_generator = board_class(
+        rows=board_parameters.rows, columns=board_parameters.columns,
+        num_agents=board_parameters.number_of_wires,
+    )
+    for _ in range(number_of_boards):
+        board = None
+        none_coutner = 0
+        while board is None:
+            board = board_generator.return_solved_board()
+            none_coutner += 1
+            if none_coutner == 100:
+                raise ValueError("Failed to generate board 100 times")
+        board_list.append(board)
 
-    n_rows = max(math.ceil(len(list_of_scores) / 3), 1)
-    print(n_rows)
-    n_columns = 3
-    fig = plt.figure(figsize=(6, 2 * n_rows + 0.5))
-    grid = AxesGrid(fig, 111,
-                    nrows_ncols=(n_rows, n_columns),
-                    axes_pad=0.3,
-                    cbar_mode='single',
-                    cbar_location='right',
-                    cbar_pad=0.1
-                    )
-    plt.suptitle(f"Scores per Cell Averaged on {number_of_boards_averaged} Boards with {num_agents} wires ", fontsize=12, y=0.98)
-
-    for i, ax in enumerate(grid):
-
-        if i >= len(list_of_scores):
-            fig.delaxes(ax)
-        else:
-            ax.set_title(list_of_titles[i])
-            im = ax.imshow(list_of_scores[i], cmap='Purples')
-            ax.tick_params(left=False,
-                bottom=False,
-                labelleft=False,
-                labelbottom=False)
-
-    cbar = ax.cax.colorbar(im)
-    cbar = grid.cbar_axes[0].colorbar(im)
-    plt.tight_layout()
-    plt.show()
+    return board_list
