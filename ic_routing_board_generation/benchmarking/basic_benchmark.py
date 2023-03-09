@@ -1,35 +1,30 @@
-import dataclasses
-import time
-from datetime import date, datetime
-from pathlib import Path
-from typing import List, Optional, Iterable, Union
 import pickle
+from typing import List, Optional, Iterable, Union
 
+import jax.numpy as jnp
 import numpy as np
 from matplotlib import pyplot as plt
-import jax.numpy as jnp
 
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters, BenchmarkData
 from ic_routing_board_generation.benchmarking.benchmark_utils import \
     make_benchmark_folder, files_list_from_benchmark_experiment
 from ic_routing_board_generation.ic_routing.route import Route
-from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardName
 
 
 class BasicBenchmark:
     def __init__(
         self,
         benchmark_data: List[BenchmarkData],
-        directory_string: Optional[str] = None,
+        directory_string: str = None,
     ):
         self.benchmark_data = self._process_raw_benchmark_data(benchmark_data)
         self.directory_string = directory_string
         self.save_plots = False
 
     @classmethod
-    def from_file(cls,
+    def from_file(
+        cls,
         file_name_parameters: Union[List[BoardGenerationParameters], List[str]],
         directory_string: Optional[str] = "",
     ):
@@ -151,24 +146,6 @@ class BasicBenchmark:
                     file_name=f"/dist_{parameter}_{board_size}",
                 )
 
-    # def plot_total_wire_lengths_violin(self):
-    #     for board_size in self.benchmark_data.keys():
-    #         mean_lengths = []
-    #         labels = []
-    #         for benchmark in self.benchmark_data[board_size]:
-    #             labels.append(benchmark.generator_type.generator_type.value)
-    #             mean_lengths.append(benchmark.total_wire_lengths)
-    #
-    #         file_name = f"/total_wire_lenghts_{board_size}_violin" if self.save_plots else None
-    #         self._plot_violin_plot(
-    #             title=f"Total wire lengths over 1000 boards, {board_size}",
-    #             x_label="Generator type",
-    #             y_label="Total wire lengths",
-    #             data=mean_lengths,
-    #             labels=labels,
-    #             file_name=file_name
-    #         )
-
     def plot_proportion_wires_connected(self):
         for board_size in self.benchmark_data.keys():
             mean_proportion = []
@@ -228,11 +205,12 @@ class BasicBenchmark:
                 file_name=file_name,
             )
 
-    def _plot_bar_chart(self,
+    def _plot_bar_chart(
+        self,
         x_label: str, y_label: str, title: str,
         data: Iterable, labels:  List[str],
         file_name: Optional[str] = None,
-        stds = None
+        stds = None,
     ):
         fig, ax = plt.subplots()
         ax.bar(labels, data)
@@ -262,13 +240,8 @@ class BasicBenchmark:
         data: Iterable, labels: List[str],
         file_name: Optional[str] = None
     ):
-        # for i, el in enumerate(data):
-        #     plt.hist(el)
-        #     plt.title(i)
-        #     plt.show()
         fig, ax = plt.subplots()
         ax.violinplot(data, showmeans=True)
-        # ax.boxplot(data, showfliers=False)
         ax.set(
             title=title,
             ylabel=y_label,
@@ -299,8 +272,6 @@ class BasicBenchmark:
             fig.savefig(str(self.directory_string) + str(file_name))
         else:
             plt.show()
-            # print(means)
-            print()
 
 
     def _adjacent_values(self, vals, q1, q3):

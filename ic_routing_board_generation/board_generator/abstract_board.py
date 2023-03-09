@@ -31,7 +31,7 @@ class AbstractBoard(ABC):
 
     @property
     def num_agents(self):
-        return self._cols
+        return self._num_agents
 
     @num_agents.setter
     def num_agents(self, value):
