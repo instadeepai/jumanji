@@ -22,7 +22,7 @@ from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import get_position, get_target
 
 
-class InstanceGenerator(abc.ABC):
+class Generator(abc.ABC):
     """Base class for generators for the connector environment."""
 
     def __init__(self, grid_size: int, num_agents: int) -> None:
@@ -44,7 +44,7 @@ class InstanceGenerator(abc.ABC):
         """
 
 
-class UniformRandomGenerator(InstanceGenerator):
+class UniformRandomGenerator(Generator):
     """Generates connector environments that may or may not be solvable.
 
     Places start and target positions uniformly at random on the grid.

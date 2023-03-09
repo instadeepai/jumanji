@@ -19,7 +19,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.cleaner.constants import DIRTY, WALL
-from jumanji.environments.routing.cleaner.instance_generator import RandomGenerator
+from jumanji.environments.routing.cleaner.generator import RandomGenerator
 
 
 class TestRandomGenerator:

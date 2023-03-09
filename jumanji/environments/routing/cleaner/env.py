@@ -24,10 +24,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, WALL
 from jumanji.environments.routing.cleaner.env_viewer import CleanerViewer
-from jumanji.environments.routing.cleaner.instance_generator import (
-    Generator,
-    RandomGenerator,
-)
+from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
 from jumanji.types import Action, TimeStep, restart, termination, transition
 
@@ -35,7 +32,7 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 class Cleaner(Environment[State]):
     """A JAX implementation of the 'Multi-Agent Cleaner' game.
 
-    - observation: Observation
+    - observation: `Observation`
         - grid: jax array (int) containing the state of the board:
             0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int) of size (num_agents, 2) containing
@@ -53,7 +50,7 @@ class Cleaner(Environment[State]):
         - The number of steps is greater than the limit.
         - An invalid action is selected for any of the agents.
 
-    - state: State
+    - state: `State`
         - grid: jax array (int) containing the state of the board:
             0 for dirty tile, 1 for clean tile, 2 for a wall.
         - agents_locations: jax array (int) of size (num_agents, 2) containing
@@ -73,13 +70,15 @@ class Cleaner(Environment[State]):
         generator: Optional[Generator] = None,
         render_mode: str = "human",
     ) -> None:
-        """Instantiate an Cleaner environment.
+        """Instantiates a `Cleaner` environment.
 
         Args:
             grid_width: width of the grid.
             grid_height: height of the grid.
             num_agents: number of agents.
             step_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
         self.grid_width = grid_width
@@ -102,7 +101,7 @@ class Cleaner(Environment[State]):
         )
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Specification of the observation of the Cleaner environment.
+        """Specification of the observation of the `Cleaner` environment.
 
         Returns:
             ObservationSpec containing the specifications for all observation fields:
@@ -129,7 +128,7 @@ class Cleaner(Environment[State]):
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
-        """Specification of the actions for the Cleaner environment.
+        """Specification of the actions for the `Cleaner` environment.
 
         Returns:
             action_spec: a `specs.MultiDiscreteArray` spec.
@@ -272,7 +271,7 @@ class Cleaner(Environment[State]):
     ) -> chex.Array:
         """Compute the action mask.
 
-        An action is masked if it leads to a WALL or outside of the maze.
+        An action is masked if it leads to a WALL or out of the maze.
         """
 
         def is_move_valid(agent_location: chex.Array, move: chex.Array) -> chex.Array:

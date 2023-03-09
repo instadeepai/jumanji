@@ -19,7 +19,7 @@ import pytest
 
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.cleaner.instance_generator import Generator, Maze
+from jumanji.environments.routing.cleaner.generator import Generator, Maze
 from jumanji.environments.routing.cleaner.types import Observation, State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Sequence, Tuple, Type
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -26,7 +26,7 @@ from jumanji.env import Environment
 from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE, NOOP
 from jumanji.environments.routing.connector.env_viewer import ConnectorViewer
 from jumanji.environments.routing.connector.generator import (
-    InstanceGenerator,
+    Generator,
     UniformRandomGenerator,
 )
 from jumanji.environments.routing.connector.reward import RewardFn, SparseRewardFn
@@ -44,9 +44,9 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Connector(Environment[State]):
-    """The Connector environment is a multi-agent gridworld problem where each agent must connect a
-    start to a target. However when moving through this gridworld the agent leaves an impassable
-    trail behind it. Therefore agents must connect to their targets without overlapping the routes
+    """The `Connector` environment is a multi-agent gridworld problem where each agent must connect a
+    start to a target. However, when moving through this gridworld the agent leaves an impassable
+    trail behind it. Therefore, agents must connect to their targets without overlapping the routes
     taken by any other agent.
 
     - observation - Observation
@@ -87,21 +87,23 @@ class Connector(Environment[State]):
         self,
         size: int = 8,
         num_agents: int = 3,
-        reward_fn: Type[RewardFn] = SparseRewardFn,
+        reward_fn: Optional[RewardFn] = None,
         horizon: int = 50,
-        generator: Type[InstanceGenerator] = UniformRandomGenerator,
+        generator: Optional[Generator] = None,
         render_mode: str = "human",
-        **reward_fn_kwargs: Any
     ) -> None:
-        """Create the Connector Environment.
+        """Create the `Connector` environment.
 
         Args:
             size: number of rows and columns in the grid.
             num_agents: number of agents in the grid (or equivalently, the number of targets).
-            reward_fn: class of type RewardFn, whose __call__ is used as a reward function.
+            reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
+                Implemented options are [`DenseRewardFn`, `SparseRewardFn`].
+                Defaults to `SparseRewardFn`.
             horizon: the number of steps allowed before an episode terminates.
-            generator: an InstanceGenerator that generates new grids.
-            reward_fn_kwargs: arguments passed to the reward_fn's __init__ to configure it.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are [`UniformRandomGenerator`].
+                Defaults to `UniformRandomGenerator`.
         """
         super().__init__()
 
@@ -111,8 +113,8 @@ class Connector(Environment[State]):
 
         self.agent_ids = jnp.arange(self._num_agents)
 
-        self._reward_fn = reward_fn(**reward_fn_kwargs)
-        self._generator = generator(size, num_agents)
+        self._reward_fn = reward_fn or SparseRewardFn()
+        self._generator = generator or UniformRandomGenerator(size, num_agents)
 
         self._renderer = ConnectorViewer("Connector", num_agents, render_mode)
 
