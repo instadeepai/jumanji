@@ -50,7 +50,7 @@ class FakeEnvironment(Environment[FakeState]):
         """Initialize a fake environment.
 
         Args:
-            time_limit: horizon of an episode.
+            time_limit: time_limit of an episode.
             observation_shape: shape of the dummy observation.
             action_shape: shape of bounded continuous action space.
         """
@@ -164,7 +164,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
                 dimension should always be (num_agents, ...)
             num_action_values: number of values in the bounded discrete action space.
             reward_per_step: the reward given to each agent every timestep.
-            time_limit: horizon of an episode.
+            time_limit: time_limit of an episode.
         """
         self.time_limit = time_limit
         self.observation_shape = observation_shape

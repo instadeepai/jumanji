@@ -37,6 +37,44 @@ class JobShop(Environment[State]):
 
     [1] https://developers.google.com/optimization/scheduling/job_shop.
 
+    - observation: `Observation`
+        - ops_machine_ids: jax array (int32) of (num_jobs, max_num_ops)
+            id of the machine each operation must be processed on.
+        - ops_durations: jax array (int32) of (num_jobs, max_num_ops)
+            processing time of each operation.
+        - ops_mask: jax array (bool) of (num_jobs, max_num_ops)
+            indicating which operations have yet to be scheduled.
+        - machines_job_ids: jax array (int32) of shape (num_machines,)
+            id of the job (or no-op) that each machine is processing.
+        - machines_remaining_times: jax array (int32) of shape (num_machines,)
+            specifying, for each machine, the number of time steps until available.
+        - action_mask: jax array (bool) of shape (num_machines, num_jobs + 1)
+            indicates which job(s) (or no-op) can legally be scheduled on each machine.
+
+    - action: jax array (int32) of shape (num_machines,).
+
+    - reward: jax array (float) of shape (). A reward of `-1` is given each time step.
+        If all machines are simultaneously idle or the agent selects an invalid action,
+        the agent is given a large penalty of `-num_jobs * max_num_ops * max_op_duration`
+        which is an upper bound on the makespan.
+
+    - episode termination:
+        - Finished schedule: all operations (and thus all jobs) every job have been processed.
+        - Illegal action: the agent ignores the action mask and takes an illegal action.
+        - Simultaneously idle: all machines are inactive at the same time.
+
+    - state: `State`
+        - ops_machine_ids: same as observation.
+        - ops_durations: same as observation.
+        - ops_mask: same as observation.
+        - machines_job_ids: same as observation.
+        - machines_remaining_times: same as observation.
+        - action_mask: same as observation.
+        - step_count: jax array (int32) of shape (),
+            the number of time steps in the episode so far.
+        - scheduled_times: jax array (int32) of shape (num_jobs, max_num_ops),
+            specifying the timestep at which every op (scheduled so far) was scheduled.
+
     ```python
     from jumanji.environments import JobShop
     env = JobShop()
@@ -54,6 +92,7 @@ class JobShop(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are ['ToyGenerator', 'RandomGenerator'].
                 Defaults to `RandomGenerator` with its default parameters.
         """
         self.generator = generator or RandomGenerator()
@@ -152,7 +191,7 @@ class JobShop(Environment[State]):
         updated_ops_mask, updated_scheduled_times = self._update_operations(
             action,
             op_ids,
-            state.current_timestep,
+            state.step_count,
             state.scheduled_times,
             state.ops_mask,
         )
@@ -166,7 +205,7 @@ class JobShop(Environment[State]):
         )
 
         # Increment the time step
-        updated_timestep = jnp.array(state.current_timestep + 1, jnp.int32)
+        updated_step_count = jnp.array(state.step_count + 1, jnp.int32)
 
         # Check if all machines are idle simultaneously
         all_machines_idle = jnp.all(
@@ -188,7 +227,7 @@ class JobShop(Environment[State]):
             machines_job_ids=updated_machines_job_ids,
             machines_remaining_times=updated_machines_remaining_times,
             action_mask=updated_action_mask,
-            current_timestep=updated_timestep,
+            step_count=updated_step_count,
             scheduled_times=updated_scheduled_times,
         )
         next_obs = self._observation_from_state(next_state)
@@ -214,7 +253,7 @@ class JobShop(Environment[State]):
         self,
         action: Action,
         op_ids: chex.Array,
-        current_timestep: int,
+        step_count: int,
         scheduled_times: chex.Array,
         ops_mask: chex.Array,
     ) -> Any:
@@ -224,7 +263,7 @@ class JobShop(Environment[State]):
          Args:
             action: array representing the job (or no-op) scheduled by each machine.
             op_ids: array containing the index of the next operation for each job.
-            current_timestep: the current time.
+            step_count: the current time.
             scheduled_times: specifies the time step at which each operation was
                 scheduled. Set to -1 if the operation has not been scheduled yet.
             ops_mask: specifies which operations have yet to be scheduled.
@@ -241,7 +280,7 @@ class JobShop(Environment[State]):
         is_next_op = is_next_op.at[jnp.arange(self.num_jobs), op_ids].set(True)
         is_new_job_and_next_op = jnp.logical_and(is_new_job, is_next_op)
         updated_scheduled_times = jnp.where(
-            is_new_job_and_next_op, current_timestep, scheduled_times
+            is_new_job_and_next_op, step_count, scheduled_times
         )
         updated_ops_mask = ops_mask & ~is_new_job_and_next_op
         return updated_ops_mask, updated_scheduled_times

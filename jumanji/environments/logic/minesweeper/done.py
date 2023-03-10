@@ -25,16 +25,18 @@ from jumanji.environments.logic.minesweeper.utils import (
 from jumanji.types import Action
 
 
-class DoneFunction(abc.ABC):
+class DoneFn(abc.ABC):
     @abc.abstractmethod
     def __call__(self, state: State, next_state: State, action: Action) -> chex.Array:
         """Call method for computing the done signal given the current and next state,
-        and the action taken"""
+        and the action taken.
+        """
 
 
-class DefaultDoneFunction(DoneFunction):
+class DefaultDoneFn(DoneFn):
     """Terminate the episode as soon as an invalid action is taken, a mine is explored,
-    or the board is solved"""
+    or the board is solved.
+    """
 
     def __call__(self, state: State, next_state: State, action: Action) -> chex.Array:
         return (

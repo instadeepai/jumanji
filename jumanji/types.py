@@ -170,7 +170,7 @@ def termination(
             not observed by the agent (hence not in the observation). For example, it
             could be whether an invalid action was taken. In most environments, extras
             is None.
-        shape : optional parameter to specify the shape of the rewards and discounts.
+        shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
 

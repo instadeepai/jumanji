@@ -66,8 +66,8 @@ class JobShopViewer:
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
-        ax.set_title(f"Scheduled Jobs at Time={state.current_timestep}")
-        ax.axvline(state.current_timestep, ls="--", color="red", lw=0.5)
+        ax.set_title(f"Scheduled Jobs at Time={state.step_count}")
+        ax.axvline(state.step_count, ls="--", color="red", lw=0.5)
         self._prepare_figure(ax)
         self._add_scheduled_ops(ax, state)
         return self._display_human(fig)
@@ -97,7 +97,7 @@ class JobShopViewer:
 
         def make_frame(state_index: int) -> None:
             state = states[state_index]
-            ax.set_title(rf"Scheduled Jobs at Time={state.current_timestep}")
+            ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)
 
         self._animation = matplotlib.animation.FuncAnimation(

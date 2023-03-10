@@ -96,7 +96,7 @@ class DummyGenerator(Generator):
             jnp.int32,
         )
 
-        current_timestep = jnp.array(0, jnp.int32)
+        step_count = jnp.array(0, jnp.int32)
 
         state = State(
             ops_machine_ids=ops_machine_ids,
@@ -105,7 +105,7 @@ class DummyGenerator(Generator):
             machines_job_ids=machines_job_ids,
             machines_remaining_times=machines_remaining_times,
             action_mask=action_mask,
-            current_timestep=current_timestep,
+            step_count=step_count,
             scheduled_times=scheduled_times,
         )
 

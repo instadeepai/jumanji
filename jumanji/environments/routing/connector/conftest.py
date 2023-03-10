@@ -211,5 +211,5 @@ def action2() -> chex.Array:
 
 @pytest.fixture
 def env() -> Connector:
-    """Returns a Connector environment of size 6 with 3 agents and a horizon of 5."""
-    return Connector(size=6, num_agents=3, horizon=5)
+    """Returns a Connector environment of size 6 with 3 agents and a time_limit of 5."""
+    return Connector(size=6, num_agents=3, time_limit=5)

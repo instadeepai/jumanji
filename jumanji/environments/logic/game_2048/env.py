@@ -33,27 +33,38 @@ from jumanji.types import Action, TimeStep, restart, termination, transition
 
 
 class Game2048(Environment[State]):
-    """The Game2048 class represents an environment for the game 2048. It has a board of size
-    board_size x board_size (4x4 by default), and the player can take actions to move the tiles
-    on the board up, down, left, or right. The goal of the game is to combine tiles with the
-    same number to create a tile with double the value, until the player at least reaches a
-    tile with the value 2048 to consider it as a win.
+    """Environment for the game 2048. The game consists of a board of size board_size x board_size
+    (4x4 by default) in which the player can take actions to move the tiles on the board up, down,
+    left, or right. The goal of the game is to combine tiles with the same number to create a tile
+    with twice the value, until the player at least creates a tile with the value 2048 to consider
+    it a win.
 
-    The environment has the following characteristics:
     - observation: `Observation`
-        - board: a 2D array representing the current state of the board. An empty tile is
-        represented by zero whereas a non-empty tile is an exponent of 2, for example 1, 2,
-        3, 4, ... (corresponding to 2, 4, 8, 16, ...).
-        - action_mask: a 1D boolean array indicating which actions are valid in the current state of
-        the environment. The actions are up, right, down, and left.
+        - board: jax array (int32) of shape (board_size, board_size)
+            the current state of the board. An empty tile is represented by zero whereas a non-empty
+            tile is an exponent of 2, e.g. 1, 2, 3, 4, ... (corresponding to 2, 4, 8, 16, ...).
+        - action_mask: jax array (bool) of shape (4,)
+            indicates which actions are valid in the current state of the environment.
 
-    - action: a discrete value in the range [0, 3], representing the actions up, right, down,
-    and left, respectively.
+    - action: jax array (int32) of shape (). Is in [0, 1, 2, 3] representing the actions up, right,
+        down, and left, respectively.
 
-    - reward: the reward is 0 except when the player combines tiles to create a new tile with twice
-    the value. In this case, the reward is the value of the new tile.
+    - reward: jax array (float) of shape (). The reward is 0 except when the player combines tiles
+        to create a new tile with twice the value. In this case, the reward is the value of the new
+        tile.
 
-    - episode termination: when no more valid moves exist (this can happen when the board is full).
+    - episode termination:
+        - if no more valid moves exist (this can happen when the board is full).
+
+    - state: `State`
+        - board: same as observation.
+        - step_count: jax array (int32) of shape (),
+            the number of time steps in the episode so far.
+        - action_mask: same as observation.
+        - key: jax array (int) of shape (2,)
+            jax random generation key. Ignored since the environment is deterministic.
+        - score: jax array (int32) of shape (),
+            the sum of all tile values on the board.
 
     ```python
     from jumanji.environments import Game2048
@@ -67,19 +78,16 @@ class Game2048(Environment[State]):
     ```
     """
 
-    def __init__(
-        self, board_size: int = 4, env_viewer: Optional[Game2048Viewer] = None
-    ) -> None:
+    def __init__(self, board_size: int = 4) -> None:
         """Initialize the 2048 game.
 
         Args:
-            board_size: size of the board.
-                Defaults to 4.
+            board_size: size of the board. Defaults to 4.
         """
         self.board_size = board_size
 
         # Create viewer used for rendering
-        self._env_viewer = env_viewer or Game2048Viewer("2048", board_size)
+        self._env_viewer = Game2048Viewer("2048", board_size)
 
     def __repr__(self) -> str:
         """String representation of the environment.

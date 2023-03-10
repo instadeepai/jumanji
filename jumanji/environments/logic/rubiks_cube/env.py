@@ -28,14 +28,11 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube.constants import (
     DEFAULT_CUBE_SIZE,
-    DEFAULT_STICKER_COLOURS,
+    DEFAULT_STICKER_COLORS,
     CubeMovementAmount,
     Face,
 )
-from jumanji.environments.logic.rubiks_cube.reward_functions import (
-    RewardFunction,
-    SparseRewardFunction,
-)
+from jumanji.environments.logic.rubiks_cube.reward import RewardFn, SparseRewardFn
 from jumanji.environments.logic.rubiks_cube.types import Cube, Observation, State
 from jumanji.environments.logic.rubiks_cube.utils import (
     generate_all_moves,
@@ -65,7 +62,7 @@ class RubiksCube(Environment[State]):
         by default, 1 if cube is solved or otherwise 0
 
     - episode termination:
-        if either the cube is solved or a horizon is reached
+        if either the cube is solved or a time_limit is reached
 
     - state: `State`
         - cube: as in observation.
@@ -75,7 +72,7 @@ class RubiksCube(Environment[State]):
         - action_history: jax array (int16) of shape (max_num_scrambles, 3):
             indicates the entire history of applied moves
             (including those taken on scrambling the cube in the environment reset).
-            max_num_scrambles = num_scrambles_on_reset + step_limit.
+            max_num_scrambles = num_scrambles_on_reset + time_limit.
             This is useful for debugging purposes, providing a method to solve the cube from any
             position without relying on the agent, by just inverting the action history.
             The first axis indexes over the length of the sequence
@@ -98,19 +95,31 @@ class RubiksCube(Environment[State]):
     def __init__(
         self,
         cube_size: int = DEFAULT_CUBE_SIZE,
-        step_limit: int = 200,
-        reward_function: Optional[RewardFunction] = None,
+        time_limit: int = 200,
+        reward_fn: Optional[RewardFn] = None,
         num_scrambles_on_reset: int = 100,
-        sticker_colours: Optional[list] = None,
+        sticker_colors: Optional[list] = None,
     ):
+        """Instantiate a `RubiksCube` environment.
+
+        Args:
+            cube_size: the size of the cube. Defaults to 3.
+            time_limit: the number of steps allowed before an episode terminates.
+            reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
+                Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
+            num_scrambles_on_reset: the number of scrambles done on a solved rubiks cube in the
+                generation of a random instance. Defaults to 100.
+            sticker_colors: colors used in rendering the faces of the rubiks cube.
+                Defaults to `DEFAULT_STICKER_COLORS`.
+        """
         if cube_size <= 1:
             raise ValueError(
                 f"Cannot meaningfully construct a cube smaller than 2x2x2, "
                 f"but received cube_size={cube_size}"
             )
-        if step_limit <= 0:
+        if time_limit <= 0:
             raise ValueError(
-                f"The step_limit must be positive, but received step_limit={step_limit}"
+                f"The time_limit must be positive, but received time_limit={time_limit}"
             )
         if num_scrambles_on_reset < 0:
             raise ValueError(
@@ -118,11 +127,11 @@ class RubiksCube(Environment[State]):
                 f"but received num_scrambles_on_reset={num_scrambles_on_reset}"
             )
         self.cube_size = cube_size
-        self.step_limit = step_limit
-        self.reward_function = reward_function or SparseRewardFunction()
+        self.time_limit = time_limit
+        self.reward_function = reward_fn or SparseRewardFn()
         self.num_scrambles_on_reset = num_scrambles_on_reset
         self.sticker_colours_cmap = matplotlib.colors.ListedColormap(
-            sticker_colours if sticker_colours else DEFAULT_STICKER_COLOURS
+            sticker_colors if sticker_colors else DEFAULT_STICKER_COLORS
         )
         self.num_actions = len(Face) * (cube_size // 2) * len(CubeMovementAmount)
         self.all_moves = generate_all_moves(cube_size=cube_size)
@@ -209,7 +218,7 @@ class RubiksCube(Environment[State]):
             flat_actions_in_scramble=flat_actions_in_scramble
         )
         action_history = jnp.zeros(
-            shape=(self.num_scrambles_on_reset + self.step_limit, 3), dtype=jnp.int16
+            shape=(self.num_scrambles_on_reset + self.time_limit, 3), dtype=jnp.int16
         )
         action_history = action_history.at[: self.num_scrambles_on_reset].set(
             self._unflatten_action(flat_actions_in_scramble).transpose()
@@ -250,7 +259,7 @@ class RubiksCube(Environment[State]):
         )
         reward = self.reward_function(state=next_state)
         solved = is_solved(cube)
-        done = (step_count >= self.step_limit) | solved
+        done = (step_count >= self.time_limit) | solved
         next_observation = state_to_observation(state=next_state)
         next_timestep = lax.cond(
             done,
@@ -288,7 +297,7 @@ class RubiksCube(Environment[State]):
                 shape=(),
                 dtype=jnp.int32,
                 minimum=0,
-                maximum=self.step_limit,
+                maximum=self.time_limit,
                 name="step_count",
             ),
         )

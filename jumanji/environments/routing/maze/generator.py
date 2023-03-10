@@ -39,11 +39,11 @@ class ToyGenerator(Generator):
     """Generate a hardcoded 5x5 toy maze."""
 
     def __init__(self) -> None:
-        self.n_rows = 5
-        self.n_cols = 5
+        self.num_rows = 5
+        self.num_cols = 5
 
     def __call__(self, key: chex.PRNGKey) -> Maze:
-        walls = jnp.ones((self.n_rows, self.n_cols), bool)
+        walls = jnp.ones((self.num_rows, self.num_cols), bool)
         walls = walls.at[0, :].set((False, True, False, False, False))
         walls = walls.at[1, :].set((False, True, False, True, True))
         walls = walls.at[2, :].set((False, True, False, False, False))
@@ -60,8 +60,8 @@ class RandomGenerator(Generator):
             width: the width of the maze to create.
             height: the height of the maze to create.
         """
-        self.n_rows = rows
-        self.n_cols = cols
+        self.num_rows = rows
+        self.num_cols = cols
 
     def __call__(self, key: chex.PRNGKey) -> Maze:
         """Generate a random maze.
@@ -75,4 +75,6 @@ class RandomGenerator(Generator):
         Returns:
             maze: A generated maze as an array of booleans.
         """
-        return maze_generation.generate_maze(self.n_cols, self.n_rows, key).astype(bool)
+        return maze_generation.generate_maze(self.num_cols, self.num_rows, key).astype(
+            bool
+        )

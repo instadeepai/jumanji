@@ -26,15 +26,16 @@ from jumanji.environments.logic.minesweeper.utils import explored_mine, is_valid
 from jumanji.types import Action
 
 
-class RewardFunction(abc.ABC):
+class RewardFn(abc.ABC):
     @abc.abstractmethod
     def __call__(self, state: State, action: Action) -> chex.Array:
-        """Call method for computing the reward given current state and selected action"""
+        """Call method for computing the reward given current state and selected action."""
 
 
-class DefaultRewardFunction(RewardFunction):
+class DefaultRewardFn(RewardFn):
     """A dense reward function: 1 for every timestep on which a mine is not explored
-    (or a small penalty if action is invalid), otherwise 0"""
+    (or a small penalty if action is invalid), otherwise 0.
+    """
 
     def __call__(self, state: State, action: Action) -> chex.Array:
         return jnp.where(

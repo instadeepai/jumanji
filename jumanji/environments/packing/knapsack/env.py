@@ -90,10 +90,8 @@ class Knapsack(Environment[State]):
         """Instantiates a `Knapsack` environment.
 
         Args:
-            num_items: the number of items in the environment.
-                Defaults to 50.
-            total_budget: the capacity of the knapsack.
-                Defaults to 12.5.
+            num_items: the number of items in the environment. Defaults to 50.
+            total_budget: the capacity of the knapsack. Defaults to 12.5.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.

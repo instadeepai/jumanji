@@ -96,8 +96,7 @@ class TSP(Environment[State]):
         """Instantiates a `TSP` environment.
 
         Args:
-            num_cities: number of cities to visit.
-                Defaults to 20.
+            num_cities: number of cities to visit. Defaults to 20.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.

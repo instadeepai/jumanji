@@ -46,12 +46,12 @@ def make_actor_critic_networks_cleaner(
     policy_network = make_actor_network(
         num_conv_channels=num_conv_channels,
         mlp_units=policy_layers,
-        step_limit=cleaner.step_limit,
+        time_limit=cleaner.time_limit,
     )
     value_network = make_critic_network(
         num_conv_channels=num_conv_channels,
         mlp_units=value_layers,
-        step_limit=cleaner.step_limit,
+        time_limit=cleaner.time_limit,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -99,7 +99,7 @@ def process_obs_for_critic(observation: Observation) -> chex.Array:
 
 
 def make_critic_network(
-    num_conv_channels: Sequence[int], mlp_units: Sequence[int], step_limit: int
+    num_conv_channels: Sequence[int], mlp_units: Sequence[int], time_limit: int
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         # Shapes: B: batch size, N: number of agents, W: grid width, H: grid height
@@ -119,7 +119,7 @@ def make_critic_network(
         obs = jax.vmap(process_obs_for_critic)(observation)  # shape (B, H, W, 3)
         embedding = torso(obs)  # shape (B, W * H)
         normalised_step_count = (
-            jnp.expand_dims(observation.step_count, axis=-1) / step_limit
+            jnp.expand_dims(observation.step_count, axis=-1) / time_limit
         )  # (B, 1)
         output = jnp.concatenate(
             [embedding, normalised_step_count], axis=-1
@@ -166,7 +166,7 @@ def process_obs_for_actor(observation: Observation) -> chex.Array:
 
 
 def make_actor_network(
-    num_conv_channels: Sequence[int], mlp_units: Sequence[int], step_limit: int
+    num_conv_channels: Sequence[int], mlp_units: Sequence[int], time_limit: int
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         # Shapes: B: batch size, N: number of agents, W: grid width, H: grid height
@@ -187,7 +187,7 @@ def make_actor_network(
         embedding = jax.vmap(torso)(obs)  # shape (B, N, W * H)
         num_agents = obs.shape[1]
         normalised_step_count = jnp.repeat(
-            jnp.expand_dims(observation.step_count, axis=(1, 2)) / step_limit,
+            jnp.expand_dims(observation.step_count, axis=(1, 2)) / time_limit,
             num_agents,
             axis=1,
         )  # (B, N, 1)

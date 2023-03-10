@@ -103,7 +103,7 @@ def test_rubiks_cube_env_reset(rubiks_cube_env: RubiksCube) -> None:
     assert isinstance(state, State)
     assert state.step_count == 0
     assert state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.step_limit,
+        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
         3,
     )
     action_history_index = rubiks_cube_env.num_scrambles_on_reset
@@ -135,7 +135,7 @@ def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
     assert next_timestep.observation.step_count == 1
     assert jnp.array_equal(next_state.cube, next_timestep.observation.cube)
     assert next_state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.step_limit,
+        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
         3,
     )
     action_history_index = rubiks_cube_env.num_scrambles_on_reset + 1
@@ -154,7 +154,7 @@ def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
     assert next_next_timestep.observation.step_count == 2
     assert jnp.array_equal(next_next_state.cube, next_next_timestep.observation.cube)
     assert next_next_state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.step_limit,
+        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
         3,
     )
     action_history_index = rubiks_cube_env.num_scrambles_on_reset + 2
@@ -164,7 +164,7 @@ def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
 @pytest.mark.parametrize("cube_size", [3, 4, 5])
 def test_rubiks_cube_env_does_not_smoke(cube_size: int) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(env=RubiksCube(cube_size=cube_size, step_limit=10))
+    check_env_does_not_smoke(env=RubiksCube(cube_size=cube_size, time_limit=10))
 
 
 def test_rubiks_cube_env_render(
@@ -181,10 +181,10 @@ def test_rubiks_cube_env_render(
     rubiks_cube_env.close()
 
 
-@pytest.mark.parametrize("step_limit", [3, 4, 5])
-def test_rubiks_cube_env_done(step_limit: int) -> None:
+@pytest.mark.parametrize("time_limit", [3, 4, 5])
+def test_rubiks_cube_env_done(time_limit: int) -> None:
     """Test that the done signal is sent correctly"""
-    env = RubiksCube(step_limit=step_limit)
+    env = RubiksCube(time_limit=time_limit)
     state, timestep = jit(env.reset)(random.PRNGKey(0))
     action = env.action_spec().generate_value()
     episode_length = 0
@@ -195,7 +195,7 @@ def test_rubiks_cube_env_done(step_limit: int) -> None:
         if episode_length > 10:
             # Exit condition to make sure tests don't enter infinite loop, should not be hit
             raise Exception("Entered infinite loop")
-    assert episode_length == step_limit
+    assert episode_length == time_limit
 
 
 def test_rubiks_cube_animation(

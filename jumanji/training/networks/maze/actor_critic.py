@@ -97,7 +97,7 @@ def make_network_maze(
         obs = jax.vmap(process_observation)(observation)  # (B, G, G, 1)
         embedding = torso(obs)  # (B, H)
         normalised_step_count = (
-            jnp.expand_dims(observation.step_count, axis=-1) / maze.step_limit
+            jnp.expand_dims(observation.step_count, axis=-1) / maze.time_limit
         )  # (B, 1)
         output = jnp.concatenate(
             [embedding, normalised_step_count], axis=-1

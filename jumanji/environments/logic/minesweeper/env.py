@@ -32,14 +32,8 @@ from jumanji.environments.logic.minesweeper.constants import (
     PATCH_SIZE,
     UNEXPLORED_ID,
 )
-from jumanji.environments.logic.minesweeper.done_functions import (
-    DefaultDoneFunction,
-    DoneFunction,
-)
-from jumanji.environments.logic.minesweeper.reward_functions import (
-    DefaultRewardFunction,
-    RewardFunction,
-)
+from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
+from jumanji.environments.logic.minesweeper.reward import DefaultRewardFn, RewardFn
 from jumanji.environments.logic.minesweeper.types import Observation, State
 from jumanji.environments.logic.minesweeper.utils import (
     count_adjacent_mines,
@@ -110,11 +104,25 @@ class Minesweeper(Environment[State]):
         self,
         board_height: int = DEFAULT_BOARD_HEIGHT,
         board_width: int = DEFAULT_BOARD_WIDTH,
-        reward_function: Optional[RewardFunction] = None,
-        done_function: Optional[DoneFunction] = None,
+        reward_function: Optional[RewardFn] = None,
+        done_function: Optional[DoneFn] = None,
         num_mines: int = DEFAULT_NUM_MINES,
         color_mapping: Optional[List[str]] = None,
     ):
+        """Instantiate a `Minesweeper` environment.
+
+        Args:
+            board_height: the height of the board. Defaults to `DEFAULT_BOARD_HEIGHT`.
+            board_width: the width of the board. Defaults to `DEFAULT_BOARD_WIDTH`.
+            reward_function: `RewardFn` whose `__call__` method computes the reward of an
+                environment transition based on the given current state and selected action.
+                Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
+            done_function: `DoneFn` whose `__call__` method computes the done signal given the
+                current state, action taken, and next state.
+                Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
+            num_mines: the number of mines. Defaults to `DEFAULT_NUM_MINES`.
+            color_mapping: colour map used for rendering.
+        """
         if board_height <= 1 or board_width <= 1:
             raise ValueError(
                 f"Should make a board of height and width greater than 1, "
@@ -128,8 +136,8 @@ class Minesweeper(Environment[State]):
         self.board_height = board_height
         self.board_width = board_width
         self.num_mines = num_mines
-        self.reward_function = reward_function or DefaultRewardFunction()
-        self.done_function = done_function or DefaultDoneFunction()
+        self.reward_function = reward_function or DefaultRewardFn()
+        self.done_function = done_function or DefaultDoneFn()
 
         self.cmap = color_mapping if color_mapping else COLOUR_MAPPING
         self.figure_name = f"{board_height}x{board_width} Minesweeper"

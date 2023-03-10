@@ -29,7 +29,7 @@ class TestMazeEnvironment:
     @pytest.fixture(scope="module")
     def maze_env(self) -> Maze:
         """Instantiates a default Maze environment."""
-        return Maze(n_rows=5, n_cols=5, step_limit=15)
+        return Maze(num_rows=5, num_cols=5, time_limit=15)
 
     def test_env_maze__reset(self, maze_env: Maze) -> None:
         reset_fn = jax.jit(maze_env.reset)
@@ -196,7 +196,7 @@ class TestMazeEnvironment:
         key = jax.random.PRNGKey(0)
 
         toy_generator = ToyGenerator()
-        maze_env = Maze(n_rows=5, n_cols=5, step_limit=25, generator=toy_generator)
+        maze_env = Maze(num_rows=5, num_cols=5, time_limit=25, generator=toy_generator)
         state, timestep = maze_env.reset(key)
 
         # Fixed agent and target positions

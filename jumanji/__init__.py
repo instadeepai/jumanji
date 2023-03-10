@@ -62,7 +62,7 @@ register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
 register(
     id="RubiksCube-partly-scrambled-v0",
     entry_point="jumanji.environments:RubiksCube",
-    kwargs={"step_limit": 20, "num_scrambles_on_reset": 7},
+    kwargs={"time_limit": 20, "num_scrambles_on_reset": 7},
 )
 
 # Minesweeper
@@ -92,7 +92,7 @@ register(
 register(
     id="Maze-v0",
     entry_point="jumanji.environments:Maze",
-    kwargs={"n_rows": 10, "n_cols": 10},
+    kwargs={"num_rows": 10, "num_cols": 10},
 )
 
 # Cleaner

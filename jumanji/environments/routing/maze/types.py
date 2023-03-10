@@ -46,7 +46,7 @@ class State:
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (n_rows, n_cols)
+    walls: chex.Array  # Shape (num_rows, num_cols)
     action_mask: chex.Array  # Shape (4,)
     step_count: jnp.int32  # Shape ()
     key: chex.PRNGKey
@@ -64,6 +64,6 @@ class Observation(NamedTuple):
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (n_rows, n_cols)
+    walls: chex.Array  # Shape (num_rows, num_cols)
     action_mask: chex.Array  # Shape (4,)
     step_count: jnp.int32  # Shape ()

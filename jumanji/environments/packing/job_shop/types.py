@@ -65,7 +65,7 @@ class State:
         available.
     action_mask: for each machine, it indicates which jobs (or no-op) can legally be scheduled.
         The last column corresponds to no-op.
-    current_timestep: used to track time, which is necessary for updating scheduled_times.
+    step_count: used to track time, which is necessary for updating scheduled_times.
     scheduled_times: for each job, it specifies the time at which each operation was scheduled.
         Note that -1 means the operation has not been scheduled yet.
     key: not used inside the environment, but may be used e.g. in wrappers.
@@ -77,6 +77,6 @@ class State:
     machines_job_ids: chex.Array  # (num_machines,)
     machines_remaining_times: chex.Array  # (num_machines,)
     action_mask: Optional[chex.Array]  # (num_machines, num_jobs + 1)
-    current_timestep: int
+    step_count: chex.Numeric  # ()
     scheduled_times: chex.Array  # (num_jobs, max_num_ops)
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)

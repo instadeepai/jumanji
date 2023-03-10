@@ -37,7 +37,7 @@ from jumanji.types import StepType, TimeStep
 def play_and_get_episode_stats(
     env: Minesweeper,
     actions: List[chex.Array],
-    step_limit: int,
+    time_limit: int,
     force_start_state: Optional[State] = None,
 ) -> Tuple[List[float], List[StepType], int]:
     state, timestep = jit(env.reset)(random.PRNGKey(0))
@@ -52,7 +52,7 @@ def play_and_get_episode_stats(
         episode_length += 1
         collected_rewards.append(timestep.reward)
         collected_step_types.append(timestep.step_type)
-        if episode_length > step_limit:
+        if episode_length > time_limit:
             # Exit condition to make sure tests don't enter infinite loop, should not
             # be hit
             raise Exception("Entered infinite loop")
@@ -91,7 +91,7 @@ def test_default_reward_and_done_signals(
     rewards, step_types, episode_length = play_and_get_episode_stats(
         env=minesweeper_env,
         actions=actions,
-        step_limit=len(actions),
+        time_limit=len(actions),
         force_start_state=manual_start_state,
     )
     assert rewards == expected_rewards
@@ -178,7 +178,7 @@ def test_minesweeper_env_done_invalid_action(minesweeper_env: Minesweeper) -> No
     # Note that this action corresponds to not stepping on a mine
     action = minesweeper_env.action_spec().generate_value()
     *_, episode_length = play_and_get_episode_stats(
-        env=minesweeper_env, actions=[action for _ in range(10)], step_limit=10
+        env=minesweeper_env, actions=[action for _ in range(10)], time_limit=10
     )
     assert episode_length == 2
 

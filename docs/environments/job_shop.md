@@ -57,7 +57,7 @@ The rationale for having a no-op is the following:
 ## Reward
 The reward setting is dense: a reward of `-1` is given each time step if none
 of the termination criteria are met. An episode will terminate in any of the three scenarios below:
-- **Finished schedule**: all operations for every job have been processed.
+- **Finished schedule**: all operations (and thus all jobs) every job have been processed.
 - **Illegal action:** the agent ignores the action mask and takes an illegal action.
 - **Simultaneously idle:** all machines are inactive at the same time.
 

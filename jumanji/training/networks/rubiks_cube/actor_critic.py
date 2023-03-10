@@ -42,10 +42,10 @@ def make_actor_critic_networks_rubiks_cube(
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=action_spec_num_values
     )
-    step_limit = rubiks_cube.step_limit
+    time_limit = rubiks_cube.time_limit
     policy_network = make_network_rubiks_cube(
         cube_embed_dim=cube_embed_dim,
-        step_limit=step_limit,
+        time_limit=time_limit,
         step_count_embed_dim=step_count_embed_dim,
         dense_layer_dims=dense_layer_dims,
         num_actions=num_actions,
@@ -53,7 +53,7 @@ def make_actor_critic_networks_rubiks_cube(
     )
     value_network = make_network_rubiks_cube(
         cube_embed_dim=cube_embed_dim,
-        step_limit=step_limit,
+        time_limit=time_limit,
         step_count_embed_dim=step_count_embed_dim,
         dense_layer_dims=dense_layer_dims,
         num_actions=num_actions,
@@ -68,7 +68,7 @@ def make_actor_critic_networks_rubiks_cube(
 
 def make_network_rubiks_cube(
     cube_embed_dim: int,
-    step_limit: int,
+    time_limit: int,
     step_count_embed_dim: int,
     dense_layer_dims: Sequence[int],
     num_actions: int,
@@ -78,7 +78,7 @@ def make_network_rubiks_cube(
         cube_embedder = hk.Embed(vocab_size=len(Face), embed_dim=cube_embed_dim)
         x = cube_embedder(observation.cube).reshape(observation.cube.shape[0], -1)
         step_count_embedder = hk.Linear(step_count_embed_dim)
-        y = step_count_embedder(observation.step_count[:, None] / step_limit)
+        y = step_count_embedder(observation.step_count[:, None] / time_limit)
         dense_layers = hk.nets.MLP(dense_layer_dims)
         output = dense_layers(jnp.concatenate([x, y], axis=-1))
         if critic:

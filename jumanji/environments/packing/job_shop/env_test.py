@@ -74,7 +74,7 @@ class TestJobShop:
                 ],
             )
         )
-        assert state.current_timestep == jnp.array(0, jnp.int32)
+        assert state.step_count == jnp.array(0, jnp.int32)
 
     def test_env__reset_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the reset is only compiled once when jitted."""
@@ -146,7 +146,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 1
+        assert next_state.step_count == 1
 
         # STEP T=1 -> T=2
         next_action = jnp.array([3, 3, 3])
@@ -201,7 +201,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 2
+        assert next_state.step_count == 2
 
         # STEP T=2 -> T=3
         next_action = jnp.array([0, 3, 1])
@@ -257,7 +257,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 3
+        assert next_state.step_count == 3
 
         # STEP T=3 -> T=4
         next_action = jnp.array([3, 3, 3])
@@ -313,7 +313,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 4
+        assert next_state.step_count == 4
 
         # STEP T=4 -> T=5
         next_action = jnp.array([3, 1, 2])
@@ -369,7 +369,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 5
+        assert next_state.step_count == 5
 
         # STEP T=5 -> T=6
         next_action = jnp.array([3, 3, 3])
@@ -425,7 +425,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 6
+        assert next_state.step_count == 6
 
         # STEP T=6 -> T=7
         next_action = jnp.array([3, 3, 3])
@@ -481,7 +481,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 7
+        assert next_state.step_count == 7
 
         # STEP T=7 -> T=8
         next_action = jnp.array([3, 3, 3])
@@ -537,7 +537,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 8
+        assert next_state.step_count == 8
 
         # STEP T=8 -> T=9
         next_action = jnp.array([3, 0, 3])
@@ -593,7 +593,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 9
+        assert next_state.step_count == 9
 
         # # STEP T=9 -> T=10
         next_action = jnp.array([3, 3, 3])
@@ -649,7 +649,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 10
+        assert next_state.step_count == 10
 
         # # STEP T=10 -> T=11
         next_action = jnp.array([3, 3, 0])
@@ -705,7 +705,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 11
+        assert next_state.step_count == 11
 
         # STEP T=10 -> T=11
         next_action = jnp.array([3, 3, 3])
@@ -761,7 +761,7 @@ class TestJobShop:
                 ]
             )
         )
-        assert next_state.current_timestep == 12
+        assert next_state.step_count == 12
 
     def test_env__step_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the step is only compiled once when jitted."""

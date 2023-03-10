@@ -100,11 +100,9 @@ class Snake(Environment[State]):
         """Instantiates a `Snake` environment.
 
         Args:
-            num_rows: number of rows of the 2D grid.
-                Defaults to 12.
-            num_cols: number of columns of the 2D grid.
-                Defaults to 12.
-            time_limit: horizon of an episode, i.e. number of environment steps before
+            num_rows: number of rows of the 2D grid. Defaults to 12.
+            num_cols: number of columns of the 2D grid. Defaults to 12.
+            time_limit: time_limit of an episode, i.e. number of environment steps before
                 the episode ends. Defaults to 4000.
         """
         super().__init__()

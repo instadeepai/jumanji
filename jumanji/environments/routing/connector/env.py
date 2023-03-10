@@ -49,7 +49,7 @@ class Connector(Environment[State]):
     trail behind it. Therefore, agents must connect to their targets without overlapping the routes
     taken by any other agent.
 
-    - observation - Observation
+    - observation - `Observation`
         - action mask: jax array (bool) of shape (num_agents, 5).
         - step: jax array (int32) of shape ()
             the current episode step.
@@ -74,7 +74,7 @@ class Connector(Environment[State]):
     - reward_fn: function that takes old state, new state and action returns a reward for each
         agent.
 
-    - episode termination: if an agent can't move, or the horizon is reached, or the agent connects
+    - episode termination: if an agent can't move, the time_limit is reached, or the agent connects
         to its target, it is considered done. Once all agents are done, the episode will terminate.
         - timestep discounts are of shape (num_agents,)
 
@@ -100,7 +100,7 @@ class Connector(Environment[State]):
         size: int = 8,
         num_agents: int = 3,
         reward_fn: Optional[RewardFn] = None,
-        horizon: int = 50,
+        time_limit: int = 50,
         generator: Optional[Generator] = None,
         render_mode: str = "human",
     ) -> None:
@@ -112,7 +112,7 @@ class Connector(Environment[State]):
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`, `SparseRewardFn`].
                 Defaults to `SparseRewardFn`.
-            horizon: the number of steps allowed before an episode terminates.
+            time_limit: the number of steps allowed before an episode terminates.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
                 Defaults to `UniformRandomGenerator`.
@@ -121,7 +121,7 @@ class Connector(Environment[State]):
 
         self._size = size
         self._num_agents = num_agents
-        self._horizon = horizon
+        self._time_limit = time_limit
 
         self.agent_ids = jnp.arange(self._num_agents)
 
@@ -198,7 +198,7 @@ class Connector(Environment[State]):
         discount = jnp.asarray(jnp.logical_not(dones), dtype=float)
 
         timestep = jax.lax.cond(
-            dones.all() | (new_state.step >= self._horizon),
+            dones.all() | (new_state.step >= self._time_limit),
             lambda: termination(
                 reward=reward, observation=observation, shape=self._num_agents
             ),
@@ -321,7 +321,7 @@ class Connector(Environment[State]):
         return self._renderer.animate(grids, interval, save, path)
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec for Connector environment.
+        """Returns the observation spec for `Connector` environment.
 
         This observation contains the grid for each agent, the action mask for each agent and
         the current step.
@@ -344,7 +344,7 @@ class Connector(Environment[State]):
             name="action_mask",
         )
         step = specs.BoundedArray(
-            shape=(), dtype=int, minimum=0, maximum=self._horizon, name="step"
+            shape=(), dtype=int, minimum=0, maximum=self._time_limit, name="step"
         )
         return specs.Spec(
             Observation,
@@ -361,7 +361,7 @@ class Connector(Environment[State]):
         environment, the environment expects an array of actions of shape (num_agents,).
 
         Returns:
-            observation_spec: MultiDiscreteArray of shape (num_agents,).
+            observation_spec: `MultiDiscreteArray` of shape (num_agents,).
         """
         return specs.MultiDiscreteArray(
             num_values=jnp.array([5] * self._num_agents),

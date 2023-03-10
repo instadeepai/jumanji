@@ -148,7 +148,7 @@ def test_connector__step_blocked(
 
 def test_connector__step_horizon(env: Connector, state: State) -> None:
     """Tests that the timestep is done, but discounts are not all 0 past"""
-    # env has a horizon of 5
+    # env has a time_limit of 5
     actions = jnp.zeros(3, int)
     # step 1
     state, timestep = env.step(state, actions)

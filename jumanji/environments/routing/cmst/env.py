@@ -58,7 +58,7 @@ class CoopMinSpanTree(Environment[State]):
             the component type of each node (-1 represents utility nodes).
         - edges: jax array (int) of shape (num_edges, 2).
             all the edges in the graph.
-        - connected_nodes: jax array (int) of shape (num_agents, step_limit).
+        - connected_nodes: jax array (int) of shape (num_agents, time_limit).
             we only count each node visit once.
         - connected_nodes_index: jax array (int) of shape (num_agents, num_nodes).
         - position_index: jax array (int) of shape (num_agents,).
@@ -70,7 +70,7 @@ class CoopMinSpanTree(Environment[State]):
         - finished_agents: jax array (bool) of shape (num_agent,).
         - nodes_to_connect: jax array (int) of shape (num_agents, num_nodes_per_agent).
         - step_count: step counter.
-        - step_limit: the number of steps allowed before an episode terminates.
+        - time_limit: the number of steps allowed before an episode terminates.
         - key: PRNG key for random sample.
 
     - constants definitions:
@@ -105,7 +105,7 @@ class CoopMinSpanTree(Environment[State]):
         max_degree: int = 5,
         num_agents: int = 2,
         num_nodes_per_agent: int = 3,
-        step_limit: int = 70,
+        time_limit: int = 70,
     ):
         """Create the Cooperative Minimum Spanning Tree environment.
 
@@ -120,7 +120,7 @@ class CoopMinSpanTree(Environment[State]):
             reward_for_noop: reward given if an agent performs picks an invalid action
             reward_for_connection: the reward given to an agent for connecting
                 any new of its component node.
-            step_limit: the number of steps allowed before an episode terminates.
+            time_limit: the number of steps allowed before an episode terminates.
 
         """
 

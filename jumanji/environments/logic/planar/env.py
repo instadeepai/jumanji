@@ -57,7 +57,7 @@ class PlanarGraph(Environment[State]):
             reward_fn: callable to compute the reward of the environment's transition.
                 Defaults to `IntersectionCountChangeRewardFn`.
             viewer: function to render an environment state. This used when calling `render`.
-            time_limit: horizon of an episode, i.e. number of environment steps before
+            time_limit: time_limit of an episode, i.e. number of environment steps before
                 the episode ends. Defaults to 100.
         """
         self.generator = generator or RandomGenerator(num_nodes=10, num_edges=15)

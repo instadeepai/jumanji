@@ -41,7 +41,7 @@ class State:
     node_types: chex.Array  # (num_nodes,)
     edges: chex.Array  # (num_edges, 2)
     nodes_to_connect: chex.Array  # (num_agents, num_nodes_per_agent)
-    connected_nodes: chex.Array  # (num_agents, step_limit)
+    connected_nodes: chex.Array  # (num_agents, time_limit)
     connected_nodes_index: chex.Array  # (num_agents, num_nodes)
     node_edges: chex.Array  # (num_agents, num_nodes, num_nodes)
     position: chex.Array  # (num_agents,)

@@ -36,7 +36,7 @@ class Maze(Environment[State]):
     - observation:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: jax array (bool) of shape (n_rows, n_cols)
+        - walls: jax array (bool) of shape (num_rows, num_cols)
             whose values are `True` where walls are and `False` for empty cells.
         - action_mask: array (bool) of shape (4,)
             defining the available actions in the current position.
@@ -51,12 +51,12 @@ class Maze(Environment[State]):
 
     - episode termination (if any):
         - agent reaches the target position.
-        - the horizon is reached.
+        - the time_limit is reached.
 
     - state: State:
         - agent_position: current 2D Position of agent.
         - target_position: 2D Position of target cell.
-        - walls: jax array (bool) of shape (n_rows, n_cols)
+        - walls: jax array (bool) of shape (num_rows, num_cols)
             whose values are `True` where walls are and `False` for empty cells.
         - action_mask: array (bool) of shape (4,)
             defining the available actions in the current position.
@@ -81,29 +81,26 @@ class Maze(Environment[State]):
 
     def __init__(
         self,
-        n_rows: int = 10,
-        n_cols: int = 10,
-        step_limit: Optional[int] = None,
+        num_rows: int = 10,
+        num_cols: int = 10,
+        time_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
         render_mode: str = "human",
     ) -> None:
         """Instantiates a Maze environment.
 
         Args:
-            n_rows: number of rows, i.e. height of the maze.
-                Defaults to 10.
-            n_cols: number of columns, i.e. width of the maze.
-                Defaults to 10.
-            step_limit: the horizon of an episode, i.e. the maximum number of environment steps
-                before the episode terminates. By default,
-                `step_limit = n_rows * n_cols`.
+            num_rows: number of rows, i.e. height of the maze. Defaults to 10.
+            num_cols: number of columns, i.e. width of the maze. Defaults to 10.
+            time_limit: the time_limit of an episode, i.e. the maximum number of environment steps
+                before the episode terminates. By default, `time_limit = num_rows * num_cols`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
-        self.n_rows = n_rows
-        self.n_cols = n_cols
-        self.shape = (self.n_rows, self.n_cols)
-        self.step_limit = step_limit or self.n_rows * self.n_cols
-        self.generator = generator or RandomGenerator(self.n_rows, self.n_cols)
+        self.num_rows = num_rows
+        self.num_cols = num_cols
+        self.shape = (self.num_rows, self.num_cols)
+        self.time_limit = time_limit or self.num_rows * self.num_cols
+        self.generator = generator or RandomGenerator(self.num_rows, self.num_cols)
 
         # Create viewer used for rendering
         self._env_viewer = MazeEnvViewer("Maze", render_mode)
@@ -112,35 +109,35 @@ class Maze(Environment[State]):
         return "\n".join(
             [
                 "Maze environment:",
-                f" - n_rows: {self.n_rows}",
-                f" - n_cols: {self.n_cols}",
-                f" - step_limit: {self.step_limit}",
+                f" - num_rows: {self.num_rows}",
+                f" - num_cols: {self.num_cols}",
+                f" - time_limit: {self.time_limit}",
             ]
         )
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Specifications of the observation of the Maze environment.
+        """Specifications of the observation of the `Maze` environment.
 
-        Returns: ObservationSpec containing all the specifications for all the Observation fields:
-        observation_spec: ObservationSpec:
-            - agent_position_spec : PositionSpec:
-                - row_spec: specs.BoundedArray
-                - col_spec: specs.BoundedArray
-            - target_position_spec : PositionSpec:
-                - row_spec: specs.BoundedArray
-                - col_spec: specs.BoundedArray
-            - walls_spec : specs.BoundedArray (bool) of shape (n_rows, n_cols),
-            - step_count_spec : specs.Array int of shape ()
-            - action_mask_spec : specs.BoundedArray (bool) of shape (4,).
+        Returns:
+            Spec for the `Observation` whose fields are:
+            - agent_position: tree of BoundedArray (int32) of shape ().
+            - target_position: tree of BoundedArray (int32) of shape ().
+            - walls: BoundedArray (bool) of shape (num_rows, num_cols).
+            - step_count: Array (int32) of shape ().
+            - action_mask: BoundedArray (bool) of shape (4,).
         """
         agent_position = specs.Spec(
             Position,
             "PositionSpec",
-            row=specs.BoundedArray((), jnp.int32, 0, self.n_rows - 1, "row_coordinate"),
-            col=specs.BoundedArray((), jnp.int32, 0, self.n_cols - 1, "col_coordinate"),
+            row=specs.BoundedArray(
+                (), jnp.int32, 0, self.num_rows - 1, "row_coordinate"
+            ),
+            col=specs.BoundedArray(
+                (), jnp.int32, 0, self.num_cols - 1, "col_coordinate"
+            ),
         )
         walls = specs.BoundedArray(
-            shape=(self.n_rows, self.n_cols),
+            shape=(self.num_rows, self.num_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
@@ -175,8 +172,8 @@ class Maze(Environment[State]):
             key: random key used to reset the environment since it is stochastic.
 
         Returns:
-            state: State object corresponding to the new state of the environment after a reset.
-            timestep: TimeStep object corresponding the first timestep returned by the environment
+            state: `State` object corresponding to the new state of the environment after a reset.
+            timestep: `TimeStep` object corresponding the first timestep returned by the environment
                 after a reset.
         """
 
@@ -187,13 +184,13 @@ class Maze(Environment[State]):
         # Randomise agent start and target positions.
         start_and_target_indices = jax.random.choice(
             agent_key,
-            jnp.arange(self.n_rows * self.n_cols),
+            jnp.arange(self.num_rows * self.num_cols),
             (2,),
             replace=False,
             p=~walls.flatten(),
         )
         (agent_row, target_row), (agent_col, target_col) = jnp.divmod(
-            start_and_target_indices, self.n_cols
+            start_and_target_indices, self.num_cols
         )
 
         agent_position = Position(row=agent_row, col=agent_col)
@@ -270,9 +267,9 @@ class Maze(Environment[State]):
         # Check if the episode terminates (i.e. done is True).
         no_actions_available = ~jnp.any(action_mask)
         target_reached = state.agent_position == state.target_position
-        step_limit_exceeded = state.step_count >= self.step_limit
+        time_limit_exceeded = state.step_count >= self.time_limit
 
-        done = no_actions_available | target_reached | step_limit_exceeded
+        done = no_actions_available | target_reached | time_limit_exceeded
 
         # Compute the reward.
         reward = jnp.array(state.agent_position == state.target_position, float)
@@ -298,9 +295,9 @@ class Maze(Environment[State]):
             x, y = jnp.array([agent_position.row, agent_position.col]) + move
             return (
                 (x >= 0)
-                & (x < self.n_cols)
+                & (x < self.num_cols)
                 & (y >= 0)
-                & (y < self.n_rows)
+                & (y < self.num_rows)
                 & ~(walls[x, y])
             )
 

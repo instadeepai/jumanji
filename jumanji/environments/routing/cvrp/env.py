@@ -30,6 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 
 class CVRP(Environment[State]):
     """Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
+
     - observation: `Observation`
         - coordinates: jax array (float) of shape (num_nodes + 1, 2)
             the coordinates of each node and the depot.
@@ -103,12 +104,9 @@ class CVRP(Environment[State]):
         """Instantiates a `CVRP` environment.
 
         Args:
-            num_nodes: number of city nodes in the environment.
-                Defaults to 20.
-            max_capacity: maximum capacity of the vehicle.
-                Defaults to 30.
-            max_demand: maximum demand of each node.
-                Defaults to 10.
+            num_nodes: number of city nodes in the environment. Defaults to 20.
+            max_capacity: maximum capacity of the vehicle. Defaults to 30.
+            max_demand: maximum demand of each node. Defaults to 10.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.

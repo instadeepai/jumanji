@@ -22,14 +22,14 @@ from jumanji.environments.logic.rubiks_cube.types import FakeState, State
 from jumanji.environments.logic.rubiks_cube.utils import is_solved
 
 
-class RewardFunction(abc.ABC):
+class RewardFn(abc.ABC):
     @abc.abstractmethod
     def __call__(self, state: Union[State, FakeState]) -> chex.Array:
-        """Call method for computing the reward given new state"""
+        """Call method for computing the reward given new state."""
 
 
-class SparseRewardFunction(RewardFunction):
-    """A sparse reward function, returning +1 if cube is solved and otherwise 0"""
+class SparseRewardFn(RewardFn):
+    """A sparse reward function, returning +1 if cube is solved and otherwise 0."""
 
     def __call__(self, state: Union[State, FakeState]) -> chex.Array:
         solved = is_solved(state.cube)

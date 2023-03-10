@@ -19,7 +19,7 @@ import pytest
 from jax import numpy as jnp
 
 from jumanji.environments.logic.rubiks_cube.constants import DEFAULT_CUBE_SIZE, Face
-from jumanji.environments.logic.rubiks_cube.reward_functions import SparseRewardFunction
+from jumanji.environments.logic.rubiks_cube.reward import SparseRewardFn
 from jumanji.environments.logic.rubiks_cube.types import Cube, FakeState
 from jumanji.environments.logic.rubiks_cube.utils import (
     CubeMovementAmount,
@@ -116,8 +116,8 @@ def test_solved_reward(
     differently_stickered_state = FakeState(
         cube=differently_stickered_cube, step_count=jnp.array(0, jnp.int32)
     )
-    assert jnp.equal(SparseRewardFunction()(solved_state), 1.0)
-    assert jnp.equal(SparseRewardFunction()(differently_stickered_state), 0.0)
+    assert jnp.equal(SparseRewardFn()(solved_state), 1.0)
+    assert jnp.equal(SparseRewardFn()(differently_stickered_state), 0.0)
 
 
 @pytest.mark.parametrize(
@@ -138,7 +138,7 @@ def test_moves_nontrivial(
     move_solved_state = FakeState(
         cube=move_solved_cube, step_count=jnp.array(0, jnp.int32)
     )
-    assert jnp.equal(SparseRewardFunction()(move_solved_state), 0.0)
+    assert jnp.equal(SparseRewardFn()(move_solved_state), 0.0)
     assert (
         jnp.not_equal(solved_cube, move_solved_cube).sum()
         == (len(Face) - 2) * solved_cube.shape[-1]

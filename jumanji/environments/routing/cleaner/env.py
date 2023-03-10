@@ -33,7 +33,6 @@ class Cleaner(Environment[State]):
     """A JAX implementation of the 'Cleaner' game. # TODO: need a better description here.
 
     - observation: `Observation`
-
         - grid: jax array (int) of shape (grid_height, grid_width)
             the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int) of shape (num_agents, 2)
@@ -57,7 +56,7 @@ class Cleaner(Environment[State]):
 
     - state: `State`
         - grid: jax array (int) of shape (grid_height, grid_width)
-            the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+            the current board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int) of shape (num_agents, 2)
             the location of each agent on the board.
         - action_mask: jax array (bool) of shape (num_agents, 4)
@@ -84,7 +83,7 @@ class Cleaner(Environment[State]):
         grid_width: int = 10,
         grid_height: int = 10,
         num_agents: int = 3,
-        step_limit: Optional[int] = None,
+        time_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
         render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
@@ -95,7 +94,7 @@ class Cleaner(Environment[State]):
             grid_width: width of the grid. Defaults to 10.
             grid_height: height of the grid. Defaults to 10.
             num_agents: number of agents. Defaults to 3.
-            step_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
+            time_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
@@ -105,7 +104,7 @@ class Cleaner(Environment[State]):
         self.grid_height = grid_height
         self.grid_shape = (self.grid_width, self.grid_height)
         self.num_agents = num_agents
-        self.step_limit = step_limit or (self.grid_width * self.grid_height)
+        self.time_limit = time_limit or (self.grid_width * self.grid_height)
         self.generator = generator or RandomGenerator(grid_width, grid_height)
         self.penalty_per_timestep = penalty_per_timestep
 
@@ -125,14 +124,14 @@ class Cleaner(Environment[State]):
         """Specification of the observation of the `Cleaner` environment.
 
         Returns:
-            ObservationSpec containing the specifications for all observation fields:
-                - grid: BoundedArray of int between 0 and 2 (inclusive),
-                    same shape as the grid.
-                - agent_locations_spec: BoundedArray of int, shape is (num_agents, 2).
-                    Maximum value for the first column is grid_width,
-                    and maximum value for the second is grid_height.
-                - action_mask: BoundedArray of bool, shape is (num_agent, 4).
-                - step_count_spec : specs.BoundedArray int of shape ().
+            Spec for the `Observation`, consisting of the fields:
+                - grid: BoundedArray (int32) of shape (grid_width, grid_height). Values
+                    are between 0 and 2 (inclusive).
+                - agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
+                    Maximum value for the first column is grid_width, and maximum value
+                    for the second is grid_height.
+                - action_mask: BoundedArray (bool) of shape (num_agent, 4).
+                - step_count: BoundedArray (int32) of shape ().
         """
         grid = specs.BoundedArray(self.grid_shape, jnp.int32, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
@@ -141,7 +140,7 @@ class Cleaner(Environment[State]):
         action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
         )
-        step_count = specs.BoundedArray((), jnp.int32, 0, self.step_limit, "step_count")
+        step_count = specs.BoundedArray((), jnp.int32, 0, self.time_limit, "step_count")
         return specs.Spec(
             Observation,
             "ObservationSpec",
@@ -173,8 +172,8 @@ class Cleaner(Environment[State]):
             key: random key used to reset the environment.
 
         Returns:
-            state: State object corresponding to the new state of the environment after a reset.
-            timestep: TimeStep object corresponding to the first timestep returned by the
+            state: `State` object corresponding to the new state of the environment after a reset.
+            timestep: `TimeStep` object corresponding to the first timestep returned by the
                 environment after a reset.
         """
         key, subkey = jax.random.split(key)
@@ -212,11 +211,11 @@ class Cleaner(Environment[State]):
         Args:
             state: current environment state.
             actions: Jax array of shape (num_agents,). Each agent moves one step in
-                the specified direction (0: up, 1: righ, 2: down, 3: left).
+                the specified direction (0: up, 1: right, 2: down, 3: left).
 
         Returns:
-            state: State object corresponding to the next state of the environment.
-            timestep: TimeStep object corresponding to the timestep returned by the environment.
+            state: `State` object corresponding to the next state of the environment.
+            timestep: `TimeStep` object corresponding to the timestep returned by the environment.
         """
         are_actions_valid = self._are_actions_valid(actions, state.action_mask)
 
@@ -371,13 +370,13 @@ class Cleaner(Environment[State]):
         Returns True if:
             - An action was invalid.
             - There are no more dirty tiles left, i.e. all tiles have been cleaned.
-            - The maximum number of steps (`self.step_limit`) is reached.
+            - The maximum number of steps (`self.time_limit`) is reached.
         Returns False otherwise.
         """
         return (
             ~valid_actions.all()
             | ~(state.grid == DIRTY).any()
-            | (state.step_count >= self.step_limit)
+            | (state.step_count >= self.time_limit)
         )
 
     def _compute_extras(self, state: State) -> Dict[str, Any]:
