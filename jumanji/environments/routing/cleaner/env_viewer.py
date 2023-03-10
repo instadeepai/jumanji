@@ -15,9 +15,14 @@
 from typing import Optional, Sequence
 
 import matplotlib
+import matplotlib.animation
+import matplotlib.cm
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import image
+from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-from jumanji.environments.commons.maze_utils.maze_generation import Maze
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.types import State
@@ -29,8 +34,9 @@ class CleanerViewer(MazeViewer):
         CLEAN: [1, 1, 1],  # White
         WALL: [0, 0, 0],  # Black
         DIRTY: [0, 1, 0],  # Green
-        AGENT: [1, 0, 0],  # Red
     }
+    AGENT_COLOR = ([1, 0, 0],)  # Red
+    ALPHA = 0.5
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """
@@ -49,9 +55,15 @@ class CleanerViewer(MazeViewer):
 
         Args:
             state: the environment state to render.
+
+        Returns:
+            RGB array if the render_mode is RenderMode.RGB_ARRAY.
         """
-        maze = self._overlay_agents_on_grid(state)
-        return super().render(maze)
+        self._clear_display()
+        fig, ax = self._get_fig_ax()
+        ax.clear()
+        self._add_grid_image(state, ax)
+        return self._display(fig)
 
     def animate(
         self,
@@ -71,11 +83,58 @@ class CleanerViewer(MazeViewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        mazes = [self._overlay_agents_on_grid(state) for state in states]
-        return super().animate(mazes, interval, save, path)
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        plt.close(fig)
 
-    def _overlay_agents_on_grid(self, state: State) -> Maze:
-        agents_locations = state.agents_locations
-        return state.grid.at[agents_locations[:, 0], agents_locations[:, 1]].set(
-            self.AGENT
+        def make_frame(state_index: int) -> None:
+            ax.clear()
+            state = states[state_index]
+            self._add_grid_image(state, ax)
+
+        self._animation = matplotlib.animation.FuncAnimation(
+            fig,
+            make_frame,
+            frames=len(states),
+            interval=interval,
         )
+
+        # Save the animation as a gif.
+        if save:
+            self._animation.save(path)
+
+        return self._animation
+
+    def _add_grid_image(self, state: State, ax: Axes) -> image.AxesImage:
+        img = self._create_grid_image(state)
+        ax.set_axis_off()
+        return ax.imshow(img)
+
+    def _create_grid_image(self, state: State) -> NDArray:
+        grid = state.grid
+        img = np.zeros((*grid.shape, 3))
+        for tile_value, color in self.COLORS.items():
+            img[np.where(grid == tile_value)] = color
+        # Add a channel for transparency
+        img = np.pad(img, ((0, 0), (0, 0), (0, 1)), constant_values=1)
+        img = self._set_agents_colors(img, state.agents_locations)
+        img = self._draw_black_frame_around(img)
+        return img
+
+    def _set_agents_colors(self, img: NDArray, agents_locations: NDArray) -> NDArray:
+        unique_locations, counts = np.unique(
+            agents_locations, return_counts=True, axis=0
+        )
+        for location, count in zip(unique_locations, counts):
+            img[location[0], location[1], :3] = np.array(self.AGENT_COLOR)
+            img[location[0], location[1], 3] = 1 - self.ALPHA**count
+        return img
+
+    def _draw_black_frame_around(self, img: NDArray) -> NDArray:
+        # Draw black frame around maze by padding axis 0 and 1
+        img = np.pad(img, ((1, 1), (1, 1), (0, 0)))  # type: ignore
+        # Ensure the black frame is not transparent
+        img[0, :, 3] = 1
+        img[-1, :, 3] = 1
+        img[:, 0, 3] = 1
+        img[:, -1, 3] = 1
+        return img
