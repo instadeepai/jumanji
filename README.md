@@ -11,21 +11,27 @@
 [![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 
----
 [**Installation**](#installation-)
 | [**Quickstart**](#quickstart-)
 | [**Examples**](#examples-%EF%B8%8F)
 | [**Environments**](#environments-)
 | [**Citation**](#citing-jumanji-%EF%B8%8F)
-| [**See Also**](#see-also)
-| [**Reference Docs**](https://instadeepai.github.io/jumanji)
+| [**Docs**](https://instadeepai.github.io/jumanji)
+---
 
 
 <p float="left" align="center">
-  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/connector.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/snake.gif" alt="BinPack" width="30%" />
+  <img src="docs/env_anim/cleaner.gif" alt="2048" width="30%" />
+  <img src="docs/env_anim/job_shop.gif" alt="Snake" width="30%" />
   <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/game_2048.gif" alt="2048" width="30%" />
+  <img src="docs/env_anim/cvrp.gif" alt="2048" width="30%" />
+  <img src="docs/env_anim/rubiks_cube.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/game_2048.gif" alt="BinPack" width="30%" />
+  <img src="docs/env_anim/minesweeper.gif" alt="2048" width="30%" />
 </p>
+
 
 
 ## Welcome to the Jungle! 🌴
