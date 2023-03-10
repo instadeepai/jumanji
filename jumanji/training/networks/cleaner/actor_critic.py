@@ -116,18 +116,16 @@ def make_critic_network(
                 hk.Flatten(),
             ]
         )
-        obs = jax.vmap(process_obs_for_critic)(observation)  # shape (B, H, W, 3)
-        embedding = torso(obs)  # shape (B, W * H)
+        obs = jax.vmap(process_obs_for_critic)(observation)  # (B, H, W, 3)
+        embedding = torso(obs)  # (B, W * H)
         normalised_step_count = (
             jnp.expand_dims(observation.step_count, axis=-1) / time_limit
         )  # (B, 1)
         output = jnp.concatenate(
             [embedding, normalised_step_count], axis=-1
         )  # (B, W*H+1)
-        values = hk.nets.MLP((*mlp_units, 1), activate_final=False)(
-            output
-        )  # shape (B, 1)
-        return jnp.squeeze(values, axis=-1)  # shape (B,)
+        values = hk.nets.MLP((*mlp_units, 1), activate_final=False)(output)  # (B, 1)
+        return jnp.squeeze(values, axis=-1)  # (B,)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)
@@ -183,8 +181,8 @@ def make_actor_network(
                 hk.Flatten(),
             ]
         )
-        obs = jax.vmap(process_obs_for_actor)(observation)  # shape (B, N, H, W, 4)
-        embedding = jax.vmap(torso)(obs)  # shape (B, N, W * H)
+        obs = jax.vmap(process_obs_for_actor)(observation)  # (B, N, H, W, 4)
+        embedding = jax.vmap(torso)(obs)  # (B, N, W * H)
         num_agents = obs.shape[1]
         normalised_step_count = jnp.repeat(
             jnp.expand_dims(observation.step_count, axis=(1, 2)) / time_limit,
@@ -195,7 +193,7 @@ def make_actor_network(
             [embedding, normalised_step_count], axis=-1
         )  # (B, N, W*H+1)
         head = hk.nets.MLP((*mlp_units, 4), activate_final=False)
-        logits = head(output)  # shape (B, N, 4)
+        logits = head(output)  # (B, N, 4)
         return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

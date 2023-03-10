@@ -10,11 +10,11 @@ An episode ends when all agents have connected to their targets or no agents can
 
 ## Observation
 
-At each step observation contains 3 items: a grid for each agent, an action mask for each agent and the step.
+At each step observation contains 3 items: a grid for each agent, an action mask for each agent and the episode step count.
 
  - `grid`: jax array (int32) of shape `(grid_size, grid_size)`, a size-configurable 2D matrix that represents pairs of points that need to be connected. The **position** of an agent has to connect to its **target**, leaving a **path** behind it as it moves across the grid forming its route. Each agent connects to only 1 target.
  - `action_mask`: jax array (bool) of shape `(num_agents,)`, indicates which actions each agent can take.
- - `step`: jax array (int32) of shape `()`, represents how many steps have been taken in the environment since the last reset.
+ - `step_count`: jax array (int32) of shape `()`, represents how many steps have been taken in the environment since the last reset.
 
 Each agent is passed their own grid so the grid observation is of shape `(num_agents, grid_size, grid_size)`, similarly action masks are of shape `(num_agents, 5)`, however the step is a common value for all agents and thus is a scalar.
 
@@ -60,10 +60,9 @@ The action space is a `MultiDiscreteArray` of shape `(num_agents,)` of integer v
 ## Reward
 
 The reward can be either:
-- **Dense**: -0.03 each step, +0.1 on the step the agent connects and -0.01 if the agent does the no-op action.
-- **Sparse**: +1 for each agent connecting to a target at the current timestep.
+- **Dense**: +1.0 for each agent that connects at that step and -0.03 for each agent that has not connected yet.
 
-The default reward is **sparse** and rewards are provided to each agent in the shape `(num_agents,)`.
+Rewards are provided in the shape `(num_agents,)` so that each agent can have a reward.
 
 
 

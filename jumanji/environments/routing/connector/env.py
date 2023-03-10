@@ -12,24 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
-from chex import PRNGKey
 from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE, NOOP
+from jumanji.environments.routing.connector.constants import (
+    AGENT_INITIAL_VALUE,
+    NOOP,
+    PATH,
+)
 from jumanji.environments.routing.connector.env_viewer import ConnectorViewer
 from jumanji.environments.routing.connector.generator import (
     Generator,
     UniformRandomGenerator,
 )
-from jumanji.environments.routing.connector.reward import RewardFn, SparseRewardFn
+from jumanji.environments.routing.connector.reward import DenseRewardFn, RewardFn
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     connected_or_blocked,
@@ -40,7 +43,7 @@ from jumanji.environments.routing.connector.utils import (
     move_position,
     switch_perspective,
 )
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class Connector(Environment[State]):
@@ -51,7 +54,7 @@ class Connector(Environment[State]):
 
     - observation - `Observation`
         - action mask: jax array (bool) of shape (num_agents, 5).
-        - step: jax array (int32) of shape ()
+        - step_count: jax array (int32) of shape ()
             the current episode step.
         - grid: jax array (int32) of shape (num_agents, size, size)
             - each 2d array (size, size) along axis 0 is the agent's local observation.
@@ -71,17 +74,18 @@ class Connector(Environment[State]):
         - can take the values [0,1,2,3,4] which correspond to [No Op, Up, Right, Down, Left].
         - each value in the array corresponds to an agent's action.
 
-    - reward_fn: function that takes old state, new state and action returns a reward for each
-        agent.
+    - reward: jax array (float) of shape ():
+        - dense: each agent is given 1.0 if it connects on that step, otherwise 0.0. Additionally,
+            each agent that has not connected receives a penalty reward of -0.03.
 
-    - episode termination: if an agent can't move, the time_limit is reached, or the agent connects
-        to its target, it is considered done. Once all agents are done, the episode will terminate.
-        - timestep discounts are of shape (num_agents,)
+    - episode termination: if an agent can't move, or the time limit is reached, or the agent
+        connects to its target, it is considered done. Once all agents are done, the episode
+        terminates. The timestep discounts are of shape (num_agents,).
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
         - grid: jax array (int32) of shape (size, size) which corresponds to agent 0's observation.
-        - step: jax array (int32) of shape () number of steps passed in the current episode.
+        - step_count: jax array (int32) of shape () number of steps elapsed in the current episode.
 
     ```python
     from jumanji.environments import Connector
@@ -97,40 +101,30 @@ class Connector(Environment[State]):
 
     def __init__(
         self,
-        size: int = 8,
-        num_agents: int = 3,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         time_limit: int = 50,
-        generator: Optional[Generator] = None,
         render_mode: str = "human",
     ) -> None:
         """Create the `Connector` environment.
 
         Args:
-            size: number of rows and columns in the grid.
-            num_agents: number of agents in the grid (or equivalently, the number of targets).
-            reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
-                Implemented options are [`DenseRewardFn`, `SparseRewardFn`].
-                Defaults to `SparseRewardFn`.
-            time_limit: the number of steps allowed before an episode terminates.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
                 Defaults to `UniformRandomGenerator`.
+            reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
+                Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
+            time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
         """
-        super().__init__()
+        self._generator = generator or UniformRandomGenerator()
+        self._reward_fn = reward_fn or DenseRewardFn()
+        self.time_limit = time_limit
+        self.num_agents = self._generator.num_agents
+        self.grid_size = self._generator.grid_size
+        self._agent_ids = jnp.arange(self.num_agents)
+        self._renderer = ConnectorViewer("Connector", self.num_agents, render_mode)
 
-        self._size = size
-        self._num_agents = num_agents
-        self._time_limit = time_limit
-
-        self.agent_ids = jnp.arange(self._num_agents)
-
-        self._reward_fn = reward_fn or SparseRewardFn()
-        self._generator = generator or UniformRandomGenerator(size, num_agents)
-
-        self._renderer = ConnectorViewer("Connector", num_agents, render_mode)
-
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -140,8 +134,7 @@ class Connector(Environment[State]):
             state: `State` object corresponding to the new state of the environment.
             timestep: `TimeStep` object corresponding to the initial environment timestep.
         """
-        generator_key, key = jax.random.split(key)
-        state = self._generator(generator_key)
+        state = self._generator(key)
 
         action_mask = jax.vmap(self._get_action_mask, (0, None))(
             state.agents, state.grid
@@ -149,24 +142,16 @@ class Connector(Environment[State]):
         observation = Observation(
             grid=self._obs_from_grid(state.grid),
             action_mask=action_mask,
-            step=state.step,
+            step_count=state.step_count,
         )
-        timestep = restart(observation=observation, shape=(self._num_agents,))
-
-        return (
-            State(
-                key=key,
-                grid=state.grid,
-                step=jnp.array(0, jnp.int32),
-                agents=state.agents,
-            ),
-            timestep,
+        extras = self._get_extras(state)
+        timestep = restart(
+            observation=observation, extras=extras, shape=(self.num_agents,)
         )
+        return state, timestep
 
     def step(
-        self,
-        state: State,
-        action: Action,
+        self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
@@ -184,43 +169,51 @@ class Connector(Environment[State]):
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
         agents, grid = self._step_agents(state, action)
-        new_state = State(key=state.key, grid=grid, step=state.step + 1, agents=agents)
+        new_state = State(
+            grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key
+        )
 
         # Construct timestep: get observations, rewards, discounts
         grids = self._obs_from_grid(grid)
-        reward = self._reward_fn(state, new_state, action)
+        reward = self._reward_fn(state, action, new_state)
         action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
         observation = Observation(
-            grid=grids, action_mask=action_mask, step=new_state.step
+            grid=grids, action_mask=action_mask, step_count=new_state.step_count
         )
 
         dones = jax.vmap(connected_or_blocked)(agents, action_mask)
         discount = jnp.asarray(jnp.logical_not(dones), dtype=float)
-
+        extras = self._get_extras(new_state)
         timestep = jax.lax.cond(
-            dones.all() | (new_state.step >= self._time_limit),
+            dones.all() | (new_state.step_count >= self.time_limit),
             lambda: termination(
-                reward=reward, observation=observation, shape=self._num_agents
+                reward=reward,
+                observation=observation,
+                extras=extras,
+                shape=self.num_agents,
             ),
             lambda: transition(
                 reward=reward,
                 observation=observation,
                 discount=discount,
-                shape=self._num_agents,
+                extras=extras,
+                shape=self.num_agents,
             ),
         )
 
         return new_state, timestep
 
-    def _step_agents(self, state: State, action: Action) -> Tuple[Agent, chex.Array]:
+    def _step_agents(
+        self, state: State, action: chex.Array
+    ) -> Tuple[Agent, chex.Array]:
         """Steps all agents at the same time correcting for possible collisions.
 
         If a collision occurs we place the agent with the lower `agent_id` in its previous position.
 
         Returns:
-            Tuple: (agents, grid) after having applied each agents action
+            Tuple: (agents, grid) after having applied each agents' action
         """
-        agent_ids = jnp.arange(self._num_agents)
+        agent_ids = jnp.arange(self.num_agents)
         # Step all agents at the same time (separately) and return all of the grids
         agents, grids = jax.vmap(self._step_agent, in_axes=(0, None, 0))(
             state.agents, state.grid, action
@@ -274,7 +267,7 @@ class Connector(Environment[State]):
     def _obs_from_grid(self, grid: chex.Array) -> chex.Array:
         """Gets the observation vector for all agents."""
         return jax.vmap(switch_perspective, (None, 0, None))(
-            grid, self.agent_ids, self._num_agents
+            grid, self._agent_ids, self.num_agents
         )
 
     def _get_action_mask(self, agent: Agent, grid: chex.Array) -> chex.Array:
@@ -289,6 +282,19 @@ class Connector(Environment[State]):
         mask = jnp.ones(5, dtype=bool)
         mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
         return mask
+
+    def _get_extras(self, state: State) -> Dict:
+        """Computes extras metrics to be return within the timestep."""
+        offset = AGENT_INITIAL_VALUE
+        total_path_length = jnp.sum((offset + (state.grid - offset) % 3) == PATH)
+        # Add agents' head
+        total_path_length += self.num_agents
+        extras = {
+            "num_connections": jnp.sum(state.agents.connected),
+            "ratio_connections": jnp.mean(state.agents.connected),
+            "total_path_length": total_path_length,
+        }
+        return extras
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment.
@@ -321,37 +327,41 @@ class Connector(Environment[State]):
         return self._renderer.animate(grids, interval, save, path)
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec for `Connector` environment.
-
-        This observation contains the grid for each agent, the action mask for each agent and
-        the current step.
+        """Specifications of the observation of the `Connector` environment.
 
         Returns:
-            observation_spec: an `ObservationSpec` which contains the grid and the action mask spec.
+            Spec for the `Observation` whose fields are:
+            - grid: BoundedArray (int32) of shape (num_agents, grid_size, grid_size).
+            - action_mask: BoundedArray (bool) of shape (num_agents, 5).
+            - step_count: BoundedArray (int32) of shape ().
         """
         grid = specs.BoundedArray(
-            shape=(self._num_agents, self._size, self._size),
-            dtype=int,
-            name="observation",
+            shape=(self.num_agents, self.grid_size, self.grid_size),
+            dtype=jnp.int32,
+            name="grid",
             minimum=0,
-            maximum=self._num_agents * 3 + AGENT_INITIAL_VALUE,
+            maximum=self.num_agents * 3 + AGENT_INITIAL_VALUE,
         )
         action_mask = specs.BoundedArray(
-            shape=(self._num_agents, 5),
+            shape=(self.num_agents, 5),
             dtype=bool,
             minimum=False,
             maximum=True,
             name="action_mask",
         )
-        step = specs.BoundedArray(
-            shape=(), dtype=int, minimum=0, maximum=self._time_limit, name="step"
+        step_count = specs.BoundedArray(
+            shape=(),
+            dtype=jnp.int32,
+            minimum=0,
+            maximum=self.time_limit,
+            name="step_count",
         )
         return specs.Spec(
             Observation,
             "ObservationSpec",
             grid=grid,
             action_mask=action_mask,
-            step=step,
+            step_count=step_count,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -364,7 +374,8 @@ class Connector(Environment[State]):
             observation_spec: `MultiDiscreteArray` of shape (num_agents,).
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([5] * self._num_agents),
+            num_values=jnp.array([5] * self.num_agents),
+            dtype=jnp.int32,
             name="action",
         )
 
@@ -373,7 +384,7 @@ class Connector(Environment[State]):
         Returns:
             reward_spec: a `specs.Array` spec of shape (num_agents,). One for each agent.
         """
-        return specs.Array(shape=(self._num_agents,), dtype=float, name="reward")
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
         """
@@ -381,7 +392,7 @@ class Connector(Environment[State]):
             discount_spec: a `specs.Array` spec of shape (num_agents,). One for each agent
         """
         return specs.BoundedArray(
-            shape=(self._num_agents,),
+            shape=(self.num_agents,),
             dtype=float,
             minimum=0.0,
             maximum=1.0,

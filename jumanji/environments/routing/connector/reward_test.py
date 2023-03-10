@@ -13,35 +13,11 @@
 # limitations under the License.
 
 import chex
+import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.connector.reward import DenseRewardFn, SparseRewardFn
+from jumanji.environments.routing.connector.reward import DenseRewardFn
 from jumanji.environments.routing.connector.types import State
-
-
-def test_sparse_reward(
-    state: State, state1: State, state2: State, action1: chex.Array, action2: chex.Array
-) -> None:
-    sparse_reward_fn = SparseRewardFn()
-    # Reward of moving between the same states should be 0.
-    reward = sparse_reward_fn(state, state, jnp.array([0, 0, 0]))
-    assert (reward == jnp.zeros(3)).all()
-
-    # Reward for no agents finished to some agents finished.
-    reward = sparse_reward_fn(state, state1, action1)
-    assert (reward == jnp.array([1.0, 0.0, 1.0])).all()
-
-    # Reward for some agents finished to all agents finished.
-    reward = sparse_reward_fn(state1, state2, action2)
-    assert (reward == jnp.array([0.0, 1.0, 0.0])).all()
-
-    # Reward of none finished to all finished.
-    reward = sparse_reward_fn(state, state2, action1)
-    assert (reward == jnp.ones(3)).all()
-
-    # Reward of all finished to all finished.
-    reward = sparse_reward_fn(state2, state2, jnp.zeros(3))
-    assert (reward == jnp.zeros(3)).all()
 
 
 def test_dense_reward(
@@ -49,39 +25,37 @@ def test_dense_reward(
 ) -> None:
     timestep_reward = -0.03
     connected_reward = 0.1
-    noop_reward = -0.01
 
-    dense_rew_fn = DenseRewardFn(
-        timestep_reward=timestep_reward,
-        connected_reward=connected_reward,
-        noop_reward=noop_reward,
+    dense_reward_fn = jax.jit(
+        DenseRewardFn(
+            timestep_reward=timestep_reward,
+            connected_reward=connected_reward,
+        )
     )
 
     # Reward of moving between the same states should be 0.
-    reward = dense_rew_fn(state, state, jnp.array([0, 0, 0]))
-    assert (reward == jnp.array([timestep_reward + noop_reward] * 3)).all()
+    reward = dense_reward_fn(state, jnp.array([0, 0, 0]), state)
+    assert (reward == jnp.array([timestep_reward] * 3)).all()
 
     # Reward for no agents finished to some agents finished.
-    reward = dense_rew_fn(state, state1, action1)
-    assert (
-        reward
-        == jnp.array(
-            [
-                connected_reward + timestep_reward,
-                timestep_reward,
-                connected_reward + timestep_reward,
-            ]
-        )
-    ).all()
+    reward = dense_reward_fn(state, action1, state1)
+    expected_reward = jnp.array(
+        [
+            connected_reward + timestep_reward,
+            timestep_reward,
+            connected_reward + timestep_reward,
+        ]
+    )
+    assert jnp.array_equal(reward, expected_reward)
 
     # Reward for some agents finished to all agents finished.
-    reward = dense_rew_fn(state1, state2, action2)
+    reward = dense_reward_fn(state1, action2, state2)
     assert (reward == jnp.array([0.0, connected_reward + timestep_reward, 0.0])).all()
 
     # Reward of none finished to all finished, when all agents take a non-noop action.
-    reward = dense_rew_fn(state, state2, action1)
+    reward = dense_reward_fn(state, action1, state2)
     assert (reward == jnp.array([connected_reward + timestep_reward] * 3)).all()
 
     # Reward of all finished to all finished.
-    reward = dense_rew_fn(state2, state2, jnp.zeros(3))
+    reward = dense_reward_fn(state2, jnp.zeros(3), state2)
     assert (reward == jnp.zeros(3)).all()

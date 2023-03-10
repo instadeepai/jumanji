@@ -91,7 +91,8 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    env: Environment = ENV_FACTORY[cfg.env.name](**cfg.env.env_kwargs)
+    env_kwargs = cfg.env.env_kwargs or {}
+    env: Environment = ENV_FACTORY[cfg.env.name](**env_kwargs)
     if isinstance(env, Connector):
         env = MultiToSingleWrapper(env)
     return env
@@ -286,6 +287,16 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             num_conv_channels=cfg.env.network.num_conv_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "connector":
+        assert isinstance(env.unwrapped, Connector)
+        actor_critic_networks = networks.make_actor_critic_networks_connector(
+            connector=env.unwrapped,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+            conv_n_channels=cfg.env.network.conv_n_channels,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")

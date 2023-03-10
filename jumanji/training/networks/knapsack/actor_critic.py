@@ -183,15 +183,15 @@ def make_knapsack_masks(observation: Observation) -> Tuple[chex.Array, chex.Arra
     - self_attention_mask: mask of non-packed items.
     - cross_attention_mask: action mask, i.e. only items that can be packed.
     """
-    # Only consider the non-visited nodes
+    # Only consider the non-visited nodes.
     mask = ~observation.packed_items
 
-    # Replicate the mask on the query and key dimensions
+    # Replicate the mask on the query and key dimensions.
     self_attention_mask = jnp.einsum("...i,...j->...ij", mask, mask)
     # Expand on the head dimension.
     self_attention_mask = jnp.expand_dims(self_attention_mask, axis=-3)
 
-    # Expand on the query dimension
+    # Expand on the query dimension.
     cross_attention_mask = jnp.expand_dims(observation.action_mask, axis=-2)
     # Expand on the head dimension.
     cross_attention_mask = jnp.expand_dims(cross_attention_mask, axis=-3)

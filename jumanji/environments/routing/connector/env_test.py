@@ -18,6 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
+import jumanji.testing.pytrees
 from jumanji.environments.routing.connector import constants
 from jumanji.environments.routing.connector.constants import EMPTY
 from jumanji.environments.routing.connector.env import Connector
@@ -31,40 +32,39 @@ from jumanji.types import StepType, TimeStep
 @partial(jax.vmap, in_axes=(0, None))
 def is_head_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     """Returns true if the agent's head is on the correct place on the grid."""
-    return (grid[agent.position] == get_position(agent.id)).any()
+    return jnp.any(grid[agent.position] == get_position(agent.id))
 
 
 @partial(jax.vmap, in_axes=(0, None))
 def is_target_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     """Returns true if the agent's target is on the correct place on the grid."""
-    return (grid[agent.target] == get_target(agent.id)).any()
+    return jnp.any(grid[agent.target] == get_target(agent.id))
 
 
-def test_connector__reset(env: Connector, key: jax.random.KeyArray) -> None:
+def test_connector__reset(connector: Connector, key: jax.random.KeyArray) -> None:
     """Test that all heads and targets are on the board."""
-    reset = env.reset  # jax.jit(env.reset)
-    state, timestep = reset(key)
+    state, timestep = connector.reset(key)
 
-    assert state.grid.shape == (env._size, env._size)
+    assert state.grid.shape == (connector.grid_size, connector.grid_size)
 
-    for agent_id in range(env._num_agents):
-        assert (state.grid == get_position(agent_id)).any()
-        assert (state.grid == get_target(agent_id)).any()
+    for agent_id in range(connector.num_agents):
+        assert jnp.any(state.grid == get_position(agent_id))
+        assert jnp.any(state.grid == get_target(agent_id))
 
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
 
-    assert (timestep.discount == jnp.ones(env._num_agents, int)).all()
-    assert (timestep.reward == jnp.zeros(env._num_agents)).all()
+    assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
+    assert jnp.array_equal(timestep.reward, jnp.zeros(connector.num_agents))
     assert timestep.step_type == StepType.FIRST
 
 
-def test_connector__reset_jit(env: Connector) -> None:
+def test_connector__reset_jit(connector: Connector) -> None:
     """Confirm that the reset is only compiled once when jitted."""
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(env.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(connector.reset, n=1))
     key = jax.random.PRNGKey(0)
-    state, timestep = reset_fn(key)
+    _ = reset_fn(key)
 
     # Call again to check it does not compile twice
     state, timestep = reset_fn(key)
@@ -73,7 +73,7 @@ def test_connector__reset_jit(env: Connector) -> None:
 
 
 def test_connector__step_connected(
-    env: Connector,
+    connector: Connector,
     state: State,
     state1: State,
     state2: State,
@@ -81,17 +81,19 @@ def test_connector__step_connected(
     action2: chex.Array,
 ) -> None:
     """Tests that timestep is done when all agents connect"""
-    real_state1, timestep = env.step(state, action1)
-
-    assert (timestep.reward == jnp.array([1.0, 0.0, 1.0])).all()
+    step_fn = jax.jit(connector.step)
+    real_state1, timestep = step_fn(state, action1)
+    reward = connector._reward_fn(state, action1, real_state1)
+    assert jnp.array_equal(timestep.reward, reward)
     chex.assert_trees_all_equal(real_state1, state1)
 
-    real_state2, timestep = env.step(real_state1, action2)
+    real_state2, timestep = step_fn(real_state1, action2)
     chex.assert_trees_all_equal(real_state2, state2)
 
     assert timestep.step_type == StepType.LAST
-    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
-    assert (timestep.reward == jnp.array([0.0, 1.0, 0.0])).all()
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
+    reward = connector._reward_fn(real_state1, action2, real_state2)
+    assert jnp.array_equal(timestep.reward, reward)
 
     assert all(is_head_on_grid(state.agents, state.grid))
     # None of the targets should be on the grid because everyone is connected
@@ -99,7 +101,7 @@ def test_connector__step_connected(
 
 
 def test_connector__step_blocked(
-    env: Connector,
+    connector: Connector,
     state: State,
     path0: int,
     path1: int,
@@ -112,6 +114,7 @@ def test_connector__step_blocked(
     posi2: int,
 ) -> None:
     """Tests that timestep is done when all agents are blocked"""
+    step_fn = jax.jit(connector.step)
     # Actions that will block all agents
     actions = jnp.array(
         [
@@ -125,7 +128,7 @@ def test_connector__step_blocked(
 
     # Take the actions that will block all agents
     for action in actions:
-        state, timestep = env.step(state, action)
+        state, timestep = step_fn(state, action)
 
     expected_grid = jnp.array(
         [
@@ -138,36 +141,37 @@ def test_connector__step_blocked(
         ]
     )
 
-    assert (state.grid == expected_grid).all()
+    assert jnp.array_equal(state.grid, expected_grid)
     assert timestep.step_type == StepType.LAST
-    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
 
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
 
 
-def test_connector__step_horizon(env: Connector, state: State) -> None:
+def test_connector__step_horizon(connector: Connector, state: State) -> None:
     """Tests that the timestep is done, but discounts are not all 0 past"""
-    # env has a time_limit of 5
+    step_fn = jax.jit(connector.step)
+    # The environment has a time limit of 5.
     actions = jnp.zeros(3, int)
     # step 1
-    state, timestep = env.step(state, actions)
+    state, timestep = step_fn(state, actions)
 
     # step 2, 3, 4
     for _ in range(3):
-        state, timestep = env.step(state, actions)
+        state, timestep = step_fn(state, actions)
 
         assert timestep.step_type != StepType.LAST
-        assert (timestep.discount == jnp.ones(env._num_agents)).all()
+        assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
 
     # step 5
-    state, timestep = env.step(state, actions)
+    state, timestep = step_fn(state, actions)
     assert timestep.step_type == StepType.LAST
-    assert (timestep.discount == jnp.zeros(env._num_agents)).all()
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
 
 
 def test_connector__step_agents_collision(
-    env: Connector,
+    connector: Connector,
     state: State,
     path0: int,
     path1: int,
@@ -181,7 +185,7 @@ def test_connector__step_agents_collision(
 ) -> None:
     """Tests _step_agents function when there is a collision."""
     action = jnp.array([constants.DOWN, constants.UP, constants.NOOP])
-    agents, grid = env._step_agents(state, action)
+    agents, grid = connector._step_agents(state, action)
 
     expected_grid = jnp.array(
         [
@@ -194,40 +198,40 @@ def test_connector__step_agents_collision(
         ]
     )
 
-    assert (grid == expected_grid).all()
+    assert jnp.array_equal(grid, expected_grid)
     assert all(is_target_on_grid(agents, grid))
     assert all(is_head_on_grid(agents, grid))
 
 
-def test_connector__step_agent_valid(env: Connector, state: State) -> None:
+def test_connector__step_agent_valid(connector: Connector, state: State) -> None:
     """Test _step_agent method given valid position."""
     agent0 = tree_slice(state.agents, 0)
-    agent, grid = env._step_agent(agent0, state.grid, constants.LEFT)
+    agent, grid = connector._step_agent(agent0, state.grid, constants.LEFT)
 
-    assert (agent.position == jnp.array([1, 1])).all()
+    assert jnp.array_equal(agent.position, jnp.array([1, 1]))
     # agent should have moved
-    assert (agent.position != agent0.position).any()
+    assert jnp.any(agent.position != agent0.position)
     assert grid[1, 1] == get_position(0)
 
 
-def test_connector__step_agent_invalid(env: Connector, state: State) -> None:
+def test_connector__step_agent_invalid(connector: Connector, state: State) -> None:
     """Test _step_agent method given invalid position."""
     agent0 = tree_slice(state.agents, 0)
-    agent, grid = env._step_agent(agent0, state.grid, constants.RIGHT)
+    agent, grid = connector._step_agent(agent0, state.grid, constants.RIGHT)
 
-    assert (agent.position == jnp.array([1, 2])).all()
+    assert jnp.array_equal(agent.position, jnp.array([1, 2]))
     # agent should not have moved
-    assert (agent.position == agent0.position).all()
+    assert jnp.array_equal(agent.position, agent0.position)
     assert grid[1, 2] == get_position(0)
 
 
-def test_connector__does_not_smoke(env: Connector) -> None:
+def test_connector__does_not_smoke(connector: Connector) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(env)
+    check_env_does_not_smoke(connector)
 
 
 def test_connector__obs_from_grid(
-    env: Connector,
+    connector: Connector,
     grid: chex.Array,
     path0: int,
     path1: int,
@@ -240,7 +244,7 @@ def test_connector__obs_from_grid(
     posi2: int,
 ) -> None:
     """Tests that observations are correctly generated given the grid."""
-    observations = env._obs_from_grid(grid)
+    observations = connector._obs_from_grid(grid)
 
     expected_agent_1 = jnp.array(
         [
@@ -264,12 +268,14 @@ def test_connector__obs_from_grid(
     )
 
     expected_obs = jnp.stack([grid, expected_agent_1, expected_agent_2])
-    assert (expected_obs == observations).all()
+    assert jnp.array_equal(expected_obs, observations)
 
 
-def test_connector__get_action_mask(state: State, env: Connector) -> None:
+def test_connector__get_action_mask(state: State, connector: Connector) -> None:
     """Validates the action masking."""
-    action_masks = jax.vmap(env._get_action_mask, (0, None))(state.agents, state.grid)
+    action_masks = jax.vmap(connector._get_action_mask, (0, None))(
+        state.agents, state.grid
+    )
     expected_mask = jnp.array(
         [
             [True, True, False, True, True],
@@ -277,4 +283,15 @@ def test_connector__get_action_mask(state: State, env: Connector) -> None:
             [True, False, True, False, True],
         ]
     )
-    assert (action_masks == expected_mask).all()
+    assert jnp.array_equal(action_masks, expected_mask)
+
+
+def test_connector__get_extras(state: State, connector: Connector) -> None:
+    """Validates the `_get_extras` method to generates extras metrics."""
+    extras = connector._get_extras(state)
+    expected_keys = ["total_path_length", "ratio_connections", "num_connections"]
+    assert set(extras.keys()) == set(expected_keys)
+    jumanji.testing.pytrees.assert_is_jax_array_tree(extras)
+    no_op_action = jnp.full(connector.num_agents, 0, jnp.int32)
+    _, timestep = connector.step(state, no_op_action)
+    assert timestep.extras == extras

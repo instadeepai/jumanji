@@ -19,6 +19,7 @@ import pytest
 
 from jumanji.environments.routing.connector.constants import EMPTY, LEFT, NOOP, UP
 from jumanji.environments.routing.connector.env import Connector
+from jumanji.environments.routing.connector.generator import UniformRandomGenerator
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
     get_path,
@@ -122,7 +123,7 @@ def state(key: chex.PRNGKey, grid: chex.Array) -> State:
         position=jnp.array([(1, 2), (3, 2), (2, 4)]),
     )
 
-    state = State(key=key, grid=grid, step=jnp.array(0, jnp.int32), agents=agents)
+    state = State(key=key, grid=grid, step_count=jnp.array(0, jnp.int32), agents=agents)
 
     return state
 
@@ -159,7 +160,7 @@ def state1(
         position=jnp.array([(0, 2), (3, 1), (2, 3)]),
     )
 
-    return State(grid=grid, step=jnp.array(1, jnp.int32), agents=agents, key=key)
+    return State(grid=grid, step_count=jnp.array(1, jnp.int32), agents=agents, key=key)
 
 
 @pytest.fixture
@@ -194,7 +195,7 @@ def state2(
         position=jnp.array([(0, 2), (3, 0), (2, 3)]),
     )
 
-    return State(grid=grid, step=jnp.array(2, jnp.int32), agents=agents, key=key)
+    return State(grid=grid, step_count=jnp.array(2, jnp.int32), agents=agents, key=key)
 
 
 @pytest.fixture
@@ -210,6 +211,7 @@ def action2() -> chex.Array:
 
 
 @pytest.fixture
-def env() -> Connector:
-    """Returns a Connector environment of size 6 with 3 agents and a time_limit of 5."""
-    return Connector(size=6, num_agents=3, time_limit=5)
+def connector() -> Connector:
+    """Returns a `Connector` environment of size 6 with 3 agents and a time limit of 5."""
+    uniform_random_generator = UniformRandomGenerator(grid_size=6, num_agents=3)
+    return Connector(uniform_random_generator, time_limit=5)

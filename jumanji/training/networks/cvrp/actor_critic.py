@@ -197,19 +197,19 @@ def make_cvrp_masks(observation: Observation) -> Tuple[chex.Array, chex.Array]:
     - self_attention_mask: mask of non-visited nodes along with the current node and the depot.
     - cross_attention_mask: action mask, i.e. only nodes that can be visited.
     """
-    # Only consider the non-visited nodes
+    # Only consider the non-visited nodes.
     mask = observation.unvisited_nodes
-    # Also include the current city
+    # Also include the current city.
     mask = mask.at[observation.position].set(True)
-    # And include the depot
+    # And include the depot.
     mask = mask.at[DEPOT_IDX].set(True)
 
-    # Replicate the mask on the query and key dimensions
+    # Replicate the mask on the query and key dimensions.
     self_attention_mask = jnp.einsum("...i,...j->...ij", mask, mask)
     # Expand on the head dimension.
     self_attention_mask = jnp.expand_dims(self_attention_mask, axis=-3)
 
-    # Expand on the query dimension
+    # Expand on the query dimension.
     cross_attention_mask = jnp.expand_dims(observation.action_mask, axis=-2)
     # Expand on the head dimension.
     cross_attention_mask = jnp.expand_dims(cross_attention_mask, axis=-3)

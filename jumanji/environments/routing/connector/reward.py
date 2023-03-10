@@ -17,77 +17,60 @@ import abc
 import chex
 import jax.numpy as jnp
 
-from jumanji.environments.routing.connector.constants import NOOP
 from jumanji.environments.routing.connector.types import State
 
 
 class RewardFn(abc.ABC):
-    """Abstract class for Connector rewards."""
+    """Abstract class for `Connector` rewards."""
 
     @abc.abstractmethod
     def __call__(
         self,
         state: State,
-        next_state: State,
         action: chex.Array,
+        next_state: State,
     ) -> chex.Array:
-        """The reward function used in the Connector environment.
+        """The reward function used in the `Connector` environment.
 
         Args:
-            state: connector state before taking an action.
-            next_state: connector state after taking the action.
-            action: action: multi-dimensional action taken to reach this state.
-            step: how many steps have passed this episode.
-            reward_config_kwargs: default arguments for configuring the reward.
+            state: `Connector` state before taking an action.
+            action: action taken from `state` to reach `next_state`.
+            next_state: `Connector` state after taking the action.
 
         Returns:
             The reward for the current step.
         """
 
 
-class SparseRewardFn(RewardFn):
-    """Rewards each agent with 1 if the agent connected on that step, otherwise 0."""
-
-    def __call__(
-        self, state: State, next_state: State, action: chex.Array
-    ) -> chex.Array:
-        del action
-        return jnp.asarray(~state.agents.connected & next_state.agents.connected, float)
-
-
 class DenseRewardFn(RewardFn):
-    """Rewards: `timestep_reward` each timestep, `connected_reward` if it connects and `noop_reward`
-    for each noop.
-
-    Each agent receives a separate reward and rewards are 0 after an agent has connected.
+    """Rewards each agent with 1.0 if it connects on that step, otherwise 0.0. Each agent also
+    receives a penalty of -0.03 at every timestep if they have not connected yet.
     """
 
     def __init__(
         self,
+        connected_reward: float = 1.0,
         timestep_reward: float = -0.03,
-        connected_reward: float = 0.1,
-        noop_reward: float = -0.01,
     ) -> None:
-        """Dense reward function initialiser: sets reward scales.
+        """Instantiates a dense reward function for the `Connector` environment.
 
         Args:
-            timestep_reward: reward every timestep, encourages agent to connect quickly.
-            connected_reward: reward agent when connected.
-            noop_reward: reward agent negatively when doing a noop to discourage the action.
+            connected_reward: reward agent if it connects on that step.
+            timestep_reward: reward penalty for every timestep, encourages agent to connect quickly.
         """
         self.timestep_reward = timestep_reward
         self.connected_reward = connected_reward
-        self.noop_reward = noop_reward
 
     def __call__(
         self,
         state: State,
-        next_state: State,
         action: chex.Array,
+        next_state: State,
     ) -> chex.Array:
-        connected_reward = self.connected_reward * next_state.agents.connected
-        noop_reward = self.noop_reward * (action == NOOP)
-        agents_rewards = jnp.asarray(
-            connected_reward + noop_reward + self.timestep_reward, dtype=float
+        connected_rewards = self.connected_reward * jnp.asarray(
+            ~state.agents.connected & next_state.agents.connected, float
         )
-        return jnp.where(state.agents.connected, 0.0, agents_rewards)
+        timestep_rewards = self.timestep_reward * jnp.asarray(
+            ~state.agents.connected, float
+        )
+        return connected_rewards + timestep_rewards

@@ -30,50 +30,66 @@ class Generator(abc.ABC):
 
         Args:
             grid_size: size of the grid to generate.
-            num_agents: number of agents in the grid.
+            num_agents: number of agents on the grid.
         """
         self._grid_size = grid_size
         self._num_agents = num_agents
 
+    @property
+    def grid_size(self) -> int:
+        return self._grid_size
+
+    @property
+    def num_agents(self) -> int:
+        return self._num_agents
+
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a connector grid.
+        """Generates a `Connector` state that contains the grid and the agents' layout.
 
         Returns:
-            A connector environment state.
+            A `Connector` state.
         """
 
 
 class UniformRandomGenerator(Generator):
-    """Generates connector environments that may or may not be solvable.
-
-    Places start and target positions uniformly at random on the grid.
+    """Randomly generates `Connector` grids that may or may not be solvable. This generator places
+    start and target positions uniformly at random on the grid.
     """
 
+    def __init__(self, grid_size: int = 10, num_agents: int = 5) -> None:
+        """Instantiates a `UniformRandomGenerator`.
+
+        Args:
+            grid_size: size of the square grid to generate. Defaults to 10.
+            num_agents: number of agents/paths on the grid. Defaults to 5.
+        """
+        super().__init__(grid_size, num_agents)
+
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a connector grid.
+        """Generates a `Connector` state that contains the grid and the agents' layout.
 
         Returns:
-            A connector environment state.
+            A `Connector` state.
         """
         key, pos_key = jax.random.split(key)
         starts_flat, targets_flat = jax.random.choice(
             key=pos_key,
-            a=jnp.arange(self._grid_size**2, dtype=int),
-            shape=(2, self._num_agents),  # Start and target positions for all agents
+            a=jnp.arange(self.grid_size**2),
+            shape=(2, self.num_agents),  # Start and target positions for all agents
             replace=False,  # Start and target positions cannot overlap
         )
 
         # Create 2D points from the flat arrays.
-        starts = jnp.divmod(starts_flat, self._grid_size)
-        targets = jnp.divmod(targets_flat, self._grid_size)
+        starts = jnp.divmod(starts_flat, self.grid_size)
+        targets = jnp.divmod(targets_flat, self.grid_size)
 
         # Get the agent values for starts and positions.
-        agent_position_values = jax.vmap(get_position)(jnp.arange(self._num_agents))
-        agent_target_values = jax.vmap(get_target)(jnp.arange(self._num_agents))
+        agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
+        agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
 
         # Create empty grid.
-        grid = jnp.zeros((self._grid_size, self._grid_size), dtype=int)
+        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
 
         # Place the agent values at starts and targets.
         grid = grid.at[starts].set(agent_position_values)
@@ -81,12 +97,12 @@ class UniformRandomGenerator(Generator):
 
         # Create the agent pytree that corresponds to the grid.
         agents = jax.vmap(Agent)(
-            id=jnp.arange(self._num_agents),
+            id=jnp.arange(self.num_agents),
             start=jnp.stack(starts, axis=1),
             target=jnp.stack(targets, axis=1),
             position=jnp.stack(starts, axis=1),
         )
 
-        step = jnp.asarray(0, int)
+        step_count = jnp.array(0, jnp.int32)
 
-        return State(key=key, grid=grid, step=step, agents=agents)
+        return State(key=key, grid=grid, step_count=step_count, agents=agents)

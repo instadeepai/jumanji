@@ -1,23 +1,22 @@
 name: connector
 env_kwargs:
-    size: 8
-    num_agents: 3
-    horizon: 50
 
 network:
-    num_channels: 32
-    policy_layers: [128, 128]
-    value_layers: [128, 128]
+    transformer_num_blocks: 4
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+    conv_n_channels: 32
 
 training:
-    num_epochs: 100
-    num_learner_steps_per_epoch: 500
-    n_steps: 10
+    num_epochs: 500
+    num_learner_steps_per_epoch: 100
+    n_steps: 20
     total_batch_size: 128
 
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 5000
+    greedy_eval_total_batch_size: 5000
 
 a2c:
     normalize_advantage: False
@@ -26,4 +25,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 1e-4
+    learning_rate: 2e-4

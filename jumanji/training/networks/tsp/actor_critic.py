@@ -182,19 +182,19 @@ def make_critic_network_tsp(
 
 def make_tsp_masks(observation: Observation) -> Tuple[chex.Array, chex.Array]:
     """Return the mask of non-visited cities along with the current and initial cities."""
-    # Only consider the non-visited cities
+    # Only consider the non-visited cities.
     mask = observation.action_mask
-    # Also include the current city, works even when observation.position == -1
+    # Also include the current city, works even when observation.position == -1.
     mask = mask.at[observation.position].set(True)
-    # Also include the initial city, works even when observation.trajectory[..., 0] == -1
+    # Also include the initial city, works even when observation.trajectory[..., 0] == -1.
     mask = mask.at[observation.trajectory[..., 0]].set(True)
 
-    # Replicate the mask on the query and key dimensions
+    # Replicate the mask on the query and key dimensions.
     self_attention_mask = jnp.einsum("...i,...j->...ij", mask, mask)
     # Expand on the head dimension.
     self_attention_mask = jnp.expand_dims(self_attention_mask, axis=-3)
 
-    # Expand on the query dimension
+    # Expand on the query dimension.
     cross_attention_mask = jnp.expand_dims(mask, axis=-2)
     # Expand on the head dimension.
     cross_attention_mask = jnp.expand_dims(cross_attention_mask, axis=-3)

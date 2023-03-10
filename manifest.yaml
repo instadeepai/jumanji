@@ -30,8 +30,8 @@ spec:
       count: 1
 
       resources:
-        cpus: 1
-        ramRatio: 20 # RAM per CPU
+        cpus: 2
+        ramRatio: 10 # RAM per CPU
 
         accelerators: # optional
           gpu:

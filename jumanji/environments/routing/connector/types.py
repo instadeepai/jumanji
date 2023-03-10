@@ -14,6 +14,8 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
+import jax.random
+
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
@@ -47,15 +49,15 @@ class Agent:
 class State:
     """
     grid: grid representing the position of all agents.
-    step: the index of the current step.
+    step_count: the index of the current step.
     agents: a stacked pytree of type Agent.
     key: random key.
     """
 
     grid: chex.Array  # (grid_size, grid_size)
-    step: chex.Array  # ()
+    step_count: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
-    key: chex.PRNGKey
+    key: chex.PRNGKey = jax.random.PRNGKey(0)
 
 
 class Observation(NamedTuple):
@@ -73,9 +75,9 @@ class Observation(NamedTuple):
     bottom right corner and is aiming to get to the middle bottom cell
 
     action_mask: boolean array representing whether each of the 5 actions is legal, for each agent.
-    step: (int) the current episode step.
+    step_count: (int32) the current episode step.
     """
 
     grid: chex.Array  # (num_agents, grid_size, grid_size)
     action_mask: chex.Array  # (num_agents, 5)
-    step: chex.Array  # ()
+    step_count: chex.Array  # ()

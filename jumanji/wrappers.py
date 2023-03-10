@@ -251,6 +251,7 @@ class MultiToSingleWrapper(Wrapper):
             observation=timestep.observation,
             reward=self._reward_aggregator(timestep.reward),
             discount=self._discount_aggregator(timestep.discount),
+            extras=timestep.extras,
         )
 
     def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
