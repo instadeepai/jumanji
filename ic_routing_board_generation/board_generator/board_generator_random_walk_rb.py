@@ -745,9 +745,12 @@ class RandomWalkBoard(AbstractBoard):
                     # Prioritize extending away from the previous neighbor if possible.
                     if priority_neighbor in poss_extension_list:
                         self.extend_cell(current_pos, priority_neighbor)
+                        row, col = min(row, priority_neighbor.x), min(col, priority_neighbor.y)
                     else:
                         # Othewise, extend in a random direction
-                        self.extend_cell(current_pos, random.choice(poss_extension_list))
+                        extension_pos = random.choice(poss_extension_list)
+                        self.extend_cell(current_pos, extension_pos)
+                        row, col = min(row, extension_pos.x), min(col, extension_pos.y)
         return
 
     def get_neighbors_same_wire(self, pos: Position) -> List:
