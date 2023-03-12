@@ -75,6 +75,27 @@ class RandomWalkBoard(AbstractBoard):
             # board_output.add_wire_head_target_erode()
             self.add_wire_random_walk(2 * max(rows, cols))
 
+    def position_to_cell_type(self, position: Position) -> int:
+        """
+        Return the type of cell at position (row, col) in self.layout
+            0 = empty
+            1 = obstacle
+            2 = wire
+            3 = target
+            4 = head
+
+        Args:
+            row (int), col (int): 2D position of the cell to query.
+
+        Returns:
+            (int) : The type of cell (0-4) as detailed above.
+        """
+        cell = self.layout[position.x, position.y]
+        if cell == 0 or cell == 1:
+            return cell
+        else:
+            return ((cell-2) % 3) + 2
+
 
     def get_random_head(self) -> Position:
         # Return a random 2D position, a starting point in the array
@@ -230,7 +251,7 @@ class RandomWalkBoard(AbstractBoard):
             wire_list (List): List of cells already in the wire.
 
         Returns:
-            List: Up to four available cells adjacent to the input cell.
+            List: List of 2D integer tuples, up to four available cells adjacent to the input cell.
         """
         adjacent_list = []
         # Check above, below, to the left and the right and add those cells to the list if available.
@@ -523,12 +544,12 @@ class RandomWalkBoard(AbstractBoard):
                     if (cell % 3) == WIRE:
                         # Wire cells should have two neighbors of the same wire
                         if self.num_wire_neighbors(cell, row, col) != 2:
-                            #print(f"{row},{col} == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors" )
+                            print(f"({row},{col}) == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors" )
                             return False
                     else:
                         # Head and target cells should only have one neighbor of the same wire.
                         if self.num_wire_neighbors(cell, row, col) != 1:
-                            #print(f"HT{row},{col} == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors")
+                            print(f"HT({row},{col}) == {cell}, {self.num_wire_neighbors(cell, row, col)} neighbors")
                             return False
         return True
 
@@ -603,7 +624,22 @@ class RandomWalkBoard(AbstractBoard):
                         self.layout[x, y] += 3 * (wire_num_a - wire_num_b)
         return # Nothing to return.  self.layout is modified in-place
 
-    def get_wire_num(self, cell_label: int) -> (int):
+    def position_to_wire_num(self, pos: Position) -> (int):
+        """ Returns the wire number of the given cell position
+
+            Args:
+                position (Position) : the value of the cell in self.layout
+
+            Returns:
+                (int) : The wire number that the cell belongs to. Returns -1 if not part of a wire.
+        """
+        if (pos.x not in range(self._rows)) or (pos.y not in range(self._cols)):
+            return -1
+        else:
+            cell_label = self.layout[pos.x, pos.y]
+            return self.cell_label_to_wire_num(cell_label)
+
+    def cell_label_to_wire_num(self, cell_label: int) -> (int):
         """ Returns the wire number of the given cell value
 
             Args:
@@ -630,21 +666,21 @@ class RandomWalkBoard(AbstractBoard):
         num_detours = 0
         for x in range(self._dim.x):
             for y in range(self._dim.y):
-                cell_label = self.layout[x,y]
-                if (cell_label < 2) or ((cell_label % 3) == WIRE):
+                label_current_cell = self.layout[x,y]
+                if (label_current_cell < 2) or ((label_current_cell % 3) == WIRE):
                     continue
-                current_wire = self.get_wire_num(cell_label)
+                current_wire = self.cell_label_to_wire_num(label_current_cell)
                 #print("\n",x,y,"wire",current_wire)
                 #
                 above = self.layout[:x, y]
                 #print("above = ", above)
-                above = [self.get_wire_num(cell) for cell in above if cell != 0]
+                above = [self.cell_label_to_wire_num(cell_label) for cell_label in above if cell_label != 0]
                 if not count_current_wire:
                     above = [wire_num for wire_num in above if wire_num != current_wire]
                 #print("above = ", above)
                 below = self.layout[x + 1:, y]
                 #print("below = ", below)
-                below = [self.get_wire_num(cell) for cell in below if cell != 0]
+                below = [self.cell_label_to_wire_num(cell_label) for cell_label in below if cell_label != 0]
                 if not count_current_wire:
                     below = [wire_num for wire_num in below if wire_num != current_wire]
                 #print("below = ", below)
@@ -654,13 +690,13 @@ class RandomWalkBoard(AbstractBoard):
                 #
                 left = self.layout[x, :y].tolist()
                 #print("left = ", left)
-                left = [self.get_wire_num(cell) for cell in left if cell != 0]
+                left = [self.cell_label_to_wire_num(cell_label) for cell_label in left if cell_label != 0]
                 if not count_current_wire:
                     left = [wire_num for wire_num in left if wire_num != current_wire]
                 #print("left = ", left)
                 right = self.layout[x, y+1 :].tolist()
                 #print("right = ", right)
-                right = [self.get_wire_num(cell) for cell in right if cell != 0]
+                right = [self.cell_label_to_wire_num(cell) for cell in right if cell != 0]
                 if not count_current_wire:
                     right = [wire_num for wire_num in right if wire_num != current_wire]
                 #print("right = ",right)
@@ -669,6 +705,113 @@ class RandomWalkBoard(AbstractBoard):
                 num_detours += len(common)
         #print("num_detours = ", num_detours)
         return num_detours
+
+
+    def extend_wires(self):
+        """ Extend the heads and targets of each wire as far as they can go, prefernce given to current direction.
+            The implementation is done in-place on self.layout
+        """
+        prev_layout = None
+        # Continue as long as the algorithm is still changing the board
+        while not np.all(prev_layout == self.layout):
+            prev_layout = 1 * self.layout
+            for row in range(self._rows):
+                for col in range(self._cols):
+                    # If the cell is not a head or target, ignore it.
+                    cell_type = self.position_to_cell_type(Position(row,col))
+                    if not (cell_type == HEAD) and not (cell_type == TARGET):
+                        continue
+
+                    # If we have found a head or target, try to extend it.
+                    #
+                    # Get the list of neighbors available to extend to. er
+                    current_pos = Position(row, col)
+                    poss_extension_list = self.get_open_adjacent_cells(current_pos, [])
+                    # Convert tuples to Position class
+                    poss_extension_list = [Position(cell[0], cell[1]) for cell in poss_extension_list]
+                    # For each possible cell, throw it out if it already touches part of the same wire.
+                    current_wire_num = self.position_to_wire_num(current_pos)
+                    for cell in deepcopy(poss_extension_list):  # Use a copy so we can modify the list in the loop
+                        if self.num_wire_adjacencies(cell, current_wire_num) > 1:
+                            #print("Removing cell ",cell," from ",poss_extension_list)
+                            poss_extension_list.remove(cell)
+                    # If there is no room to extend, move on.
+                    if len(poss_extension_list) == 0:
+                        continue
+                    # First find the neighboring cell that is part of the same wire and prioritize extending away from it.
+                    neighbors_list = self.get_neighbors_same_wire(Position(row, col)) # Should be only one neighbor for a head or target
+                    neighbor = neighbors_list[0] # There should only be one similar neighbor of a head/target
+                    priority_neighbor = Position(row + (row - neighbor.x), col + (col - neighbor.y)) # Try to extend away form previous neighbor
+                    # Prioritize extending away from the previous neighbor if possible.
+                    if priority_neighbor in poss_extension_list:
+                        self.extend_cell(current_pos, priority_neighbor)
+                    else:
+                        # Othewise, extend in a random direction
+                        self.extend_cell(current_pos, random.choice(poss_extension_list))
+        return
+
+    def get_neighbors_same_wire(self, pos: Position) -> List:
+        """ Returns a list of adjacent cells belonging to the same wire.
+
+            Args:
+                pos (Position): 2D position in self.layout
+
+            Returns:
+                (List) : a list of cells (2D positions) adacent to the queried cell which belong to the same wire
+        """
+        output_list = []
+        wire_num = self.position_to_wire_num(pos)
+        pos_up = Position(pos.x - 1, pos.y)
+        pos_down = Position(pos.x + 1, pos.y)
+        pos_left = Position(pos.x, pos.y - 1)
+        pos_right = Position(pos.x, pos.y + 1)
+        if self.position_to_wire_num(pos_up) == wire_num:
+            output_list.append(pos_up)
+        if self.position_to_wire_num(pos_down) == wire_num:
+            output_list.append(pos_down)
+        if self.position_to_wire_num(pos_left) == wire_num:
+            output_list.append(pos_left)
+        if self.position_to_wire_num(pos_right) == wire_num:
+            output_list.append(pos_right)
+        return output_list
+
+    def num_wire_adjacencies(self, cell: Position, wire_num: int) -> int:
+        """ Returns the number of cells adjacent to cell which below to the wire specified by wire_num.
+
+            Args:
+                cell (tuple): 2D position in self.layout
+                wire_num (int): Count adjacent contacts with this specified wire.
+
+            Returns:
+                (int) : The number of adjacent cells belonging to the specified wire
+        """
+        num_adjacencies = 0
+        if self.position_to_wire_num(Position(cell.x-1, cell.y)) == wire_num:
+            num_adjacencies += 1
+        if self.position_to_wire_num(Position(cell.x+1, cell.y)) == wire_num:
+            num_adjacencies += 1
+        if self.position_to_wire_num(Position(cell.x, cell.y - 1)) == wire_num:
+            num_adjacencies += 1
+        if self.position_to_wire_num(Position(cell.x, cell.y + 1)) == wire_num:
+            num_adjacencies += 1
+        return num_adjacencies
+
+    def extend_cell(self, current_cell: Position, extension_cell: Position):
+        """ Extends the head/target of the wire from current_cell to extension_cell
+
+            The extension is done in-place on self.layout
+
+             Args:
+                 current_cell (Position): 2D position of the current head/target cell
+                 extension_cell (Position): 2D position of the cell to extend into.
+        """
+        #print("current cell = ", current_cell, extension_cell)
+        # Extend head/target into new cell
+        self.layout[extension_cell.x, extension_cell.y] = self.layout[current_cell.x, current_cell.y]
+        cell_type = self.position_to_cell_type(current_cell)
+        # Convert old head/target cell to a wire
+        self.layout[current_cell.x, current_cell.y] += WIRE - cell_type
+        return
 
 
 def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_agents: int) -> None:
@@ -680,6 +823,43 @@ def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_agen
     print("Solved board")
     print(board_solution)
     return
+
+def get_detour_stats(rows: int, cols: int, num_agents: int, num_boards: int = 1000):
+    """ Print out the detour stats averaged over a specified number of boardsExtends the head/target of the wire from current_cell to extension_cell
+
+        Args:
+            rows, col (int), (int): 2D size of the board
+            num_agents (int): number of wires to add to the board
+            num_boards (int): number of boards to generate from which to average the stats
+    """
+    print(f"\n{rows} x {cols}: {num_agents}")
+    sampled_detours = []
+    sampled_detours_exclude = []
+    sampled_detours_extend = []
+    sampled_detours_extend_exclude = []
+    for i in range(num_boards):
+        my_board = RandomWalkBoard(rows, cols, num_agents)
+        num_detours = my_board.count_detours(count_current_wire=True)
+        sampled_detours.append(num_detours)
+        num_detours_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_exclude.append(num_detours_exclude)
+        my_board.extend_wires()
+        num_detours_extend = my_board.count_detours(count_current_wire=True)
+        sampled_detours_extend.append(num_detours_extend)
+        num_detours_extend_exclude = my_board.count_detours(count_current_wire=False)
+        sampled_detours_extend_exclude.append(num_detours_extend_exclude)
+    sampled_detours = np.array(sampled_detours)
+    sampled_detours_exclude = np.array(sampled_detours_exclude)
+    mean = sampled_detours.mean()
+    mean_exclude = sampled_detours_exclude.mean()
+    print("Average detours = ", mean," = ", int(100 * mean / num_agents), "%     ", mean_exclude," = ", int(100*mean_exclude) / num_agents, "%")
+    print("After extension")
+    sampled_detours_extend = np.array(sampled_detours_extend)
+    sampled_detours_extend_exclude = np.array(sampled_detours_extend_exclude)
+    mean = sampled_detours_extend.mean()
+    mean_exclude = sampled_detours_extend_exclude.mean()
+    print("Average detours = ", mean, " = ", int(100 * mean / num_agents), "%     ",\
+                        mean_exclude, " = ",int(100 * mean_exclude) / num_agents, "%")
 
 if __name__ == "__main__":
     for num_agents in range(9):
@@ -725,6 +905,11 @@ if __name__ == "__main__":
     valid = my_board.is_valid_board()
     board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
     print_board(board_training, board_solution, wires_on_board)
+    print("Number of detours = ",my_board.count_detours(count_current_wire=False),"\n")
+    my_board.extend_wires()
+    print(my_board.return_solved_board())
+    print("Number of detours = ", my_board.count_detours(count_current_wire=False))
+    valid = my_board.is_valid_board()
 
     for i in range(1000):
         rows = random.randint(3,20)
@@ -745,7 +930,7 @@ if __name__ == "__main__":
     #print(my_board.layout)
     #print(my_board._dim)
     valid = my_board.is_valid_board()
-    #size, _wires_on_board, indices, headstails, valid shape
+    #test size, _wires_on_board, indices, headstails, valid shape
     #my_board._dim.x = 3
     #valid = my_board.is_valid_board()
     #my_board._dim = Position(4,5)
@@ -809,46 +994,13 @@ if __name__ == "__main__":
     """
 
     print("\nTest count detours")
-    sampled_detours = []
-    sampled_detours_exclude = []
-    num_agents = 5
-    print("8 x 8: ", num_agents)
-    for i in range(1000):
-        my_board = RandomWalkBoard(8, 8, num_agents)
-        #print(my_board.layout)
-        num_detours = my_board.count_detours(count_current_wire = True)
-        #print(num_detours)
-        sampled_detours.append(num_detours)
-        num_detours_exclude = my_board.count_detours(count_current_wire=False)
-        sampled_detours_exclude.append(num_detours_exclude)
-    sampled_detours = np.array(sampled_detours)
-    mean = sampled_detours.mean()
-    print("Average detours = ", mean," = ", int(100 * mean / num_agents), "%")
-    print("STD = ", sampled_detours.std())
-    sampled_detours_exclude = np.array(sampled_detours_exclude)
-    mean_exclude = sampled_detours_exclude.mean()
-    print("Excluding current wire")
-    print("Average detours = ", mean_exclude," = ", int(100 * mean_exclude / num_agents), "%")
-    print("STD = ", sampled_detours_exclude.std())
+    get_detour_stats(rows=8, cols=8, num_agents=5, num_boards=1000)
+    get_detour_stats(rows=8, cols=8, num_agents=10, num_boards=1000)
+    print()
 
-    sampled_detours = []
-    sampled_detours_exclude = []
-    num_agents = 10
-    print("8 x 8: ", num_agents)
-    for i in range(1000):
-        my_board = RandomWalkBoard(8, 8, num_agents)
-        # print(my_board.layout)
-        num_detours = my_board.count_detours(count_current_wire=True)
-        # print(num_detours)
-        sampled_detours.append(num_detours)
-        num_detours_exclude = my_board.count_detours(count_current_wire=False)
-        sampled_detours_exclude.append(num_detours_exclude)
-    sampled_detours = np.array(sampled_detours)
-    mean = sampled_detours.mean()
-    print("Average detours = ", mean," = ", int(100 * mean / num_agents), "%")
-    print("STD = ", sampled_detours.std())
-    sampled_detours_exclude = np.array(sampled_detours_exclude)
-    mean_exclude = sampled_detours_exclude.mean()
-    print("Excluding current wire")
-    print("Average detours = ", mean_exclude," = ", int(100*mean_exclude) / num_agents, "%")
-    print("STD = ", sampled_detours_exclude.std())
+    my_board = RandomWalkBoard(8,8,5)
+    print(my_board.return_solved_board())
+    my_board.extend_wires()
+    print(my_board.return_solved_board())
+
+
