@@ -22,18 +22,38 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
+# Define a type alias for a board, which is an array.
 Board: TypeAlias = chex.Array
 
 
 @dataclass
 class State:
-    board: Board
-    step_count: chex.Numeric
-    action_mask: chex.Array
-    key: chex.PRNGKey
-    score: chex.Numeric
+    """
+    board: the game board, each nonzero element in the array corresponds
+        to a game tile and holds an exponent of 2. The actual value of the tile
+        is obtained by raising 2 to the power of said non-zero exponent.
+    step_count: the number of steps taken so far.
+    action_mask: array of booleans that indicate the feasible actions, i.e. valid
+        directions to move in.
+    key: is used to generate random numbers.
+    score: the current score of the game state.
+    """
+
+    board: Board  # (board_size, board_size)
+    step_count: chex.Numeric  # ()
+    action_mask: chex.Array  # (4,)
+    key: chex.PRNGKey  # (2,)
+    score: chex.Numeric  # ()
 
 
 class Observation(NamedTuple):
-    board: Board
-    action_mask: chex.Array
+    """
+    board: the game board, each nonzero element in the array corresponds
+        to a game tile and holds an exponent of 2. The actual value of the tile
+        is obtained by raising 2 to the power of said non-zero exponent.
+    action_mask: array of booleans that indicate the feasible actions, i.e. valid
+        directions to move in.
+    """
+
+    board: Board  # (board_size, board_size)
+    action_mask: chex.Array  # (4,)
