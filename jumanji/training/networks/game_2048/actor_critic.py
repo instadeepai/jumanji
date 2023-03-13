@@ -63,19 +63,20 @@ def make_network_cnn(
     mlp_units: Sequence[int],
     conv_n_channels: int,
 ) -> FeedForwardNetwork:
-    def network_fn(
-        observation: Observation,
-    ) -> chex.Array:
+    def network_fn(observation: Observation) -> chex.Array:
+        board = observation.board.astype(float)[..., None]
         torso = hk.Sequential(
             [
-                hk.Conv2D(conv_n_channels, (2, 2), 1),
+                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
+                jax.nn.relu,
+                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
                 jax.nn.relu,
                 hk.Conv2D(conv_n_channels, (2, 2), 1),
                 jax.nn.relu,
                 hk.Flatten(),
             ]
         )
-        embedding = torso(observation.board.astype(float))
+        embedding = torso(board)
         head = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
         if num_outputs == 1:
             return jnp.squeeze(head(embedding), axis=-1)

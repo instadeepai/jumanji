@@ -4,14 +4,14 @@ env_kwargs:
 
 network:
     num_channels: 32
-    policy_layers: [64, 64]
-    value_layers: [128, 128]
+    policy_layers: [128, 128]
+    value_layers: [256, 256]
 
 training:
     num_epochs: 100
-    num_learner_steps_per_epoch: 500
-    n_steps: 10
-    total_batch_size: 128
+    num_learner_steps_per_epoch: 600
+    n_steps: 50
+    total_batch_size: 32
 
 evaluation:
     eval_total_batch_size: 500
@@ -24,4 +24,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 1e-4
+    learning_rate: 2e-4

@@ -149,8 +149,6 @@ class Game2048(Environment[State]):
 
         obs = Observation(board=board, action_mask=action_mask)
 
-        timestep = restart(observation=obs)
-
         state = State(
             board=board,
             step_count=jnp.array(0, jnp.int32),
@@ -158,6 +156,9 @@ class Game2048(Environment[State]):
             key=key,
             score=jnp.array(0, float),
         )
+
+        highest_tile = 2 ** jnp.max(board)
+        timestep = restart(observation=obs, extras={"highest_tile": highest_tile})
 
         return state, timestep
 
@@ -214,12 +215,20 @@ class Game2048(Environment[State]):
         )
 
         # Return either a MID or a LAST timestep depending on done.
+        highest_tile = 2 ** jnp.max(updated_board)
+        extras = {"highest_tile": highest_tile}
         timestep = jax.lax.cond(
             done,
-            termination,
-            transition,
-            additional_reward,
-            observation,
+            lambda: termination(
+                reward=additional_reward,
+                observation=observation,
+                extras=extras,
+            ),
+            lambda: transition(
+                reward=additional_reward,
+                observation=observation,
+                extras=extras,
+            ),
         )
 
         return state, timestep
