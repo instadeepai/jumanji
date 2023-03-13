@@ -19,7 +19,7 @@ A new maze is randomly generated using a recursive division method for each new 
 
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 
-- `grid`: jax array (int) of shape `(height, width)`, array representing the grid, each tile is either dirty (0),
+- `grid`: jax array (int) of shape `(num_rows, num_cols)`, array representing the grid, each tile is either dirty (0),
   clean (1), or a wall (2).
 - `agents_locations`: jax array (int) of shape `(num_agents, 2)`, array specifying the x and y coordinates of every agent.
 - `action_mask`: jax array (bool) of shape `(num_agents, 4)`, array specifying, for each agent, which action

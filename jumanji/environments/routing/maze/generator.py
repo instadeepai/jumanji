@@ -23,6 +23,16 @@ Maze: TypeAlias = chex.Array
 
 
 class Generator(abc.ABC):
+    def __init__(self, num_rows: int, num_cols: int):
+        """Interface for maze generator.
+
+        Args:
+            num_rows: the width of the maze to create.
+            num_cols: the length of the maze to create.
+        """
+        self.num_rows = num_rows
+        self.num_cols = num_cols
+
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> Maze:
         """Generate a problem instance.
@@ -39,8 +49,7 @@ class ToyGenerator(Generator):
     """Generate a hardcoded 5x5 toy maze."""
 
     def __init__(self) -> None:
-        self.num_rows = 5
-        self.num_cols = 5
+        super(ToyGenerator, self).__init__(num_rows=5, num_cols=5)
 
     def __call__(self, key: chex.PRNGKey) -> Maze:
         walls = jnp.ones((self.num_rows, self.num_cols), bool)
@@ -53,15 +62,8 @@ class ToyGenerator(Generator):
 
 
 class RandomGenerator(Generator):
-    def __init__(self, rows: int, cols: int) -> None:
-        """Random instance generator of the maze environment.
-
-        Args:
-            width: the width of the maze to create.
-            height: the height of the maze to create.
-        """
-        self.num_rows = rows
-        self.num_cols = cols
+    def __init__(self, num_rows: int, num_cols: int) -> None:
+        super(RandomGenerator, self).__init__(num_rows=num_rows, num_cols=num_cols)
 
     def __call__(self, key: chex.PRNGKey) -> Maze:
         """Generate a random maze.

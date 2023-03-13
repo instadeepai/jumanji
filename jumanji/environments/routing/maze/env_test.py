@@ -18,7 +18,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.maze.env import Maze
-from jumanji.environments.routing.maze.generator import ToyGenerator
+from jumanji.environments.routing.maze.generator import RandomGenerator, ToyGenerator
 from jumanji.environments.routing.maze.types import Position, State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -29,7 +29,8 @@ class TestMazeEnvironment:
     @pytest.fixture(scope="module")
     def maze_env(self) -> Maze:
         """Instantiates a default Maze environment."""
-        return Maze(num_rows=5, num_cols=5, time_limit=15)
+        generator = RandomGenerator(num_rows=5, num_cols=5)
+        return Maze(generator=generator, time_limit=15)
 
     def test_env_maze__reset(self, maze_env: Maze) -> None:
         reset_fn = jax.jit(maze_env.reset)
@@ -196,7 +197,7 @@ class TestMazeEnvironment:
         key = jax.random.PRNGKey(0)
 
         toy_generator = ToyGenerator()
-        maze_env = Maze(num_rows=5, num_cols=5, time_limit=25, generator=toy_generator)
+        maze_env = Maze(generator=toy_generator, time_limit=25)
         state, timestep = maze_env.reset(key)
 
         # Fixed agent and target positions

@@ -81,26 +81,25 @@ class Maze(Environment[State]):
 
     def __init__(
         self,
-        num_rows: int = 10,
-        num_cols: int = 10,
-        time_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
+        time_limit: Optional[int] = None,
         render_mode: str = "human",
     ) -> None:
-        """Instantiates a Maze environment.
+        """Instantiates a `Maze` environment.
 
         Args:
-            num_rows: number of rows, i.e. height of the maze. Defaults to 10.
-            num_cols: number of columns, i.e. width of the maze. Defaults to 10.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are [`ToyGenerator`, `RandomGenerator`].
+                Defaults to `RandomGenerator` with `num_rows=10` and `num_cols=10`.
             time_limit: the time_limit of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default, `time_limit = num_rows * num_cols`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
         """
-        self.num_rows = num_rows
-        self.num_cols = num_cols
+        self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
+        self.num_rows = self.generator.num_rows
+        self.num_cols = self.generator.num_cols
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit or self.num_rows * self.num_cols
-        self.generator = generator or RandomGenerator(self.num_rows, self.num_cols)
 
         # Create viewer used for rendering
         self._env_viewer = MazeEnvViewer("Maze", render_mode)
@@ -112,6 +111,7 @@ class Maze(Environment[State]):
                 f" - num_rows: {self.num_rows}",
                 f" - num_cols: {self.num_cols}",
                 f" - time_limit: {self.time_limit}",
+                f" - generator: {self.generator}",
             ]
         )
 

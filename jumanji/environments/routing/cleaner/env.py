@@ -33,7 +33,7 @@ class Cleaner(Environment[State]):
     """A JAX implementation of the 'Cleaner' game. # TODO: need a better description here.
 
     - observation: `Observation`
-        - grid: jax array (int) of shape (grid_height, grid_width)
+        - grid: jax array (int) of shape (num_cols, num_rows)
             the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int) of shape (num_agents, 2)
             the location of each agent on the board.
@@ -55,7 +55,7 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int) of shape (grid_height, grid_width)
+        - grid: jax array (int) of shape (num_cols, num_rows)
             the current board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int) of shape (num_agents, 2)
             the location of each agent on the board.
@@ -80,32 +80,29 @@ class Cleaner(Environment[State]):
 
     def __init__(
         self,
-        grid_width: int = 10,
-        grid_height: int = 10,
         num_agents: int = 3,
-        time_limit: Optional[int] = None,
         generator: Optional[Generator] = None,
+        time_limit: Optional[int] = None,
         render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
     ) -> None:
         """Instantiates a `Cleaner` environment.
 
         Args:
-            grid_width: width of the grid. Defaults to 10.
-            grid_height: height of the grid. Defaults to 10.
             num_agents: number of agents. Defaults to 3.
-            time_limit: max number of steps in an episode. Defaults to grid_width * grid_height.
+            time_limit: max number of steps in an episode. Defaults to `num_rows * num_cols`.
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator`.
+                Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
+                `num_rows=10` and `num_cols=10`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
-        self.grid_width = grid_width
-        self.grid_height = grid_height
-        self.grid_shape = (self.grid_width, self.grid_height)
         self.num_agents = num_agents
-        self.time_limit = time_limit or (self.grid_width * self.grid_height)
-        self.generator = generator or RandomGenerator(grid_width, grid_height)
+        self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
+        self.num_rows = self.generator.num_rows
+        self.num_cols = self.generator.num_cols
+        self.grid_shape = (self.num_rows, self.num_cols)
+        self.time_limit = time_limit or (self.num_rows * self.num_cols)
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
@@ -114,9 +111,10 @@ class Cleaner(Environment[State]):
     def __repr__(self) -> str:
         return (
             f"Cleaner(\n"
-            f"\tgrid_width={self.grid_width!r},\n"
-            f"\tgrid_height={self.grid_height!r},\n"
+            f"\tnum_rows={self.num_rows!r},\n"
+            f"\tnum_cols={self.num_cols!r},\n"
             f"\tnum_agents={self.num_agents!r}, \n"
+            f"\tgenerator={self.generator!r}, \n"
             ")"
         )
 
@@ -125,11 +123,11 @@ class Cleaner(Environment[State]):
 
         Returns:
             Spec for the `Observation`, consisting of the fields:
-                - grid: BoundedArray (int32) of shape (grid_width, grid_height). Values
+                - grid: BoundedArray (int32) of shape (num_rows, num_cols). Values
                     are between 0 and 2 (inclusive).
                 - agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
-                    Maximum value for the first column is grid_width, and maximum value
-                    for the second is grid_height.
+                    Maximum value for the first column is num_rows, and maximum value
+                    for the second is num_cols.
                 - action_mask: BoundedArray (bool) of shape (num_agent, 4).
                 - step_count: BoundedArray (int32) of shape ().
         """
@@ -315,9 +313,9 @@ class Cleaner(Environment[State]):
             y, x = agent_location + move
             return (
                 (x >= 0)
-                & (x < self.grid_width)
+                & (x < self.num_rows)
                 & (y >= 0)
-                & (y < self.grid_height)
+                & (y < self.num_cols)
                 & (grid[y, x] != WALL)
             )
 

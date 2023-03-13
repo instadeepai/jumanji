@@ -36,7 +36,7 @@ class State:
     key: not used inside the environment, but may be used e.g. in wrappers.
     """
 
-    grid: chex.Array  # (grid_width, grid_height)
+    grid: chex.Array  # (num_rows, num_cols)
     agents_locations: chex.Array  # (num_agent, 2)
     action_mask: chex.Array  # (num_agent, 4)
     step_count: jnp.int32
@@ -54,7 +54,7 @@ class Observation(NamedTuple):
     step_count: the number of steps elapsed since the beginning of the episode.
     """
 
-    grid: chex.Array  # (grid_width, grid_height)
+    grid: chex.Array  # (num_rows, num_cols)
     agents_locations: chex.Array  # (num_agent, 2)
     action_mask: chex.Array  # (num_agent, 4)
     step_count: jnp.int32

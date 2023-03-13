@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Define a stack data structure which can be used with Jax.
 
 To be usable with Jax transformations, data structures must have fixed shape.
@@ -64,7 +65,7 @@ class Stack(NamedTuple):
         Rows after insertion_index should be ignored, they only contain padding to make sure data
         is of fixed shape and can be used with Jax transformations.
         The width of the data is the number of features in an element, the height is the maximum
-        number of element the stack can contain.
+        number of elements the stack can contain.
     - insertion_index: the index of the row at which to insert the next element in data. Should be
         0 for an empty stack.
     """

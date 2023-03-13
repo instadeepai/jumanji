@@ -17,7 +17,7 @@ current position `agent_position`, the target's `target_position`, the number of
 and the action mask `action_mask`.
 - `agent_position`: Position(row, col) (int32) each of shape `()`, agent position in the maze.
 - `target_position`: Position(row, col) (int32) each of shape `()`, target position in the maze.
-- `walls`: jax array (bool) of shape `(n_rows, n_cols)`, indicates whether a grid cell is a wall.
+- `walls`: jax array (bool) of shape `(num_rows, num_cols)`, indicates whether a grid cell is a wall.
 - `step_count`: jax array (int32) of shape `()`, number of steps elapsed in the current episode.
 - `action_mask`: jax array (bool) of shape `(4,)`, binary values denoting whether each action is possible.
 
@@ -38,4 +38,8 @@ blocked by a wall, a no-op is performed and the agent's position remains unchang
 
 ## Reward
 Maze is a sparse reward problem, where the agent recieves a reward of 0 at every step and a reward of 1 for reaching the target position.
-An episode ends when the agent reaches the target position, or after a set number of steps (by default, this is twice the number of cells in the maze, i.e. `step_limit=2*n_rows*n_cols`).
+An episode ends when the agent reaches the target position, or after a set number of steps (by default, this is twice the number of cells
+in the maze, i.e. `step_limit=2*num_rows*num_cols`).
+
+## Registered Versions 📖
+- `Maze-v0`, maze with 10 rows and 10 cols.

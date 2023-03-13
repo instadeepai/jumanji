@@ -24,9 +24,19 @@ Maze: TypeAlias = chex.Array
 
 
 class Generator(abc.ABC):
+    def __init__(self, num_rows: int, num_cols: int):
+        """Interface for maze generation for the `Cleaner` environment.
+
+        Args:
+            num_rows: the width of the maze to create.
+            num_cols: the length of the maze to create.
+        """
+        self.num_rows = num_rows
+        self.num_cols = num_cols
+
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> Maze:
-        """Generate a problem instance.
+        """Generate a problem instance for the `Cleaner` environment.
 
         Args:
             key: random key.
@@ -37,15 +47,8 @@ class Generator(abc.ABC):
 
 
 class RandomGenerator(Generator):
-    def __init__(self, width: int, height: int) -> None:
-        """Random instance generator of the cleaner environment.
-
-        Args:
-            width: the width of the maze to create.
-            height: the height of the maze to create.
-        """
-        self.width = width
-        self.height = height
+    def __init__(self, num_rows: int, num_cols: int) -> None:
+        super(RandomGenerator, self).__init__(num_rows=num_rows, num_cols=num_cols)
 
     def __call__(self, key: chex.PRNGKey) -> Maze:
         """Generate a random maze.
@@ -61,7 +64,7 @@ class RandomGenerator(Generator):
         Returns:
             maze: the generated maze.
         """
-        maze = maze_generation.generate_maze(self.width, self.height, key)
+        maze = maze_generation.generate_maze(self.num_rows, self.num_cols, key)
         return self._adapt_values(maze)
 
     def _adapt_values(self, maze: Maze) -> Maze:

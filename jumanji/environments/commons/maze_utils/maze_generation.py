@@ -115,7 +115,7 @@ def draw_vertical_wall(maze: Maze, x: int, y: int, height: int) -> Maze:
 def create_chamber(chambers: Stack, x: int, y: int, width: int, height: int) -> Stack:
     """Create a new chamber from (x,y) and a given width and height.
 
-    If the new chamber is less then the minimum size (1 by 1), then do nothing.
+    If the new chamber is less than the minimum size (1 by 1), then do nothing.
     """
     new_stack: Stack = jax.lax.cond(
         (width > 1) & (height > 1),
@@ -206,8 +206,8 @@ def generate_maze(width: int, height: int, key: chex.PRNGKey) -> Maze:
     """Randomly generate a maze.
 
     Args:
-        width: the width of the maze to create.
-        height: the height of the maze to create.
+        width: the number of rows of the maze to create.
+        height: the number of columns of the maze to create.
         key: the Jax random number generation key.
 
     Returns:

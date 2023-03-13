@@ -38,6 +38,9 @@ N_AGENT = 3
 
 
 class DummyGenerator(Generator):
+    def __init__(self) -> None:
+        super(DummyGenerator, self).__init__(num_rows=5, num_cols=5)
+
     def __call__(self, key: chex.PRNGKey) -> Maze:
         return SAMPLE_GRID
 
@@ -45,7 +48,8 @@ class DummyGenerator(Generator):
 class TestCleaner:
     @pytest.fixture
     def env(self) -> Cleaner:
-        return Cleaner(5, 5, N_AGENT, generator=DummyGenerator())
+        generator = DummyGenerator()
+        return Cleaner(num_agents=N_AGENT, generator=generator)
 
     @pytest.fixture
     def key(self) -> chex.PRNGKey:
