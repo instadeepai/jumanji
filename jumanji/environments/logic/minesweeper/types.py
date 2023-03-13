@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 import chex
 import jax.random
@@ -29,15 +29,31 @@ Board: TypeAlias = Array
 
 @dataclass
 class State:
-    board: Board
-    step_count: chex.Numeric
-    flat_mine_locations: Array
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    """
+    board: grid whose cells contain -1 if not yet explored, otherwise the number of mines in the 8
+        adjacent cells.
+    step_count: specifies how many timesteps have elapsed since environment reset.
+    flat_mine_locations: indicates the flat locations (i.e. 2D is flattened to 1D) of all the mines
+        on the board, is of length num_mines.
+    key: used for seeding the sampling of mine placement on reset.
+    """
+
+    board: Board  # (num_rows, num_cols)
+    step_count: chex.Numeric  # ()
+    flat_mine_locations: Array  # (num_mines,)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
 
 
-@dataclass
-class Observation:
-    board: Board
-    action_mask: Board
-    num_mines: chex.Numeric
-    step_count: chex.Numeric
+class Observation(NamedTuple):
+    """
+    board: grid whose cells contain -1 if not yet explored, otherwise the number of mines in the 8
+        adjacent cells.
+    action_mask: indicates which actions are valid (not yet explored squares).
+    num_mines: indicates the number of mines to locate.
+    step_count: specifies how many timesteps have elapsed since environment reset.
+    """
+
+    board: Board  # (num_rows, num_cols)
+    action_mask: Board  # (num_rows, num_cols)
+    num_mines: chex.Numeric  # ()
+    step_count: chex.Numeric  # ()

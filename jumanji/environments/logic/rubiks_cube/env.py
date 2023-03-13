@@ -96,19 +96,19 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = DEFAULT_CUBE_SIZE,
         time_limit: int = 200,
-        reward_fn: Optional[RewardFn] = None,
         num_scrambles_on_reset: int = 100,
+        reward_fn: Optional[RewardFn] = None,
         sticker_colors: Optional[list] = None,
     ):
         """Instantiate a `RubiksCube` environment.
 
         Args:
-            cube_size: the size of the cube. Defaults to 3.
+            cube_size: the size of the cube, i.e. length of an edge. Defaults to 3.
             time_limit: the number of steps allowed before an episode terminates.
+            num_scrambles_on_reset: the number of scrambles done from a solved Rubik's Cube in the
+                generation of a random instance. Defaults to 100.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
-            num_scrambles_on_reset: the number of scrambles done on a solved rubiks cube in the
-                generation of a random instance. Defaults to 100.
             sticker_colors: colors used in rendering the faces of the rubiks cube.
                 Defaults to `DEFAULT_STICKER_COLORS`.
         """
@@ -128,8 +128,8 @@ class RubiksCube(Environment[State]):
             )
         self.cube_size = cube_size
         self.time_limit = time_limit
-        self.reward_function = reward_fn or SparseRewardFn()
         self.num_scrambles_on_reset = num_scrambles_on_reset
+        self.reward_function = reward_fn or SparseRewardFn()
         self.sticker_colours_cmap = matplotlib.colors.ListedColormap(
             sticker_colors if sticker_colors else DEFAULT_STICKER_COLORS
         )

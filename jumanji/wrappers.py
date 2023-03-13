@@ -506,17 +506,17 @@ class VmapAutoResetWrapper(Wrapper):
 
 
 class JumanjiToGymWrapper(gym.Env):
-    """A wrapper that converts Environment to one that follows the gym.Env API"""
+    """A wrapper that converts a Jumanji `Environment` to one that follows the `gym.Env` API."""
 
     # Flag that prevents `gym.register` from misinterpreting the `_step` and
     # `_reset` as signs of a deprecated gym Env API.
     _gym_disable_underscore_compat: ClassVar[bool] = True
 
     def __init__(self, env: Environment, seed: int = 0, backend: Optional[str] = None):
-        """Create the wrapped environment.
+        """Create the Gym environment.
 
         Args:
-            env: Environment to wrap to a gym.Env.
+            env: `Environment` to wrap to a `gym.Env`.
             seed: the seed that is used to initialize the environment's PRNG.
             backend: the XLA backend.
         """

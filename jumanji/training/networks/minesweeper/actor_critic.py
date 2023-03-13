@@ -40,8 +40,8 @@ def make_actor_critic_networks_minesweeper(
     final_layer_dims: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Minesweeper` environment."""
-    board_height = minesweeper.board_height
-    board_width = minesweeper.board_width
+    board_height = minesweeper.num_rows
+    board_width = minesweeper.num_cols
     vocab_size = 1 + PATCH_SIZE**2  # unexplored, or 0, 1, ..., 8
 
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(

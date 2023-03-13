@@ -17,7 +17,6 @@ from typing import List, Optional, Sequence, Tuple
 import chex
 import matplotlib.animation
 import matplotlib.pyplot as plt
-from chex import PRNGKey
 from jax import lax
 from jax import numpy as jnp
 
@@ -26,9 +25,6 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.minesweeper.constants import (
     COLOUR_MAPPING,
-    DEFAULT_BOARD_HEIGHT,
-    DEFAULT_BOARD_WIDTH,
-    DEFAULT_NUM_MINES,
     PATCH_SIZE,
     UNEXPLORED_ID,
 )
@@ -40,7 +36,7 @@ from jumanji.environments.logic.minesweeper.utils import (
     create_flat_mine_locations,
     explored_mine,
 )
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 def state_to_observation(state: State, num_mines: int) -> Observation:
@@ -56,12 +52,12 @@ class Minesweeper(Environment[State]):
     """A JAX implementation of the minesweeper game.
 
     - observation: `Observation`
-        - board: jax array (int32) of shape (board_height, board_width):
+        - board: jax array (int32) of shape (num_rows, num_cols):
             each cell contains -1 if not yet explored, or otherwise the number of mines in
             the 8 adjacent squares.
-        - action_mask: jax array (bool) of shape (board_height, board_width):
+        - action_mask: jax array (bool) of shape (num_rows, num_cols):
             indicates which actions are valid (not yet explored squares).
-        - num_mines: the number of mines to find, which can be read from the env.
+        - num_mines: jax array (int32) of shape `()`, indicates the number of mines to locate.
         - step_count: jax array (int32) of shape ():
             specifies how many timesteps have elapsed since environment reset.
 
@@ -80,9 +76,12 @@ class Minesweeper(Environment[State]):
             (exploring an already explored square), or the board is solved.
 
     - state: `State`
-        - board: as in observation.
-        - step_count: as in observation.
-        - flat_mine_locations: jax array (int32) of shape (board_height * board_width):
+        - board: jax array (int32) of shape (num_rows, num_cols):
+            each cell contains -1 if not yet explored, or otherwise the number of mines in
+            the 8 adjacent squares.
+        - step_count: jax array (int32) of shape ():
+            specifies how many timesteps have elapsed since environment reset.
+        - flat_mine_locations: jax array (int32) of shape (num_rows * num_cols,):
             indicates the (flat) locations of all the mines on the board.
             Will be of length num_mines.
         - key: jax array (int32) of shape (2,) used for seeding the sampling of mine placement
@@ -102,48 +101,48 @@ class Minesweeper(Environment[State]):
 
     def __init__(
         self,
-        board_height: int = DEFAULT_BOARD_HEIGHT,
-        board_width: int = DEFAULT_BOARD_WIDTH,
+        num_rows: int = 10,
+        num_cols: int = 10,
+        num_mines: int = 10,
         reward_function: Optional[RewardFn] = None,
         done_function: Optional[DoneFn] = None,
-        num_mines: int = DEFAULT_NUM_MINES,
         color_mapping: Optional[List[str]] = None,
     ):
         """Instantiate a `Minesweeper` environment.
 
         Args:
-            board_height: the height of the board. Defaults to `DEFAULT_BOARD_HEIGHT`.
-            board_width: the width of the board. Defaults to `DEFAULT_BOARD_WIDTH`.
+            num_rows: number of rows, i.e. height of the board. Defaults to 10.
+            num_cols: number of columns, i.e. width of the board. Defaults to 10.
+            num_mines: number of mines on the board. Defaults to 10.
             reward_function: `RewardFn` whose `__call__` method computes the reward of an
                 environment transition based on the given current state and selected action.
                 Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
             done_function: `DoneFn` whose `__call__` method computes the done signal given the
                 current state, action taken, and next state.
                 Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
-            num_mines: the number of mines. Defaults to `DEFAULT_NUM_MINES`.
             color_mapping: colour map used for rendering.
         """
-        if board_height <= 1 or board_width <= 1:
+        if num_rows <= 1 or num_cols <= 1:
             raise ValueError(
                 f"Should make a board of height and width greater than 1, "
-                f"got height={board_height}, width={board_width}"
+                f"got num_rows={num_rows}, num_cols={num_cols}"
             )
-        if num_mines < 0 or num_mines >= board_height * board_width:
+        if num_mines < 0 or num_mines >= num_rows * num_cols:
             raise ValueError(
                 f"Number of mines should be constrained between 0 and the size of the board, "
                 f"got {num_mines}"
             )
-        self.board_height = board_height
-        self.board_width = board_width
+        self.num_rows = num_rows
+        self.num_cols = num_cols
         self.num_mines = num_mines
         self.reward_function = reward_function or DefaultRewardFn()
         self.done_function = done_function or DefaultDoneFn()
 
         self.cmap = color_mapping if color_mapping else COLOUR_MAPPING
-        self.figure_name = f"{board_height}x{board_width} Minesweeper"
+        self.figure_name = f"{num_rows}x{num_cols} Minesweeper"
         self.figure_size = (6.0, 6.0)
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -155,15 +154,15 @@ class Minesweeper(Environment[State]):
                 environment.
         """
         board = jnp.full(
-            shape=(self.board_height, self.board_width),
+            shape=(self.num_rows, self.num_cols),
             fill_value=UNEXPLORED_ID,
             dtype=jnp.int32,
         )
         step_count = jnp.array(0, jnp.int32)
         flat_mine_locations = create_flat_mine_locations(
             key=key,
-            board_height=self.board_height,
-            board_width=self.board_width,
+            num_rows=self.num_rows,
+            num_cols=self.num_cols,
             num_mines=self.num_mines,
         )
         state = State(
@@ -176,12 +175,14 @@ class Minesweeper(Environment[State]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: `State` object containing the dynamics of the environment.
-            action: `Array` containing the height and width of the square to be explored.
+            action: `Array` containing the row and column of the square to be explored.
 
         Returns:
             next_state: `State` corresponding to the next state of the environment,
@@ -217,43 +218,47 @@ class Minesweeper(Environment[State]):
         """Specifications of the observation of the `Minesweeper` environment.
 
         Returns:
-            Spec containing all the specifications for all the `Observation` fields:
-             - board: BoundedArray (jnp.int32) of shape (board_height, board_width).
-             - action_mask: BoundedArray (bool) of shape (board_height, board_width).
-             - num_mines: BoundedArray (jnp.int32) of shape ().
-             - step_count: BoundedArray (jnp.int32) of shape ().
+            Spec for the `Observation` whose fields are:
+             - board: BoundedArray (int32) of shape (num_rows, num_cols).
+             - action_mask: BoundedArray (bool) of shape (num_rows, num_cols).
+             - num_mines: BoundedArray (int32) of shape ().
+             - step_count: BoundedArray (int32) of shape ().
         """
+        board = specs.BoundedArray(
+            shape=(self.num_rows, self.num_cols),
+            dtype=jnp.int32,
+            minimum=-1,
+            maximum=PATCH_SIZE * PATCH_SIZE - 1,
+            name="board",
+        )
+        action_mask = specs.BoundedArray(
+            shape=(self.num_rows, self.num_cols),
+            dtype=bool,
+            minimum=False,
+            maximum=True,
+            name="action_mask",
+        )
+        num_mines = specs.BoundedArray(
+            shape=(),
+            dtype=jnp.int32,
+            minimum=0,
+            maximum=self.num_rows * self.num_cols - 1,
+            name="num_mines",
+        )
+        step_count = specs.BoundedArray(
+            shape=(),
+            dtype=jnp.int32,
+            minimum=0,
+            maximum=self.num_rows * self.num_cols - self.num_mines,
+            name="step_count",
+        )
         return specs.Spec(
             Observation,
             "ObservationSpec",
-            board=specs.BoundedArray(
-                shape=(self.board_height, self.board_width),
-                dtype=jnp.int32,
-                minimum=-1,
-                maximum=PATCH_SIZE * PATCH_SIZE - 1,
-                name="board",
-            ),
-            action_mask=specs.BoundedArray(
-                shape=(self.board_height, self.board_width),
-                dtype=jnp.bool_,
-                minimum=False,
-                maximum=True,
-                name="action_mask",
-            ),
-            num_mines=specs.BoundedArray(
-                shape=(),
-                dtype=jnp.int32,
-                minimum=0,
-                maximum=self.board_height * self.board_width - 1,
-                name="num_mines",
-            ),
-            step_count=specs.BoundedArray(
-                shape=(),
-                dtype=jnp.int32,
-                minimum=0,
-                maximum=self.board_height * self.board_width - self.num_mines,
-                name="step_count",
-            ),
+            board=board,
+            action_mask=action_mask,
+            num_mines=num_mines,
+            step_count=step_count,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -264,7 +269,7 @@ class Minesweeper(Environment[State]):
             action_spec: `specs.MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([self.board_height, self.board_width]),
+            num_values=jnp.array([self.num_rows, self.num_cols], jnp.int32),
             name="action",
             dtype=jnp.int32,
         )
@@ -343,8 +348,8 @@ class Minesweeper(Environment[State]):
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
-        ax.set_xticks(jnp.arange(-0.5, self.board_width - 1, 1))
-        ax.set_yticks(jnp.arange(-0.5, self.board_height - 1, 1))
+        ax.set_xticks(jnp.arange(-0.5, self.num_cols - 1, 1))
+        ax.set_yticks(jnp.arange(-0.5, self.num_rows - 1, 1))
         ax.tick_params(
             top=False,
             bottom=False,
@@ -356,8 +361,8 @@ class Minesweeper(Environment[State]):
             labelright=False,
         )
         background = jnp.ones_like(state.board)
-        for i in range(self.board_height):
-            for j in range(self.board_width):
+        for i in range(self.num_rows):
+            for j in range(self.num_cols):
                 background = self._render_grid_square(
                     state=state, ax=ax, i=i, j=j, background=background
                 )

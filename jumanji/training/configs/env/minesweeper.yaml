@@ -1,25 +1,25 @@
 name: minesweeper
 env_kwargs:
-    board_height: 10
-    board_width: 10
+    num_rows: 10
+    num_cols: 10
     num_mines: 10
 
 network:
     board_embed_dim: 4
-    board_conv_channels: [8, 16]
+    board_conv_channels: [8, 8, 8]
     board_kernel_shape: 3
     num_mines_embed_dim: 4
-    final_layer_dims: [16, 8]
+    final_layer_dims: [32, 32]
 
 training:
     num_epochs: 100
-    num_learner_steps_per_epoch: 500
+    num_learner_steps_per_epoch: 200
     n_steps: 10
     total_batch_size: 128
 
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 5000
+    greedy_eval_total_batch_size: 5000
 
 a2c:
     normalize_advantage: False
@@ -28,4 +28,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 1e-4
+    learning_rate: 3e-4

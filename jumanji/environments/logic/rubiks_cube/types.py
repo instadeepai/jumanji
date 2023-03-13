@@ -26,6 +26,9 @@ else:
 
 Cube: TypeAlias = Array
 
+# TODO: update types to be consistent with the other environments, including changing the
+#  observation to a NamedTuple.
+
 
 @dataclass
 class State:

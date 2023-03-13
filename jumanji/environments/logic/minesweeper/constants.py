@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DEFAULT_BOARD_HEIGHT: int = 10
-DEFAULT_BOARD_WIDTH: int = 10
-DEFAULT_NUM_MINES: int = 10
 UNEXPLORED_ID: int = -1
 IS_MINE: int = 1
 PATCH_SIZE: int = 3

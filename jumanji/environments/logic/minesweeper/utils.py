@@ -18,51 +18,47 @@ from jax import random
 from jax.lax import dynamic_slice_in_dim
 
 from jumanji.environments.logic.minesweeper.constants import (
-    DEFAULT_BOARD_HEIGHT,
-    DEFAULT_BOARD_WIDTH,
-    DEFAULT_NUM_MINES,
     IS_MINE,
     PATCH_SIZE,
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.types import Board, State
-from jumanji.types import Action
 
 
 def create_flat_mine_locations(
     key: chex.PRNGKey,
-    board_height: int = DEFAULT_BOARD_HEIGHT,
-    board_width: int = DEFAULT_BOARD_WIDTH,
-    num_mines: int = DEFAULT_NUM_MINES,
+    num_rows: int,
+    num_cols: int,
+    num_mines: int,
 ) -> Board:
     """Create locations of mines on a board with a specified height, width, and number
-    of mines.
-    Locations are in flattened coordinates."""
+    of mines. The locations are in flattened coordinates.
+    """
     return random.choice(
         key,
-        board_height * board_width,
+        num_rows * num_cols,
         shape=(num_mines,),
         replace=False,
     )
 
 
 def is_solved(state: State) -> chex.Array:
-    """Check if all non-mined squares have been explored"""
+    """Check if all non-mined squares have been explored."""
     board = state.board
     num_mines = state.flat_mine_locations.shape[-1]
-    board_height, board_width = board.shape
+    num_rows, num_cols = board.shape
     num_explored = (board >= 0).sum()
-    return num_explored == board_height * board_width - num_mines
+    return num_explored == num_rows * num_cols - num_mines
 
 
-def is_valid_action(state: State, action: Action) -> chex.Array:
-    """Check if an action is exploring a square that has not already been explored"""
+def is_valid_action(state: State, action: chex.Array) -> chex.Array:
+    """Check if an action is exploring a square that has not already been explored."""
     action_height, action_width = action
     return state.board[action_height, action_width] == UNEXPLORED_ID
 
 
 def get_mined_board(state: State) -> chex.Array:
-    """Compute the board with 1 in mine locations, otherwise 0"""
+    """Compute the board with 1 in mine locations, otherwise 0."""
     return (
         jnp.zeros((state.board.shape[-1] * state.board.shape[-2],), dtype=jnp.int32)
         .at[state.flat_mine_locations]
@@ -70,16 +66,16 @@ def get_mined_board(state: State) -> chex.Array:
     )
 
 
-def explored_mine(state: State, action: Action) -> chex.Array:
-    """Check if an action is exploring a square containing a mine"""
+def explored_mine(state: State, action: chex.Array) -> chex.Array:
+    """Check if an action is exploring a square containing a mine."""
     height, width = action
     index = width + height * state.board.shape[-1]
     mined_board = get_mined_board(state=state)
     return mined_board[index] == IS_MINE
 
 
-def count_adjacent_mines(state: State, action: Action) -> chex.Array:
-    """Count the number of mines in a 3x3 patch surrounding the selected action"""
+def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
+    """Count the number of mines in a 3x3 patch surrounding the selected action."""
     action_height, action_width = action
     mined_board = get_mined_board(state=state).reshape(
         state.board.shape[-2], state.board.shape[-1]
