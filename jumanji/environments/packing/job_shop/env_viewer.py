@@ -76,19 +76,18 @@ class JobShopViewer:
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./job_shop.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
-            animation that can export to gif, mp4, or render with HTML.
+            Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
         fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         ax = fig.add_subplot(111)
@@ -100,14 +99,17 @@ class JobShopViewer:
             ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)
 
+        # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=len(states),
             interval=interval,
         )
-        if save:
-            self._animation.save(path)
+
+        # Save the animation as a gif.
+        if save_path:
+            self._animation.save(save_path)
 
         return self._animation
 

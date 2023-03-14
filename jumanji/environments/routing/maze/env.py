@@ -328,20 +328,17 @@ class Maze(Environment[State]):
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./maze.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Creates an animated gif of the `Maze` environment based on the sequence of states.
 
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
-            states=states, interval=interval, save=save, path=path
-        )
+        return self._env_viewer.animate(states, interval, save_path)

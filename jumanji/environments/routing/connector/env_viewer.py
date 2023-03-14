@@ -34,7 +34,7 @@ class ConnectorViewer:
 
     def __init__(self, name: str, num_agents: int, render_mode: str = "human") -> None:
         """
-        Viewer for a Connector environment.
+        Viewer for a `Connector` environment.
 
         Args:
             name: the window name to be used when initialising the window.
@@ -61,6 +61,10 @@ class ConnectorViewer:
         for colormap_idx in colormap_indecies:
             self.colors.append(colormap(colormap_idx))
 
+        # The animation must be stored in a variable that lives as long as the
+        # animation should run. Otherwise, the animation will get garbage-collected.
+        self._animation: Optional[matplotlib.animation.Animation] = None
+
     def render(self, grid: chex.Array) -> Optional[NDArray]:
         """Render Connector.
 
@@ -80,16 +84,15 @@ class ConnectorViewer:
         self,
         grids: Sequence[chex.Array],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./connector.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of Connector grids.
 
         Args:
             grids: sequence of Connector grids corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
@@ -104,7 +107,8 @@ class ConnectorViewer:
             grid = grids[grid_index]
             self._add_grid_image(grid, ax)
 
-        animation = matplotlib.animation.FuncAnimation(
+        # Create the animation object.
+        self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=len(grids),
@@ -112,10 +116,10 @@ class ConnectorViewer:
         )
 
         # Save the animation as a gif.
-        if save:
-            animation.save(path)
+        if save_path:
+            self._animation.save(save_path)
 
-        return animation
+        return self._animation
 
     def close(self) -> None:
         plt.close(self._name)

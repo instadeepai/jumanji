@@ -308,23 +308,21 @@ class Connector(Environment[State]):
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./connector.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
         Args:
             states: sequence of `State` corresponding to subsequent timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation (as a gif).
-            path: where to save the animation (as a gif).
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             animation that can export to gif, mp4, or render with HTML.
         """
-
         grids = [state.grid for state in states]
-        return self._renderer.animate(grids, interval, save, path)
+        return self._renderer.animate(grids, interval, save_path)
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.

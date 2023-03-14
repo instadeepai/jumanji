@@ -96,10 +96,10 @@ class Game2048Viewer:
             states: is a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be stored.
+                will not be saved.
 
         Returns:
-            animation.FuncAnimation: the animation object that was created.
+            Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
         # Set up the figure and axes for the game board.
         fig, ax = self.get_fig_ax()
@@ -112,13 +112,14 @@ class Game2048Viewer:
             self.draw_board(ax, state)
             fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
 
-        # Create the animation object using FuncAnimation.
+        # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=len(states),
             interval=interval,
         )
+
         # Save the animation as a gif.
         if save_path:
             self._animation.save(save_path)

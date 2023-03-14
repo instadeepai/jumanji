@@ -59,22 +59,21 @@ class MazeEnvViewer(MazeViewer):
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./maze.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
         mazes = [self._overlay_agent_and_target(state) for state in states]
-        return super().animate(mazes, interval, save, path)
+        return super().animate(mazes, interval, save_path)
 
     def _overlay_agent_and_target(self, state: State) -> Maze:
         maze = state.walls.astype(int)

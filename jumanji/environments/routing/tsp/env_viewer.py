@@ -69,16 +69,15 @@ class TSPViewer:
         self,
         states: Sequence[State],
         interval: int = 200,
-        save: bool = False,
-        path: str = "./tsp.gif",
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            save: whether to save the animation to a file.
-            path: the path to save the animation file.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
@@ -93,14 +92,17 @@ class TSPViewer:
             state = states[state_index]
             self._add_tour(ax, state)
 
+        # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=len(states),
             interval=interval,
         )
-        if save:
-            self._animation.save(path)
+
+        # Save the animation as a gif.
+        if save_path:
+            self._animation.save(save_path)
 
         return self._animation
 
