@@ -166,20 +166,20 @@ rollout = jax.vmap(run_n_steps, in_axes=(0, 0, None))(state, keys, rollout_lengt
 
 Jumanji provides a diverse range of environments ranging from simple games to NP-hard problems.
 
-| Environment                                    | Category | Registered Version(s) | Source                                                                                           | Description                                                            |
-|------------------------------------------------|----------|-----------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| 🐍 Snake                                       | Routing  | `Snake-v1`              | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake)      | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
-| 🎲 RubiksCube                                  | Logic    | `RubiksCube-v0`         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube)  | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
-| 💣 Minesweeper                                 | Logic    | `Minesweeper-v0`        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper)  | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
-| 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp)        | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
-| 🎒 Knapsack                                    | Packing  | `Knapsack-v1`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack)   | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
-| 📦 BinPack (3D BinPacking Problem)             | Packing  | `BinPack-v1`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack)   | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
+| Environment                              | Category | Registered Version(s) | Source                                                                                           | Description                                                            |
+|------------------------------------------|----------|-----------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| 🔢 Game2048                              | Logic  | `Game2048-v0`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game_2048/)   | [doc](https://instadeepai.github.io/jumanji/environments/game_2048/)   |
+| 💣 Minesweeper                           | Logic    | `Minesweeper-v0`        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper)  | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
+| 🎲 RubiksCube                            | Logic    | `RubiksCube-v0`, `RubiksCube-partly-scrambled-v0`         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube)  | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
+| 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v1`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack)   | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
+| 🏭 JobShop (Job Shop Scheduling Problem) | Packing  | `JobShop-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop)   | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
+| 🎒 Knapsack                              | Packing  | `Knapsack-v1`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack)   | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
+| 🧹 Cleaner                               | Routing  | `Cleaner-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cleaner/)   | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
+| :link: Connector                         | Routing  | `Connector-v0`          | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp)       | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
-| 🏭 JobShop (Job Shop Scheduling Problem)       | Packing  | `JobShop-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop)   | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
-| 🔢 Game2048   | Logic  | `Game2048-v0`           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game_2048/)   | [doc](https://instadeepai.github.io/jumanji/environments/game_2048/)   |
 | :mag: Maze   | Routing  | `Maze-v0`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)      | [doc](https://instadeepai.github.io/jumanji/environments/maze/)        |
-| :link: Connector   | Routing  | `Connector-v0`          | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
-| 🧹 Cleaner   | Routing  | `Cleaner-v0`            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cleaner/)   | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
+| 🐍 Snake                                       | Routing  | `Snake-v1`              | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake)      | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
+| 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp)        | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 
 ### Registry and Versioning 📖
 
@@ -210,7 +210,7 @@ how to submit pull requests, our Contributor License Agreement, and community gu
 ## Citing Jumanji ✏️
 If you use Jumanji in your work, please cite the library using:
 ```
-@software{jumanji2022github,
+@software{jumanji2023github,
   author = {Clément Bonnet and Daniel Luo and Donal Byrne and Sasha Abramowitz
         and Vincent Coyette and Paul Duckworth and Daniel Furelos-Blanco and
         Nathan Grinsztajn and Tristan Kalloniatis and Victor Le and Omayma Mahjoub
