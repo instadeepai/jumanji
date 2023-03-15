@@ -1,5 +1,5 @@
 name: connector
-env_kwargs:
+registered_version: Connector-v0
 
 network:
     transformer_num_blocks: 4

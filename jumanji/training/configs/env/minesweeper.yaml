@@ -1,8 +1,5 @@
 name: minesweeper
-env_kwargs:
-    num_rows: 10
-    num_cols: 10
-    num_mines: 10
+registered_version: Minesweeper-v0
 
 network:
     board_embed_dim: 4

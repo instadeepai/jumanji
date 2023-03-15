@@ -1,7 +1,5 @@
 name: maze
-env_kwargs:
-    n_rows: 10
-    n_cols: 10
+registered_version: Maze-v0
 
 network:
     num_channels: [32, 32, 8]

@@ -1,8 +1,5 @@
 name: rubiks_cube
-env_kwargs:
-    cube_size: 3
-    step_limit: 20
-    num_scrambles_on_reset: 7
+registered_version: RubiksCube-v0
 
 network:
     cube_embed_dim: 4

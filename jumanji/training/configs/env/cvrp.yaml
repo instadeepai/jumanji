@@ -1,8 +1,5 @@
 name: cvrp
-env_kwargs:
-    num_nodes: 20
-    max_capacity: 30
-    max_demand: 10
+registered_version: CVRP-v1
 
 network:
     transformer_num_blocks: 6

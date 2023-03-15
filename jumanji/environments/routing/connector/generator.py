@@ -57,12 +57,12 @@ class UniformRandomGenerator(Generator):
     start and target positions uniformly at random on the grid.
     """
 
-    def __init__(self, grid_size: int = 10, num_agents: int = 5) -> None:
+    def __init__(self, grid_size: int, num_agents: int) -> None:
         """Instantiates a `UniformRandomGenerator`.
 
         Args:
-            grid_size: size of the square grid to generate. Defaults to 10.
-            num_agents: number of agents/paths on the grid. Defaults to 5.
+            grid_size: size of the square grid to generate.
+            num_agents: number of agents/paths on the grid.
         """
         super().__init__(grid_size, num_agents)
 

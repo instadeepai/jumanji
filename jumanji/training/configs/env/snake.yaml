@@ -1,8 +1,5 @@
 name: snake
-env_kwargs:
-    num_rows: 12
-    num_cols: 12
-    time_limit: 4000
+registered_version: Snake-v1
 
 network:
     num_channels: 32

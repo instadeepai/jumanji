@@ -45,7 +45,8 @@ register(
     },
 )
 
-# TODO: register JobShop
+# TODO: register JobShop correctly with a descriptive inline comment.
+register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 
 # Knapsack problem with 50 randomly generated items, a total budget
 # of 12.5, and a dense reward function.
@@ -53,6 +54,9 @@ register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
 # Cleaner with 10 rows, 10 colums, 3 agents, a time limit of 100, and a random maze generator.
 register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
+
+# Connector with grid size of 10 and 5 agents.
+register(id="Connector-v0", entry_point="jumanji.environments:Connector")
 
 # CVRP with 20 randomly generated nodes, a maximum capacity of 30,
 # a maximum demand for each node of 10, and a dense reward function.

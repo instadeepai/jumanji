@@ -111,12 +111,14 @@ class Connector(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
-                Defaults to `UniformRandomGenerator`.
+                Defaults to `UniformRandomGenerator` with `grid_size=10` and `num_agents=5`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
         """
-        self._generator = generator or UniformRandomGenerator()
+        self._generator = generator or UniformRandomGenerator(
+            grid_size=10, num_agents=5
+        )
         self._reward_fn = reward_fn or DenseRewardFn()
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents

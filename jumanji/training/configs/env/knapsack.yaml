@@ -1,7 +1,5 @@
 name: knapsack
-env_kwargs:
-    num_items: 50
-    total_budget: 12.5
+registered_version: Knapsack-v1
 
 network:
     transformer_num_blocks: 6

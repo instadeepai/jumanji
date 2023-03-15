@@ -19,6 +19,7 @@ import jax.numpy as jnp
 import optax
 from omegaconf import DictConfig
 
+import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
@@ -91,8 +92,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    env_kwargs = cfg.env.env_kwargs or {}
-    env: Environment = ENV_FACTORY[cfg.env.name](**env_kwargs)
+    env: Environment = jumanji.make(cfg.env.registered_version)
     if isinstance(env, Connector):
         env = MultiToSingleWrapper(env)
     return env

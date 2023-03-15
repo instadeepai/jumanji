@@ -36,14 +36,15 @@
 
 ## Welcome to the Jungle! 🌴
 
-Jumanji is a suite of Reinforcement Learning (RL) environments written in JAX providing clean, hardware-accelerated
-environments for industry-driven research.
+Jumanji is a suite of diverse and challenging reinforcement learning (RL) environments written in JAX.
+It provides hardware-accelerated environments for industry-driven research.
 
 Jumanji is helping pioneer a new wave of hardware-accelerated research and development in the
-field of RL. Jumanji's high-speed environments enable faster iteration and larger-scale experimentation
+field of RL. Jumanji's high-speed environments enable faster iteration and large-scale experimentation
 while simultaneously reducing complexity. Originating in the Research Team at [InstaDeep](https://www.instadeep.com/),
 Jumanji is now developed jointly with the open-source community.
-To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-) (or just star 🌟 to stay up to date with the latest developments)!
+To join us in these efforts, reach out, raise issues and read our [contribution guidelines](#contributing-)
+(or just star 🌟 to stay up to date with the latest developments!).
 
 ### Goals 🚀
 
@@ -54,10 +55,11 @@ help close the gap between research and industrial applications.
 
 ### Overview 🦜
 
-- 🥑 **Environment API**: core abstractions for JAX-based environments and their variations, e.g. multi-agent or turn-by-turn.
-- 🕹️ **Environment Suite**: a list of RL environments ranging from simple games to complex NP-hard problems.
-- 🍬 **Wrappers**: easily connect to your favourite RL frameworks and libraries such as [Acme](https://github.com/deepmind/acme), [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3), [RLlib](https://docs.ray.io/en/latest/rllib/index.html), [OpenAI Gym](https://github.com/openai/gym), and [DeepMind-Env](https://github.com/deepmind/dm_env).
-- 🎓 **Educational Examples and User Guides**: guides to facilitate Jumanji's adoption and highlight the added value of JAX-based environments.
+- 🥑 **Environment API**: core abstractions for JAX-based environments.
+- 🕹️ **Environment Suite**: a collection of RL environments ranging from simple games to NP-hard problems.
+- 🍬 **Wrappers**: easily connect to your favourite RL frameworks and libraries such as [Acme](https://github.com/deepmind/acme), [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3), [RLlib](https://docs.ray.io/en/latest/rllib/index.html), [OpenAI Gym](https://github.com/openai/gym), and [DeepMind-Env](https://github.com/deepmind/dm_env), through our `dm_env` and `gym` wrappers.
+- 🎓 **Educational Examples**: guides to facilitate Jumanji's adoption and highlight the added value of JAX-based environments.
+- 🏎️ **Training:** example agents that can be used as inspiration for the agents you may implement in your research!
 
 ## Installation 🎬
 
@@ -65,7 +67,7 @@ You can install the latest release of Jumanji from PyPI:
 ```bash
 pip install jumanji
 ```
-or you can install the latest development version directly from GitHub:
+Alternatively, you can install the latest development version directly from GitHub:
 ```bash
 pip install git+https://github.com/instadeepai/jumanji.git
 ```
@@ -79,7 +81,7 @@ Check out [Matplotlib backends](https://matplotlib.org/stable/users/explain/back
 
 ## Quickstart ⚡
 
-Practitioners will find Jumanji's interface familiar
+RL practitioners will find Jumanji's interface familiar
 as it combines the widely adopted [OpenAI Gym](https://github.com/openai/gym)
 and [DeepMind Environment](https://github.com/deepmind/dm_env) interfaces.
 From OpenAI Gym, we adopted the idea of a `registry` and the `render` method,
@@ -107,7 +109,7 @@ state, timestep = jax.jit(env.step)(state, action)   # Take a step and observe t
 ```
 where:
 
-- `state` represents the internal state of an environment: it contains all the information required
+- `state` represents the internal state of the environment: it contains all the information required
 to take a step when executing an action. This should **not** be confused with the `observation` contained in the `timestep`,
 which is the information perceived by the agent.
 - `timestep` is a dataclass containing `step_type`, `reward`, `discount`, `observation`, and `extras`.
@@ -128,10 +130,11 @@ import jax
 import jumanji
 from jumanji.wrappers import AutoResetWrapper
 
-env = jumanji.make("Snake-v1")  # Creates the snake environment.
-env = AutoResetWrapper(env)     # Automatically reset the environment when an episode terminates.
+env = jumanji.make("Snake-v1")  # Create a Snake environment
+env = AutoResetWrapper(env)     # Automatically reset the environment when an episode terminates
 
-batch_size, rollout_length = 7, 5
+batch_size = 7
+rollout_length = 5
 num_actions = env.action_spec().num_values
 
 random_key = jax.random.PRNGKey(0)
@@ -142,7 +145,7 @@ def step_fn(state, key):
   new_state, timestep = env.step(state, action)
   return new_state, timestep
 
-def run_n_step(state, key, n):
+def run_n_steps(state, key, n):
   random_keys = jax.random.split(key, n)
   state, rollout = jax.lax.scan(step_fn, state, random_keys)
   return rollout
@@ -153,24 +156,15 @@ state, timestep = jax.vmap(env.reset)(keys)
 
 # Collect a batch of rollouts
 keys = jax.random.split(key2, batch_size)
-rollout = jax.vmap(run_n_step, in_axes=(0, 0, None))(state, keys, rollout_length)
+rollout = jax.vmap(run_n_steps, in_axes=(0, 0, None))(state, keys, rollout_length)
 
 # Shape and type of given rollout:
 # TimeStep(step_type=(7, 5), reward=(7, 5), discount=(7, 5), observation=(7, 5, 6, 6, 5), extras=None)
 ```
 
-## Examples 🕹️
-
-For more in-depth examples of running with Jumanji environments, check out our Colab notebooks:
-
-| Example           | Topic          | Colab |
-|-------------------|----------------|:-----:|
-| Online Q-Learning | RL Training ([Anakin](https://arxiv.org/abs/2104.06272)) | <a href="https://colab.research.google.com/github/instadeepai/jumanji/blob/main/examples/anakin_snake.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>    |
-
-
 ## Environments 🌍
 
-Jumanji implements a diverse range of environments ranging from simple games to NP-hard problems.
+Jumanji provides a diverse range of environments ranging from simple games to NP-hard problems.
 
 | Environment                                    | Category | Registered Version(s) | Source                                                                                           | Description                                                            |
 |------------------------------------------------|----------|-----------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
@@ -201,11 +195,10 @@ To make Jumanji more accessible, we have provided the following example agents f
 - Random agent.
 - A2C agent.
 
-These are also the agents that our benchmark performance across all environments are based on.
-We encourage you to implement your own agent and beat our benchmarks!
-> ⚠️ The training pipelines and agents in the subpackage `jumanji/training` are purely meant to provide
-> inspiration for how you can implement your own agent. Jumanji is first and foremost a library of
-> environments - as such, the agents and networks will not be maintained to a production standard.
+These agents can be found [here](jumanji/training/).
+> ⚠️ The example agents in `jumanji/training` are **only** meant to serve as inspiration for how you can
+> implement your own agent. Jumanji is first and foremost a library of environments - as such, the
+> agents and networks will **not** be maintained to a production standard.
 
 For more information on how to use the example agents, see the [training guide](docs/guides/training.md).
 

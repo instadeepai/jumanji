@@ -1,8 +1,5 @@
 name: cleaner
-env_kwargs:
-    grid_width: 10
-    grid_height: 10
-    num_agents: 3
+registered_version: Cleaner-v0
 
 training:
     num_epochs: 300

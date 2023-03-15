@@ -1,7 +1,5 @@
 name: bin_pack
-env_kwargs:
-    obs_num_ems: 50
-    generator: null  # Defaults to RandomGenerator with max_num_items=20 and max_num_ems=80
+registered_version: BinPack-v1
 
 network:
     num_independent_transformer_layers: 4

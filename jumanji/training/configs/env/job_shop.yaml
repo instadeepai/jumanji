@@ -1,10 +1,5 @@
 name: job_shop
-env_kwargs:
-    instance_generator_type: "random"  # [random, toy]
-    num_jobs: 6
-    num_machines: 3
-    max_num_ops: 3
-    max_op_duration: 5
+registered_version: JobShop-v0
 
 network:
     policy_layers: [64, 64]
