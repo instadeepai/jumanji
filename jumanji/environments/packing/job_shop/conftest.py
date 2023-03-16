@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import jax.numpy as jnp
+import jax.random
 import pytest
 from chex import PRNGKey
 
@@ -107,6 +108,7 @@ class DummyGenerator(Generator):
             action_mask=action_mask,
             step_count=step_count,
             scheduled_times=scheduled_times,
+            key=jax.random.PRNGKey(0),
         )
 
         return state

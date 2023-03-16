@@ -41,15 +41,15 @@ class State:
     walls: array (bool) whose values are `True` where walls are and `False` for empty cells.
     action_mask: array specifying which directions the agent can move in from its current position.
     step_count: (int32) step number of the episode.
-    key: PRNGKey random key (uint) of shape (2,).
+    key: random key used for auto-reset.
     """
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (num_rows, num_cols)
-    action_mask: chex.Array  # Shape (4,)
-    step_count: jnp.int32  # Shape ()
-    key: chex.PRNGKey
+    walls: chex.Array  # (num_rows, num_cols)
+    action_mask: chex.Array  # (4,)
+    step_count: jnp.int32  # ()
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):
@@ -64,6 +64,6 @@ class Observation(NamedTuple):
 
     agent_position: Position  # Position(row, col) each of shape ()
     target_position: Position  # Position(row, col) each of shape ()
-    walls: chex.Array  # Shape (num_rows, num_cols)
-    action_mask: chex.Array  # Shape (4,)
-    step_count: jnp.int32  # Shape ()
+    walls: chex.Array  # (num_rows, num_cols)
+    action_mask: chex.Array  # (4,)
+    step_count: jnp.int32  # ()

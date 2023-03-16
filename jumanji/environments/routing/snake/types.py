@@ -48,7 +48,6 @@ class Actions(IntEnum):
 @dataclass
 class State:
     """
-    key: random key used to sample a new fruit when one is eaten.
     body: array indicating the snake's body cells.
     body_state: array ordering the snake's body cells.
     head_position: position of the snake's head on the 2D grid.
@@ -57,9 +56,9 @@ class State:
     length: current length of the snake.
     step_count: current number of steps in the episode.
     action_mask: array specifying which directions the snake can move in from its current position.
+    key: random key used to sample a new fruit when one is eaten and used for auto-reset.
     """
 
-    key: chex.PRNGKey  # (2,)
     body: chex.Array  # (num_rows, num_cols)
     body_state: chex.Array  # (num_rows, num_cols)
     head_position: Position  # leaves of shape ()
@@ -68,6 +67,7 @@ class State:
     length: chex.Numeric  # ()
     step_count: chex.Numeric  # ()
     action_mask: chex.Array  # (4,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

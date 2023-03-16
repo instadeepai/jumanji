@@ -15,10 +15,10 @@
 from typing import List, Optional, Sequence, Tuple
 
 import chex
+import jax
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
-from jax import lax
-from jax import numpy as jnp
 
 import jumanji.environments
 from jumanji import specs
@@ -37,15 +37,6 @@ from jumanji.environments.logic.minesweeper.utils import (
     explored_mine,
 )
 from jumanji.types import TimeStep, restart, termination, transition
-
-
-def state_to_observation(state: State, num_mines: int) -> Observation:
-    return Observation(
-        board=state.board,
-        action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-        num_mines=jnp.array(num_mines, jnp.int32),
-        step_count=state.step_count,
-    )
 
 
 class Minesweeper(Environment[State]):
@@ -153,6 +144,7 @@ class Minesweeper(Environment[State]):
             timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
+        key, sample_key = jax.random.split(key)
         board = jnp.full(
             shape=(self.num_rows, self.num_cols),
             fill_value=UNEXPLORED_ID,
@@ -160,7 +152,7 @@ class Minesweeper(Environment[State]):
         )
         step_count = jnp.array(0, jnp.int32)
         flat_mine_locations = create_flat_mine_locations(
-            key=key,
+            key=sample_key,
             num_rows=self.num_rows,
             num_cols=self.num_cols,
             num_mines=self.num_mines,
@@ -171,7 +163,7 @@ class Minesweeper(Environment[State]):
             key=key,
             flat_mine_locations=flat_mine_locations,
         )
-        observation = state_to_observation(state=state, num_mines=self.num_mines)
+        observation = self._state_to_observation(state=state)
         timestep = restart(observation=observation)
         return state, timestep
 
@@ -202,10 +194,8 @@ class Minesweeper(Environment[State]):
         )
         reward = self.reward_function(state, action)
         done = self.done_function(state, next_state, action)
-        next_observation = state_to_observation(
-            state=next_state, num_mines=self.num_mines
-        )
-        next_timestep = lax.cond(
+        next_observation = self._state_to_observation(state=next_state)
+        next_timestep = jax.lax.cond(
             done,
             termination,
             transition,
@@ -272,6 +262,14 @@ class Minesweeper(Environment[State]):
             num_values=jnp.array([self.num_rows, self.num_cols], jnp.int32),
             name="action",
             dtype=jnp.int32,
+        )
+
+    def _state_to_observation(self, state: State) -> Observation:
+        return Observation(
+            board=state.board,
+            action_mask=jnp.equal(state.board, UNEXPLORED_ID),
+            num_mines=jnp.array(self.num_mines, jnp.int32),
+            step_count=state.step_count,
         )
 
     def render(self, state: State) -> None:

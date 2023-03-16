@@ -123,13 +123,17 @@ class TSP(Environment[State]):
             timestep: TimeStep object corresponding to the first timestep returned
                 by the environment.
         """
-        coordinates = jax.random.uniform(key, (self.num_cities, 2), minval=0, maxval=1)
+        key, sample_key = jax.random.split(key)
+        coordinates = jax.random.uniform(
+            sample_key, (self.num_cities, 2), minval=0, maxval=1
+        )
         state = State(
             coordinates=coordinates,
             position=jnp.array(-1, jnp.int32),
             visited_mask=jnp.zeros(self.num_cities, dtype=bool),
             trajectory=jnp.full(self.num_cities, -1, jnp.int32),
             num_visited=jnp.array(0, jnp.int32),
+            key=key,
         )
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
@@ -269,6 +273,7 @@ class TSP(Environment[State]):
             visited_mask=state.visited_mask.at[action].set(True),
             trajectory=state.trajectory.at[state.num_visited].set(action),
             num_visited=state.num_visited + 1,
+            key=state.key,
         )
 
     def _state_to_observation(self, state: State) -> Observation:

@@ -15,8 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-import jax.random
-from chex import Array
 from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
@@ -24,7 +22,7 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
-Board: TypeAlias = Array
+Board: TypeAlias = chex.Array
 
 
 @dataclass
@@ -35,13 +33,13 @@ class State:
     step_count: specifies how many timesteps have elapsed since environment reset.
     flat_mine_locations: indicates the flat locations (i.e. 2D is flattened to 1D) of all the mines
         on the board, is of length num_mines.
-    key: used for seeding the sampling of mine placement on reset.
+    key: random key used for auto-reset.
     """
 
     board: Board  # (num_rows, num_cols)
     step_count: chex.Numeric  # ()
-    flat_mine_locations: Array  # (num_mines,)
-    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
+    flat_mine_locations: chex.Array  # (num_mines,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

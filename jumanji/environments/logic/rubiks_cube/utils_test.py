@@ -15,6 +15,7 @@
 from typing import Callable, List
 
 import chex
+import jax.random
 import pytest
 from jax import numpy as jnp
 
@@ -113,12 +114,16 @@ def test_solved_reward(
 ) -> None:
     """Test that the cube fixtures have the expected rewards"""
     solved_state = State(
-        cube=solved_cube, step_count=jnp.array(0, jnp.int32), action_history=None
+        cube=solved_cube,
+        step_count=jnp.array(0, jnp.int32),
+        action_history=None,
+        key=jax.random.PRNGKey(0),
     )
     differently_stickered_state = State(
         cube=differently_stickered_cube,
         step_count=jnp.array(0, jnp.int32),
         action_history=None,
+        key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(solved_state), 1.0)
     assert jnp.equal(SparseRewardFn()(differently_stickered_state), 0.0)
@@ -140,7 +145,10 @@ def test_moves_nontrivial(
     """Test that all moves leave the cube in a non-solved state"""
     move_solved_cube = move(solved_cube)
     move_solved_state = State(
-        cube=move_solved_cube, step_count=jnp.array(0, jnp.int32), action_history=None
+        cube=move_solved_cube,
+        step_count=jnp.array(0, jnp.int32),
+        action_history=None,
+        key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(move_solved_state), 0.0)
     assert (

@@ -229,6 +229,7 @@ class JobShop(Environment[State]):
             action_mask=updated_action_mask,
             step_count=updated_step_count,
             scheduled_times=updated_scheduled_times,
+            key=state.key,
         )
         next_obs = self._observation_from_state(next_state)
 

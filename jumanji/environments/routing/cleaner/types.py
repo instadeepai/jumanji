@@ -33,14 +33,14 @@ class State:
     action_mask: boolean array specifying, for each agent, which action
         (up, right, down, left) is legal.
     step_count: the number of steps elapsed since the beginning of the episode.
-    key: not used inside the environment, but may be used e.g. in wrappers.
+    key: random key used for auto-reset.
     """
 
     grid: chex.Array  # (num_rows, num_cols)
     agents_locations: chex.Array  # (num_agent, 2)
     action_mask: chex.Array  # (num_agent, 4)
-    step_count: jnp.int32
-    key: chex.PRNGKey
+    step_count: jnp.int32  # ()
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):
@@ -57,4 +57,4 @@ class Observation(NamedTuple):
     grid: chex.Array  # (num_rows, num_cols)
     agents_locations: chex.Array  # (num_agent, 2)
     action_mask: chex.Array  # (num_agent, 4)
-    step_count: jnp.int32
+    step_count: jnp.int32  # ()

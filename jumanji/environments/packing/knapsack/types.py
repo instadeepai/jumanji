@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-import jax.random
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -30,13 +29,14 @@ class State:
     values: array of values of the items.
     packed_items: binary mask denoting which items are already packed into the knapsack.
     remaining_budget: the budget currently remaining.
+    key: random key used for auto-reset.
     """
 
     weights: chex.Array  # (num_items,)
     values: chex.Array  # (num_items,)
     packed_items: chex.Array  # (num_items,)
     remaining_budget: chex.Array  # ()
-    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

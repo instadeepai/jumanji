@@ -364,6 +364,7 @@ class ToyGenerator(Generator):
             items_location=items_location,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            key=jax.random.PRNGKey(0),
         )
 
         return solution
@@ -466,6 +467,7 @@ class CSVGenerator(Generator):
             items_location=items_location,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            key=jax.random.PRNGKey(0),
         )
 
         return reset_state
@@ -651,7 +653,7 @@ class RandomGenerator(Generator):
 
     def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
         """Generate the random instance with all items correctly packed."""
-        state_key, split_key = jax.random.split(key)
+        key, split_key = jax.random.split(key)
         container = make_container(self.container_dims)
 
         list_of_ems = [container] + (self.max_num_ems - 1) * [empty_ems()]
@@ -675,6 +677,7 @@ class RandomGenerator(Generator):
             items_location=all_item_locations,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            key=key,
         )
         return solution
 

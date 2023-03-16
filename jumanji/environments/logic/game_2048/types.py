@@ -35,15 +35,15 @@ class State:
     step_count: the number of steps taken so far.
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
         directions to move in.
-    key: is used to generate random numbers.
     score: the current score of the game state.
+    key: random key used to generate random numbers at each step and for auto-reset.
     """
 
     board: Board  # (board_size, board_size)
     step_count: chex.Numeric  # ()
     action_mask: chex.Array  # (4,)
-    key: chex.PRNGKey  # (2,)
     score: chex.Numeric  # ()
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

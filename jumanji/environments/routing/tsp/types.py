@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-import jax.random
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -31,6 +30,7 @@ class State:
     visited_mask: binary mask (False/True <--> unvisited/visited).
     trajectory: array of city indices defining the route (-1 --> not filled yet).
     num_visited: how many cities have been visited.
+    key: random key used for auto-reset.
     """
 
     coordinates: chex.Array  # (num_cities, 2)
@@ -38,7 +38,7 @@ class State:
     visited_mask: chex.Array  # (num_cities,)
     trajectory: chex.Array  # (num_cities,)
     num_visited: chex.Numeric  # ()
-    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

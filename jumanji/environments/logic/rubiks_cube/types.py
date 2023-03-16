@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-import jax.random
 from chex import Array
 from typing_extensions import TypeAlias
 
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
 else:
     from chex import dataclass
 
-Cube: TypeAlias = Array
+Cube: TypeAlias = chex.Array
 
 
 @dataclass
@@ -35,13 +34,13 @@ class State:
     step_count: specifies how many timesteps have elapsed since environment reset.
     action_history: array that indicates the entire history of applied moves (including those taken
         on scrambling the cube in the environment reset).
-    key: random key used for seeding the sampling for scrambling on reset.
+    key: random key used for auto-reset.
     """
 
     cube: Cube  # (6, cube_size, cube_size)
     step_count: chex.Numeric  # ()
     action_history: Array  # (num_scrambles_on_reset + time_limit, 3)
-    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

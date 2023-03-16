@@ -121,6 +121,7 @@ class ToyGenerator(Generator):
             action_mask=None,
             step_count=step_count,
             scheduled_times=scheduled_times,
+            key=jax.random.PRNGKey(0),
         )
 
         return state
@@ -208,6 +209,7 @@ class RandomGenerator(Generator):
             action_mask=None,
             step_count=step_count,
             scheduled_times=scheduled_times,
+            key=key,
         )
 
         return state

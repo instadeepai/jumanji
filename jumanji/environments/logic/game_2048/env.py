@@ -61,10 +61,10 @@ class Game2048(Environment[State]):
         - step_count: jax array (int32) of shape (),
             the number of time steps in the episode so far.
         - action_mask: same as observation.
-        - key: jax array (int) of shape (2,)
-            jax random generation key. Ignored since the environment is deterministic.
         - score: jax array (int32) of shape (),
             the sum of all tile values on the board.
+        - key: jax array (uint32) of shape (2,)
+            random key used to generate random numbers at each step and for auto-reset.
 
     ```python
     from jumanji.environments import Game2048

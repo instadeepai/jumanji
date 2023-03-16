@@ -147,7 +147,7 @@ class CVRP(Environment[State]):
              timestep: `TimeStep` object corresponding to the first timestep returned by the
                 environment.
         """
-        coordinates_key, demands_key = jax.random.split(key)
+        key, coordinates_key, demands_key = jax.random.split(key, 3)
         coordinates = jax.random.uniform(
             coordinates_key, (self.num_nodes + 1, 2), minval=0, maxval=1
         )
@@ -164,6 +164,7 @@ class CVRP(Environment[State]):
             visited_mask=visited_mask,
             trajectory=jnp.full(2 * self.num_nodes, DEPOT_IDX, jnp.int32),
             num_total_visits=jnp.array(1, jnp.int32),
+            key=key,
         )
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
@@ -339,6 +340,7 @@ class CVRP(Environment[State]):
             visited_mask=visited_mask.at[action].set(True),
             trajectory=state.trajectory.at[state.num_total_visits].set(action),
             num_total_visits=state.num_total_visits + 1,
+            key=state.key,
         )
 
     def _state_to_observation(self, state: State) -> Observation:

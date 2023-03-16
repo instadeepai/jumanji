@@ -14,8 +14,6 @@
 
 from typing import TYPE_CHECKING, NamedTuple
 
-import jax.random
-
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
@@ -51,13 +49,13 @@ class State:
     grid: grid representing the position of all agents.
     step_count: the index of the current step.
     agents: a stacked pytree of type Agent.
-    key: random key.
+    key: random key used for auto-reset.
     """
 
     grid: chex.Array  # (grid_size, grid_size)
     step_count: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

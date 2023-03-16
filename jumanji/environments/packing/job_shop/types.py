@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
 import chex
-import jax.random
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -68,7 +67,7 @@ class State:
     step_count: used to track time, which is necessary for updating scheduled_times.
     scheduled_times: for each job, it specifies the time at which each operation was scheduled.
         Note that -1 means the operation has not been scheduled yet.
-    key: not used inside the environment, but may be used e.g. in wrappers.
+    key: random key used for auto-reset.
     """
 
     ops_machine_ids: chex.Array  # (num_jobs, max_num_ops)
@@ -79,4 +78,4 @@ class State:
     action_mask: Optional[chex.Array]  # (num_machines, num_jobs + 1)
     step_count: chex.Numeric  # ()
     scheduled_times: chex.Array  # (num_jobs, max_num_ops)
-    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
+    key: chex.PRNGKey  # (2,)

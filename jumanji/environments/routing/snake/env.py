@@ -61,8 +61,6 @@ class Snake(Environment[State]):
         - if an invalid action is taken, the snake exits the grid or bumps into itself.
 
     - state: `State`
-        - key: jax array (uint32) of shape (2,)
-            random key used to sample a new fruit when one is eaten.
         - body: jax array (bool) of shape (num_rows, num_cols)
             array indicating the snake's body cells.
         - body_state: jax array (int32) of shape (num_rows, num_cols)
@@ -79,6 +77,8 @@ class Snake(Environment[State]):
             current number of steps in the episode.
         - action_mask: jax array (bool) of shape (4,)
             array specifying which directions the snake can move in from its current position.
+        - key: jax array (uint32) of shape (2,)
+            random key used to sample a new fruit when one is eaten and used for auto-reset.
 
     ```python
     from jumanji.environments import Snake

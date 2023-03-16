@@ -22,7 +22,6 @@ else:
     from chex import dataclass
 
 import chex
-import jax
 import jax.numpy as jnp
 
 from jumanji.environments.packing.bin_pack.space import Space
@@ -118,6 +117,7 @@ class State:
     action_mask: array of booleans that indicate the valid actions, i.e. EMSs and items that can
         be chosen.
     sorted_ems_indexes: EMS indexes that are sorted by decreasing volume order.
+    key: random key used for auto-reset.
     """
 
     container: Container  # leaves of shape ()
@@ -129,7 +129,7 @@ class State:
     items_location: Location  # leaves of shape (max_num_items,)
     action_mask: Optional[chex.Array]  # (obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # (max_num_ems,)
-    key: chex.Array = jax.random.PRNGKey(0)  # (2,)
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):

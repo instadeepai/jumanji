@@ -125,14 +125,16 @@ class Knapsack(Environment[State]):
             state: the new state of the environment.
             timestep: the first timestep returned by the environment.
         """
+        key, sample_key = jax.random.split(key)
         weights, values = jax.random.uniform(
-            key, (2, self.num_items), minval=0, maxval=1
+            sample_key, (2, self.num_items), minval=0, maxval=1
         )
         state = State(
             weights=weights,
             values=values,
             packed_items=jnp.zeros(self.num_items, dtype=bool),
             remaining_budget=jnp.array(self.total_budget, float),
+            key=key,
         )
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
@@ -276,6 +278,7 @@ class Knapsack(Environment[State]):
             values=state.values,
             packed_items=state.packed_items.at[action].set(True),
             remaining_budget=state.remaining_budget - state.weights[action],
+            key=state.key,
         )
 
     def _state_to_observation(self, state: State) -> Observation:
