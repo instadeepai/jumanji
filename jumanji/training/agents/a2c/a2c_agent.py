@@ -174,6 +174,8 @@ class A2CAgent(Agent):
             advantage=jnp.mean(advantage),
             value=jnp.mean(value),
         )
+        if data.extras:
+            metrics.update(data.extras)
         return total_loss, (acting_state, metrics)
 
     def make_policy(
