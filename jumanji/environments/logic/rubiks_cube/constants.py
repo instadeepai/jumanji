@@ -14,7 +14,6 @@
 
 from enum import Enum
 
-DEFAULT_CUBE_SIZE: int = 3
 DEFAULT_STICKER_COLORS = ["white", "green", "red", "blue", "orange", "yellow"]
 
 

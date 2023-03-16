@@ -16,7 +16,7 @@ import chex
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.logic.rubiks_cube.constants import DEFAULT_CUBE_SIZE, Face
+from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
 from jumanji.environments.logic.rubiks_cube.utils import make_solved_cube
 
@@ -24,15 +24,13 @@ from jumanji.environments.logic.rubiks_cube.utils import make_solved_cube
 @pytest.fixture
 def solved_cube() -> chex.Array:
     """Fixture for a solved cube"""
-    return make_solved_cube(cube_size=DEFAULT_CUBE_SIZE)
+    return make_solved_cube(cube_size=3)
 
 
 @pytest.fixture
 def differently_stickered_cube() -> chex.Array:
     """Fixture for a cube with all different stickers"""
-    return jnp.arange(
-        len(Face) * DEFAULT_CUBE_SIZE * DEFAULT_CUBE_SIZE, dtype=jnp.int8
-    ).reshape(len(Face), DEFAULT_CUBE_SIZE, DEFAULT_CUBE_SIZE)
+    return jnp.arange(len(Face) * 3 * 3, dtype=jnp.int8).reshape(len(Face), 3, 3)
 
 
 @pytest.fixture
@@ -76,6 +74,6 @@ def expected_scramble_result() -> chex.Array:
 
 
 @pytest.fixture
-def rubiks_cube_env() -> RubiksCube:
-    """Instantiates a default RubiksCube environment."""
-    return RubiksCube(cube_size=DEFAULT_CUBE_SIZE)
+def rubiks_cube() -> RubiksCube:
+    """Instantiates a `RubiksCube` environment with 10 scrambles on reset."""
+    return RubiksCube(num_scrambles_on_reset=10)

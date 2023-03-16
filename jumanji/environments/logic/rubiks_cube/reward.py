@@ -13,24 +13,23 @@
 # limitations under the License.
 
 import abc
-from typing import Union
 
 import chex
 import jax.numpy as jnp
 
-from jumanji.environments.logic.rubiks_cube.types import FakeState, State
+from jumanji.environments.logic.rubiks_cube.types import State
 from jumanji.environments.logic.rubiks_cube.utils import is_solved
 
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, state: Union[State, FakeState]) -> chex.Array:
+    def __call__(self, state: State) -> chex.Array:
         """Call method for computing the reward given new state."""
 
 
 class SparseRewardFn(RewardFn):
     """A sparse reward function, returning +1 if cube is solved and otherwise 0."""
 
-    def __call__(self, state: Union[State, FakeState]) -> chex.Array:
+    def __call__(self, state: State) -> chex.Array:
         solved = is_solved(state.cube)
         return jnp.array(solved, float)

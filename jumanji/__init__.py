@@ -25,10 +25,12 @@ register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
 
 # RubiksCube - the standard Rubik's Cube puzzle with faces of size 3x3.
 register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
+# RubiksCube - an easier version of the standard Rubik's Cube puzzle with faces of size 3x3 yet only
+# 7 scrambles at reset time, making it technically maximum 7 actions away from the solution.
 register(
     id="RubiksCube-partly-scrambled-v0",
     entry_point="jumanji.environments:RubiksCube",
-    kwargs={"time_limit": 20, "num_scrambles_on_reset": 7},
+    kwargs={"cube_size": 3, "time_limit": 20, "num_scrambles_on_reset": 7},
 )
 
 # TODO: register BinPack

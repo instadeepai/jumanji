@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, List, Union
+from typing import Callable, List
 
 import chex
 from jax import numpy as jnp
 
 from jumanji.environments.logic.rubiks_cube.constants import CubeMovementAmount, Face
-from jumanji.environments.logic.rubiks_cube.types import Cube, FakeState, State
+from jumanji.environments.logic.rubiks_cube.types import Cube, State
 
 # Convention:
 # 0 = up face
@@ -51,7 +51,7 @@ def is_solved(cube: Cube) -> chex.Array:
     return jnp.array_equal(max_sticker_by_side, min_sticker_by_side)
 
 
-def sparse_reward_function(state: Union[State, FakeState]) -> chex.Array:
+def sparse_reward_function(state: State) -> chex.Array:
     solved = is_solved(state.cube)
     return jnp.array(solved, float)
 

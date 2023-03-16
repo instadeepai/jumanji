@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 import chex
 import jax.random
@@ -26,28 +26,30 @@ else:
 
 Cube: TypeAlias = Array
 
-# TODO: update types to be consistent with the other environments, including changing the
-#  observation to a NamedTuple.
-
 
 @dataclass
 class State:
-    cube: Cube
-    step_count: chex.Numeric
-    action_history: Array
-    key: chex.PRNGKey = jax.random.PRNGKey(0)
+    """
+    cube: 3D array whose cells contain the index of the corresponding colour of the sticker in the
+        scramble.
+    step_count: specifies how many timesteps have elapsed since environment reset.
+    action_history: array that indicates the entire history of applied moves (including those taken
+        on scrambling the cube in the environment reset).
+    key: random key used for seeding the sampling for scrambling on reset.
+    """
+
+    cube: Cube  # (6, cube_size, cube_size)
+    step_count: chex.Numeric  # ()
+    action_history: Array  # (num_scrambles_on_reset + time_limit, 3)
+    key: chex.PRNGKey = jax.random.PRNGKey(0)  # (2,)
 
 
-@dataclass
-class FakeState:
-    """Dummy class for storing just the cube and step count of a state
-    (for testing only). Equivalent to observation."""
+class Observation(NamedTuple):
+    """
+    cube: 3D array whose cells contain the index of the corresponding colour of the sticker in the
+        scramble.
+    step_count: specifies how many timesteps have elapsed since environment reset.
+    """
 
-    cube: Cube
-    step_count: chex.Numeric
-
-
-@dataclass
-class Observation:
-    cube: Cube
-    step_count: chex.Numeric
+    cube: Cube  # (6, cube_size, cube_size)
+    step_count: chex.Numeric  # ()

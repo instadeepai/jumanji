@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence
+from typing import Callable, Sequence
 
 import chex
 import haiku as hk
@@ -43,21 +43,18 @@ def make_actor_critic_networks_rubiks_cube(
         action_spec_num_values=action_spec_num_values
     )
     time_limit = rubiks_cube.time_limit
-    policy_network = make_network_rubiks_cube(
+    policy_network = make_actor_network(
         cube_embed_dim=cube_embed_dim,
         time_limit=time_limit,
         step_count_embed_dim=step_count_embed_dim,
         dense_layer_dims=dense_layer_dims,
         num_actions=num_actions,
-        critic=False,
     )
-    value_network = make_network_rubiks_cube(
+    value_network = make_critic_network(
         cube_embed_dim=cube_embed_dim,
         time_limit=time_limit,
         step_count_embed_dim=step_count_embed_dim,
         dense_layer_dims=dense_layer_dims,
-        num_actions=num_actions,
-        critic=True,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -66,25 +63,68 @@ def make_actor_critic_networks_rubiks_cube(
     )
 
 
-def make_network_rubiks_cube(
+def make_torso_network_fn(
+    cube_embed_dim: int,
+    time_limit: int,
+    step_count_embed_dim: int,
+) -> Callable[[Observation], chex.Array]:
+    def torso_network_fn(observation: Observation) -> chex.Array:
+        # Cube embedding
+        cube_embedder = hk.Embed(vocab_size=len(Face), embed_dim=cube_embed_dim)
+        cube_embedding = cube_embedder(observation.cube).reshape(
+            *observation.cube.shape[:-3], -1
+        )
+
+        # Step count embedding
+        step_count_embedder = hk.Linear(step_count_embed_dim)
+        step_count_embedding = step_count_embedder(
+            observation.step_count[:, None] / time_limit
+        )
+
+        embedding = jnp.concatenate([cube_embedding, step_count_embedding], axis=-1)
+        return embedding
+
+    return torso_network_fn
+
+
+def make_actor_network(
     cube_embed_dim: int,
     time_limit: int,
     step_count_embed_dim: int,
     dense_layer_dims: Sequence[int],
     num_actions: int,
-    critic: bool,
 ) -> FeedForwardNetwork:
+    torso_network_fn = make_torso_network_fn(
+        cube_embed_dim=cube_embed_dim,
+        time_limit=time_limit,
+        step_count_embed_dim=step_count_embed_dim,
+    )
+
     def network_fn(observation: Observation) -> chex.Array:
-        cube_embedder = hk.Embed(vocab_size=len(Face), embed_dim=cube_embed_dim)
-        x = cube_embedder(observation.cube).reshape(observation.cube.shape[0], -1)
-        step_count_embedder = hk.Linear(step_count_embed_dim)
-        y = step_count_embedder(observation.step_count[:, None] / time_limit)
-        dense_layers = hk.nets.MLP(dense_layer_dims)
-        output = dense_layers(jnp.concatenate([x, y], axis=-1))
-        if critic:
-            return jnp.squeeze(hk.Linear(1)(output), axis=-1)
-        else:
-            return hk.Linear(num_actions)(output)
+        embedding = torso_network_fn(observation)
+        logits = hk.nets.MLP((*dense_layer_dims, num_actions))(embedding)
+        return logits
+
+    init, apply = hk.without_apply_rng(hk.transform(network_fn))
+    return FeedForwardNetwork(init=init, apply=apply)
+
+
+def make_critic_network(
+    cube_embed_dim: int,
+    time_limit: int,
+    step_count_embed_dim: int,
+    dense_layer_dims: Sequence[int],
+) -> FeedForwardNetwork:
+    torso_network_fn = make_torso_network_fn(
+        cube_embed_dim=cube_embed_dim,
+        time_limit=time_limit,
+        step_count_embed_dim=step_count_embed_dim,
+    )
+
+    def network_fn(observation: Observation) -> chex.Array:
+        embedding = torso_network_fn(observation)
+        value = hk.nets.MLP((*dense_layer_dims, 1))(embedding)
+        return jnp.squeeze(value, axis=-1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

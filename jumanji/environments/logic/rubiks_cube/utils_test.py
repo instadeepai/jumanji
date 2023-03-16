@@ -18,9 +18,9 @@ import chex
 import pytest
 from jax import numpy as jnp
 
-from jumanji.environments.logic.rubiks_cube.constants import DEFAULT_CUBE_SIZE, Face
+from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.reward import SparseRewardFn
-from jumanji.environments.logic.rubiks_cube.types import Cube, FakeState
+from jumanji.environments.logic.rubiks_cube.types import Cube, State
 from jumanji.environments.logic.rubiks_cube.utils import (
     CubeMovementAmount,
     generate_all_moves,
@@ -112,9 +112,13 @@ def test_solved_reward(
     solved_cube: chex.Array, differently_stickered_cube: chex.Array
 ) -> None:
     """Test that the cube fixtures have the expected rewards"""
-    solved_state = FakeState(cube=solved_cube, step_count=jnp.array(0, jnp.int32))
-    differently_stickered_state = FakeState(
-        cube=differently_stickered_cube, step_count=jnp.array(0, jnp.int32)
+    solved_state = State(
+        cube=solved_cube, step_count=jnp.array(0, jnp.int32), action_history=None
+    )
+    differently_stickered_state = State(
+        cube=differently_stickered_cube,
+        step_count=jnp.array(0, jnp.int32),
+        action_history=None,
     )
     assert jnp.equal(SparseRewardFn()(solved_state), 1.0)
     assert jnp.equal(SparseRewardFn()(differently_stickered_state), 0.0)
@@ -123,8 +127,8 @@ def test_solved_reward(
 @pytest.mark.parametrize(
     "move, move_is_face_turn",
     zip(
-        generate_all_moves(cube_size=DEFAULT_CUBE_SIZE),
-        is_face_turn(cube_size=DEFAULT_CUBE_SIZE),
+        generate_all_moves(cube_size=3),
+        is_face_turn(cube_size=3),
     ),
 )
 def test_moves_nontrivial(
@@ -135,8 +139,8 @@ def test_moves_nontrivial(
 ) -> None:
     """Test that all moves leave the cube in a non-solved state"""
     move_solved_cube = move(solved_cube)
-    move_solved_state = FakeState(
-        cube=move_solved_cube, step_count=jnp.array(0, jnp.int32)
+    move_solved_state = State(
+        cube=move_solved_cube, step_count=jnp.array(0, jnp.int32), action_history=None
     )
     assert jnp.equal(SparseRewardFn()(move_solved_state), 0.0)
     assert (

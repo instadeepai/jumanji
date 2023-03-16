@@ -13,13 +13,12 @@
 # limitations under the License.
 
 import chex
+import jax
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
 import pytest_mock
-from jax import jit
-from jax import numpy as jnp
-from jax import random, vmap
 
 from jumanji.environments.logic.rubiks_cube.constants import CubeMovementAmount, Face
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
@@ -30,15 +29,15 @@ from jumanji.types import TimeStep
 
 
 @pytest.mark.parametrize("cube_size", [2, 3, 4, 5])
-def test_flatten(cube_size: int) -> None:
-    """Test that flattening and unflattening actions are inverse to each other"""
+def test_flatten_action(cube_size: int) -> None:
+    """Test that flattening and unflattening actions are inverse to each other."""
     env = RubiksCube(cube_size=cube_size)
     flat_actions = jnp.arange(
-        len(Face) * (cube_size // 2) * len(CubeMovementAmount), dtype=jnp.int16
+        len(Face) * (cube_size // 2) * len(CubeMovementAmount), dtype=jnp.int32
     )
-    faces = jnp.arange(len(Face), dtype=jnp.int16)
-    depths = jnp.arange(cube_size // 2, dtype=jnp.int16)
-    amounts = jnp.arange(len(CubeMovementAmount), dtype=jnp.int16)
+    faces = jnp.arange(len(Face), dtype=jnp.int32)
+    depths = jnp.arange(cube_size // 2, dtype=jnp.int32)
+    amounts = jnp.arange(len(CubeMovementAmount), dtype=jnp.int32)
     unflat_actions = jnp.stack(
         [
             jnp.repeat(faces, len(CubeMovementAmount) * (cube_size // 2)),
@@ -53,10 +52,11 @@ def test_flatten(cube_size: int) -> None:
 
 
 def test_scramble_on_reset(
-    rubiks_cube_env: RubiksCube, expected_scramble_result: chex.Array
+    rubiks_cube: RubiksCube, expected_scramble_result: chex.Array
 ) -> None:
     """Test that the environment reset is performing correctly when given a particular scramble
-    (chosen manually)"""
+    (chosen manually).
+    """
     amount_to_index = {
         CubeMovementAmount.CLOCKWISE: 0,
         CubeMovementAmount.ANTI_CLOCKWISE: 1,
@@ -78,39 +78,39 @@ def test_scramble_on_reset(
             [Face.UP.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
             [Face.DOWN.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
         ],
-        dtype=jnp.int16,
+        dtype=jnp.int32,
     )
     flat_sequence = jnp.array(
-        [0, 14, 16, 2, 10, 6, 3, 7, 13, 11, 4, 0, 15], dtype=jnp.int16
+        [0, 14, 16, 2, 10, 6, 3, 7, 13, 11, 4, 0, 15], dtype=jnp.int32
     )
     assert jnp.array_equal(
         unflattened_sequence.transpose(),
-        rubiks_cube_env._unflatten_action(action=flat_sequence),
+        rubiks_cube._unflatten_action(action=flat_sequence),
     )
     assert jnp.array_equal(
-        flat_sequence, vmap(rubiks_cube_env._flatten_action)(unflattened_sequence)
+        flat_sequence, jax.vmap(rubiks_cube._flatten_action)(unflattened_sequence)
     )
-    cube = rubiks_cube_env._scramble_solved_cube(flat_actions_in_scramble=flat_sequence)
+    cube = rubiks_cube._scramble_solved_cube(flat_actions_in_scramble=flat_sequence)
     assert jnp.array_equal(expected_scramble_result, cube)
 
 
-def test_rubiks_cube_env_reset(rubiks_cube_env: RubiksCube) -> None:
+def test_rubiks_cube__reset(rubiks_cube: RubiksCube) -> None:
     """Validates the jitted reset of the environment."""
-    reset_fn = jit(rubiks_cube_env.reset)
-    key = random.PRNGKey(0)
+    chex.clear_trace_counter()
+    reset_fn = jax.jit(chex.assert_max_traces(rubiks_cube.reset, n=1))
+    key = jax.random.PRNGKey(0)
+    _ = reset_fn(key)
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.step_count == 0
-    assert state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
-        3,
-    )
-    action_history_index = rubiks_cube_env.num_scrambles_on_reset
+    expected_shape = (rubiks_cube.num_scrambles_on_reset + rubiks_cube.time_limit, 3)
+    assert state.action_history.shape == expected_shape
+    action_history_index = rubiks_cube.num_scrambles_on_reset
     assert jnp.all(jnp.equal(state.action_history[action_history_index:], 0))
     assert state.action_history.min() >= 0
     assert state.action_history[:, 0].max() < len(Face)
-    assert state.action_history[:, 1].max() < rubiks_cube_env.cube_size // 2
+    assert state.action_history[:, 1].max() < rubiks_cube.cube_size // 2
     assert state.action_history[:, 2].max() < len(CubeMovementAmount)
     assert jnp.array_equal(state.cube, timestep.observation.cube)
     assert timestep.observation.step_count == 0
@@ -119,14 +119,13 @@ def test_rubiks_cube_env_reset(rubiks_cube_env: RubiksCube) -> None:
     assert_is_jax_array_tree(state)
 
 
-def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
+def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
-    step_fn = chex.assert_max_traces(rubiks_cube_env.step, n=2)
-    step_fn = jit(step_fn)
-    key = random.PRNGKey(0)
-    state, timestep = jit(rubiks_cube_env.reset)(key)
-    action = rubiks_cube_env.action_spec().generate_value()
+    step_fn = jax.jit(chex.assert_max_traces(rubiks_cube.step, n=1))
+    key = jax.random.PRNGKey(0)
+    state, timestep = rubiks_cube.reset(key)
+    action = rubiks_cube.action_spec().generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -134,12 +133,10 @@ def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
     assert next_state.step_count == 1
     assert next_timestep.observation.step_count == 1
     assert jnp.array_equal(next_state.cube, next_timestep.observation.cube)
-    assert next_state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
-        3,
-    )
-    action_history_index = rubiks_cube_env.num_scrambles_on_reset + 1
-    assert jnp.all(jnp.equal(next_state.action_history[action_history_index:], 0))
+    expected_shape = (rubiks_cube.num_scrambles_on_reset + rubiks_cube.time_limit, 3)
+    assert next_state.action_history.shape == expected_shape
+    action_history_index = rubiks_cube.num_scrambles_on_reset + 1
+    assert jnp.all(next_state.action_history[action_history_index:] == 0)
 
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
@@ -153,42 +150,40 @@ def test_rubiks_cube_env_step(rubiks_cube_env: RubiksCube) -> None:
     assert next_next_state.step_count == 2
     assert next_next_timestep.observation.step_count == 2
     assert jnp.array_equal(next_next_state.cube, next_next_timestep.observation.cube)
-    assert next_next_state.action_history.shape == (
-        rubiks_cube_env.num_scrambles_on_reset + rubiks_cube_env.time_limit,
-        3,
-    )
-    action_history_index = rubiks_cube_env.num_scrambles_on_reset + 2
-    assert jnp.all(jnp.equal(next_next_state.action_history[action_history_index:], 0))
+    assert next_next_state.action_history.shape == expected_shape
+    action_history_index = rubiks_cube.num_scrambles_on_reset + 2
+    assert jnp.all(next_next_state.action_history[action_history_index:] == 0)
 
 
 @pytest.mark.parametrize("cube_size", [3, 4, 5])
-def test_rubiks_cube_env_does_not_smoke(cube_size: int) -> None:
+def test_rubiks_cube__does_not_smoke(cube_size: int) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(env=RubiksCube(cube_size=cube_size, time_limit=10))
+    env = RubiksCube(cube_size=cube_size, time_limit=10, num_scrambles_on_reset=5)
+    check_env_does_not_smoke(env)
 
 
-def test_rubiks_cube_env_render(
-    monkeypatch: pytest.MonkeyPatch, rubiks_cube_env: RubiksCube
+def test_rubiks_cube__render(
+    monkeypatch: pytest.MonkeyPatch, rubiks_cube: RubiksCube
 ) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
-    state, timestep = jit(rubiks_cube_env.reset)(random.PRNGKey(0))
-    rubiks_cube_env.render(state)
-    rubiks_cube_env.close()
-    action = rubiks_cube_env.action_spec().generate_value()
-    state, timestep = jit(rubiks_cube_env.step)(state, action)
-    rubiks_cube_env.render(state)
-    rubiks_cube_env.close()
+    state, timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
+    rubiks_cube.render(state)
+    rubiks_cube.close()
+    action = rubiks_cube.action_spec().generate_value()
+    state, timestep = rubiks_cube.step(state, action)
+    rubiks_cube.render(state)
+    rubiks_cube.close()
 
 
 @pytest.mark.parametrize("time_limit", [3, 4, 5])
-def test_rubiks_cube_env_done(time_limit: int) -> None:
-    """Test that the done signal is sent correctly"""
+def test_rubiks_cube__done(time_limit: int) -> None:
+    """Test that the done signal is sent correctly."""
     env = RubiksCube(time_limit=time_limit)
-    state, timestep = jit(env.reset)(random.PRNGKey(0))
+    state, timestep = env.reset(jax.random.PRNGKey(0))
     action = env.action_spec().generate_value()
     episode_length = 0
-    step_fn = jit(env.step)
+    step_fn = jax.jit(env.step)
     while not timestep.last():
         state, timestep = step_fn(state, action)
         episode_length += 1
@@ -198,10 +193,10 @@ def test_rubiks_cube_env_done(time_limit: int) -> None:
     assert episode_length == time_limit
 
 
-def test_rubiks_cube_animation(
-    rubiks_cube_env: RubiksCube, mocker: pytest_mock.MockerFixture
+def test_rubiks_cube__animate(
+    rubiks_cube: RubiksCube, mocker: pytest_mock.MockerFixture
 ) -> None:
-    """Check that the animation method creates the animation correctly."""
+    """Check that the `animate` method creates the animation correctly."""
     states = mocker.MagicMock()
-    animation = rubiks_cube_env.animate(states)
+    animation = rubiks_cube.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)

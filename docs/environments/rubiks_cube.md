@@ -9,7 +9,7 @@ We provide here a Jax JIT-able implementation of the _Rubik's cube_. The environ
 ## Observation
 The observation given to the agent gives a view of the current state of the cube,
 - `cube`: jax array (int8) of shape `(6, cube_size, cube_size)` whose values are in `[0, 1, 2, 3, 4, 5]`
-  (corresponding to the different sticker colours). The indices of the array specify the sticker position - first
+  (corresponding to the different sticker colors). The indices of the array specify the sticker position - first
 the face (in the order _up_, _front_, _right_, _back_, _left_, _down_) and then the row and column.
 Note that the orientation of each face is as follows:
   - UP: LEFT face on the left and BACK face pointing up
@@ -36,4 +36,8 @@ The reward function is configurable, but by default is the fully sparse reward g
 The episode terminates if either the cube is solved or a configurable horizon (by default `200`) is reached.
 
 ## Registered Versions 📖
-- `RubiksCube-v0`, the classic [puzzle](https://en.wikipedia.org/wiki/Rubik%27s_Cube).
+- `RubiksCube-v0`, the standard Rubik's Cube [puzzle](https://en.wikipedia.org/wiki/Rubik%27s_Cube)
+with faces of size 3x3.
+- `RubiksCube-partly-scrambled-v0`, an easier version of the standard Rubik's Cube puzzle with faces
+of size 3x3 yet only 7 scrambles at reset time, making it technically maximum 7 actions away from
+the solution.
