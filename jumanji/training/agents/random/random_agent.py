@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import chex
 import jax
@@ -42,14 +42,17 @@ class RandomAgent(Agent):
         return None
 
     def run_epoch(self, training_state: TrainingState) -> Tuple[TrainingState, Dict]:
-        acting_state = self.random_rollout(
+        acting_state, extras = self.random_rollout(
             acting_state=training_state.acting_state,
         )
         training_state = TrainingState(
             params_state=None,
             acting_state=acting_state,
         )
-        return training_state, {}
+        metrics = {}
+        if extras:
+            metrics.update(extras)
+        return training_state, metrics
 
     def make_policy(
         self,
@@ -62,7 +65,7 @@ class RandomAgent(Agent):
     def random_rollout(
         self,
         acting_state: ActingState,
-    ) -> ActingState:
+    ) -> Tuple[ActingState, Optional[Dict]]:
         """Rollout for training purposes.
         Returns:
             shape (n_steps, batch_size_per_device, *)
@@ -71,7 +74,7 @@ class RandomAgent(Agent):
 
         def run_one_step(
             acting_state: ActingState, key: chex.PRNGKey
-        ) -> Tuple[ActingState, None]:
+        ) -> Tuple[ActingState, Optional[Dict]]:
             action = random_policy(acting_state.timestep.observation, key)
             next_env_state, next_timestep = self.env.step(acting_state.state, action)
             acting_state = ActingState(
@@ -83,10 +86,11 @@ class RandomAgent(Agent):
                 env_step_count=acting_state.env_step_count
                 + jax.lax.psum(self.batch_size_per_device, "devices"),
             )
-            return acting_state, None
+            extras = next_timestep.extras
+            return acting_state, extras
 
         acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
             (self.n_steps, -1)
         )
-        acting_state, _ = jax.lax.scan(run_one_step, acting_state, acting_keys)
-        return acting_state
+        acting_state, extras = jax.lax.scan(run_one_step, acting_state, acting_keys)
+        return acting_state, extras

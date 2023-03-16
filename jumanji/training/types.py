@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional
 
 import chex
 import haiku as hk
@@ -31,6 +31,7 @@ class Transition(NamedTuple):
     next_observation: chex.ArrayTree
     log_prob: chex.ArrayTree
     logits: chex.ArrayTree
+    extras: Optional[Dict]
 
 
 class ActorCriticParams(NamedTuple):

@@ -247,6 +247,7 @@ class A2CAgent(Agent):
                 next_observation=next_timestep.observation,
                 log_prob=log_prob,
                 logits=logits,
+                extras=next_timestep.extras,
             )
 
             return acting_state, transition
