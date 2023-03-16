@@ -21,15 +21,15 @@
 
 
 <p float="left" align="center">
-  <img src="docs/env_anim/connector.gif" alt="Snake" width="30%" />
-  <img src="docs/env_anim/snake.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/cleaner.gif" alt="2048" width="30%" />
-  <img src="docs/env_anim/job_shop.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/connector.gif" alt="Connector" width="30%" />
+  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
+  <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="30%" />
+  <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="30%" />
   <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/cvrp.gif" alt="2048" width="30%" />
-  <img src="docs/env_anim/rubiks_cube.gif" alt="Snake" width="30%" />
-  <img src="docs/env_anim/game_2048.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/minesweeper.gif" alt="2048" width="30%" />
+  <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="30%" />
+  <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
+  <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
+  <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
 </p>
 
 
