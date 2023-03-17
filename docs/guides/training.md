@@ -1,8 +1,8 @@
 # Training
 
-Jumanji provides two example agents to get you started with training on Jumanji's environments:
-- Random agent,
-- A2C agent.
+Jumanji provides two example agents to get you started with training on Jumanji environments:
+- Random agent
+- A2C agent
 
 ## Configuration
 
@@ -20,7 +20,7 @@ Here,
 as an iteration.
 - `num_learner_steps_per_epoch` is the number of learner steps that happen in each epoch.
 After every learner step, the A2C agent's policy is updated.
-- `n_steps` is the number of environment steps.
+- `n_steps` is the sequence length (consecutive environment steps in a batch).
 - `total_batch_size` is the number of environments that are run in parallel.
 
 So in the above example,
@@ -33,5 +33,5 @@ using the updated policy.
 
 ## Evaluation
 Two types of evaluation are recorded:
-- Stochastic evaluation,
-- Greedy evaluation.
+- Stochastic evaluation (same policy used during training)
+- Greedy evaluation (argmax over the action logits)
