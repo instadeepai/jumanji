@@ -1,0 +1,28 @@
+name: cvrp
+registered_version: CVRP-v1
+
+network:
+    transformer_num_blocks: 6
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+    mean_nodes_in_query: True
+
+training:
+    num_epochs: 500
+    num_learner_steps_per_epoch: 100
+    n_steps: 20
+    total_batch_size: 64
+
+evaluation:
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 1.0
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4

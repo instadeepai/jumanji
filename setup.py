@@ -18,7 +18,7 @@ from typing import List
 import setuptools
 from setuptools import setup
 
-__version__ = "0.1.6"
+__version__ = "0.2.0"
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,8 +42,8 @@ setup(
     long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
     long_description_content_type="text/markdown",
     keywords="reinforcement-learning python jax",
-    packages=setuptools.find_packages(exclude=["*testing"]),
-    python_requires=">=3.7",
+    packages=setuptools.find_packages(),
+    python_requires=">=3.8",
     install_requires=_parse_requirements(
         os.path.join(_CURRENT_DIR, "requirements", "requirements.txt")
     ),
@@ -51,14 +51,17 @@ setup(
         "dev": _parse_requirements(
             os.path.join(_CURRENT_DIR, "requirements", "requirements-dev.txt")
         ),
+        "train": _parse_requirements(
+            os.path.join(_CURRENT_DIR, "requirements", "requirements-train.txt")
+        ),
     },
+    package_data={"jumanji": ["py.typed"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",

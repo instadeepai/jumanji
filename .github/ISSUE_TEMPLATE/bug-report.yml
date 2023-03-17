@@ -42,7 +42,7 @@ body:
 - type: input
   attributes:
     label: What Jumanji version are you using?
-    placeholder: For example jumanji v0.1.1
+    placeholder: For example jumanji v0.2.0
 - type: input
   attributes:
     label: Which accelerator(s) are you using?

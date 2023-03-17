@@ -14,15 +14,21 @@
 
 import sys
 
-from jumanji.environments.combinatorial import binpack, cvrp, knapsack, routing, tsp
-from jumanji.environments.combinatorial.binpack.env import BinPack
-from jumanji.environments.combinatorial.cvrp.env import CVRP
-from jumanji.environments.combinatorial.knapsack.env import Knapsack
-from jumanji.environments.combinatorial.routing.env import Routing
-from jumanji.environments.combinatorial.tsp.env import TSP
-from jumanji.environments.games import connect4, snake
-from jumanji.environments.games.connect4.env import Connect4
-from jumanji.environments.games.snake.env import Snake
+from jumanji.environments.logic import game_2048, minesweeper, rubiks_cube
+from jumanji.environments.logic.game_2048.env import Game2048
+from jumanji.environments.logic.minesweeper import Minesweeper
+from jumanji.environments.logic.rubiks_cube import RubiksCube
+from jumanji.environments.packing import bin_pack, job_shop, knapsack
+from jumanji.environments.packing.bin_pack.env import BinPack
+from jumanji.environments.packing.job_shop.env import JobShop
+from jumanji.environments.packing.knapsack.env import Knapsack
+from jumanji.environments.routing import cleaner, connector, cvrp, maze, snake, tsp
+from jumanji.environments.routing.cleaner.env import Cleaner
+from jumanji.environments.routing.connector.env import Connector
+from jumanji.environments.routing.cvrp.env import CVRP
+from jumanji.environments.routing.maze.env import Maze
+from jumanji.environments.routing.snake.env import Snake
+from jumanji.environments.routing.tsp.env import TSP
 
 
 def is_colab() -> bool:

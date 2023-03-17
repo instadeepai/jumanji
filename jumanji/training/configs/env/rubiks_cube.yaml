@@ -1,0 +1,26 @@
+name: rubiks_cube
+registered_version: RubiksCube-partly-scrambled-v0
+
+network:
+    cube_embed_dim: 4
+    step_count_embed_dim: 4
+    dense_layer_dims: [256, 256]
+
+training:
+    num_epochs: 600
+    num_learner_steps_per_epoch: 500
+    n_steps: 10
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 3e-4

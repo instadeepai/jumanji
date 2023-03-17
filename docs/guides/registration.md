@@ -12,15 +12,15 @@ It can be used as follows:
 import jax
 import jumanji
 
-env = jumanji.make('Snake12-v0')
-key = jax.random.PRNGKey(1)
+env = jumanji.make('BinPack-v1')
+key = jax.random.PRNGKey(0)
 state, timestep = env.reset(key)
 ```
 
 The environment ID is composed of two parts, the environment name and its version.
 To get the full list of registered environments, you can use the `registered_environments` util.
 
-!!! warning
+⚠️ Warning
 
     Users can provide additional key-word arguments in the call to `jumanji.make(env_id, ...)`.
     These are then passed to the class constructor. Because they can be used to overwrite the intended configuration
@@ -46,15 +46,15 @@ register(
 )
 ```
 
-To successfully register your environment, make sure to provide the right path to your class constructor.
-The `kwargs` argument is there to configurate the environment and allow you to register scenarios with a specific set of arguments.
-The environment ID must respect the format `(env_name)-v(version)`, where the version number starts at `v0`.
+To successfully register your environment, make sure to provide the right path to your class
+constructor. The `kwargs` argument is there to configurate the environment and allow you to register
+scenarios with a specific set of arguments. The environment ID must respect the format
+`(EnvName)-v(version)`, where the version number starts at `v0`.
 
-For examples on how to register environments, please see our `__init__.py` file.
-
-!!! note ""
+For examples on how to register environments, please see our
+[jumanji/\_\_init\_\_.py](jumanji/__init__.py) file.
 
     Note that Jumanji doesn't allow users to overwrite the registration of an existing environment.
 
-To verify that your custom environment has been registered correctly,
-you can inspect the listing of registered environments using the `registered_environments` util.
+To verify that your custom environment has been registered correctly, you can inspect the listing
+of registered environments using the `registered_environments` util.

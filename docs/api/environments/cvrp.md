@@ -1,4 +1,4 @@
-::: jumanji.environments.combinatorial.cvrp.env.CVRP
+::: jumanji.environments.routing.cvrp.env.CVRP
     selection:
       members:
         - __init__
