@@ -435,6 +435,14 @@ class JobShop(Environment[State]):
         """
         return self._env_viewer.render(state)
 
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()
+
     def animate(
         self,
         states: Sequence[State],

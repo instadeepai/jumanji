@@ -326,6 +326,14 @@ class Connector(Environment[State]):
         grids = [state.grid for state in states]
         return self._renderer.animate(grids, interval, save_path)
 
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._renderer.close()
+
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
 

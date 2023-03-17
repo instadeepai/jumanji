@@ -342,3 +342,11 @@ class Maze(Environment[State]):
             animation.FuncAnimation: the animation object that was created.
         """
         return self._env_viewer.animate(states, interval, save_path)
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()

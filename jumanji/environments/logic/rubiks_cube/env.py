@@ -384,7 +384,9 @@ class RubiksCube(Environment[State]):
             fig = plt.figure(self.figure_name)
             ax = fig.get_axes()
         else:
-            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
+            fig, ax = plt.subplots(
+                nrows=3, ncols=2, figsize=self.figure_size, num=self.figure_name
+            )
             fig.suptitle(self.figure_name)
             ax = ax.flatten()
             plt.tight_layout()
@@ -428,8 +430,7 @@ class RubiksCube(Environment[State]):
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 0.5 seconds.
-            fig.canvas.start_event_loop(0.5)
+            fig.canvas.flush_events()
 
     def _clear_display(self) -> None:
         if jumanji.environments.is_colab():

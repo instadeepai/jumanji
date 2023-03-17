@@ -226,8 +226,7 @@ class CVRPViewer:
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 2 seconds.
-            fig.canvas.start_event_loop(2.0)
+            fig.canvas.flush_events()
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()

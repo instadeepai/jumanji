@@ -184,20 +184,19 @@ class ConnectorViewer:
         if plt.isinteractive():
             # Required to update render when using Jupyter Notebook.
             fig.canvas.draw()
-            if jumanji.environments.is_colab():
+            if jumanji.environments.is_notebook():
                 plt.show(self._name)
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for .5 seconds.
-            fig.canvas.start_event_loop(0.5)
+            fig.canvas.flush_events()
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()
         return np.asarray(fig.canvas.buffer_rgba())
 
     def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
+        if jumanji.environments.is_notebook():
             import IPython.display
 
             IPython.display.clear_output(True)

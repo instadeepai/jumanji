@@ -528,8 +528,7 @@ class Snake(Environment[State]):
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 0.5 seconds.
-            fig.canvas.start_event_loop(0.5)
+            fig.canvas.flush_events()
 
     def _clear_display(self) -> None:
         if jumanji.environments.is_colab():

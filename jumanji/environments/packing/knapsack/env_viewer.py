@@ -74,7 +74,6 @@ class KnapsackViewer:
             f"Total value: {round(float(total_value), 2):.2f}. "
             f"Budget used: {round(float(budget_used), 2):.2f}/{self._total_budget}."
         )
-        plt.show()
 
     def animate(
         self,
@@ -125,15 +124,16 @@ class KnapsackViewer:
             IPython.display.clear_output(True)
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        if recreate:
-            fig.tight_layout()
+        exists = plt.fignum_exists(self._name)
+        if exists:
+            fig = plt.figure(self._name)
+            # ax = fig.add_subplot()
+            ax = fig.get_axes()[0]
+        else:
+            fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
             if not plt.isinteractive():
                 fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
+            ax = fig.add_subplot()
         return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
@@ -153,8 +153,7 @@ class KnapsackViewer:
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 2 seconds.
-            fig.canvas.start_event_loop(2.0)
+            fig.canvas.flush_events()
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()

@@ -340,7 +340,6 @@ class Minesweeper(Environment[State]):
             fig = plt.figure(self.figure_name, figsize=self.figure_size)
             plt.suptitle(self.figure_name)
             plt.tight_layout()
-            plt.axis("off")
             if not plt.isinteractive():
                 fig.show()
             ax = fig.add_subplot()
@@ -397,8 +396,7 @@ class Minesweeper(Environment[State]):
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for 0.5 seconds.
-            fig.canvas.start_event_loop(0.5)
+            fig.canvas.flush_events()
 
     def _clear_display(self) -> None:
         if jumanji.environments.is_colab():

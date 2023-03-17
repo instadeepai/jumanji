@@ -146,8 +146,7 @@ class MazeViewer:
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            # Block for .5 seconds.
-            fig.canvas.start_event_loop(0.5)
+            fig.canvas.flush_events()
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()

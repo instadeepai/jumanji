@@ -287,6 +287,14 @@ class Cleaner(Environment[State]):
         """
         return self._env_viewer.animate(states, interval, save_path)
 
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()
+
     def _compute_reward(self, prev_state: State, state: State) -> chex.Array:
         """Compute the reward by counting the number of tiles which changed from previous state.
 

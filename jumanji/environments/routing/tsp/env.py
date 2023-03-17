@@ -256,6 +256,14 @@ class TSP(Environment[State]):
         """
         return self._env_viewer.animate(states, interval, save_path)
 
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        Environments will automatically :meth:`close()` themselves when
+        garbage collected or when the program exits.
+        """
+        self._env_viewer.close()
+
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """
         Updates the state of the environment.

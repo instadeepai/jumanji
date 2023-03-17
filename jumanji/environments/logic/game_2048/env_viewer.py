@@ -72,6 +72,7 @@ class Game2048Viewer:
             save_path: the path where the image should be saved. If it is None, the plot
             will not be stored.
         """
+        self._clear_display()
         # Get the figure and axes for the game board.
         fig, ax = self.get_fig_ax()
         # Set the figure title to display the current score.
@@ -146,7 +147,6 @@ class Game2048Viewer:
                 facecolor=self.COLORS["bg"],
             )
             plt.tight_layout()
-            plt.axis("off")
             if not plt.isinteractive():
                 fig.show()
             ax = fig.add_subplot()
