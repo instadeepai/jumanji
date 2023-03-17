@@ -21,7 +21,7 @@ jobs:
         with:
             python-version: "${{ matrix.python-version }}"
       - name: Install python dependencies 🔧
-        run: pip install .[dev]
+        run: pip install .[dev,train]
       - name: Run linters 🖌️
         run: pre-commit run --all-files --verbose
       - name: Run tests 🧪
