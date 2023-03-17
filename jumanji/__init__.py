@@ -11,181 +11,69 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from jumanji.env import Environment
 from jumanji.registration import make, register, registered_environments
 
-## Environment Registration
+"""Environment Registration"""
 
+###
+# Logic Environments
+###
 
-# Snake
+# Game2048 - the game of 2048 with the default board size of 4x4.
+register(id="Game2048-v0", entry_point="jumanji.environments:Game2048")
+
+# Minesweeper on a board of size 10x10 with 10 mines.
+register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
+
+# RubiksCube - the standard Rubik's Cube puzzle with faces of size 3x3.
+register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
+# RubiksCube - an easier version of the standard Rubik's Cube puzzle with faces of size 3x3 yet only
+# 7 scrambles at reset time, making it technically maximum 7 actions away from the solution.
 register(
-    id="Snake-6x6-v0",
-    entry_point="jumanji.environments:Snake",
-    kwargs={"n_rows": 6, "n_cols": 6, "time_limit": 500},
-)
-
-register(
-    id="Snake-12x12-v0",
-    entry_point="jumanji.environments:Snake",
-    kwargs={"n_rows": 12, "n_cols": 12, "time_limit": 5000},
-)
-
-
-# TSP
-register(
-    id="TSP50-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 50},
-)
-
-register(
-    id="TSP100-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 100},
-)
-
-register(
-    id="TSP150-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 150},
-)
-
-register(
-    id="TSP200-v0",
-    entry_point="jumanji.environments:TSP",
-    kwargs={"problem_size": 200},
+    id="RubiksCube-partly-scrambled-v0",
+    entry_point="jumanji.environments:RubiksCube",
+    kwargs={"cube_size": 3, "time_limit": 20, "num_scrambles_on_reset": 7},
 )
 
 
-# Knapsack
-register(
-    id="Knapsack50-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 50, "total_budget": 25},
-)
+###
+# Packing Environments
+###
 
-register(
-    id="Knapsack100-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 100, "total_budget": 25},
-)
+# 3D bin-packing problem with 30 randomly generated items maximum, 100 EMSs maximum and the 70
+# largest ones are given in the observation.
+register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
 
-register(
-    id="Knapsack200-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 200, "total_budget": 25},
-)
+# Job-shop scheduling problem with 20 jobs, 10 machines, at most
+# 8 operations per job, and a max operation duration of 6 timesteps.
+register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 
-register(
-    id="Knapsack250-v0",
-    entry_point="jumanji.environments:Knapsack",
-    kwargs={"problem_size": 250, "total_budget": 25},
-)
+# Knapsack problem with 50 randomly generated items, a total budget
+# of 12.5, and a dense reward function.
+register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
 
-# BinPack
+###
+# Routing Environments
+###
 
-# Toy instance of the BinPack environment
-register(
-    id="BinPack-toy-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "toy",
-        "obs_num_ems": 40,
-    },
-)
+# Cleaner with 10 rows, 10 colums, 3 agents, a time limit of 100, and a random maze generator.
+register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 
-# Random Instance Generator
-register(
-    id="BinPack-rand20-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 20,
-        "max_num_ems": 80,
-        "obs_num_ems": 40,
-    },
-)
+# Connector with grid size of 10 and 5 agents.
+register(id="Connector-v0", entry_point="jumanji.environments:Connector")
 
-register(
-    id="BinPack-rand40-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 40,
-        "max_num_ems": 200,
-        "obs_num_ems": 60,
-    },
-)
+# CVRP with 20 randomly generated nodes, a maximum capacity of 30,
+# a maximum demand for each node of 10, and a dense reward function.
+register(id="CVRP-v1", entry_point="jumanji.environments:CVRP")
 
-register(
-    id="BinPack-rand100-v0",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "instance_generator_type": "random",
-        "max_num_items": 100,
-        "max_num_ems": 300,
-        "obs_num_ems": 150,
-    },
-)
+# Maze with 10 rows and 10 columns, a time limit of 100 and a random maze generator.
+register(id="Maze-v0", entry_point="jumanji.environments:Maze")
 
-# Routing
-register(
-    id="Routing-n3-8x8-v0",
-    entry_point="jumanji.environments:Routing",
-    kwargs={"rows": 8, "cols": 8, "num_agents": 3, "step_limit": 64},
-)
+# Snake game on a board of size 12x12 with a time limit of 4000.
+register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 
-register(
-    id="Routing-n4-12x12-v0",
-    entry_point="jumanji.environments:Routing",
-    kwargs={"rows": 12, "cols": 12, "num_agents": 4, "step_limit": 144},
-)
-
-register(
-    id="Routing-n5-16x16-v0",
-    entry_point="jumanji.environments:Routing",
-    kwargs={"rows": 16, "cols": 16, "num_agents": 5, "step_limit": 256},
-)
-
-
-# Connect4
-register(
-    id="Connect4-v0",
-    entry_point="jumanji.environments:Connect4",
-)
-
-
-# CVRP - problem size, maximum capacity and maximum demand are derived from [1, 2]
-# [1] Kwon Y., Choo J., Kim B., Yoon I., Min S., Gwon Y. (2020). "POMO: Policy Optimization with
-# Multiple Optima for Reinforcement Learning".
-# [2] Grinsztajn N., Furelos-Blanco D., Barrett T. (2022). "Population-Based Reinforcement
-# Learning for Combinatorial Optimization Problem".
-register(
-    id="CVRP20-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 20, "max_capacity": 30, "max_demand": 10},
-)
-
-register(
-    id="CVRP50-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 50, "max_capacity": 40, "max_demand": 10},
-)
-register(
-    id="CVRP100-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 100, "max_capacity": 50, "max_demand": 10},
-)
-
-register(
-    id="CVRP125-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 125, "max_capacity": 55, "max_demand": 10},
-)
-
-register(
-    id="CVRP150-v0",
-    entry_point="jumanji.environments:CVRP",
-    kwargs={"problem_size": 150, "max_capacity": 60, "max_demand": 10},
-)
+# TSP with 20 randomly generated cities and a dense reward function.
+register(id="TSP-v1", entry_point="jumanji.environments:TSP")

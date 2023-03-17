@@ -73,7 +73,7 @@ def check_env_does_not_smoke(
 ) -> None:
     """Run an episode of the environment, with a jitted step function to check no errors occur."""
     action_spec = env.action_spec()
-    if not select_action:
+    if select_action is None:
         if isinstance(action_spec, specs.BoundedArray) or isinstance(
             action_spec, specs.DiscreteArray
         ):
@@ -86,15 +86,14 @@ def check_env_does_not_smoke(
                 f"a custom `SelectActionFn` to be provided to this test."
             )
     key = jax.random.PRNGKey(0)
-    key, subkey = jax.random.split(key)
-    state, timestep = env.reset(subkey)
+    key, reset_key = jax.random.split(key)
+    state, timestep = env.reset(reset_key)
     step_fn = jax.jit(env.step)
     while not timestep.last():
-        key, subkey = jax.random.split(key)
-        action = select_action(subkey, timestep.observation)
-
-        state, timestep = step_fn(state, action)
+        key, action_key = jax.random.split(key)
+        action = select_action(action_key, timestep.observation)
         env.action_spec().validate(action)
+        state, timestep = step_fn(state, action)
         env.observation_spec().validate(timestep.observation)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))

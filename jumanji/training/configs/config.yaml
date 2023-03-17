@@ -1,0 +1,12 @@
+defaults:
+    - _self_
+    - env: snake  # [bin_pack, cleaner, connector, cvrp, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
+
+agent: random  # [random, a2c]
+
+seed: 0
+
+logger:
+    type: terminal  # [neptune, tensorboard, terminal]
+    save_checkpoint: false  # [false, true]
+    name: ${agent}_${env.name}

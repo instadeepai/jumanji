@@ -17,31 +17,42 @@ edit_uri: edit/develop/docs/
 nav:
   - Home: index.md
   - Environments:
-      - Combinatorial:
-          - TSP: environments/tsp.md
-          - Routing: environments/routing.md
-          - BinPack: environments/binpack.md
+      - Logic:
+          - RubiksCube: environments/rubiks_cube.md
+          - Minesweeper: environments/minesweeper.md
+          - Game2048: environments/game_2048.md
+      - Packing:
+          - BinPack: environments/bin_pack.md
           - Knapsack: environments/knapsack.md
+          - JobShop: environments/job_shop.md
+      - Routing:
+          - Cleaner: environments/cleaner.md
+          - Connector: environments/connector.md
           - CVRP: environments/cvrp.md
-      - Game:
+          - Maze: environments/maze.md
           - Snake: environments/snake.md
-          - Connect4: environments/connect4.md
+          - TSP: environments/tsp.md
   - User Guides:
       - Registration: guides/registration.md
-      - Examples: guides/anakin_snake.ipynb
       - Wrapper: guides/wrappers.md
   - API Reference:
       - Environments:
           - Base: api/env.md
-          - Combinatorial:
-              - TSP: api/environments/tsp.md
-              - Routing: api/environments/routing.md
-              - BinPack: api/environments/binpack.md
+          - Logic:
+              - RubiksCube: api/environments/rubiks_cube.md
+              - Minesweeper: api/environments/minesweeper.md
+              - Game2048: api/environments/game_2048.md
+          - Packing:
+              - BinPack: api/environments/bin_pack.md
               - Knapsack: api/environments/knapsack.md
+              - JobShop: api/environments/job_shop.md
+          - Routing:
+              - Cleaner: api/environments/cleaner.md
+              - Connector: api/environments/connector.md
               - CVRP: api/environments/cvrp.md
-          - Game:
+              - Maze: api/environments/maze.md
               - Snake: api/environments/snake.md
-              - Connect4: api/environments/connect4.md
+              - TSP: api/environments/tsp.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
@@ -67,14 +78,14 @@ theme:
         name: Switch to light mode
   favicon: img/instadeep_logo.png
   features:
-    - navigation.tracking       # the URL is automatically updated with the active anchor
-    - navigation.sections       # top-level sections are rendered as groups in the sidebar
-    - navigation.tabs           # horizontal tabs at the top of the page
-    - navigation.tabs.sticky    # navigation tabs will lock below the header and always remain visible when scrolling
-    - navigation.indexes        # documents can be directly attached to sections
-    - search.highlight          # highlight search result
-    - search.share              # share button
-    - search.suggest            # smart suggestion
+    - navigation.tracking # the URL is automatically updated with the active anchor
+    - navigation.sections # top-level sections are rendered as groups in the sidebar
+    - navigation.tabs # horizontal tabs at the top of the page
+    - navigation.tabs.sticky # navigation tabs will lock below the header and always remain visible when scrolling
+    - navigation.indexes # documents can be directly attached to sections
+    - search.highlight # highlight search result
+    - search.share # share button
+    - search.suggest # smart suggestion
     - toc.integrate
     - toc.follow
     - content.code.annotate
@@ -111,9 +122,9 @@ plugins:
   - autorefs
   - git-revision-date
   - include-markdown
-  - mknotebooks:       # enable Jupyter notebooks
+  - mknotebooks: # enable Jupyter notebooks
       enable_default_jupyter_cell_styling: false
-  - mermaid2          # Class diagrams, flowcharts and more
+  - mermaid2 # Class diagrams, flowcharts and more
   - mkdocstrings:
       default_handler: python
       handlers:

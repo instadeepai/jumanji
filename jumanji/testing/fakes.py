@@ -50,7 +50,7 @@ class FakeEnvironment(Environment[FakeState]):
         """Initialize a fake environment.
 
         Args:
-            time_limit: horizon of an episode.
+            time_limit: time_limit of an episode.
             observation_shape: shape of the dummy observation.
             action_shape: shape of bounded continuous action space.
         """
@@ -96,7 +96,7 @@ class FakeEnvironment(Environment[FakeState]):
             timestep: TimeStep object corresponding the first timestep returned by the environment,
         """
 
-        state = FakeState(key=key, step=0)
+        state = FakeState(key=key, step=jnp.array(0, jnp.int32))
         observation = self._state_to_obs(state)
         timestep = restart(observation=observation)
         return state, timestep
@@ -119,15 +119,10 @@ class FakeEnvironment(Environment[FakeState]):
         observation = self._state_to_obs(next_state)
         timestep = lax.cond(
             next_step >= self.time_limit,
-            lambda _: termination(
-                reward=jnp.zeros((), float),
-                observation=observation,
-            ),
-            lambda _: transition(
-                reward=jnp.zeros((), float),
-                observation=observation,
-            ),
-            None,
+            termination,
+            transition,
+            jnp.zeros((), float),
+            observation,
         )
         return next_state, timestep
 
@@ -169,7 +164,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
                 dimension should always be (num_agents, ...)
             num_action_values: number of values in the bounded discrete action space.
             reward_per_step: the reward given to each agent every timestep.
-            time_limit: horizon of an episode.
+            time_limit: time_limit of an episode.
         """
         self.time_limit = time_limit
         self.observation_shape = observation_shape

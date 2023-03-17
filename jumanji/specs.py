@@ -13,16 +13,19 @@
 # limitations under the License.
 
 import abc
+import copy
 import functools
 import inspect
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
     Iterable,
     NamedTuple,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -30,38 +33,58 @@ from typing import (
 import chex
 import dm_env.specs
 import gym
+import jax
 import jax.numpy as jnp
 import numpy as np
 
+from jumanji.testing.pytrees import is_equal_pytree
 from jumanji.types import get_valid_dtype
 
 T = TypeVar("T")
 
 
 class Spec(abc.ABC, Generic[T]):
-    """Adapted from dm_env.spec.Array. This is an augmentation of the Array spec to allow for nested
+    """Adapted from `dm_env.spec.Array`. This is an augmentation of the `Array` spec to allow for nested
     specs. `self.name`, `self.generate_value` and `self.validate` methods are adapted from the
-    dm_env object."""
+    `dm_env` object."""
 
-    def __init__(self, name: str = ""):
+    def __init__(
+        self,
+        constructor: Union[Type[T], Callable[..., T]],
+        name: str = "",
+        **specs: "Spec",
+    ):
         """Initializes a new spec.
 
         Args:
-            name: string containing a semantic name for the corresponding nested spec.
-            Defaults to `''`.
+            constructor: the class or initialization function that creates the object represented
+                by the spec.
+            name: string containing a semantic name for the corresponding (nested) spec.
+                Defaults to `''`.
+            **specs: potential children specs each of which is either a nested spec or a primitive
+                spec (`Array`, `BoundedArray`, etc). Importantly, the keywords used must exactly
+                match the attribute names of the constructor.
         """
         self._name = name
+        self._specs = specs
+        self._constructor = constructor
 
-    @abc.abstractmethod
+        for spec_name, spec_value in specs.items():
+            setattr(self, spec_name, spec_value)
+
     def __repr__(self) -> str:
-        return f"Spec(name={repr(self.name)})"
+        if self._specs.items():
+            s = ""
+            for spec_name, spec_value in self._specs.items():
+                s += f"\t{spec_name}={spec_value},\n"
+            return f"{self.name}(\n" + s + ")"
+        return self.name
 
     @property
     def name(self) -> str:
         """Returns the name of the nested spec."""
         return self._name
 
-    @abc.abstractmethod
     def validate(self, value: T) -> T:
         """Checks if a (potentially nested) value (tree of observations, actions...) conforms to
         this spec.
@@ -75,12 +98,24 @@ class Spec(abc.ABC, Generic[T]):
         Raises:
             ValueError: if value doesn't conform to this spec.
         """
+        if isinstance(value, tuple) and hasattr(value, "_asdict"):
+            val = value._asdict()
+        elif hasattr(value, "__dict__"):
+            val = value.__dict__
+        else:
+            raise TypeError("The value provided must be a named tuple or a dataclass.")
+        constructor_kwargs = jax.tree_util.tree_map(
+            lambda spec, obs: spec.validate(obs), dict(self._specs), val
+        )
+        return self._constructor(**constructor_kwargs)
 
-    @abc.abstractmethod
     def generate_value(self) -> T:
         """Generate a value which conforms to this spec."""
+        constructor_kwargs = jax.tree_util.tree_map(
+            lambda spec: spec.generate_value(), self._specs
+        )
+        return self._constructor(**constructor_kwargs)
 
-    @abc.abstractmethod
     def replace(self, **kwargs: Any) -> "Spec":
         """Returns a new copy of `self` with specified attributes replaced.
 
@@ -90,10 +125,21 @@ class Spec(abc.ABC, Generic[T]):
         Returns:
             A new copy of `self`.
         """
+        dict_copy = copy.deepcopy(self._specs)
+        dict_copy.update(kwargs)
+        return Spec(self._constructor, self.name, **dict_copy)
+
+    def __eq__(self, other: "Spec") -> bool:  # type: ignore[override]
+        if not isinstance(other, Spec):
+            return NotImplemented
+        return is_equal_pytree(self._specs, other._specs)
+
+    def __getitem__(self, item: str) -> "Spec":
+        return self._specs[item]
 
 
 class Array(Spec[chex.Array]):
-    """Describes a jax array spec. This is adapted from dm_env.specs.Array to suit Jax environments.
+    """Describes a jax array spec. This is adapted from `dm_env.specs.Array` to suit Jax environments.
 
     An `Array` spec allows an API to describe the arrays that it accepts or returns, before that
     array exists.
@@ -107,7 +153,8 @@ class Array(Spec[chex.Array]):
             dtype: jax numpy dtype or string specifying the array dtype.
             name: string containing a semantic name for the corresponding array. Defaults to `''`.
         """
-        super().__init__(name)
+        self._constructor = lambda: jnp.zeros(shape, dtype)
+        super().__init__(constructor=self._constructor, name=name)
         self._shape = tuple(int(dim) for dim in shape)
         self._dtype = get_valid_dtype(dtype)
 
@@ -158,10 +205,6 @@ class Array(Spec[chex.Array]):
             )
         return value
 
-    def generate_value(self) -> chex.Array:
-        """Generate a value which conforms to this spec."""
-        return jnp.zeros(shape=self.shape, dtype=self.dtype)
-
     def _get_constructor_kwargs(self) -> Dict[str, Any]:
         """Returns constructor kwargs for instantiating a new copy of this spec."""
         # Get the names and kinds of the constructor parameters.
@@ -192,10 +235,19 @@ class Array(Spec[chex.Array]):
         all_kwargs.update(kwargs)
         return type(self)(**all_kwargs)
 
+    def __eq__(self, other: "Array") -> bool:  # type: ignore[override]
+        if not isinstance(other, Array):
+            return NotImplemented
+        return (
+            (self.shape == other.shape)
+            and (self.dtype == other.dtype)
+            and (self.name == other.name)
+        )
+
 
 class BoundedArray(Array):
     """Bounded array spec that specifies minimum and maximum values for an environment. This is
-    adapted from dm_env.specs.BoundedArray to suit Jax environments.
+    adapted from `dm_env.specs.BoundedArray` to suit Jax environments.
 
     Example usage:
     ```python
@@ -269,7 +321,7 @@ class BoundedArray(Array):
                 f"All values in `minimum` must be less than or equal to their corresponding "
                 f"value in `maximum`, got: \n\tminimum={repr(minimum)}\n\tmaximum={repr(maximum)}"
             )
-
+        self._constructor = lambda: jnp.full(shape, minimum, dtype)
         self._minimum = minimum
         self._maximum = maximum
 
@@ -308,14 +360,21 @@ class BoundedArray(Array):
             )
         return value
 
-    def generate_value(self) -> chex.Array:
-        """Generate a jax array of the minima which conforms to this shape."""
-        return jnp.ones(shape=self.shape, dtype=self.dtype) * self.minimum
+    def __eq__(self, other: "BoundedArray") -> bool:  # type: ignore[override]
+        if not isinstance(other, BoundedArray):
+            return NotImplemented
+        return (
+            (self.shape == other.shape)
+            and (self.dtype == other.dtype)
+            and (self.minimum == other.minimum)
+            and (self.maximum == other.maximum)
+            and (self.name == other.name)
+        )
 
 
 class DiscreteArray(BoundedArray):
     """Represents a discrete, scalar, zero-based space. This is adapted from
-    dm_env.specs.BoundedArray to suit Jax environments.
+    `dm_env.specs`.BoundedArray to suit Jax environments.
 
     This is a special case of the parent `BoundedArray` class. It represents a 0-dimensional jax
     array  containing a single integer value between 0 and num_values - 1 (inclusive), and exposes
@@ -366,6 +425,15 @@ class DiscreteArray(BoundedArray):
     def num_values(self) -> int:
         """Returns the number of items."""
         return self._num_values
+
+    def __eq__(self, other: "DiscreteArray") -> bool:  # type: ignore[override]
+        if not isinstance(other, DiscreteArray):
+            return NotImplemented
+        return (
+            (self.num_values == other.num_values)
+            and (self.dtype == other.dtype)
+            and (self.name == other.name)
+        )
 
 
 class MultiDiscreteArray(BoundedArray):
@@ -422,8 +490,17 @@ class MultiDiscreteArray(BoundedArray):
 
     @property
     def num_values(self) -> chex.Array:
-        """Returns the number of items."""
+        """Returns the number of possible values for each element of the action vector."""
         return self._num_values
+
+    def __eq__(self, other: "MultiDiscreteArray") -> bool:  # type: ignore[override]
+        if not isinstance(other, MultiDiscreteArray):
+            return NotImplemented
+        return (
+            (self.num_values == other.num_values).all()
+            and (self.dtype == other.dtype)
+            and (self.name == other.name)
+        )
 
 
 def jumanji_specs_to_dm_env_specs(
@@ -436,11 +513,11 @@ def jumanji_specs_to_dm_env_specs(
         spec: jumanji spec of type `jumanji.specs.Array`. It breaks if spec is nested.
 
     Returns:
-        dm_env.specs.Array object corresponding to the equivalent jumanji specs implementation.
+        `dm_env.specs.Array` object corresponding to the equivalent jumanji specs implementation.
 
     Raises:
         ValueError if spec is not a jumanji specs Array. In that case, one must override the spec
-            method to output specs of type dm_env.specs.Array.
+            method to output specs of type `dm_env.specs.Array`.
     """
     if isinstance(spec, DiscreteArray):
         return dm_env.specs.DiscreteArray(

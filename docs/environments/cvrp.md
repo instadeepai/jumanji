@@ -1,7 +1,7 @@
 # Capacitated Vehicle Routing Problem (CVRP) Environment
 
 <p align="center">
-        <img src="../img/cvrp_img0.png" width="500"/>
+        <img src="../env_anim/cvrp.gif" width="500"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the capacitated vehicle routing problem
@@ -20,32 +20,41 @@ coordinates for each node sampled from a uniform distribution between 0 and 1, a
 distribution between 1 and the maximum demand (which is a parameter of the CVRP environment).
 The number of nodes with demand is a parameter of the environment.
 
+
 ## Observation
-The observation given to the agent provides information on the problem layout, the visited/unvisited cities and
-the current position of the agent as well as the current capacity.
+The observation given to the agent provides information on the problem layout, the visited/unvisited
+cities and the current position of the agent as well as the current capacity.
+- `coordinates`: jax array (float) of shape `(num_nodes + 1, 2)`, array of coordinates of each city
+node and the depot node.
+- `demands`: jax array (float) of shape `(num_nodes + 1,)`, array of the demands of each city node
+and the depot node whose demand is set to 0.
+- `unvisited_nodes`: jax array (bool) of shape `(num_nodes + 1,)`, array denoting which nodes
+remain to be visited.
+- `position`: jax array (int32) of shape (), identifier (index) of the current visited node (city
+or depot).
+- `trajectory`: jax array (int32) of shape `(2 * num_nodes,)`, identifiers of the nodes that have
+been visited (set to `DEPOT_IDX` if not filled yet).
+- `capacity`: jax array (float) of shape (), current capacity of the vehicle.
+- `action_mask`: jax array (bool) of shape `(num_nodes + 1,)`, array denoting which actions are
+possible (True) and which are not (False).
 
-**Observation Spec**:
-
-- **coordinates**: jax array (float32) of shape (problem_size + 1, 2), shows an array of the coordinates of each city node
-and the depot node.
-- **demands**: jax array (float32) of shape (problem_size + 1,), shows an array of the demands of each city node
-(and depot node where the demand is set to 0).
-- **position**: jax array (int32), gives the identifier (index) of the current visited city or depot.
-- **current capacity**: jax array (float32), gives the current capacity of the vehicle.
-- **action_mask**: jax array (bool) of shape (problem_size + 1,), denoting which actions are possible (True) and
-which are not (False).
 
 ## Action
-Action space is a `DiscreteArray` of integer values in the range of [0, problem_size]. An action is the index of the
-next node to visit, and an action value of 0 corresponds to visiting the depot.
+The action space is a `DiscreteArray` of integer values in the range of `[0, num_nodes]`. An action
+is the index of the next node to visit, and an action value of 0 corresponds to visiting the depot.
+
 
 ## Reward
-The reward is 0 at every step but the last, where the reward is
-the negative of the length of the path chosen by the agent.
+The reward could be either:
+- **Dense**: the negative distance between the current node and the chosen next node to go to.
+    For the last node, it also includes the distance to the depot to complete the tour.
+- **Sparse**: the negative tour length at the end of the episode. The tour length is defined
+    as the sum of the distances between consecutive nodes.
+
+In both cases, the reward is a large negative penalty of `-2 * num_nodes * sqrt(2)` if the
+action is invalid, e.g. a previously selected node other than the depot is selected again.
+
 
 ## Registered Versions 📖
-- `CVRP20-v0`, CVRP problem with 20 nodes (randomly generated), maximum capacity of 30, and maximum demand of 10.
-- `CVRP50-v0`, CVRP problem with 50 nodes (randomly generated), maximum capacity of 40, and maximum demand of 10.
-- `CVRP100-v0`, CVRP problem with 100 nodes (randomly generated), maximum capacity of 50, and maximum demand of 10.
-- `CVRP125-v0`, CVRP problem with 125 nodes (randomly generated), maximum capacity of 55, and maximum demand of 10.
-- `CVRP150-v0`, CVRP problem with 150 nodes (randomly generated), maximum capacity of 60, and maximum demand of 10.
+- `CVRP-v1`: CVRP problem with 20 randomly generated nodes, a maximum capacity of 30, a maximum
+demand for each node of 10 and a dense reward function.

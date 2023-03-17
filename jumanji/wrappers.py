@@ -24,13 +24,12 @@ from typing import (
     Union,
 )
 
+import chex
 import dm_env.specs
 import gym
 import jax
 import jax.numpy as jnp
 import numpy as np
-from chex import Array, PRNGKey
-from jax import jit, random
 
 from jumanji import specs, tree_utils
 from jumanji.env import Environment, State
@@ -64,7 +63,7 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the wrapped env."""
         return self._env.unwrapped
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
 
         Args:
@@ -123,7 +122,7 @@ class Wrapper(Environment[State], Generic[State]):
 class JumanjiToDMEnvWrapper(dm_env.Environment):
     """A wrapper that converts Environment to dm_env.Environment."""
 
-    def __init__(self, env: Environment, key: Optional[PRNGKey] = None):
+    def __init__(self, env: Environment, key: Optional[chex.PRNGKey] = None):
         """Create the wrapped environment.
 
         Args:
@@ -132,14 +131,14 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
         """
         self._env = env
         if key is None:
-            self._key = random.PRNGKey(0)
+            self._key = jax.random.PRNGKey(0)
         else:
             self._key = key
         self._state: Any
-        self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep]] = jit(
+        self._jitted_reset: Callable[[chex.PRNGKey], Tuple[State, TimeStep]] = jax.jit(
             self._env.reset
         )
-        self._jitted_step: Callable[[State, Action], Tuple[State, TimeStep]] = jit(
+        self._jitted_step: Callable[[State, Action], Tuple[State, TimeStep]] = jax.jit(
             self._env.step
         )
 
@@ -159,7 +158,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
                     are also valid in place of a scalar array. Must conform to the
                     specification returned by `observation_spec()`.
         """
-        reset_key, self._key = random.split(self._key)
+        reset_key, self._key = jax.random.split(self._key)
         self._state, timestep = self._jitted_reset(reset_key)
         return dm_env.restart(observation=timestep.observation)
 
@@ -251,9 +250,10 @@ class MultiToSingleWrapper(Wrapper):
             observation=timestep.observation,
             reward=self._reward_aggregator(timestep.reward),
             discount=self._discount_aggregator(timestep.discount),
+            extras=timestep.extras,
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -267,7 +267,7 @@ class MultiToSingleWrapper(Wrapper):
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
-    def step(self, state: Any, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The rewards are aggregated into a single value based on the given reward aggregator.
@@ -297,7 +297,7 @@ class VmapWrapper(Wrapper):
     - discount_spec
     """
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         The first dimension of the key will dictate the number of concurrent environments.
@@ -317,7 +317,7 @@ class VmapWrapper(Wrapper):
         state, timestep = jax.vmap(self._env.reset)(key)
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The first dimension of the state will dictate the number of concurrent environments.
@@ -352,9 +352,14 @@ class AutoResetWrapper(Wrapper):
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.FIRST, respectively.
     The reward, discount, and extras retrieved from the transition to the terminal state.
+    WARNING: do not `jax.vmap` the wrapped environment (e.g. do not use with the `VmapWrapper`),
+    which would lead to inefficient computation due to both the `step` and `reset` functions
+    being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
-    def auto_reset(self, state: State, timestep: TimeStep) -> Tuple[State, TimeStep]:
+    def _auto_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
         """
@@ -377,14 +382,14 @@ class AutoResetWrapper(Wrapper):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
         """Step the environment, with automatic resetting if the episode terminates."""
         state, timestep = self._env.step(state, action)
 
         # Overwrite the state and timestep appropriately if the episode terminates.
         state, timestep = jax.lax.cond(
             timestep.last(),
-            self.auto_reset,
+            self._auto_reset,
             lambda *x: x,
             state,
             timestep,
@@ -393,24 +398,130 @@ class AutoResetWrapper(Wrapper):
         return state, timestep
 
 
+class VmapAutoResetWrapper(Wrapper):
+    """Efficient combination of VmapWrapper and AutoResetWrapper, to be used as a replacement of
+    the combination of both wrappers.
+    `env = VmapAutoResetWrapper(env)` is equivalent to `env = VmapWrapper(AutoResetWrapper(env))`
+    but is more efficient as it parallelizes homogeneous computation and does not run branches
+    of the computational graph that are not needed (heterogeneous computation).
+    - Homogeneous computation: call step function on all environments in the batch.
+    - Heterogeneous computation: conditional auto-reset (call reset function for some environments
+        within the batch because they have terminated).
+    """
+
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+        """Resets a batch of environments to initial states.
+
+        The first dimension of the key will dictate the number of concurrent environments.
+
+        To obtain a key with the right first dimension, you may call `jax.random.split` on key
+        with the parameter `num` representing the number of concurrent environments.
+
+        Args:
+            key: random keys used to reset the environments where the first dimension is the number
+                of desired environments.
+
+        Returns:
+            state: `State` object corresponding to the new state of the environments,
+            timestep: `TimeStep` object corresponding the first timesteps returned by the
+                environments,
+        """
+        state, timestep = jax.vmap(self._env.reset)(key)
+        return state, timestep
+
+    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+        """Run one timestep of all environments' dynamics. It automatically resets environment(s)
+        in which episodes have terminated.
+
+        The first dimension of the state will dictate the number of concurrent environments.
+
+        See `VmapAutoResetWrapper.reset` for more details on how to get a state of concurrent
+        environments.
+
+        Args:
+            state: `State` object containing the dynamics of the environments.
+            action: `Array` containing the actions to take.
+
+        Returns:
+            state: `State` object corresponding to the next states of the environments.
+            timestep: `TimeStep` object corresponding the timesteps returned by the environments.
+        """
+        # Vmap homogeneous computation (parallelizable).
+        state, timestep = jax.vmap(self._env.step)(state, action)
+        # Map heterogeneous computation (non-parallelizable).
+        state, timestep = jax.lax.map(
+            lambda args: self._maybe_reset(*args), (state, timestep)
+        )
+        return state, timestep
+
+    def _auto_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
+        """Reset the state and overwrite `timestep.observation` with the reset observation
+        if the episode has terminated.
+        """
+        if not hasattr(state, "key"):
+            raise AttributeError(
+                "This wrapper assumes that the state has attribute key which is used"
+                " as the source of randomness for automatic reset"
+            )
+
+        # Make sure that the random key in the environment changes at each call to reset.
+        # State is a type variable hence it does not have key type hinted, so we type ignore.
+        key, _ = jax.random.split(state.key)
+        state, reset_timestep = self._env.reset(key)
+
+        # Replace observation with reset observation.
+        timestep = timestep.replace(  # type: ignore
+            observation=reset_timestep.observation,
+            step_type=reset_timestep.step_type,
+        )
+
+        return state, timestep
+
+    def _maybe_reset(
+        self, state: State, timestep: TimeStep
+    ) -> Tuple[State, TimeStep[Observation]]:
+        """Overwrite the state and timestep appropriately if the episode terminates."""
+        state, timestep = jax.lax.cond(
+            timestep.last(),
+            self._auto_reset,
+            lambda *x: x,
+            state,
+            timestep,
+        )
+
+        return state, timestep
+
+    def render(self, state: State) -> Any:
+        """Render the first environment state of the given batch.
+        The remaining elements of the batched state are ignored.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+        """
+        state_0 = tree_utils.tree_slice(state, 0)
+        return super().render(state_0)
+
+
 class JumanjiToGymWrapper(gym.Env):
-    """A wrapper that converts Environment to one that follows the gym.Env API"""
+    """A wrapper that converts a Jumanji `Environment` to one that follows the `gym.Env` API."""
 
     # Flag that prevents `gym.register` from misinterpreting the `_step` and
     # `_reset` as signs of a deprecated gym Env API.
     _gym_disable_underscore_compat: ClassVar[bool] = True
 
     def __init__(self, env: Environment, seed: int = 0, backend: Optional[str] = None):
-        """Create the wrapped environment.
+        """Create the Gym environment.
 
         Args:
-            env: Environment to wrap to a gym.Env.
+            env: `Environment` to wrap to a `gym.Env`.
             seed: the seed that is used to initialize the environment's PRNG.
             backend: the XLA backend.
         """
         self._env = env
         self.metadata: Dict[str, str] = {}
-        self.seed(seed)
+        self._key = jax.random.PRNGKey(seed)
         self.backend = backend
         self._state = None
         self.observation_space = specs.jumanji_specs_to_gym_spaces(
@@ -418,7 +529,7 @@ class JumanjiToGymWrapper(gym.Env):
         )
         self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec())
 
-        def reset(key: PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
+        def reset(key: chex.PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
             """Reset function of a Jumanji environment to be jitted."""
             state, timestep = self._env.reset(key)
             return state, timestep.observation, timestep.extras
@@ -427,7 +538,7 @@ class JumanjiToGymWrapper(gym.Env):
 
         def step(
             state: State, action: Action
-        ) -> Tuple[State, Observation, Array, bool, Optional[Any]]:
+        ) -> Tuple[State, Observation, chex.Array, bool, Optional[Any]]:
             """Step function of a Jumanji environment to be jitted."""
             state, timestep = self._env.step(state, action)
             done = jnp.bool_(timestep.last())
@@ -451,20 +562,20 @@ class JumanjiToGymWrapper(gym.Env):
         """
         if seed is not None:
             self.seed(seed)
-        key, self._key = random.split(self._key)  # type: Tuple[PRNGKey, PRNGKey]
+        key, self._key = jax.random.split(self._key)
         self._state, obs, extras = self._reset(key)
 
         # Convert the observation to a numpy array or a nested dict thereof
         obs = jumanji_to_gym_obs(obs)
 
         if return_info:
-            info = jax.tree_map(np.asarray, extras)
+            info = jax.tree_util.tree_map(np.asarray, extras)
             return obs, info
         else:
             return obs  # type: ignore
 
     def step(
-        self, action: np.ndarray
+        self, action: chex.ArrayNumpy
     ) -> Tuple[GymObservation, float, bool, Optional[Any]]:
         """Updates the environment according to the action and returns an `Observation`.
 
@@ -485,7 +596,7 @@ class JumanjiToGymWrapper(gym.Env):
         obs = jumanji_to_gym_obs(obs)
         reward = float(reward)
         terminated = bool(done)
-        info = jax.tree_map(np.asarray, extras)
+        info = jax.tree_util.tree_map(np.asarray, extras)
 
         return obs, reward, terminated, info
 
@@ -497,14 +608,14 @@ class JumanjiToGymWrapper(gym.Env):
         """
         self._key = jax.random.PRNGKey(seed)
 
-    def render(self, mode: str = "human") -> None:
+    def render(self, mode: str = "human") -> Any:
         """Renders the environment.
 
         Args:
             mode: currently not used since Jumanji does not currently support modes.
         """
         del mode
-        self._env.render(self._state)
+        return self._env.render(self._state)
 
     def close(self) -> None:
         """Closes the environment, important for rendering where pygame is imported."""
@@ -525,7 +636,7 @@ def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
     Returns:
         Numpy array or nested dictionary of numpy arrays.
     """
-    if isinstance(observation, jnp.ndarray):
+    if isinstance(observation, chex.Array):
         return np.asarray(observation)
     elif hasattr(observation, "__dict__"):
         # Applies to various containers including `chex.dataclass`

@@ -15,20 +15,19 @@
 from collections import namedtuple
 from typing import Tuple, Type, TypeVar
 
+import chex
 import dm_env.specs
 import gym
 import jax
 import jax.numpy as jnp
-import jax.random as random
 import numpy as np
 import pytest
 import pytest_mock
-from chex import assert_trees_all_equal, dataclass
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.combinatorial.binpack.conftest import DummyInstanceGenerator
-from jumanji.environments.combinatorial.binpack.env import BinPack
+from jumanji.environments.packing.bin_pack import conftest as bin_pack_conftest
+from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
 from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import StepType, TimeStep
@@ -37,6 +36,7 @@ from jumanji.wrappers import (
     JumanjiToDMEnvWrapper,
     JumanjiToGymWrapper,
     MultiToSingleWrapper,
+    VmapAutoResetWrapper,
     VmapWrapper,
     Wrapper,
     jumanji_to_gym_obs,
@@ -54,6 +54,16 @@ def mock_wrapper_class() -> Type[Wrapper]:
     return MockWrapper
 
 
+@pytest.fixture
+def key() -> chex.PRNGKey:
+    return jax.random.PRNGKey(0)
+
+
+@pytest.fixture
+def keys() -> chex.PRNGKey:
+    return jax.random.split(jax.random.PRNGKey(0), num=5)
+
+
 class TestBaseWrapper:
     """Test the base Wrapper used for extending functionality of the Jumanji Environment."""
 
@@ -68,7 +78,7 @@ class TestBaseWrapper:
         self, wrapped_fake_environment: Wrapper, fake_environment: FakeEnvironment
     ) -> None:
         """Checks `Wrapper.unwrapped` returns the unwrapped env."""
-        assert wrapped_fake_environment.unwrapped == fake_environment
+        assert wrapped_fake_environment.unwrapped is fake_environment
 
     def test_wrapper__step(
         self,
@@ -181,13 +191,16 @@ class TestJumanjiEnvironmentToDeepMindEnv:
     """
 
     def test_jumanji_environment_to_deep_mind_env__init(
-        self, fake_environment: FakeEnvironment
+        self,
+        fake_environment: FakeEnvironment,
+        key: chex.PRNGKey,
     ) -> None:
         """Validates initialization of the dm_env wrapper."""
         dm_environment = JumanjiToDMEnvWrapper(fake_environment)
         assert isinstance(dm_environment, dm_env.Environment)
         dm_environment_with_key = JumanjiToDMEnvWrapper(
-            fake_environment, key=jax.random.PRNGKey(0)
+            fake_environment,
+            key=key,
         )
         assert isinstance(dm_environment_with_key, dm_env.Environment)
 
@@ -254,11 +267,11 @@ class TestJumanjiEnvironmentToGymEnv:
         state2 = fake_gym_env._state
 
         # Observation is typically numpy array
-        assert isinstance(observation1, np.ndarray)
-        assert isinstance(observation2, np.ndarray)
+        assert isinstance(observation1, chex.ArrayNumpy)
+        assert isinstance(observation2, chex.ArrayNumpy)
 
         # Check that the observations are equal
-        assert_trees_all_equal(observation1, observation2)
+        chex.assert_trees_all_equal(observation1, observation2)
         assert_trees_are_different(state1, state2)
 
     def test_jumanji_environment_to_gym_env__step(
@@ -340,11 +353,12 @@ class TestMultiToSingleEnvironment:
         self,
         fake_multi_environment: FakeMultiEnvironment,
         fake_multi_to_single_env: MultiToSingleWrapper,
+        key: chex.PRNGKey,
     ) -> None:
         """Validates (jitted) reset function and timestep type of the multi agent
         to single agent wrapped environment.
         """
-        _, timestep = jax.jit(fake_multi_to_single_env.reset)(random.PRNGKey(0))
+        _, timestep = jax.jit(fake_multi_to_single_env.reset)(key)
         assert isinstance(timestep, TimeStep)
         assert timestep.step_type == StepType.FIRST
         assert timestep.observation.shape[0] == fake_multi_environment.num_agents
@@ -355,17 +369,14 @@ class TestMultiToSingleEnvironment:
         self,
         fake_multi_environment: FakeMultiEnvironment,
         fake_multi_to_single_env: MultiToSingleWrapper,
+        key: chex.PRNGKey,
     ) -> None:
         """Validates (jitted) step function of the multi agent to single
         agent wrapped environment.
         """
-        state, timestep = fake_multi_to_single_env.reset(
-            random.PRNGKey(0)
-        )  # type: Tuple[FakeState, TimeStep]
+        state, timestep = fake_multi_to_single_env.reset(key)  # type: ignore
         action = fake_multi_to_single_env.action_spec().generate_value()
-        state, next_timestep = jax.jit(fake_multi_to_single_env.step)(
-            state, action
-        )  # type: Tuple[FakeState, TimeStep]
+        state, next_timestep = jax.jit(fake_multi_to_single_env.step)(state, action)
         assert next_timestep != timestep
         assert next_timestep.reward.shape == ()
         assert (
@@ -380,14 +391,13 @@ class TestMultiToSingleEnvironment:
         self,
         fake_multi_environment: FakeMultiEnvironment,
         fake_multi_to_single_env: MultiToSingleWrapper,
+        key: chex.PRNGKey,
     ) -> None:
         """Checks that using a different reward aggregator is correct."""
         mean_fake_multi_to_single_env = MultiToSingleWrapper(
             fake_multi_environment, reward_aggregator=jnp.mean
         )
-        state, timestep = mean_fake_multi_to_single_env.reset(
-            random.PRNGKey(0)
-        )  # type: Tuple[FakeState, TimeStep]
+        state, timestep = mean_fake_multi_to_single_env.reset(key)  # type: ignore
         action = mean_fake_multi_to_single_env.action_spec().generate_value()
         state, next_timestep = mean_fake_multi_to_single_env.step(
             state, action
@@ -431,37 +441,33 @@ class TestMultiToSingleEnvironment:
         agent wrapped environment.
         """
         assert isinstance(fake_multi_to_single_env.unwrapped, Environment)
-        assert fake_multi_to_single_env._env == fake_multi_environment
+        assert fake_multi_to_single_env._env is fake_multi_environment
 
 
 class TestVmapWrapper:
     @pytest.fixture
-    def fake_vmap_environment(self, fake_environment: Environment) -> VmapWrapper:
+    def fake_vmap_environment(self, fake_environment: FakeEnvironment) -> VmapWrapper:
         return VmapWrapper(fake_environment)
 
-    @pytest.fixture
-    def keys(self) -> random.PRNGKey:
-        return random.split(random.PRNGKey(0), num=5)
-
-    def test_vmap_wrapper__init(self, fake_environment: Environment) -> None:
+    def test_vmap_wrapper__init(self, fake_environment: FakeEnvironment) -> None:
         """Validates initialization of the vmap wrapper."""
         vmap_env = VmapWrapper(fake_environment)
         assert isinstance(vmap_env, Environment)
 
     def test_vmap_env__reset(
-        self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
+        self, fake_vmap_environment: VmapWrapper, keys: chex.PRNGKey
     ) -> None:
         """Validates reset function and timestep type of the vmap wrapped environment."""
         _, timestep = jax.jit(fake_vmap_environment.reset)(keys)
 
         assert isinstance(timestep, TimeStep)
-        assert_trees_all_equal(timestep.step_type, StepType.FIRST)
+        chex.assert_trees_all_equal(timestep.step_type, StepType.FIRST)
         assert timestep.observation.shape[0] == keys.shape[0]
         assert timestep.reward.shape == (keys.shape[0],)
         assert timestep.discount.shape == (keys.shape[0],)
 
     def test_vmap_env__step(
-        self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
+        self, fake_vmap_environment: VmapWrapper, keys: chex.PRNGKey
     ) -> None:
         """Validates step function of the vmap environment."""
         state, timestep = fake_vmap_environment.reset(
@@ -476,14 +482,14 @@ class TestVmapWrapper:
         )  # type: Tuple[FakeState, TimeStep]
 
         assert_trees_are_different(next_timestep, timestep)
-        assert_trees_all_equal(next_timestep.reward, 0)
+        chex.assert_trees_all_equal(next_timestep.reward, 0)
 
         assert next_timestep.reward.shape == (keys.shape[0],)
         assert next_timestep.discount.shape == (keys.shape[0],)
         assert next_timestep.observation.shape[0] == keys.shape[0]
 
     def test_vmap_env__render(
-        self, fake_vmap_environment: VmapWrapper, keys: random.PRNGKey
+        self, fake_vmap_environment: VmapWrapper, keys: chex.PRNGKey
     ) -> None:
         states, _ = fake_vmap_environment.reset(
             keys
@@ -496,7 +502,7 @@ class TestVmapWrapper:
     ) -> None:
         """Validates unwrapped property of the vmap environment."""
         assert isinstance(fake_vmap_environment.unwrapped, Environment)
-        assert fake_vmap_environment._env == fake_environment
+        assert fake_vmap_environment._env is fake_environment
 
 
 class TestAutoResetWrapper:
@@ -507,13 +513,9 @@ class TestAutoResetWrapper:
         return AutoResetWrapper(fake_environment)
 
     @pytest.fixture
-    def key(self) -> random.PRNGKey:
-        return random.PRNGKey(0)
-
-    @pytest.fixture
     def fake_state_and_timestep(
-        self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
-    ) -> Tuple[State, TimeStep]:
+        self, fake_auto_reset_environment: AutoResetWrapper, key: chex.PRNGKey
+    ) -> Tuple[State, TimeStep[Observation]]:
         state, timestep = jax.jit(fake_auto_reset_environment.reset)(key)
         return state, timestep
 
@@ -525,17 +527,17 @@ class TestAutoResetWrapper:
     def test_auto_reset_wrapper__auto_reset(
         self,
         fake_auto_reset_environment: AutoResetWrapper,
-        fake_state_and_timestep: Tuple[State, TimeStep],
+        fake_state_and_timestep: Tuple[State, TimeStep[Observation]],
     ) -> None:
         """Validates the auto_reset function of the AutoResetWrapper."""
         state, timestep = fake_state_and_timestep
-        _, reset_timestep = jax.jit(fake_auto_reset_environment.auto_reset)(
+        _, reset_timestep = jax.jit(fake_auto_reset_environment._auto_reset)(
             state, timestep
         )
-        assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+        chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
 
     def test_auto_reset_wrapper__step_no_reset(
-        self, fake_auto_reset_environment: AutoResetWrapper, key: random.PRNGKey
+        self, fake_auto_reset_environment: AutoResetWrapper, key: chex.PRNGKey
     ) -> None:
         """Validates that step function of the AutoResetWrapper does not do an
         auto-reset when the terminal state is not reached.
@@ -553,41 +555,173 @@ class TestAutoResetWrapper:
 
         assert timestep.step_type == StepType.MID
         assert_trees_are_different(timestep, first_timestep)
-        assert_trees_all_equal(timestep.reward, 0)
+        chex.assert_trees_all_equal(timestep.reward, 0)
 
     def test_auto_reset_wrapper__step_reset(
         self,
-        fake_environment: Environment,
+        fake_environment: FakeEnvironment,
         fake_auto_reset_environment: AutoResetWrapper,
-        key: random.PRNGKey,
+        key: chex.PRNGKey,
     ) -> None:
         """Validates that the auto-reset is done correctly by the step function
         of the AutoResetWrapper when the terminal timestep is reached.
         """
-        state, first_timestep = fake_auto_reset_environment.reset(
-            key
-        )  # type: Tuple[FakeState, TimeStep]
+        state, first_timestep = fake_auto_reset_environment.reset(key)
 
-        fake_environment.time_limit = 5  # type: ignore
+        fake_environment.time_limit = 5
 
         # Loop across time_limit so auto-reset occurs
-        for _ in range(fake_environment.time_limit):  # type: ignore
+        timestep = first_timestep
+        for _ in range(fake_environment.time_limit):
             action = fake_auto_reset_environment.action_spec().generate_value()
-            state, timestep = jax.jit(fake_auto_reset_environment.step)(  # type: ignore
-                state, action
-            )  # type: Tuple[FakeState, TimeStep]
+            state, timestep = jax.jit(fake_auto_reset_environment.step)(state, action)
 
         assert timestep.step_type == first_timestep.step_type == StepType.FIRST
-        assert_trees_all_equal(timestep.observation, first_timestep.observation)
+        chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
+
+
+class TestVmapAutoResetWrapper:
+    @pytest.fixture
+    def fake_vmap_auto_reset_environment(
+        self, fake_environment: FakeEnvironment
+    ) -> VmapAutoResetWrapper:
+        return VmapAutoResetWrapper(fake_environment)
+
+    @pytest.fixture
+    def action(
+        self, fake_vmap_auto_reset_environment: VmapAutoResetWrapper, keys: chex.PRNGKey
+    ) -> chex.Array:
+        generate_action_fn = (
+            lambda _: fake_vmap_auto_reset_environment.action_spec().generate_value()
+        )
+        return jax.vmap(generate_action_fn)(keys)
+
+    def test_vmap_auto_reset_wrapper__init(
+        self, fake_environment: FakeEnvironment
+    ) -> None:
+        """Validates initialization of the wrapper."""
+        vmap_auto_reset_env = VmapWrapper(fake_environment)
+        assert isinstance(vmap_auto_reset_env, Environment)
+
+    def test_vmap_auto_reset_wrapper__reset(
+        self, fake_vmap_auto_reset_environment: VmapAutoResetWrapper, keys: chex.PRNGKey
+    ) -> None:
+        """Validates reset function and timestep type of the wrapper."""
+        _, timestep = jax.jit(fake_vmap_auto_reset_environment.reset)(keys)
+
+        assert isinstance(timestep, TimeStep)
+        chex.assert_trees_all_equal(timestep.step_type, StepType.FIRST)
+        assert timestep.observation.shape[0] == keys.shape[0]
+        assert timestep.reward.shape == (keys.shape[0],)
+        assert timestep.discount.shape == (keys.shape[0],)
+
+    def test_vmap_auto_reset_wrapper__auto_reset(
+        self,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+        keys: chex.PRNGKey,
+    ) -> None:
+        """Validates the auto_reset function of the wrapper."""
+        state, timestep = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        _, reset_timestep = jax.lax.map(
+            lambda args: fake_vmap_auto_reset_environment._auto_reset(*args),
+            (state, timestep),
+        )
+        chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+
+    def test_vmap_auto_reset_wrapper__maybe_reset(
+        self,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+        keys: chex.PRNGKey,
+    ) -> None:
+        """Validates the auto_reset function of the wrapper."""
+        state, timestep = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        _, reset_timestep = jax.lax.map(
+            lambda args: fake_vmap_auto_reset_environment._maybe_reset(*args),
+            (state, timestep),
+        )
+        chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+
+    def test_vmap_auto_reset_wrapper__step_no_reset(
+        self,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+        keys: chex.PRNGKey,
+        action: chex.Array,
+    ) -> None:
+        """Validates that step function of the wrapper does not do an
+        auto-reset when the terminal state is not reached.
+        """
+        state, first_timestep = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        state, timestep = jax.jit(fake_vmap_auto_reset_environment.step)(state, action)
+
+        assert jnp.all(timestep.step_type == StepType.MID)
+        assert_trees_are_different(timestep, first_timestep)
+        chex.assert_trees_all_equal(timestep.reward, 0)
+
+    def test_vmap_auto_reset_wrapper__step_reset(
+        self,
+        fake_environment: Environment,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+        keys: chex.PRNGKey,
+        action: chex.Array,
+    ) -> None:
+        """Validates that the auto-reset is done correctly by the step function
+        of the wrapper when the terminal timestep is reached.
+        """
+        state, first_timestep = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        fake_vmap_auto_reset_environment.unwrapped.time_limit = 5  # type: ignore
+
+        # Loop across time_limit so auto-reset occurs
+        for _ in range(fake_vmap_auto_reset_environment.time_limit):
+            state, timestep = jax.jit(fake_vmap_auto_reset_environment.step)(
+                state, action
+            )
+
+        assert jnp.all(timestep.step_type == first_timestep.step_type)
+        assert jnp.all(timestep.step_type == StepType.FIRST)
+        chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
+
+    def test_vmap_auto_reset_wrapper__step(
+        self,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+        keys: chex.PRNGKey,
+        action: chex.Array,
+    ) -> None:
+        """Validates step function of the vmap environment."""
+        state, timestep = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        state, next_timestep = jax.jit(fake_vmap_auto_reset_environment.step)(
+            state, action
+        )
+
+        assert_trees_are_different(next_timestep, timestep)
+        chex.assert_trees_all_equal(next_timestep.reward, 0)
+        assert next_timestep.reward.shape == (keys.shape[0],)
+        assert next_timestep.discount.shape == (keys.shape[0],)
+        assert next_timestep.observation.shape[0] == keys.shape[0]
+
+    def test_vmap_auto_reset_wrapper__render(
+        self, fake_vmap_auto_reset_environment: VmapAutoResetWrapper, keys: chex.PRNGKey
+    ) -> None:
+        states, _ = fake_vmap_auto_reset_environment.reset(keys)  # type: ignore
+        result = fake_vmap_auto_reset_environment.render(states)
+        assert result == (keys.shape[1:], ())
+
+    def test_vmap_auto_reset_wrapper__unwrapped(
+        self,
+        fake_environment: FakeEnvironment,
+        fake_vmap_auto_reset_environment: VmapAutoResetWrapper,
+    ) -> None:
+        """Validates unwrapped property of the vmap environment."""
+        assert isinstance(fake_vmap_auto_reset_environment.unwrapped, FakeEnvironment)
+        assert fake_vmap_auto_reset_environment._env is fake_environment
 
 
 class TestJumanjiToGymObservation:
     """Tests for checking the behaviour of jumanji_to_gym_obs."""
 
-    @dataclass
+    @chex.dataclass
     class DummyChexDataclass:
-        x: jnp.ndarray
-        y: jnp.ndarray
+        x: chex.Array
+        y: chex.Array
 
     def test_jumanji_to_gym_obs__correct_observation(self) -> None:
         """Check that a NamedTuple containing a JAX array and a chex dataclass of two
@@ -606,12 +740,12 @@ class TestJumanjiToGymObservation:
             "chex_dataclass": {"x": np.zeros((2, 2)), "y": np.zeros((2, 2))},
         }
 
-        assert_trees_all_equal(converted_obs, correct_obs)
+        chex.assert_trees_all_equal(converted_obs, correct_obs)
         assert isinstance(converted_obs, dict)
-        assert isinstance(converted_obs["jax_array"], np.ndarray)
+        assert isinstance(converted_obs["jax_array"], chex.ArrayNumpy)
         assert isinstance(converted_obs["chex_dataclass"], dict)
-        assert isinstance(converted_obs["chex_dataclass"]["x"], np.ndarray)
-        assert isinstance(converted_obs["chex_dataclass"]["y"], np.ndarray)
+        assert isinstance(converted_obs["chex_dataclass"]["x"], chex.ArrayNumpy)
+        assert isinstance(converted_obs["chex_dataclass"]["y"], chex.ArrayNumpy)
 
     def test_jumanji_to_gym_obs__wrong_observation(self) -> None:
         """Check that a NotImplementedError is raised when the wrong datatype is passed
@@ -630,10 +764,10 @@ class TestJumanjiToGymObservation:
         with pytest.raises(NotImplementedError):
             jumanji_to_gym_obs(nested_obs)
 
-    def test_jumanji_to_gym_obs__binpack(self) -> None:
-        """Check that an example binpack observation is correctly converted."""
+    def test_jumanji_to_gym_obs__bin_pack(self) -> None:
+        """Check that an example bin_pack observation is correctly converted."""
         env = BinPack(obs_num_ems=1)
-        env.instance_generator = DummyInstanceGenerator()
+        env.generator = bin_pack_conftest.DummyGenerator()
         obs = env.observation_spec().generate_value()
 
         converted_obs = jumanji_to_gym_obs(obs)
@@ -656,5 +790,5 @@ class TestJumanjiToGymObservation:
             "items_placed": jnp.bool_([0, 0, 0]),
             "action_mask": jnp.bool_([[0, 0, 0]]),
         }
-        assert_trees_all_equal(converted_obs, correct_obs)
+        chex.assert_trees_all_equal(converted_obs, correct_obs)
         assert isinstance(converted_obs, dict)

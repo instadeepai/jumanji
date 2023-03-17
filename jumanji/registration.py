@@ -15,7 +15,7 @@
 import importlib
 import re
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, Set, Tuple, Type
 
 from jumanji.env import Environment
 
@@ -28,13 +28,13 @@ def parse_env_id(id: str) -> Tuple[str, int]:
     The format must obey the following structure: <env-name>-v<version>.
 
     Args:
-        id: The environment ID to parse.
+        id: the environment ID to parse.
 
     Returns:
         A tuple of environment name and version number.
 
     Raises:
-        ValueError: If the environment name does not a valid environment regex.
+        ValueError: if the environment name does not follow the correct format.
     """
     match = ENV_NAME_RE.fullmatch(id)
     if not match:
@@ -95,32 +95,12 @@ def _check_registration_is_allowed(spec: EnvSpec) -> None:
 
     Raises:
         ValueError: if an environment with the same ID is already registered.
-        ValueError: if the previous version of the registered environment doesn't exist
-        (except for v0).
     """
     global _REGISTRY
 
     # Try to overwrite a registered environment
     if spec.id in _REGISTRY:
         raise ValueError(f"Trying to override the registered environment {spec.id}.")
-
-    latest_version = max(
-        (_spec.version for _spec in _REGISTRY.values() if _spec.name == spec.name),
-        default=None,  # if no version of the environment is registered
-    )
-
-    # the first version of an env must be zero.
-    if (latest_version is None) and spec.version != 0:
-        raise ValueError(
-            f"The first version of an unregistered environment must be 0, got {spec.version}"
-        )
-
-    # Verify that version v-1 exists when trying to register version v (except 0)
-    if (latest_version is not None) and latest_version != (spec.version - 1):
-        raise ValueError(
-            f"Trying to register version {spec.version} of {spec.name}. "
-            f"However, the latest registered version of {spec.name} is {latest_version}."
-        )
 
 
 def register(
@@ -155,20 +135,19 @@ def register(
     _REGISTRY[env_id] = spec
 
 
-def load(name: str) -> Callable:
-    """Loads an environment with name and returns an environment creation function
+def load(name: str) -> Type[Environment]:
+    """Loads an environment with the specified name and returns an environment constructor.
 
     Args:
-        name: The environment name
+        name: the environment name.
 
     Returns:
-        the environment constructor
+        the environment constructor.
     """
-    mod_name, attr_name = name.split(":")
+    mod_name, env_name = name.split(":")
     mod = importlib.import_module(mod_name)
-    fn = getattr(mod, attr_name)
-
-    return fn  # type: ignore
+    env_constructor: Type[Environment] = getattr(mod, env_name)
+    return env_constructor
 
 
 def make(id: str, *args: Any, **kwargs: Any) -> Environment:

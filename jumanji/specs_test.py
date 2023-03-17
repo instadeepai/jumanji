@@ -15,17 +15,127 @@
 # Adapted from dm_env.specs_test
 # ============================================================================
 import pickle
-from typing import Any, Iterable, Sequence, Union
+from typing import Any, Iterable, NamedTuple, Sequence, Union
 
 import chex
 import dm_env.specs
 import gym.spaces
 import jax.numpy as jnp
+import jax.tree_util
 import numpy as np
 import pytest
 from chex import assert_trees_all_equal
 
 from jumanji import specs
+
+
+class ThirdClass(NamedTuple):
+    bounded_array: chex.Array
+    multi_discrete_array: chex.Array
+
+
+class SecondClass(NamedTuple):
+    array: chex.Array
+    third_class: ThirdClass
+
+
+class FirstClass(NamedTuple):
+    bounded_array: chex.Array
+    second_class: SecondClass
+    discrete_array: chex.Array
+
+
+@pytest.fixture
+def nested_spec() -> specs.Spec:
+    """Fixture representing a triply nested spec."""
+    return specs.Spec(
+        FirstClass,
+        "FirstClassSpec",
+        bounded_array=specs.BoundedArray((7, 9), jnp.int32, 0, 6),
+        second_class=specs.Spec(
+            SecondClass,
+            "SecondClassSpec",
+            array=specs.Array((2, 3), jnp.int32),
+            third_class=specs.Spec(
+                ThirdClass,
+                "ThirdClassSpec",
+                bounded_array=specs.BoundedArray((5, 5), jnp.int32, 0, 3),
+                multi_discrete_array=specs.MultiDiscreteArray(
+                    jnp.array([4, 5]), jnp.int32
+                ),
+            ),
+        ),
+        discrete_array=specs.DiscreteArray(5, jnp.int32),
+    )
+
+
+def test_spec__type(nested_spec: specs.Spec) -> None:
+    assert isinstance(nested_spec, specs.Spec)
+
+    # Verify that all the leaves are specs
+    result = jax.tree_util.tree_map(
+        lambda s: isinstance(s, specs.Spec),
+        nested_spec,
+    )
+    assert jnp.all(jnp.array(jax.tree_util.tree_leaves(result)))
+
+
+def test_spec__generate_value(nested_spec: specs.Spec) -> None:
+    assert isinstance(nested_spec.generate_value(), FirstClass)
+    assert isinstance(nested_spec["second_class"].generate_value(), SecondClass)
+    assert isinstance(
+        nested_spec["second_class"]["third_class"].generate_value(), ThirdClass
+    )
+
+
+def test_spec__validate(nested_spec: specs.Spec) -> None:
+    third_class = ThirdClass(
+        bounded_array=jnp.ones((5, 5), jnp.int32),
+        multi_discrete_array=jnp.ones(2, jnp.int32),
+    )
+    third_class = nested_spec["second_class"]["third_class"].validate(third_class)
+    assert isinstance(third_class, ThirdClass)
+
+    second_class = SecondClass(
+        array=jnp.ones((2, 3), jnp.int32), third_class=third_class
+    )
+    second_class = nested_spec["second_class"].validate(second_class)
+    assert isinstance(second_class, SecondClass)
+
+    first_class = FirstClass(
+        bounded_array=jnp.ones((7, 9), jnp.int32),
+        second_class=second_class,
+        discrete_array=jnp.ones((), jnp.int32),
+    )
+    first_class = nested_spec.validate(first_class)
+    assert isinstance(first_class, FirstClass)
+
+
+def test_spec__replace(nested_spec: specs.Spec) -> None:
+    arg_list = ["bounded_array", "second_class", "discrete_array"]
+    modified_specs = [
+        nested_spec["bounded_array"].replace(name="wrong_name"),
+        nested_spec["second_class"].replace(
+            y=nested_spec["second_class"]["array"].replace(dtype=float)
+        ),
+        nested_spec["second_class"].replace(
+            second_class=nested_spec["second_class"]["third_class"].replace(
+                bounded_array=nested_spec["second_class"]["third_class"][
+                    "bounded_array"
+                ].replace(shape=(333, 333))
+            )
+        ),
+        nested_spec["discrete_array"].replace(num_values=27),
+    ]
+    for arg, modified_spec in zip(arg_list, modified_specs):
+        old_spec = nested_spec
+        new_spec = old_spec.replace(**{arg: modified_spec})
+        assert new_spec != old_spec
+        chex.assert_equal(getattr(new_spec, arg), modified_spec)
+        for attr_name in set(arg_list).difference([arg]):
+            chex.assert_equal(
+                getattr(new_spec, attr_name), getattr(old_spec, attr_name)
+            )
 
 
 class BaseNestedSpec(specs.Spec):
@@ -35,7 +145,7 @@ class BaseNestedSpec(specs.Spec):
         dtype: Union[jnp.dtype, type] = jnp.float32,
         name: str = "",
     ):
-        super().__init__(name)
+        super().__init__(lambda: None, name)
         self._shape = tuple(int(dim) for dim in shape)
         self._dtype = jnp.dtype(dtype)
 
@@ -204,8 +314,8 @@ class TestBoundedArray:
 
     def test_min_max_attributes(self) -> None:
         spec = specs.BoundedArray((1, 2, 3), jnp.float32, 0, (5, 5, 5))
-        assert isinstance(spec.minimum, jnp.ndarray)
-        assert isinstance(spec.maximum, jnp.ndarray)
+        assert isinstance(spec.minimum, chex.Array)
+        assert isinstance(spec.maximum, chex.Array)
 
     @pytest.mark.parametrize(
         "spec_dtype, min_dtype, max_dtype",
@@ -331,8 +441,8 @@ class TestBoundedArray:
     def test_scalar_bounds(self) -> None:
         spec = specs.BoundedArray((), float, minimum=0.0, maximum=1.0)
 
-        assert isinstance(spec.minimum, jnp.ndarray)
-        assert isinstance(spec.maximum, jnp.ndarray)
+        assert isinstance(spec.minimum, chex.Array)
+        assert isinstance(spec.maximum, chex.Array)
 
         # Sanity check that jax compares correctly to a scalar for an empty shape.
         assert spec.minimum == 0.0
@@ -547,10 +657,10 @@ class TestJumanjiSpecsToDmEnvSpecs:
         assert converted_spec.maximum == dm_env_spec.maximum
         assert converted_spec.num_values == dm_env_spec.num_values
 
-    def test_spec(self, singly_nested_spec: SinglyNestedSpec) -> None:
+    def test_spec(self, nested_spec: specs.Spec) -> None:
         with pytest.raises(ValueError):
             # Cannot work with nested specs.
-            _ = specs.jumanji_specs_to_dm_env_specs(singly_nested_spec)
+            _ = specs.jumanji_specs_to_dm_env_specs(nested_spec)
 
 
 class TestJumanjiSpecsToGymSpaces:

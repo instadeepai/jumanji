@@ -15,15 +15,11 @@
 from typing import Tuple
 
 import pytest
+import pytest_mock
 
+import jumanji
 from jumanji import registration
 from jumanji.testing.fakes import FakeEnvironment
-
-
-@pytest.fixture(autouse=True)
-def mock_global_registry(mocker):  # type: ignore
-    mocker.patch("jumanji.registration._REGISTRY", {})
-    return mocker
 
 
 class TestParser:
@@ -41,35 +37,32 @@ class TestParser:
 
 
 class TestRegistrationRules:
-    def test_registration__first_version(self) -> None:
-        # Env-v0 must exist to register v1
-        env_spec = registration.EnvSpec(id="Env-v1", entry_point="")
-        with pytest.raises(ValueError, match="first version"):
-            registration._check_registration_is_allowed(env_spec)
+    def test_registration__next_version(
+        self, mocker: pytest_mock.MockerFixture
+    ) -> None:
+        mocker.patch("jumanji.registration._REGISTRY", {})
 
-        # the first version must be zero
-        env_spec = registration.EnvSpec(id="Env-v0", entry_point="")
-        registration._check_registration_is_allowed(env_spec)
-
-    def test_registration__next_version(self) -> None:
-        # check that the next registrable version is v+1
+        # Check that the next registrable version is v+1
         registration.register("Env-v0", entry_point="")
 
         env_spec = registration.EnvSpec(id="Env-v2", entry_point="")
-        with pytest.raises(ValueError):
-            registration._check_registration_is_allowed(env_spec)
+        registration._check_registration_is_allowed(env_spec)
 
         env_spec = registration.EnvSpec(id="Env-v1", entry_point="")
         registration._check_registration_is_allowed(env_spec)
 
-    def test_registration__already_registered(self) -> None:
+    def test_registration__already_registered(
+        self, mocker: pytest_mock.MockerFixture
+    ) -> None:
+        mocker.patch("jumanji.registration._REGISTRY", {})
         env_spec = registration.EnvSpec(id="Env-v0", entry_point="")
         registration.register(env_spec.id, entry_point=env_spec.entry_point)
         with pytest.raises(ValueError, match="override the registered environment"):
             registration._check_registration_is_allowed(env_spec)
 
 
-def test_register() -> None:
+def test_register(mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
     env_ids = ("Cat-v0", "Dog-v0", "Fish-v0", "Cat-v1")
     for env_id in env_ids:
         registration.register(env_id, entry_point="")
@@ -77,7 +70,10 @@ def test_register() -> None:
     assert all(env_id in registered_envs for env_id in env_ids)
 
 
-def test_register__instantiate_registered_env() -> None:
+def test_register__instantiate_registered_env(
+    mocker: pytest_mock.MockerFixture,
+) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
     env_id = "Fake-v0"
     registration.register(
         id=env_id,
@@ -87,7 +83,8 @@ def test_register__instantiate_registered_env() -> None:
     assert isinstance(env, FakeEnvironment)
 
 
-def test_register__override_kwargs() -> None:
+def test_register__override_kwargs(mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
     env_id = "Fake-v0"
     obs_shape = (11, 17)
     registration.register(
@@ -98,3 +95,17 @@ def test_register__override_kwargs() -> None:
         env_id, observation_shape=obs_shape
     )
     assert env.observation_spec().shape == obs_shape
+
+
+def test_registration__make() -> None:
+    """Check that all the environments in the registry can be initiated correctly
+    using `jumanji.make`.
+    """
+    for env_id, env_spec in registration._REGISTRY.items():
+        assert isinstance(env_spec, registration.EnvSpec)
+
+        env = jumanji.make(env_id)
+        assert isinstance(env, jumanji.Environment)
+
+        env_class = registration.load(env_spec.entry_point)
+        assert isinstance(env, env_class)
