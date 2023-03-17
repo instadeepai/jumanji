@@ -34,8 +34,7 @@ from jumanji.training.networks.transformer_block import TransformerBlock
 
 def make_actor_critic_networks_bin_pack(
     bin_pack: BinPack,
-    num_independent_transformer_layers: int,
-    num_joint_transformer_layers: int,
+    num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
@@ -46,15 +45,13 @@ def make_actor_critic_networks_bin_pack(
         action_spec_num_values=num_values
     )
     policy_network = make_actor_network_bin_pack(
-        num_independent_transformer_layers=num_independent_transformer_layers,
-        num_joint_transformer_layers=num_joint_transformer_layers,
+        num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
     )
     value_network = make_critic_network_bin_pack(
-        num_independent_transformer_layers=num_independent_transformer_layers,
-        num_joint_transformer_layers=num_joint_transformer_layers,
+        num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
@@ -69,20 +66,14 @@ def make_actor_critic_networks_bin_pack(
 class BinPackTorso(hk.Module):
     def __init__(
         self,
-        num_independent_transformer_layers: int,
-        num_joint_transformer_layers: int,
+        num_transformer_layers: int,
         transformer_num_heads: int,
         transformer_key_size: int,
         transformer_mlp_units: Sequence[int],
         name: Optional[str] = None,
     ):
-        """This module first computes self-attention on the EMSs, in parallel with self-attention
-        on the items, then both embeddings are concatenated and the module finishes with
-        self-attention on the concatenation of EMSs and items.
-        """
         super().__init__(name=name)
-        self.num_independent_transformer_layers = num_independent_transformer_layers
-        self.num_joint_transformer_layers = num_joint_transformer_layers
+        self.num_transformer_layers = num_transformer_layers
         self.transformer_num_heads = transformer_num_heads
         self.transformer_key_size = transformer_key_size
         self.transformer_mlp_units = transformer_mlp_units
@@ -90,80 +81,76 @@ class BinPackTorso(hk.Module):
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
         # EMS encoder
-        ems_mask = observation.ems_mask
-        ems_embeddings = self.self_attention_ems(observation.ems, ems_mask)
+        ems_mask = self._make_self_attention_mask(observation.ems_mask)
+        ems_embeddings = self.embed_ems(observation.ems)
 
         # Item encoder
-        items_mask = observation.items_mask & ~observation.items_placed
-        items_embeddings = self.self_attention_items(observation.items, items_mask)
+        items_mask = self._make_self_attention_mask(
+            observation.items_mask & ~observation.items_placed
+        )
+        items_embeddings = self.embed_items(observation.items)
 
         # Decoder
-        decoder_mask = jnp.concatenate([ems_mask, items_mask], axis=-1)
-        embeddings = jnp.concatenate([ems_embeddings, items_embeddings], axis=-2)
-        embeddings = self.self_attention_joint_ems_items(embeddings, decoder_mask)
-
-        return embeddings, decoder_mask
-
-    def self_attention_ems(self, ems: EMS, mask: chex.Array) -> chex.Array:
-        mask = self._make_self_attention_mask(mask)
-
-        # Stack the 6 EMS attributes into a single vector [x1, x2, y1, y2, z1, z2].
-        ems_leaves = jnp.stack(jax.tree_util.tree_leaves(ems), axis=-1)
-
-        # Projection of the EMSs.
-        embeddings = hk.Linear(self.model_size, name="ems_projection")(ems_leaves)
-        for block_id in range(self.num_independent_transformer_layers):
-            transformer_block = TransformerBlock(
+        ems_cross_items_mask = jnp.expand_dims(observation.action_mask, axis=-3)
+        items_cross_ems_mask = jnp.expand_dims(
+            jnp.moveaxis(observation.action_mask, -1, -2), axis=-3
+        )
+        for block_id in range(self.num_transformer_layers):
+            # Self-attention on EMSs.
+            ems_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
                 mlp_units=self.transformer_mlp_units,
-                w_init_scale=1 / self.num_independent_transformer_layers,
+                w_init_scale=2 / self.num_transformer_layers,
                 model_size=self.model_size,
                 name=f"self_attention_ems_block_{block_id}",
-            )
-            embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings, mask=mask
-            )
-        return embeddings
+            )(ems_embeddings, ems_embeddings, ems_embeddings, ems_mask)
 
-    def self_attention_items(self, items: Item, mask: chex.Array) -> chex.Array:
-        mask = self._make_self_attention_mask(mask)
-
-        # Stack the 3 items attributes into a single vector [x_len, y_len, z_len].
-        items_leaves = jnp.stack(jax.tree_util.tree_leaves(items), axis=-1)
-
-        # Projection of the EMSs.
-        embeddings = hk.Linear(self.model_size, name="item_projection")(items_leaves)
-        for block_id in range(self.num_independent_transformer_layers):
-            transformer_block = TransformerBlock(
+            # Self-attention on items.
+            items_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
                 mlp_units=self.transformer_mlp_units,
-                w_init_scale=1 / self.num_independent_transformer_layers,
+                w_init_scale=2 / self.num_transformer_layers,
                 model_size=self.model_size,
                 name=f"self_attention_items_block_{block_id}",
-            )
-            embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings, mask=mask
-            )
-        return embeddings
+            )(items_embeddings, items_embeddings, items_embeddings, items_mask)
 
-    def self_attention_joint_ems_items(
-        self, embeddings: chex.Array, mask: chex.Array
-    ) -> chex.Array:
-        mask = self._make_self_attention_mask(mask)
-        for block_id in range(self.num_joint_transformer_layers):
-            transformer_block = TransformerBlock(
+            # Cross-attention EMSs on items.
+            new_ems_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
                 mlp_units=self.transformer_mlp_units,
-                w_init_scale=1 / self.num_joint_transformer_layers,
+                w_init_scale=2 / self.num_transformer_layers,
                 model_size=self.model_size,
-                name=f"self_attention_joint_ems_items_block_{block_id}",
-            )
-            embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings, mask=mask
-            )
+                name=f"cross_attention_ems_items_block_{block_id}",
+            )(ems_embeddings, items_embeddings, items_embeddings, ems_cross_items_mask)
+
+            # Cross-attention items on EMSs.
+            items_embeddings = TransformerBlock(
+                num_heads=self.transformer_num_heads,
+                key_size=self.transformer_key_size,
+                mlp_units=self.transformer_mlp_units,
+                w_init_scale=2 / self.num_transformer_layers,
+                model_size=self.model_size,
+                name=f"cross_attention_items_ems_block_{block_id}",
+            )(items_embeddings, ems_embeddings, ems_embeddings, items_cross_ems_mask)
+            ems_embeddings = new_ems_embeddings
+
+        return ems_embeddings, items_embeddings
+
+    def embed_ems(self, ems: EMS) -> chex.Array:
+        # Stack the 6 EMS attributes into a single vector [x1, x2, y1, y2, z1, z2].
+        ems_leaves = jnp.stack(jax.tree_util.tree_leaves(ems), axis=-1)
+        # Projection of the EMSs.
+        embeddings = hk.Linear(self.model_size, name="ems_projection")(ems_leaves)
+        return embeddings
+
+    def embed_items(self, items: Item) -> chex.Array:
+        # Stack the 3 items attributes into a single vector [x_len, y_len, z_len].
+        items_leaves = jnp.stack(jax.tree_util.tree_leaves(items), axis=-1)
+        # Projection of the EMSs.
+        embeddings = hk.Linear(self.model_size, name="item_projection")(items_leaves)
         return embeddings
 
     def _make_self_attention_mask(self, mask: chex.Array) -> chex.Array:
@@ -175,34 +162,31 @@ class BinPackTorso(hk.Module):
 
 
 def make_actor_network_bin_pack(
-    num_independent_transformer_layers: int,
-    num_joint_transformer_layers: int,
+    num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = BinPackTorso(
-            num_independent_transformer_layers=num_independent_transformer_layers,
-            num_joint_transformer_layers=num_joint_transformer_layers,
+            num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
-            name="actor_torso",
+            name="policy_torso",
         )
-        embeddings, _ = torso(observation)
-        num_ems = observation.ems_mask.shape[-1]
-        ems_embeddings, items_embeddings = jnp.split(embeddings, (num_ems,), axis=-2)
-        ems_embeddings = hk.nets.MLP(transformer_mlp_units, name="policy_head_ems")(
+        ems_embeddings, items_embeddings = torso(observation)
+
+        # Process EMSs differently from items.
+        ems_embeddings = hk.Linear(torso.model_size, name="policy_ems_head")(
             ems_embeddings
         )
-        items_embeddings = hk.nets.MLP(transformer_mlp_units, name="policy_head_items")(
+        items_embeddings = hk.Linear(torso.model_size, name="policy_items_head")(
             items_embeddings
         )
-        joint_embeddings = jnp.einsum(
-            "...ek,...ik->...ei", ems_embeddings, items_embeddings
-        )
-        logits = joint_embeddings / jnp.sqrt(transformer_mlp_units[-1])
+
+        # Outer-product between the embeddings to obtain logits.
+        logits = jnp.einsum("...ek,...ik->...ei", ems_embeddings, items_embeddings)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits.reshape(*logits.shape[:-2], -1)
 
@@ -211,25 +195,31 @@ def make_actor_network_bin_pack(
 
 
 def make_critic_network_bin_pack(
-    num_independent_transformer_layers: int,
-    num_joint_transformer_layers: int,
+    num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = BinPackTorso(
-            num_independent_transformer_layers=num_independent_transformer_layers,
-            num_joint_transformer_layers=num_joint_transformer_layers,
+            num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
-            name="actor_torso",
+            name="critic_torso",
         )
-        embeddings, decoder_mask = torso(observation)
-        # Sum embeddings over the sequence length (EMSs + items).
-        embedding = jnp.sum(embeddings, axis=-2, where=decoder_mask[..., None])
-        value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)
+        ems_embeddings, items_embeddings = torso(observation)
+
+        # Sum embeddings over the sequence length (EMSs or items).
+        ems_mask = observation.ems_mask
+        ems_embedding = jnp.sum(ems_embeddings, axis=-2, where=ems_mask[..., None])
+        items_mask = observation.items_mask & ~observation.items_placed
+        items_embedding = jnp.sum(
+            items_embeddings, axis=-2, where=items_mask[..., None]
+        )
+        joint_embedding = jnp.concatenate([ems_embedding, items_embedding], axis=-1)
+
+        value = hk.nets.MLP((torso.model_size, 1), name="critic_head")(joint_embedding)
         return jnp.squeeze(value, axis=-1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

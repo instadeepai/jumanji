@@ -43,7 +43,6 @@ class TransformerBlock(hk.Module):
                 to the key size multiplied by the number of heads (K * H).
             name: optional name for this module.
         """
-
         super(TransformerBlock, self).__init__(name=name)
         self.num_heads = num_heads
         self.key_size = key_size

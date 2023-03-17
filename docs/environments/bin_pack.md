@@ -4,76 +4,43 @@
         <img src="../env_anim/bin_pack.gif" width="500"/>
 </p>
 
-We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem). In this problem, the goal of the agent is to efficiently pack a set of boxes of different sizes into a single container with
-as little empty space as possible.
+We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem).
+In this problem, the goal of the agent is to efficiently pack a set of boxes (items) of different
+sizes into a single container with as little empty space as possible.
+
 
 ## Observation
-The observation given to the agent provides information on the available empty space, the items that
-still need to be packed, and information on what actions are legal at this point. The full observation
-spec is as follows:
+The observation given to the agent provides information on the available empty space (called EMSs),
+the items that still need to be packed, and information on what actions are valid at this point.
+The full observation is as follows:
+- `ems`: `EMS` tree of jax arrays (float if `normalize_dimensions` else int32) each of shape
+    `(obs_num_ems,)`, coordinates of all EMSs at the current timestep.
+- `ems_mask`: jax array (bool) of shape `(obs_num_ems,)`, indicates the EMSs that are valid.
+- `items`: `Item` tree of jax arrays (float if `normalize_dimensions` else int32) each of shape
+    `(max_num_items,)`, characteristics of all items for this instance.
+- `items_mask`: jax array (bool) of shape `(max_num_items,)`, indicates the items that are valid.
+- `items_placed`: jax array (bool) of shape `(max_num_items,)`, indicates the items that have been
+    placed so far.
+- `action_mask`: jax array (bool) of shape `(obs_num_ems, max_num_items)`, mask of the joint action
+    space: `True` if the action `[ems_id, item_id]` is valid.
 
 
-**Observation Spec**:
+## Action
+The action space is a `MultiDiscreteArray` of 2 integer values representing the ID of an EMS
+(space) and the ID of an item. For instance, `[1, 5]` will place item 5 in EMS 1.
 
-- **ems**: EMS(Empty Maximal Space) specifying space that can contain an Item defined by 3d points (x1, x2, y1, y2, z1, z2) | shape (obs_num_ems,)
-- **ems_mask**: chex.Array True if ems exist | shape (obs_num_ems,)
-- **items**: Item # defined by (x_len, y_len, z_len) | shape (max_num_items,)
-- **items_mask**: chex.Array True if items exist | shape (max_num_items,)
-- **items_placed**: chex.Array True if items are placed in the container | shape (max_num_items,)
-- **action_mask**: chex.Array Joint action mask specifying which actions are valid | shape (obs_num_ems, max_num_items)
-
-
-## Actions
-At each step in the environment, the agent must provide an action specifying 2 integers:
-- The ID of the `Item` that will be placed in the container.
-- The ID of the `EMS` that the `Item` will be placed in.
-
-Actions taken in the `BinPack` environment follow the rules:
-
-- **Placement**: the chosen item will be placed in the *bottom left corner* of the chosen space.
-- **Support**: an item can be placed only in an `EMS`. These spaces are defined to have a
-non-zero support with an item below or a container surface. Since the item is placed in the corner,
-the support could end up being null. Hence, the item could technically fall to the side or down
-below but the environment keeps it in the corner of the `EMS` for the sake of simplicity.
-- **Gravity**: there is no gravity enforced.
-
-**Note**: not all actions are allowed at each time step, for example you cannot place an item in a
-space that already contains an item. To avoid taking illegal actions, you should always use the
-`action_mask` contained in the observation.
-
-```python
-key = jax.random.PRNGKey(0)
-reset_key, action_key = jax.random.split(key)
-
-# Reset environment
-state, timestep = env.reset(reset_key)
-
-# Randomly choose ems_id and item_id using the action mask
-num_ems, num_items = env.action_spec().num_values
-ems_item_id = jax.random.choice(
-    key=rng_key,
-    a=num_ems * num_items,
-    p=timestep.observation.action_mask.flatten(),
-)
-ems_id, item_id = jnp.divmod(ems_item_id, num_items)
-
-# Wrap the action as a jax array of shape (2,)
-action = jnp.array([ems_id, item_id])
-```
 
 ## Reward
-At the end of the episode, the reward is calculated by penalizing the agent for any remaining space
-in the container: `reward = volume_utilization - 1.0`.
-For example, if the container is 80% full at the end of the episode, the agent will receive
-a reward of `-0.20`. Unless it is a terminal state, each step in the episode returns
-a reward of `0.0`.
+The reward could be either:
+- **Dense**: normalized volume (relative to the container volume) of the item packed by taking
+    the chosen action. The computed reward is equivalent to the increase in volume utilization
+    of the container due to packing the chosen item. If the action is invalid, the reward is 0.0
+    instead.
+- **Sparse**: computed only at the end of the episode (otherwise, returns 0.0). Returns the volume
+    utilization of the container (between 0.0 and 1.0). If the action is invalid, the action is
+    ignored and the reward is still returned as the current container utilization.
 
-```
-reward: jax array of shape() # [-1, 0]
-```
 
 ## Registered Versions 📖
-- `BinPack-toy-v0`, a fixed problem instance containing 20 items to pack in a 20ft container.
-- `BinPack-rand20-v0`, randomly generated instances containing 20 items.
-- `BinPack-rand40-v0`, randomly generated instances containing 40 items.
-- `BinPack-rand100-v0`, randomly generated instances containing 100 items.
+- `BinPack-v1`, 3D bin-packing problem with a solvable random generator that generates up to 30
+items maximum, that can handle 100 EMSs and that shows the 70 largest EMSs to the agent.

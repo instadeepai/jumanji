@@ -15,6 +15,7 @@ It is NP-hard and one of the most well-known combinatorial optimisation problems
 The goal of the agent is to determine the schedule that minimises the time needed to process all the jobs.
 The length of the schedule is also known as its _makespan_.
 
+
 ## Observation
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 - `ops_machine_ids`: jax array (int32) of shape `(num_jobs, max_num_ops)`. For each job, it specifies the machine each op must be processed on.
@@ -30,6 +31,7 @@ The **observation** seen by the agent is a `NamedTuple` containing the following
     available.
 - `action_mask`: jax array (bool) of `(num_machines, num_jobs + 1)`. For each machine, it indicates which jobs (or no-op) can legally be scheduled.
     The last column corresponds to no-op.
+
 
 ## Action
 The action space is a `MultiDiscreteArray` containing an integer value in `[0, 1, ..., num_jobs]` for each machine.
@@ -54,6 +56,7 @@ The rationale for having a no-op is the following:
 - There might not be any jobs that can be scheduled on a machine.
 - There may be scenarios where waiting to schedule a job via one or more no-op(s) ultimately minimises the makespan.
 
+
 ## Reward
 The reward setting is dense: a reward of `-1` is given each time step if none
 of the termination criteria are met. An episode will terminate in any of the three scenarios below:
@@ -66,5 +69,7 @@ is reflected in a large penalty in the reward. This would be `-num_jobs * max_nu
 which is a higher bound on the makespan, corresponding to if every job had `max_num_ops` operations and
 every operation had a processing time of `max_op_duration`.
 
+
 ## Registered Versions 📖
+#TODO: add description of the corresponding registered version.
 - `JobShop-v0`

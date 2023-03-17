@@ -91,7 +91,8 @@ def toy_generator() -> ToyGenerator:
 
 @pytest.fixture
 def random_generator() -> RandomGenerator:
-    return RandomGenerator()
+    """Returns a `RandomGenerator` with up to 20 items and that can handle 80 EMSs."""
+    return RandomGenerator(max_num_items=20, max_num_ems=80)
 
 
 @pytest.fixture

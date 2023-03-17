@@ -6,6 +6,7 @@
 
 We provide here a Jax JIT-able implementation of the _Rubik's cube_. The environment contains an implementation of the classic 3x3x3 cube by default, and configurably other sizes. The goal of the agent is to match all stickers on each face to a single colour. On resetting the environment the cube will be randomly scrambled with a configurable number of turns (by default 100).
 
+
 ## Observation
 The observation given to the agent gives a view of the current state of the cube,
 - `cube`: jax array (int8) of shape `(6, cube_size, cube_size)` whose values are in `[0, 1, 2, 3, 4, 5]`
@@ -20,6 +21,7 @@ Note that the orientation of each face is as follows:
   - DOWN: LEFT face on the left and FRONT face pointing up
 - `step_count`: jax array (int32) of shape `()`, representing the number of steps in the episode thus far.
 
+
 ## Action
 The action space is a `MultiDiscreteArray`, specifically a tuple of an index between 0 and 5 (since there
 are 6 faces), an index between 0 and `cube_size//2` (the number of possible depths), and an index between
@@ -30,10 +32,10 @@ representing the layer closest to the middle),
 - Direction of turn (possible directions are clockwise, anti-clockwise, or a half turn).
 
 
-
 ## Reward
 The reward function is configurable, but by default is the fully sparse reward giving `+1` for solving the cube and otherwise `0`.
 The episode terminates if either the cube is solved or a configurable horizon (by default `200`) is reached.
+
 
 ## Registered Versions 📖
 - `RubiksCube-v0`, the standard Rubik's Cube [puzzle](https://en.wikipedia.org/wiki/Rubik%27s_Cube)

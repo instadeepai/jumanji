@@ -72,7 +72,7 @@ class CategoricalDistribution(Distribution):
 
     def entropy(self) -> chex.Array:
         log_probs = jax.nn.log_softmax(self.logits)
-        probs = jnp.exp(log_probs)
+        probs = jax.nn.softmax(self.logits)
         return -jnp.sum(jnp.where(probs == 0, 0.0, probs * log_probs), axis=-1)
 
     def kl_divergence(  # type: ignore[override]
@@ -80,7 +80,7 @@ class CategoricalDistribution(Distribution):
         other: "CategoricalDistribution",
     ) -> chex.Array:
         log_probs = jax.nn.log_softmax(self.logits)
-        probs = jnp.exp(log_probs)
+        probs = jax.nn.softmax(self.logits)
         log_probs_other = jax.nn.log_softmax(other.logits)
         return jnp.sum(
             jnp.where(probs == 0, 0.0, probs * (log_probs - log_probs_other)), axis=-1

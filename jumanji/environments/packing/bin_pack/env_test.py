@@ -251,6 +251,7 @@ def test_bin_pack__optimal_policy_random_instance(
             action = bin_pack_optimal_policy_select_action(
                 timestep.observation, solution
             )
+            assert timestep.observation.action_mask[tuple(action)]
             state, timestep = step_fn(state, action)
             assert not timestep.extras["invalid_action"]
             assert not timestep.extras["invalid_ems_from_env"]

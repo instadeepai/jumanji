@@ -33,19 +33,10 @@ register(
     kwargs={"cube_size": 3, "time_limit": 20, "num_scrambles_on_reset": 7},
 )
 
-# TODO: register BinPack
-register(
-    id="BinPack-v1",
-    entry_point="jumanji.environments:BinPack",
-    kwargs={
-        "generator": None,  # defaults to RandomGenerator()
-        "obs_num_ems": 50,
-        "reward_fn": None,  # defaults to DenseRewardFn()
-        "normalize_dimensions": True,
-        "debug": False,
-        "render_mode": "human",
-    },
-)
+# 3D bin-packing problem with 30 randomly generated items maximum, 100 EMSs maximum and the 70
+# largest ones are given in the observation.
+register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
+
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
 register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")

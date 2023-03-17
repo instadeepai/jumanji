@@ -33,16 +33,16 @@ class Cleaner(Environment[State]):
     """A JAX implementation of the 'Cleaner' game. # TODO: need a better description here.
 
     - observation: `Observation`
-        - grid: jax array (int) of shape (num_cols, num_rows)
-            the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
-        - agents_locations: jax array (int) of shape (num_agents, 2)
-            the location of each agent on the board.
+        - grid: jax array (int32) of shape (num_rows, num_cols)
+            contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int32) of shape (num_agents, 2)
+            contains the location of each agent on the board.
         - action_mask: jax array (bool) of shape (num_agents, 4)
-            binary mask (False/True <--> invalid/valid action).
+            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
         - step_count: (int32)
             the number of step since the beginning of the episode.
 
-    - action: jax array (int) of shape (num_agents,)
+    - action: jax array (int32) of shape (num_agents,)
         the action for each agent: (0: up, 1: right, 2: down, 3: left)
 
     - reward: jax array (float) of shape ()
@@ -55,15 +55,15 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int) of shape (num_cols, num_rows)
-            the current board: 0 for dirty tile, 1 for clean tile, 2 for wall.
-        - agents_locations: jax array (int) of shape (num_agents, 2)
-            the location of each agent on the board.
+        - grid: jax array (int32) of shape (num_rows, num_cols)
+            contains the current state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
+        - agents_locations: jax array (int32) of shape (num_agents, 2)
+            contains the location of each agent on the board.
         - action_mask: jax array (bool) of shape (num_agents, 4)
-            binary mask (False/True <--> invalid/valid action).
-        - step_count: (int32)
-            the number of step since the beginning of the episode.
-        - key: jax array (int) of shape (2,)
+            indicates for each agent if each of the four actions (up, right, down, left) is allowed.
+        - step_count: jax array (int32) of shape ()
+            the number of steps since the beginning of the episode.
+        - key: jax array (uint) of shape (2,)
             jax random generation key. Ignored since the environment is deterministic.
 
     ```python

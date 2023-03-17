@@ -30,7 +30,6 @@ import gym
 import jax
 import jax.numpy as jnp
 import numpy as np
-from chex import Array, PRNGKey
 
 from jumanji import specs, tree_utils
 from jumanji.env import Environment, State
@@ -64,7 +63,7 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the wrapped env."""
         return self._env.unwrapped
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
 
         Args:
@@ -123,7 +122,7 @@ class Wrapper(Environment[State], Generic[State]):
 class JumanjiToDMEnvWrapper(dm_env.Environment):
     """A wrapper that converts Environment to dm_env.Environment."""
 
-    def __init__(self, env: Environment, key: Optional[PRNGKey] = None):
+    def __init__(self, env: Environment, key: Optional[chex.PRNGKey] = None):
         """Create the wrapped environment.
 
         Args:
@@ -136,7 +135,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
         else:
             self._key = key
         self._state: Any
-        self._jitted_reset: Callable[[PRNGKey], Tuple[State, TimeStep]] = jax.jit(
+        self._jitted_reset: Callable[[chex.PRNGKey], Tuple[State, TimeStep]] = jax.jit(
             self._env.reset
         )
         self._jitted_step: Callable[[State, Action], Tuple[State, TimeStep]] = jax.jit(
@@ -254,7 +253,7 @@ class MultiToSingleWrapper(Wrapper):
             extras=timestep.extras,
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -298,7 +297,7 @@ class VmapWrapper(Wrapper):
     - discount_spec
     """
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         The first dimension of the key will dictate the number of concurrent environments.
@@ -410,7 +409,7 @@ class VmapAutoResetWrapper(Wrapper):
         within the batch because they have terminated).
     """
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets a batch of environments to initial states.
 
         The first dimension of the key will dictate the number of concurrent environments.
@@ -522,7 +521,7 @@ class JumanjiToGymWrapper(gym.Env):
         """
         self._env = env
         self.metadata: Dict[str, str] = {}
-        self.seed(seed)
+        self._key = jax.random.PRNGKey(seed)
         self.backend = backend
         self._state = None
         self.observation_space = specs.jumanji_specs_to_gym_spaces(
@@ -530,7 +529,7 @@ class JumanjiToGymWrapper(gym.Env):
         )
         self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec())
 
-        def reset(key: PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
+        def reset(key: chex.PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
             """Reset function of a Jumanji environment to be jitted."""
             state, timestep = self._env.reset(key)
             return state, timestep.observation, timestep.extras
@@ -539,7 +538,7 @@ class JumanjiToGymWrapper(gym.Env):
 
         def step(
             state: State, action: Action
-        ) -> Tuple[State, Observation, Array, bool, Optional[Any]]:
+        ) -> Tuple[State, Observation, chex.Array, bool, Optional[Any]]:
             """Step function of a Jumanji environment to be jitted."""
             state, timestep = self._env.step(state, action)
             done = jnp.bool_(timestep.last())
@@ -563,7 +562,7 @@ class JumanjiToGymWrapper(gym.Env):
         """
         if seed is not None:
             self.seed(seed)
-        key, self._key = jax.random.split(self._key)  # type: Tuple[PRNGKey, PRNGKey]
+        key, self._key = jax.random.split(self._key)
         self._state, obs, extras = self._reset(key)
 
         # Convert the observation to a numpy array or a nested dict thereof

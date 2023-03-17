@@ -194,8 +194,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
             bin_pack=env.unwrapped,
-            num_independent_transformer_layers=cfg.env.network.num_independent_transformer_layers,
-            num_joint_transformer_layers=cfg.env.network.num_joint_transformer_layers,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
