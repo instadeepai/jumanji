@@ -17,6 +17,10 @@ from jumanji.registration import make, register, registered_environments
 
 """Environment Registration"""
 
+###
+# Logic Environments
+###
+
 # Game2048 - the game of 2048 with the default board size of 4x4.
 register(id="Game2048-v0", entry_point="jumanji.environments:Game2048")
 
@@ -33,6 +37,11 @@ register(
     kwargs={"cube_size": 3, "time_limit": 20, "num_scrambles_on_reset": 7},
 )
 
+
+###
+# Packing Environments
+###
+
 # 3D bin-packing problem with 30 randomly generated items maximum, 100 EMSs maximum and the 70
 # largest ones are given in the observation.
 register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
@@ -44,6 +53,11 @@ register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 # Knapsack problem with 50 randomly generated items, a total budget
 # of 12.5, and a dense reward function.
 register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
+
+
+###
+# Routing Environments
+###
 
 # Cleaner with 10 rows, 10 colums, 3 agents, a time limit of 100, and a random maze generator.
 register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")

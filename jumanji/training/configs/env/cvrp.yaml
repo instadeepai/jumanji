@@ -24,5 +24,5 @@ a2c:
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0
-    l_en: 0.1
+    l_en: 0.01
     learning_rate: 1e-4
