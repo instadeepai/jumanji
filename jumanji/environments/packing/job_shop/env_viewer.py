@@ -91,10 +91,11 @@ class JobShopViewer:
         """
         fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         ax = fig.add_subplot(111)
-        plt.close(fig)
         self._prepare_figure(ax)
 
         def make_frame(state_index: int) -> None:
+            ax.clear()
+            self._prepare_figure(ax)
             state = states[state_index]
             ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)

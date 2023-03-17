@@ -46,8 +46,8 @@ register(
         "render_mode": "human",
     },
 )
-
-# TODO: register JobShop correctly with a descriptive inline comment.
+# Job-shop scheduling problem with 20 jobs, 10 machines, at most
+# 8 operations per job, and a max operation duration of 6 timesteps.
 register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 
 # Knapsack problem with 50 randomly generated items, a total budget

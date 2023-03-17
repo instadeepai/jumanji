@@ -56,10 +56,10 @@ class TestToyGenerator:
 
     def test_toy_generator__properties(self, toy_generator: ToyGenerator) -> None:
         """Validate that the toy instance generator has the correct properties."""
-        assert toy_generator.num_jobs == 9
-        assert toy_generator.num_machines == 5
-        assert toy_generator.max_num_ops == 7
-        assert toy_generator.max_op_duration == 8
+        assert toy_generator.num_jobs == 5
+        assert toy_generator.num_machines == 4
+        assert toy_generator.max_num_ops == 4
+        assert toy_generator.max_op_duration == 4
 
     def test_toy_generator__call(self, toy_generator: ToyGenerator) -> None:
         """Validate that the toy instance generator's call function behaves correctly,

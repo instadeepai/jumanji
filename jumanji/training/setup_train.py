@@ -231,10 +231,12 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, JobShop)
         actor_critic_networks = networks.make_actor_critic_networks_job_shop(
             job_shop=env.unwrapped,
-            policy_layers=cfg.env.network.policy_layers,
-            value_layers=cfg.env.network.value_layers,
-            operations_layers=cfg.env.network.operations_layers,
-            machines_layers=cfg.env.network.machines_layers,
+            num_layers_machines=cfg.env.network.num_layers_machines,
+            num_layers_operations=cfg.env.network.num_layers_operations,
+            num_layers_joint_machines_jobs=cfg.env.network.num_layers_joint_machines_jobs,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)

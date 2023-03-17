@@ -93,9 +93,16 @@ class JobShop(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are ['ToyGenerator', 'RandomGenerator'].
-                Defaults to `RandomGenerator` with its default parameters.
+                Defaults to `RandomGenerator` with 20 jobs, 10 machines, up to 8 ops
+                for any given job, and a max operation duration of 6.
         """
-        self.generator = generator or RandomGenerator()
+        default_generator = RandomGenerator(
+            num_jobs=20,
+            num_machines=10,
+            max_num_ops=8,
+            max_op_duration=6,
+        )
+        self.generator = generator or default_generator
         self.num_jobs = self.generator.num_jobs
         self.num_machines = self.generator.num_machines
         self.max_num_ops = self.generator.max_num_ops
@@ -235,6 +242,8 @@ class JobShop(Environment[State]):
 
         # Compute terminal condition
         done = invalid | all_machines_idle | schedule_finished
+
+        # Compute reward
         reward = jnp.where(
             invalid | all_machines_idle,
             jnp.array(-self.num_jobs * self.max_num_ops * self.max_op_duration, float),
@@ -243,9 +252,10 @@ class JobShop(Environment[State]):
 
         timestep = jax.lax.cond(
             done,
-            lambda _: termination(reward=reward, observation=next_obs),
-            lambda _: transition(reward=reward, observation=next_obs),
-            operand=None,
+            termination,
+            transition,
+            reward,
+            next_obs,
         )
 
         return next_state, timestep

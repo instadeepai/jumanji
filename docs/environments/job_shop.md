@@ -1,7 +1,7 @@
 # JobShop Environment
 
 <p align="center">
-        <img src="../env_anim/job_shop.gif" height="600"/>
+        <img src="../env_anim/job_shop_annotated.gif" height="600"/>
 </p>
 
 We provide here a JAX jit-able implementation of the [job shop scheduling problem](https://developers.google.com/optimization/scheduling/job_shop).

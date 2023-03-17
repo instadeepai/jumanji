@@ -36,7 +36,7 @@ spec:
         accelerators: # optional
           gpu:
             count: 1
-            product: Quadro-RTX-4000 # options: Quadro-RTX-4000, A100-SXM4-80GB, Tesla-V100-SXM3-32GB
+            product: Tesla-V100-SXM3-32GB # options: Quadro-RTX-4000, A100-SXM4-80GB, Tesla-V100-SXM3-32GB
             type: gpu
 
 #        machineName: "dgx" # optional

@@ -2,14 +2,16 @@ name: job_shop
 registered_version: JobShop-v0
 
 network:
-    policy_layers: [64, 64]
-    value_layers: [64, 64]
-    operations_layers: [128, 128]
-    machines_layers: [128, 128]
+    num_layers_machines: 1
+    num_layers_operations: 1
+    num_layers_joint_machines_jobs: 2
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
 
 training:
-    num_epochs: 100
-    num_learner_steps_per_epoch: 500
+    num_epochs: 65
+    num_learner_steps_per_epoch: 200
     n_steps: 10
     total_batch_size: 128
 

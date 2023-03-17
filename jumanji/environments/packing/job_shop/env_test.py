@@ -17,13 +17,14 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.packing.job_shop.env import JobShop
+from jumanji.environments.packing.job_shop.generator import ToyGenerator
 from jumanji.environments.packing.job_shop.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.types import TimeStep
 
 
 class TestJobShop:
-    def test_env__reset(self, job_shop_env: JobShop) -> None:
+    def test_job_shop__reset(self, job_shop_env: JobShop) -> None:
         """Test that the environment is reset correctly."""
         key = jax.random.PRNGKey(0)
         state, timestep = job_shop_env.reset(key)
@@ -76,7 +77,7 @@ class TestJobShop:
         )
         assert state.step_count == jnp.array(0, jnp.int32)
 
-    def test_env__reset_jit(self, job_shop_env: JobShop) -> None:
+    def test_job_shop__reset_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the reset is only compiled once when jitted."""
         chex.clear_trace_counter()
         reset_fn = jax.jit(chex.assert_max_traces(job_shop_env.reset, n=1))
@@ -88,7 +89,7 @@ class TestJobShop:
         assert isinstance(timestep, TimeStep)
         assert isinstance(state, State)
 
-    def test_env__step(self, job_shop_env: JobShop) -> None:
+    def test_job_shop__step(self, job_shop_env: JobShop) -> None:
         """Test the 12 steps of the dummy instance."""
 
         key = jax.random.PRNGKey(0)
@@ -763,7 +764,7 @@ class TestJobShop:
         )
         assert next_state.step_count == 12
 
-    def test_env__step_jit(self, job_shop_env: JobShop) -> None:
+    def test_job_shop__step_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the step is only compiled once when jitted."""
         key = jax.random.PRNGKey(0)
         state, timestep = job_shop_env.reset(key)
@@ -777,6 +778,40 @@ class TestJobShop:
         next_state, next_timestep = step_fn(state, action)
         assert isinstance(next_timestep, TimeStep)
         assert isinstance(next_state, State)
+
+    def test_job_shop__toy_generator_reward(self) -> None:
+        """Verify that the specified actions lead to the optimal makespan
+        for the `ToyGenerator` and thus a reward of -8.
+        """
+        key = jax.random.PRNGKey(0)
+        toy_generator = ToyGenerator()
+        env = JobShop(toy_generator)
+        state, timestep = env.reset(key)
+        no_op_idx = env.num_jobs
+
+        # Sequence of optimal actions
+        actions = [
+            jnp.array([3, 4, 0, 1]),
+            jnp.array([no_op_idx, no_op_idx, no_op_idx, no_op_idx]),
+            jnp.array([no_op_idx, no_op_idx, 1, 0]),
+            jnp.array([no_op_idx, 2, no_op_idx, no_op_idx]),
+            jnp.array([4, no_op_idx, no_op_idx, 3]),
+            jnp.array([3, 0, no_op_idx, 2]),
+            jnp.array([1, 4, 0, no_op_idx]),
+            jnp.array([3, no_op_idx, no_op_idx, no_op_idx]),
+        ]
+        dense_return = 0
+        for action in actions:
+            state, timestep = env.step(state, action)
+            dense_return += timestep.reward
+
+        assert dense_return == -8  # Known optimal makespan of `ToyGenerator`
+        assert timestep.last()
+
+        # Check that doing a no-op leads to a large negative penalty
+        action = jnp.array([no_op_idx, no_op_idx, no_op_idx, no_op_idx])
+        state, timestep = env.step(state, action)
+        assert timestep.reward == -env.num_jobs * env.max_num_ops * env.max_op_duration
 
     def test_job_shop_env__does_not_smoke(self, job_shop_env: JobShop) -> None:
         """Test that we can run an episode without any errors."""

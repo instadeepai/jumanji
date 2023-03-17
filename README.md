@@ -52,6 +52,7 @@ To join us in these efforts, reach out, raise issues and read our [contribution 
 2. Make research in RL more accessible.
 3. Facilitate the research on RL for problems in the industry and
 help close the gap between research and industrial applications.
+4. Provide environments whose difficulty can be scaled to be arbitrarily hard.
 
 ### Overview 🦜
 
@@ -196,6 +197,8 @@ To make Jumanji more accessible, we have provided the following example agents f
 - A2C agent.
 
 These agents can be found [here](jumanji/training/).
+Because the environment framework in Jumanji is so flexible, it allows pretty much any problem to be implemented as a Jumanji environment, giving rise to very diverse observations. For this reason, environment-specific networks are required to capture the symmetries of each environment. Alongside the A2C agent implementation, we provide examples of such actor-critic environment-specific networks in `jumanji/training/networks`.
+
 > ⚠️ The example agents in `jumanji/training` are **only** meant to serve as inspiration for how you can
 > implement your own agent. Jumanji is first and foremost a library of environments - as such, the
 > agents and networks will **not** be maintained to a production standard.
