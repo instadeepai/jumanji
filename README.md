@@ -92,7 +92,7 @@ problems.
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 
 
-## Installation :clapper:
+## Installation 🎬
 
 You can install the latest release of Jumanji from PyPI:
 ```bash
