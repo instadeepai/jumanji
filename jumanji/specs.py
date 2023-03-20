@@ -505,19 +505,20 @@ class MultiDiscreteArray(BoundedArray):
 
 def jumanji_specs_to_dm_env_specs(
     spec: Spec,
-) -> Union[dm_env.specs.DiscreteArray, dm_env.specs.BoundedArray, dm_env.specs.Array]:
-    """Converts jumanji specs back to dm_env specs. The conversion is possible only if the spec
-    is not nested, i.e. is an Array.
+) -> Union[
+    dm_env.specs.DiscreteArray,
+    dm_env.specs.BoundedArray,
+    dm_env.specs.Array,
+    Dict[str, dm_env.specs.Array],
+]:
+    """Converts jumanji specs to dm_env specs or a tree of dm_env specs.
 
     Args:
-        spec: jumanji spec of type `jumanji.specs.Array`. It breaks if spec is nested.
+        spec: jumanji spec of type `jumanji.specs.Spec`.
 
     Returns:
-        `dm_env.specs.Array` object corresponding to the equivalent jumanji specs implementation.
-
-    Raises:
-        ValueError if spec is not a jumanji specs Array. In that case, one must override the spec
-            method to output specs of type `dm_env.specs.Array`.
+        `dm_env.specs.Array` or pytree of `dm_env.specs.Array` corresponding to the equivalent
+            jumanji specs implementation.
     """
     if isinstance(spec, DiscreteArray):
         return dm_env.specs.DiscreteArray(
@@ -540,11 +541,13 @@ def jumanji_specs_to_dm_env_specs(
             name=spec.name if spec.name else None,
         )
     else:
-        raise ValueError(
-            f"spec {spec} of type {type(spec)} is not available in a deepmind environment. "
-            "Please override the observation_spec or action_spec method to output spec of type "
-            "`dm_env.specs.Array`."
-        )
+        # Nested spec.
+        return {
+            # Iterate over specs.
+            f"{key}": jumanji_specs_to_dm_env_specs(value)
+            for key, value in vars(spec).items()
+            if isinstance(value, Spec)
+        }
 
 
 def jumanji_specs_to_gym_spaces(
@@ -587,11 +590,11 @@ def jumanji_specs_to_gym_spaces(
             dtype=spec.dtype,
             seed=None,
         )
-    # Nested spec such as EMSSpec, ItemSpec, and ObservationSpec in BinPack environment
     else:
+        # Nested spec.
         return gym.spaces.Dict(
             {
-                # Iterate over specs
+                # Iterate over specs.
                 f"{key}": jumanji_specs_to_gym_spaces(value)
                 for key, value in vars(spec).items()
                 if isinstance(value, Spec)
