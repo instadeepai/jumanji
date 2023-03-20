@@ -1,7 +1,7 @@
 # Cleaner Environment
 
 <p align="center">
-        <img src="../env_anim/cleaner.gif" height="600"/>
+        <img src="../env_anim/cleaner.gif" width="600"/>
 </p>
 
 We provide here a JAX jit-able implementation of the [Multi-Agent Cleaning](https://github.com/Bigpig4396/Multi-Agent-Reinforcement-Learning-Environment#multi-agent-cleaner)
@@ -19,12 +19,16 @@ always start in the top left corner of the maze.
 
 ## Observation
 The **observation** seen by the agent is a `NamedTuple` containing the following:
+
 - `grid`: jax array (int) of shape `(num_rows, num_cols)`, array representing the grid, each tile is
     either dirty (0), clean (1), or a wall (2).
+
 - `agents_locations`: jax array (int) of shape `(num_agents, 2)`, array specifying the x and y
     coordinates of every agent.
+
 - `action_mask`: jax array (bool) of shape `(num_agents, 4)`, array specifying, for each agent,
     which action (up, right, down, left) is legal.
+
 - `step_count`: jax array (int32) of shape `()`, number of steps elapsed in the current episode.
 
 
@@ -35,6 +39,7 @@ agent. Each agent can take one of four actions: up (`0`), right (`1`), down (`2`
 The episode terminates if any agent meets one of the following conditions:
 
 - An invalid action is taken, or
+
 - An action is blocked by a wall.
 
 In both cases, the agent's position remains unchanged.

@@ -1,21 +1,26 @@
 # Minesweeper Environment
 
 <p align="center">
-        <img src="../env_anim/minesweeper.gif" height="300"/>
+        <img src="../env_anim/minesweeper.gif" width="500"/>
 </p>
 
-We provide here a Jax JIT-able implementation of the game _Minesweeper_.
+We provide here a Jax JIT-able implementation of the
+[Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) game.
 
 
 ## Observation
 The observation given to the agent consists of:
+
 - `board`: jax array (int32) of shape `(num_rows, num_cols)`:
     each cell contains `-1` if not yet explored, or otherwise the number of mines in
     the 8 adjacent squares.
+
 - `action_mask`: jax array (bool) of shape `(num_rows, num_cols)`:
     indicates which actions are valid (not yet explored squares). This can also be determined from
     the board which will have an entry of `-1` in all of these positions.
+
 - `num_mines`: jax array (int32) of shape `()`, indicates the number of mines to locate.
+
 - `step_count`: jax array (int32) of shape `()`:
     specifies how many timesteps have elapsed since environment reset.
 
@@ -38,5 +43,5 @@ board is solved.
 
 
 ## Registered Versions 📖
-- `Minesweeper-v0`, the classic [game](https://en.wikipedia.org/wiki/Minesweeper) on a 10x10 grid
-with 10 mines to locate.
+- `Minesweeper-v0`, the classic [game](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) on
+a 10x10 grid with 10 mines to locate.
