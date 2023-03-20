@@ -153,6 +153,7 @@ contained in the `timestep`, which is the information perceived by the agent.
 the agent's observation nor part of the environment's internal state.
 
 ### Advanced Usage 🧑‍🔬
+
 Being written in JAX, Jumanji's environments benefit from many of its features including
 automatic vectorization/parallelization (`jax.vmap`, `jax.pmap`) and JIT-compilation (`jax.jit`),
 which can be composed arbitrarily.
@@ -171,6 +172,7 @@ For a full list of registered versions of each environment, check out
 
 
 ## Training 🏎️
+
 To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
 actor-critic (A2C) agent. These agents can be found in
 [jumanji/training/](https://github.com/instadeepai/jumanji/tree/main/jumanji/training/).
@@ -191,6 +193,7 @@ For more information on how to use the example agents, see the
 
 
 ## Contributing 🤝
+
 Contributions are welcome! See our issue tracker for
 [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue). Please read
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
@@ -198,6 +201,7 @@ details on how to submit pull requests, our Contributor License Agreement, and c
 
 
 ## Citing Jumanji ✏️
+
 If you use Jumanji in your work, please cite the library using:
 ```
 @software{jumanji2023github,
@@ -214,6 +218,7 @@ If you use Jumanji in your work, please cite the library using:
 
 
 ## See Also 🔎
+
 Other works have embraced the approach of writing RL environments in JAX.
 In particular, we suggest users check out the following sister repositories:
 
