@@ -14,8 +14,8 @@
 [**Environments**](#environments-)
 | [**Installation**](#installation-)
 | [**Quickstart**](#quickstart-)
-| [**Training**](#training-)
-| [**Citation**](#citing-jumanji-)
+| [**Training**](#training-%EF%B8%8F)
+| [**Citation**](#citing-jumanji-%EF%B8%8F)
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
