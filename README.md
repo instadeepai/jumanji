@@ -11,11 +11,11 @@
 [![MyPy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[**Installation**](#installation-)
+[**Environments**](#environments-)
+| [**Installation**](#installation-)
 | [**Quickstart**](#quickstart-)
-| [**Examples**](#examples-%EF%B8%8F)
-| [**Environments**](#environments-)
-| [**Citation**](#citing-jumanji-%EF%B8%8F)
+| [**Training**](#training-)
+| [**Citation**](#citing-jumanji-)
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
