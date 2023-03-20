@@ -20,18 +20,17 @@ else:
     from chex import dataclass
 
 import chex
+import jax
 import jax.numpy as jnp
-from chex import PRNGKey
-from jax import lax, random
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 @dataclass
 class FakeState:
-    key: PRNGKey
+    key: chex.PRNGKey
     step: jnp.int32
 
 
@@ -85,7 +84,7 @@ class FakeEnvironment(Environment[FakeState]):
             name="action",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[FakeState, TimeStep]:
         """Resets the environment to an initial state: step number is 0.
 
         Args:
@@ -101,7 +100,7 @@ class FakeEnvironment(Environment[FakeState]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: FakeState, action: Action) -> Tuple[FakeState, TimeStep]:
+    def step(self, state: FakeState, action: chex.Array) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -113,11 +112,11 @@ class FakeEnvironment(Environment[FakeState]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
         chex.assert_equal_shape((action, self._example_action))
-        key, _ = random.split(state.key)
+        key, _ = jax.random.split(state.key)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
         observation = self._state_to_obs(next_state)
-        timestep = lax.cond(
+        timestep = jax.lax.cond(
             next_step >= self.time_limit,
             termination,
             transition,
@@ -220,7 +219,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
             name="discount",
         )
 
-    def reset(self, key: PRNGKey) -> Tuple[FakeState, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[FakeState, TimeStep]:
         """Resets the environment to an initial state: step number is 0.
 
         Args:
@@ -236,7 +235,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 
-    def step(self, state: FakeState, action: Action) -> Tuple[FakeState, TimeStep]:
+    def step(self, state: FakeState, action: chex.Array) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -247,10 +246,10 @@ class FakeMultiEnvironment(Environment[FakeState]):
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        key = random.split(state.key, 1).squeeze(0)
+        key = jax.random.split(state.key, 1).squeeze(0)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
-        timestep = lax.cond(
+        timestep = jax.lax.cond(
             next_step >= self.time_limit,
             lambda _: termination(
                 reward=jnp.ones(self.num_agents, float) * self.reward_per_step,

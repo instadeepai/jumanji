@@ -14,10 +14,10 @@
 
 from typing import Optional, Sequence, Tuple
 
+import chex
 import jax
 import jax.numpy as jnp
 import matplotlib.animation as animation
-from chex import Array, PRNGKey
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -29,7 +29,7 @@ from jumanji.environments.logic.game_2048.utils import (
     move_right,
     move_up,
 )
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class Game2048(Environment[State]):
@@ -132,7 +132,7 @@ class Game2048(Environment[State]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def reset(self, key: PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -162,7 +162,9 @@ class Game2048(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
         Args:
@@ -233,7 +235,7 @@ class Game2048(Environment[State]):
 
         return state, timestep
 
-    def _generate_board(self, key: PRNGKey) -> Board:
+    def _generate_board(self, key: chex.PRNGKey) -> Board:
         """Generates an initial board for the environment.
 
         The method generates an empty board with the specified size and fills a random cell with
@@ -253,7 +255,7 @@ class Game2048(Environment[State]):
 
         return board
 
-    def _add_random_cell(self, board: Board, key: PRNGKey) -> Board:
+    def _add_random_cell(self, board: Board, key: chex.PRNGKey) -> Board:
         """Adds a new random cell to the board.
 
         This method selects an empty position in the board and assigns it a value
@@ -284,7 +286,7 @@ class Game2048(Environment[State]):
 
         return board
 
-    def _get_action_mask(self, board: Board) -> Array:
+    def _get_action_mask(self, board: Board) -> chex.Array:
         """Generates a binary mask indicating which actions are valid.
 
         If the movement in that direction leaves the board unchanged, the action is

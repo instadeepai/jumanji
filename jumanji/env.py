@@ -21,7 +21,7 @@ import chex
 from typing_extensions import Protocol
 
 from jumanji import specs
-from jumanji.types import Action, TimeStep
+from jumanji.types import TimeStep
 
 
 class StateProtocol(Protocol):
@@ -56,7 +56,7 @@ class Environment(abc.ABC, Generic[State]):
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
         """Run one timestep of the environment's dynamics.
 
         Args:
