@@ -222,14 +222,14 @@ If you use Jumanji in your work, please cite the library using:
 Other works have embraced the approach of writing RL environments in JAX.
 In particular, we suggest users check out the following sister repositories:
 
+- 🤖 [Qdax](https://github.com/adaptive-intelligent-robotics/QDax) is a library to accelerate
+Quality-Diversity and neuro-evolution algorithms through hardware accelerators and parallelization.
 - 🦾 [Brax](https://github.com/google/brax) is a differentiable physics engine that simulates
 environments made up of rigid bodies, joints, and actuators.
 - 🏋️‍ [Gymnax](https://github.com/RobertTLange/gymnax) implements classic environments including
 classic control, bsuite, MinAtar and a collection of meta RL tasks.
 - 🌳 [Evojax](https://github.com/google/evojax) provides tools to enable neuroevolution algorithms
 to work with neural networks running across multiple TPU/GPUs.
-- 🤖 [Qdax](https://github.com/adaptive-intelligent-robotics/QDax) is a library to accelerate
-Quality-Diversity and neuro-evolution algorithms through hardware accelerators and parallelization.
 
 
 ## Acknowledgements 🙏
