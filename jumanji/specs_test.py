@@ -15,202 +15,162 @@
 # Adapted from dm_env.specs_test
 # ============================================================================
 import pickle
-from typing import Any, Iterable, NamedTuple, Sequence, Union
+from collections import namedtuple
+from typing import Any, NamedTuple, Sequence, Union
 
 import chex
 import dm_env.specs
 import gym.spaces
 import jax.numpy as jnp
-import jax.tree_util
 import numpy as np
 import pytest
 from chex import assert_trees_all_equal
 
 from jumanji import specs
+from jumanji.testing.pytrees import assert_tree_with_leaves_of_type
 
 
-class ThirdClass(NamedTuple):
+class SinglyNested(NamedTuple):
+    array: chex.Array
     bounded_array: chex.Array
     multi_discrete_array: chex.Array
 
 
-class SecondClass(NamedTuple):
-    array: chex.Array
-    third_class: ThirdClass
+class DoublyNested(NamedTuple):
+    singly_nested: SinglyNested
+    discrete_array: chex.Array
 
 
-class FirstClass(NamedTuple):
+class TriplyNested(NamedTuple):
+    doubly_nested: DoublyNested
     bounded_array: chex.Array
-    second_class: SecondClass
     discrete_array: chex.Array
 
 
 @pytest.fixture
-def nested_spec() -> specs.Spec:
+def singly_nested_spec() -> specs.Spec:
+    """An example of a singly nested Jumanji spec."""
+    return specs.Spec(
+        SinglyNested,
+        "SinglyNestedSpec",
+        array=specs.Array((3, 1), jnp.int32),
+        bounded_array=specs.BoundedArray((5, 5), jnp.int32, 0, 3),
+        multi_discrete_array=specs.MultiDiscreteArray(jnp.array([4, 5]), jnp.int32),
+    )
+
+
+@pytest.fixture
+def doubly_nested_spec(singly_nested_spec: specs.Spec) -> specs.Spec:
+    """An example of a doubly nested Jumanji spec."""
+    return specs.Spec(
+        DoublyNested,
+        "DoublyNestedSpec",
+        singly_nested=singly_nested_spec,
+        discrete_array=specs.DiscreteArray(num_values=5),
+    )
+
+
+@pytest.fixture
+def triply_nested_spec(doubly_nested_spec: specs.Spec) -> specs.Spec[TriplyNested]:
     """Fixture representing a triply nested spec."""
     return specs.Spec(
-        FirstClass,
-        "FirstClassSpec",
+        TriplyNested,
+        "TriplyNestedSpec",
+        doubly_nested=doubly_nested_spec,
         bounded_array=specs.BoundedArray((7, 9), jnp.int32, 0, 6),
-        second_class=specs.Spec(
-            SecondClass,
-            "SecondClassSpec",
-            array=specs.Array((2, 3), jnp.int32),
-            third_class=specs.Spec(
-                ThirdClass,
-                "ThirdClassSpec",
-                bounded_array=specs.BoundedArray((5, 5), jnp.int32, 0, 3),
-                multi_discrete_array=specs.MultiDiscreteArray(
-                    jnp.array([4, 5]), jnp.int32
-                ),
-            ),
-        ),
         discrete_array=specs.DiscreteArray(5, jnp.int32),
     )
 
 
-def test_spec__type(nested_spec: specs.Spec) -> None:
-    assert isinstance(nested_spec, specs.Spec)
-
-    # Verify that all the leaves are specs
-    result = jax.tree_util.tree_map(
-        lambda s: isinstance(s, specs.Spec),
-        nested_spec,
+@pytest.fixture
+def not_jumanji_type_spec() -> specs.Spec:
+    """An example of nested Spec whose only leaf is not a Jumanji spec."""
+    return specs.Spec(
+        namedtuple("not_jumanji_type", ["dm_env_array"]),
+        "NotJumanjiTypeSpec",
+        dm_env_array=dm_env.specs.Array(shape=(2, 3), dtype=np.float32),
     )
-    assert jnp.all(jnp.array(jax.tree_util.tree_leaves(result)))
-
-
-def test_spec__generate_value(nested_spec: specs.Spec) -> None:
-    assert isinstance(nested_spec.generate_value(), FirstClass)
-    assert isinstance(nested_spec["second_class"].generate_value(), SecondClass)
-    assert isinstance(
-        nested_spec["second_class"]["third_class"].generate_value(), ThirdClass
-    )
-
-
-def test_spec__validate(nested_spec: specs.Spec) -> None:
-    third_class = ThirdClass(
-        bounded_array=jnp.ones((5, 5), jnp.int32),
-        multi_discrete_array=jnp.ones(2, jnp.int32),
-    )
-    third_class = nested_spec["second_class"]["third_class"].validate(third_class)
-    assert isinstance(third_class, ThirdClass)
-
-    second_class = SecondClass(
-        array=jnp.ones((2, 3), jnp.int32), third_class=third_class
-    )
-    second_class = nested_spec["second_class"].validate(second_class)
-    assert isinstance(second_class, SecondClass)
-
-    first_class = FirstClass(
-        bounded_array=jnp.ones((7, 9), jnp.int32),
-        second_class=second_class,
-        discrete_array=jnp.ones((), jnp.int32),
-    )
-    first_class = nested_spec.validate(first_class)
-    assert isinstance(first_class, FirstClass)
-
-
-def test_spec__replace(nested_spec: specs.Spec) -> None:
-    arg_list = ["bounded_array", "second_class", "discrete_array"]
-    modified_specs = [
-        nested_spec["bounded_array"].replace(name="wrong_name"),
-        nested_spec["second_class"].replace(
-            y=nested_spec["second_class"]["array"].replace(dtype=float)
-        ),
-        nested_spec["second_class"].replace(
-            second_class=nested_spec["second_class"]["third_class"].replace(
-                bounded_array=nested_spec["second_class"]["third_class"][
-                    "bounded_array"
-                ].replace(shape=(333, 333))
-            )
-        ),
-        nested_spec["discrete_array"].replace(num_values=27),
-    ]
-    for arg, modified_spec in zip(arg_list, modified_specs):
-        old_spec = nested_spec
-        new_spec = old_spec.replace(**{arg: modified_spec})
-        assert new_spec != old_spec
-        chex.assert_equal(getattr(new_spec, arg), modified_spec)
-        for attr_name in set(arg_list).difference([arg]):
-            chex.assert_equal(
-                getattr(new_spec, attr_name), getattr(old_spec, attr_name)
-            )
-
-
-class BaseNestedSpec(specs.Spec):
-    def __init__(
-        self,
-        shape: Iterable = (2, 3),
-        dtype: Union[jnp.dtype, type] = jnp.float32,
-        name: str = "",
-    ):
-        super().__init__(lambda: None, name)
-        self._shape = tuple(int(dim) for dim in shape)
-        self._dtype = jnp.dtype(dtype)
-
-    def validate(self, value: Any) -> Any:
-        return value
-
-    def generate_value(self) -> Any:
-        pass
-
-    def replace(self, **kwargs: Any) -> "BaseNestedSpec":
-        return self
-
-    def __repr__(self) -> str:
-        return ""
-
-
-class SinglyNestedSpec(BaseNestedSpec):
-    """A singly nested spec that defines an Array, a BoundedArray and a DiscreteArray."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.array_spec = specs.Array(self._shape, self._dtype)
-        self.bounded_array_spec = specs.BoundedArray(self._shape, self._dtype, 0.0, 1.0)
-        self.discrete_array_spec = specs.DiscreteArray(num_values=5)
-
-
-class DoublyNestedSpec(BaseNestedSpec):
-    """A doubly nested Spec."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.nested_spec = SinglyNestedSpec()
-        self.array_spec = specs.Array(self._shape, self._dtype)
-        self.bounded_array_spec = specs.BoundedArray(self._shape, self._dtype, 0.0, 1.0)
-        self.discrete_array_spec = specs.DiscreteArray(num_values=5)
-
-
-class MixedSpec(BaseNestedSpec):
-    """A nested spec with a mix of primitive Jumanji specs and attributes that are
-    not Jumanji specs.
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.nested_spec = SinglyNestedSpec()
-        self.array_spec = specs.Array(self._shape, self._dtype)
-        self.not_spec_1 = [1.0]
-        self.not_spec_2 = (2.0,)
-
-
-class NotJumanjiSpec(BaseNestedSpec):
-    """An example of nested Spec whose leaves are not Jumanji specs."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.dm_env_spec = dm_env.specs.Array(
-            shape=self._shape, dtype=self._dtype, name=self._name
-        )
-        self.not_spec_1 = 1.0
-        self.not_spec_2 = (3.0,)
 
 
 @pytest.fixture
-def singly_nested_spec() -> SinglyNestedSpec:
-    return SinglyNestedSpec()
+def mixed_spec(
+    singly_nested_spec: specs.Spec, not_jumanji_type_spec: specs.Spec
+) -> specs.Spec:
+    """An example of nested Spec whose leaves are a mix of Jumanji and non-Jumanji specs."""
+    return specs.Spec(
+        namedtuple("mixed_type", ["singly_nested", "not_jumanji_type"]),
+        "MixedSpec",
+        singly_nested=singly_nested_spec,
+        not_jumanji_type=not_jumanji_type_spec,
+    )
+
+
+class TestNestedSpec:
+    def test_spec__type(self, triply_nested_spec: specs.Spec) -> None:
+        assert isinstance(triply_nested_spec, specs.Spec)
+        # Verify that all the leaves are specs.
+        assert_tree_with_leaves_of_type(triply_nested_spec, specs.Spec)
+
+    def test_spec__generate_value(self, triply_nested_spec: specs.Spec) -> None:
+        assert isinstance(triply_nested_spec.generate_value(), TriplyNested)
+        assert isinstance(
+            triply_nested_spec["doubly_nested"].generate_value(), DoublyNested
+        )
+        assert isinstance(
+            triply_nested_spec["doubly_nested"]["singly_nested"].generate_value(),
+            SinglyNested,
+        )
+
+    def test_spec__validate(self, triply_nested_spec: specs.Spec) -> None:
+        singly_nested = triply_nested_spec["doubly_nested"][
+            "singly_nested"
+        ].generate_value()
+        assert isinstance(singly_nested, SinglyNested)
+
+        doubly_nested = DoublyNested(
+            singly_nested=singly_nested,
+            discrete_array=jnp.ones((), jnp.int32),
+        )
+        doubly_nested = triply_nested_spec["doubly_nested"].validate(doubly_nested)
+        assert isinstance(doubly_nested, DoublyNested)
+
+        triply_nested = TriplyNested(
+            doubly_nested=doubly_nested,
+            bounded_array=jnp.ones((7, 9), jnp.int32),
+            discrete_array=jnp.ones((), jnp.int32),
+        )
+        triply_nested = triply_nested_spec.validate(triply_nested)
+        assert isinstance(triply_nested, TriplyNested)
+
+    def test_spec__replace(self, triply_nested_spec: specs.Spec) -> None:
+        arg_list = ["doubly_nested", "bounded_array", "discrete_array"]
+        modified_specs = [
+            triply_nested_spec["bounded_array"].replace(name="wrong_name"),
+            triply_nested_spec["doubly_nested"].replace(
+                y=triply_nested_spec["doubly_nested"]["discrete_array"].replace(
+                    num_values=2
+                )
+            ),
+            triply_nested_spec["doubly_nested"].replace(
+                doubly_nested=triply_nested_spec["doubly_nested"][
+                    "singly_nested"
+                ].replace(
+                    bounded_array=triply_nested_spec["doubly_nested"]["singly_nested"][
+                        "bounded_array"
+                    ].replace(shape=(33, 33))
+                )
+            ),
+            triply_nested_spec["discrete_array"].replace(num_values=27),
+        ]
+        for arg, modified_spec in zip(arg_list, modified_specs):
+            old_spec = triply_nested_spec
+            new_spec = old_spec.replace(**{arg: modified_spec})
+            assert new_spec != old_spec
+            chex.assert_equal(getattr(new_spec, arg), modified_spec)
+            for attr_name in set(arg_list).difference([arg]):
+                chex.assert_equal(
+                    getattr(new_spec, attr_name), getattr(old_spec, attr_name)
+                )
 
 
 class TestArray:
@@ -314,8 +274,8 @@ class TestBoundedArray:
 
     def test_min_max_attributes(self) -> None:
         spec = specs.BoundedArray((1, 2, 3), jnp.float32, 0, (5, 5, 5))
-        assert isinstance(spec.minimum, chex.Array)
-        assert isinstance(spec.maximum, chex.Array)
+        assert isinstance(spec.minimum, jnp.ndarray)
+        assert isinstance(spec.maximum, jnp.ndarray)
 
     @pytest.mark.parametrize(
         "spec_dtype, min_dtype, max_dtype",
@@ -441,8 +401,8 @@ class TestBoundedArray:
     def test_scalar_bounds(self) -> None:
         spec = specs.BoundedArray((), float, minimum=0.0, maximum=1.0)
 
-        assert isinstance(spec.minimum, chex.Array)
-        assert isinstance(spec.maximum, chex.Array)
+        assert isinstance(spec.minimum, jnp.ndarray)
+        assert isinstance(spec.maximum, jnp.ndarray)
 
         # Sanity check that jax compares correctly to a scalar for an empty shape.
         assert spec.minimum == 0.0
@@ -626,7 +586,9 @@ class TestJumanjiSpecsToDmEnvSpecs:
     def test_array(self) -> None:
         jumanji_spec = specs.Array((1, 2), jnp.int32)
         dm_env_spec = dm_env.specs.Array((1, 2), jnp.int32)
-        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        converted_spec: dm_env.specs.Array = specs.jumanji_specs_to_dm_env_specs(
+            jumanji_spec
+        )
         assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
@@ -637,7 +599,9 @@ class TestJumanjiSpecsToDmEnvSpecs:
         dm_env_spec = dm_env.specs.BoundedArray(
             (1, 2), jnp.float32, minimum=0.0, maximum=1.0
         )
-        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        converted_spec: dm_env.specs.BoundedArray = specs.jumanji_specs_to_dm_env_specs(
+            jumanji_spec
+        )
         assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
@@ -648,7 +612,9 @@ class TestJumanjiSpecsToDmEnvSpecs:
     def test_discrete_array(self) -> None:
         jumanji_spec = specs.DiscreteArray(num_values=5, dtype=jnp.int32)
         dm_env_spec = dm_env.specs.DiscreteArray(num_values=5, dtype=jnp.int32)
-        converted_spec = specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        converted_spec: dm_env.specs.DiscreteArray = (
+            specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
+        )
         assert type(converted_spec) == type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
@@ -657,25 +623,54 @@ class TestJumanjiSpecsToDmEnvSpecs:
         assert converted_spec.maximum == dm_env_spec.maximum
         assert converted_spec.num_values == dm_env_spec.num_values
 
-    def test_spec(self, nested_spec: specs.Spec) -> None:
-        with pytest.raises(ValueError):
-            # Cannot work with nested specs.
-            _ = specs.jumanji_specs_to_dm_env_specs(nested_spec)
+    def test_triply_nested_spec(self, triply_nested_spec: specs.Spec) -> None:
+        """Check that the specs in a triply nested spec is correctly converted to its equivalent
+        dm_env.specs.
+        """
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(triply_nested_spec)
+        assert isinstance(converted_spec, dict)
+        assert isinstance(converted_spec["doubly_nested"], dict)
+        assert isinstance(converted_spec["doubly_nested"]["singly_nested"], dict)
+        assert isinstance(
+            converted_spec["doubly_nested"]["singly_nested"]["array"],
+            dm_env.specs.Array,
+        )
+        assert isinstance(
+            converted_spec["doubly_nested"]["singly_nested"]["bounded_array"],
+            dm_env.specs.BoundedArray,
+        )
+        assert isinstance(
+            converted_spec["doubly_nested"]["singly_nested"]["multi_discrete_array"],
+            dm_env.specs.BoundedArray,
+        )
+        assert isinstance(
+            converted_spec["doubly_nested"]["discrete_array"],
+            dm_env.specs.DiscreteArray,
+        )
+        assert isinstance(converted_spec["bounded_array"], dm_env.specs.BoundedArray)
+        assert isinstance(converted_spec["discrete_array"], dm_env.specs.DiscreteArray)
+
+    def test_mixed_spec(self, mixed_spec: specs.Spec) -> None:
+        """Check that in a nested spec with some Jumanji specs and some non-Jumanji specs, only
+        the Jumanji specs are converted to their corresponding dm_env.specs.
+        """
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(mixed_spec)
+        assert isinstance(converted_spec, dict)
+        assert isinstance(converted_spec["singly_nested"], dict)
+        assert_tree_with_leaves_of_type(
+            converted_spec["singly_nested"], dm_env.specs.Array
+        )
+        assert not converted_spec["not_jumanji_type"]
+        assert mixed_spec["not_jumanji_type"]
+
+    def test_not_jumanji_type_spec(self, not_jumanji_type_spec: specs.Spec) -> None:
+        """Check that an empty dict is returned when one tries to convert non-Jumanji specs."""
+        converted_spec = specs.jumanji_specs_to_dm_env_specs(not_jumanji_type_spec)
+        assert isinstance(converted_spec, dict)
+        assert converted_spec == {}
 
 
 class TestJumanjiSpecsToGymSpaces:
-    @pytest.fixture
-    def doubly_nested_spec(self) -> DoublyNestedSpec:
-        return DoublyNestedSpec()
-
-    @pytest.fixture
-    def mixed_spec(self) -> MixedSpec:
-        return MixedSpec()
-
-    @pytest.fixture
-    def not_jumanji_spec(self) -> NotJumanjiSpec:
-        return NotJumanjiSpec()
-
     def test_array(self) -> None:
         jumanji_spec = specs.Array((1, 2), jnp.int32)
         gym_space = gym.spaces.Box(-np.inf, np.inf, (1, 2), jnp.int32)
@@ -716,59 +711,51 @@ class TestJumanjiSpecsToGymSpaces:
         assert type(converted_spec) == type(gym_space)
         assert converted_spec.shape == gym_space.shape
         assert converted_spec.dtype == gym_space.dtype
-        assert (converted_spec.nvec == gym_space.nvec).all()
+        assert jnp.array_equal(converted_spec.nvec, gym_space.nvec)
 
-    def test_singly_nested_spec(self, singly_nested_spec: SinglyNestedSpec) -> None:
-        """Check that a tree of three distinct Jumanji specs is converted to the correct
-        gym.spaces objects.
+    def test_triply_nested_spec(self, triply_nested_spec: specs.Spec) -> None:
+        """Check that the specs in a triply nested spec is correctly converted to its equivalent
+        dm_env.specs.
         """
-        converted_spec = specs.jumanji_specs_to_gym_spaces(singly_nested_spec)
+        converted_spec = specs.jumanji_specs_to_gym_spaces(triply_nested_spec)
         assert isinstance(converted_spec, gym.spaces.Dict)
-        assert isinstance(converted_spec["array_spec"], gym.spaces.Box)
-        assert isinstance(converted_spec["bounded_array_spec"], gym.spaces.Box)
-        assert isinstance(converted_spec["discrete_array_spec"], gym.spaces.Discrete)
-
-    def test_doubly_nested_spec(self, doubly_nested_spec: DoublyNestedSpec) -> None:
-        """Check that the specs in a doubly nested spec are correctly converted to their
-        equivalent gym.spaces objects.
-        """
-        converted_spec = specs.jumanji_specs_to_gym_spaces(doubly_nested_spec)
-        assert isinstance(converted_spec, gym.spaces.Dict)
-        assert isinstance(converted_spec["nested_spec"], gym.spaces.Dict)
-        assert isinstance(converted_spec["nested_spec"]["array_spec"], gym.spaces.Box)
+        assert isinstance(converted_spec["doubly_nested"], gym.spaces.Dict)
         assert isinstance(
-            converted_spec["nested_spec"]["bounded_array_spec"], gym.spaces.Box
+            converted_spec["doubly_nested"]["singly_nested"], gym.spaces.Dict
         )
         assert isinstance(
-            converted_spec["nested_spec"]["discrete_array_spec"], gym.spaces.Discrete
+            converted_spec["doubly_nested"]["singly_nested"]["array"],
+            gym.spaces.Box,
         )
-        assert isinstance(converted_spec["array_spec"], gym.spaces.Box)
-        assert isinstance(converted_spec["bounded_array_spec"], gym.spaces.Box)
-        assert isinstance(converted_spec["discrete_array_spec"], gym.spaces.Discrete)
-        assert "not_spec_1" not in converted_spec.keys()
-        assert "not_spec_2" not in converted_spec.keys()
-        assert len(converted_spec.keys()) == 4
+        assert isinstance(
+            converted_spec["doubly_nested"]["singly_nested"]["bounded_array"],
+            gym.spaces.Box,
+        )
+        assert isinstance(
+            converted_spec["doubly_nested"]["singly_nested"]["multi_discrete_array"],
+            gym.spaces.MultiDiscrete,
+        )
+        assert isinstance(
+            converted_spec["doubly_nested"]["discrete_array"], gym.spaces.Discrete
+        )
+        assert isinstance(converted_spec["bounded_array"], gym.spaces.Box)
+        assert isinstance(converted_spec["discrete_array"], gym.spaces.Discrete)
 
-    def test_mixed_spec(self, mixed_spec: MixedSpec) -> None:
+    def test_mixed_spec(self, mixed_spec: specs.Spec) -> None:
         """Check that in a nested spec with some Jumanji specs and some non-Jumanji specs, only
-        the Jumanji specs are converted to their corresponding gym.spaces objects.
+        the Jumanji specs are converted to their corresponding dm_env.specs.
         """
         converted_spec = specs.jumanji_specs_to_gym_spaces(mixed_spec)
         assert isinstance(converted_spec, gym.spaces.Dict)
-        assert isinstance(converted_spec["nested_spec"], gym.spaces.Dict)
-        assert isinstance(converted_spec["nested_spec"]["array_spec"], gym.spaces.Box)
-        assert isinstance(
-            converted_spec["nested_spec"]["bounded_array_spec"], gym.spaces.Box
+        assert isinstance(converted_spec["singly_nested"], gym.spaces.Dict)
+        assert_tree_with_leaves_of_type(
+            converted_spec["singly_nested"].spaces, gym.spaces.Space
         )
-        assert isinstance(
-            converted_spec["nested_spec"]["discrete_array_spec"], gym.spaces.Discrete
-        )
-        assert isinstance(converted_spec["array_spec"], gym.spaces.Box)
-        assert "not_spec_1" not in converted_spec.keys()
-        assert "not_spec_2" not in converted_spec.keys()
+        assert not converted_spec["not_jumanji_type"]
+        assert mixed_spec["not_jumanji_type"]
 
-    def test_not_jumanji_spec(self, not_jumanji_spec: NotJumanjiSpec) -> None:
+    def test_not_jumanji_type_spec(self, not_jumanji_type_spec: specs.Spec) -> None:
         """Check that an empty dict is returned when one tries to convert non-Jumanji specs."""
-        converted_spec = specs.jumanji_specs_to_gym_spaces(not_jumanji_spec)
+        converted_spec = specs.jumanji_specs_to_gym_spaces(not_jumanji_type_spec)
         assert isinstance(converted_spec, gym.spaces.Dict)
         assert not converted_spec  # Check that the dictionary is empty
