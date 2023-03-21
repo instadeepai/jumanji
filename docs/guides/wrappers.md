@@ -1,7 +1,8 @@
 # Wrappers
 
-The `Wrapper` interface is used for extending Jumanji `Environment` to add features like auto reset and vectorised environments.
-Jumanji provides wrappers to convert a Jumanji `Environment` to a DeepMind or Gym environment.
+The `Wrapper` interface is used for extending Jumanji `Environment` to add features like auto reset
+and vectorised environments. Jumanji provides wrappers to convert a Jumanji `Environment` to a
+DeepMind or Gym environment.
 
 ## Jumanji to DeepMind Environment
 We can also convert our Jumanji environments to a DeepMind environment:
@@ -34,8 +35,10 @@ observation, reward, done, extra = gym_env.step(action)
 ```
 
 ## Auto-reset an Environment
-Below is an example of how to extend the functionality of the Snake environment to automatically reset whenever the environment reaches a terminal state.
-The Snake game terminates when the snake hits the wall, using the `AutoResetWrapper` the environment will be reset once a terminal state has been reached.
+Below is an example of how to extend the functionality of the Snake environment to automatically
+reset whenever the environment reaches a terminal state. The Snake game terminates when the snake
+hits the wall, using the `AutoResetWrapper` the environment will be reset once a terminal state has
+been reached.
 
 ```python
 import jax.random

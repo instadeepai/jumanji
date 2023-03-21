@@ -26,7 +26,7 @@ from jumanji.environments.routing.maze.constants import MOVES
 from jumanji.environments.routing.maze.env_viewer import MazeEnvViewer
 from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
 from jumanji.environments.routing.maze.types import Observation, Position, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class Maze(Environment[State]):
@@ -214,7 +214,9 @@ class Maze(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 

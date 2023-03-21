@@ -1,7 +1,7 @@
 # Connector Environment
 
 <p align="center">
-        <img src="../env_anim/connector.gif" width="300"/>
+        <img src="../env_anim/connector.gif" width="600"/>
 </p>
 
 The `Connector` environment contains multiple agents spawned in a grid world with each agent
@@ -13,29 +13,43 @@ to allow each other to connect to their own targets without overlapping.
 An episode ends when all agents have connected to their targets or no agents can make any further
 moves due to being blocked.
 
+> ⚠️ Warning
+>
+> This environment is multi-agent, i.e. the observation, action and action mask are batched on the
+> agent dimension.
+>
+> - If used in a multi-agent RL setting, one can direclty vmap the agents' inference functions on
+> the observation they receive or unpack the observation and give it to each agent manually, e.g.
+> `agents_obs = [jax.tree_util.tree_map(lambda x: x[i] if x.ndim>0 else x, obs) for i in range(len(obs.grid))]`.
+>
+> - If used in a single-agent RL setting, one can use `jumanji.wrappers.MultiToSingleWrapper` to
+> make it a single-agent environment.
+
 
 ## Observation
 At each step observation contains 3 items: a grid for each agent, an action mask for each agent and
 the episode step count.
-- `grid`: jax array (int32) of shape `(grid_size, grid_size)`, a size-configurable 2D matrix that
-   represents pairs of points that need to be connected. The **position** of an agent has to
-   connect to its **target**, leaving a **path** behind it as it moves across the grid forming
-   its route. Each agent connects to only 1 target.
-- `action_mask`: jax array (bool) of shape `(num_agents,)`, indicates which actions each agent
+
+- `grid`: jax array (int32) of shape `(num_agents, grid_size, grid_size)`, a 2D matrix for each
+   agent that represents pairs of points that need to be connected from the perspective of each
+   agent. The **position** of an agent has to connect to its **target**, leaving a **path** behind
+   it as it moves across the grid forming its route. Each agent connects to only 1 target.
+
+- `action_mask`: jax array (bool) of shape `(num_agents, 5)`, indicates which actions each agent
    can take.
+
 - `step_count`: jax array (int32) of shape `()`, represents how many steps have been taken in
    the environment since the last reset.
 
-Each agent is passed their own grid so the grid observation is of shape
-`(num_agents, grid_size, grid_size)`, similarly action masks are of shape `(num_agents, 5)`,
-however the step is a common value for all agents and thus is a scalar.
 
 ### Encoding
 Each agent has 3 components represented in the observation space: position, target, and path. Each
 agent in the environment will have an integer representing their components.
 
 - Positions are encoded starting from 2 in multiples of 3: 2, 5, 8, …
+
 - Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …
+
 - Paths appear in the location of the head once it moves, starting from 1 in
     multiples of 3: 1, 4, 7, …
 
@@ -79,8 +93,7 @@ no-op action. That is, [0, 1, 2, 3, 4] -> [No Op, Up, Right, Down, Left].
 
 
 ## Reward
-The reward can be either:
-- **Dense**: +1.0 for each agent that connects at that step and -0.03 for each agent that has not
+The reward is **dense**: +1.0 for each agent that connects at that step and -0.03 for each agent that has not
 connected yet.
 
 Rewards are provided in the shape `(num_agents,)` so that each agent can have a reward.
