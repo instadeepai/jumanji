@@ -32,7 +32,7 @@ def _parse_requirements(path: str) -> List[str]:
 def _get_version() -> str:
     """Grabs the package version from jumanji/version.py."""
     dict_ = {}
-    with open("jumanji/version.py") as f:
+    with open(os.path.join(_CURRENT_DIR, "jumanji", "version.py")) as f:
         exec(f.read(), dict_)
     return dict_["__version__"]
 
@@ -42,7 +42,7 @@ setup(
     version=_get_version(),
     author="InstaDeep",
     author_email="hello@instadeep.com",
-    description="Industry-Driven Hardware-Accelerated RL Environments",
+    description="A suite of diverse and challenging RL environments in JAX",
     license="Apache 2.0",
     url="https://github.com/instadeepai/jumanji/",
     long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
