@@ -32,7 +32,7 @@ def _parse_requirements(path: str) -> List[str]:
 def _get_version() -> str:
     """Grabs the package version from jumanji/version.py."""
     dict_ = {}
-    with open(os.path.join(_CURRENT_DIR, "jumanji", "version.py")) as f:
+    with open("jumanji/version.py") as f:
         exec(f.read(), dict_)
     return dict_["__version__"]
 
