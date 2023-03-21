@@ -22,8 +22,6 @@ else:
 import jax.numpy as jnp
 from chex import Array
 
-Action = Array
-
 
 class StepType(jnp.int8):
     """Defines the status of a `TimeStep` within a sequence.
