@@ -18,8 +18,6 @@ from typing import List
 import setuptools
 from setuptools import setup
 
-_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 def _parse_requirements(path: str) -> List[str]:
     """Returns content of given requirements file."""
