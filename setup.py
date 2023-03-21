@@ -18,8 +18,6 @@ from typing import List
 import setuptools
 from setuptools import setup
 
-__version__ = "0.2.0"
-
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -31,9 +29,17 @@ def _parse_requirements(path: str) -> List[str]:
         ]
 
 
+def _get_version() -> str:
+    """Grabs the package version from jumanji/version.py."""
+    dict_ = {}
+    with open("jumanji/version.py") as f:
+        exec(f.read(), dict_)
+    return dict_["__version__"]
+
+
 setup(
     name="jumanji",
-    version=__version__,
+    version=_get_version(),
     author="InstaDeep",
     author_email="hello@instadeep.com",
     description="Industry-Driven Hardware-Accelerated RL Environments",

@@ -14,6 +14,7 @@
 
 from jumanji.env import Environment
 from jumanji.registration import make, register, registered_environments
+from jumanji.version import __version__
 
 """Environment Registration"""
 
