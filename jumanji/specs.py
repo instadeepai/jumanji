@@ -541,9 +541,9 @@ def jumanji_specs_to_dm_env_specs(
             name=spec.name if spec.name else None,
         )
     else:
-        # Nested spec.
+        # Nested spec
         return {
-            # Iterate over specs.
+            # Iterate over specs
             f"{key}": jumanji_specs_to_dm_env_specs(value)
             for key, value in vars(spec).items()
             if isinstance(value, Spec)
@@ -591,10 +591,10 @@ def jumanji_specs_to_gym_spaces(
             seed=None,
         )
     else:
-        # Nested spec.
+        # Nested spec
         return gym.spaces.Dict(
             {
-                # Iterate over specs.
+                # Iterate over specs
                 f"{key}": jumanji_specs_to_gym_spaces(value)
                 for key, value in vars(spec).items()
                 if isinstance(value, Spec)
