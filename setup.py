@@ -45,21 +45,15 @@ setup(
     description="A suite of diverse and challenging RL environments in JAX",
     license="Apache 2.0",
     url="https://github.com/instadeepai/jumanji/",
-    long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     keywords="reinforcement-learning python jax",
     packages=setuptools.find_packages(),
     python_requires=">=3.8",
-    install_requires=_parse_requirements(
-        os.path.join(_CURRENT_DIR, "requirements", "requirements.txt")
-    ),
+    install_requires=_parse_requirements("requirements/requirements.txt"),
     extras_require={
-        "dev": _parse_requirements(
-            os.path.join(_CURRENT_DIR, "requirements", "requirements-dev.txt")
-        ),
-        "train": _parse_requirements(
-            os.path.join(_CURRENT_DIR, "requirements", "requirements-train.txt")
-        ),
+        "dev": _parse_requirements("requirements/requirements-dev.txt"),
+        "train": _parse_requirements("requirements/requirements-train.txt"),
     },
     package_data={"jumanji": ["py.typed"]},
     classifiers=[
