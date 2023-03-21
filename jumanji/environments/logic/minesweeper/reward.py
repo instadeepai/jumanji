@@ -23,12 +23,11 @@ from jumanji.environments.logic.minesweeper.constants import (
 )
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.environments.logic.minesweeper.utils import explored_mine, is_valid_action
-from jumanji.types import Action
 
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, state: State, action: Action) -> chex.Array:
+    def __call__(self, state: State, action: chex.Array) -> chex.Array:
         """Call method for computing the reward given current state and selected action."""
 
 
@@ -37,7 +36,7 @@ class DefaultRewardFn(RewardFn):
     (or a small penalty if action is invalid), otherwise 0.
     """
 
-    def __call__(self, state: State, action: Action) -> chex.Array:
+    def __call__(self, state: State, action: chex.Array) -> chex.Array:
         return jnp.where(
             is_valid_action(state=state, action=action),
             jnp.where(

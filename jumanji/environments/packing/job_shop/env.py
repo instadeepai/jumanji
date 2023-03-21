@@ -24,7 +24,7 @@ from jumanji.env import Environment
 from jumanji.environments.packing.job_shop.env_viewer import JobShopViewer
 from jumanji.environments.packing.job_shop.generator import Generator, RandomGenerator
 from jumanji.environments.packing.job_shop.types import Observation, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class JobShop(Environment[State]):
@@ -160,7 +160,9 @@ class JobShop(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: Action) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the status of all machines, the status of the operations, and increments the
         time step. It updates the environment state and the timestep (which contains the new
         observation). It calculates the reward based on the three terminal conditions:
@@ -262,7 +264,7 @@ class JobShop(Environment[State]):
 
     def _update_operations(
         self,
-        action: Action,
+        action: chex.Array,
         op_ids: chex.Array,
         step_count: int,
         scheduled_times: chex.Array,
@@ -298,7 +300,7 @@ class JobShop(Environment[State]):
 
     def _update_machines(
         self,
-        action: Action,
+        action: chex.Array,
         op_ids: chex.Array,
         machines_job_ids: chex.Array,
         machines_remaining_times: chex.Array,
@@ -524,7 +526,7 @@ class JobShop(Environment[State]):
             is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
         )
 
-    def _set_busy(self, job_id: jnp.int32, action: Action) -> Any:
+    def _set_busy(self, job_id: jnp.int32, action: chex.Array) -> Any:
         """Determine, for a given action and job, whether the job is a new job to be
         scheduled.
 

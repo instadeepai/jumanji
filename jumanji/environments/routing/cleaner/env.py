@@ -26,7 +26,7 @@ from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, 
 from jumanji.environments.routing.cleaner.env_viewer import CleanerViewer
 from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class Cleaner(Environment[State]):
@@ -150,7 +150,7 @@ class Cleaner(Environment[State]):
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
-        """Specification of the actions for the `Cleaner` environment.
+        """Specification of the action for the `Cleaner` environment.
 
         Returns:
             action_spec: a `specs.MultiDiscreteArray` spec.
@@ -200,7 +200,7 @@ class Cleaner(Environment[State]):
         return state, timestep
 
     def step(
-        self, state: State, actions: Action
+        self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
@@ -209,17 +209,17 @@ class Cleaner(Environment[State]):
 
         Args:
             state: current environment state.
-            actions: Jax array of shape (num_agents,). Each agent moves one step in
+            action: Jax array of shape (num_agents,). Each agent moves one step in
                 the specified direction (0: up, 1: right, 2: down, 3: left).
 
         Returns:
             state: `State` object corresponding to the next state of the environment.
             timestep: `TimeStep` object corresponding to the timestep returned by the environment.
         """
-        are_actions_valid = self._are_actions_valid(actions, state.action_mask)
+        is_action_valid = self._is_action_valid(action, state.action_mask)
 
         agents_locations = self._update_agents_locations(
-            state.agents_locations, actions, are_actions_valid
+            state.agents_locations, action, is_action_valid
         )
 
         grid = self._clean_tiles_containing_agents(state.grid, agents_locations)
@@ -238,7 +238,7 @@ class Cleaner(Environment[State]):
 
         observation = self._observation_from_state(state)
 
-        done = self._should_terminate(state, are_actions_valid)
+        done = self._should_terminate(state, is_action_valid)
 
         extras = self._compute_extras(state)
         # Return either a MID or a LAST timestep depending on done.
@@ -341,25 +341,28 @@ class Cleaner(Environment[State]):
             step_count=state.step_count,
         )
 
-    def _are_actions_valid(
-        self, actions: Action, action_mask: chex.Array
+    def _is_action_valid(
+        self, action: chex.Array, action_mask: chex.Array
     ) -> chex.Array:
         """Compute, for the action of each agent, whether said action is valid.
 
         Args:
-            actions: Jax array containing the actions to validate.
+            action: Jax array containing the action to validate for each agent.
             action_mask: Jax array containing the action mask.
 
         Returns:
             An array of booleans representing which agents took a valid action.
         """
-        return action_mask[jnp.arange(self.num_agents), actions]
+        return action_mask[jnp.arange(self.num_agents), action]
 
     def _update_agents_locations(
-        self, prev_locations: chex.Array, actions: Action, actions_are_valid: chex.Array
+        self,
+        prev_locations: chex.Array,
+        action: chex.Array,
+        action_is_valid: chex.Array,
     ) -> chex.Array:
         """Update the agents locations based on the actions if they are valid."""
-        moves = jnp.where(actions_are_valid[:, None], MOVES[actions], 0)
+        moves = jnp.where(action_is_valid[:, None], MOVES[action], 0)
         return prev_locations + moves
 
     def _clean_tiles_containing_agents(

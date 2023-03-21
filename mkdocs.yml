@@ -33,7 +33,9 @@ nav:
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
   - User Guides:
+      - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
+      - Training: guides/training.md
       - Wrapper: guides/wrappers.md
   - API Reference:
       - Environments:
