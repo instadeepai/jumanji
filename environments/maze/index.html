@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,22 +1301,43 @@
 
 <h1 id="maze-environment">Maze Environment<a class="headerlink" href="#maze-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/maze.gif" width="300"/>
+        <img src="../../env_anim/maze.gif" width="600"/>
 </p>
 
-<p>We provide here a Jax JIT-able implementation of a 2D maze problem. The maze is a size-configurable 2D matrix where each cell represents either free space (white) or wall (black).</p>
-<p>The goal is for the agent (green) to reach the single target cell (red). It is a sparse reward problem, where the agent recieves a reward of 0 at every step and a reward of 1 for reaching the target. The agent may choose to move one space up, right, down, or left: ("N", “E”, "S",  "W"). If the way is blocked by a wall, it will remain at the same position.</p>
-<p>Each maze is randomly generated using a recursive division function. By default, a new maze, initial agent position and target position, are generated each time the environment is reset.</p>
+<p>We provide here a Jax JIT-able implementation of a 2D maze problem. The maze is a size-configurable
+2D matrix where each cell represents either free space (white) or wall (black).</p>
+<p>The goal is for the agent (green) to reach the single target cell (red). It is a sparse reward
+problem, where the agent receives a reward of 0 at every step and a reward of 1 for reaching the
+target. The agent may choose to move one space up, right, down, or left: ("N", “E”, "S",  "W").
+If the way is blocked by a wall, it will remain at the same position.</p>
+<p>Each maze is randomly generated using a recursive division function. By default, a new maze,
+initial agent position and target position are generated each time the environment is reset.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>As an observation, the agent has access to the current maze configuration in the array named <code>walls</code>. It also has access to its
-current position <code>agent_position</code>, the target's <code>target_position</code>, the number of steps <code>step_count</code> elapsed in the current episode
-and the action mask <code>action_mask</code>.
-- <code>agent_position</code>: Position(row, col) (int32) each of shape <code>()</code>, agent position in the maze.
-- <code>target_position</code>: Position(row, col) (int32) each of shape <code>()</code>, target position in the maze.
-- <code>walls</code>: jax array (bool) of shape <code>(num_rows, num_cols)</code>, indicates whether a grid cell is a wall.
-- <code>step_count</code>: jax array (int32) of shape <code>()</code>, number of steps elapsed in the current episode.
-- <code>action_mask</code>: jax array (bool) of shape <code>(4,)</code>, binary values denoting whether each action is possible.</p>
-<p>An example 5x5 observation <code>walls</code> array, is shown below. 1 represents a wall, and 0 represents free space.</p>
+<p>As an observation, the agent has access to the current maze configuration in the array named
+<code>walls</code>. It also has access to its current position <code>agent_position</code>, the target's
+<code>target_position</code>, the number of steps <code>step_count</code> elapsed in the current episode and the action
+mask <code>action_mask</code>.</p>
+<ul>
+<li>
+<p><code>agent_position</code>: Position(row, col) (int32) each of shape <code>()</code>, agent position in the maze.</p>
+</li>
+<li>
+<p><code>target_position</code>: Position(row, col) (int32) each of shape <code>()</code>, target position in the maze.</p>
+</li>
+<li>
+<p><code>walls</code>: jax array (bool) of shape <code>(num_rows, num_cols)</code>, indicates whether a grid cell is a
+wall.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>, number of steps elapsed in the current episode.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(4,)</code>, binary values denoting whether each action is
+possible.</p>
+</li>
+</ul>
+<p>An example 5x5 observation <code>walls</code> array, is shown below. 1 represents a wall, and 0 represents free
+space.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1296,13 +1349,15 @@ and the action mask <code>action_mask</code>.
 [0, 0, 0, 0, 0]
 </code></pre></div></td></tr></table></div>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>The action space is a <code>DiscreteArray</code> of integer values in the range of [0, 3]. I.e. the agent can take one
-of four actions: up (<code>0</code>), right (<code>1</code>), down (<code>2</code>), or left (<code>3</code>). If an invalid action is taken, or an action is
-blocked by a wall, a no-op is performed and the agent's position remains unchanged.</p>
+<p>The action space is a <code>DiscreteArray</code> of integer values in the range of [0, 3]. I.e. the agent can
+take one of four actions: up (<code>0</code>), right (<code>1</code>), down (<code>2</code>), or left (<code>3</code>). If an invalid action is
+taken, or an action is blocked by a wall, a no-op is performed and the agent's position remains
+unchanged.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>Maze is a sparse reward problem, where the agent recieves a reward of 0 at every step and a reward of 1 for reaching the target position.
-An episode ends when the agent reaches the target position, or after a set number of steps (by default, this is twice the number of cells
-in the maze, i.e. <code>step_limit=2*num_rows*num_cols</code>).</p>
+<p>Maze is a sparse reward problem, where the agent receives a reward of 0 at every step and a reward
+of 1 for reaching the target position. An episode ends when the agent reaches the target position,
+or after a set number of steps (by default, this is twice the number of cells in the maze, i.e.
+<code>step_limit=2*num_rows*num_cols</code>).</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
 <li><code>Maze-v0</code>, maze with 10 rows and 10 cols.</li>
@@ -1313,7 +1368,7 @@ in the maze, i.e. <code>step_limit=2*num_rows*num_cols</code>).</p>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

@@ -246,7 +246,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -709,6 +709,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -729,8 +733,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1820,7 +1852,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1848,7 +1880,7 @@ has been constructed and <code>reset</code> has not been called. Again, in this 
   <tbody>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>ndarray</code></td>
         <td><p>A NumPy array, or a nested dict, list or tuple of arrays
 corresponding to <code>action_spec()</code>.</p></td>
         <td><em>required</em></td>
@@ -1975,7 +2007,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f208d598940</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f208d5a0160</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f43fac0b940</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f43fac13160</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2009,14 +2041,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x7f208d598940&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f43fac0b940&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x7f208d5a0160&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f43fac13160&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -2825,7 +2857,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

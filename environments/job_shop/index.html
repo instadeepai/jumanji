@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,66 +1301,133 @@
 
 <h1 id="jobshop-environment">JobShop Environment<a class="headerlink" href="#jobshop-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/job_shop_annotated.gif" height="600"/>
+        <img src="../../env_anim/job_shop_annotated.gif" width="600"/>
 </p>
 
-<p>We provide here a JAX jit-able implementation of the <a href="https://developers.google.com/optimization/scheduling/job_shop">job shop scheduling problem</a>.
-It is NP-hard and one of the most well-known combinatorial optimisation problems. The problem formulation is:
-- $N$ <strong>jobs</strong>, each consisting of a sequence of <strong>operations</strong>, need to be scheduled on $M$ machines.
-- For each job, its operations must be processed <strong>in order</strong>. This is called the <strong>precedence constraints</strong>.
-- Only one operation in a job can be processed at any given time.
-- A machine can only work on one operation at a time.
-- Once started, an operation must run to completion.</p>
-<p>The goal of the agent is to determine the schedule that minimises the time needed to process all the jobs.
-The length of the schedule is also known as its <em>makespan</em>.</p>
+<p>We provide here a JAX jit-able implementation of the
+<a href="https://developers.google.com/optimization/scheduling/job_shop">job shop scheduling problem</a>.
+It is NP-hard and one of the most well-known combinatorial optimisation problems. The problem
+formulation is:</p>
+<ul>
+<li>
+<p><code>N</code> <strong>jobs</strong>, each consisting of a sequence of <strong>operations</strong>, need to be scheduled on <code>M</code>
+machines.</p>
+</li>
+<li>
+<p>For each job, its operations must be processed <strong>in order</strong>. This is called the <strong>precedence
+constraints</strong>.</p>
+</li>
+<li>
+<p>Only one operation in a job can be processed at any given time.</p>
+</li>
+<li>
+<p>A machine can only work on one operation at a time.</p>
+</li>
+<li>
+<p>Once started, an operation must run to completion.</p>
+</li>
+</ul>
+<p>The goal of the agent is to determine the schedule that minimises the time needed to process all
+the jobs. The length of the schedule is also known as its <em>makespan</em>.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>The <strong>observation</strong> seen by the agent is a <code>NamedTuple</code> containing the following:
-- <code>ops_machine_ids</code>: jax array (int32) of shape <code>(num_jobs, max_num_ops)</code>. For each job, it specifies the machine each op must be processed on.
-    Note that a <code>-1</code> corresponds to padded ops since not all jobs have the same number of ops.
-- <code>ops_durations</code>: jax array (int32) of shape <code>(num_jobs, max_num_ops)</code>. For each job, it specifies the processing time of each operation.
-    Note that a <code>-1</code> corresponds to padded ops since not all jobs have the same number of ops.
-- <code>ops_mask</code>: jax array (bool) of shape <code>(num_jobs, max_num_ops)</code>. For each job, indicates which operations remain to be scheduled. False if the
-    op has been scheduled or if the op was added for padding, True otherwise. The first True in
-    each row (i.e. each job) identifies the next operation for that job.
-- <code>machines_job_ids</code>: jax array (int32) of shape <code>(num_machines,)</code>. For each machine, it specifies the job currently being processed.
-    Note that <code>-1</code> means no-op in which case the remaining time until available is always 0.
-- <code>machines_remaining_times</code>: jax array (int32) of shape <code>(num_machines,)</code>. For each machine, it specifies the number of time steps until
-    available.
-- <code>action_mask</code>: jax array (bool) of <code>(num_machines, num_jobs + 1)</code>. For each machine, it indicates which jobs (or no-op) can legally be scheduled.
-    The last column corresponds to no-op.</p>
+<p>The <strong>observation</strong> seen by the agent is a <code>NamedTuple</code> containing the following:</p>
+<ul>
+<li>
+<p><code>ops_machine_ids</code>: jax array (int32) of shape <code>(num_jobs, max_num_ops)</code>. For each job, it
+    specifies the machine each op must be processed on. Note that a <code>-1</code> corresponds to padded ops
+    since not all jobs have the same number of ops.</p>
+</li>
+<li>
+<p><code>ops_durations</code>: jax array (int32) of shape <code>(num_jobs, max_num_ops)</code>. For each job, it specifies
+    the processing time of each operation. Note that a <code>-1</code> corresponds to padded ops since not all
+    jobs have the same number of ops.</p>
+</li>
+<li>
+<p><code>ops_mask</code>: jax array (bool) of shape <code>(num_jobs, max_num_ops)</code>. For each job, indicates which
+    operations remain to be scheduled. False if the op has been scheduled or if the op was added
+    for padding, True otherwise. The first True in each row (i.e. each job) identifies the next
+    operation for that job.</p>
+</li>
+<li>
+<p><code>machines_job_ids</code>: jax array (int32) of shape <code>(num_machines,)</code>. For each machine, it specifies
+    the job currently being processed. Note that <code>-1</code> means no-op in which case the remaining time
+    until available is always 0.</p>
+</li>
+<li>
+<p><code>machines_remaining_times</code>: jax array (int32) of shape <code>(num_machines,)</code>. For each machine, it
+    specifies the number of time steps until available.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of <code>(num_machines, num_jobs + 1)</code>. For each machine, it indicates
+    which jobs (or no-op) can legally be scheduled. The last column corresponds to no-op.</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>The action space is a <code>MultiDiscreteArray</code> containing an integer value in <code>[0, 1, ..., num_jobs]</code> for each machine.
-Thus, an action consists of the following: for each machine, decide which job (or no-op) to schedule at the current time step.
-The action is represented as a 1-dimensional array of length <code>num_machines</code>.
-For example, suppose we have $M=5$ machines and there are $N=10$ jobs. A legal action might be
+<p>The action space is a <code>MultiDiscreteArray</code> containing an integer value in <code>[0, 1, ..., num_jobs]</code>
+for each machine. Thus, an action consists of the following: for each machine, decide which job
+(or no-op) to schedule at the current time step. The action is represented as a 1-dimensional array
+of length <code>num_machines</code>. For example, suppose we have <code>M=5</code> machines and there are <code>N=10</code> jobs. A
+legal action might be
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">action</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
-This action represents scheduling
-- Job 4 on Machine 0,
-- Job 7 on Machine 1,
-- Job 0 on Machine 2,
-- No-op on Machine 3,
-- No-op on Machine 4.</p>
-<p>As such, the action is multidimensional and can be thought of as each machine (each agent) "deciding" which job (or no-op) to schedule.
-Importantly, the action space is a product of the marginal action space of each agent (machine).</p>
-<p>The rationale for having a no-op is the following:
-- A machine might be busy processing an operation, in which case a no-op is the only allowed action for that machine.
-- There might not be any jobs that can be scheduled on a machine.
-- There may be scenarios where waiting to schedule a job via one or more no-op(s) ultimately minimises the makespan.</p>
+This action represents scheduling</p>
+<ul>
+<li>
+<p>Job 4 on Machine 0,</p>
+</li>
+<li>
+<p>Job 7 on Machine 1,</p>
+</li>
+<li>
+<p>Job 0 on Machine 2,</p>
+</li>
+<li>
+<p>No-op on Machine 3,</p>
+</li>
+<li>
+<p>No-op on Machine 4.</p>
+</li>
+</ul>
+<p>As such, the action is multidimensional and can be thought of as each machine (each agent)
+<em>deciding</em> which job (or no-op) to schedule. Importantly, the action space is a product of the
+marginal action space of each agent (machine).</p>
+<p>The rationale for having a no-op is the following:</p>
+<ul>
+<li>
+<p>A machine might be busy processing an operation, in which case a no-op is the only allowed action
+for that machine.</p>
+</li>
+<li>
+<p>There might not be any jobs that can be scheduled on a machine.</p>
+</li>
+<li>
+<p>There may be scenarios where waiting to schedule a job via one or more no-op(s) ultimately
+minimizes the makespan.</p>
+</li>
+</ul>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
 <p>The reward setting is dense: a reward of <code>-1</code> is given each time step if none
-of the termination criteria are met. An episode will terminate in any of the three scenarios below:
-- <strong>Finished schedule</strong>: all operations (and thus all jobs) every job have been processed.
-- <strong>Illegal action:</strong> the agent ignores the action mask and takes an illegal action.
-- <strong>Simultaneously idle:</strong> all machines are inactive at the same time.</p>
-<p>If all machines are simultaneously idle or the agent selects an invalid action, this
-is reflected in a large penalty in the reward. This would be <code>-num_jobs * max_num_ops * max_op_duration</code>
-which is a higher bound on the makespan, corresponding to if every job had <code>max_num_ops</code> operations and
-every operation had a processing time of <code>max_op_duration</code>.</p>
-<h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
-<h1 id="todo-add-description-of-the-corresponding-registered-version">TODO: add description of the corresponding registered version.<a class="headerlink" href="#todo-add-description-of-the-corresponding-registered-version" title="Permanent link">#</a></h1>
+of the termination criteria are met. An episode will terminate in any of the three scenarios below:</p>
 <ul>
-<li><code>JobShop-v0</code></li>
+<li>
+<p><strong>Finished schedule</strong>: all operations (and thus all jobs) every job have been processed.</p>
+</li>
+<li>
+<p><strong>Illegal action:</strong> the agent ignores the action mask and takes an illegal action.</p>
+</li>
+<li>
+<p><strong>Simultaneously idle:</strong> all machines are inactive at the same time.</p>
+</li>
+</ul>
+<p>If all machines are simultaneously idle or the agent selects an invalid action, this
+is reflected in a large penalty in the reward. This would be
+<code>-num_jobs * max_num_ops * max_op_duration</code> which is a upper bound on the makespan, corresponding
+to if every job had <code>max_num_ops</code> operations and every operation had a processing time of
+<code>max_op_duration</code>.</p>
+<h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
+<ul>
+<li><code>JobShop-v0</code>: job-shop scheduling problem with 20 jobs, 10 machines, a maximum of 8 operations
+per job, and a max operation duration of 6 timesteps per operation.</li>
 </ul>
 
   <hr>
@@ -1336,7 +1435,7 @@ every operation had a processing time of <code>max_op_duration</code>.</p>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

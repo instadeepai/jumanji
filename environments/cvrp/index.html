@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1286,29 +1318,51 @@ distribution between 1 and the maximum demand (which is a parameter of the CVRP 
 The number of nodes with demand is a parameter of the environment.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <p>The observation given to the agent provides information on the problem layout, the visited/unvisited
-cities and the current position of the agent as well as the current capacity.
-- <code>coordinates</code>: jax array (float) of shape <code>(num_nodes + 1, 2)</code>, array of coordinates of each city
-node and the depot node.
-- <code>demands</code>: jax array (float) of shape <code>(num_nodes + 1,)</code>, array of the demands of each city node
-and the depot node whose demand is set to 0.
-- <code>unvisited_nodes</code>: jax array (bool) of shape <code>(num_nodes + 1,)</code>, array denoting which nodes
-remain to be visited.
-- <code>position</code>: jax array (int32) of shape (), identifier (index) of the current visited node (city
-or depot).
-- <code>trajectory</code>: jax array (int32) of shape <code>(2 * num_nodes,)</code>, identifiers of the nodes that have
-been visited (set to <code>DEPOT_IDX</code> if not filled yet).
-- <code>capacity</code>: jax array (float) of shape (), current capacity of the vehicle.
-- <code>action_mask</code>: jax array (bool) of shape <code>(num_nodes + 1,)</code>, array denoting which actions are
+cities and the current position of the agent as well as the current capacity.</p>
+<ul>
+<li>
+<p><code>coordinates</code>: jax array (float) of shape <code>(num_nodes + 1, 2)</code>, array of coordinates of each city
+node and the depot node.</p>
+</li>
+<li>
+<p><code>demands</code>: jax array (float) of shape <code>(num_nodes + 1,)</code>, array of the demands of each city node
+and the depot node whose demand is set to 0.</p>
+</li>
+<li>
+<p><code>unvisited_nodes</code>: jax array (bool) of shape <code>(num_nodes + 1,)</code>, array denoting which nodes
+remain to be visited.</p>
+</li>
+<li>
+<p><code>position</code>: jax array (int32) of shape <code>()</code>, identifier (index) of the current visited node (city
+or depot).</p>
+</li>
+<li>
+<p><code>trajectory</code>: jax array (int32) of shape <code>(2 * num_nodes,)</code>, identifiers of the nodes that have
+been visited (set to <code>DEPOT_IDX</code> if not filled yet).</p>
+</li>
+<li>
+<p><code>capacity</code>: jax array (float) of shape <code>()</code>, current capacity of the vehicle.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_nodes + 1,)</code>, array denoting which actions are
 possible (True) and which are not (False).</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>DiscreteArray</code> of integer values in the range of <code>[0, num_nodes]</code>. An action
 is the index of the next node to visit, and an action value of 0 corresponds to visiting the depot.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>The reward could be either:
-- <strong>Dense</strong>: the negative distance between the current node and the chosen next node to go to.
-    For the last node, it also includes the distance to the depot to complete the tour.
-- <strong>Sparse</strong>: the negative tour length at the end of the episode. The tour length is defined
+<p>The reward could be either:</p>
+<ul>
+<li>
+<p><strong>Dense</strong>: the negative distance between the current node and the chosen next node to go to.
+    For the last node, it also includes the distance to the depot to complete the tour.</p>
+</li>
+<li>
+<p><strong>Sparse</strong>: the negative tour length at the end of the episode. The tour length is defined
     as the sum of the distances between consecutive nodes.</p>
+</li>
+</ul>
 <p>In both cases, the reward is a large negative penalty of <code>-2 * num_nodes * sqrt(2)</code> if the
 action is invalid, e.g. a previously selected node other than the depot is selected again.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
@@ -1322,7 +1376,7 @@ demand for each node of 10 and a dense reward function.</li>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

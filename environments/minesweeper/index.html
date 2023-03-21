@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,21 +1301,32 @@
 
 <h1 id="minesweeper-environment">Minesweeper Environment<a class="headerlink" href="#minesweeper-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/minesweeper.gif" height="300"/>
+        <img src="../../env_anim/minesweeper.gif" width="500"/>
 </p>
 
-<p>We provide here a Jax JIT-able implementation of the game <em>Minesweeper</em>.</p>
+<p>We provide here a Jax JIT-able implementation of the
+<a href="https://en.wikipedia.org/wiki/Minesweeper_(video_game)">Minesweeper</a> game.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>The observation given to the agent consists of:
-- <code>board</code>: jax array (int32) of shape <code>(num_rows, num_cols)</code>:
+<p>The observation given to the agent consists of:</p>
+<ul>
+<li>
+<p><code>board</code>: jax array (int32) of shape <code>(num_rows, num_cols)</code>:
     each cell contains <code>-1</code> if not yet explored, or otherwise the number of mines in
-    the 8 adjacent squares.
-- <code>action_mask</code>: jax array (bool) of shape <code>(num_rows, num_cols)</code>:
+    the 8 adjacent squares.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_rows, num_cols)</code>:
     indicates which actions are valid (not yet explored squares). This can also be determined from
-    the board which will have an entry of <code>-1</code> in all of these positions.
-- <code>num_mines</code>: jax array (int32) of shape <code>()</code>, indicates the number of mines to locate.
-- <code>step_count</code>: jax array (int32) of shape <code>()</code>:
+    the board which will have an entry of <code>-1</code> in all of these positions.</p>
+</li>
+<li>
+<p><code>num_mines</code>: jax array (int32) of shape <code>()</code>, indicates the number of mines to locate.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>:
     specifies how many timesteps have elapsed since environment reset.</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>MultiDiscreteArray</code> of integer values representing coordinates of the square
 to explore, e.g. <code>[3, 6]</code> for the cell located on the third row and sixth column. If either a mined
@@ -1298,8 +1341,8 @@ mine, and <code>0</code> otherwise (which also terminates the episode). The epis
 board is solved.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
-<li><code>Minesweeper-v0</code>, the classic <a href="https://en.wikipedia.org/wiki/Minesweeper">game</a> on a 10x10 grid
-with 10 mines to locate.</li>
+<li><code>Minesweeper-v0</code>, the classic <a href="https://en.wikipedia.org/wiki/Minesweeper_(video_game)">game</a> on
+a 10x10 grid with 10 mines to locate.</li>
 </ul>
 
   <hr>
@@ -1307,7 +1350,7 @@ with 10 mines to locate.</li>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,12 +1301,13 @@
 
 <h1 id="knapskack-environment">Knapskack Environment<a class="headerlink" href="#knapskack-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/knapsack.gif" width="350"/>
+        <img src="../../env_anim/knapsack.gif" width="450"/>
 </p>
 
-<p>We provide here a Jax JIT-able implementation of the <a href="https://en.wikipedia.org/wiki/Knapsack_problem">knapskack problem</a>.</p>
-<p>The knapsack problem is a famous problem in combinatorial optimization. The goal is to determine, given
-a set of items, each with a weight and a value, which items to include in a collection so that
+<p>We provide here a Jax JIT-able implementation of the
+<a href="https://en.wikipedia.org/wiki/Knapsack_problem">knapskack problem</a>.</p>
+<p>The knapsack problem is a famous problem in combinatorial optimization. The goal is to determine,
+given a set of items, each with a weight and a value, which items to include in a collection so that
 the total weight is less than or equal to a given limit and the total value is as large as possible.</p>
 <p>The decision problem form of the knapsack problem is NP-complete, thus there is no known
 algorithm both correct and fast (polynomial-time) in all cases.</p>
@@ -1285,22 +1318,38 @@ A trajectory terminates when no further item can be added to the knapsack or the
 is invalid.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <p>The observation given to the agent provides information regarding the weights and the values of all the items,
-as well as, which items have been packed into the knapsack.
-- <code>weights</code>: jax array (float) of shape <code>(num_items,)</code>, array of weights of the items to be
-packed into the knapsack.
-- <code>values</code>: jax array (float) of shape <code>(num_items,)</code>, array of values of the items to be packed
-into the knapsack.
-- <code>packed_items</code>: jax array (bool) of shape <code>(num_items,)</code>, array of binary values denoting which
-items are already packed into the knapsack.
-- <code>action_mask</code>: jax array (bool) of shape <code>(num_items,)</code>, array of binary values denoting which
+as well as, which items have been packed into the knapsack.</p>
+<ul>
+<li>
+<p><code>weights</code>: jax array (float) of shape <code>(num_items,)</code>, array of weights of the items to be
+packed into the knapsack.</p>
+</li>
+<li>
+<p><code>values</code>: jax array (float) of shape <code>(num_items,)</code>, array of values of the items to be packed
+into the knapsack.</p>
+</li>
+<li>
+<p><code>packed_items</code>: jax array (bool) of shape <code>(num_items,)</code>, array of binary values denoting which
+items are already packed into the knapsack.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_items,)</code>, array of binary values denoting which
 items can be packed into the knapsack.</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>The action space is a <code>DiscreteArray</code> of integer values in the range of <code>[0, num_items-1]</code>. An action
-is the index of the next item to pack.</p>
+<p>The action space is a <code>DiscreteArray</code> of integer values in the range of <code>[0, num_items-1]</code>. An
+action is the index of the next item to pack.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>The reward can be either:
-- <strong>Dense</strong>: the value of the item to pack at the current timestep.
-- <strong>Sparse</strong>: the sum of the values of the items packed in the bag at the end of the episode.</p>
+<p>The reward can be either:</p>
+<ul>
+<li>
+<p><strong>Dense</strong>: the value of the item to pack at the current timestep.</p>
+</li>
+<li>
+<p><strong>Sparse</strong>: the sum of the values of the items packed in the bag at the end of the episode.</p>
+</li>
+</ul>
 <p>In both cases, the reward is 0 if the action is invalid, i.e. an item that was previously
 selected is selected again or has a weight larger than the bag capacity.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
@@ -1314,7 +1363,7 @@ dense reward function.</li>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

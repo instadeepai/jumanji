@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -520,9 +520,61 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          BinPack
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         BinPack
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#observation" class="md-nav__link">
+    Observation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action" class="md-nav__link">
+    Action
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward" class="md-nav__link">
+    Reward
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registered-versions" class="md-nav__link">
+    Registered Versions 📖
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -723,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -743,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1216,7 +1300,6 @@
 
 
 <h1 id="binpack-environment">BinPack Environment<a class="headerlink" href="#binpack-environment" title="Permanent link">#</a></h1>
-<h1 id="todo">TODO<a class="headerlink" href="#todo" title="Permanent link">#</a></h1>
 <p align="center">
         <img src="../../env_anim/bin_pack.gif" width="500"/>
 </p>
@@ -1227,29 +1310,49 @@ sizes into a single container with as little empty space as possible.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <p>The observation given to the agent provides information on the available empty space (called EMSs),
 the items that still need to be packed, and information on what actions are valid at this point.
-The full observation is as follows:
-- <code>ems</code>: <code>EMS</code> tree of jax arrays (float if <code>normalize_dimensions</code> else int32) each of shape
-    <code>(obs_num_ems,)</code>, coordinates of all EMSs at the current timestep.
-- <code>ems_mask</code>: jax array (bool) of shape <code>(obs_num_ems,)</code>, indicates the EMSs that are valid.
-- <code>items</code>: <code>Item</code> tree of jax arrays (float if <code>normalize_dimensions</code> else int32) each of shape
-    <code>(max_num_items,)</code>, characteristics of all items for this instance.
-- <code>items_mask</code>: jax array (bool) of shape <code>(max_num_items,)</code>, indicates the items that are valid.
-- <code>items_placed</code>: jax array (bool) of shape <code>(max_num_items,)</code>, indicates the items that have been
-    placed so far.
-- <code>action_mask</code>: jax array (bool) of shape <code>(obs_num_ems, max_num_items)</code>, mask of the joint action
+The full observation is as follows:</p>
+<ul>
+<li>
+<p><code>ems</code>: <code>EMS</code> tree of jax arrays (float if <code>normalize_dimensions</code> else int32) each of shape
+    <code>(obs_num_ems,)</code>, coordinates of all EMSs at the current timestep.</p>
+</li>
+<li>
+<p><code>ems_mask</code>: jax array (bool) of shape <code>(obs_num_ems,)</code>, indicates the EMSs that are valid.</p>
+</li>
+<li>
+<p><code>items</code>: <code>Item</code> tree of jax arrays (float if <code>normalize_dimensions</code> else int32) each of shape
+    <code>(max_num_items,)</code>, characteristics of all items for this instance.</p>
+</li>
+<li>
+<p><code>items_mask</code>: jax array (bool) of shape <code>(max_num_items,)</code>, indicates the items that are valid.</p>
+</li>
+<li>
+<p><code>items_placed</code>: jax array (bool) of shape <code>(max_num_items,)</code>, indicates the items that have been
+    placed so far.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(obs_num_ems, max_num_items)</code>, mask of the joint action
     space: <code>True</code> if the action <code>[ems_id, item_id]</code> is valid.</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>MultiDiscreteArray</code> of 2 integer values representing the ID of an EMS
 (space) and the ID of an item. For instance, <code>[1, 5]</code> will place item 5 in EMS 1.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>The reward could be either:
-- <strong>Dense</strong>: normalized volume (relative to the container volume) of the item packed by taking
+<p>The reward could be either:</p>
+<ul>
+<li>
+<p><strong>Dense</strong>: normalized volume (relative to the container volume) of the item packed by taking
     the chosen action. The computed reward is equivalent to the increase in volume utilization
     of the container due to packing the chosen item. If the action is invalid, the reward is 0.0
-    instead.
-- <strong>Sparse</strong>: computed only at the end of the episode (otherwise, returns 0.0). Returns the volume
+    instead.</p>
+</li>
+<li>
+<p><strong>Sparse</strong>: computed only at the end of the episode (otherwise, returns 0.0). Returns the volume
     utilization of the container (between 0.0 and 1.0). If the action is invalid, the action is
     ignored and the reward is still returned as the current container utilization.</p>
+</li>
+</ul>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
 <li><code>BinPack-v1</code>, 3D bin-packing problem with a solvable random generator that generates up to 30
@@ -1261,7 +1364,7 @@ items maximum, that can handle 100 EMSs and that shows the 70 largest EMSs to th
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

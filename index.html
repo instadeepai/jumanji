@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="guides/registration/" class="md-tabs__link">
+      <a href="guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -849,6 +849,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -869,8 +873,36 @@
   
   
     <li class="md-nav__item">
+      <a href="guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1355,10 +1387,10 @@
 <a href="https://github.com/psf/black"><img alt="Code Style" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
 <a href="http://mypy-lang.org/"><img alt="MyPy" src="http://www.mypy-lang.org/static/mypy_badge.svg" /></a>
 <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-orange.svg" /></a></p>
-<p><a href="#installation-"><strong>Installation</strong></a>
+<p><a href="#environments-"><strong>Environments</strong></a>
+| <a href="#installation-"><strong>Installation</strong></a>
 | <a href="#quickstart-"><strong>Quickstart</strong></a>
-| <a href="#examples-%EF%B8%8F"><strong>Examples</strong></a>
-| <a href="#environments-"><strong>Environments</strong></a>
+| <a href="#training-%EF%B8%8F"><strong>Training</strong></a>
 | <a href="#citing-jumanji-%EF%B8%8F"><strong>Citation</strong></a>
 | <a href="https://instadeepai.github.io/jumanji"><strong>Docs</strong></a></p>
 <hr />
@@ -1382,8 +1414,8 @@ field of RL. Jumanji's high-speed environments enable faster iteration and large
 experimentation while simultaneously reducing complexity. Originating in the Research Team at
 <a href="https://www.instadeep.com/">InstaDeep</a>, Jumanji is now developed jointly with the open-source
 community. To join us in these efforts, reach out, raise issues and read our
-<a href="#contributing-">contribution guidelines</a> or just star 🌟 to stay up to date with the latest
-developments!</p>
+<a href="https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md">contribution guidelines</a> or just
+<a href="https://github.com/instadeepai/jumanji">star</a> 🌟 to stay up to date with the latest developments!</p>
 <h3 id="goals">Goals 🚀<a class="headerlink" href="#goals" title="Permanent link">#</a></h3>
 <ol>
 <li>Provide a simple, well-tested API for JAX-based environments.</li>
@@ -1400,8 +1432,7 @@ combinatorial problems.</li>
 <li>🍬 <strong>Wrappers</strong>: easily connect to your favourite RL frameworks and libraries such as
 <a href="https://github.com/deepmind/acme">Acme</a>,
 <a href="https://github.com/DLR-RM/stable-baselines3">Stable Baselines3</a>,
-<a href="https://docs.ray.io/en/latest/rllib/index.html">RLlib</a>,
-<a href="https://github.com/openai/gym">OpenAI Gym</a>
+<a href="https://docs.ray.io/en/latest/rllib/index.html">RLlib</a>, <a href="https://github.com/openai/gym">OpenAI Gym</a>
 and <a href="https://github.com/deepmind/dm_env">DeepMind-Env</a> through our <code>dm_env</code> and <code>gym</code> wrappers.</li>
 <li>🎓 <strong>Examples</strong>: guides to facilitate Jumanji's adoption and highlight the added value of
 JAX-based environments.</li>
@@ -1517,16 +1548,19 @@ Alternatively, you can install the latest development version directly from GitH
 </code></pre></div></td></tr></table></div>
 Jumanji has been tested on Python 3.8 and 3.9.
 Note that because the installation of JAX differs depending on your hardware accelerator,
-we advise users to explicitly install the correct JAX version (see the <a href="https://github.com/google/jax#installation">official installation guide</a>).</p>
+we advise users to explicitly install the correct JAX version (see the
+<a href="https://github.com/google/jax#installation">official installation guide</a>).</p>
 <p><strong>Rendering:</strong> Matplotlib is used for rendering all the environments. To visualize the environments
-you will need a GUI backend. For example, on Linux, you can install Tk via: <code>apt-get install python3-tk</code>,
-or using conda: <code>conda install tk</code>. Check out <a href="https://matplotlib.org/stable/users/explain/backends.html">Matplotlib backends</a>
-for a list of backends you can use.</p>
+you will need a GUI backend. For example, on Linux, you can install Tk via:
+<code>apt-get install python3-tk</code>, or using conda: <code>conda install tk</code>. Check out
+<a href="https://matplotlib.org/stable/users/explain/backends.html">Matplotlib backends</a> for a list of
+backends you can use.</p>
 <h2 id="quickstart">Quickstart ⚡<a class="headerlink" href="#quickstart" title="Permanent link">#</a></h2>
 <p>RL practitioners will find Jumanji's interface familiar as it combines the widely adopted
-<a href="https://github.com/openai/gym">OpenAI Gym</a> and <a href="https://github.com/deepmind/dm_env">DeepMind Environment</a>
-interfaces. From OpenAI Gym, we adopted the idea of a <code>registry</code> and the <code>render</code> method, while our
-<code>TimeStep</code> structure is inspired by DeepMind Environment.</p>
+<a href="https://github.com/openai/gym">OpenAI Gym</a> and
+<a href="https://github.com/deepmind/dm_env">DeepMind Environment</a> interfaces. From OpenAI Gym, we adopted
+the idea of a <code>registry</code> and the <code>render</code> method, while our <code>TimeStep</code> structure is inspired by
+DeepMind Environment.</p>
 <h3 id="basic-usage">Basic Usage 🧑‍💻<a class="headerlink" href="#basic-usage" title="Permanent link">#</a></h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -1565,15 +1599,17 @@ interfaces. From OpenAI Gym, we adopted the idea of a <code>registry</code> and 
 to take a step when executing an action. This should <strong>not</strong> be confused with the <code>observation</code>
 contained in the <code>timestep</code>, which is the information perceived by the agent.</li>
 <li><code>timestep</code> is a dataclass containing <code>step_type</code>, <code>reward</code>, <code>discount</code>, <code>observation</code> and
-<code>extras</code>. This structure is similar to <a href="https://github.com/deepmind/dm_env/blob/master/docs/index.md"><code>dm_env.TimeStep</code></a>
-except for the <code>extras</code> field that was added to allow users to log environments metrics that are
-neither part of the agent's observation nor part of the environment's internal state.</li>
+<code>extras</code>. This structure is similar to
+<a href="https://github.com/deepmind/dm_env/blob/master/docs/index.md"><code>dm_env.TimeStep</code></a> except for the
+<code>extras</code> field that was added to allow users to log environments metrics that are neither part of
+the agent's observation nor part of the environment's internal state.</li>
 </ul>
 <h3 id="advanced-usage">Advanced Usage 🧑‍🔬<a class="headerlink" href="#advanced-usage" title="Permanent link">#</a></h3>
 <p>Being written in JAX, Jumanji's environments benefit from many of its features including
 automatic vectorization/parallelization (<code>jax.vmap</code>, <code>jax.pmap</code>) and JIT-compilation (<code>jax.jit</code>),
 which can be composed arbitrarily.
-We provide an example of a more advanced usage in the <a href="guides/advanced_usage.md">advanced guide</a>.</p>
+We provide an example of a more advanced usage in the
+<a href="https://instadeepai.github.io/jumanji/guides/advanced_usage/">advanced usage guide</a>.</p>
 <h3 id="registry-and-versioning">Registry and Versioning 📖<a class="headerlink" href="#registry-and-versioning" title="Permanent link">#</a></h3>
 <p>Like OpenAI Gym, Jumanji keeps a strict versioning of its environments for reproducibility reasons.
 We maintain a registry of standard environments with their configuration.
@@ -1584,22 +1620,26 @@ For a full list of registered versions of each environment, check out
 <a href="https://instadeepai.github.io/jumanji/environments/tsp/">the documentation</a>.</p>
 <h2 id="training">Training 🏎️<a class="headerlink" href="#training" title="Permanent link">#</a></h2>
 <p>To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
-actor-critic (A2C) agent. These agents can be found in <a href="../jumanji/training">jumanji/training/</a>.</p>
+actor-critic (A2C) agent. These agents can be found in
+<a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/training/">jumanji/training/</a>.</p>
 <p>Because the environment framework in Jumanji is so flexible, it allows pretty much any problem to
 be implemented as a Jumanji environment, giving rise to very diverse observations. For this reason,
 environment-specific networks are required to capture the symmetries of each environment.
 Alongside the A2C agent implementation, we provide examples of such environment-specific
-actor-critic networks in <a href="../jumanji/training/networks">jumanji/training/networks</a>.</p>
+actor-critic networks in
+<a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/training/networks/">jumanji/training/networks</a>.</p>
 <blockquote>
 <p>⚠️ The example agents in <code>jumanji/training</code> are <strong>only</strong> meant to serve as inspiration for how one
 can implement an agent. Jumanji is first and foremost a library of environments - as such, the
 agents and networks will <strong>not</strong> be maintained to a production standard.</p>
 </blockquote>
-<p>For more information on how to use the example agents, see the <a href="guides/training.md">training guide</a>.</p>
+<p>For more information on how to use the example agents, see the
+<a href="https://instadeepai.github.io/jumanji/guides/training/">training guide</a>.</p>
 <h2 id="contributing">Contributing 🤝<a class="headerlink" href="#contributing" title="Permanent link">#</a></h2>
-<p>Contributions are welcome! See our issue tracker for <a href="https://github.com/instadeepai/jumanji/labels/good%20first%20issue">good first issues</a>.
-Please read our <a href="../CONTRIBUTING.md">contributing guidelines</a> for details on
-how to submit pull requests, our Contributor License Agreement, and community guidelines.</p>
+<p>Contributions are welcome! See our issue tracker for
+<a href="https://github.com/instadeepai/jumanji/labels/good%20first%20issue">good first issues</a>. Please read
+our <a href="https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md">contributing guidelines</a> for
+details on how to submit pull requests, our Contributor License Agreement, and community guidelines.</p>
 <h2 id="citing-jumanji">Citing Jumanji ✏️<a class="headerlink" href="#citing-jumanji" title="Permanent link">#</a></h2>
 <p>If you use Jumanji in your work, please cite the library using:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1616,7 +1656,7 @@ how to submit pull requests, our Contributor License Agreement, and community gu
         and Vincent Coyette and Paul Duckworth and Daniel Furelos-Blanco and
         Nathan Grinsztajn and Tristan Kalloniatis and Victor Le and Omayma Mahjoub
         and Laurence Midgley and Shikha Surana and Cemlyn Waters and Alexandre Laterre},
-  title = {Jumanji: Industry-Driven Hardware-Accelerated RL Environments},
+  title = {Jumanji: a Suite of Diverse and Challenging Reinforcement Learning Environments in JAX},
   url = {https://github.com/instadeepai/jumanji},
   version = {0.2.0},
   year = {2023},
@@ -1626,10 +1666,14 @@ how to submit pull requests, our Contributor License Agreement, and community gu
 <p>Other works have embraced the approach of writing RL environments in JAX.
 In particular, we suggest users check out the following sister repositories:</p>
 <ul>
-<li>🦾 <a href="https://github.com/google/brax">Brax</a> is a differentiable physics engine that simulates environments made up of rigid bodies, joints, and actuators.</li>
-<li>🏋️‍ <a href="https://github.com/RobertTLange/gymnax">Gymnax</a> implements classic environments including classic control, bsuite, MinAtar and a collection of meta RL tasks.</li>
-<li>🌳 <a href="https://github.com/google/evojax">Evojax</a> provides tools to enable neuroevolution algorithms to work with neural networks running across multiple TPU/GPUs.</li>
-<li>🤖 <a href="https://github.com/adaptive-intelligent-robotics/QDax">Qdax</a> is a library to accelerate Quality-Diversity and neuro-evolution algorithms through hardware accelerators and parallelization.</li>
+<li>🤖 <a href="https://github.com/adaptive-intelligent-robotics/QDax">Qdax</a> is a library to accelerate
+Quality-Diversity and neuro-evolution algorithms through hardware accelerators and parallelization.</li>
+<li>🦾 <a href="https://github.com/google/brax">Brax</a> is a differentiable physics engine that simulates
+environments made up of rigid bodies, joints, and actuators.</li>
+<li>🏋️‍ <a href="https://github.com/RobertTLange/gymnax">Gymnax</a> implements classic environments including
+classic control, bsuite, MinAtar and a collection of meta RL tasks.</li>
+<li>🌳 <a href="https://github.com/google/evojax">Evojax</a> provides tools to enable neuroevolution algorithms
+to work with neural networks running across multiple TPU/GPUs.</li>
 </ul>
 <h2 id="acknowledgements">Acknowledgements 🙏<a class="headerlink" href="#acknowledgements" title="Permanent link">#</a></h2>
 <p>The development of this library was supported with Cloud TPUs
@@ -1640,7 +1684,7 @@ from Google's <a href="https://sites.research.google/trc/about/">TPU Research Cl
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

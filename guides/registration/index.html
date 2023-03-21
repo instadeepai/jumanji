@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="./" class="md-tabs__link md-tabs__link--active">
+      <a href="../advanced_usage/" class="md-tabs__link md-tabs__link--active">
         User Guides
       </a>
     </li>
@@ -711,6 +711,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -724,6 +728,20 @@
           User Guides
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -782,6 +800,20 @@
   
 </nav>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/" class="md-nav__link">
+        Training
+      </a>
     </li>
   
 
@@ -1276,16 +1308,16 @@ To get the full list of registered environments, you can use the <code>registere
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>Users can provide additional key-word arguments in the call to `jumanji.make(env_id, ...)`.
-These are then passed to the class constructor. Because they can be used to overwrite the intended configuration
-of the environment when registered, we discourage users to do so. However, we are mindful of particular use cases that
-might require this flexibility.
+These are then passed to the class constructor. Because they can be used to overwrite the
+intended configuration of the environment when registered, we discourage users to do so.
+However, we are mindful of particular use cases that might require this flexibility.
 </code></pre></div></td></tr></table></div>
 <p>Although the <code>make</code> function provides a unified way to instantiate environments,
 users can always instantiate them by importing the corresponding environment class.</p>
 <h2 id="register-your-environment">Register your environment<a class="headerlink" href="#register-your-environment" title="Permanent link">#</a></h2>
-<p>In addition to the environments available in Jumanji, users can register their custom environment and access them through the
-familiar <code>jumanji.make</code> function. Assuming you created an environment by subclassing Jumanji <code>Environment</code> base class,
-you can register it as follows:</p>
+<p>In addition to the environments available in Jumanji, users can register their custom environment
+and access them through the familiar <code>jumanji.make</code> function. Assuming you created an environment
+by subclassing Jumanji <code>Environment</code> base class, you can register it as follows:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1305,7 +1337,7 @@ constructor. The <code>kwargs</code> argument is there to configurate the enviro
 scenarios with a specific set of arguments. The environment ID must respect the format
 <code>(EnvName)-v(version)</code>, where the version number starts at <code>v0</code>.</p>
 <p>For examples on how to register environments, please see our
-<a href="../jumanji/__init__.py">jumanji/__init__.py</a> file.</p>
+<a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/__init__.py">jumanji/__init__.py</a> file.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Note that Jumanji doesn&#39;t allow users to overwrite the registration of an existing environment.
 </code></pre></div></td></tr></table></div>
 <p>To verify that your custom environment has been registered correctly, you can inspect the listing
@@ -1316,7 +1348,7 @@ of registered environments using the <code>registered_environments</code> util.<
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>
@@ -1338,7 +1370,7 @@ of registered environments using the <code>registered_environments</code> util.<
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../../environments/tsp/" class="md-footer__link md-footer__link--prev" aria-label="Previous: TSP" rel="prev">
+        <a href="../advanced_usage/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Advanced Usage" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1347,20 +1379,20 @@ of registered environments using the <code>registered_environments</code> util.<
               <span class="md-footer__direction">
                 Previous
               </span>
-              TSP
+              Advanced Usage
             </div>
           </div>
         </a>
       
       
         
-        <a href="../wrappers/" class="md-footer__link md-footer__link--next" aria-label="Next: Wrapper" rel="next">
+        <a href="../training/" class="md-footer__link md-footer__link--next" aria-label="Next: Training" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Wrapper
+              Training
             </div>
           </div>
           <div class="md-footer__button md-icon">

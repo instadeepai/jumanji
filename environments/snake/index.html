@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,19 +1301,26 @@
 
 <h1 id="snake-environment">Snake Environment 🐍<a class="headerlink" href="#snake-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/snake.gif" width="300"/>
+        <img src="../../env_anim/snake.gif" width="500"/>
 </p>
 
-<p>We provide here an implementation of the Snake environment from <a href="https://arxiv.org/abs/2111.00206">(Bonnet et al., 2021)</a>.
-The goal of the agent is to navigate in a grid world (by default of size 12x12) to collect as many
-fruits as possible without colliding with its own body (i.e. looping on itself).</p>
+<p>We provide here an implementation of the <em>Snake</em> environment from
+<a href="https://arxiv.org/abs/2111.00206">(Bonnet et al., 2021)</a>. The goal of the agent is to navigate
+in a grid world (by default of size 12x12) to collect as many fruits as possible without colliding
+with its own body (i.e. looping on itself).</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <ul>
-<li><code>grid</code>: jax array (float) of shape <code>(num_rows, num_cols, 5)</code>, feature maps (image) that include
-    information about the fruit, the snake head, its body and tail.</li>
-<li><code>step_count</code>: jax array (int32) of shape <code>()</code>, current number of steps in the episode.</li>
-<li><code>action_mask</code>: jax array (bool) of shape <code>(4,)</code>, array specifying which directions the snake can
-    move in from its current position.</li>
+<li>
+<p><code>grid</code>: jax array (float) of shape <code>(num_rows, num_cols, 5)</code>, feature maps (image) that include
+    information about the fruit, the snake head, its body and tail.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>, current number of steps in the episode.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(4,)</code>, array specifying which directions the snake can
+    move in from its current position.</p>
+</li>
 </ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>DiscreteArray</code> of integer values: <code>[0,1,2,3]</code> -&gt; <code>[Up, Right, Down, Left]</code>.</p>
@@ -1297,7 +1336,7 @@ fruits as possible without colliding with its own body (i.e. looping on itself).
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../registration/" class="md-tabs__link md-tabs__link--active">
+      <a href="../advanced_usage/" class="md-tabs__link md-tabs__link--active">
         User Guides
       </a>
     </li>
@@ -711,6 +711,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -731,8 +735,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1259,8 +1291,9 @@
 
 
 <h1 id="wrappers">Wrappers<a class="headerlink" href="#wrappers" title="Permanent link">#</a></h1>
-<p>The <code>Wrapper</code> interface is used for extending Jumanji <code>Environment</code> to add features like auto reset and vectorised environments.
-Jumanji provides wrappers to convert a Jumanji <code>Environment</code> to a DeepMind or Gym environment.</p>
+<p>The <code>Wrapper</code> interface is used for extending Jumanji <code>Environment</code> to add features like auto reset
+and vectorised environments. Jumanji provides wrappers to convert a Jumanji <code>Environment</code> to a
+DeepMind or Gym environment.</p>
 <h2 id="jumanji-to-deepmind-environment">Jumanji to DeepMind Environment<a class="headerlink" href="#jumanji-to-deepmind-environment" title="Permanent link">#</a></h2>
 <p>We can also convert our Jumanji environments to a DeepMind environment:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1303,8 +1336,10 @@ Below is an example of how to convert a Jumanji environment into a Gym environme
 <span class="o">...</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="auto-reset-an-environment">Auto-reset an Environment<a class="headerlink" href="#auto-reset-an-environment" title="Permanent link">#</a></h2>
-<p>Below is an example of how to extend the functionality of the Snake environment to automatically reset whenever the environment reaches a terminal state.
-The Snake game terminates when the snake hits the wall, using the <code>AutoResetWrapper</code> the environment will be reset once a terminal state has been reached.</p>
+<p>Below is an example of how to extend the functionality of the Snake environment to automatically
+reset whenever the environment reaches a terminal state. The Snake game terminates when the snake
+hits the wall, using the <code>AutoResetWrapper</code> the environment will be reset once a terminal state has
+been reached.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1341,7 +1376,7 @@ The Snake game terminates when the snake hits the wall, using the <code>AutoRese
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>
@@ -1363,7 +1398,7 @@ The Snake game terminates when the snake hits the wall, using the <code>AutoRese
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../registration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Registration" rel="prev">
+        <a href="../training/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Training" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1372,7 +1407,7 @@ The Snake game terminates when the snake hits the wall, using the <code>AutoRese
               <span class="md-footer__direction">
                 Previous
               </span>
-              Registration
+              Training
             </div>
           </div>
         </a>

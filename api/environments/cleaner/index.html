@@ -246,7 +246,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../guides/registration/" class="md-tabs__link">
+      <a href="../../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -709,6 +709,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -729,8 +733,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1556,7 +1588,7 @@ Implemented options are [<code>RandomGenerator</code>]. Defaults to <code>Random
 
     <div class="doc doc-contents ">
 
-      <p>Specification of the actions for the <code>Cleaner</code> environment.</p>
+      <p>Specification of the action for the <code>Cleaner</code> environment.</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -1642,7 +1674,7 @@ timestep: <code>TimeStep</code> object corresponding to the first timestep retur
 
 
 <h3 id="jumanji.environments.routing.cleaner.env.Cleaner.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.environments.routing.cleaner.env.Cleaner.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1671,7 +1703,7 @@ the episode terminates.</p>
         <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>actions</code></td>
+        <td><code>action</code></td>
         <td><code>Array</code></td>
         <td><p>Jax array of shape (num_agents,). Each agent moves one step in
 the specified direction (0: up, 1: right, 2: down, 3: left).</p></td>
@@ -1842,7 +1874,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

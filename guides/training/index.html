@@ -240,13 +240,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../registration/" class="md-tabs__link">
+      <a href="../advanced_usage/" class="md-tabs__link md-tabs__link--active">
         User Guides
       </a>
     </li>
@@ -693,15 +695,21 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
+        
+          
+        
+          
         
           
         
@@ -727,9 +735,92 @@
   
   
     <li class="md-nav__item">
+      <a href="../advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../registration/" class="md-nav__link">
         Registration
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Training
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Training
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#agents" class="md-nav__link">
+    Agents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluation" class="md-nav__link">
+    Evaluation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1200,9 +1291,22 @@
 
 
 <h1 id="training">Training<a class="headerlink" href="#training" title="Permanent link">#</a></h1>
-<p>Jumanji provides two example agents to get you started with training on Jumanji environments:
-- Random agent
-- A2C agent</p>
+<p>Jumanji provides a training script
+<a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/training/train.py">train.py</a> to train an
+online agent on a specified Jumanji environment given an environment-specific network.</p>
+<h2 id="agents">Agents<a class="headerlink" href="#agents" title="Permanent link">#</a></h2>
+<p>Jumanji provides two example agents in
+<a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/training/agents/">jumanji/training/agents/</a>
+to get you started with training on Jumanji environments:</p>
+<ul>
+<li>
+<p>Random agent: uses the action mask to randomly sample valid actions.</p>
+</li>
+<li>
+<p>A2C agent: online advantage actor-critic agent that follows from
+<a href="https://arxiv.org/abs/1602.01783">[Mnih et al., 2016]</a>.</p>
+</li>
+</ul>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h2>
 <p>In each environment-specific config YAML file, you will see a "training" section like below:</p>
 <p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1215,31 +1319,57 @@
 <span class="w">    </span><span class="nt">n_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
 <span class="w">    </span><span class="nt">total_batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
 </code></pre></div></td></tr></table></div>
-Here,
-- <code>num_epochs</code> corresponds to the number of data points in your plots. An epoch can be thought
-as an iteration.
-- <code>num_learner_steps_per_epoch</code> is the number of learner steps that happen in each epoch.
-After every learner step, the A2C agent's policy is updated.
-- <code>n_steps</code> is the sequence length (consecutive environment steps in a batch).
-- <code>total_batch_size</code> is the number of environments that are run in parallel.</p>
-<p>So in the above example,
-- 64 environments are running in parallel.
-- Each of these 64 environments run 20 environment steps. After this, the agent's policy is
-updated via SGD. This constitutes a single learner step.
-- 50 such learner steps are done for the epoch in question. After this, evaluation is done
-using the updated policy.
-- The above procedure is done for 1000 epochs.</p>
+Here,</p>
+<ul>
+<li>
+<p><code>num_epochs</code> corresponds to the number of data points in your plots. An epoch can be thought
+as an iteration.</p>
+</li>
+<li>
+<p><code>num_learner_steps_per_epoch</code> is the number of learner steps that happen in each epoch.
+After every learner step, the A2C agent's policy is updated.</p>
+</li>
+<li>
+<p><code>n_steps</code> is the sequence length (consecutive environment steps in a batch).</p>
+</li>
+<li>
+<p><code>total_batch_size</code> is the number of environments that are run in parallel.</p>
+</li>
+</ul>
+<p>So in the above example,</p>
+<ul>
+<li>
+<p>64 environments are running in parallel.</p>
+</li>
+<li>
+<p>Each of these 64 environments run 20 environment steps. After this, the agent's policy is
+updated via SGD. This constitutes a single learner step.</p>
+</li>
+<li>
+<p>50 such learner steps are done for the epoch in question. After this, evaluation is done
+using the updated policy.</p>
+</li>
+<li>
+<p>The above procedure is done for 1000 epochs.</p>
+</li>
+</ul>
 <h2 id="evaluation">Evaluation<a class="headerlink" href="#evaluation" title="Permanent link">#</a></h2>
-<p>Two types of evaluation are recorded:
-- Stochastic evaluation (same policy used during training)
-- Greedy evaluation (argmax over the action logits)</p>
+<p>Two types of evaluation are recorded:</p>
+<ul>
+<li>
+<p>Stochastic evaluation (same policy used during training)</p>
+</li>
+<li>
+<p>Greedy evaluation (argmax over the action logits)</p>
+</li>
+</ul>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>
@@ -1257,6 +1387,41 @@ using the updated policy.
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../registration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Registration" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Registration
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../wrappers/" class="md-footer__link md-footer__link--next" aria-label="Next: Wrapper" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Wrapper
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -795,6 +795,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -815,8 +819,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1289,7 +1321,7 @@
 
 <h1 id="connector-environment">Connector Environment<a class="headerlink" href="#connector-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/connector.gif" width="300"/>
+        <img src="../../env_anim/connector.gif" width="600"/>
 </p>
 
 <p>The <code>Connector</code> environment contains multiple agents spawned in a grid world with each agent
@@ -1299,28 +1331,55 @@ it leaves behind a path, which is impassable by all agents. Thus, agents need to
 to allow each other to connect to their own targets without overlapping.</p>
 <p>An episode ends when all agents have connected to their targets or no agents can make any further
 moves due to being blocked.</p>
+<blockquote>
+<p>⚠️ Warning</p>
+<p>This environment is multi-agent, i.e. the observation, action and action mask are batched on the
+agent dimension.</p>
+<ul>
+<li>
+<p>If used in a multi-agent RL setting, one can direclty vmap the agents' inference functions on
+the observation they receive or unpack the observation and give it to each agent manually, e.g.
+<code>agents_obs = [jax.tree_util.tree_map(lambda x: x[i] if x.ndim&gt;0 else x, obs) for i in range(len(obs.grid))]</code>.</p>
+</li>
+<li>
+<p>If used in a single-agent RL setting, one can use <code>jumanji.wrappers.MultiToSingleWrapper</code> to
+make it a single-agent environment.</p>
+</li>
+</ul>
+</blockquote>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <p>At each step observation contains 3 items: a grid for each agent, an action mask for each agent and
-the episode step count.
-- <code>grid</code>: jax array (int32) of shape <code>(grid_size, grid_size)</code>, a size-configurable 2D matrix that
-   represents pairs of points that need to be connected. The <strong>position</strong> of an agent has to
-   connect to its <strong>target</strong>, leaving a <strong>path</strong> behind it as it moves across the grid forming
-   its route. Each agent connects to only 1 target.
-- <code>action_mask</code>: jax array (bool) of shape <code>(num_agents,)</code>, indicates which actions each agent
-   can take.
-- <code>step_count</code>: jax array (int32) of shape <code>()</code>, represents how many steps have been taken in
+the episode step count.</p>
+<ul>
+<li>
+<p><code>grid</code>: jax array (int32) of shape <code>(num_agents, grid_size, grid_size)</code>, a 2D matrix for each
+   agent that represents pairs of points that need to be connected from the perspective of each
+   agent. The <strong>position</strong> of an agent has to connect to its <strong>target</strong>, leaving a <strong>path</strong> behind
+   it as it moves across the grid forming its route. Each agent connects to only 1 target.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_agents, 5)</code>, indicates which actions each agent
+   can take.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>, represents how many steps have been taken in
    the environment since the last reset.</p>
-<p>Each agent is passed their own grid so the grid observation is of shape
-<code>(num_agents, grid_size, grid_size)</code>, similarly action masks are of shape <code>(num_agents, 5)</code>,
-however the step is a common value for all agents and thus is a scalar.</p>
+</li>
+</ul>
 <h3 id="encoding">Encoding<a class="headerlink" href="#encoding" title="Permanent link">#</a></h3>
 <p>Each agent has 3 components represented in the observation space: position, target, and path. Each
 agent in the environment will have an integer representing their components.</p>
 <ul>
-<li>Positions are encoded starting from 2 in multiples of 3: 2, 5, 8, …</li>
-<li>Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …</li>
-<li>Paths appear in the location of the head once it moves, starting from 1 in
-    multiples of 3: 1, 4, 7, …</li>
+<li>
+<p>Positions are encoded starting from 2 in multiples of 3: 2, 5, 8, …</p>
+</li>
+<li>
+<p>Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …</p>
+</li>
+<li>
+<p>Paths appear in the location of the head once it moves, starting from 1 in
+    multiples of 3: 1, 4, 7, …</p>
+</li>
 </ul>
 <p>Every group of 3 corresponds to 1 agent: (1,2,3), (4,5,6), …</p>
 <p>Example:
@@ -1357,8 +1416,7 @@ This means that the agent with the values <code>(4,5,6)</code> will always be th
 of <code>[0, 4]</code>. Each value corresponds to an agent moving in 1 of 4 cardinal directions or taking the
 no-op action. That is, [0, 1, 2, 3, 4] -&gt; [No Op, Up, Right, Down, Left].</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>The reward can be either:
-- <strong>Dense</strong>: +1.0 for each agent that connects at that step and -0.03 for each agent that has not
+<p>The reward is <strong>dense</strong>: +1.0 for each agent that connects at that step and -0.03 for each agent that has not
 connected yet.</p>
 <p>Rewards are provided in the shape <code>(num_agents,)</code> so that each agent can have a reward.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
@@ -1371,7 +1429,7 @@ connected yet.</p>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>

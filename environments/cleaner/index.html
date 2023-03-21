@@ -248,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../guides/registration/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -775,6 +775,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -795,8 +799,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/registration/" class="md-nav__link">
         Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
       </a>
     </li>
   
@@ -1269,7 +1301,7 @@
 
 <h1 id="cleaner-environment">Cleaner Environment<a class="headerlink" href="#cleaner-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/cleaner.gif" height="600"/>
+        <img src="../../env_anim/cleaner.gif" width="600"/>
 </p>
 
 <p>We provide here a JAX jit-able implementation of the <a href="https://github.com/Bigpig4396/Multi-Agent-Reinforcement-Learning-Environment#multi-agent-cleaner">Multi-Agent Cleaning</a>
@@ -1281,21 +1313,35 @@ Every time an agent (red) visits a dirty tile, it is cleaned (white).</p>
 <p>A new maze is randomly generated using a recursive division method for each new episode. Agents
 always start in the top left corner of the maze.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>The <strong>observation</strong> seen by the agent is a <code>NamedTuple</code> containing the following:
-- <code>grid</code>: jax array (int) of shape <code>(num_rows, num_cols)</code>, array representing the grid, each tile is
-    either dirty (0), clean (1), or a wall (2).
-- <code>agents_locations</code>: jax array (int) of shape <code>(num_agents, 2)</code>, array specifying the x and y
-    coordinates of every agent.
-- <code>action_mask</code>: jax array (bool) of shape <code>(num_agents, 4)</code>, array specifying, for each agent,
-    which action (up, right, down, left) is legal.
-- <code>step_count</code>: jax array (int32) of shape <code>()</code>, number of steps elapsed in the current episode.</p>
+<p>The <strong>observation</strong> seen by the agent is a <code>NamedTuple</code> containing the following:</p>
+<ul>
+<li>
+<p><code>grid</code>: jax array (int) of shape <code>(num_rows, num_cols)</code>, array representing the grid, each tile is
+    either dirty (0), clean (1), or a wall (2).</p>
+</li>
+<li>
+<p><code>agents_locations</code>: jax array (int) of shape <code>(num_agents, 2)</code>, array specifying the x and y
+    coordinates of every agent.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_agents, 4)</code>, array specifying, for each agent,
+    which action (up, right, down, left) is legal.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>, number of steps elapsed in the current episode.</p>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>MultiDiscreteArray</code> containing an integer value in <code>[0, 1, 2, 3]</code> for each
 agent. Each agent can take one of four actions: up (<code>0</code>), right (<code>1</code>), down (<code>2</code>), or left (<code>3</code>).</p>
 <p>The episode terminates if any agent meets one of the following conditions:</p>
 <ul>
-<li>An invalid action is taken, or</li>
-<li>An action is blocked by a wall.</li>
+<li>
+<p>An invalid action is taken, or</p>
+</li>
+<li>
+<p>An action is blocked by a wall.</p>
+</li>
 </ul>
 <p>In both cases, the agent's position remains unchanged.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
@@ -1312,7 +1358,7 @@ maze faster.</p>
   <small>
     
       Last update:
-      2023-03-17
+      2023-03-21
     
   </small>
 </div>
