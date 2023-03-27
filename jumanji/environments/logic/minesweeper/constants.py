@@ -17,7 +17,7 @@ IS_MINE: int = 1
 PATCH_SIZE: int = 3
 REVEALED_EMPTY_SQUARE_REWARD: float = 1.0
 REVEALED_MINE_OR_INVALID_ACTION_REWARD: float = 0.0
-COLOUR_MAPPING: list = [
+DEFAULT_COLOR_MAPPING: list = [
     "orange",
     "blue",
     "green",
