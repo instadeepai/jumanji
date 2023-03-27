@@ -250,10 +250,10 @@ class RubiksCube(Environment[State]):
         return Observation(cube=state.cube, step_count=state.step_count)
 
     def render(self, state: State, save_path: Optional[str] = None) -> None:
-        """Renders the current state of the game board.
+        """Renders the current state of the cube.
 
         Args:
-            state: is the current game state to be rendered.
+            state: the current state to be rendered.
             save_path: the path where the image should be saved. If it is None, the plot
             will not be stored.
         """
@@ -265,10 +265,10 @@ class RubiksCube(Environment[State]):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
-        """Creates an animated gif of the 2048 game board based on the sequence of game states.
+        """Creates an animated gif of the cube based on the sequence of states.
 
         Args:
-            states: is a list of `State` objects representing the sequence of game states.
+            states: a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
             will not be stored.
