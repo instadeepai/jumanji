@@ -128,7 +128,6 @@ class Minesweeper(Environment[State]):
             invalid_action_reward=INVALID_ACTION_REWARD,
         )
         self.done_function = done_function or DefaultDoneFn()
-
         self._generator = generator or UniformSamplingGenerator(
             num_rows=10, num_cols=10, num_mines=10
         )
@@ -224,7 +223,7 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self._generator.num_rows * self._generator.num_cols,
+            maximum=self._generator.num_rows * self._generator.num_cols - self._generator.num_mines,
             name="step_count",
         )
         return specs.Spec(
@@ -266,7 +265,7 @@ class Minesweeper(Environment[State]):
         Args:
             state: the current state to be rendered.
             save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
+                will not be saved.
         """
         self._env_viewer.render(state=state)
 
@@ -281,7 +280,7 @@ class Minesweeper(Environment[State]):
         states: a list of `State` objects representing the sequence of states.
         interval: the delay between frames in milliseconds, default to 200.
         save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be stored.
+            will not be saved.
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
