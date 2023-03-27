@@ -66,14 +66,6 @@ class RubiksCube(Environment[State]):
             specifies how many timesteps have elapsed since environment reset.
         - key: jax array (uint) of shape (2,) used for seeding the sampling for scrambling on
             reset.
-        - action_history: jax array (int32) of shape (num_scrambles_on_reset + time_limit, 3):
-            indicates the entire history of applied moves (including those taken on scrambling the
-            cube in the environment reset). This is useful for debugging purposes, providing a
-            method to solve the cube from any position without relying on the agent, by just
-            inverting the action history. The first axis indexes over the length of the sequence
-            The second axis indexes over the component of the action (face, depth, amount). The
-            number of scrambles applied for each state is given by
-            `env.num_scrambles_on_reset + state.step_count`.
 
     ```python
     from jumanji.environments import RubiksCube
@@ -176,15 +168,11 @@ class RubiksCube(Environment[State]):
             cube=state.cube,
             flattened_action=flattened_action,
         )
-        action_history = state.action_history.at[
-            self.num_scrambles_on_reset + state.step_count
-        ].set(action)
         step_count = state.step_count + 1
         next_state = State(
             cube=cube,
             step_count=step_count,
             key=state.key,
-            action_history=action_history,
         )
         reward = self.reward_function(state=next_state)
         solved = is_solved(cube)
@@ -198,11 +186,6 @@ class RubiksCube(Environment[State]):
             next_observation,
         )
         return next_state, next_timestep
-
-    def get_action_history(self, state: State) -> chex.Array:
-        """Slice and return the action history from the state."""
-        action_history_index = self.num_scrambles_on_reset + state.step_count
-        return state.action_history[:action_history_index]
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `RubiksCube` environment.

@@ -147,13 +147,11 @@ def test_solved_reward(
     solved_state = State(
         cube=solved_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=jnp.array(0, jnp.int32),
         key=jax.random.PRNGKey(0),
     )
     differently_stickered_state = State(
         cube=differently_stickered_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=jnp.array(0, jnp.int32),
         key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(solved_state), 1.0)
@@ -178,7 +176,6 @@ def test_moves_nontrivial(
     move_solved_state = State(
         cube=move_solved_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=jnp.array(0, jnp.int32),
         key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(move_solved_state), 0.0)
