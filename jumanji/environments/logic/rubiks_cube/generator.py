@@ -24,7 +24,7 @@ from jumanji.environments.logic.rubiks_cube.utils import scramble_solved_cube
 
 
 class Generator(abc.ABC):
-    """Base class for generators for the RubiksCube environment."""
+    """Base class for generators for the `RubiksCube` environment."""
 
     def __init__(self, cube_size: int):
         """Initialises a RubiksCube generator for resetting the environment.
