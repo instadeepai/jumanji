@@ -21,7 +21,10 @@ import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.rubiks_cube.constants import Face
+from jumanji.environments.logic.rubiks_cube.constants import (
+    DEFAULT_STICKER_COLORS,
+    Face,
+)
 from jumanji.environments.logic.rubiks_cube.env_viewer import (
     DefaultRubiksCubeViewer,
     RubiksCubeViewer,
@@ -83,7 +86,6 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = 3,
         time_limit: int = 200,
-        num_scrambles_on_reset: int = 100,
         reward_fn: Optional[RewardFn] = None,
         env_viewer: Optional[RubiksCubeViewer] = None,
         generator: Optional[Generator] = None,
@@ -93,10 +95,6 @@ class RubiksCube(Environment[State]):
         Args:
             cube_size: the size of the cube, i.e. length of an edge. Defaults to 3.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
-            num_scrambles_on_reset: the number of scrambles done from a solved Rubik's Cube in the
-                generation of a random instance. The lower, the closer to a solved cube the reset
-                state is. Defaults to 100.
-                Note that this argument will be ignored if a custom generator is passed.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
             env_viewer: RubiksCubeViewer to support rendering and animation methods.
@@ -115,20 +113,16 @@ class RubiksCube(Environment[State]):
             raise ValueError(
                 f"The time_limit must be positive, but received time_limit={time_limit}"
             )
-        if num_scrambles_on_reset < 0:
-            raise ValueError(
-                f"The num_scrambles_on_reset must be non-negative, "
-                f"but received num_scrambles_on_reset={num_scrambles_on_reset}"
-            )
+
         self.cube_size = cube_size
         self.time_limit = time_limit
-        self.num_scrambles_on_reset = num_scrambles_on_reset
         self.reward_function = reward_fn or SparseRewardFn()
-        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(cube_size=cube_size)
+        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(
+            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=cube_size
+        )
         self._generator = generator or ScramblingGenerator(
             cube_size=cube_size,
-            num_scrambles_on_reset=num_scrambles_on_reset,
-            time_limit=self.time_limit,
+            num_scrambles_on_reset=100,
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:

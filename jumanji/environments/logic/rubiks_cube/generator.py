@@ -61,10 +61,19 @@ class ScramblingGenerator(Generator):
         self,
         cube_size: int,
         num_scrambles_on_reset: int,
-        time_limit: int,
     ):
+        """
+        Args:
+            num_scrambles_on_reset: the number of scrambles done from a solved Rubik's Cube in the
+            generation of a random instance. The lower, the closer to a solved cube the reset
+            state is.
+        """
+        if num_scrambles_on_reset < 0:
+            raise ValueError(
+                f"The num_scrambles_on_reset must be non-negative, "
+                f"but received num_scrambles_on_reset={num_scrambles_on_reset}"
+            )
         self.num_scrambles_on_reset = num_scrambles_on_reset
-        self.time_limit = time_limit
         super().__init__(cube_size=cube_size)
 
     def generate_actions_for_scramble(self, key: chex.PRNGKey) -> chex.Array:

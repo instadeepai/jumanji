@@ -21,6 +21,7 @@ import pytest
 import pytest_mock
 
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
+from jumanji.environments.logic.rubiks_cube.generator import ScramblingGenerator
 from jumanji.environments.logic.rubiks_cube.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -76,7 +77,11 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
 @pytest.mark.parametrize("cube_size", [3, 4, 5])
 def test_rubiks_cube__does_not_smoke(cube_size: int) -> None:
     """Test that we can run an episode without any errors."""
-    env = RubiksCube(cube_size=cube_size, time_limit=10, num_scrambles_on_reset=5)
+    env = RubiksCube(
+        cube_size=cube_size,
+        time_limit=10,
+        generator=ScramblingGenerator(cube_size=cube_size, num_scrambles_on_reset=5),
+    )
     check_env_does_not_smoke(env)
 
 
