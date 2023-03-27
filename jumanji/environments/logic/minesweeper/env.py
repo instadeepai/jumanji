@@ -223,7 +223,8 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self._generator.num_rows * self._generator.num_cols - self._generator.num_mines,
+            maximum=self._generator.num_rows * self._generator.num_cols
+            - self._generator.num_mines,
             name="step_count",
         )
         return specs.Spec(
@@ -254,9 +255,7 @@ class Minesweeper(Environment[State]):
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-            num_mines=jnp.array(
-                self._generator.num_mines, jnp.int32
-            ),
+            num_mines=jnp.array(self._generator.num_mines, jnp.int32),
             step_count=state.step_count,
         )
 
