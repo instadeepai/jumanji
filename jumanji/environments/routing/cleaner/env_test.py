@@ -19,7 +19,7 @@ import pytest
 
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.cleaner.generator import Generator, Maze
+from jumanji.environments.routing.cleaner.generator import Generator
 from jumanji.environments.routing.cleaner.types import Observation, State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -27,7 +27,7 @@ from jumanji.types import StepType, TimeStep
 
 SAMPLE_GRID = jnp.array(
     [
-        [DIRTY, DIRTY, WALL, DIRTY, DIRTY],
+        [CLEAN, DIRTY, WALL, DIRTY, DIRTY],
         [WALL, DIRTY, WALL, DIRTY, WALL],
         [DIRTY, DIRTY, DIRTY, DIRTY, WALL],
         [DIRTY, WALL, WALL, DIRTY, WALL],
@@ -39,17 +39,24 @@ N_AGENT = 3
 
 class DummyGenerator(Generator):
     def __init__(self) -> None:
-        super(DummyGenerator, self).__init__(num_rows=5, num_cols=5)
+        super(DummyGenerator, self).__init__(num_rows=5, num_cols=5, num_agents=N_AGENT)
 
-    def __call__(self, key: chex.PRNGKey) -> Maze:
-        return SAMPLE_GRID
+    def __call__(self, key: chex.PRNGKey) -> State:
+        agents_locations = jnp.zeros((N_AGENT, 2), int)
+        return State(
+            grid=SAMPLE_GRID,
+            agents_locations=agents_locations,
+            action_mask=None,
+            step_count=jnp.array(0, jnp.int32),
+            key=key,
+        )
 
 
 class TestCleaner:
     @pytest.fixture
     def env(self) -> Cleaner:
         generator = DummyGenerator()
-        return Cleaner(num_agents=N_AGENT, generator=generator)
+        return Cleaner(generator=generator)
 
     @pytest.fixture
     def key(self) -> chex.PRNGKey:

@@ -14,44 +14,47 @@
 import abc
 
 import chex
+import jax
 import jax.numpy as jnp
-from typing_extensions import TypeAlias
 
 from jumanji.environments.commons.maze_utils import maze_generation
-from jumanji.environments.routing.cleaner.constants import DIRTY, WALL
-
-Maze: TypeAlias = chex.Array
+from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
+from jumanji.environments.routing.cleaner.types import State
 
 
 class Generator(abc.ABC):
-    def __init__(self, num_rows: int, num_cols: int):
-        """Interface for maze generation for the `Cleaner` environment.
+    def __init__(self, num_rows: int, num_cols: int, num_agents: int) -> None:
+        """Interface for instance generation for the `Cleaner` environment.
 
         Args:
-            num_rows: the width of the maze to create.
-            num_cols: the length of the maze to create.
+            num_rows: the width of the grid to create.
+            num_cols: the length of the grid to create.
+            num_agents: the number of agents.
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
+        self.num_agents = num_agents
 
     @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey) -> Maze:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Generate a problem instance for the `Cleaner` environment.
 
         Args:
             key: random key.
 
         Returns:
-            A `Maze` representing a problem instance.
+            An initial `State` representing a problem instance.
         """
 
 
 class RandomGenerator(Generator):
-    def __init__(self, num_rows: int, num_cols: int) -> None:
-        super(RandomGenerator, self).__init__(num_rows=num_rows, num_cols=num_cols)
+    def __init__(self, num_rows: int, num_cols: int, num_agents: int) -> None:
+        super(RandomGenerator, self).__init__(
+            num_rows=num_rows, num_cols=num_cols, num_agents=num_agents
+        )
 
-    def __call__(self, key: chex.PRNGKey) -> Maze:
-        """Generate a random maze.
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Generate a random instance of the cleaner environment.
 
         This method relies on the `generate_maze` method from the `maze_generation` module to
         generate a maze. This generated maze has its own specific values to represent empty tiles
@@ -62,12 +65,30 @@ class RandomGenerator(Generator):
             key: the Jax random number generation key.
 
         Returns:
-            maze: the generated maze.
+            state: the generated state.
         """
-        maze = maze_generation.generate_maze(self.num_rows, self.num_cols, key)
-        return self._adapt_values(maze)
+        generator_key, state_key = jax.random.split(key)
+        maze = maze_generation.generate_maze(
+            self.num_rows, self.num_cols, generator_key
+        )
 
-    def _adapt_values(self, maze: Maze) -> Maze:
+        grid = self._adapt_values(maze)
+
+        # Agents start in upper left corner
+        agents_locations = jnp.zeros((self.num_agents, 2), int)
+
+        # Clean the tile in upper left corner
+        grid = grid.at[0, 0].set(CLEAN)
+
+        return State(
+            grid=grid,
+            agents_locations=agents_locations,
+            action_mask=None,
+            step_count=jnp.array(0, jnp.int32),
+            key=state_key,
+        )
+
+    def _adapt_values(self, maze: maze_generation.Maze) -> chex.Array:
         """Adapt the values of the maze from maze_generation to agent cleaner."""
         maze = jnp.where(maze == maze_generation.EMPTY, DIRTY, maze)
         # This line currently doesn't do anything, but avoid breaking this function if either of
