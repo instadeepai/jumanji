@@ -53,9 +53,11 @@ def make_solved_cube(cube_size: int) -> Cube:
 
 
 def is_solved(cube: Cube) -> chex.Array:
-    """Check if a cube is solved
+    """Check if a cube is solved.
+    
     Args:
         cube: the cube to check.
+        
     Returns:
         Whether or not the cube is solved (all faces have a unique id).
     """
