@@ -55,7 +55,7 @@ class Generator(abc.ABC):
 
 
 class ScramblingGenerator(Generator):
-    """Generates instances by applying a given number of scrambles to a solved cube"""
+    """Generates instances by applying a given number of scrambles to a solved cube."""
 
     def __init__(
         self,
