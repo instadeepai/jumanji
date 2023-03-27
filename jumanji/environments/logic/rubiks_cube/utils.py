@@ -67,7 +67,7 @@ def is_solved(cube: Cube) -> chex.Array:
 
 
 def sparse_reward_function(state: State) -> chex.Array:
-    """A sparse reward function: +1 if the cube is solved, otherwise 0"""
+    """A sparse reward function: +1 if the cube is solved, otherwise 0."""
     solved = is_solved(state.cube)
     return jnp.array(solved, float)
 
