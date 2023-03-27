@@ -27,7 +27,7 @@ class Generator(abc.ABC):
     """Base class for generators for the `RubiksCube` environment."""
 
     def __init__(self, cube_size: int):
-        """Initialises a RubiksCube generator for resetting the environment.
+        """Initialises a `RubiksCube` generator for resetting the environment.
 
         Args:
             cube_size: the size of the cube to generate instances for.
