@@ -26,14 +26,26 @@ from jumanji.environments.logic.minesweeper.utils import create_flat_mine_locati
 class Generator(abc.ABC):
     """Base class for generators for the Minesweeper environment."""
 
-    def __init__(self, num_rows: int, num_cols: int):
+    def __init__(self, num_rows: int, num_cols: int, num_mines: int):
         """Initialises a Minesweeper generator for resetting the environment.
         Args:
             num_rows: number of rows, i.e. height of the board.
             num_cols: number of columns, i.e. width of the board.
+            num_mines: number of mines to place on the board.
         """
+        if num_rows <= 1 or num_cols <= 1:
+            raise ValueError(
+                f"Should make a board of height and width greater than 1, "
+                f"got num_rows={num_rows}, num_cols={num_cols}"
+            )
+        if num_mines < 0 or num_mines >= num_rows * num_cols:
+            raise ValueError(
+                f"Number of mines should be constrained between 0 and the size of the board, "
+                f"got {num_mines}"
+            )
         self.num_rows = num_rows
         self.num_cols = num_cols
+        self.num_mines = num_mines
 
     @abc.abstractmethod
     def generate_flat_mine_locations(self, key: chex.PRNGKey) -> chex.Array:
@@ -61,22 +73,8 @@ class Generator(abc.ABC):
         return state
 
 
-class SamplingGenerator(Generator):
+class UniformSamplingGenerator(Generator):
     """Generates instances by sampling a given number of mines (without replacement)."""
-
-    def __init__(
-        self,
-        num_rows: int,
-        num_cols: int,
-        num_mines: int,
-    ):
-        if num_mines < 0 or num_mines >= num_rows * num_cols:
-            raise ValueError(
-                f"Number of mines should be constrained between 0 and the size of the board, "
-                f"got {num_mines}"
-            )
-        self.num_mines = num_mines
-        super().__init__(num_rows=num_rows, num_cols=num_cols)
 
     def generate_flat_mine_locations(self, key: chex.PRNGKey) -> chex.Array:
         return create_flat_mine_locations(

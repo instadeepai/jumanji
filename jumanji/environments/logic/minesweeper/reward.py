@@ -40,7 +40,7 @@ class DefaultRewardFn(RewardFn):
         revealed_mine_reward: float,
         invalid_action_reward: float,
     ):
-        self.revelead_empty_square_reward = revealed_empty_square_reward
+        self.revealed_empty_square_reward = revealed_empty_square_reward
         self.revelead_mine_reward = revealed_mine_reward
         self.invalid_action_reward = invalid_action_reward
 
@@ -50,7 +50,7 @@ class DefaultRewardFn(RewardFn):
             jnp.where(
                 explored_mine(state=state, action=action),
                 jnp.array(self.revelead_mine_reward, float),
-                jnp.array(self.revelead_empty_square_reward, float),
+                jnp.array(self.revealed_empty_square_reward, float),
             ),
             jnp.array(self.invalid_action_reward, float),
         )

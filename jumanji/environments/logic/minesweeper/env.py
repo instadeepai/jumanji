@@ -35,7 +35,7 @@ from jumanji.environments.logic.minesweeper.env_viewer import (
 )
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
-    SamplingGenerator,
+    UniformSamplingGenerator,
 )
 from jumanji.environments.logic.minesweeper.reward import DefaultRewardFn, RewardFn
 from jumanji.environments.logic.minesweeper.types import Observation, State
@@ -96,8 +96,6 @@ class Minesweeper(Environment[State]):
 
     def __init__(
         self,
-        num_rows: int = 10,
-        num_cols: int = 10,
         reward_function: Optional[RewardFn] = None,
         done_function: Optional[DoneFn] = None,
         env_viewer: Optional[MinesweeperViewer] = None,
@@ -106,8 +104,7 @@ class Minesweeper(Environment[State]):
         """Instantiate a `Minesweeper` environment.
 
         Args:
-            num_rows: number of rows, i.e. height of the board. Defaults to 10.
-            num_cols: number of columns, i.e. width of the board. Defaults to 10.
+
             reward_function: `RewardFn` whose `__call__` method computes the reward of an
                 environment transition based on the given current state and selected action.
                 Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
@@ -120,14 +117,11 @@ class Minesweeper(Environment[State]):
             generator: Generator to generate problem instances on environment reset.
                 Implemented options are [`SamplingGenerator`].
                 Defaults to `SamplingGenerator`.
+                The generator will have attributes:
+                    - num_rows: number of rows, i.e. height of the board. Defaults to 10.
+                    - num_cols: number of columns, i.e. width of the board. Defaults to 10.
+                    - num_mines: number of mines generated. Defaults to 10.
         """
-        if num_rows <= 1 or num_cols <= 1:
-            raise ValueError(
-                f"Should make a board of height and width greater than 1, "
-                f"got num_rows={num_rows}, num_cols={num_cols}"
-            )
-        self.num_rows = num_rows
-        self.num_cols = num_cols
         self.reward_function = reward_function or DefaultRewardFn(
             revealed_empty_square_reward=REVEALED_EMPTY_SQUARE_REWARD,
             revealed_mine_reward=REVEALED_MINE_REWARD,
@@ -135,11 +129,11 @@ class Minesweeper(Environment[State]):
         )
         self.done_function = done_function or DefaultDoneFn()
 
-        self._env_viewer = env_viewer or DefaultMinesweeperViewer(
-            num_rows=num_rows, num_cols=num_cols
+        self._generator = generator or UniformSamplingGenerator(
+            num_rows=10, num_cols=10, num_mines=10
         )
-        self._generator = generator or SamplingGenerator(
-            num_rows=num_rows, num_cols=num_cols, num_mines=10
+        self._env_viewer = env_viewer or DefaultMinesweeperViewer(
+            num_rows=self._generator.num_rows, num_cols=self._generator.num_cols
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -206,14 +200,14 @@ class Minesweeper(Environment[State]):
              - step_count: BoundedArray (int32) of shape ().
         """
         board = specs.BoundedArray(
-            shape=(self.num_rows, self.num_cols),
+            shape=(self._generator.num_rows, self._generator.num_cols),
             dtype=jnp.int32,
             minimum=-1,
             maximum=PATCH_SIZE * PATCH_SIZE - 1,
             name="board",
         )
         action_mask = specs.BoundedArray(
-            shape=(self.num_rows, self.num_cols),
+            shape=(self._generator.num_rows, self._generator.num_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
@@ -223,14 +217,14 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self.num_rows * self.num_cols - 1,
+            maximum=self._generator.num_rows * self._generator.num_cols - 1,
             name="num_mines",
         )
         step_count = specs.BoundedArray(
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self.num_rows * self.num_cols,
+            maximum=self._generator.num_rows * self._generator.num_cols,
             name="step_count",
         )
         return specs.Spec(
@@ -250,7 +244,9 @@ class Minesweeper(Environment[State]):
             action_spec: `specs.MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([self.num_rows, self.num_cols], jnp.int32),
+            num_values=jnp.array(
+                [self._generator.num_rows, self._generator.num_cols], jnp.int32
+            ),
             name="action",
             dtype=jnp.int32,
         )
@@ -259,7 +255,9 @@ class Minesweeper(Environment[State]):
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-            num_mines=jnp.array(10, jnp.int32),  # todo: make this more generic
+            num_mines=jnp.array(
+                self._generator.num_mines, jnp.int32
+            ),
             step_count=state.step_count,
         )
 

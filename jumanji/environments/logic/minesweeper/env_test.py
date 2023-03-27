@@ -108,11 +108,11 @@ def test_minesweeper_env_reset(minesweeper_env: Minesweeper) -> None:
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.step_count == 0
-    assert state.flat_mine_locations.shape == (minesweeper_env.num_mines,)
-    assert timestep.observation.num_mines == minesweeper_env.num_mines
+    assert state.flat_mine_locations.shape == (minesweeper_env._generator.num_mines,)
+    assert timestep.observation.num_mines == minesweeper_env._generator.num_mines
     assert state.board.shape == (
-        minesweeper_env.num_rows,
-        minesweeper_env.num_cols,
+        minesweeper_env._generator.num_rows,
+        minesweeper_env._generator.num_cols,
     )
     assert jnp.array_equal(state.board, timestep.observation.board)
     assert timestep.observation.step_count == 0
@@ -190,9 +190,9 @@ def test_minesweeper_env_solved(minesweeper_env: Minesweeper) -> None:
     step_fn = jit(minesweeper_env.step)
     collected_rewards = []
     collected_step_types = []
-    for i in range(minesweeper_env.num_rows):
-        for j in range(minesweeper_env.num_cols):
-            flat_location = i * minesweeper_env.num_cols + j
+    for i in range(minesweeper_env._generator.num_rows):
+        for j in range(minesweeper_env._generator.num_cols):
+            flat_location = i * minesweeper_env._generator.num_cols + j
             if flat_location in state.flat_mine_locations:
                 continue
             action = jnp.array([i, j], dtype=jnp.int32)
@@ -200,7 +200,8 @@ def test_minesweeper_env_solved(minesweeper_env: Minesweeper) -> None:
             collected_rewards.append(timestep.reward)
             collected_step_types.append(timestep.step_type)
     expected_episode_length = (
-        minesweeper_env.num_rows * minesweeper_env.num_cols - minesweeper_env.num_mines
+        minesweeper_env._generator.num_rows * minesweeper_env._generator.num_cols
+        - minesweeper_env._generator.num_mines
     )
     assert collected_rewards == [REVEALED_EMPTY_SQUARE_REWARD] * expected_episode_length
     assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [

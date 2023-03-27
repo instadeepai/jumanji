@@ -18,13 +18,16 @@ import pytest
 
 from jumanji.environments.logic.minesweeper.constants import UNEXPLORED_ID
 from jumanji.environments.logic.minesweeper.env import Minesweeper
+from jumanji.environments.logic.minesweeper.generator import UniformSamplingGenerator
 from jumanji.environments.logic.minesweeper.types import State
 
 
 @pytest.fixture
 def minesweeper_env() -> Minesweeper:
     """Fixture for a default minesweeper env"""
-    return Minesweeper()
+    return Minesweeper(
+        generator=UniformSamplingGenerator(num_rows=10, num_cols=10, num_mines=10)
+    )
 
 
 @pytest.fixture
