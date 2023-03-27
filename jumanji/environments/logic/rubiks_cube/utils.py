@@ -42,10 +42,12 @@ from jumanji.environments.logic.rubiks_cube.types import Cube, State
 
 def make_solved_cube(cube_size: int) -> Cube:
     """Make a solved cube of a given size.
+    
     Args:
         cube_size: the size of the cube to generate.
+        
     Returns:
-        A solved cube, ie with all faces a uniform id (sticker color).
+        A solved cube, i.e. with all faces a uniform id (sticker color).
     """
     return jnp.stack(
         [face.value * jnp.ones((cube_size, cube_size), dtype=jnp.int8) for face in Face]
