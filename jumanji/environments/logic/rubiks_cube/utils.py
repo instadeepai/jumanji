@@ -526,13 +526,9 @@ def scramble_solved_cube(
     Returns:
         The scrambled cube.
     """
-
-    def rotate_cube_fn(cube: Cube, flattened_action: chex.Array) -> Cube:
-        return rotate_cube(cube=cube, flattened_action=flattened_action)
-
     cube = make_solved_cube(cube_size=cube_size)
     cube, _ = jax.lax.scan(
-        lambda *args: (rotate_cube_fn(*args), None),
+        lambda *args: (rotate_cube(*args), None),
         cube,
         flattened_actions_in_scramble,
     )
