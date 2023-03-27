@@ -21,7 +21,13 @@ import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.minesweeper.constants import PATCH_SIZE, UNEXPLORED_ID
+from jumanji.environments.logic.minesweeper.constants import (
+    INVALID_ACTION_REWARD,
+    PATCH_SIZE,
+    REVEALED_EMPTY_SQUARE_REWARD,
+    REVEALED_MINE_REWARD,
+    UNEXPLORED_ID,
+)
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
 from jumanji.environments.logic.minesweeper.env_viewer import (
     DefaultMinesweeperViewer,
@@ -92,7 +98,6 @@ class Minesweeper(Environment[State]):
         self,
         num_rows: int = 10,
         num_cols: int = 10,
-        num_mines: int = 10,
         reward_function: Optional[RewardFn] = None,
         done_function: Optional[DoneFn] = None,
         env_viewer: Optional[MinesweeperViewer] = None,
@@ -103,8 +108,6 @@ class Minesweeper(Environment[State]):
         Args:
             num_rows: number of rows, i.e. height of the board. Defaults to 10.
             num_cols: number of columns, i.e. width of the board. Defaults to 10.
-            num_mines: number of mines on the board. Defaults to 10.
-                Note that this argument will be ignored if a custom generator is passed.
             reward_function: `RewardFn` whose `__call__` method computes the reward of an
                 environment transition based on the given current state and selected action.
                 Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
@@ -123,22 +126,20 @@ class Minesweeper(Environment[State]):
                 f"Should make a board of height and width greater than 1, "
                 f"got num_rows={num_rows}, num_cols={num_cols}"
             )
-        if num_mines < 0 or num_mines >= num_rows * num_cols:
-            raise ValueError(
-                f"Number of mines should be constrained between 0 and the size of the board, "
-                f"got {num_mines}"
-            )
         self.num_rows = num_rows
         self.num_cols = num_cols
-        self.num_mines = num_mines
-        self.reward_function = reward_function or DefaultRewardFn()
+        self.reward_function = reward_function or DefaultRewardFn(
+            revealed_empty_square_reward=REVEALED_EMPTY_SQUARE_REWARD,
+            revealed_mine_reward=REVEALED_MINE_REWARD,
+            invalid_action_reward=INVALID_ACTION_REWARD,
+        )
         self.done_function = done_function or DefaultDoneFn()
 
         self._env_viewer = env_viewer or DefaultMinesweeperViewer(
             num_rows=num_rows, num_cols=num_cols
         )
         self._generator = generator or SamplingGenerator(
-            num_rows=num_rows, num_cols=num_cols, num_mines=num_mines
+            num_rows=num_rows, num_cols=num_cols, num_mines=10
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -229,7 +230,7 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self.num_rows * self.num_cols - self.num_mines,
+            maximum=self.num_rows * self.num_cols,
             name="step_count",
         )
         return specs.Spec(
@@ -258,7 +259,7 @@ class Minesweeper(Environment[State]):
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-            num_mines=jnp.array(self.num_mines, jnp.int32),
+            num_mines=jnp.array(10, jnp.int32),  # todo: make this more generic
             step_count=state.step_count,
         )
 

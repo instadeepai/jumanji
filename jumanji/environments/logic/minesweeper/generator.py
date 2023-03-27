@@ -36,11 +36,29 @@ class Generator(abc.ABC):
         self.num_cols = num_cols
 
     @abc.abstractmethod
+    def generate_flat_mine_locations(self, key: chex.PRNGKey) -> chex.Array:
+        """Generates positions (in flattened coordinates) of the mines in the board"""
+
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Minesweeper` state.
         Returns:
             A `Minesweeper` state.
         """
+        key, sample_key = jax.random.split(key)
+        board = jnp.full(
+            shape=(self.num_rows, self.num_cols),
+            fill_value=UNEXPLORED_ID,
+            dtype=jnp.int32,
+        )
+        step_count = jnp.array(0, jnp.int32)
+        flat_mine_locations = self.generate_flat_mine_locations(key=sample_key)
+        state = State(
+            board=board,
+            step_count=step_count,
+            key=key,
+            flat_mine_locations=flat_mine_locations,
+        )
+        return state
 
 
 class SamplingGenerator(Generator):
@@ -52,31 +70,18 @@ class SamplingGenerator(Generator):
         num_cols: int,
         num_mines: int,
     ):
+        if num_mines < 0 or num_mines >= num_rows * num_cols:
+            raise ValueError(
+                f"Number of mines should be constrained between 0 and the size of the board, "
+                f"got {num_mines}"
+            )
         self.num_mines = num_mines
         super().__init__(num_rows=num_rows, num_cols=num_cols)
 
-    def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a `Minesweeper` state by placing a fixed number of mines on the board.
-        Returns:
-            A `Minesweeper` state.
-        """
-        key, sample_key = jax.random.split(key)
-        board = jnp.full(
-            shape=(self.num_rows, self.num_cols),
-            fill_value=UNEXPLORED_ID,
-            dtype=jnp.int32,
-        )
-        step_count = jnp.array(0, jnp.int32)
-        flat_mine_locations = create_flat_mine_locations(
-            key=sample_key,
+    def generate_flat_mine_locations(self, key: chex.PRNGKey) -> chex.Array:
+        return create_flat_mine_locations(
+            key=key,
             num_rows=self.num_rows,
             num_cols=self.num_cols,
             num_mines=self.num_mines,
         )
-        state = State(
-            board=board,
-            step_count=step_count,
-            key=key,
-            flat_mine_locations=flat_mine_locations,
-        )
-        return state
