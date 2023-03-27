@@ -100,7 +100,7 @@ class RubiksCube(Environment[State]):
             env_viewer: RubiksCubeViewer to support rendering and animation methods.
                 Implemented options are [`DefaultRubiksCubeViewer`].
                 Defaults to `DefaultRubiksCubeViewer`.
-            generator: Generator to generate problem instances on environment reset.
+            generator: `Generator` used to generate problem instances on environment reset.
                 Implemented options are [`ScramblingGenerator`].
                 Defaults to `ScramblingGenerator`.
         """
