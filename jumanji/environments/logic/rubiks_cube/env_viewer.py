@@ -70,7 +70,7 @@ class DefaultRubiksCubeViewer(RubiksCubeViewer):
         """
         Args:
             sticker_colors: colors used in rendering the faces of the Rubik's cube.
-            cube_size: size of cube to view
+            cube_size: size of cube to view.
         """
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
