@@ -226,13 +226,11 @@ class RubiksCube(Environment[State]):
     def _state_to_observation(self, state: State) -> Observation:
         return Observation(cube=state.cube, step_count=state.step_count)
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> None:
         """Renders the current state of the cube.
 
         Args:
             state: the current state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
         """
         self._env_viewer.render(state=state)
 
@@ -248,7 +246,7 @@ class RubiksCube(Environment[State]):
             states: a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be stored.
+            will not be saved.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
