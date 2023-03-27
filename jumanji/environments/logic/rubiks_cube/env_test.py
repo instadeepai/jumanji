@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 import pytest
 import pytest_mock
 
-from jumanji.environments.logic.rubiks_cube.constants import CubeMovementAmount, Face
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
+from jumanji.environments.logic.rubiks_cube.generator import ScramblingGenerator
 from jumanji.environments.logic.rubiks_cube.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -38,14 +38,6 @@ def test_rubiks_cube__reset(rubiks_cube: RubiksCube) -> None:
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
     assert state.step_count == 0
-    expected_shape = (rubiks_cube.num_scrambles_on_reset + rubiks_cube.time_limit, 3)
-    assert state.action_history.shape == expected_shape
-    action_history_index = rubiks_cube.num_scrambles_on_reset
-    assert jnp.all(jnp.equal(state.action_history[action_history_index:], 0))
-    assert state.action_history.min() >= 0
-    assert state.action_history[:, 0].max() < len(Face)
-    assert state.action_history[:, 1].max() < rubiks_cube.cube_size // 2
-    assert state.action_history[:, 2].max() < len(CubeMovementAmount)
     assert jnp.array_equal(state.cube, timestep.observation.cube)
     assert timestep.observation.step_count == 0
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
@@ -67,10 +59,6 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     assert next_state.step_count == 1
     assert next_timestep.observation.step_count == 1
     assert jnp.array_equal(next_state.cube, next_timestep.observation.cube)
-    expected_shape = (rubiks_cube.num_scrambles_on_reset + rubiks_cube.time_limit, 3)
-    assert next_state.action_history.shape == expected_shape
-    action_history_index = rubiks_cube.num_scrambles_on_reset + 1
-    assert jnp.all(next_state.action_history[action_history_index:] == 0)
 
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
@@ -84,15 +72,16 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     assert next_next_state.step_count == 2
     assert next_next_timestep.observation.step_count == 2
     assert jnp.array_equal(next_next_state.cube, next_next_timestep.observation.cube)
-    assert next_next_state.action_history.shape == expected_shape
-    action_history_index = rubiks_cube.num_scrambles_on_reset + 2
-    assert jnp.all(next_next_state.action_history[action_history_index:] == 0)
 
 
 @pytest.mark.parametrize("cube_size", [3, 4, 5])
 def test_rubiks_cube__does_not_smoke(cube_size: int) -> None:
     """Test that we can run an episode without any errors."""
-    env = RubiksCube(cube_size=cube_size, time_limit=10, num_scrambles_on_reset=5)
+    env = RubiksCube(
+        cube_size=cube_size,
+        time_limit=10,
+        generator=ScramblingGenerator(cube_size=cube_size, num_scrambles_on_reset=5),
+    )
     check_env_does_not_smoke(env)
 
 

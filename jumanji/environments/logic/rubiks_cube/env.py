@@ -21,7 +21,10 @@ import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.rubiks_cube.constants import Face
+from jumanji.environments.logic.rubiks_cube.constants import (
+    DEFAULT_STICKER_COLORS,
+    Face,
+)
 from jumanji.environments.logic.rubiks_cube.env_viewer import (
     DefaultRubiksCubeViewer,
     RubiksCubeViewer,
@@ -66,14 +69,6 @@ class RubiksCube(Environment[State]):
             specifies how many timesteps have elapsed since environment reset.
         - key: jax array (uint) of shape (2,) used for seeding the sampling for scrambling on
             reset.
-        - action_history: jax array (int32) of shape (num_scrambles_on_reset + time_limit, 3):
-            indicates the entire history of applied moves (including those taken on scrambling the
-            cube in the environment reset). This is useful for debugging purposes, providing a
-            method to solve the cube from any position without relying on the agent, by just
-            inverting the action history. The first axis indexes over the length of the sequence
-            The second axis indexes over the component of the action (face, depth, amount). The
-            number of scrambles applied for each state is given by
-            `env.num_scrambles_on_reset + state.step_count`.
 
     ```python
     from jumanji.environments import RubiksCube
@@ -91,7 +86,6 @@ class RubiksCube(Environment[State]):
         self,
         cube_size: int = 3,
         time_limit: int = 200,
-        num_scrambles_on_reset: int = 100,
         reward_fn: Optional[RewardFn] = None,
         env_viewer: Optional[RubiksCubeViewer] = None,
         generator: Optional[Generator] = None,
@@ -101,16 +95,12 @@ class RubiksCube(Environment[State]):
         Args:
             cube_size: the size of the cube, i.e. length of an edge. Defaults to 3.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
-            num_scrambles_on_reset: the number of scrambles done from a solved Rubik's Cube in the
-                generation of a random instance. The lower, the closer to a solved cube the reset
-                state is. Defaults to 100.
-                Note that this argument will be ignored if a custom generator is passed.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
             env_viewer: RubiksCubeViewer to support rendering and animation methods.
                 Implemented options are [`DefaultRubiksCubeViewer`].
                 Defaults to `DefaultRubiksCubeViewer`.
-            generator: Generator to generate problem instances on environment reset.
+            generator: `Generator` used to generate problem instances on environment reset.
                 Implemented options are [`ScramblingGenerator`].
                 Defaults to `ScramblingGenerator`.
         """
@@ -123,20 +113,16 @@ class RubiksCube(Environment[State]):
             raise ValueError(
                 f"The time_limit must be positive, but received time_limit={time_limit}"
             )
-        if num_scrambles_on_reset < 0:
-            raise ValueError(
-                f"The num_scrambles_on_reset must be non-negative, "
-                f"but received num_scrambles_on_reset={num_scrambles_on_reset}"
-            )
+
         self.cube_size = cube_size
         self.time_limit = time_limit
-        self.num_scrambles_on_reset = num_scrambles_on_reset
         self.reward_function = reward_fn or SparseRewardFn()
-        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(cube_size=cube_size)
+        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(
+            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=cube_size
+        )
         self._generator = generator or ScramblingGenerator(
             cube_size=cube_size,
-            num_scrambles_on_reset=num_scrambles_on_reset,
-            time_limit=self.time_limit,
+            num_scrambles_on_reset=100,
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -176,15 +162,11 @@ class RubiksCube(Environment[State]):
             cube=state.cube,
             flattened_action=flattened_action,
         )
-        action_history = state.action_history.at[
-            self.num_scrambles_on_reset + state.step_count
-        ].set(action)
         step_count = state.step_count + 1
         next_state = State(
             cube=cube,
             step_count=step_count,
             key=state.key,
-            action_history=action_history,
         )
         reward = self.reward_function(state=next_state)
         solved = is_solved(cube)
@@ -198,11 +180,6 @@ class RubiksCube(Environment[State]):
             next_observation,
         )
         return next_state, next_timestep
-
-    def get_action_history(self, state: State) -> chex.Array:
-        """Slice and return the action history from the state."""
-        action_history_index = self.num_scrambles_on_reset + state.step_count
-        return state.action_history[:action_history_index]
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `RubiksCube` environment.
@@ -249,13 +226,11 @@ class RubiksCube(Environment[State]):
     def _state_to_observation(self, state: State) -> Observation:
         return Observation(cube=state.cube, step_count=state.step_count)
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> None:
         """Renders the current state of the cube.
 
         Args:
             state: the current state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
         """
         self._env_viewer.render(state=state)
 
@@ -271,7 +246,7 @@ class RubiksCube(Environment[State]):
             states: a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be stored.
+            will not be saved.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.

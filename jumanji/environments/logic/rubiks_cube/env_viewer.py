@@ -19,15 +19,15 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 import jumanji.environments
-from jumanji.environments.logic.rubiks_cube.constants import (
-    DEFAULT_STICKER_COLORS,
-    Face,
-)
+from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.types import State
 
 
 class RubiksCubeViewer:
     """Abstract viewer class to support rendering and animation"""
+
+    def __init__(self, cube_size: int):
+        self.cube_size = cube_size
 
     def render(self, state: State) -> None:
         """Render frames of the environment for a given state using matplotlib.
@@ -40,8 +40,8 @@ class RubiksCubeViewer:
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 200,
-        save_path: Optional[str] = None,
+        interval: int,
+        save_path: Optional[str],
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
@@ -66,18 +66,16 @@ class RubiksCubeViewer:
 
 
 class DefaultRubiksCubeViewer(RubiksCubeViewer):
-    def __init__(self, sticker_colors: Optional[list] = None, cube_size: int = 3):
+    def __init__(self, sticker_colors: Optional[list], cube_size: int):
         """
         Args:
             sticker_colors: colors used in rendering the faces of the Rubik's cube.
-                Defaults to `DEFAULT_STICKER_COLORS`.
-            cube_size: size of cube to view
+            cube_size: size of cube to view.
         """
-        self.cube_size = cube_size
-        sticker_colors = sticker_colors or DEFAULT_STICKER_COLORS
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
         self.figure_size = (6.0, 6.0)
+        super().__init__(cube_size=cube_size)
 
     def render(self, state: State) -> None:
         """Render frames of the environment for a given state using matplotlib.
@@ -93,8 +91,8 @@ class DefaultRubiksCubeViewer(RubiksCubeViewer):
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 200,
-        save_path: Optional[str] = None,
+        interval: int,
+        save_path: Optional[str],
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 

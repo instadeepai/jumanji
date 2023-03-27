@@ -42,10 +42,12 @@ from jumanji.environments.logic.rubiks_cube.types import Cube, State
 
 def make_solved_cube(cube_size: int) -> Cube:
     """Make a solved cube of a given size.
+
     Args:
         cube_size: the size of the cube to generate.
+
     Returns:
-        A solved cube, ie with all faces a uniform id (sticker color).
+        A solved cube, i.e. with all faces a uniform id (sticker color).
     """
     return jnp.stack(
         [face.value * jnp.ones((cube_size, cube_size), dtype=jnp.int8) for face in Face]
@@ -53,9 +55,11 @@ def make_solved_cube(cube_size: int) -> Cube:
 
 
 def is_solved(cube: Cube) -> chex.Array:
-    """Check if a cube is solved
+    """Check if a cube is solved.
+
     Args:
         cube: the cube to check.
+
     Returns:
         Whether or not the cube is solved (all faces have a unique id).
     """
@@ -65,7 +69,7 @@ def is_solved(cube: Cube) -> chex.Array:
 
 
 def sparse_reward_function(state: State) -> chex.Array:
-    """A sparse reward function: +1 if the cube is solved, otherwise 0"""
+    """A sparse reward function: +1 if the cube is solved, otherwise 0."""
     solved = is_solved(state.cube)
     return jnp.array(solved, float)
 
@@ -113,9 +117,11 @@ def do_rotation(
 
 def generate_up_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the up face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified up move.
     """
@@ -158,9 +164,11 @@ def generate_front_move(
     amount: CubeMovementAmount, depth: int
 ) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the front face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified front move.
     """
@@ -203,9 +211,11 @@ def generate_right_move(
     amount: CubeMovementAmount, depth: int
 ) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the right face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified right move.
     """
@@ -248,9 +258,11 @@ def generate_back_move(
     amount: CubeMovementAmount, depth: int
 ) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the back face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified back move.
     """
@@ -293,9 +305,11 @@ def generate_left_move(
     amount: CubeMovementAmount, depth: int
 ) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the left face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified left move.
     """
@@ -338,9 +352,11 @@ def generate_down_move(
     amount: CubeMovementAmount, depth: int
 ) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the down face.
+
     Args:
         amount: how much to turn the face by.
         depth: the number of layers into the cube where the move is performed.
+
     Returns:
         A callable that performs the specified down move.
     """
@@ -398,9 +414,11 @@ def generate_all_moves(cube_size: int) -> List[Callable[[Cube], Cube]]:
 
 def unflatten_action(flattened_action: chex.Array, cube_size: int) -> chex.Array:
     """Translate from the flat action representation to the unflattened representation.
+
     Args:
         flattened_action: index into the sequence of all moves.
         cube_size: the size of the cube in question.
+
     Returns:
         Unflattened action, ie a tuple:
             - face (0-5). This indicates the face on which the layer will turn.
@@ -437,6 +455,7 @@ def unflatten_action(flattened_action: chex.Array, cube_size: int) -> chex.Array
 
 def flatten_action(unflattened_action: chex.Array, cube_size: int) -> chex.Array:
     """Inverse of the `unflatten_action` method.
+
     Args:
         unflattened_action: flattened action representation, a tuple:
             - face (0-5). This indicates the face on which the layer will turn.
@@ -444,6 +463,7 @@ def flatten_action(unflattened_action: chex.Array, cube_size: int) -> chex.Array
                 the turn will take place.
             - amount (0-2). This indicates the amount of turning.
         cube_size: the size of the cube in question.
+
     Returns:
         The flattened action representation, ie an index into the sequence of all moves.
 
@@ -479,9 +499,11 @@ def flatten_action(unflattened_action: chex.Array, cube_size: int) -> chex.Array
 
 def rotate_cube(cube: Cube, flattened_action: chex.Array) -> Cube:
     """Apply a flattened action (index into the sequence of all moves) to a cube.
+
     Args:
         cube: the cube on which to perform the move.
         flattened_action: the action to perform, in the flattened representation.
+
     Returns:
         The rotated cube.
     """
@@ -495,10 +517,12 @@ def scramble_solved_cube(
     cube_size: int,
 ) -> Cube:
     """Return a scrambled cube according to a given sequence of flat actions.
+
     Args:
         flattened_actions_in_scramble: the sequence of moves to perform,
             in their flat representation.
         cube_size: the size of the cube to return.
+
     Returns:
         The scrambled cube.
     """
