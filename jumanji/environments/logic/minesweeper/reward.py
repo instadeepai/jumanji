@@ -29,9 +29,9 @@ class RewardFn(abc.ABC):
 
 class DefaultRewardFn(RewardFn):
     """A dense reward function corresponding to the 3 possible events:
-        - Revealing an empty square
-        - Revealing a mine
-        - Choosing an invalid action (an already revealed square)
+    - Revealing an empty square
+    - Revealing a mine
+    - Choosing an invalid action (an already revealed square)
     """
 
     def __init__(

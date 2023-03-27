@@ -24,8 +24,9 @@ from jax import numpy as jnp
 from jax import random
 
 from jumanji.environments.logic.minesweeper.constants import (
+    INVALID_ACTION_REWARD,
     REVEALED_EMPTY_SQUARE_REWARD,
-    REVEALED_MINE_OR_INVALID_ACTION_REWARD,
+    REVEALED_MINE_REWARD,
 )
 from jumanji.environments.logic.minesweeper.env import Minesweeper
 from jumanji.environments.logic.minesweeper.types import State
@@ -69,12 +70,12 @@ def play_and_get_episode_stats(
         ),
         (
             [[0, 3], [0, 2]],
-            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_OR_INVALID_ACTION_REWARD],
+            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_REWARD],
             [StepType.MID, StepType.LAST],
         ),
         (
             [[0, 3], [0, 3]],
-            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_OR_INVALID_ACTION_REWARD],
+            [REVEALED_EMPTY_SQUARE_REWARD, INVALID_ACTION_REWARD],
             [StepType.MID, StepType.LAST],
         ),
     ],
