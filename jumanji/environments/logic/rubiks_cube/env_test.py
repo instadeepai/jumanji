@@ -78,7 +78,6 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
 def test_rubiks_cube__does_not_smoke(cube_size: int) -> None:
     """Test that we can run an episode without any errors."""
     env = RubiksCube(
-        cube_size=cube_size,
         time_limit=10,
         generator=ScramblingGenerator(cube_size=cube_size, num_scrambles_on_reset=5),
     )

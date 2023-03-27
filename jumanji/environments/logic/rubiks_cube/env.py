@@ -84,7 +84,6 @@ class RubiksCube(Environment[State]):
 
     def __init__(
         self,
-        cube_size: int = 3,
         time_limit: int = 200,
         reward_fn: Optional[RewardFn] = None,
         env_viewer: Optional[RubiksCubeViewer] = None,
@@ -93,7 +92,6 @@ class RubiksCube(Environment[State]):
         """Instantiate a `RubiksCube` environment.
 
         Args:
-            cube_size: the size of the cube, i.e. length of an edge. Defaults to 3.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
@@ -103,26 +101,21 @@ class RubiksCube(Environment[State]):
             generator: `Generator` used to generate problem instances on environment reset.
                 Implemented options are [`ScramblingGenerator`].
                 Defaults to `ScramblingGenerator`.
+                The generator will contain an attribute `cube_size`, corresponding to the number of
+                cubies to an edge, and defaulting to 3.
         """
-        if cube_size < 2:
-            raise ValueError(
-                f"Cannot meaningfully construct a cube smaller than 2x2x2, "
-                f"but received cube_size={cube_size}"
-            )
         if time_limit <= 0:
             raise ValueError(
                 f"The time_limit must be positive, but received time_limit={time_limit}"
             )
-
-        self.cube_size = cube_size
         self.time_limit = time_limit
         self.reward_function = reward_fn or SparseRewardFn()
-        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(
-            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=cube_size
-        )
         self._generator = generator or ScramblingGenerator(
-            cube_size=cube_size,
+            cube_size=3,
             num_scrambles_on_reset=100,
+        )
+        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(
+            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=self._generator.cube_size
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -156,7 +149,7 @@ class RubiksCube(Environment[State]):
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         flattened_action = flatten_action(
-            unflattened_action=action, cube_size=self.cube_size
+            unflattened_action=action, cube_size=self._generator.cube_size
         )
         cube = rotate_cube(
             cube=state.cube,
@@ -190,7 +183,7 @@ class RubiksCube(Environment[State]):
              - step_count: BoundedArray (jnp.int32) of shape ().
         """
         cube = specs.BoundedArray(
-            shape=(len(Face), self.cube_size, self.cube_size),
+            shape=(len(Face), self._generator.cube_size, self._generator.cube_size),
             dtype=jnp.int8,
             minimum=0,
             maximum=len(Face) - 1,
@@ -218,7 +211,9 @@ class RubiksCube(Environment[State]):
             action_spec: `MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([len(Face), self.cube_size // 2, 3], jnp.int32),
+            num_values=jnp.array(
+                [len(Face), self._generator.cube_size // 2, 3], jnp.int32
+            ),
             name="action",
             dtype=jnp.int32,
         )

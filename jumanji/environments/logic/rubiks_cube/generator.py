@@ -32,6 +32,11 @@ class Generator(abc.ABC):
         Args:
             cube_size: the size of the cube to generate instances for.
         """
+        if cube_size < 2:
+            raise ValueError(
+                f"Cannot meaningfully construct a cube smaller than 2x2x2, "
+                f"but received cube_size={cube_size}"
+            )
         self.cube_size = cube_size
 
     @abc.abstractmethod
