@@ -23,46 +23,11 @@ from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.types import State
 
 
-class RubiksCubeViewer:
+class RubiksCubeViewer(Viewer):
     """Abstract viewer class to support rendering and animation"""
 
     def __init__(self, cube_size: int):
         self.cube_size = cube_size
-
-    def render(self, state: State) -> None:
-        """Render frames of the environment for a given state using matplotlib.
-
-        Args:
-            state: `State` object corresponding to the new state of the environment.
-        """
-        raise NotImplementedError
-
-    def animate(
-        self,
-        states: Sequence[State],
-        interval: int,
-        save_path: Optional[str],
-    ) -> matplotlib.animation.FuncAnimation:
-        """Create an animation from a sequence of environment states.
-
-        Args:
-            states: sequence of environment states corresponding to consecutive timesteps.
-            interval: delay between frames in milliseconds, default to 200.
-            save_path: the path where the animation file should be saved. If it is None, the plot
-                will not be saved.
-
-        Returns:
-            Animation that can be saved as a GIF, MP4, or rendered with HTML.
-        """
-        raise NotImplementedError
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        raise NotImplementedError
 
 
 class DefaultRubiksCubeViewer(RubiksCubeViewer):
