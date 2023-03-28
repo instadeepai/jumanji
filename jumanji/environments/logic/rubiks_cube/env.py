@@ -227,7 +227,7 @@ class RubiksCube(Environment[State]):
         Args:
             state: the current state to be rendered.
         """
-        self._env_viewer.render(state=state)
+        return self._env_viewer.render(state=state)
 
     def animate(
         self,
