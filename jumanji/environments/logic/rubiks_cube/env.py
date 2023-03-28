@@ -241,7 +241,7 @@ class RubiksCube(Environment[State]):
             states: a list of `State` objects representing the sequence of game states.
             interval: the delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be saved.
+                will not be saved.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
