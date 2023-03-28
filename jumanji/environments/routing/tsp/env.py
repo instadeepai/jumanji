@@ -92,7 +92,6 @@ class TSP(Environment[State]):
         self,
         num_cities: int = 20,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `TSP` environment.
@@ -103,14 +102,12 @@ class TSP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `TSPViewer`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human". Only used if `TSPViewer` is used.
+            viewer: `Viewer` used for rendering. Defaults to `TSPViewer` with "human" render mode.
         """
 
         self.num_cities = num_cities
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = viewer or TSPViewer(name="TSP", render_mode=render_mode)
+        self._env_viewer = viewer or TSPViewer(name="TSP", render_mode="human")
 
     def __repr__(self) -> str:
         return f"TSP environment with {self.num_cities} cities."

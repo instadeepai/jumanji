@@ -118,7 +118,6 @@ class BinPack(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `BinPack` environment.
@@ -143,16 +142,14 @@ class BinPack(Environment[State]):
             debug: if True, will add to timestep.extras an `invalid_ems_from_env` field that checks
                 if an invalid EMS was created by the environment, which should not happen. Computing
                 this metric slows down the environment. Default to False.
-            viewer: `Viewer` used for rendering. Defaults to `BinPackViewer`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human". Only used if the `BinPackViewer`
-                is used.
+            viewer: `Viewer` used for rendering. Defaults to `BinPackViewer` with "human" render
+                mode.
         """
         self.generator = generator or RandomGenerator(max_num_items=30, max_num_ems=100)
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = viewer or BinPackViewer("BinPack", render_mode)
+        self._env_viewer = viewer or BinPackViewer("BinPack", render_mode="human")
         self.debug = debug
 
     def __repr__(self) -> str:

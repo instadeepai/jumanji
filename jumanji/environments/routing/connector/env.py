@@ -105,7 +105,6 @@ class Connector(Environment[State]):
         generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         time_limit: int = 50,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Create the `Connector` environment.
@@ -117,7 +116,8 @@ class Connector(Environment[State]):
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
-            viewer: `Viewer` used for rendering. Defaults to `ConnectorViewer`.
+            viewer: `Viewer` used for rendering. Defaults to `ConnectorViewer` with "human" render
+                mode.
         """
         self._generator = generator or UniformRandomGenerator(
             grid_size=10, num_agents=5
@@ -128,7 +128,7 @@ class Connector(Environment[State]):
         self.grid_size = self._generator.grid_size
         self._agent_ids = jnp.arange(self.num_agents)
         self._env_viewer = viewer or ConnectorViewer(
-            "Connector", self.num_agents, render_mode
+            "Connector", self.num_agents, render_mode="human"
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:

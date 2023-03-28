@@ -100,7 +100,6 @@ class CVRP(Environment[State]):
         max_capacity: int = 30,
         max_demand: int = 10,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `CVRP` environment.
@@ -113,10 +112,7 @@ class CVRP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `CVRPViewer`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human". Only used if the `CVRPViewer`
-                is used.
+            viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
         """
 
         if max_capacity < max_demand:
@@ -131,7 +127,7 @@ class CVRP(Environment[State]):
         self._env_viewer = viewer or CVRPViewer(
             name="CVRP",
             num_cities=self.num_nodes,
-            render_mode=render_mode,
+            render_mode="human",
         )
 
     def __repr__(self) -> str:

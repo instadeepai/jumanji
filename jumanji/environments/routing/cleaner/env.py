@@ -85,7 +85,6 @@ class Cleaner(Environment[State]):
         num_agents: int = 3,
         generator: Optional[Generator] = None,
         time_limit: Optional[int] = None,
-        render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
@@ -97,9 +96,8 @@ class Cleaner(Environment[State]):
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
                 `num_rows=10` and `num_cols=10`.
-            viewer: `Viewer` used for rendering. Defaults to `CleanerViewer`.
-            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
-                Only used if the `CleanerViewer` is used.
+            viewer: `Viewer` used for rendering. Defaults to `CleanerViewer` with "human" render
+                mode.
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
         self.num_agents = num_agents
@@ -111,7 +109,7 @@ class Cleaner(Environment[State]):
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or CleanerViewer("Cleaner", render_mode)
+        self._env_viewer = viewer or CleanerViewer("Cleaner", render_mode="human")
 
     def __repr__(self) -> str:
         return (

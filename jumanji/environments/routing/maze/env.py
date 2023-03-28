@@ -84,7 +84,6 @@ class Maze(Environment[State]):
         self,
         generator: Optional[Generator] = None,
         time_limit: Optional[int] = None,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Maze` environment.
@@ -95,9 +94,8 @@ class Maze(Environment[State]):
                 Defaults to `RandomGenerator` with `num_rows=10` and `num_cols=10`.
             time_limit: the time_limit of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default, `time_limit = num_rows * num_cols`.
-            viewer: `Viewer` used for rendering. Defaults to `MazeEnvViewer`.
-            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
-                Only used if `MazeEnvViewer` is used.
+            viewer: `Viewer` used for rendering. Defaults to `MazeEnvViewer` with "human" render
+                mode.
         """
         self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
         self.num_rows = self.generator.num_rows
@@ -106,7 +104,7 @@ class Maze(Environment[State]):
         self.time_limit = time_limit or self.num_rows * self.num_cols
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or MazeEnvViewer("Maze", render_mode)
+        self._env_viewer = viewer or MazeEnvViewer("Maze", render_mode="human")
 
     def __repr__(self) -> str:
         return "\n".join(

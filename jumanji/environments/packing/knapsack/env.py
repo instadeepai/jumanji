@@ -86,7 +86,6 @@ class Knapsack(Environment[State]):
         num_items: int = 50,
         total_budget: float = 12.5,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `Knapsack` environment.
@@ -98,10 +97,8 @@ class Knapsack(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `KnapsackViewer`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human". Only used if the `KnapsackViewer`
-                is used.
+            viewer: `Viewer` used for rendering. Defaults to `KnapsackViewer` with "human" render
+                mode.
         """
 
         self.num_items = num_items
@@ -109,7 +106,7 @@ class Knapsack(Environment[State]):
         self.reward_fn = reward_fn or DenseReward()
         self._env_viewer = viewer or KnapsackViewer(
             name="Knapsack",
-            render_mode=render_mode,
+            render_mode="human",
             total_budget=total_budget,
         )
 
