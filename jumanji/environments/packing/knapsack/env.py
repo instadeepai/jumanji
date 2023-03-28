@@ -98,8 +98,10 @@ class Knapsack(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+            viewer: `Viewer` used for rendering. Defaults to `KnapsackViewer`.
             render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+                Choices are ["human, "rgb"], defaults to "human". Only used if the `KnapsackViewer`
+                is used.
         """
 
         self.num_items = num_items

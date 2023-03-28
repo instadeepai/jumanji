@@ -103,8 +103,9 @@ class TSP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+            viewer: `Viewer` used for rendering. Defaults to `TSPViewer`.
             render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+                Choices are ["human, "rgb"], defaults to "human". Only used if `TSPViewer` is used.
         """
 
         self.num_cities = num_cities

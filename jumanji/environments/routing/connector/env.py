@@ -117,6 +117,7 @@ class Connector(Environment[State]):
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
+            viewer: `Viewer` used for rendering. Defaults to `ConnectorViewer`.
         """
         self._generator = generator or UniformRandomGenerator(
             grid_size=10, num_agents=5

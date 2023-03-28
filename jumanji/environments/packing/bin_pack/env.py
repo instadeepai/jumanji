@@ -143,8 +143,10 @@ class BinPack(Environment[State]):
             debug: if True, will add to timestep.extras an `invalid_ems_from_env` field that checks
                 if an invalid EMS was created by the environment, which should not happen. Computing
                 this metric slows down the environment. Default to False.
+            viewer: `Viewer` used for rendering. Defaults to `BinPackViewer`.
             render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+                Choices are ["human, "rgb"], defaults to "human". Only used if the `BinPackViewer`
+                is used.
         """
         self.generator = generator or RandomGenerator(max_num_items=30, max_num_ems=100)
         self.obs_num_ems = obs_num_ems

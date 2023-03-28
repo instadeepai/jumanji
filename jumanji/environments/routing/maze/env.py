@@ -95,7 +95,9 @@ class Maze(Environment[State]):
                 Defaults to `RandomGenerator` with `num_rows=10` and `num_cols=10`.
             time_limit: the time_limit of an episode, i.e. the maximum number of environment steps
                 before the episode terminates. By default, `time_limit = num_rows * num_cols`.
+            viewer: `Viewer` used for rendering. Defaults to `MazeEnvViewer`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
+                Only used if `MazeEnvViewer` is used.
         """
         self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
         self.num_rows = self.generator.num_rows

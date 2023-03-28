@@ -97,7 +97,9 @@ class Cleaner(Environment[State]):
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
                 `num_rows=10` and `num_cols=10`.
+            viewer: `Viewer` used for rendering. Defaults to `CleanerViewer`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
+                Only used if the `CleanerViewer` is used.
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
         self.num_agents = num_agents

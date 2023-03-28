@@ -101,6 +101,7 @@ class JobShop(Environment[State]):
                 Implemented options are ['ToyGenerator', 'RandomGenerator'].
                 Defaults to `RandomGenerator` with 20 jobs, 10 machines, up to 8 ops
                 for any given job, and a max operation duration of 6.
+            viewer: `Viewer` used for rendering. Defaults to `JobShopViewer`.
         """
         self.generator = generator or RandomGenerator(
             num_jobs=20,

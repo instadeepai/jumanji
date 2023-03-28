@@ -85,6 +85,7 @@ class Game2048(Environment[State]):
 
         Args:
             board_size: size of the board. Defaults to 4.
+            viewer: `Viewer` used for rendering. Defaults to `Game2048Viewer`.
         """
         self.board_size = board_size
 

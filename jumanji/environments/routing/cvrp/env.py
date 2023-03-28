@@ -113,8 +113,10 @@ class CVRP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+            viewer: `Viewer` used for rendering. Defaults to `CVRPViewer`.
             render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+                Choices are ["human, "rgb"], defaults to "human". Only used if the `CVRPViewer`
+                is used.
         """
 
         if max_capacity < max_demand:
