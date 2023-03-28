@@ -23,9 +23,9 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
-from jumanji.environments.packing.knapsack.env_viewer import KnapsackViewer
 from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
+from jumanji.environments.packing.knapsack.viewer import KnapsackViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -87,7 +87,7 @@ class Knapsack(Environment[State]):
         total_budget: float = 12.5,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `Knapsack` environment.
 

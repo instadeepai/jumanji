@@ -24,9 +24,9 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, WALL
-from jumanji.environments.routing.cleaner.env_viewer import CleanerViewer
 from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
+from jumanji.environments.routing.cleaner.viewer import CleanerViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -87,7 +87,7 @@ class Cleaner(Environment[State]):
         time_limit: Optional[int] = None,
         render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Cleaner` environment.
 

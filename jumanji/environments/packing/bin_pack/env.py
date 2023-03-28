@@ -24,7 +24,6 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
-from jumanji.environments.packing.bin_pack.env_viewer import BinPackViewer
 from jumanji.environments.packing.bin_pack.generator import Generator, RandomGenerator
 from jumanji.environments.packing.bin_pack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.bin_pack.space import Space
@@ -39,6 +38,7 @@ from jumanji.environments.packing.bin_pack.types import (
     item_volume,
     space_from_item_and_location,
 )
+from jumanji.environments.packing.bin_pack.viewer import BinPackViewer
 from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
 
@@ -119,7 +119,7 @@ class BinPack(Environment[State]):
         normalize_dimensions: bool = True,
         debug: bool = False,
         render_mode: str = "human",
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `BinPack` environment.
 

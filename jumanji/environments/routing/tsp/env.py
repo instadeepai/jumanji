@@ -24,9 +24,9 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
-from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
+from jumanji.environments.routing.tsp.viewer import TSPViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -93,7 +93,7 @@ class TSP(Environment[State]):
         num_cities: int = 20,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `TSP` environment.
 

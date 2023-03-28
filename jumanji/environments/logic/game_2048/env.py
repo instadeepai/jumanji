@@ -23,7 +23,6 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
-from jumanji.environments.logic.game_2048.env_viewer import Game2048Viewer
 from jumanji.environments.logic.game_2048.types import Board, Observation, State
 from jumanji.environments.logic.game_2048.utils import (
     move_down,
@@ -31,6 +30,7 @@ from jumanji.environments.logic.game_2048.utils import (
     move_right,
     move_up,
 )
+from jumanji.environments.logic.game_2048.viewer import Game2048Viewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -80,7 +80,9 @@ class Game2048(Environment[State]):
     ```
     """
 
-    def __init__(self, board_size: int = 4, viewer: Optional[Viewer] = None) -> None:
+    def __init__(
+        self, board_size: int = 4, viewer: Optional[Viewer[State]] = None
+    ) -> None:
         """Initialize the 2048 game.
 
         Args:

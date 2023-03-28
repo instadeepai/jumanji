@@ -23,9 +23,9 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
-from jumanji.environments.packing.job_shop.env_viewer import JobShopViewer
 from jumanji.environments.packing.job_shop.generator import Generator, RandomGenerator
 from jumanji.environments.packing.job_shop.types import Observation, State
+from jumanji.environments.packing.job_shop.viewer import JobShopViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -92,7 +92,7 @@ class JobShop(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiate a `JobShop` environment.
 

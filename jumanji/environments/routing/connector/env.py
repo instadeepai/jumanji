@@ -28,7 +28,6 @@ from jumanji.environments.routing.connector.constants import (
     NOOP,
     PATH,
 )
-from jumanji.environments.routing.connector.env_viewer import ConnectorViewer
 from jumanji.environments.routing.connector.generator import (
     Generator,
     UniformRandomGenerator,
@@ -44,6 +43,7 @@ from jumanji.environments.routing.connector.utils import (
     move_position,
     switch_perspective,
 )
+from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -106,7 +106,7 @@ class Connector(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         time_limit: int = 50,
         render_mode: str = "human",
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Create the `Connector` environment.
 

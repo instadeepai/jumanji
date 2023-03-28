@@ -23,9 +23,9 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
-from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
+from jumanji.environments.routing.cvrp.viewer import CVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -101,7 +101,7 @@ class CVRP(Environment[State]):
         max_demand: int = 10,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
-        viewer: Optional[Viewer] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `CVRP` environment.
 

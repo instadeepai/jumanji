@@ -37,7 +37,10 @@ class MazeEnvViewer(MazeViewer):
     }
 
     def __init__(
-        self, name: str, render_mode: str = "human", viewer: Optional[Viewer] = None
+        self,
+        name: str,
+        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Viewer for the Maze environment.
 
