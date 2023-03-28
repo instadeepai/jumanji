@@ -107,7 +107,7 @@ class TSP(Environment[State]):
 
         self.num_cities = num_cities
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = viewer or TSPViewer(name="TSP", render_mode="human")
+        self._viewer = viewer or TSPViewer(name="TSP", render_mode="human")
 
     def __repr__(self) -> str:
         return f"TSP environment with {self.num_cities} cities."
@@ -235,7 +235,7 @@ class TSP(Environment[State]):
         Returns:
             rgb_array: the RGB image of the state as an array.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -254,7 +254,7 @@ class TSP(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -262,7 +262,7 @@ class TSP(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """

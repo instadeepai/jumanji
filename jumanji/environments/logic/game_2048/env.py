@@ -92,7 +92,7 @@ class Game2048(Environment[State]):
         self.board_size = board_size
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or Game2048Viewer("2048", board_size)
+        self._viewer = viewer or Game2048Viewer("2048", board_size)
 
     def __repr__(self) -> str:
         """String representation of the environment.
@@ -319,7 +319,7 @@ class Game2048(Environment[State]):
         Args:
             state: is the current game state to be rendered.
         """
-        return self._env_viewer.render(state=state)
+        return self._viewer.render(state=state)
 
     def animate(
         self,
@@ -338,7 +338,7 @@ class Game2048(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
+        return self._viewer.animate(
             states=states, interval=interval, save_path=save_path
         )
 
@@ -348,4 +348,4 @@ class Game2048(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()

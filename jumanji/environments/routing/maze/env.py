@@ -104,7 +104,7 @@ class Maze(Environment[State]):
         self.time_limit = time_limit or self.num_rows * self.num_cols
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or MazeEnvViewer("Maze", render_mode="human")
+        self._viewer = viewer or MazeEnvViewer("Maze", render_mode="human")
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -326,7 +326,7 @@ class Maze(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -345,7 +345,7 @@ class Maze(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -353,4 +353,4 @@ class Maze(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()

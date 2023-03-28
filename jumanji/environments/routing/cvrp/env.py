@@ -124,7 +124,7 @@ class CVRP(Environment[State]):
         self.max_capacity = max_capacity
         self.max_demand = max_demand
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = viewer or CVRPViewer(
+        self._viewer = viewer or CVRPViewer(
             name="CVRP",
             num_cities=self.num_nodes,
             render_mode="human",
@@ -292,7 +292,7 @@ class CVRP(Environment[State]):
         Returns:
             rgb_array: the RGB image of the state as an array.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -311,7 +311,7 @@ class CVRP(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -319,7 +319,7 @@ class CVRP(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

@@ -104,7 +104,7 @@ class Knapsack(Environment[State]):
         self.num_items = num_items
         self.total_budget = total_budget
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = viewer or KnapsackViewer(
+        self._viewer = viewer or KnapsackViewer(
             name="Knapsack",
             render_mode="human",
             total_budget=total_budget,
@@ -243,7 +243,7 @@ class Knapsack(Environment[State]):
         Args:
             state: the environment state to be rendered.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -262,7 +262,7 @@ class Knapsack(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -270,7 +270,7 @@ class Knapsack(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

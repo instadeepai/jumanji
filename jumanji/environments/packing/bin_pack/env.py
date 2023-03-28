@@ -149,7 +149,7 @@ class BinPack(Environment[State]):
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = viewer or BinPackViewer("BinPack", render_mode="human")
+        self._viewer = viewer or BinPackViewer("BinPack", render_mode="human")
         self.debug = debug
 
     def __repr__(self) -> str:
@@ -358,7 +358,7 @@ class BinPack(Environment[State]):
         Args:
             state: State object containing the current dynamics of the environment.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -377,7 +377,7 @@ class BinPack(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -385,7 +385,7 @@ class BinPack(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _make_observation_and_extras(
         self, state: State

@@ -109,7 +109,7 @@ class Cleaner(Environment[State]):
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or CleanerViewer("Cleaner", render_mode="human")
+        self._viewer = viewer or CleanerViewer("Cleaner", render_mode="human")
 
     def __repr__(self) -> str:
         return (
@@ -269,7 +269,7 @@ class Cleaner(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -288,7 +288,7 @@ class Cleaner(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -296,7 +296,7 @@ class Cleaner(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _compute_reward(self, prev_state: State, state: State) -> chex.Array:
         """Compute the reward by counting the number of tiles which changed from previous state.

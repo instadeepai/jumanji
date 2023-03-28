@@ -118,7 +118,7 @@ class JobShop(Environment[State]):
         self.no_op_idx = self.num_jobs
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or JobShopViewer(
+        self._viewer = viewer or JobShopViewer(
             "JobShop",
             self.num_jobs,
             self.num_machines,
@@ -441,7 +441,7 @@ class JobShop(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -449,7 +449,7 @@ class JobShop(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def animate(
         self,
@@ -468,7 +468,7 @@ class JobShop(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def _observation_from_state(self, state: State) -> Observation:
         """Converts a job shop environment state to an observation.
