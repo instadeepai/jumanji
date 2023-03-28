@@ -126,7 +126,7 @@ class Connector(Environment[State]):
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
         self._agent_ids = jnp.arange(self.num_agents)
-        self._renderer = viewer or ConnectorViewer(
+        self._env_viewer = viewer or ConnectorViewer(
             "Connector", self.num_agents, render_mode
         )
 
@@ -308,7 +308,7 @@ class Connector(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._renderer.render(state.grid)
+        return self._env_viewer.render(state.grid)
 
     def animate(
         self,
@@ -328,7 +328,7 @@ class Connector(Environment[State]):
             animation that can export to gif, mp4, or render with HTML.
         """
         grids = [state.grid for state in states]
-        return self._renderer.animate(grids, interval, save_path)
+        return self._env_viewer.animate(grids, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -336,7 +336,7 @@ class Connector(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._renderer.close()
+        self._env_viewer.close()
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
