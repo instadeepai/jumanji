@@ -30,40 +30,10 @@ from jumanji.environments.logic.minesweeper.utils import explored_mine
 
 class MinesweeperViewer(Viewer):
     """Abstract viewer class to support rendering and animation"""
+
     def __init__(self, num_rows: int, num_cols: int):
         self.num_rows = num_rows
         self.num_cols = num_cols
-
-    def render(self, state: State) -> None:
-        """Render frames of the environment for a given state using matplotlib.
-        Args:
-            state: `State` object corresponding to the new state of the environment.
-        """
-        raise NotImplementedError
-
-    def animate(
-        self,
-        states: Sequence[State],
-        interval: int = 200,
-        save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
-        """Create an animation from a sequence of environment states.
-        Args:
-            states: sequence of environment states corresponding to consecutive timesteps.
-            interval: delay between frames in milliseconds, default to 200.
-            save_path: the path where the animation file should be saved. If it is None, the plot
-                will not be saved.
-        Returns:
-            Animation that can be saved as a GIF, MP4, or rendered with HTML.
-        """
-        raise NotImplementedError
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        raise NotImplementedError
 
 
 class DefaultMinesweeperViewer(MinesweeperViewer):
