@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from jumanji.env import Environment
-from jumanji.environments.logic.rubiks_cube.generator import ScramblingGenerator
+from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -33,7 +33,7 @@ register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
 register(id="RubiksCube-v0", entry_point="jumanji.environments:RubiksCube")
 # RubiksCube - an easier version of the standard Rubik's Cube puzzle with faces of size 3x3 yet only
 # 7 scrambles at reset time, making it technically maximum 7 actions away from the solution.
-partly_scrambled_rubiks_cube_generator = ScramblingGenerator(
+partly_scrambled_rubiks_cube_generator = rubik_generator.ScramblingGenerator(
     cube_size=3, num_scrambles_on_reset=7
 )
 register(
