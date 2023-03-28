@@ -28,8 +28,11 @@ from jumanji.environments.logic.minesweeper.types import State
 from jumanji.environments.logic.minesweeper.utils import explored_mine
 
 
-class MinesweeperViewer:
+class MinesweeperViewer(Viewer):
     """Abstract viewer class to support rendering and animation"""
+    def __init__(self, num_rows: int, num_cols: int):
+        self.num_rows = num_rows
+        self.num_cols = num_cols
 
     def render(self, state: State) -> None:
         """Render frames of the environment for a given state using matplotlib.
@@ -78,10 +81,9 @@ class DefaultMinesweeperViewer(MinesweeperViewer):
             num_cols: number of columns, i.e. width of the board. Defaults to 10.
         """
         self.cmap = color_mapping if color_mapping else DEFAULT_COLOR_MAPPING
-        self.num_rows = num_rows
-        self.num_cols = num_cols
         self.figure_name = f"{num_rows}x{num_cols} Minesweeper"
         self.figure_size = (6.0, 6.0)
+        super().__init__(num_rows=num_rows, num_cols=num_cols)
 
     def render(self, state: State) -> None:
         """Render the given environment state using matplotlib.
