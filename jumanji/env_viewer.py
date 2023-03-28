@@ -15,7 +15,7 @@
 """Abstract environment viewer class."""
 
 import abc
-from typing import Generic, Sequence, Optional
+from typing import Generic, Optional, Sequence
 
 import matplotlib
 from numpy.typing import NDArray
