@@ -184,3 +184,73 @@ class RandomGenerator(Generator):
         )
 
         return state
+
+
+class KnownOptimalGenerator:
+    """Instance generator, for the `JobShop` environment, with a known minimum schedule length."""
+    # def __init__(
+    #     self, num_jobs: int, num_machines: int, max_num_ops: int, max_op_duration: int
+    # ):
+    #     super().__init__(num_jobs, num_machines, max_num_ops, max_op_duration)
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        num_jobs = 5
+        num_machines = 3
+        makespan = 12
+
+        all_job_ids = jnp.arange(num_jobs)
+
+        def insert_col(carry, _):
+            key, t = carry
+            key, subkey = jax.random.split(key)
+            machines_job_ids = jax.random.choice(
+                subkey, all_job_ids, (num_machines,), replace=False
+            )
+            carry = key, t + 1
+            return carry, machines_job_ids
+
+        init_carry = (key, 0)
+        final_carry, schedule = jax.lax.scan(
+            lambda carry, _: insert_col(carry, _), init_carry, xs=None, length=makespan
+        )
+        schedule = schedule.T
+        assert final_carry[1] == makespan
+
+        def get_job_info(job_id, schedule):
+
+            def get_op_info(carry, x):
+                mask = carry
+                mask_flat = jnp.ravel(mask, order="F")
+                idx = jnp.argmax(mask_flat)
+                t_start, machine_id = jnp.divmod(idx, num_machines)
+                duration = 1
+                t = t_start
+                while mask[machine_id, t] == mask[machine_id, t+1]:
+                    duration += 1
+                mask = mask.at[machine_id, t_start:t_start+duration+1].set(jnp.array([False]*duration))
+
+                return mask, (machine_id, duration)
+
+            # Carry the mask
+            init_mask = schedule == job_id
+            _, (mids, durs) = jax.lax.scan(get_op_info, init_mask, xs=None, length=10)
+
+            return job_id + 1, (mids, durs)
+
+        # Carry the job id
+        init_job_id = 0
+        carry, (ops_mids, ops_durations) = jax.lax.scan(
+            get_job_info,
+            init_job_id,
+            xs=None,
+            length=num_jobs
+        )
+
+        assert ops_mids, ops_durations
+
+
+if __name__ == "__main__":
+    generator = KnownOptimalGenerator()
+    k = jax.random.PRNGKey(42)
+    result = generator(k)
+    assert result
