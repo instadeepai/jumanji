@@ -18,9 +18,11 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib.animation as animation
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.env_viewer import Viewer
 from jumanji.environments.logic.game_2048.env_viewer import Game2048Viewer
 from jumanji.environments.logic.game_2048.types import Board, Observation, State
 from jumanji.environments.logic.game_2048.utils import (
@@ -78,7 +80,7 @@ class Game2048(Environment[State]):
     ```
     """
 
-    def __init__(self, board_size: int = 4) -> None:
+    def __init__(self, board_size: int = 4, viewer: Optional[Viewer] = None) -> None:
         """Initialize the 2048 game.
 
         Args:
@@ -87,7 +89,7 @@ class Game2048(Environment[State]):
         self.board_size = board_size
 
         # Create viewer used for rendering
-        self._env_viewer = Game2048Viewer("2048", board_size)
+        self._env_viewer = viewer or Game2048Viewer("2048", board_size)
 
     def __repr__(self) -> str:
         """String representation of the environment.
@@ -308,15 +310,13 @@ class Game2048(Environment[State]):
         )
         return action_mask
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the game board.
 
         Args:
             state: is the current game state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
         """
-        return self._env_viewer.render(state=state, save_path=save_path)
+        return self._env_viewer.render(state=state)
 
     def animate(
         self,

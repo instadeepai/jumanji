@@ -19,10 +19,11 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.logic.game_2048.types import State
 
 
-class Game2048Viewer:
+class Game2048Viewer(Viewer):
     COLORS = {
         1: "#ccc0b3",
         2: "#eee4da",
@@ -64,13 +65,11 @@ class Game2048Viewer:
         # animation should run. Otherwise, the animation will get garbage-collected.
         self._animation: Optional[matplotlib.animation.Animation] = None
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> None:
         """Renders the current state of the game board.
 
         Args:
             state: is the current game state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
         """
         self._clear_display()
         # Get the figure and axes for the game board.
@@ -79,10 +78,6 @@ class Game2048Viewer:
         fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
         # Draw the game board
         self.draw_board(ax, state)
-        # Save the figure as an image file.
-        if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.5)
-
         self._display_human(fig)
 
     def animate(

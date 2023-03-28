@@ -20,10 +20,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.job_shop.types import State
 
 
-class JobShopViewer:
+class JobShopViewer(Viewer):
     FIGURE_SIZE = (15.0, 10.0)
     COLORMAP_NAME = "hsv"
 

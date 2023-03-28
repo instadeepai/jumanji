@@ -22,10 +22,11 @@ from chex import Array
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cvrp.types import State
 
 
-class CVRPViewer:
+class CVRPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"

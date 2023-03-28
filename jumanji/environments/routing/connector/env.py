@@ -22,6 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.connector.constants import (
     AGENT_INITIAL_VALUE,
     NOOP,
@@ -105,6 +106,7 @@ class Connector(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         time_limit: int = 50,
         render_mode: str = "human",
+        viewer: Optional[Viewer] = None,
     ) -> None:
         """Create the `Connector` environment.
 
@@ -124,7 +126,9 @@ class Connector(Environment[State]):
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
         self._agent_ids = jnp.arange(self.num_agents)
-        self._renderer = ConnectorViewer("Connector", self.num_agents, render_mode)
+        self._renderer = viewer or ConnectorViewer(
+            "Connector", self.num_agents, render_mode
+        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.

@@ -23,7 +23,8 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.bin_pack import env_viewer
+from jumanji.env_viewer import Viewer
+from jumanji.environments.packing.bin_pack.env_viewer import BinPackViewer
 from jumanji.environments.packing.bin_pack.generator import Generator, RandomGenerator
 from jumanji.environments.packing.bin_pack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.bin_pack.space import Space
@@ -118,6 +119,7 @@ class BinPack(Environment[State]):
         normalize_dimensions: bool = True,
         debug: bool = False,
         render_mode: str = "human",
+        viewer: Optional[Viewer] = None,
     ):
         """Instantiates a `BinPack` environment.
 
@@ -148,7 +150,7 @@ class BinPack(Environment[State]):
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = env_viewer.BinPackViewer("BinPack", render_mode)
+        self._env_viewer = viewer or BinPackViewer("BinPack", render_mode)
         self.debug = debug
 
     def __repr__(self) -> str:

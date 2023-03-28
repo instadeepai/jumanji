@@ -23,10 +23,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.bin_pack.types import State, item_from_space
 
 
-class BinPackViewer:
+class BinPackViewer(Viewer):
     FONT_STYLE = "monospace"
     FIGURE_SIZE = (6.0, 6.0)
 

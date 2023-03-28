@@ -23,18 +23,22 @@ from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.commons.maze_utils.maze_generation import EMPTY, WALL, Maze
 
 
-class MazeViewer:
+class MazeViewer(Viewer):
     FONT_STYLE = "monospace"
     FIGURE_SIZE = (10.0, 10.0)
     # EMPTY is white, WALL is black
     COLORS = {EMPTY: [1, 1, 1], WALL: [0, 0, 0]}
 
-    def __init__(self, name: str, render_mode: str = "human") -> None:
-        """
-        Viewer for a maze environment.
+    def __init__(
+        self,
+        name: str,
+        render_mode: str = "human",
+    ) -> None:
+        """Viewer for a maze environment.
 
         Args:
             name: the window name to be used when initialising the window.

@@ -22,6 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, WALL
 from jumanji.environments.routing.cleaner.env_viewer import CleanerViewer
 from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
@@ -86,6 +87,7 @@ class Cleaner(Environment[State]):
         time_limit: Optional[int] = None,
         render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
+        viewer: Optional[Viewer] = None,
     ) -> None:
         """Instantiates a `Cleaner` environment.
 
@@ -107,7 +109,7 @@ class Cleaner(Environment[State]):
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
-        self._env_viewer = CleanerViewer("Cleaner", render_mode)
+        self._env_viewer = viewer or CleanerViewer("Cleaner", render_mode)
 
     def __repr__(self) -> str:
         return (

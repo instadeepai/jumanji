@@ -22,6 +22,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.connector.utils import (
     get_agent_id,
     is_path,
@@ -29,7 +30,7 @@ from jumanji.environments.routing.connector.utils import (
 )
 
 
-class ConnectorViewer:
+class ConnectorViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
 
     def __init__(self, name: str, num_agents: int, render_mode: str = "human") -> None:

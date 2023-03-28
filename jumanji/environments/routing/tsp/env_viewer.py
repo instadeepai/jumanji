@@ -20,10 +20,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.tsp.types import State
 
 
-class TSPViewer:
+class TSPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "dimgray"
     NODE_SIZE = 150

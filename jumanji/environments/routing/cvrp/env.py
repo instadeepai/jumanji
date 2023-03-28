@@ -21,6 +21,7 @@ import matplotlib
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
@@ -100,6 +101,7 @@ class CVRP(Environment[State]):
         max_demand: int = 10,
         reward_fn: Optional[RewardFn] = None,
         render_mode: str = "human",
+        viewer: Optional[Viewer] = None,
     ):
         """Instantiates a `CVRP` environment.
 
@@ -124,7 +126,7 @@ class CVRP(Environment[State]):
         self.max_capacity = max_capacity
         self.max_demand = max_demand
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = CVRPViewer(
+        self._env_viewer = viewer or CVRPViewer(
             name="CVRP",
             num_cities=self.num_nodes,
             render_mode=render_mode,

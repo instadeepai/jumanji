@@ -17,6 +17,7 @@ from typing import Optional, Sequence
 import matplotlib
 from numpy.typing import NDArray
 
+from jumanji.env_viewer import Viewer
 from jumanji.environments.commons.maze_utils.maze_generation import Maze
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from jumanji.environments.routing.maze.types import State
@@ -35,7 +36,9 @@ class MazeEnvViewer(MazeViewer):
         TARGET: [1, 0, 0],  # Red
     }
 
-    def __init__(self, name: str, render_mode: str = "human") -> None:
+    def __init__(
+        self, name: str, render_mode: str = "human", viewer: Optional[Viewer] = None
+    ) -> None:
         """Viewer for the Maze environment.
 
         Args:

@@ -20,10 +20,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.knapsack.types import State
 
 
-class KnapsackViewer:
+class KnapsackViewer(Viewer):
     FIGURE_SIZE = (5.0, 5.0)
 
     def __init__(
