@@ -266,7 +266,7 @@ class Minesweeper(Environment[State]):
             save_path: the path where the image should be saved. If it is None, the plot
                 will not be saved.
         """
-        self._env_viewer.render(state=state)
+        return self._env_viewer.render(state=state)
 
     def animate(
         self,
