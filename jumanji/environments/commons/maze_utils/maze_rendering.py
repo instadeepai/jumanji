@@ -33,11 +33,7 @@ class MazeViewer(Viewer):
     # EMPTY is white, WALL is black
     COLORS = {EMPTY: [1, 1, 1], WALL: [0, 0, 0]}
 
-    def __init__(
-        self,
-        name: str,
-        render_mode: str = "human",
-    ) -> None:
+    def __init__(self, name: str, render_mode: str = "human") -> None:
         """Viewer for a maze environment.
 
         Args:

@@ -22,6 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.maze.constants import MOVES
 from jumanji.environments.routing.maze.env_viewer import MazeEnvViewer
 from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
@@ -84,6 +85,7 @@ class Maze(Environment[State]):
         generator: Optional[Generator] = None,
         time_limit: Optional[int] = None,
         render_mode: str = "human",
+        viewer: Optional[Viewer] = None,
     ) -> None:
         """Instantiates a `Maze` environment.
 
@@ -102,7 +104,7 @@ class Maze(Environment[State]):
         self.time_limit = time_limit or self.num_rows * self.num_cols
 
         # Create viewer used for rendering
-        self._env_viewer = MazeEnvViewer("Maze", render_mode)
+        self._env_viewer = viewer or MazeEnvViewer("Maze", render_mode)
 
     def __repr__(self) -> str:
         return "\n".join(
