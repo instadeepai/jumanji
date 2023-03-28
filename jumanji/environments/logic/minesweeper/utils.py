@@ -14,8 +14,7 @@
 
 import chex
 import jax.numpy as jnp
-from jax import random
-from jax.lax import dynamic_slice_in_dim
+import jax
 
 from jumanji.environments.logic.minesweeper.constants import (
     IS_MINE,
@@ -34,7 +33,7 @@ def create_flat_mine_locations(
     """Create locations of mines on a board with a specified height, width, and number
     of mines. The locations are in flattened coordinates.
     """
-    return random.choice(
+    return jax.random.choice(
         key,
         num_rows * num_cols,
         shape=(num_mines,),
@@ -81,11 +80,11 @@ def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
         state.board.shape[-2], state.board.shape[-1]
     )
     pad_board = jnp.pad(mined_board, pad_width=PATCH_SIZE - 1)
-    selected_rows = dynamic_slice_in_dim(
+    selected_rows = jax.lax.dynamic_slice_in_dim(
         pad_board, start_index=action_height + 1, slice_size=PATCH_SIZE, axis=-2
     )
     return (
-        dynamic_slice_in_dim(
+        jax.lax.dynamic_slice_in_dim(
             selected_rows,
             start_index=action_width + 1,
             slice_size=PATCH_SIZE,

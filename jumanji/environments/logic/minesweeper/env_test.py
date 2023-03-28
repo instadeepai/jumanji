@@ -19,9 +19,8 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
 import pytest_mock
-from jax import jit
+import jax
 from jax import numpy as jnp
-from jax import random
 
 from jumanji.environments.logic.minesweeper.constants import (
     INVALID_ACTION_REWARD,
@@ -41,11 +40,11 @@ def play_and_get_episode_stats(
     time_limit: int,
     force_start_state: Optional[State] = None,
 ) -> Tuple[List[float], List[StepType], int]:
-    state, timestep = jit(env.reset)(random.PRNGKey(0))
+    state, timestep = jax.jit(env.reset)(jax.random.PRNGKey(0))
     if force_start_state:
         state = force_start_state
     episode_length = 0
-    step_fn = jit(env.step)
+    step_fn = jax.jit(env.step)
     collected_rewards = []
     collected_step_types = []
     while not timestep.last():
@@ -102,8 +101,8 @@ def test_default_reward_and_done_signals(
 
 def test_minesweeper_env_reset(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted reset of the environment."""
-    reset_fn = jit(minesweeper_env.reset)
-    key = random.PRNGKey(0)
+    reset_fn = jax.jit(minesweeper_env.reset)
+    key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
@@ -125,9 +124,9 @@ def test_minesweeper_env_step(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
     step_fn = chex.assert_max_traces(minesweeper_env.step, n=2)
-    step_fn = jit(step_fn)
-    key = random.PRNGKey(0)
-    state, timestep = jit(minesweeper_env.reset)(key)
+    step_fn = jax.jit(step_fn)
+    key = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(minesweeper_env.reset)(key)
     # For this board, this action will be a non-mined square
     action = minesweeper_env.action_spec().generate_value()
     next_state, next_timestep = step_fn(state, action)
@@ -165,11 +164,11 @@ def test_minesweeper_env_render(
 ) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
-    state, timestep = jit(minesweeper_env.reset)(random.PRNGKey(0))
+    state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     minesweeper_env.render(state)
     minesweeper_env.close()
     action = minesweeper_env.action_spec().generate_value()
-    state, timestep = jit(minesweeper_env.step)(state, action)
+    state, timestep = jax.jit(minesweeper_env.step)(state, action)
     minesweeper_env.render(state)
     minesweeper_env.close()
 
@@ -186,8 +185,8 @@ def test_minesweeper_env_done_invalid_action(minesweeper_env: Minesweeper) -> No
 
 def test_minesweeper_env_solved(minesweeper_env: Minesweeper) -> None:
     """Solve the game and verify that things are as expected"""
-    state, timestep = jit(minesweeper_env.reset)(random.PRNGKey(0))
-    step_fn = jit(minesweeper_env.step)
+    state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
+    step_fn = jax.jit(minesweeper_env.step)
     collected_rewards = []
     collected_step_types = []
     for i in range(minesweeper_env._generator.num_rows):
