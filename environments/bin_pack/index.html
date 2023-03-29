@@ -1306,7 +1306,8 @@
 
 <p>We provide here an implementation of the 3D <a href="https://en.wikipedia.org/wiki/Bin_packing_problem">bin packing problem</a>.
 In this problem, the goal of the agent is to efficiently pack a set of boxes (items) of different
-sizes into a single container with as little empty space as possible.</p>
+sizes into a single container with as little empty space as possible. Since there is only 1 bin,
+this formulation is equivalent to the 3D-knapsack problem.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
 <p>The observation given to the agent provides information on the available empty space (called EMSs),
 the items that still need to be packed, and information on what actions are valid at this point.
@@ -1364,7 +1365,7 @@ items maximum, that can handle 100 EMSs and that shows the 70 largest EMSs to th
   <small>
     
       Last update:
-      2023-03-28
+      2023-03-29
     
   </small>
 </div>

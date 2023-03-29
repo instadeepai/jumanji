@@ -1349,13 +1349,18 @@ BinPack            (<a class="autorefs autorefs-internal" title="jumanji.env.Env
     <div class="doc doc-contents first">
 
       <p>Problem of 3D bin packing, where a set of items have to be placed in a 3D container with the
-goal of maximizing its volume utilization. We use the Empty Maximal Space (EMS) formulation
-of this problem. An EMS is a 3D-rectangular space that lives inside the container and has the
-following properties:
-    - It does not intersect any items, and it is not fully included into any other EMSs.
-    - It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
-    the first point corresponding to its bottom-left location while the second defining its
-    top-right corner.</p>
+goal of maximizing its volume utilization. This environment only supports 1 bin, meaning it is
+equivalent to the 3D-knapsack problem. We use the Empty Maximal Space (EMS) formulation of this
+problem. An EMS is a 3D-rectangular space that lives inside the container and has the following</p>
+<div class="admonition properties">
+<p class="admonition-title">Properties</p>
+<ul>
+<li>It does not intersect any items, and it is not fully included into any other EMSs.</li>
+<li>It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
+the first point corresponding to its bottom-left location while the second defining its
+top-right corner.</li>
+</ul>
+</div>
 <ul>
 <li>
 <p>observation: <code>Observation</code></p>
@@ -1837,7 +1842,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2023-03-28
+      2023-03-29
     
   </small>
 </div>
