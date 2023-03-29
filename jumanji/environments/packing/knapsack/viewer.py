@@ -20,8 +20,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.knapsack.types import State
+from jumanji.viewer import Viewer
 
 
 class KnapsackViewer(Viewer):

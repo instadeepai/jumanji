@@ -23,11 +23,11 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
 from jumanji.environments.routing.tsp.viewer import TSPViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class TSP(Environment[State]):

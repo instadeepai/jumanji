@@ -17,10 +17,10 @@ from typing import Optional, Sequence
 import matplotlib
 from numpy.typing import NDArray
 
-from jumanji.env_viewer import Viewer
 from jumanji.environments.commons.maze_utils.maze_generation import Maze
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from jumanji.environments.routing.maze.types import State
+from jumanji.viewer import Viewer
 
 EMPTY = 0
 WALL = 1

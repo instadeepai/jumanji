@@ -28,14 +28,15 @@ class Viewer(abc.ABC, Generic[State]):
     that matplotlib is used for rendering the environment in question.
     """
 
+    @abc.abstractmethod
     def render(self, state: State) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: `State` object corresponding to the new state of the environment.
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def animate(
         self,
         states: Sequence[State],
@@ -53,10 +54,9 @@ class Viewer(abc.ABC, Generic[State]):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def close(self) -> None:
         """Perform any necessary cleanup. Environments will automatically :meth:`close()`
         themselves when garbage collected or when the program exits.
         """
-        raise NotImplementedError

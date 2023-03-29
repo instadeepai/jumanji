@@ -23,8 +23,8 @@ from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.commons.maze_utils.maze_generation import EMPTY, WALL, Maze
+from jumanji.viewer import Viewer
 
 
 class MazeViewer(Viewer):

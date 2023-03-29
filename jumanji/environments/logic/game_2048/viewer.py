@@ -19,8 +19,8 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.logic.game_2048.types import State
+from jumanji.viewer import Viewer
 
 
 class Game2048Viewer(Viewer):

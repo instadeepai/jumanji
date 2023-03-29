@@ -21,12 +21,12 @@ import matplotlib
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
 from jumanji.environments.routing.cvrp.viewer import CVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class CVRP(Environment[State]):

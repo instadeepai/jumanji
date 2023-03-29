@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.job_shop.types import State
+from jumanji.viewer import Viewer
 
 
 class JobShopViewer(Viewer):

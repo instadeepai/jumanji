@@ -22,12 +22,12 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.maze.constants import MOVES
 from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.environments.routing.maze.viewer import MazeEnvViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Maze(Environment[State]):

@@ -22,11 +22,11 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
 from jumanji.environments.packing.knapsack.viewer import KnapsackViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Knapsack(Environment[State]):

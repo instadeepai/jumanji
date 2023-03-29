@@ -22,8 +22,8 @@ from chex import Array
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cvrp.types import State
+from jumanji.viewer import Viewer
 
 
 class CVRPViewer(Viewer):

@@ -22,7 +22,6 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.connector.constants import (
     AGENT_INITIAL_VALUE,
     NOOP,
@@ -45,6 +44,7 @@ from jumanji.environments.routing.connector.utils import (
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Connector(Environment[State]):

@@ -22,7 +22,6 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.logic.game_2048.types import Board, Observation, State
 from jumanji.environments.logic.game_2048.utils import (
     move_down,
@@ -32,6 +31,7 @@ from jumanji.environments.logic.game_2048.utils import (
 )
 from jumanji.environments.logic.game_2048.viewer import Game2048Viewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Game2048(Environment[State]):

@@ -22,11 +22,11 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.packing.job_shop.generator import Generator, RandomGenerator
 from jumanji.environments.packing.job_shop.types import Observation, State
 from jumanji.environments.packing.job_shop.viewer import JobShopViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class JobShop(Environment[State]):

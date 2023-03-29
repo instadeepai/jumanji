@@ -22,12 +22,12 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, WALL
 from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
 from jumanji.environments.routing.cleaner.viewer import CleanerViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Cleaner(Environment[State]):

@@ -22,12 +22,12 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.env_viewer import Viewer
 from jumanji.environments.routing.connector.utils import (
     get_agent_id,
     is_path,
     is_target,
 )
+from jumanji.viewer import Viewer
 
 
 class ConnectorViewer(Viewer):
