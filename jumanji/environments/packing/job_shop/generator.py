@@ -188,6 +188,12 @@ class RandomGenerator(Generator):
 
 
 class MakespanGenerator(Generator):
+    """`Generator` that can be used as an example. It deterministically outputs a hardcoded
+    instance with 5 jobs, 4 machines, a max of 4 ops for any job, and max duration of 4 time
+    steps for any operation. By construction, this generator has a known, optimal makespan
+    of 8 time steps.
+    """
+
     def __init__(
         self,
         num_jobs: int,

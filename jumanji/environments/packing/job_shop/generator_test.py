@@ -18,6 +18,7 @@ import pytest
 
 from jumanji.environments.packing.job_shop.conftest import DummyGenerator
 from jumanji.environments.packing.job_shop.generator import (
+    MakespanGenerator,
     RandomGenerator,
     ToyGenerator,
 )
@@ -103,3 +104,41 @@ class TestRandomGenerator:
 
         state2 = call_fn(key=jax.random.PRNGKey(2))
         assert_trees_are_different(state1, state2)
+
+
+class TestMakespanGenerator:
+    NUM_JOBS = 30
+    NUM_MACHINES = 15
+    MAX_NUM_OPS = 10
+    MAX_OP_DURATION = 6
+    MAKESPAN = 12
+
+    @pytest.fixture
+    def makespan_generator(self) -> MakespanGenerator:
+        return MakespanGenerator(
+            num_jobs=self.NUM_JOBS,
+            num_machines=self.NUM_MACHINES,
+            max_num_ops=self.MAX_NUM_OPS,
+            max_op_duration=self.MAX_OP_DURATION,
+            makespan=self.MAKESPAN,
+        )
+
+    def test_makespan_generator__attributes(
+        self, makespan_generator: MakespanGenerator
+    ) -> None:
+        """Validate that the random instance generator has the correct properties."""
+        assert makespan_generator.num_jobs == self.NUM_JOBS
+        assert makespan_generator.num_machines == self.NUM_MACHINES
+        assert makespan_generator.max_num_ops == self.MAX_NUM_OPS
+        assert makespan_generator.max_op_duration == self.MAX_OP_DURATION
+
+        key = jax.random.PRNGKey(0)
+        state = makespan_generator(key)
+        assert isinstance(state, State)
+
+    def test_makespan_generator__generate_schedule(
+        self, makespan_generator: MakespanGenerator
+    ) -> None:
+        key = jax.random.PRNGKey(0)
+        schedule = makespan_generator._generate_schedule(key)
+        assert schedule.shape == (self.NUM_MACHINES, self.MAKESPAN)
