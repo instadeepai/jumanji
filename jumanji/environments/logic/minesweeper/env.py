@@ -29,10 +29,7 @@ from jumanji.environments.logic.minesweeper.constants import (
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
-from jumanji.environments.logic.minesweeper.env_viewer import (
-    DefaultMinesweeperViewer,
-    MinesweeperViewer,
-)
+from jumanji.environments.logic.minesweeper.env_viewer import DefaultMinesweeperViewer
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
     UniformSamplingGenerator,
@@ -41,6 +38,7 @@ from jumanji.environments.logic.minesweeper.reward import DefaultRewardFn, Rewar
 from jumanji.environments.logic.minesweeper.types import Observation, State
 from jumanji.environments.logic.minesweeper.utils import count_adjacent_mines
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Minesweeper(Environment[State]):
@@ -98,7 +96,7 @@ class Minesweeper(Environment[State]):
         self,
         reward_function: Optional[RewardFn] = None,
         done_function: Optional[DoneFn] = None,
-        env_viewer: Optional[MinesweeperViewer] = None,
+        env_viewer: Optional[Viewer[State]] = None,
         generator: Optional[Generator] = None,
     ):
         """Instantiate a `Minesweeper` environment.
@@ -111,7 +109,7 @@ class Minesweeper(Environment[State]):
             done_function: `DoneFn` whose `__call__` method computes the done signal given the
                 current state, action taken, and next state.
                 Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
-            env_viewer: MinesweeperViewer to support rendering and animation methods.
+            env_viewer: Viewer to support rendering and animation methods.
                 Implemented options are [`DefaultMinesweeperViewer`].
                 Defaults to `DefaultMinesweeperViewer`.
             generator: Generator to generate problem instances on environment reset.
