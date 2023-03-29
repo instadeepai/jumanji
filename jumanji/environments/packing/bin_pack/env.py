@@ -23,7 +23,6 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.bin_pack import env_viewer
 from jumanji.environments.packing.bin_pack.generator import Generator, RandomGenerator
 from jumanji.environments.packing.bin_pack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.bin_pack.space import Space
@@ -38,8 +37,10 @@ from jumanji.environments.packing.bin_pack.types import (
     item_volume,
     space_from_item_and_location,
 )
+from jumanji.environments.packing.bin_pack.viewer import BinPackViewer
 from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class BinPack(Environment[State]):
@@ -118,7 +119,7 @@ class BinPack(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
-        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `BinPack` environment.
 
@@ -142,14 +143,14 @@ class BinPack(Environment[State]):
             debug: if True, will add to timestep.extras an `invalid_ems_from_env` field that checks
                 if an invalid EMS was created by the environment, which should not happen. Computing
                 this metric slows down the environment. Default to False.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+            viewer: `Viewer` used for rendering. Defaults to `BinPackViewer` with "human" render
+                mode.
         """
         self.generator = generator or RandomGenerator(max_num_items=30, max_num_ems=100)
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions
-        self._env_viewer = env_viewer.BinPackViewer("BinPack", render_mode)
+        self._viewer = viewer or BinPackViewer("BinPack", render_mode="human")
         self.debug = debug
 
     def __repr__(self) -> str:
@@ -358,7 +359,7 @@ class BinPack(Environment[State]):
         Args:
             state: State object containing the current dynamics of the environment.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -377,7 +378,7 @@ class BinPack(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -385,7 +386,7 @@ class BinPack(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _make_observation_and_extras(
         self, state: State
