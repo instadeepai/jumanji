@@ -25,10 +25,7 @@ from jumanji.environments.logic.rubiks_cube.constants import (
     DEFAULT_STICKER_COLORS,
     Face,
 )
-from jumanji.environments.logic.rubiks_cube.env_viewer import (
-    DefaultRubiksCubeViewer,
-    RubiksCubeViewer,
-)
+from jumanji.environments.logic.rubiks_cube.env_viewer import DefaultRubiksCubeViewer
 from jumanji.environments.logic.rubiks_cube.generator import (
     Generator,
     ScramblingGenerator,
@@ -41,6 +38,7 @@ from jumanji.environments.logic.rubiks_cube.utils import (
     rotate_cube,
 )
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class RubiksCube(Environment[State]):
@@ -86,7 +84,7 @@ class RubiksCube(Environment[State]):
         self,
         time_limit: int = 200,
         reward_fn: Optional[RewardFn] = None,
-        env_viewer: Optional[RubiksCubeViewer] = None,
+        env_viewer: Optional[Viewer[State]] = None,
         generator: Optional[Generator] = None,
     ):
         """Instantiate a `RubiksCube` environment.
@@ -95,7 +93,7 @@ class RubiksCube(Environment[State]):
             time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
-            env_viewer: RubiksCubeViewer to support rendering and animation methods.
+            env_viewer: Viewer to support rendering and animation methods.
                 Implemented options are [`DefaultRubiksCubeViewer`].
                 Defaults to `DefaultRubiksCubeViewer`.
             generator: `Generator` used to generate problem instances on environment reset.
