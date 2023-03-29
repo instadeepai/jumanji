@@ -1414,7 +1414,7 @@ it a win.</p>
 
 
 <h3 id="jumanji.environments.logic.game_2048.env.Game2048.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">board_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">board_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">game_2048</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1442,6 +1442,12 @@ it a win.</p>
         <td><code>int</code></td>
         <td><p>size of the board. Defaults to 4.</p></td>
         <td><code>4</code></td>
+      </tr>
+      <tr>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.logic.game_2048.types.State]]</code></td>
+        <td><p><code>Viewer</code> used for rendering. Defaults to <code>Game2048Viewer</code>.</p></td>
+        <td><code>None</code></td>
       </tr>
   </tbody>
 </table>

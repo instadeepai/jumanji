@@ -1421,7 +1421,7 @@ selected is selected again or has a weight larger than the bag capacity.</li>
 
 
 <h3 id="jumanji.environments.packing.knapsack.env.Knapsack.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">total_budget</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.5</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">render_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;human&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">total_budget</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.5</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1466,11 +1466,11 @@ Implemented options are [<code>DenseReward</code>, <code>SparseReward</code>]. D
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>render_mode</code></td>
-        <td><code>str</code></td>
-        <td><p>string that defines the mode of rendering.
-Choices are ["human, "rgb"], defaults to "human".</p></td>
-        <td><code>&#39;human&#39;</code></td>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.packing.knapsack.types.State]]</code></td>
+        <td><p><code>Viewer</code> used for rendering. Defaults to <code>KnapsackViewer</code> with "human" render
+mode.</p></td>
+        <td><code>None</code></td>
       </tr>
   </tbody>
 </table>

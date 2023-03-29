@@ -1427,7 +1427,7 @@ minimise the total length of the schedule, also known as the makespan.</p>
 
 
 <h3 id="jumanji.environments.packing.job_shop.env.JobShop.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">job_shop</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">job_shop</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">job_shop</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1457,6 +1457,12 @@ minimise the total length of the schedule, also known as the makespan.</p>
 Implemented options are ['ToyGenerator', 'RandomGenerator'].
 Defaults to <code>RandomGenerator</code> with 20 jobs, 10 machines, up to 8 ops
 for any given job, and a max operation duration of 6.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.packing.job_shop.types.State]]</code></td>
+        <td><p><code>Viewer</code> used for rendering. Defaults to <code>JobShopViewer</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
