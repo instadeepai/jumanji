@@ -26,7 +26,6 @@ from jumanji.environments.logic.rubiks_cube.constants import (
     DEFAULT_STICKER_COLORS,
     Face,
 )
-from jumanji.environments.logic.rubiks_cube.env_viewer import RubiksCubeViewer
 from jumanji.environments.logic.rubiks_cube.generator import (
     Generator,
     ScramblingGenerator,
@@ -38,6 +37,7 @@ from jumanji.environments.logic.rubiks_cube.utils import (
     is_solved,
     rotate_cube,
 )
+from jumanji.environments.logic.rubiks_cube.viewer import RubiksCubeViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
@@ -113,7 +113,7 @@ class RubiksCube(Environment[State]):
             cube_size=3,
             num_scrambles_on_reset=100,
         )
-        self._env_viewer = viewer or RubiksCubeViewer(
+        self._viewer = viewer or RubiksCubeViewer(
             sticker_colors=DEFAULT_STICKER_COLORS, cube_size=self.generator.cube_size
         )
 
@@ -226,7 +226,7 @@ class RubiksCube(Environment[State]):
         Args:
             state: the current state to be rendered.
         """
-        return self._env_viewer.render(state=state)
+        return self._viewer.render(state=state)
 
     def animate(
         self,
@@ -245,7 +245,7 @@ class RubiksCube(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
+        return self._viewer.animate(
             states=states, interval=interval, save_path=save_path
         )
 
@@ -255,4 +255,4 @@ class RubiksCube(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
