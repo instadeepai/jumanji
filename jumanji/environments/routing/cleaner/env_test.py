@@ -38,6 +38,8 @@ N_AGENT = 3
 
 
 class DummyGenerator(Generator):
+    """Dummy generator, generate an instance of size 5x5 with 3 agents."""
+
     def __init__(self) -> None:
         super(DummyGenerator, self).__init__(num_rows=5, num_cols=5, num_agents=N_AGENT)
 
