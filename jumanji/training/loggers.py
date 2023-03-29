@@ -127,7 +127,7 @@ class TerminalLogger(Logger):
         env_steps: Optional[int] = None,
     ) -> None:
         if env_steps is not None:
-            env_steps_str = f"Env steps: {env_steps:.2e} | "
+            env_steps_str = f"Env Steps: {env_steps:.2e} | "
         else:
             env_steps_str = ""
         label_str = f"{label.replace('_', ' ').title()} >> " if label else ""
