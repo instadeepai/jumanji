@@ -18,6 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib.animation
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -219,7 +220,7 @@ class RubiksCube(Environment[State]):
     def _state_to_observation(self, state: State) -> Observation:
         return Observation(cube=state.cube, step_count=state.step_count)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the cube.
 
         Args:
