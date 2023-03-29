@@ -29,7 +29,7 @@ from jumanji.environments.logic.minesweeper.utils import explored_mine
 from jumanji.viewer import Viewer
 
 
-class DefaultMinesweeperViewer(Viewer[State]):
+class MinesweeperViewer(Viewer[State]):
     def __init__(
         self,
         color_mapping: Optional[List[str]] = None,

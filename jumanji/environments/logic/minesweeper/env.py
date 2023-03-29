@@ -30,7 +30,7 @@ from jumanji.environments.logic.minesweeper.constants import (
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
-from jumanji.environments.logic.minesweeper.env_viewer import DefaultMinesweeperViewer
+from jumanji.environments.logic.minesweeper.env_viewer import MinesweeperViewer
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
     UniformSamplingGenerator,
@@ -95,24 +95,15 @@ class Minesweeper(Environment[State]):
 
     def __init__(
         self,
+        generator: Optional[Generator] = None,
         reward_function: Optional[RewardFn] = None,
         done_function: Optional[DoneFn] = None,
-        env_viewer: Optional[Viewer[State]] = None,
-        generator: Optional[Generator] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiate a `Minesweeper` environment.
 
         Args:
 
-            reward_function: `RewardFn` whose `__call__` method computes the reward of an
-                environment transition based on the given current state and selected action.
-                Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
-            done_function: `DoneFn` whose `__call__` method computes the done signal given the
-                current state, action taken, and next state.
-                Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
-            env_viewer: Viewer to support rendering and animation methods.
-                Implemented options are [`DefaultMinesweeperViewer`].
-                Defaults to `DefaultMinesweeperViewer`.
             generator: Generator to generate problem instances on environment reset.
                 Implemented options are [`SamplingGenerator`].
                 Defaults to `SamplingGenerator`.
@@ -120,6 +111,15 @@ class Minesweeper(Environment[State]):
                     - num_rows: number of rows, i.e. height of the board. Defaults to 10.
                     - num_cols: number of columns, i.e. width of the board. Defaults to 10.
                     - num_mines: number of mines generated. Defaults to 10.
+            reward_function: `RewardFn` whose `__call__` method computes the reward of an
+                environment transition based on the given current state and selected action.
+                Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
+            done_function: `DoneFn` whose `__call__` method computes the done signal given the
+                current state, action taken, and next state.
+                Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
+            viewer: Viewer to support rendering and animation methods.
+                Implemented options are [`MinesweeperViewer`].
+                Defaults to `MinesweeperViewer`.
         """
         self.reward_function = reward_function or DefaultRewardFn(
             revealed_empty_square_reward=REVEALED_EMPTY_SQUARE_REWARD,
@@ -127,11 +127,11 @@ class Minesweeper(Environment[State]):
             invalid_action_reward=INVALID_ACTION_REWARD,
         )
         self.done_function = done_function or DefaultDoneFn()
-        self._generator = generator or UniformSamplingGenerator(
+        self.generator = generator or UniformSamplingGenerator(
             num_rows=10, num_cols=10, num_mines=10
         )
-        self._env_viewer = env_viewer or DefaultMinesweeperViewer(
-            num_rows=self._generator.num_rows, num_cols=self._generator.num_cols
+        self._env_viewer = viewer or MinesweeperViewer(
+            num_rows=self.generator.num_rows, num_cols=self.generator.num_cols
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -145,7 +145,7 @@ class Minesweeper(Environment[State]):
             timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
-        state = self._generator(key)
+        state = self.generator(key)
         observation = self._state_to_observation(state=state)
         timestep = restart(observation=observation)
         return state, timestep
@@ -198,14 +198,14 @@ class Minesweeper(Environment[State]):
              - step_count: BoundedArray (int32) of shape ().
         """
         board = specs.BoundedArray(
-            shape=(self._generator.num_rows, self._generator.num_cols),
+            shape=(self.generator.num_rows, self.generator.num_cols),
             dtype=jnp.int32,
             minimum=-1,
             maximum=PATCH_SIZE * PATCH_SIZE - 1,
             name="board",
         )
         action_mask = specs.BoundedArray(
-            shape=(self._generator.num_rows, self._generator.num_cols),
+            shape=(self.generator.num_rows, self.generator.num_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
@@ -215,15 +215,15 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self._generator.num_rows * self._generator.num_cols - 1,
+            maximum=self.generator.num_rows * self.generator.num_cols - 1,
             name="num_mines",
         )
         step_count = specs.BoundedArray(
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self._generator.num_rows * self._generator.num_cols
-            - self._generator.num_mines,
+            maximum=self.generator.num_rows * self.generator.num_cols
+            - self.generator.num_mines,
             name="step_count",
         )
         return specs.Spec(
@@ -244,7 +244,7 @@ class Minesweeper(Environment[State]):
         """
         return specs.MultiDiscreteArray(
             num_values=jnp.array(
-                [self._generator.num_rows, self._generator.num_cols], jnp.int32
+                [self.generator.num_rows, self.generator.num_cols], jnp.int32
             ),
             name="action",
             dtype=jnp.int32,
@@ -254,7 +254,7 @@ class Minesweeper(Environment[State]):
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-            num_mines=jnp.array(self._generator.num_mines, jnp.int32),
+            num_mines=jnp.array(self.generator.num_mines, jnp.int32),
             step_count=state.step_count,
         )
 
