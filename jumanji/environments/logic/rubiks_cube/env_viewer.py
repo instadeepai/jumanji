@@ -24,7 +24,7 @@ from jumanji.environments.logic.rubiks_cube.types import State
 from jumanji.viewer import Viewer
 
 
-class DefaultRubiksCubeViewer(Viewer[State]):
+class RubiksCubeViewer(Viewer[State]):
     def __init__(self, sticker_colors: Optional[list], cube_size: int):
         """
         Args:

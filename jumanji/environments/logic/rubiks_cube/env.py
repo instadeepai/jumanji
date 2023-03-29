@@ -26,7 +26,7 @@ from jumanji.environments.logic.rubiks_cube.constants import (
     DEFAULT_STICKER_COLORS,
     Face,
 )
-from jumanji.environments.logic.rubiks_cube.env_viewer import DefaultRubiksCubeViewer
+from jumanji.environments.logic.rubiks_cube.env_viewer import RubiksCubeViewer
 from jumanji.environments.logic.rubiks_cube.generator import (
     Generator,
     ScramblingGenerator,
@@ -83,25 +83,25 @@ class RubiksCube(Environment[State]):
 
     def __init__(
         self,
+        generator: Optional[Generator] = None,
         time_limit: int = 200,
         reward_fn: Optional[RewardFn] = None,
-        env_viewer: Optional[Viewer[State]] = None,
-        generator: Optional[Generator] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiate a `RubiksCube` environment.
 
         Args:
-            time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
-            reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
-                Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
-            env_viewer: Viewer to support rendering and animation methods.
-                Implemented options are [`DefaultRubiksCubeViewer`].
-                Defaults to `DefaultRubiksCubeViewer`.
             generator: `Generator` used to generate problem instances on environment reset.
                 Implemented options are [`ScramblingGenerator`].
                 Defaults to `ScramblingGenerator`.
                 The generator will contain an attribute `cube_size`, corresponding to the number of
                 cubies to an edge, and defaulting to 3.
+            time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
+            reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
+                Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
+            viewer: Viewer to support rendering and animation methods.
+                Implemented options are [`RubiksCubeViewer`].
+                Defaults to `RubiksCubeViewer`.
         """
         if time_limit <= 0:
             raise ValueError(
@@ -109,12 +109,12 @@ class RubiksCube(Environment[State]):
             )
         self.time_limit = time_limit
         self.reward_function = reward_fn or SparseRewardFn()
-        self._generator = generator or ScramblingGenerator(
+        self.generator = generator or ScramblingGenerator(
             cube_size=3,
             num_scrambles_on_reset=100,
         )
-        self._env_viewer = env_viewer or DefaultRubiksCubeViewer(
-            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=self._generator.cube_size
+        self._env_viewer = viewer or RubiksCubeViewer(
+            sticker_colors=DEFAULT_STICKER_COLORS, cube_size=self.generator.cube_size
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -128,7 +128,7 @@ class RubiksCube(Environment[State]):
             timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
-        state = self._generator(key)
+        state = self.generator(key)
         observation = self._state_to_observation(state=state)
         timestep = restart(observation=observation)
         return state, timestep
@@ -148,7 +148,7 @@ class RubiksCube(Environment[State]):
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         flattened_action = flatten_action(
-            unflattened_action=action, cube_size=self._generator.cube_size
+            unflattened_action=action, cube_size=self.generator.cube_size
         )
         cube = rotate_cube(
             cube=state.cube,
@@ -182,7 +182,7 @@ class RubiksCube(Environment[State]):
              - step_count: BoundedArray (jnp.int32) of shape ().
         """
         cube = specs.BoundedArray(
-            shape=(len(Face), self._generator.cube_size, self._generator.cube_size),
+            shape=(len(Face), self.generator.cube_size, self.generator.cube_size),
             dtype=jnp.int8,
             minimum=0,
             maximum=len(Face) - 1,
@@ -211,7 +211,7 @@ class RubiksCube(Environment[State]):
         """
         return specs.MultiDiscreteArray(
             num_values=jnp.array(
-                [len(Face), self._generator.cube_size // 2, 3], jnp.int32
+                [len(Face), self.generator.cube_size // 2, 3], jnp.int32
             ),
             name="action",
             dtype=jnp.int32,
