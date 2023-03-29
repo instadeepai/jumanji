@@ -30,7 +30,6 @@ from jumanji.environments.logic.minesweeper.constants import (
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
-from jumanji.environments.logic.minesweeper.viewer import MinesweeperViewer
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
     UniformSamplingGenerator,
@@ -38,6 +37,7 @@ from jumanji.environments.logic.minesweeper.generator import (
 from jumanji.environments.logic.minesweeper.reward import DefaultRewardFn, RewardFn
 from jumanji.environments.logic.minesweeper.types import Observation, State
 from jumanji.environments.logic.minesweeper.utils import count_adjacent_mines
+from jumanji.environments.logic.minesweeper.viewer import MinesweeperViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
