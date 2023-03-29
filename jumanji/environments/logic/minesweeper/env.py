@@ -30,7 +30,7 @@ from jumanji.environments.logic.minesweeper.constants import (
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
-from jumanji.environments.logic.minesweeper.env_viewer import MinesweeperViewer
+from jumanji.environments.logic.minesweeper.viewer import MinesweeperViewer
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
     UniformSamplingGenerator,
