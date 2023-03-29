@@ -18,13 +18,15 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.job_shop.env_viewer import JobShopViewer
 from jumanji.environments.packing.job_shop.generator import Generator, RandomGenerator
 from jumanji.environments.packing.job_shop.types import Observation, State
+from jumanji.environments.packing.job_shop.viewer import JobShopViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class JobShop(Environment[State]):
@@ -87,7 +89,11 @@ class JobShop(Environment[State]):
     ```
     """
 
-    def __init__(self, generator: Optional[Generator] = None):
+    def __init__(
+        self,
+        generator: Optional[Generator] = None,
+        viewer: Optional[Viewer[State]] = None,
+    ):
         """Instantiate a `JobShop` environment.
 
         Args:
@@ -95,14 +101,14 @@ class JobShop(Environment[State]):
                 Implemented options are ['ToyGenerator', 'RandomGenerator'].
                 Defaults to `RandomGenerator` with 20 jobs, 10 machines, up to 8 ops
                 for any given job, and a max operation duration of 6.
+            viewer: `Viewer` used for rendering. Defaults to `JobShopViewer`.
         """
-        default_generator = RandomGenerator(
+        self.generator = generator or RandomGenerator(
             num_jobs=20,
             num_machines=10,
             max_num_ops=8,
             max_op_duration=6,
         )
-        self.generator = generator or default_generator
         self.num_jobs = self.generator.num_jobs
         self.num_machines = self.generator.num_machines
         self.max_num_ops = self.generator.max_num_ops
@@ -112,7 +118,7 @@ class JobShop(Environment[State]):
         self.no_op_idx = self.num_jobs
 
         # Create viewer used for rendering
-        self._env_viewer = JobShopViewer(
+        self._viewer = viewer or JobShopViewer(
             "JobShop",
             self.num_jobs,
             self.num_machines,
@@ -428,14 +434,14 @@ class JobShop(Environment[State]):
             name="action",
         )
 
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment. This rendering shows which job (or no-op)
         is running on each machine for the current time step and previous time steps.
 
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -443,7 +449,7 @@ class JobShop(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def animate(
         self,
@@ -462,7 +468,7 @@ class JobShop(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def _observation_from_state(self, state: State) -> Observation:
         """Converts a job shop environment state to an observation.

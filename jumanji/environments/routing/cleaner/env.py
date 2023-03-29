@@ -23,10 +23,11 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, MOVES, WALL
-from jumanji.environments.routing.cleaner.env_viewer import CleanerViewer
 from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
+from jumanji.environments.routing.cleaner.viewer import CleanerViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Cleaner(Environment[State]):
@@ -84,8 +85,8 @@ class Cleaner(Environment[State]):
         num_agents: int = 3,
         generator: Optional[Generator] = None,
         time_limit: Optional[int] = None,
-        render_mode: str = "human",
         penalty_per_timestep: float = 0.5,
+        viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Cleaner` environment.
 
@@ -95,7 +96,8 @@ class Cleaner(Environment[State]):
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
                 `num_rows=10` and `num_cols=10`.
-            render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
+            viewer: `Viewer` used for rendering. Defaults to `CleanerViewer` with "human" render
+                mode.
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
         self.num_agents = num_agents
@@ -107,7 +109,7 @@ class Cleaner(Environment[State]):
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
-        self._env_viewer = CleanerViewer("Cleaner", render_mode)
+        self._viewer = viewer or CleanerViewer("Cleaner", render_mode="human")
 
     def __repr__(self) -> str:
         return (
@@ -267,7 +269,7 @@ class Cleaner(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -286,7 +288,7 @@ class Cleaner(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -294,7 +296,7 @@ class Cleaner(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _compute_reward(self, prev_state: State, state: State) -> chex.Array:
         """Compute the reward by counting the number of tiles which changed from previous state.

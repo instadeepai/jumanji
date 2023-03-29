@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 import jumanji.environments
 from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.types import State
+from jumanji.viewer import Viewer
 
 
 class RubiksCubeViewer(Viewer):
