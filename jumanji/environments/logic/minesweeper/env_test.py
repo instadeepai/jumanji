@@ -15,11 +15,11 @@
 from typing import List, Optional, Tuple
 
 import chex
+import jax
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
 import pytest_mock
-import jax
 from jax import numpy as jnp
 
 from jumanji.environments.logic.minesweeper.constants import (

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import chex
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
 
 from jumanji.environments.logic.minesweeper.constants import (
     IS_MINE,

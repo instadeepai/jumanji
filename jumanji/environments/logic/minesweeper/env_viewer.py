@@ -26,6 +26,7 @@ from jumanji.environments.logic.minesweeper.constants import (
 )
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.environments.logic.minesweeper.utils import explored_mine
+from jumanji.viewer import Viewer
 
 
 class MinesweeperViewer(Viewer):
