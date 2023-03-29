@@ -93,7 +93,7 @@ class Cleaner(Environment[State]):
             time_limit: max number of steps in an episode. Defaults to `num_rows * num_cols`.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
-                `num_rows=10` and `num_cols=10`.
+                `num_rows=10`, `num_cols=10` and `num_agents=3`.
             render_mode: the mode for visualising the environment, can be "human" or "rgb_array".
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
