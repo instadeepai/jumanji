@@ -24,24 +24,17 @@ from jumanji.environments.logic.rubiks_cube.types import State
 from jumanji.viewer import Viewer
 
 
-class RubiksCubeViewer(Viewer):
-    """Abstract viewer class to support rendering and animation"""
-
-    def __init__(self, cube_size: int):
-        self.cube_size = cube_size
-
-
-class DefaultRubiksCubeViewer(RubiksCubeViewer):
+class DefaultRubiksCubeViewer(Viewer[State]):
     def __init__(self, sticker_colors: Optional[list], cube_size: int):
         """
         Args:
             sticker_colors: colors used in rendering the faces of the Rubik's cube.
             cube_size: size of cube to view.
         """
+        self.cube_size = cube_size
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
         self.figure_size = (6.0, 6.0)
-        super().__init__(cube_size=cube_size)
 
     def render(self, state: State) -> None:
         """Render frames of the environment for a given state using matplotlib.
