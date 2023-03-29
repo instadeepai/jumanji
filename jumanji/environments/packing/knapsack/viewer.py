@@ -12,41 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from itertools import groupby
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-from chex import Array
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.routing.cvrp.types import State
+from jumanji.environments.packing.knapsack.types import State
+from jumanji.viewer import Viewer
 
 
-class CVRPViewer:
-    FIGURE_SIZE = (10.0, 10.0)
-    NODE_COLOUR = "black"
-    COLORMAP_NAME = "hsv"
-    NODE_SIZE = 150
-    DEPOT_SIZE = 250
-    ARROW_WIDTH = 0.004
+class KnapsackViewer(Viewer):
+    FIGURE_SIZE = (5.0, 5.0)
 
-    def __init__(self, name: str, num_cities: int, render_mode: str = "human") -> None:
-        """Viewer for the `CVRP` environment.
+    def __init__(
+        self, name: str, render_mode: str = "human", total_budget: float = 2.0
+    ) -> None:
+        """Viewer for the `Knapsack` environment.
 
         Args:
             name: the window name to be used when initialising the window.
             render_mode: the mode used to render the environment. Must be one of:
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
+            total_budget: the capacity of the knapsack.
         """
         self._name = name
-        self._num_cities = num_cities
-
-        # Each route to and from depot has a different color
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_cities)
+        self._total_budget = total_budget
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
@@ -61,17 +55,26 @@ class CVRPViewer:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `CVRP` environment.
+        """Render the given state of the `Knapsack` environment.
 
         Args:
             state: the environment state to render.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
-        ax.clear()
         self._prepare_figure(ax)
-        self._add_tour(ax, state)
+        self._show_value_and_budget(ax, state)
         return self._display(fig)
+
+    def _show_value_and_budget(self, ax: plt.Axes, state: State) -> None:
+        # Initially, no items have been picked
+        budget_used: np.ndarray = np.sum(state.weights, where=state.packed_items)
+        total_value: np.ndarray = np.sum(state.values, where=state.packed_items)
+
+        ax.set_title(
+            f"Total value: {round(float(total_value), 2):.2f}. "
+            f"Budget used: {round(float(budget_used), 2):.2f}/{self._total_budget}."
+        )
 
     def animate(
         self,
@@ -91,14 +94,12 @@ class CVRPViewer:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
         fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         ax = fig.add_subplot(111)
-        plt.close(fig)
         self._prepare_figure(ax)
 
         def make_frame(state_index: int) -> None:
             state = states[state_index]
-            self._add_tour(ax, state)
+            self._show_value_and_budget(ax, state)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
@@ -124,16 +125,16 @@ class CVRPViewer:
             IPython.display.clear_output(True)
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        if recreate:
-            fig.tight_layout()
+        exists = plt.fignum_exists(self._name)
+        if exists:
+            fig = plt.figure(self._name)
+            # ax = fig.add_subplot()
+            ax = fig.get_axes()[0]
+        else:
+            fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
             if not plt.isinteractive():
                 fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
+            ax = fig.add_subplot()
         return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
@@ -141,81 +142,8 @@ class CVRPViewer:
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        map_img = plt.imread("docs/img/city_map.jpeg")
+        map_img = plt.imread("docs/img/knapsack.png")
         ax.imshow(map_img, extent=[0, 1, 0, 1])
-
-    def _group_tour(self, tour: Array) -> list:
-        """Group the tour into routes that either (1) start and end at the depot, or, (2) start at
-        the depot and end at the current city.
-
-        Args:
-            tour: x and y coordinates of the cities in the tour.
-
-        Returns:
-            tour_grouped: list of x and y coordinates that are grouped based on the above.
-        """
-        depot = tour[0]
-        check_depot_fn = lambda x: (x != depot).all()
-        tour_grouped = [
-            np.array([depot] + list(g) + [depot])
-            for k, g in groupby(tour, key=check_depot_fn)
-            if k
-        ]
-        if (tour[-1] != tour[0]).all():
-            tour_grouped[-1] = tour_grouped[-1][:-1]
-        return tour_grouped
-
-    def _draw_route(self, ax: plt.Axes, coords: Array, col_id: int) -> None:
-        """Draw the arrows and nodes for each route in the given colour."""
-        x, y = coords.T
-
-        # Compute the difference in the x- and y-coordinates to determine the distance between
-        # consecutive cities.
-        dx = x[1:] - x[:-1]
-        dy = y[1:] - y[:-1]
-        ax.quiver(
-            x[:-1],
-            y[:-1],
-            dx,
-            dy,
-            scale_units="xy",
-            angles="xy",
-            scale=1,
-            width=self.ARROW_WIDTH,
-            headwidth=5,
-            color=self._cmap(col_id),
-        )
-        ax.scatter(x, y, s=self.NODE_SIZE, color=self._cmap(col_id))
-
-    def _add_tour(self, ax: plt.Axes, state: State) -> None:
-        """Add the cities and the depot to the plot, and draw each route in the tour in a different
-        colour. The tour is the entire trajectory between the visited cities and a route is a
-        trajectory either starting and ending at the depot or starting at the depot and ending at
-        the current city."""
-        x_coords, y_coords = state.coordinates.T
-
-        # Draw the cities
-        ax.scatter(x_coords[1:], y_coords[1:], s=self.NODE_SIZE, color=self.NODE_COLOUR)
-
-        # Draw the arrows between cities
-        if state.num_total_visits > 1:
-            coords = state.coordinates[state.trajectory[: state.num_total_visits]]
-            coords_grouped = self._group_tour(coords)
-
-            # Draw each route in different colour
-            for coords_route, col_id in zip(
-                coords_grouped, np.arange(0, len(coords_grouped))
-            ):
-                self._draw_route(ax, coords_route, col_id)
-
-        # Draw the depot node
-        ax.scatter(
-            x_coords[0],
-            y_coords[0],
-            marker="s",
-            s=self.DEPOT_SIZE,
-            color=self.NODE_COLOUR,
-        )
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
