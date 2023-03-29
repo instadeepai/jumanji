@@ -182,7 +182,7 @@ class RubiksCube(Environment[State]):
              - step_count: BoundedArray (jnp.int32) of shape ().
         """
         cube = specs.BoundedArray(
-            shape=(len(Face), self._generator.cube_size, self._generator.cube_size), 
+            shape=(len(Face), self._generator.cube_size, self._generator.cube_size),
             dtype=jnp.int8,
             minimum=0,
             maximum=len(Face) - 1,
