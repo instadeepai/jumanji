@@ -44,9 +44,10 @@ from jumanji.types import TimeStep, restart, termination, transition
 
 class BinPack(Environment[State]):
     """Problem of 3D bin packing, where a set of items have to be placed in a 3D container with the
-    goal of maximizing its volume utilization. We use the Empty Maximal Space (EMS) formulation
-    of this problem. An EMS is a 3D-rectangular space that lives inside the container and has the
-    following properties:
+    goal of maximizing its volume utilization. This environment only supports 1 bin, meaning it is
+    equivalent to the 3D-knapsack problem. We use the Empty Maximal Space (EMS) formulation of this
+    problem. An EMS is a 3D-rectangular space that lives inside the container and has the following
+    properties:
         - It does not intersect any items, and it is not fully included into any other EMSs.
         - It is defined by 2 3D-points, hence 6 coordinates (x1, x2, y1, y2, z1, z2),
         the first point corresponding to its bottom-left location while the second defining its

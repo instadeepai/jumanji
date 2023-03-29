@@ -6,7 +6,8 @@
 
 We provide here an implementation of the 3D [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem).
 In this problem, the goal of the agent is to efficiently pack a set of boxes (items) of different
-sizes into a single container with as little empty space as possible.
+sizes into a single container with as little empty space as possible. Since there is only 1 bin,
+this formulation is equivalent to the 3D-knapsack problem.
 
 
 ## Observation
