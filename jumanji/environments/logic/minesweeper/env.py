@@ -18,6 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib.animation
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -257,12 +258,10 @@ class Minesweeper(Environment[State]):
             step_count=state.step_count,
         )
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the board.
         Args:
             state: the current state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-                will not be saved.
         """
         return self._env_viewer.render(state=state)
 
