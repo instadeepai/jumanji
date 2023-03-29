@@ -34,17 +34,16 @@ SAMPLE_GRID = jnp.array(
         [DIRTY, WALL, DIRTY, DIRTY, DIRTY],
     ]
 )
-N_AGENT = 3
 
 
 class DummyGenerator(Generator):
     """Dummy generator, generate an instance of size 5x5 with 3 agents."""
 
     def __init__(self) -> None:
-        super(DummyGenerator, self).__init__(num_rows=5, num_cols=5, num_agents=N_AGENT)
+        super(DummyGenerator, self).__init__(num_rows=5, num_cols=5, num_agents=3)
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        agents_locations = jnp.zeros((N_AGENT, 2), int)
+        agents_locations = jnp.zeros((self.num_agents, 2), int)
         return State(
             grid=SAMPLE_GRID,
             agents_locations=agents_locations,
@@ -83,7 +82,7 @@ class TestCleaner:
         assert isinstance(timestep, TimeStep)
         assert isinstance(state, State)
 
-        assert jnp.all(state.agents_locations == jnp.zeros((N_AGENT, 2)))
+        assert jnp.all(state.agents_locations == jnp.zeros((env.num_agents, 2)))
         assert jnp.sum(state.grid == CLEAN) == 1  # Only the top-left tile is clean
         assert state.step_count == 0
 
@@ -110,7 +109,7 @@ class TestCleaner:
         step_fn = jax.jit(env.step)
 
         # First action: all agents move right
-        actions = jnp.array([1] * N_AGENT)
+        actions = jnp.array([1] * env.num_agents)
         state, timestep = step_fn(initial_state, actions)
         # Assert only one tile changed, on the right of the initial pos
         assert jnp.sum(state.grid != initial_state.grid) == 1
@@ -157,7 +156,7 @@ class TestCleaner:
 
         # All agents can only move right in the initial state
         expected_action_mask = jnp.array(
-            [[False, True, False, False] for _ in range(N_AGENT)]
+            [[False, True, False, False] for _ in range(env.num_agents)]
         )
 
         assert jnp.all(state.action_mask == expected_action_mask)
@@ -186,7 +185,7 @@ class TestCleaner:
                     key, jnp.arange(4), p=agent_action_mask.flatten()
                 )
 
-            subkeys = jax.random.split(key, N_AGENT)
+            subkeys = jax.random.split(key, env.num_agents)
             return select_action(subkeys, observation.action_mask)
 
         check_env_does_not_smoke(env, select_actions)
