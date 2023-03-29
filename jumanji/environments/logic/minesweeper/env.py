@@ -130,7 +130,7 @@ class Minesweeper(Environment[State]):
         self.generator = generator or UniformSamplingGenerator(
             num_rows=10, num_cols=10, num_mines=10
         )
-        self._env_viewer = viewer or MinesweeperViewer(
+        self._viewer = viewer or MinesweeperViewer(
             num_rows=self.generator.num_rows, num_cols=self.generator.num_cols
         )
 
@@ -263,7 +263,7 @@ class Minesweeper(Environment[State]):
         Args:
             state: the current state to be rendered.
         """
-        return self._env_viewer.render(state=state)
+        return self._viewer.render(state=state)
 
     def animate(
         self,
@@ -280,7 +280,7 @@ class Minesweeper(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
+        return self._viewer.animate(
             states=states, interval=interval, save_path=save_path
         )
 
@@ -289,4 +289,4 @@ class Minesweeper(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
