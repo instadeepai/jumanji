@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import abc
+from typing import Any, Tuple
 
 import chex
 import jax
@@ -186,71 +187,229 @@ class RandomGenerator(Generator):
         return state
 
 
-class KnownOptimalGenerator:
-    """Instance generator, for the `JobShop` environment, with a known minimum schedule length."""
-    # def __init__(
-    #     self, num_jobs: int, num_machines: int, max_num_ops: int, max_op_duration: int
-    # ):
-    #     super().__init__(num_jobs, num_machines, max_num_ops, max_op_duration)
+class MakespanGenerator(Generator):
+    def __init__(
+        self,
+        num_jobs: int,
+        num_machines: int,
+        max_num_ops: int,
+        max_op_duration: int,
+        makespan: int,
+    ):
+        """Instantiate a `MakespanGenerator`.
+
+        Args:
+            num_jobs: the number of jobs that need to be scheduled.
+            num_machines: the number of machines that the jobs can be scheduled on.
+            max_num_ops: the maximum number of operations for any given job.
+            max_op_duration: the maximum processing time of any given operation.
+            makespan: the length of the schedule. By construction, this will be the
+                shortest possible length of the schedule.
+        """
+        super().__init__(
+            num_jobs=num_jobs,
+            num_machines=num_machines,
+            max_num_ops=max_num_ops,
+            max_op_duration=max_op_duration,
+        )
+        self.makespan = makespan
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        num_jobs = 5
-        num_machines = 3
-        makespan = 12
+        """Call method responsible for generating a new state. It returns a job shop scheduling
+        with a known optimal makespan, making it useful to benchmark agents during training.
 
-        all_job_ids = jnp.arange(num_jobs)
+        Args:
+            key: jax random key for the stochasticity used in the generation process.
 
-        def insert_col(carry, _):
+        Returns:
+            A `JobShop` environment state.
+        """
+        key, schedule_key = jax.random.split(key)
+
+        # Generate a random, dense schedule of the specified length
+        schedule = self._generate_schedule(schedule_key)
+
+        # Extract ops information from the schedule
+        ops_machine_ids, ops_durations = self._register_ops(schedule)
+
+        # Initially, all machines are available (the value self.num_jobs corresponds to no-op)
+        machines_job_ids = jnp.full(self.num_machines, self.num_jobs, jnp.int32)
+        machines_remaining_times = jnp.full(self.num_machines, 0, jnp.int32)
+        scheduled_times = jnp.full((self.num_jobs, self.max_num_ops), -1, jnp.int32)
+        ops_mask = ops_machine_ids != -1
+        step_count = jnp.int32(0)
+
+        state = State(
+            ops_machine_ids=ops_machine_ids,
+            ops_durations=ops_durations,
+            ops_mask=ops_mask,
+            machines_job_ids=machines_job_ids,
+            machines_remaining_times=machines_remaining_times,
+            action_mask=None,
+            step_count=step_count,
+            scheduled_times=scheduled_times,
+            key=key,
+        )
+
+        return state
+
+    def _generate_schedule(self, key: chex.PRNGKey) -> chex.Array:
+        """Creates a schedule given the constraints of the job shop scheduling problem.
+
+        For example, for 3 machines, 5 jobs, and a chosen optimal makespan of 12, a schedule
+        may look like:
+        [[1, 0, 1, 1, 2, 3, 4, 0, 1, 3, 2, 3],
+         [4, 1, 2, 0, 3, 4, 2, 3, 2, 2, 3, 2],
+         [0, 2, 3, 4, 0, 0, 0, 2, 3, 1, 0, 0]]
+
+        This means
+            - Machine 0 processes job 1, job 0, job 1 (for two steps), etc.
+            - Machine 1 processes job 4, job 1, job 2, job 0, etc.
+            - Machine 2 processes job 0, job 2, job 3, job 4, etc.
+
+        Importantly, since a job can only be executed on one machine at a time, this method
+        is written such that the schedule does not have duplicates in any column.
+
+        Args:
+            key: used for stochasticity in the generation of the schedule.
+
+        Returns:
+            Schedule with the specified length.
+        """
+        all_job_ids = jnp.arange(self.num_jobs)
+
+        def insert_col(
+            carry: Tuple[chex.PRNGKey, int], _: Any
+        ) -> Tuple[Tuple[chex.PRNGKey, int], chex.Array]:
+            """Create a column of distinct job ids (only one operation in a given job
+            can be processed at a time). For the example above, this would be [1, 4, 0] at
+            time=0, [0, 1, 2] at time=1, etc.
+            """
             key, t = carry
             key, subkey = jax.random.split(key)
             machines_job_ids = jax.random.choice(
-                subkey, all_job_ids, (num_machines,), replace=False
+                subkey, all_job_ids, (self.num_machines,), replace=False
             )
             carry = key, t + 1
             return carry, machines_job_ids
 
         init_carry = (key, 0)
         final_carry, schedule = jax.lax.scan(
-            lambda carry, _: insert_col(carry, _), init_carry, xs=None, length=makespan
+            lambda carry, _: insert_col(carry, _),
+            init_carry,
+            xs=None,
+            length=self.makespan,
         )
-        schedule = schedule.T
-        assert final_carry[1] == makespan
+        assert final_carry[1] == self.makespan
+        return schedule.T
 
-        def get_job_info(job_id, schedule):
+    def _register_ops(self, schedule: chex.Array) -> Tuple[chex.Array, chex.Array]:
+        """Extract, for every job, the machine id and duration of each operation in the job.
 
-            def get_op_info(carry, x):
-                mask = carry
+        For example, for the schedule
+        [[1, 0, 1, 1, 2, 3, 4, 0, 1, 3, 2, 3],
+         [4, 1, 2, 0, 3, 4, 2, 3, 2, 2, 3, 2],
+         [0, 2, 3, 4, 0, 0, 0, 2, 3, 1, 0, 0]]
+
+        the ops would have the machine ids:
+        [[ 2,  0,  1,  2,  0,  2, -1, -1, -1, -1],
+         [ 0,  1,  0,  0,  2, -1, -1, -1, -1, -1],
+         [ 2,  1,  0,  1,  2,  1,  0,  1, -1, -1],
+         [ 2,  1,  0,  1,  2,  0,  1,  0, -1, -1],
+         [ 1,  2,  1,  0, -1, -1, -1, -1, -1, -1]]
+
+        and the durations:
+        [[ 1,  1,  1,  3,  1,  2, -1, -1, -1, -1],
+         [ 1,  1,  2,  1,  1, -1, -1, -1, -1, -1],
+         [ 1,  1,  1,  1,  1,  2,  1,  1, -1, -1],
+         [ 1,  1,  1,  1,  1,  1,  1,  1, -1, -1],
+         [ 1,  1,  1,  1, -1, -1, -1, -1, -1, -1]]
+
+        Args:
+            schedule: array representing which job each machine is working on at each timestep.
+
+        Returns:
+            Arrays representing which machine id and duration characterising each operation.
+        """
+
+        def get_job_info(
+            job_id: int, _: Any
+        ) -> Tuple[int, Tuple[chex.Array, chex.Array]]:
+            """Extract the machine id and duration of every op in the specified job.
+
+            In the above example, for job 0, this will return
+                - machine_ids [2,  0,  1,  2,  0,  2, -1, -1, -1, -1]
+                - durations [1,  1,  1,  3,  1,  2, -1, -1, -1, -1]
+            """
+
+            def get_op_info(
+                mask: chex.Array,
+                _: Any,
+            ) -> Tuple[chex.Array, Tuple[chex.Array, chex.Array]]:
+                """Extract the machine id and duration for a given operation.
+
+                In the above example, for job 0 and operation 0, the machine id is 2 and
+                the duration is 1.
+
+                Args:
+                    mask: array which keeps track of which operations have been registered.
+                """
+                prev_mask = mask
+
+                # Flatten by column
                 mask_flat = jnp.ravel(mask, order="F")
+
+                # Find index of the next operation
                 idx = jnp.argmax(mask_flat)
-                t_start, machine_id = jnp.divmod(idx, num_machines)
-                duration = 1
-                t = t_start
-                while mask[machine_id, t] == mask[machine_id, t+1]:
-                    duration += 1
-                mask = mask.at[machine_id, t_start:t_start+duration+1].set(jnp.array([False]*duration))
+                t_start, machine_id = jnp.divmod(idx, self.num_machines)
+
+                # Update the mask -> the op is registered
+                mask = mask.at[machine_id, t_start].set(False)
+
+                # While loop in case op has duration > 1
+                init_val = (mask, machine_id, t_start + 1)
+
+                def next_is_same_op(val: Tuple) -> chex.Array:
+                    m, mid, t = val
+                    return m[mid, t]
+
+                def update_mask(val: Tuple) -> Tuple:
+                    m, mid, t = val
+                    m = m.at[mid, t].set(False)
+                    return m, mid, t + 1
+
+                (mask, machine_id, time) = jax.lax.while_loop(
+                    next_is_same_op, update_mask, init_val
+                )
+
+                duration = time - t_start
+
+                # If all ops for this job are registered, return -1 for padding
+                all_ops_registered = ~jnp.any(prev_mask)
+                machine_id = jax.lax.select(all_ops_registered, -1, machine_id)
+                duration = jax.lax.select(all_ops_registered, -1, duration)
 
                 return mask, (machine_id, duration)
 
             # Carry the mask
-            init_mask = schedule == job_id
-            _, (mids, durs) = jax.lax.scan(get_op_info, init_mask, xs=None, length=10)
+            init_mask = jnp.array(schedule == job_id)
+            _, (mids, durs) = jax.lax.scan(
+                get_op_info, init_mask, xs=None, length=self.makespan
+            )
 
             return job_id + 1, (mids, durs)
 
         # Carry the job id
         init_job_id = 0
-        carry, (ops_mids, ops_durations) = jax.lax.scan(
-            get_job_info,
-            init_job_id,
-            xs=None,
-            length=num_jobs
+        job_id, (ops_mids, ops_durs) = jax.lax.scan(
+            get_job_info, init_job_id, xs=None, length=self.num_jobs
         )
-
-        assert ops_mids, ops_durations
+        assert job_id == self.num_jobs
+        return ops_mids, ops_durs
 
 
 if __name__ == "__main__":
-    generator = KnownOptimalGenerator()
+    generator = MakespanGenerator(5, 3, 100, 100, makespan=12)
     k = jax.random.PRNGKey(42)
-    result = generator(k)
-    assert result
+    state = generator(k)
+    assert state
