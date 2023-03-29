@@ -20,26 +20,26 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.packing.knapsack.types import State
+from jumanji.environments.routing.tsp.types import State
+from jumanji.viewer import Viewer
 
 
-class KnapsackViewer:
-    FIGURE_SIZE = (5.0, 5.0)
+class TSPViewer(Viewer):
+    FIGURE_SIZE = (10.0, 10.0)
+    NODE_COLOUR = "dimgray"
+    NODE_SIZE = 150
+    ARROW_WIDTH = 0.004
 
-    def __init__(
-        self, name: str, render_mode: str = "human", total_budget: float = 2.0
-    ) -> None:
-        """Viewer for the `Knapsack` environment.
+    def __init__(self, name: str, render_mode: str = "human") -> None:
+        """Viewer for the TSP environment.
 
         Args:
             name: the window name to be used when initialising the window.
             render_mode: the mode used to render the environment. Must be one of:
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
-            total_budget: the capacity of the knapsack.
         """
         self._name = name
-        self._total_budget = total_budget
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
@@ -54,26 +54,17 @@ class KnapsackViewer:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `Knapsack` environment.
+        """Render the given state of the `TSP` environment.
 
         Args:
             state: the environment state to render.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
+        ax.clear()
         self._prepare_figure(ax)
-        self._show_value_and_budget(ax, state)
+        self._add_tour(ax, state)
         return self._display(fig)
-
-    def _show_value_and_budget(self, ax: plt.Axes, state: State) -> None:
-        # Initially, no items have been picked
-        budget_used: np.ndarray = np.sum(state.weights, where=state.packed_items)
-        total_value: np.ndarray = np.sum(state.values, where=state.packed_items)
-
-        ax.set_title(
-            f"Total value: {round(float(total_value), 2):.2f}. "
-            f"Budget used: {round(float(budget_used), 2):.2f}/{self._total_budget}."
-        )
 
     def animate(
         self,
@@ -93,12 +84,14 @@ class KnapsackViewer:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
         fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         ax = fig.add_subplot(111)
+        plt.close(fig)
         self._prepare_figure(ax)
 
         def make_frame(state_index: int) -> None:
             state = states[state_index]
-            self._show_value_and_budget(ax, state)
+            self._add_tour(ax, state)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
@@ -124,16 +117,16 @@ class KnapsackViewer:
             IPython.display.clear_output(True)
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._name)
-        if exists:
-            fig = plt.figure(self._name)
-            # ax = fig.add_subplot()
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
+        recreate = not plt.fignum_exists(self._name)
+        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
+        if recreate:
+            fig.tight_layout()
             if not plt.isinteractive():
                 fig.show()
-            ax = fig.add_subplot()
+            ax = fig.add_subplot(111)
+        else:
+            ax = fig.get_axes()[0]
         return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
@@ -141,8 +134,33 @@ class KnapsackViewer:
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        map_img = plt.imread("docs/img/knapsack.png")
+        map_img = plt.imread("docs/img/city_map.jpeg")
         ax.imshow(map_img, extent=[0, 1, 0, 1])
+
+    def _add_tour(self, ax: plt.Axes, state: State) -> None:
+        """Add all the cities and the current tour between the visited cities to the plot."""
+        x_coords, y_coords = state.coordinates.T
+
+        # Draw the cities as nodes
+        ax.scatter(x_coords, y_coords, s=self.NODE_SIZE, color=self.NODE_COLOUR)
+
+        # Draw the arrows between cities
+        if state.num_visited > 1:
+            xs, ys = state.coordinates[state.trajectory[: state.num_visited]].T
+            dx = xs[1:] - xs[:-1]
+            dy = ys[1:] - ys[:-1]
+            ax.quiver(
+                xs[:-1],
+                ys[:-1],
+                dx,
+                dy,
+                scale_units="xy",
+                angles="xy",
+                scale=1,
+                width=self.ARROW_WIDTH,
+                headwidth=5,
+            )
+            ax.scatter(xs, ys, s=self.NODE_SIZE, color="black")
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():

@@ -22,10 +22,11 @@ import matplotlib
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
-from jumanji.environments.routing.cvrp.env_viewer import CVRPViewer
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
+from jumanji.environments.routing.cvrp.viewer import CVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class CVRP(Environment[State]):
@@ -99,7 +100,7 @@ class CVRP(Environment[State]):
         max_capacity: int = 30,
         max_demand: int = 10,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `CVRP` environment.
 
@@ -111,8 +112,7 @@ class CVRP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+            viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
         """
 
         if max_capacity < max_demand:
@@ -124,10 +124,10 @@ class CVRP(Environment[State]):
         self.max_capacity = max_capacity
         self.max_demand = max_demand
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = CVRPViewer(
+        self._viewer = viewer or CVRPViewer(
             name="CVRP",
             num_cities=self.num_nodes,
-            render_mode=render_mode,
+            render_mode="human",
         )
 
     def __repr__(self) -> str:
@@ -292,7 +292,7 @@ class CVRP(Environment[State]):
         Returns:
             rgb_array: the RGB image of the state as an array.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -311,7 +311,7 @@ class CVRP(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -319,7 +319,7 @@ class CVRP(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

@@ -23,10 +23,11 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.tsp.env_viewer import TSPViewer
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
+from jumanji.environments.routing.tsp.viewer import TSPViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class TSP(Environment[State]):
@@ -91,7 +92,7 @@ class TSP(Environment[State]):
         self,
         num_cities: int = 20,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `TSP` environment.
 
@@ -101,13 +102,12 @@ class TSP(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+            viewer: `Viewer` used for rendering. Defaults to `TSPViewer` with "human" render mode.
         """
 
         self.num_cities = num_cities
         self.reward_fn = reward_fn or DenseReward()
-        self._env_viewer = TSPViewer(name="TSP", render_mode=render_mode)
+        self._viewer = viewer or TSPViewer(name="TSP", render_mode="human")
 
     def __repr__(self) -> str:
         return f"TSP environment with {self.num_cities} cities."
@@ -235,7 +235,7 @@ class TSP(Environment[State]):
         Returns:
             rgb_array: the RGB image of the state as an array.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -254,7 +254,7 @@ class TSP(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -262,7 +262,7 @@ class TSP(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """
