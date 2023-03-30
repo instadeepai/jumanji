@@ -21,7 +21,7 @@ from jumanji.environments.logic.minesweeper.constants import (
     PATCH_SIZE,
     UNEXPLORED_ID,
 )
-from jumanji.environments.logic.minesweeper.types import Board, State
+from jumanji.environments.logic.minesweeper.types import State
 
 
 def create_flat_mine_locations(
