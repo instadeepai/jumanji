@@ -29,9 +29,15 @@ def create_flat_mine_locations(
     num_rows: int,
     num_cols: int,
     num_mines: int,
-) -> Board:
-    """Create locations of mines on a board with a specified row, column, and number
+) -> chex.Array:
+    """Create locations of mines on a board with a specified height, width, and number
     of mines. The locations are in flattened coordinates.
+
+    Args:
+        key: used for sampling mine positions.
+        num_rows: the height of the board.
+        num_cols: the width of the board.
+        num_mines: how many mines to place.
     """
     return jax.random.choice(
         key,
