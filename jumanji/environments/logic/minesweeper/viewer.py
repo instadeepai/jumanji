@@ -32,20 +32,20 @@ from jumanji.viewer import Viewer
 class MinesweeperViewer(Viewer[State]):
     def __init__(
         self,
-        color_mapping: Optional[List[str]] = None,
         num_rows: int = 10,
         num_cols: int = 10,
+        color_mapping: Optional[List[str]] = None,
     ):
         """
         Args:
-            color_mapping: colors used in rendering the cells in Minesweeper.
-                Defaults to `DEFAULT_COLOR_MAPPING`.
             num_rows: number of rows, i.e. height of the board. Defaults to 10.
             num_cols: number of columns, i.e. width of the board. Defaults to 10.
+            color_mapping: colors used in rendering the cells in `Minesweeper`.
+                Defaults to `DEFAULT_COLOR_MAPPING`.
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
-        self.cmap = color_mapping if color_mapping else DEFAULT_COLOR_MAPPING
+        self.cmap = color_mapping or DEFAULT_COLOR_MAPPING
         self.figure_name = f"{num_rows}x{num_cols} Minesweeper"
         self.figure_size = (6.0, 6.0)
 
@@ -54,7 +54,6 @@ class MinesweeperViewer(Viewer[State]):
 
         Args:
             state: environment state to be rendered.
-
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()

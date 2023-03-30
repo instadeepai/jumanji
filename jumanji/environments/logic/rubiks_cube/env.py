@@ -92,16 +92,14 @@ class RubiksCube(Environment[State]):
 
         Args:
             generator: `Generator` used to generate problem instances on environment reset.
-                Implemented options are [`ScramblingGenerator`].
-                Defaults to `ScramblingGenerator`.
+                Implemented options are [`ScramblingGenerator`]. Defaults to `ScramblingGenerator`.
                 The generator will contain an attribute `cube_size`, corresponding to the number of
                 cubies to an edge, and defaulting to 3.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 200.
             reward_fn: `RewardFn` whose `__call__` method computes the reward given the new state.
                 Implemented options are [`SparseRewardFn`]. Defaults to `SparseRewardFn`.
-            viewer: Viewer to support rendering and animation methods.
-                Implemented options are [`RubiksCubeViewer`].
-                Defaults to `RubiksCubeViewer`.
+            viewer: `Viewer` to support rendering and animation methods.
+                Implemented options are [`RubiksCubeViewer`]. Defaults to `RubiksCubeViewer`.
         """
         if time_limit <= 0:
             raise ValueError(

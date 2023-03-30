@@ -103,10 +103,8 @@ class Minesweeper(Environment[State]):
         """Instantiate a `Minesweeper` environment.
 
         Args:
-
-            generator: Generator to generate problem instances on environment reset.
-                Implemented options are [`SamplingGenerator`].
-                Defaults to `SamplingGenerator`.
+            generator: `Generator` to generate problem instances on environment reset.
+                Implemented options are [`SamplingGenerator`]. Defaults to `SamplingGenerator`.
                 The generator will have attributes:
                     - num_rows: number of rows, i.e. height of the board. Defaults to 10.
                     - num_cols: number of columns, i.e. width of the board. Defaults to 10.
@@ -117,9 +115,8 @@ class Minesweeper(Environment[State]):
             done_function: `DoneFn` whose `__call__` method computes the done signal given the
                 current state, action taken, and next state.
                 Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
-            viewer: Viewer to support rendering and animation methods.
-                Implemented options are [`MinesweeperViewer`].
-                Defaults to `MinesweeperViewer`.
+            viewer: `Viewer` to support rendering and animation methods.
+                Implemented options are [`MinesweeperViewer`]. Defaults to `MinesweeperViewer`.
         """
         self.reward_function = reward_function or DefaultRewardFn(
             revealed_empty_square_reward=REVEALED_EMPTY_SQUARE_REWARD,
@@ -130,8 +127,11 @@ class Minesweeper(Environment[State]):
         self.generator = generator or UniformSamplingGenerator(
             num_rows=10, num_cols=10, num_mines=10
         )
+        self.num_rows = self.generator.num_rows
+        self.num_cols = self.generator.num_cols
+        self.num_mines = self.generator.num_mines
         self._viewer = viewer or MinesweeperViewer(
-            num_rows=self.generator.num_rows, num_cols=self.generator.num_cols
+            num_rows=self.num_rows, num_cols=self.num_cols
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -198,14 +198,14 @@ class Minesweeper(Environment[State]):
              - step_count: BoundedArray (int32) of shape ().
         """
         board = specs.BoundedArray(
-            shape=(self.generator.num_rows, self.generator.num_cols),
+            shape=(self.num_rows, self.num_cols),
             dtype=jnp.int32,
             minimum=-1,
             maximum=PATCH_SIZE * PATCH_SIZE - 1,
             name="board",
         )
         action_mask = specs.BoundedArray(
-            shape=(self.generator.num_rows, self.generator.num_cols),
+            shape=(self.num_rows, self.num_cols),
             dtype=bool,
             minimum=False,
             maximum=True,
@@ -215,15 +215,14 @@ class Minesweeper(Environment[State]):
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self.generator.num_rows * self.generator.num_cols - 1,
+            maximum=self.num_rows * self.num_cols - 1,
             name="num_mines",
         )
         step_count = specs.BoundedArray(
             shape=(),
             dtype=jnp.int32,
             minimum=0,
-            maximum=self.generator.num_rows * self.generator.num_cols
-            - self.generator.num_mines,
+            maximum=self.num_rows * self.num_cols - self.num_mines,
             name="step_count",
         )
         return specs.Spec(
@@ -243,9 +242,7 @@ class Minesweeper(Environment[State]):
             action_spec: `specs.MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array(
-                [self.generator.num_rows, self.generator.num_cols], jnp.int32
-            ),
+            num_values=jnp.array([self.num_rows, self.num_cols], jnp.int32),
             name="action",
             dtype=jnp.int32,
         )
@@ -254,12 +251,13 @@ class Minesweeper(Environment[State]):
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),
-            num_mines=jnp.array(self.generator.num_mines, jnp.int32),
+            num_mines=jnp.array(self.num_mines, jnp.int32),
             step_count=state.step_count,
         )
 
     def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the board.
+
         Args:
             state: the current state to be rendered.
         """
@@ -272,11 +270,13 @@ class Minesweeper(Environment[State]):
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Creates an animated gif of the board based on the sequence of states.
+
          Args:
         states: a list of `State` objects representing the sequence of states.
         interval: the delay between frames in milliseconds, default to 200.
         save_path: the path where the animation file should be saved. If it is None, the plot
             will not be saved.
+
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """

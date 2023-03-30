@@ -24,10 +24,11 @@ from jumanji.environments.logic.minesweeper.utils import create_flat_mine_locati
 
 
 class Generator(abc.ABC):
-    """Base class for generators for the Minesweeper environment."""
+    """Base class for generators for the `Minesweeper` environment."""
 
     def __init__(self, num_rows: int, num_cols: int, num_mines: int):
         """Initialises a Minesweeper generator for resetting the environment.
+
         Args:
             num_rows: number of rows, i.e. height of the board.
             num_cols: number of columns, i.e. width of the board.
@@ -49,10 +50,11 @@ class Generator(abc.ABC):
 
     @abc.abstractmethod
     def generate_flat_mine_locations(self, key: chex.PRNGKey) -> chex.Array:
-        """Generates positions (in flattened coordinates) of the mines in the board"""
+        """Generates positions (in flattened coordinates) of the mines in the board."""
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Minesweeper` state.
+
         Returns:
             A `Minesweeper` state.
         """
