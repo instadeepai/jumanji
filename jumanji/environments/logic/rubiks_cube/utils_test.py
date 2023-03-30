@@ -24,6 +24,7 @@ from jumanji.environments.logic.rubiks_cube.reward import SparseRewardFn
 from jumanji.environments.logic.rubiks_cube.types import Cube, State
 from jumanji.environments.logic.rubiks_cube.utils import (
     CubeMovementAmount,
+    flatten_action,
     generate_all_moves,
     generate_back_move,
     generate_down_move,
@@ -32,6 +33,8 @@ from jumanji.environments.logic.rubiks_cube.utils import (
     generate_right_move,
     generate_up_move,
     make_solved_cube,
+    scramble_solved_cube,
+    unflatten_action,
 )
 
 # 3x3x3 moves, for testing purposes
@@ -56,12 +59,40 @@ down_move_half_turn = generate_down_move(CubeMovementAmount.HALF_TURN, 0)
 
 
 def is_face_turn(cube_size: int) -> List[bool]:
-    """Says whether each action from generate_all_moves is a face turn (ie with depth 0)"""
+    """Says whether each action from generate_all_moves is a face turn (ie with depth 0)."""
     per_face_result_true = [True] * len(CubeMovementAmount)
     per_face_result_false = [False] * (len(CubeMovementAmount) * ((cube_size // 2) - 1))
     per_face_result = per_face_result_true + per_face_result_false
     result = [per_face_result for _ in Face]
     return [item for r in result for item in r]
+
+
+@pytest.mark.parametrize("cube_size", [2, 3, 4, 5])
+def test_flatten_and_unflatten_action(cube_size: int) -> None:
+    """Test that flattening and unflattening actions are inverse to each other."""
+    flattened_actions = jnp.arange(
+        len(Face) * (cube_size // 2) * len(CubeMovementAmount), dtype=jnp.int32
+    )
+    faces = jnp.arange(len(Face), dtype=jnp.int32)
+    depths = jnp.arange(cube_size // 2, dtype=jnp.int32)
+    amounts = jnp.arange(len(CubeMovementAmount), dtype=jnp.int32)
+    unflattened_actions = jnp.stack(
+        [
+            jnp.repeat(faces, len(CubeMovementAmount) * (cube_size // 2)),
+            jnp.concatenate(
+                [jnp.repeat(depths, len(CubeMovementAmount)) for _ in Face]
+            ),
+            jnp.concatenate([amounts for _ in range(len(Face) * (cube_size // 2))]),
+        ]
+    )
+    assert jnp.array_equal(
+        unflattened_actions,
+        unflatten_action(flattened_action=flattened_actions, cube_size=cube_size),
+    )
+    assert jnp.array_equal(
+        flattened_actions,
+        flatten_action(unflattened_action=unflattened_actions, cube_size=cube_size),
+    )
 
 
 @pytest.mark.parametrize(
@@ -80,7 +111,7 @@ def test_inverses(
     move: Callable[[Cube], Cube],
     inverse_move: Callable[[Cube], Cube],
 ) -> None:
-    """Test that applying a move followed by its inverse leads back to the original"""
+    """Test that applying a move followed by its inverse leads back to the original."""
     cube = move(differently_stickered_cube)
     cube = inverse_move(cube)
     assert jnp.array_equal(cube, differently_stickered_cube)
@@ -102,7 +133,7 @@ def test_half_turns(
     move: Callable[[Cube], Cube],
     half_turn_move: Callable[[Cube], Cube],
 ) -> None:
-    """Test that 2 applications of a move followed by its half turn leads back to the original"""
+    """Test that 2 applications of a move followed by its half turn leads back to the original."""
     cube = move(differently_stickered_cube)
     cube = move(cube)
     cube = half_turn_move(cube)
@@ -112,17 +143,15 @@ def test_half_turns(
 def test_solved_reward(
     solved_cube: chex.Array, differently_stickered_cube: chex.Array
 ) -> None:
-    """Test that the cube fixtures have the expected rewards"""
+    """Test that the cube fixtures have the expected rewards."""
     solved_state = State(
         cube=solved_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=None,
         key=jax.random.PRNGKey(0),
     )
     differently_stickered_state = State(
         cube=differently_stickered_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=None,
         key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(solved_state), 1.0)
@@ -142,12 +171,11 @@ def test_moves_nontrivial(
     move: Callable[[Cube], Cube],
     move_is_face_turn: bool,
 ) -> None:
-    """Test that all moves leave the cube in a non-solved state"""
+    """Test that all moves leave the cube in a non-solved state."""
     move_solved_cube = move(solved_cube)
     move_solved_state = State(
         cube=move_solved_cube,
         step_count=jnp.array(0, jnp.int32),
-        action_history=None,
         key=jax.random.PRNGKey(0),
     )
     assert jnp.equal(SparseRewardFn()(move_solved_state), 0.0)
@@ -196,8 +224,8 @@ def test_commuting_moves(
     first_move: Callable[[Cube], Cube],
     second_move: Callable[[Cube], Cube],
 ) -> None:
-    """Check that moves that should commute, do in fact commute
-    (on a differently stickered cube)"""
+    """Test that moves that should commute, do in fact commute
+    (on a differently stickered cube)."""
     first_then_second = second_move(first_move(differently_stickered_cube))
     second_then_first = first_move(second_move(differently_stickered_cube))
     assert jnp.array_equal(first_then_second, second_then_first)
@@ -225,7 +253,7 @@ def test_non_commuting_moves(
     first_move: Callable[[Cube], Cube],
     second_move: Callable[[Cube], Cube],
 ) -> None:
-    """Check that moves that should not commute, do not (on a solved cube)"""
+    """Test that moves that should not commute, do not (on a solved cube)."""
     first_then_second = second_move(first_move(solved_cube))
     second_then_first = first_move(second_move(solved_cube))
     assert ~jnp.array_equal(first_then_second, second_then_first)
@@ -240,7 +268,7 @@ def test_non_commuting_moves(
     ],
 )
 def test_checkerboard(cube_size: int, indices: List[int]) -> None:
-    """Check that the checkerboard scramble gives the expected result"""
+    """Test that the checkerboard scramble gives the expected result."""
     cube = make_solved_cube(cube_size=cube_size)
     all_moves = generate_all_moves(cube_size=cube_size)
     for index in indices:
@@ -261,7 +289,7 @@ def test_manual_scramble(
     solved_cube: chex.Array, expected_scramble_result: chex.Array
 ) -> None:
     """Testing a particular scramble manually.
-    Scramble chosen to have all faces touched at least once"""
+    Scramble chosen to have all faces touched at least once."""
     scramble = [
         up_move,
         left_move_half_turn,
@@ -277,6 +305,46 @@ def test_manual_scramble(
         up_move,
         down_move,
     ]
+    amount_to_index = {
+        CubeMovementAmount.CLOCKWISE: 0,
+        CubeMovementAmount.ANTI_CLOCKWISE: 1,
+        CubeMovementAmount.HALF_TURN: 2,
+    }
+    unflattened_sequence = jnp.array(
+        [
+            [Face.UP.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
+            [Face.LEFT.value, 0, amount_to_index[CubeMovementAmount.HALF_TURN]],
+            [Face.DOWN.value, 0, amount_to_index[CubeMovementAmount.ANTI_CLOCKWISE]],
+            [Face.UP.value, 0, amount_to_index[CubeMovementAmount.HALF_TURN]],
+            [Face.BACK.value, 0, amount_to_index[CubeMovementAmount.ANTI_CLOCKWISE]],
+            [Face.RIGHT.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
+            [Face.FRONT.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
+            [Face.RIGHT.value, 0, amount_to_index[CubeMovementAmount.ANTI_CLOCKWISE]],
+            [Face.LEFT.value, 0, amount_to_index[CubeMovementAmount.ANTI_CLOCKWISE]],
+            [Face.BACK.value, 0, amount_to_index[CubeMovementAmount.HALF_TURN]],
+            [Face.FRONT.value, 0, amount_to_index[CubeMovementAmount.ANTI_CLOCKWISE]],
+            [Face.UP.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
+            [Face.DOWN.value, 0, amount_to_index[CubeMovementAmount.CLOCKWISE]],
+        ],
+        dtype=jnp.int32,
+    )
+    flattened_sequence = jnp.array(
+        [0, 14, 16, 2, 10, 6, 3, 7, 13, 11, 4, 0, 15], dtype=jnp.int32
+    )
+    assert jnp.array_equal(
+        unflattened_sequence.transpose(),
+        unflatten_action(flattened_action=flattened_sequence, cube_size=3),
+    )
+    flatten_fn = lambda x: flatten_action(x, 3)
+    assert jnp.array_equal(
+        flattened_sequence, jax.vmap(flatten_fn)(unflattened_sequence)
+    )
+    cube = scramble_solved_cube(
+        flattened_actions_in_scramble=flattened_sequence,
+        cube_size=3,
+    )
+    assert jnp.array_equal(expected_scramble_result, cube)
+
     cube = solved_cube
     for move in scramble:
         cube = move(cube)
