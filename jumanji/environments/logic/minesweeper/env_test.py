@@ -99,7 +99,7 @@ def test_default_reward_and_done_signals(
     assert episode_length == len(actions)
 
 
-def test_minesweeper_env_reset(minesweeper_env: Minesweeper) -> None:
+def test_minesweeper__reset(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(minesweeper_env.reset)
     key = jax.random.PRNGKey(0)
@@ -120,7 +120,7 @@ def test_minesweeper_env_reset(minesweeper_env: Minesweeper) -> None:
     assert_is_jax_array_tree(state)
 
 
-def test_minesweeper_env_step(minesweeper_env: Minesweeper) -> None:
+def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
     step_fn = chex.assert_max_traces(minesweeper_env.step, n=2)
@@ -154,12 +154,12 @@ def test_minesweeper_env_step(minesweeper_env: Minesweeper) -> None:
     assert jnp.array_equal(next_next_state.board, next_next_timestep.observation.board)
 
 
-def test_minesweeper_env_does_not_smoke(minesweeper_env: Minesweeper) -> None:
+def test_minesweeper__does_not_smoke(minesweeper_env: Minesweeper) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(env=minesweeper_env)
 
 
-def test_minesweeper_env_render(
+def test_minesweeper__render(
     monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper
 ) -> None:
     """Check that the render method builds the figure but does not display it."""
@@ -173,7 +173,7 @@ def test_minesweeper_env_render(
     minesweeper_env.close()
 
 
-def test_minesweeper_env_done_invalid_action(minesweeper_env: Minesweeper) -> None:
+def test_minesweeper__done_invalid_action(minesweeper_env: Minesweeper) -> None:
     """Test that the strict done signal is sent correctly"""
     # Note that this action corresponds to not stepping on a mine
     action = minesweeper_env.action_spec().generate_value()
@@ -183,7 +183,7 @@ def test_minesweeper_env_done_invalid_action(minesweeper_env: Minesweeper) -> No
     assert episode_length == 2
 
 
-def test_minesweeper_env_solved(minesweeper_env: Minesweeper) -> None:
+def test_minesweeper__solved(minesweeper_env: Minesweeper) -> None:
     """Solve the game and verify that things are as expected"""
     state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     step_fn = jax.jit(minesweeper_env.step)
