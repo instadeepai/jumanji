@@ -271,11 +271,11 @@ class Minesweeper(Environment[State]):
     ) -> matplotlib.animation.FuncAnimation:
         """Creates an animated gif of the board based on the sequence of states.
 
-         Args:
-        states: a list of `State` objects representing the sequence of states.
-        interval: the delay between frames in milliseconds, default to 200.
-        save_path: the path where the animation file should be saved. If it is None, the plot
-            will not be saved.
+        Args:
+            states: a list of `State` objects representing the sequence of states.
+            interval: the delay between frames in milliseconds, default to 200.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
         Returns:
             animation.FuncAnimation: the animation object that was created.
