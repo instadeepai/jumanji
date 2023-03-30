@@ -121,7 +121,7 @@ def test_minesweeper__reset(minesweeper_env: Minesweeper) -> None:
 
 
 def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
-    """Validates the jitted step of the environment."""
+    """Validates the jitted step of the environment.""
     chex.clear_trace_counter()
     step_fn = chex.assert_max_traces(minesweeper_env.step, n=2)
     step_fn = jax.jit(step_fn)
