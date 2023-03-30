@@ -56,7 +56,7 @@ class Minesweeper(Environment[State]):
             specifies how many timesteps have elapsed since environment reset.
 
     - action:
-        multi discrete array containing the square to explore (height and width).
+        multi discrete array containing the square to explore (row and col).
 
     - reward: jax array (float32):
         Configurable function of state and action. By default:
@@ -164,8 +164,8 @@ class Minesweeper(Environment[State]):
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         board = state.board
-        action_height, action_width = action
-        board = board.at[action_height, action_width].set(
+        action_row, action_col = action
+        board = board.at[action_row, action_col].set(
             count_adjacent_mines(state=state, action=action)
         )
         step_count = state.step_count + 1

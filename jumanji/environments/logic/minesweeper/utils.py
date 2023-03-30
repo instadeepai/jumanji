@@ -30,7 +30,7 @@ def create_flat_mine_locations(
     num_cols: int,
     num_mines: int,
 ) -> Board:
-    """Create locations of mines on a board with a specified height, width, and number
+    """Create locations of mines on a board with a specified row, column, and number
     of mines. The locations are in flattened coordinates.
     """
     return jax.random.choice(
@@ -52,8 +52,8 @@ def is_solved(state: State) -> chex.Array:
 
 def is_valid_action(state: State, action: chex.Array) -> chex.Array:
     """Check if an action is exploring a square that has not already been explored."""
-    action_height, action_width = action
-    return state.board[action_height, action_width] == UNEXPLORED_ID
+    action_row, action_col = action
+    return state.board[action_row, action_col] == UNEXPLORED_ID
 
 
 def get_mined_board(state: State) -> chex.Array:
@@ -67,28 +67,28 @@ def get_mined_board(state: State) -> chex.Array:
 
 def explored_mine(state: State, action: chex.Array) -> chex.Array:
     """Check if an action is exploring a square containing a mine."""
-    height, width = action
-    index = width + height * state.board.shape[-1]
+    row, col = action
+    index = col + row * state.board.shape[-1]
     mined_board = get_mined_board(state=state)
     return mined_board[index] == IS_MINE
 
 
 def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
     """Count the number of mines in a 3x3 patch surrounding the selected action."""
-    action_height, action_width = action
+    action_row, action_col = action
     mined_board = get_mined_board(state=state).reshape(
         state.board.shape[-2], state.board.shape[-1]
     )
     pad_board = jnp.pad(mined_board, pad_width=PATCH_SIZE - 1)
     selected_rows = jax.lax.dynamic_slice_in_dim(
-        pad_board, start_index=action_height + 1, slice_size=PATCH_SIZE, axis=-2
+        pad_board, start_index=action_row + 1, slice_size=PATCH_SIZE, axis=-2
     )
     return (
         jax.lax.dynamic_slice_in_dim(
             selected_rows,
-            start_index=action_width + 1,
+            start_index=action_col + 1,
             slice_size=PATCH_SIZE,
             axis=-1,
         ).sum()
-        - mined_board[action_height, action_width]
+        - mined_board[action_row, action_col]
     )
