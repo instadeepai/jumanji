@@ -58,8 +58,7 @@ def is_solved(state: State) -> chex.Array:
 
 def is_valid_action(state: State, action: chex.Array) -> chex.Array:
     """Check if an action is exploring a square that has not already been explored."""
-    action_row, action_col = action
-    return state.board[action_row, action_col] == UNEXPLORED_ID
+    return state.board[tuple(action)] == UNEXPLORED_ID
 
 
 def get_mined_board(state: State) -> chex.Array:
@@ -82,9 +81,7 @@ def explored_mine(state: State, action: chex.Array) -> chex.Array:
 def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
     """Count the number of mines in a 3x3 patch surrounding the selected action."""
     action_row, action_col = action
-    mined_board = get_mined_board(state=state).reshape(
-        state.board.shape[-2], state.board.shape[-1]
-    )
+    mined_board = get_mined_board(state=state).reshape(*state.board.shape)
     pad_board = jnp.pad(mined_board, pad_width=PATCH_SIZE - 1)
     selected_rows = jax.lax.dynamic_slice_in_dim(
         pad_board, start_index=action_row + 1, slice_size=PATCH_SIZE, axis=-2
@@ -96,5 +93,5 @@ def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
             slice_size=PATCH_SIZE,
             axis=-1,
         ).sum()
-        - mined_board[action_row, action_col]
+        - mined_board[tuple(action)]
     )

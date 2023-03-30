@@ -22,11 +22,6 @@ import pytest
 import pytest_mock
 from jax import numpy as jnp
 
-from jumanji.environments.logic.minesweeper.constants import (
-    INVALID_ACTION_REWARD,
-    REVEALED_EMPTY_SQUARE_REWARD,
-    REVEALED_MINE_REWARD,
-)
 from jumanji.environments.logic.minesweeper.env import Minesweeper
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
@@ -64,17 +59,17 @@ def play_and_get_episode_stats(
     [
         (
             [[0, 3], [1, 1], [1, 3], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3]],
-            [REVEALED_EMPTY_SQUARE_REWARD] * 8,
+            [1.0] * 8,
             [StepType.MID] * 7 + [StepType.LAST],
         ),
         (
             [[0, 3], [0, 2]],
-            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_REWARD],
+            [1.0, 0.0],
             [StepType.MID, StepType.LAST],
         ),
         (
             [[0, 3], [0, 3]],
-            [REVEALED_EMPTY_SQUARE_REWARD, INVALID_ACTION_REWARD],
+            [1.0, 0.0],
             [StepType.MID, StepType.LAST],
         ),
     ],
@@ -201,7 +196,7 @@ def test_minesweeper__solved(minesweeper_env: Minesweeper) -> None:
     expected_episode_length = (
         minesweeper_env.num_rows * minesweeper_env.num_cols - minesweeper_env.num_mines
     )
-    assert collected_rewards == [REVEALED_EMPTY_SQUARE_REWARD] * expected_episode_length
+    assert collected_rewards == [1.0] * expected_episode_length
     assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [
         StepType.LAST
     ]

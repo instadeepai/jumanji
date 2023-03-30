@@ -32,8 +32,8 @@ from jumanji.viewer import Viewer
 class MinesweeperViewer(Viewer[State]):
     def __init__(
         self,
-        num_rows: int = 10,
-        num_cols: int = 10,
+        num_rows: int,
+        num_cols: int,
         color_mapping: Optional[List[str]] = None,
     ):
         """

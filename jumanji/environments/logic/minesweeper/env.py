@@ -22,13 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.minesweeper.constants import (
-    INVALID_ACTION_REWARD,
-    PATCH_SIZE,
-    REVEALED_EMPTY_SQUARE_REWARD,
-    REVEALED_MINE_REWARD,
-    UNEXPLORED_ID,
-)
+from jumanji.environments.logic.minesweeper.constants import PATCH_SIZE, UNEXPLORED_ID
 from jumanji.environments.logic.minesweeper.done import DefaultDoneFn, DoneFn
 from jumanji.environments.logic.minesweeper.generator import (
     Generator,
@@ -119,9 +113,9 @@ class Minesweeper(Environment[State]):
                 Implemented options are [`MinesweeperViewer`]. Defaults to `MinesweeperViewer`.
         """
         self.reward_function = reward_function or DefaultRewardFn(
-            revealed_empty_square_reward=REVEALED_EMPTY_SQUARE_REWARD,
-            revealed_mine_reward=REVEALED_MINE_REWARD,
-            invalid_action_reward=INVALID_ACTION_REWARD,
+            revealed_empty_square_reward=1.0,
+            revealed_mine_reward=0.0,
+            invalid_action_reward=0.0,
         )
         self.done_function = done_function or DefaultDoneFn()
         self.generator = generator or UniformSamplingGenerator(
@@ -163,9 +157,7 @@ class Minesweeper(Environment[State]):
             next_state: `State` corresponding to the next state of the environment,
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
-        board = state.board
-        action_row, action_col = action
-        board = board.at[action_row, action_col].set(
+        board = state.board.at[tuple(action)].set(
             count_adjacent_mines(state=state, action=action)
         )
         step_count = state.step_count + 1
