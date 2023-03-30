@@ -82,7 +82,7 @@ class TestCleaner:
         assert isinstance(timestep, TimeStep)
         assert isinstance(state, State)
 
-        assert jnp.all(state.agents_locations == jnp.zeros((env.num_agents, 2)))
+        assert jnp.all(state.agents_locations == jnp.zeros((cleaner.num_agents, 2)))
         assert jnp.sum(state.grid == CLEAN) == 1  # Only the top-left tile is clean
         assert state.step_count == 0
 
@@ -109,7 +109,7 @@ class TestCleaner:
         step_fn = jax.jit(cleaner.step)
 
         # First action: all agents move right
-        actions = jnp.array([1] * env.num_agents)
+        actions = jnp.array([1] * cleaner.num_agents)
         state, timestep = step_fn(initial_state, actions)
         # Assert only one tile changed, on the right of the initial pos
         assert jnp.sum(state.grid != initial_state.grid) == 1
@@ -156,7 +156,7 @@ class TestCleaner:
 
         # All agents can only move right in the initial state
         expected_action_mask = jnp.array(
-            [[False, True, False, False] for _ in range(env.num_agents)]
+            [[False, True, False, False] for _ in range(cleaner.num_agents)]
         )
 
         assert jnp.all(state.action_mask == expected_action_mask)
@@ -185,7 +185,7 @@ class TestCleaner:
                     key, jnp.arange(4), p=agent_action_mask.flatten()
                 )
 
-            subkeys = jax.random.split(key, env.num_agents)
+            subkeys = jax.random.split(key, cleaner.num_agents)
             return select_action(subkeys, observation.action_mask)
 
         check_env_does_not_smoke(cleaner, select_actions)

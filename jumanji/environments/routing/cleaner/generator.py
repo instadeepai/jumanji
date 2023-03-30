@@ -88,7 +88,7 @@ class RandomGenerator(Generator):
             key=state_key,
         )
 
-    def _adapt_values(self, maze: maze_generation.Maze) -> chex.Array:
+    def _adapt_values(self, maze: chex.Array) -> chex.Array:
         """Adapt the values of the maze from maze_generation to agent cleaner."""
         maze = jnp.where(maze == maze_generation.EMPTY, DIRTY, maze)
         # This line currently doesn't do anything, but avoid breaking this function if either of
