@@ -224,13 +224,14 @@ In particular, we suggest users check out the following sister repositories:
 
 - 🤖 [Qdax](https://github.com/adaptive-intelligent-robotics/QDax) is a library to accelerate
 Quality-Diversity and neuro-evolution algorithms through hardware accelerators and parallelization.
+- 🌳 [Evojax](https://github.com/google/evojax) provides tools to enable neuroevolution algorithms
+to work with neural networks running across multiple TPU/GPUs.
 - 🦾 [Brax](https://github.com/google/brax) is a differentiable physics engine that simulates
 environments made up of rigid bodies, joints, and actuators.
 - 🏋️‍ [Gymnax](https://github.com/RobertTLange/gymnax) implements classic environments including
 classic control, bsuite, MinAtar and a collection of meta RL tasks.
-- 🌳 [Evojax](https://github.com/google/evojax) provides tools to enable neuroevolution algorithms
-to work with neural networks running across multiple TPU/GPUs.
-
+- 🎲 [Pgx](https://github.com/sotetsuk/pgx) provides classic board game environments like
+Backgammon, Shogi, and Go.
 
 ## Acknowledgements 🙏
 
