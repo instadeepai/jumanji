@@ -1367,14 +1367,6 @@ number of scrambles at reset.</p>
     specifies how many timesteps have elapsed since environment reset.</li>
 <li>key: jax array (uint) of shape (2,) used for seeding the sampling for scrambling on
     reset.</li>
-<li>action_history: jax array (int32) of shape (num_scrambles_on_reset + time_limit, 3):
-    indicates the entire history of applied moves (including those taken on scrambling the
-    cube in the environment reset). This is useful for debugging purposes, providing a
-    method to solve the cube from any position without relying on the agent, by just
-    inverting the action history. The first axis indexes over the length of the sequence
-    The second axis indexes over the component of the action (face, depth, amount). The
-    number of scrambles applied for each state is given by
-    <code>env.num_scrambles_on_reset + state.step_count</code>.</li>
 </ul>
 </li>
 </ul>
@@ -1413,7 +1405,7 @@ number of scrambles at reset.</p>
 
 
 <h3 id="jumanji.environments.logic.rubiks_cube.env.RubiksCube.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cube_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">num_scrambles_on_reset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">rubiks_cube</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sticker_colors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">rubiks_cube</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">rubiks_cube</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">rubiks_cube</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1437,24 +1429,20 @@ number of scrambles at reset.</p>
   </thead>
   <tbody>
       <tr>
-        <td><code>cube_size</code></td>
-        <td><code>int</code></td>
-        <td><p>the size of the cube, i.e. length of an edge. Defaults to 3.</p></td>
-        <td><code>3</code></td>
+        <td><code>generator</code></td>
+        <td><code>Optional[jumanji.environments.logic.rubiks_cube.generator.Generator]</code></td>
+        <td><p><code>Generator</code> used to generate problem instances on environment reset.
+Implemented options are [<code>ScramblingGenerator</code>].
+Defaults to <code>ScramblingGenerator</code>.
+The generator will contain an attribute <code>cube_size</code>, corresponding to the number of
+cubies to an edge, and defaulting to 3.</p></td>
+        <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>time_limit</code></td>
         <td><code>int</code></td>
         <td><p>the number of steps allowed before an episode terminates. Defaults to 200.</p></td>
         <td><code>200</code></td>
-      </tr>
-      <tr>
-        <td><code>num_scrambles_on_reset</code></td>
-        <td><code>int</code></td>
-        <td><p>the number of scrambles done from a solved Rubik's Cube in the
-generation of a random instance. The lower, the closer to a solved cube the reset
-state is. Defaults to 100.</p></td>
-        <td><code>100</code></td>
       </tr>
       <tr>
         <td><code>reward_fn</code></td>
@@ -1464,10 +1452,11 @@ Implemented options are [<code>SparseRewardFn</code>]. Defaults to <code>SparseR
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>sticker_colors</code></td>
-        <td><code>Optional[list]</code></td>
-        <td><p>colors used in rendering the faces of the rubiks cube.
-Defaults to <code>DEFAULT_STICKER_COLORS</code>.</p></td>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.logic.rubiks_cube.types.State]]</code></td>
+        <td><p>Viewer to support rendering and animation methods.
+Implemented options are [<code>RubiksCubeViewer</code>].
+Defaults to <code>RubiksCubeViewer</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
