@@ -82,7 +82,6 @@ class Cleaner(Environment[State]):
 
     def __init__(
         self,
-        num_agents: int = 3,
         generator: Optional[Generator] = None,
         time_limit: Optional[int] = None,
         penalty_per_timestep: float = 0.5,
@@ -95,13 +94,15 @@ class Cleaner(Environment[State]):
             time_limit: max number of steps in an episode. Defaults to `num_rows * num_cols`.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
-                `num_rows=10` and `num_cols=10`.
+                `num_rows=10`, `num_cols=10` and `num_agents=3`.
             viewer: `Viewer` used for rendering. Defaults to `CleanerViewer` with "human" render
                 mode.
             penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
-        self.num_agents = num_agents
-        self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
+        self.generator = generator or RandomGenerator(
+            num_rows=10, num_cols=10, num_agents=3
+        )
+        self.num_agents = self.generator.num_agents
         self.num_rows = self.generator.num_rows
         self.num_cols = self.generator.num_cols
         self.grid_shape = (self.num_rows, self.num_cols)
@@ -177,22 +178,13 @@ class Cleaner(Environment[State]):
             timestep: `TimeStep` object corresponding to the first timestep returned by the
                 environment after a reset.
         """
-        key, subkey = jax.random.split(key)
-
         # Agents start in upper left corner
         agents_locations = jnp.zeros((self.num_agents, 2), int)
 
-        grid = self.generator(subkey)
-        # Clean the tile in upper left corner
-        grid = self._clean_tiles_containing_agents(grid, agents_locations)
+        state = self.generator(key)
 
-        state = State(
-            grid=grid,
-            agents_locations=agents_locations,
-            action_mask=self._compute_action_mask(grid, agents_locations),
-            step_count=jnp.array(0, jnp.int32),
-            key=key,
-        )
+        # Create the action mask and update the state
+        state.action_mask = self._compute_action_mask(state.grid, agents_locations)
 
         observation = self._observation_from_state(state)
 

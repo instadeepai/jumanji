@@ -18,13 +18,14 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.cleaner.constants import DIRTY, WALL
+from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.generator import RandomGenerator
 
 
 class TestRandomGenerator:
     WIDTH = 5
     HEIGHT = 7
+    NUM_AGENTS = 3
 
     @pytest.fixture
     def key(self) -> chex.PRNGKey:
@@ -32,10 +33,14 @@ class TestRandomGenerator:
 
     @pytest.fixture
     def instance_generator(self) -> RandomGenerator:
-        return RandomGenerator(self.WIDTH, self.HEIGHT)
+        return RandomGenerator(self.WIDTH, self.HEIGHT, self.NUM_AGENTS)
 
     def test_random_instance_generator_values(
         self, key: chex.PRNGKey, instance_generator: RandomGenerator
     ) -> None:
-        instance = instance_generator(key)
-        assert jnp.all(jnp.logical_or(instance == DIRTY, instance == WALL))
+        state = instance_generator(key)
+
+        assert jnp.all(state.agents_locations == jnp.zeros((self.NUM_AGENTS, 2)))
+        assert jnp.sum(jnp.logical_and(state.grid != WALL, state.grid != DIRTY)) == 1
+        assert state.grid[0, 0] == CLEAN  # Only the top-left tile is clean
+        assert state.step_count == 0

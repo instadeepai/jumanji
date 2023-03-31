@@ -14,6 +14,7 @@
 
 from typing import Callable, Optional, Sequence, Tuple
 
+import chex
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.commons.maze_utils.maze_generation import EMPTY, WALL, Maze
+from jumanji.environments.commons.maze_utils.maze_generation import EMPTY, WALL
 from jumanji.viewer import Viewer
 
 
@@ -55,7 +56,7 @@ class MazeViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(self, maze: Maze) -> Optional[NDArray]:
+    def render(self, maze: chex.Array) -> Optional[NDArray]:
         """
         Render maze.
 
@@ -73,7 +74,7 @@ class MazeViewer(Viewer):
 
     def animate(
         self,
-        mazes: Sequence[Maze],
+        mazes: Sequence[chex.Array],
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
@@ -124,12 +125,12 @@ class MazeViewer(Viewer):
             ax = fig.get_axes()[0]
         return fig, ax
 
-    def _add_grid_image(self, maze: Maze, ax: Axes) -> image.AxesImage:
+    def _add_grid_image(self, maze: chex.Array, ax: Axes) -> image.AxesImage:
         img = self._create_grid_image(maze)
         ax.set_axis_off()
         return ax.imshow(img)
 
-    def _create_grid_image(self, maze: Maze) -> NDArray:
+    def _create_grid_image(self, maze: chex.Array) -> NDArray:
         img = np.zeros((*maze.shape, 3))
         for tile_value, color in self.COLORS.items():
             img[np.where(maze == tile_value)] = color

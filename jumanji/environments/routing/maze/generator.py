@@ -15,11 +15,8 @@ import abc
 
 import chex
 import jax.numpy as jnp
-from typing_extensions import TypeAlias
 
 from jumanji.environments.commons.maze_utils import maze_generation
-
-Maze: TypeAlias = chex.Array
 
 
 class Generator(abc.ABC):
@@ -34,7 +31,7 @@ class Generator(abc.ABC):
         self.num_cols = num_cols
 
     @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey) -> Maze:
+    def __call__(self, key: chex.PRNGKey) -> chex.Array:
         """Generate a problem instance.
 
         Args:
@@ -51,7 +48,7 @@ class ToyGenerator(Generator):
     def __init__(self) -> None:
         super(ToyGenerator, self).__init__(num_rows=5, num_cols=5)
 
-    def __call__(self, key: chex.PRNGKey) -> Maze:
+    def __call__(self, key: chex.PRNGKey) -> chex.Array:
         walls = jnp.ones((self.num_rows, self.num_cols), bool)
         walls = walls.at[0, :].set((False, True, False, False, False))
         walls = walls.at[1, :].set((False, True, False, True, True))
@@ -65,7 +62,7 @@ class RandomGenerator(Generator):
     def __init__(self, num_rows: int, num_cols: int) -> None:
         super(RandomGenerator, self).__init__(num_rows=num_rows, num_cols=num_cols)
 
-    def __call__(self, key: chex.PRNGKey) -> Maze:
+    def __call__(self, key: chex.PRNGKey) -> chex.Array:
         """Generate a random maze.
 
         This method relies on the `generate_maze` method from the `maze_generation` module to
