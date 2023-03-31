@@ -21,7 +21,6 @@ import scipy
 from jumanji.environments.commons.maze_utils.maze_generation import (
     EMPTY,
     WALL,
-    Maze,
     MazeGenerationState,
     create_chambers_stack,
     create_empty_maze,
@@ -34,7 +33,7 @@ from jumanji.environments.commons.maze_utils.maze_generation import (
 from jumanji.environments.commons.maze_utils.stack import Stack, stack_pop
 
 
-def no_more_chamber(maze: Maze) -> chex.Array:
+def no_more_chamber(maze: chex.Array) -> chex.Array:
     """Test if there is no chamber in the maze that can be divided anymore.
 
     A chamber can be divided if its width and height are greater or equal to two.
@@ -48,7 +47,7 @@ def no_more_chamber(maze: Maze) -> chex.Array:
     return jnp.all(convolved)
 
 
-def all_tiles_connected(maze: Maze) -> bool:
+def all_tiles_connected(maze: chex.Array) -> bool:
     """Test if all the tiles of the maze can be reached.
 
     The function scipy.ndimage.label can be used to count the number of connected components
@@ -68,7 +67,7 @@ class TestMazeGeneration:
     HEIGHT = 15
 
     @pytest.fixture
-    def maze(self) -> Maze:
+    def maze(self) -> chex.Array:
         return create_empty_maze(self.WIDTH, self.HEIGHT)
 
     @pytest.fixture
@@ -111,7 +110,7 @@ class TestMazeGeneration:
             assert 0 <= i < max_val
 
     def test_split_vertically(
-        self, maze: Maze, chambers: Stack, key: chex.PRNGKey
+        self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey
     ) -> None:
         """Test that a horizontal wall is drawn and that subchambers are added to stack."""
         chambers, chamber = stack_pop(chambers)
@@ -126,7 +125,7 @@ class TestMazeGeneration:
         assert chambers.insertion_index >= 1
 
     def test_split_horizontally(
-        self, maze: Maze, chambers: Stack, key: chex.PRNGKey
+        self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey
     ) -> None:
         """Test that a vertical wall is drawn and that subchambers are added to stack."""
         chambers, chamber = stack_pop(chambers)
