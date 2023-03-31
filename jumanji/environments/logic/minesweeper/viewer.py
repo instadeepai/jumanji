@@ -38,8 +38,8 @@ class MinesweeperViewer(Viewer[State]):
     ):
         """
         Args:
-            num_rows: number of rows, i.e. height of the board. Defaults to 10.
-            num_cols: number of columns, i.e. width of the board. Defaults to 10.
+            num_rows: number of rows, i.e. height of the board.
+            num_cols: number of columns, i.e. width of the board.
             color_mapping: colors used in rendering the cells in `Minesweeper`.
                 Defaults to `DEFAULT_COLOR_MAPPING`.
         """

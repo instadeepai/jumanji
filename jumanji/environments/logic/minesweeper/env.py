@@ -105,10 +105,13 @@ class Minesweeper(Environment[State]):
                     - num_mines: number of mines generated. Defaults to 10.
             reward_function: `RewardFn` whose `__call__` method computes the reward of an
                 environment transition based on the given current state and selected action.
-                Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`.
+                Implemented options are [`DefaultRewardFn`]. Defaults to `DefaultRewardFn`, giving
+                a reward of 1.0 for revealing an empty square, 0.0 for revealing a mine, and
+                0.0 for an invalid action (selecting an already revealed square).
             done_function: `DoneFn` whose `__call__` method computes the done signal given the
                 current state, action taken, and next state.
-                Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`.
+                Implemented options are [`DefaultDoneFn`]. Defaults to `DefaultDoneFn`, ending the
+                episode on solving the board, revealing a mine, or picking an invalid action.
             viewer: `Viewer` to support rendering and animation methods.
                 Implemented options are [`MinesweeperViewer`]. Defaults to `MinesweeperViewer`.
         """
