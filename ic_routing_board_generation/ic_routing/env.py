@@ -25,12 +25,8 @@ from ic_routing_board_generation.interface.board_generator_interface import \
 from jumanji import specs, wrappers
 from jumanji.env import Environment
 
-from ic_routing_board_generation.ic_routing.instance_generator import (
-    InstanceGenerator,
-    RandomInstanceGenerator,
-    RandyInstanceGenerator,
-    CustomInstanceGenerator, UniversalInstanceGenerator
-)
+from ic_routing_board_generation.ic_routing.instance_generator import \
+    UniversalInstanceGenerator
 from jumanji.environments.combinatorial.routing import State, Position
 from jumanji.environments.combinatorial.routing.constants import EMPTY, \
     VIEWER_WIDTH, VIEWER_HEIGHT, HEAD, TARGET, NOOP, SOURCE
