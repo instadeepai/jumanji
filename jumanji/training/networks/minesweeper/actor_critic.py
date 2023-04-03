@@ -40,8 +40,8 @@ def make_actor_critic_networks_minesweeper(
     final_layer_dims: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Minesweeper` environment."""
-    board_height = minesweeper.num_rows
-    board_width = minesweeper.num_cols
+    board_num_rows = minesweeper.num_rows
+    board_num_cols = minesweeper.num_cols
     vocab_size = 1 + PATCH_SIZE**2  # unexplored, or 0, 1, ..., 8
 
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
@@ -49,8 +49,8 @@ def make_actor_critic_networks_minesweeper(
     )
     policy_network = make_network_cnn(
         vocab_size=vocab_size,
-        board_height=board_height,
-        board_width=board_width,
+        board_num_rows=board_num_rows,
+        board_num_cols=board_num_cols,
         board_embed_dim=board_embed_dim,
         board_conv_channels=board_conv_channels,
         board_kernel_shape=board_kernel_shape,
@@ -60,8 +60,8 @@ def make_actor_critic_networks_minesweeper(
     )
     value_network = make_network_cnn(
         vocab_size=vocab_size,
-        board_height=board_height,
-        board_width=board_width,
+        board_num_rows=board_num_rows,
+        board_num_cols=board_num_cols,
         board_embed_dim=board_embed_dim,
         board_conv_channels=board_conv_channels,
         board_kernel_shape=board_kernel_shape,
@@ -78,8 +78,8 @@ def make_actor_critic_networks_minesweeper(
 
 def make_network_cnn(
     vocab_size: int,
-    board_height: int,
-    board_width: int,
+    board_num_rows: int,
+    board_num_cols: int,
     board_embed_dim: int,
     board_conv_channels: Sequence[int],
     board_kernel_shape: int,
@@ -106,9 +106,9 @@ def make_network_cnn(
         x = board_embedder(observation.board + 1)
         num_mines_embedder = hk.Linear(num_mines_embed_dim)
         y = num_mines_embedder(
-            observation.num_mines[:, None] / (board_height * board_width)
+            observation.num_mines[:, None] / (board_num_rows * board_num_cols)
         )[:, None, None, :]
-        y = jnp.tile(y, [1, board_height, board_width, 1])
+        y = jnp.tile(y, [1, board_num_rows, board_num_cols, 1])
         output = jnp.concatenate([x, y], axis=-1)
         final_layers = hk.nets.MLP((*final_layer_dims, 1))
         output = jnp.squeeze(final_layers(output), axis=-1)

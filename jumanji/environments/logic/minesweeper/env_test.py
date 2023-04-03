@@ -15,18 +15,13 @@
 from typing import List, Optional, Tuple
 
 import chex
+import jax
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
 import pytest_mock
-from jax import jit
 from jax import numpy as jnp
-from jax import random
 
-from jumanji.environments.logic.minesweeper.constants import (
-    REVEALED_EMPTY_SQUARE_REWARD,
-    REVEALED_MINE_OR_INVALID_ACTION_REWARD,
-)
 from jumanji.environments.logic.minesweeper.env import Minesweeper
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
@@ -40,11 +35,11 @@ def play_and_get_episode_stats(
     time_limit: int,
     force_start_state: Optional[State] = None,
 ) -> Tuple[List[float], List[StepType], int]:
-    state, timestep = jit(env.reset)(random.PRNGKey(0))
+    state, timestep = jax.jit(env.reset)(jax.random.PRNGKey(0))
     if force_start_state:
         state = force_start_state
     episode_length = 0
-    step_fn = jit(env.step)
+    step_fn = jax.jit(env.step)
     collected_rewards = []
     collected_step_types = []
     while not timestep.last():
@@ -64,17 +59,17 @@ def play_and_get_episode_stats(
     [
         (
             [[0, 3], [1, 1], [1, 3], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3]],
-            [REVEALED_EMPTY_SQUARE_REWARD] * 8,
+            [1.0] * 8,
             [StepType.MID] * 7 + [StepType.LAST],
         ),
         (
             [[0, 3], [0, 2]],
-            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_OR_INVALID_ACTION_REWARD],
+            [1.0, 0.0],
             [StepType.MID, StepType.LAST],
         ),
         (
             [[0, 3], [0, 3]],
-            [REVEALED_EMPTY_SQUARE_REWARD, REVEALED_MINE_OR_INVALID_ACTION_REWARD],
+            [1.0, 0.0],
             [StepType.MID, StepType.LAST],
         ),
     ],
@@ -101,8 +96,8 @@ def test_default_reward_and_done_signals(
 
 def test_minesweeper__reset(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted reset of the environment."""
-    reset_fn = jit(minesweeper_env.reset)
-    key = random.PRNGKey(0)
+    reset_fn = jax.jit(minesweeper_env.reset)
+    key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
@@ -124,9 +119,9 @@ def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
     step_fn = chex.assert_max_traces(minesweeper_env.step, n=2)
-    step_fn = jit(step_fn)
-    key = random.PRNGKey(0)
-    state, timestep = jit(minesweeper_env.reset)(key)
+    step_fn = jax.jit(step_fn)
+    key = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(minesweeper_env.reset)(key)
     # For this board, this action will be a non-mined square
     action = minesweeper_env.action_spec().generate_value()
     next_state, next_timestep = step_fn(state, action)
@@ -164,11 +159,11 @@ def test_minesweeper__render(
 ) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
-    state, timestep = jit(minesweeper_env.reset)(random.PRNGKey(0))
+    state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     minesweeper_env.render(state)
     minesweeper_env.close()
     action = minesweeper_env.action_spec().generate_value()
-    state, timestep = jit(minesweeper_env.step)(state, action)
+    state, timestep = jax.jit(minesweeper_env.step)(state, action)
     minesweeper_env.render(state)
     minesweeper_env.close()
 
@@ -185,8 +180,8 @@ def test_minesweeper__done_invalid_action(minesweeper_env: Minesweeper) -> None:
 
 def test_minesweeper__solved(minesweeper_env: Minesweeper) -> None:
     """Solve the game and verify that things are as expected"""
-    state, timestep = jit(minesweeper_env.reset)(random.PRNGKey(0))
-    step_fn = jit(minesweeper_env.step)
+    state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
+    step_fn = jax.jit(minesweeper_env.step)
     collected_rewards = []
     collected_step_types = []
     for i in range(minesweeper_env.num_rows):
@@ -201,7 +196,7 @@ def test_minesweeper__solved(minesweeper_env: Minesweeper) -> None:
     expected_episode_length = (
         minesweeper_env.num_rows * minesweeper_env.num_cols - minesweeper_env.num_mines
     )
-    assert collected_rewards == [REVEALED_EMPTY_SQUARE_REWARD] * expected_episode_length
+    assert collected_rewards == [1.0] * expected_episode_length
     assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [
         StepType.LAST
     ]
