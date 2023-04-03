@@ -14,11 +14,12 @@
 
 import chex
 import jax
+import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.packing.job_shop.conftest import DummyGenerator
 from jumanji.environments.packing.job_shop.generator import (
-    MakespanGenerator,
+    DenseScheduleGenerator,
     RandomGenerator,
     ToyGenerator,
 )
@@ -107,15 +108,15 @@ class TestRandomGenerator:
 
 
 class TestMakespanGenerator:
-    NUM_JOBS = 30
-    NUM_MACHINES = 15
-    MAX_NUM_OPS = 10
-    MAX_OP_DURATION = 6
+    NUM_JOBS = 5
+    NUM_MACHINES = 3
+    MAX_NUM_OPS = 6
+    MAX_OP_DURATION = 3
     MAKESPAN = 12
 
     @pytest.fixture
-    def makespan_generator(self) -> MakespanGenerator:
-        return MakespanGenerator(
+    def dense_schedule_generator(self) -> DenseScheduleGenerator:
+        return DenseScheduleGenerator(
             num_jobs=self.NUM_JOBS,
             num_machines=self.NUM_MACHINES,
             max_num_ops=self.MAX_NUM_OPS,
@@ -123,22 +124,81 @@ class TestMakespanGenerator:
             makespan=self.MAKESPAN,
         )
 
-    def test_makespan_generator__attributes(
-        self, makespan_generator: MakespanGenerator
+    @pytest.fixture
+    def hardcoded_schedule(self) -> chex.Array:
+        return jnp.array(
+            [
+                [1, 0, 1, 1, 2, 3, 4, 0, 1, 3, 2, 3],
+                [4, 1, 2, 0, 3, 4, 2, 3, 2, 2, 3, 2],
+                [0, 2, 3, 4, 0, 0, 0, 2, 3, 1, 0, 0],
+            ]
+        )
+
+    def test_dense_schedule_generator__attributes(
+        self, dense_schedule_generator: DenseScheduleGenerator
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
-        assert makespan_generator.num_jobs == self.NUM_JOBS
-        assert makespan_generator.num_machines == self.NUM_MACHINES
-        assert makespan_generator.max_num_ops == self.MAX_NUM_OPS
-        assert makespan_generator.max_op_duration == self.MAX_OP_DURATION
+        assert dense_schedule_generator.num_jobs == self.NUM_JOBS
+        assert dense_schedule_generator.num_machines == self.NUM_MACHINES
+        assert dense_schedule_generator.max_num_ops == self.MAX_NUM_OPS
+        assert dense_schedule_generator.max_op_duration == self.MAX_OP_DURATION
+        assert dense_schedule_generator.makespan == self.MAKESPAN
 
         key = jax.random.PRNGKey(0)
-        state = makespan_generator(key)
+        state = dense_schedule_generator(key)
         assert isinstance(state, State)
 
-    def test_makespan_generator__generate_schedule(
-        self, makespan_generator: MakespanGenerator
+    def test_dense_schedule_generator__generate_schedule(
+        self, dense_schedule_generator: DenseScheduleGenerator
     ) -> None:
         key = jax.random.PRNGKey(0)
-        schedule = makespan_generator._generate_schedule(key)
+        schedule = dense_schedule_generator._generate_schedule(key)
         assert schedule.shape == (self.NUM_MACHINES, self.MAKESPAN)
+
+    def test_dense_schedule_generator__register_ops(
+        self,
+        dense_schedule_generator: DenseScheduleGenerator,
+        hardcoded_schedule: chex.Array,
+    ) -> None:
+        ops_machine_ids, ops_durations = dense_schedule_generator._register_ops(
+            hardcoded_schedule
+        )
+        assert jnp.array_equal(
+            ops_machine_ids,
+            jnp.array(
+                [
+                    [2, 0, 1, 2, 0, 2, -1, -1, -1, -1, -1, -1],
+                    [0, 1, 0, 0, 2, -1, -1, -1, -1, -1, -1, -1],
+                    [2, 1, 0, 1, 2, 1, 0, 1, -1, -1, -1, -1],
+                    [2, 1, 0, 1, 2, 0, 1, 0, -1, -1, -1, -1],
+                    [1, 2, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1],
+                ]
+            ),
+        )
+        assert jnp.array_equal(
+            ops_durations,
+            jnp.array(
+                [
+                    [1, 1, 1, 3, 1, 2, -1, -1, -1, -1, -1, -1],
+                    [1, 1, 2, 1, 1, -1, -1, -1, -1, -1, -1, -1],
+                    [1, 1, 1, 1, 1, 2, 1, 1, -1, -1, -1, -1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+                    [1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1],
+                ]
+            ),
+        )
+
+    def test_dense_schedule_generator__jit_only_compiles_once(
+        self, dense_schedule_generator: DenseScheduleGenerator
+    ) -> None:
+        key = jax.random.PRNGKey(0)
+        key_first, key_second = jax.random.split(key, 2)
+
+        # First call should compile the function.
+        call_fn = jax.jit(
+            chex.assert_max_traces(dense_schedule_generator.__call__, n=1)
+        )
+        _ = call_fn(key=key_first)
+
+        # Second call should not compile the function.
+        _ = call_fn(key=key_second)

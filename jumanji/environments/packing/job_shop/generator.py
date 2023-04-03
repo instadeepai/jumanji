@@ -187,11 +187,21 @@ class RandomGenerator(Generator):
         return state
 
 
-class MakespanGenerator(Generator):
-    """`Generator` that can be used as an example. It deterministically outputs a hardcoded
-    instance with 5 jobs, 4 machines, a max of 4 ops for any job, and max duration of 4 time
-    steps for any operation. By construction, this generator has a known, optimal makespan
-    of 8 time steps.
+class DenseScheduleGenerator(Generator):
+    """`Generator` which creates a dense schedule of a specified makespan. This is done by:
+        - Specifying the `makespan` (schedule length) and the `num_machines`.
+        - Initialising an "empty" schedule.
+        - Creating a valid schedule:
+            1. Randomly sample `num_machines` jobs w/o replacement. These jobs will be
+                scheduled on the machines in the first time step.
+            2. At the next timestep, stochastically either:
+                - Reuse the previous jobs on the machines, or
+                - Randomly sample `num_machines` new jobs w/o replacement.
+        - Extracting the info (duration and machine) about operations from the schedule and
+         padding the operations to the max number of operations.
+
+    This generator assumes that the number of jobs is less than or equal to the number of
+    machines.
     """
 
     def __init__(
@@ -202,7 +212,8 @@ class MakespanGenerator(Generator):
         max_op_duration: int,
         makespan: int,
     ):
-        """Instantiate a `MakespanGenerator`.
+        """Instantiate a `DenseScheduleGenerator`. Note that the `makespan` is an upper
+        bound to both `max_num_ops` and `max_op_duration`, hence they are not used.
 
         Args:
             num_jobs: the number of jobs that need to be scheduled.
@@ -212,24 +223,22 @@ class MakespanGenerator(Generator):
             makespan: the length of the schedule. By construction, this will be the
                 shortest possible length of the schedule.
         """
+        del max_op_duration
+        del max_num_ops
+        if num_jobs < num_machines:
+            raise ValueError(
+                "The number of jobs must be greater than or equal to the number of machines."
+            )
+
         super().__init__(
             num_jobs=num_jobs,
             num_machines=num_machines,
-            max_num_ops=max_num_ops,
-            max_op_duration=max_op_duration,
+            max_num_ops=makespan,
+            max_op_duration=makespan,
         )
         self.makespan = makespan
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Call method responsible for generating a new state. It returns a job shop scheduling
-        with a known optimal makespan, making it useful to benchmark agents during training.
-
-        Args:
-            key: jax random key for the stochasticity used in the generation process.
-
-        Returns:
-            A `JobShop` environment state.
-        """
         key, schedule_key = jax.random.split(key)
 
         # Generate a random, dense schedule of the specified length
@@ -280,34 +289,92 @@ class MakespanGenerator(Generator):
             key: used for stochasticity in the generation of the schedule.
 
         Returns:
-            Schedule with the specified length.
+            Schedule with the specified length. Shape (num_machines, makespan).
         """
         all_job_ids = jnp.arange(self.num_jobs)
 
         def insert_col(
-            carry: Tuple[chex.PRNGKey, int], _: Any
-        ) -> Tuple[Tuple[chex.PRNGKey, int], chex.Array]:
+            carry: Tuple[chex.PRNGKey, int, chex.Array], _: Any
+        ) -> Tuple[Tuple[chex.PRNGKey, int, chex.Array], chex.Array]:
             """Create a column of distinct job ids (only one operation in a given job
             can be processed at a time). For the example above, this would be [1, 4, 0] at
             time=0, [0, 1, 2] at time=1, etc.
             """
-            key, t = carry
-            key, subkey = jax.random.split(key)
-            machines_job_ids = jax.random.choice(
-                subkey, all_job_ids, (self.num_machines,), replace=False
-            )
-            carry = key, t + 1
-            return carry, machines_job_ids
+            key, t, prev_col = carry
+            key, job_key, reuse_key = jax.random.split(key, num=3)
 
-        init_carry = (key, 0)
-        final_carry, schedule = jax.lax.scan(
+            def reuse_prev_col(key: chex.PRNGKey, prev_col: chex.Array) -> chex.Array:
+                def _maybe_reuse_op(
+                    _carry: Tuple[chex.PRNGKey, chex.Array, int], _: Any
+                ) -> Tuple[Tuple[chex.PRNGKey, chex.Array, int], chex.Array]:
+                    _key, _job_mask, _machine_id = _carry
+                    _key, reuse_op_key, _job_key = jax.random.split(_key, num=3)
+
+                    prev_job_id = prev_col[_machine_id]
+                    _job_mask = _job_mask.at[prev_job_id].set(True)
+
+                    # Reuse the previous job with probability 0.7
+                    reuse_op = jax.random.uniform(reuse_op_key, shape=()) > 0.3
+                    job_id = jax.lax.cond(
+                        reuse_op,
+                        lambda _: prev_col[_machine_id],
+                        lambda _: jax.random.choice(
+                            _job_key, all_job_ids, (), p=_job_mask
+                        ),
+                        None,
+                    )
+                    _job_mask = _job_mask.at[job_id].set(False)
+                    return (_key, _job_mask, _machine_id + 1), job_id
+
+                # Define initial conditions for the scan
+                # init_job_mask = jax.vmap(
+                #     lambda _job_id, _col: ~jnp.any(_col == _job_id),
+                #     in_axes=(0, None),
+                # )(all_job_ids, prev_col)
+                init_job_mask = jnp.ones(self.num_jobs, dtype=jnp.bool_)
+                init_machine_id = 0
+                init_carry = (key, init_job_mask, init_machine_id)
+                _, col = jax.lax.scan(
+                    lambda _carry, _: _maybe_reuse_op(_carry, _),
+                    init_carry,
+                    xs=None,
+                    length=self.num_machines,
+                )
+
+                return col
+
+            def sample_new_jobs(key: chex.PRNGKey) -> chex.Array:
+                return jax.random.choice(
+                    key, all_job_ids, (self.num_machines,), replace=False
+                )
+
+            # Reuse the previous column with probability 0.6
+            reuse = jax.random.uniform(reuse_key, shape=()) > 0.4
+            col = jax.lax.cond(
+                reuse,
+                lambda _key, _prev_col: reuse_prev_col(_key, _prev_col),
+                lambda _key, _: sample_new_jobs(_key),
+                job_key,
+                prev_col,
+            )
+            carry = key, t + 1, col
+            return carry, col
+
+        init_col = jax.random.choice(
+            key,
+            all_job_ids,
+            (self.num_machines,),
+            replace=False,
+        )
+        init_carry = (key, 0, init_col)
+        final_carry, schedule_transposed = jax.lax.scan(
             lambda carry, _: insert_col(carry, _),
             init_carry,
             xs=None,
             length=self.makespan,
         )
-        assert final_carry[1] == self.makespan
-        return schedule.T
+        schedule = schedule_transposed.T
+        return schedule
 
     def _register_ops(self, schedule: chex.Array) -> Tuple[chex.Array, chex.Array]:
         """Extract, for every job, the machine id and duration of each operation in the job.
@@ -410,12 +477,11 @@ class MakespanGenerator(Generator):
         job_id, (ops_mids, ops_durs) = jax.lax.scan(
             get_job_info, init_job_id, xs=None, length=self.num_jobs
         )
-        assert job_id == self.num_jobs
         return ops_mids, ops_durs
 
 
 if __name__ == "__main__":
-    generator = MakespanGenerator(5, 3, 100, 100, makespan=12)
+    generator = DenseScheduleGenerator(20, 5, 100, 100, makespan=12)
     k = jax.random.PRNGKey(42)
     state = generator(k)
     assert state
