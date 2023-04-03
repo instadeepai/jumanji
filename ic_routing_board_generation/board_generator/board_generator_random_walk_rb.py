@@ -5,6 +5,7 @@
 HEAD, TARGET, WIRE, EMPTY = 4,3,2,0
 # Also available to import from constants OBSTACLE, NOOP, LEFT, LEFT, UP, RIGHT, DOWN
 from dataclasses import dataclass
+from abstract_board import AbstractBoard
 import numpy as np
 from copy import deepcopy
 import random
@@ -23,7 +24,7 @@ class IncorrectBoardSizeError(Exception):
     pass
 
 class NumAgentsOutOfRangeError(Exception):
-    "Raised when self.num_agents is negative."
+    "Raised when self._wires_on_board is negative."
     pass
 class IndicesOutOfRangeError(Exception):
     "Raised when one or more cells on the board have an invalid index."
@@ -41,7 +42,7 @@ class InvalidWireStructureError(Exception):
     "Raised when one or more of the wires has an invalid structure, eg looping or branching."
     pass
 
-class Board_rb:
+class RandomWalkBoard(AbstractBoard):
     """ The boards are 2D np.ndarrays of wiring routes on a printed circuit board.
 
     The coding of the boards is as follows:
@@ -54,20 +55,31 @@ class Board_rb:
 
     Args:
         rows, cols (int, int) : Dimensions of the board.
-        num_agents (int) : Number of wires to add to the board  THIS IS A PROBLEM TO BE RESOLVED
+        num_agents (int) : Number of wires to attempt to add to the board
 
     """
     #def __init__(self, rows: int, cols: int):
-    def __init__(self, rows: int, cols: int, num_agents:int = 0): # INITIALIZING A NON-ZERO NUMBER OF AGENTS IS A PROBLEM TO BE RESOLVED
+    def __init__(self, rows: int, cols: int, num_agents:int = 0):
+        self._rows = rows
+        self._cols = cols
+        self._num_agents = num_agents
+        self._wires_on_board = 0
+        self._dim = Position(rows, cols)
+        # Initialize empty board
         self.layout = np.zeros((rows, cols), int)
-        self.dim = Position(rows, cols)
-        #self.num_agents = 0
-        self.num_agents = num_agents
+        # Add wires to the board
+        if num_agents is None:
+            num_agents = rows * cols  # An impossible target.  Do as many as possible.
+        while (self._wires_on_board < self._num_agents) and not self.is_full():
+            # board_output.add_wire_start_distance_directions()
+            # board_output.add_wire_head_target_erode()
+            self.add_wire_random_walk(2 * max(rows, cols))
+
 
     def get_random_head(self) -> Position:
         # Return a random 2D position, a starting point in the array
-        rows = random.randint(0, self.dim.x-1)
-        cols = random.randint(0, self.dim.y-1)
+        rows = random.randint(0, self._dim.x - 1)
+        cols = random.randint(0, self._dim.y - 1)
         return Position(rows, cols)
 
     def get_wiring_directions(self, head: Position) -> Tuple[Position, Position]:
@@ -81,11 +93,11 @@ class Board_rb:
             (Position) : The second direction to run the wire.
         """
         # Point towards the middle of the layout
-        if (head.x < self.dim.x/2):
+        if (head.x < self._dim.x/2):
             x_vector = Position(1, 0)
         else:
             x_vector = Position(-1, 0)
-        if (head.y < self.dim.y/2):
+        if (head.y < self._dim.y/2):
             y_vector = Position(0, 1)
         else:
             y_vector = Position(0, -1)
@@ -114,42 +126,42 @@ class Board_rb:
                 #print(connectible_list)
                 position = Position(head.x, head.y)
                 dir_primary, dir_second = self.get_wiring_directions(head)
-                num_steps = max(self.dim.x, self.dim.y)
+                num_steps = max(self._dim.x, self._dim.y)
                 for step in range(num_steps):
                     # Check for valid step in primary direction
-                    if (0 <= (position.x + dir_primary.x) < self.dim.x) \
-                      and (0 <= (position.y + dir_primary.y) < self.dim.y)\
+                    if (0 <= (position.x + dir_primary.x) < self._dim.x) \
+                      and (0 <= (position.y + dir_primary.y) < self._dim.y)\
                       and not self.layout[position.x+dir_primary.x, position.y+dir_primary.y]:
                         position.x += dir_primary.x
                         position.y += dir_primary.y
-                        self.layout[position.x, position.y] = 3*self.num_agents + WIRE
+                        self.layout[position.x, position.y] = 3 * self._wires_on_board + WIRE
                         invalid_head = False
                     # Else check for valid step in second direction
-                    elif (0 <= position.x + dir_second.x < self.dim.x) \
-                      and (0 <= position.y + dir_second.y < self.dim.y)\
+                    elif (0 <= position.x + dir_second.x < self._dim.x) \
+                      and (0 <= position.y + dir_second.y < self._dim.y)\
                       and not self.layout[position.x+dir_second.x, position.y+dir_second.y]:
                         position.x += dir_second.x
                         position.y += dir_second.y
-                        self.layout[position.x, position.y] = 3*self.num_agents + WIRE
+                        self.layout[position.x, position.y] = 3 * self._wires_on_board + WIRE
                         invalid_head = False
         # Mark the head and target cells.
         # Randomly swap the head and target cells 50% of the time.
         if random.random() > 0.5:
             head, position = position, head
-        self.layout[head.x, head.y] = 3*self.num_agents + HEAD
-        self.layout[position.x, position.y] = 3*self.num_agents + TARGET
-        self.num_agents += 1
+        self.layout[head.x, head.y] = 3 * self._wires_on_board + HEAD
+        self.layout[position.x, position.y] = 3 * self._wires_on_board + TARGET
+        self._wires_on_board += 1
         return None
 
     def is_full(self) -> bool:
         # Return a boolean if there is no room to fit any more wires on the board.
-        for i in range(self.dim.x):
-            for j in range(self.dim.y):
+        for i in range(self._dim.x):
+            for j in range(self._dim.y):
                 # Return False if there are any adjacent open spots.
-                if (i < self.dim.x-1):
+                if (i < self._dim.x-1):
                     if (self.layout[i, j] == EMPTY) and (self.layout[i+1, j] == EMPTY):
                         return False
-                if (j < self.dim.y-1):
+                if (j < self._dim.y-1):
                     if (self.layout[i, j] == EMPTY) and (self.layout[i, j+1] == EMPTY):
                         return False
         # Return True if there were no adjacent open spots.
@@ -162,8 +174,8 @@ class Board_rb:
         """
         invalid_head = True
         while invalid_head == True:
-            #x_head, y_head = random.randint(0, self.dim.x - 1), random.randint(0, self.dim.y - 1)
-            head = Position(random.randint(0, self.dim.x - 1), random.randint(0, self.dim.y - 1))
+            #x_head, y_head = random.randint(0, self._dim.x - 1), random.randint(0, self._dim.y - 1)
+            head = Position(random.randint(0, self._dim.x - 1), random.randint(0, self._dim.y - 1))
             # Ensure that the start point isn't already in use.
             if self.layout[head.x, head.y] != EMPTY:
                 continue
@@ -185,14 +197,14 @@ class Board_rb:
                 break
         # Mark the wiring cells.
         for cell in wire_list:
-            self.layout[cell[0], cell[1]] = 3 * self.num_agents + WIRE
+            self.layout[cell[0], cell[1]] = 3 * self._wires_on_board + WIRE
         # Mark the head and target cells.
         # Randomly swap the head and target cells 50% of the time.
         if random.random() > 0.5:
             head, position = position, head
-        self.layout[head.x, head.y] = 3 * self.num_agents + HEAD
-        self.layout[position.x, position.y] = 3 * self.num_agents + TARGET
-        self.num_agents += 1
+        self.layout[head.x, head.y] = 3 * self._wires_on_board + HEAD
+        self.layout[position.x, position.y] = 3 * self._wires_on_board + TARGET
+        self._wires_on_board += 1
         return None
 
     def is_valid_cell(self,input: Position, wire_list: List) -> bool:
@@ -226,9 +238,9 @@ class Board_rb:
             adjacent_list.append((input.x-1, input.y))
         if input.y > 0 and self.is_valid_cell(Position(input.x, input.y-1), wire_list):
             adjacent_list.append((input.x, input.y-1))
-        if input.x < self.dim.x-1 and self.is_valid_cell(Position(input.x+1, input.y), wire_list):
+        if input.x < self._dim.x-1 and self.is_valid_cell(Position(input.x + 1, input.y), wire_list):
             adjacent_list.append((input.x+1, input.y))
-        if input.y < self.dim.y-1 and self.is_valid_cell(Position(input.x, input.y+1), wire_list):
+        if input.y < self._dim.y-1 and self.is_valid_cell(Position(input.x, input.y + 1), wire_list):
             adjacent_list.append((input.x, input.y+1))
         return adjacent_list
 
@@ -295,7 +307,7 @@ class Board_rb:
         return connectible_list
 
     def is_available_cell(self, x_coord, y_coord, connectible_list):
-        if x_coord not in range(0, self.dim.x) or y_coord not in range(0, self.dim.y):
+        if x_coord not in range(0, self._dim.x) or y_coord not in range(0, self._dim.y):
             return False
         return (self.layout[x_coord, y_coord] == EMPTY) and ((x_coord, y_coord) not in connectible_list)
 
@@ -317,7 +329,7 @@ class Board_rb:
         invalid_head = True
         while invalid_head:
             # Randomly pick a head until we pick a valid one
-            x_head, y_head = random.randint(0, self.dim.x-1), random.randint(0, self.dim.y-1)
+            x_head, y_head = random.randint(0, self._dim.x - 1), random.randint(0, self._dim.y - 1)
             if self.layout[x_head, y_head]:
                 continue
             connectible_list = self.connectible_cells(x_head, y_head)
@@ -344,12 +356,12 @@ class Board_rb:
                         not_done_removing = True
         # Add the wire to the layout
         for cell in wire_list:
-            self.layout[cell[0], cell[1]] = 3*self.num_agents + 2
+            self.layout[cell[0], cell[1]] = 3 * self._wires_on_board + 2
         if random.random() > 0.5:
             (x_head, y_head), (x_target, y_target) = (x_target, y_target), (x_head, y_head)
-        self.layout[x_head, y_head] = 3*self.num_agents + HEAD
-        self.layout[x_target, y_target] = 3*self.num_agents + TARGET
-        self.num_agents += 1
+        self.layout[x_head, y_head] = 3 * self._wires_on_board + HEAD
+        self.layout[x_target, y_target] = 3 * self._wires_on_board + TARGET
+        self._wires_on_board += 1
         return None
 
     def three_sides_empty(self, cell: (int,int), connectible_list: List) -> bool:
@@ -411,6 +423,29 @@ class Board_rb:
         else:
             return False
 
+    def return_solved_board(self) -> np.array:
+        """
+        Return an array of the board self.layout with the connecting wires displayed.
+
+        Args: <none>
+
+        Returns:
+            (2D np.ndarray of ints) : self.layout
+        """
+        return self.layout
+
+    def _is_num_agents_hit(self) -> bool:
+        """
+        Return a boolean indicating whether we have successfully placed _num_agents wires on the board.
+
+        Args: <none>
+
+        Returns:
+            (bool) : does wires_on_board match _wires_on_board?
+        """
+        return self._num_agents == self._wires_on_board
+
+
     def return_training_board(self) -> np.ndarray:
         """
         Return a copy of the board self.layout with the connecting wires zeroed out.
@@ -433,7 +468,7 @@ class Board_rb:
         if not self.verify_board_size():
             raise IncorrectBoardSizeError
             is_valid = False
-        if self.num_agents < 0:
+        if self._wires_on_board < 0:
             raise NumAgentsOutOfRangeError
             is_valid = False
         if not self.verify_indices_range():
@@ -448,17 +483,17 @@ class Board_rb:
 
     def verify_board_size(self) -> (bool):
         # Verify that the size of a board layout matches the specified dimensions.
-        return np.shape(self.layout) == (self.dim.x, self.dim.y)
+        return np.shape(self.layout) == (self._dim.x, self._dim.y)
 
     def verify_indices_range(self) -> (bool):
-        # Verify that all the indices on the board are either 0 or in the range 2 to 3 * self.num_agents + 1.
+        # Verify that all the indices on the board are either 0 or in the range 2 to 3 * self._wires_on_board + 1.
         wires_only = np.setdiff1d(self.layout, np.array([EMPTY]))
-        if self.num_agents == 0:
+        if self._wires_on_board == 0:
             # if no wires, we should have nothing left of the board
             return (len(wires_only) == 0)
         if np.min(self.layout) < 0:
             return False
-        if np.max(self.layout) > 3 * self.num_agents + 1:
+        if np.max(self.layout) > 3 * self._wires_on_board + 1:
             return False
         return True
 
@@ -466,7 +501,7 @@ class Board_rb:
         # Verify that each wire has exactly one head and one target.
         wires_only = np.setdiff1d(self.layout, np.array([EMPTY]))
         is_valid = True
-        for num_wire in range(self.num_agents):
+        for num_wire in range(self._wires_on_board):
             heads = np.count_nonzero(wires_only == (num_wire*3 + HEAD))
             tails = np.count_nonzero(wires_only == (num_wire*3 + TARGET))
             if heads < 1 or tails < 1:
@@ -480,8 +515,8 @@ class Board_rb:
     def verify_wire_validity(self) -> (bool):
         # Verify that each wire has a valid shape,
         # ie, each head/target is connected to one wire cell, and each wire cell is connected to two.
-        for row in range(self.dim.x):
-            for col in range(self.dim.y):
+        for row in range(self._dim.x):
+            for col in range(self._dim.y):
                 cell = self.layout[row, col]
                 if cell > 0:
                     # Don't check empty cells
@@ -517,10 +552,10 @@ class Board_rb:
         if col > 0:
             if min_val <= self.layout[row, col-1] <= max_val: # same wire to the left
                 neighbors += 1
-        if row < self.dim.x - 1:
+        if row < self._dim.x - 1:
             if min_val <= self.layout[row + 1, col] <= max_val: # same wire below
                 neighbors += 1
-        if col < self.dim.y - 1:
+        if col < self._dim.y - 1:
             if min_val <= self.layout[row, col + 1] <= max_val: # same wire to the right
                 neighbors += 1
         #if neighbors == 0:
@@ -529,13 +564,13 @@ class Board_rb:
 
     def swap_heads_targets(self):
         """ Randomly swap 50% of the heads with their respective targets.  self.layout is modified in-place."""
-        for wire_num in range(num_agents):
+        for wire_num in range(self._wires_on_board):
             if random.choice([True, False]):
                 head_cell = 3 * wire_num + HEAD
                 target_cell = 3 * wire_num + TARGET
                 #print(f"swap {head_cell} with {target_cell}")
-                for x in range(self.dim.x):
-                    for y in range(self.dim.y):
+                for x in range(self._dim.x):
+                    for y in range(self._dim.y):
                         if self.layout[x, y] == head_cell:
                             self.layout[x, y] = target_cell
                         elif self.layout[x, y] == target_cell:
@@ -546,19 +581,19 @@ class Board_rb:
         """ Randomly swap the numbering of pairs of wires.  Self.layout in modified in-place
 
             Args:
-                num (int) : number of swaps to perform, defaults to self.num_agents
+                num (int) : number of swaps to perform, defaults to self._wires_on_board
         """
-        if self.num_agents < 2:
+        if self._wires_on_board < 2:
             return
         if num == None:
-            num = self.num_agents
+            num = self._wires_on_board
         #print("num=", num)
         for i in range(num):
-            wire_num_a = np.random.randint(self.num_agents)
-            wire_num_b = np.random.randint(self.num_agents)
+            wire_num_a = np.random.randint(self._wires_on_board)
+            wire_num_b = np.random.randint(self._wires_on_board)
             #print(f"{i}Swap wire {wire_num_a} with {wire_num_b}, {3*wire_num_a + 2}-{3*wire_num_a + 4}<->{3*wire_num_b + 2}-{3*wire_num_b+4}")
-            for x in range(self.dim.x):
-                for y in range(self.dim.y):
+            for x in range(self._dim.x):
+                for y in range(self._dim.y):
                     cell = self.layout[x, y]
                     # If cell in wire A, renumber to wire B
                     if (3*wire_num_a + 2) <= cell <= (3*wire_num_a + 4):
@@ -593,8 +628,8 @@ class Board_rb:
                 (int) : The number of wires that have to detour around a head or target cell.
         """
         num_detours = 0
-        for x in range(self.dim.x):
-            for y in range(self.dim.y):
+        for x in range(self._dim.x):
+            for y in range(self._dim.y):
                 cell_label = self.layout[x,y]
                 if (cell_label < 2) or ((cell_label % 3) == WIRE):
                     continue
@@ -636,42 +671,6 @@ class Board_rb:
         return num_detours
 
 
-
-def board_generator_rb(rows: int, cols: int, num_agents: int = None) -> (np.ndarray, np.ndarray, int):
-    """ Generate a circuit board of the specified size and number of wires.
-
-    The circuit board will be of dimensions rows by cols.
-    The generator will attempt to add the number of wires specified by num_agents.
-    The wiring head/target pairs will be generated randomly.
-    If num_agents is not specified (or if it is larger than the number of
-    wires that the random process is able to fit), then the generator sill fit as
-    many wires as possible.
-
-    The coding of the output boards is outlined in the Board class definition.
-
-    Args:
-        rows, cols (int, int) : Dimensions of the board.
-        num_agents (int) : Number of wiring pairs to attempt.
-                Default (None) => Fit as many wiring pairs as possible.
-
-    Returns:
-        (Board_rb) : Board class is defined above with attributes .layout, .dim and .num_agents
-    """
-    # Initialize the board
-    board_output = Board_rb(rows, cols)
-    # Add wires to the board
-    if num_agents is None:
-        num_agents = rows * cols # An impossible target.  Do as many as possible.
-    for num_wire in range(num_agents):
-        if not board_output.is_full():
-            #board_output.add_wire_start_distance_directions()
-            #board_output.add_wire_head_target_erode()
-            board_output.add_wire_random_walk(2*max(rows, cols))
-    # Output the training and solution boards and the number of wires
-    board_solution = board_output.layout
-    board_training = board_output.return_training_board()
-    return board_output
-
 def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_agents: int) -> None:
     """ Print the training and solution boards with labels """
     rows, cols = len(board_training), len(board_training[0])
@@ -685,53 +684,53 @@ def print_board(board_training: np.ndarray, board_solution: np.ndarray, num_agen
 if __name__ == "__main__":
     for num_agents in range(9):
         rows, cols = 5,5
-        my_board = board_generator_rb(rows, cols, num_agents)
-        board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
-        print_board(board_training, board_solution, num_agents)
+        my_board = RandomWalkBoard(rows, cols, num_agents)
+        board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
+        print_board(board_training, board_solution, wires_on_board)
     # Test bigger boards
     # Test allowing the number of wires to default to max possible
-    for num_agents in range(2):
+    for num_agents in range(5):
         rows, cols = 10,11
-        my_board = board_generator_rb(rows, cols, num_agents)
-        board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
-        print_board(board_training, board_solution, num_agents)
+        my_board = RandomWalkBoard(rows, cols, num_agents)
+        board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
+        print_board(board_training, board_solution, wires_on_board)
 
     rows, cols = 18,18
-    wires_requested = 10
-    my_board = board_generator_rb(rows, cols, wires_requested)
-    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
-    print_board(board_training, board_solution, num_agents)
+    num_agents = 10
+    my_board = RandomWalkBoard(rows, cols, num_agents)
+    board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
+    print_board(board_training, board_solution, wires_on_board)
     """
-    viewer = RoutingViewer(num_agents=num_agents, grid_rows=rows, grid_cols=cols,
+    viewer = RoutingViewer(_wires_on_board=_wires_on_board, grid_rows=rows, grid_cols=cols,
                            viewer_width=500, viewer_height=500)
-    im_training = f'board_{rows}x{cols}_w_{num_agents}_wires.png'
-    im_solution = f'solved_board_{rows}x{cols}_w_{num_agents}_wires.png'
+    im_training = f'board_{rows}x{cols}_w_{_wires_on_board}_wires.png'
+    im_solution = f'solved_board_{rows}x{cols}_w_{_wires_on_board}_wires.png'
     viewer.render(board_training, save_img=im_training)
     viewer.render(board_solution, save_img=im_solution)
     """
 
     rows, cols = 20,20
-    wires_requested = 17
-    my_board = board_generator_rb(rows, cols, wires_requested)
-    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
+    num_agents = 17
+    my_board = RandomWalkBoard(rows, cols, num_agents)
+    board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
     valid = my_board.is_valid_board()
-    print_board(board_training, board_solution, num_agents)
+    print_board(board_training, board_solution, wires_on_board)
     print("\nSwap some Heads and Tails")
     my_board.swap_heads_targets()
     valid = my_board.is_valid_board()
-    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
-    print_board(board_training, board_solution, num_agents)
+    board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
+    print_board(board_training, board_solution, wires_on_board)
     print("\nSwap some wires")
     my_board.swap_wires()
     valid = my_board.is_valid_board()
-    board_training, board_solution, num_agents = my_board.return_training_board(), my_board.layout, my_board.num_agents
-    print_board(board_training, board_solution, num_agents)
+    board_training, board_solution, wires_on_board = my_board.return_training_board(), my_board.return_solved_board(), my_board._wires_on_board
+    print_board(board_training, board_solution, wires_on_board)
 
     for i in range(1000):
         rows = random.randint(3,20)
         cols = random.randint(3,20)
-        wires_requested = random.randint(1,rows)
-        my_board = board_generator_rb(rows, cols, wires_requested)
+        num_agents = random.randint(1,rows)
+        my_board = RandomWalkBoard(rows, cols, num_agents)
         valid = my_board.is_valid_board()
         #print(i, valid)
         if not valid:
@@ -742,26 +741,26 @@ if __name__ == "__main__":
     # The following are tests of the board.is_valid_board() function
     # to ensure that it picks up errors
         
-    my_board = board_generator(4,4,0)
+    my_board = RandomWalkBoard(4,4,0)
     #print(my_board.layout)
-    #print(my_board.dim)
+    #print(my_board._dim)
     valid = my_board.is_valid_board()
-    #size, num_agents, indices, headstails, valid shape
-    #my_board.dim.x = 3
+    #size, _wires_on_board, indices, headstails, valid shape
+    #my_board._dim.x = 3
     #valid = my_board.is_valid_board()
-    #my_board.dim = Position(4,5)
+    #my_board._dim = Position(4,5)
     #valid = my_board.is_valid_board()
-    #my_board.num_agents = -1
+    #my_board._wires_on_board = -1
     #valid = my_board.is_valid_board()
-    #my_board.num_agents = 1
+    #my_board._wires_on_board = 1
     #valid = my_board.is_valid_board()
-    #my_board = board_generator(4, 4, 2)
-    #my_board.num_agents -= 1
+    #my_board = RandomWalkBoard(4, 4, 2)
+    #my_board._wires_on_board -= 1
     #valid = my_board.is_valid_board()
-    #my_board = board_generator(4, 4, 0)
+    #my_board = RandomWalkBoard(4, 4, 0)
     #my_board.layout[0,0] = 2
     #valid = my_board.is_valid_board()
-    my_board = board_generator(4, 4, 1)
+    my_board = RandomWalkBoard(4, 4, 1)
     my_board.layout = np.array([[0, 0, 0, 0],
                                 [0, 0, 0, 0],
                                 [0, 0, 0, 0],
@@ -815,7 +814,7 @@ if __name__ == "__main__":
     num_agents = 5
     print("8 x 8: ", num_agents)
     for i in range(1000):
-        my_board = board_generator_rb(8, 8, num_agents)
+        my_board = RandomWalkBoard(8, 8, num_agents)
         #print(my_board.layout)
         num_detours = my_board.count_detours(count_current_wire = True)
         #print(num_detours)
@@ -824,12 +823,12 @@ if __name__ == "__main__":
         sampled_detours_exclude.append(num_detours_exclude)
     sampled_detours = np.array(sampled_detours)
     mean = sampled_detours.mean()
-    print("Average detours = ",mean," = ", int(100*mean/num_agents),"%")
+    print("Average detours = ", mean," = ", int(100 * mean / num_agents), "%")
     print("STD = ", sampled_detours.std())
     sampled_detours_exclude = np.array(sampled_detours_exclude)
     mean_exclude = sampled_detours_exclude.mean()
     print("Excluding current wire")
-    print("Average detours = ",mean_exclude," = ", int(100*mean_exclude/num_agents),"%")
+    print("Average detours = ", mean_exclude," = ", int(100 * mean_exclude / num_agents), "%")
     print("STD = ", sampled_detours_exclude.std())
 
     sampled_detours = []
@@ -837,7 +836,7 @@ if __name__ == "__main__":
     num_agents = 10
     print("8 x 8: ", num_agents)
     for i in range(1000):
-        my_board = board_generator_rb(8, 8, num_agents)
+        my_board = RandomWalkBoard(8, 8, num_agents)
         # print(my_board.layout)
         num_detours = my_board.count_detours(count_current_wire=True)
         # print(num_detours)
@@ -846,10 +845,10 @@ if __name__ == "__main__":
         sampled_detours_exclude.append(num_detours_exclude)
     sampled_detours = np.array(sampled_detours)
     mean = sampled_detours.mean()
-    print("Average detours = ",mean," = ", int(100*mean/num_agents),"%")
+    print("Average detours = ", mean," = ", int(100 * mean / num_agents), "%")
     print("STD = ", sampled_detours.std())
     sampled_detours_exclude = np.array(sampled_detours_exclude)
     mean_exclude = sampled_detours_exclude.mean()
     print("Excluding current wire")
-    print("Average detours = ",mean_exclude," = ", int(100*mean_exclude)/num_agents,"%")
+    print("Average detours = ", mean_exclude," = ", int(100*mean_exclude) / num_agents, "%")
     print("STD = ", sampled_detours_exclude.std())
