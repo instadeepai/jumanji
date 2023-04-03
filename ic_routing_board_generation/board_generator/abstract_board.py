@@ -10,7 +10,7 @@ class AbstractBoard(ABC):
         self._num_agents = num_agents # upper limit
         self._wires_on_board = 0
 
-    @abstractmethod
+    #@abstractmethod
     def _is_num_agents_hit(self):
         return self.num_agents == self._wires_on_board
     @property

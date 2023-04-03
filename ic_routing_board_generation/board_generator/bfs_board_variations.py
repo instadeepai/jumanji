@@ -15,7 +15,7 @@ class BFSBoardMinBends(BFSBoard):
 class BFSBoardFifo(BFSBoard):
     def return_training_board(self) -> np.ndarray:
         self.reset_board()
-        self.fill_board_with_clipping(int(0.5 * self.wires), 'fifo', verbose=True)
+        self.fill_board_with_clipping(int(0.5 * self.num_agents), 'fifo', verbose=True)
         if self.filled:
             return self.empty_board
         else:
@@ -24,7 +24,7 @@ class BFSBoardFifo(BFSBoard):
 class BFSBoardShortest(BFSBoard):
     def return_training_board(self) -> np.ndarray:
         self.reset_board()
-        self.fill_board_with_clipping(int(0.5 * self.wires), 'shortest', verbose=True)
+        self.fill_board_with_clipping(int(0.5 * self.num_agents), 'shortest', verbose=True)
         if self.filled:
             return self.empty_board
         else:
@@ -33,7 +33,7 @@ class BFSBoardShortest(BFSBoard):
 class BFSBoardLongest(BFSBoard):
     def return_training_board(self) -> np.ndarray:
         self.reset_board()
-        self.fill_board_with_clipping(int(0.5 * self.wires), 'longest', verbose=True)
+        self.fill_board_with_clipping(int(0.5 * self.num_agents), 'longest', verbose=True)
         if self.filled:
             return self.empty_board
         else:

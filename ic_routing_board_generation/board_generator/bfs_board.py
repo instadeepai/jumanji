@@ -12,7 +12,7 @@ class BFSBoard(AbstractBoard):
         Args:
             rows: number of rows in the board
             columns: number of columns in the board
-            num_agents: number of wires in the board
+            num_agents: maximum number of wires to place on the board
             max_attempts: maximum number of attempts to fill the board
         Returns:
             None
@@ -21,7 +21,7 @@ class BFSBoard(AbstractBoard):
         self.rows = rows
         self.columns = columns
         self.grid = Grid(rows, columns)
-        self.wires = num_agents
+        self.num_agents = num_agents
         self.paths = []
         self.starts = []
         self.ends = []
@@ -31,7 +31,7 @@ class BFSBoard(AbstractBoard):
         self.partial_board = None  # board with  (<num_agents) wires filled (only populated if fill is unsuccessful)
         self.unsolved_board = None  # partial board with wires removed (only populated if fill is unsuccessful)
         self.max_attempts = max_attempts
-        self.filled_wires = 0
+        self._wires_on_board = 0
         self.clip_method_dict = self.get_clip_method_dict()
         # self.fill_board(verbose=False)
 
@@ -83,7 +83,7 @@ class BFSBoard(AbstractBoard):
         """
         if not hard_fill:
             assert self.filled, "Cannot populate the grid if the board is not filled!"
-            assert len(self.paths) == self.wires, "Something's wrong. Number of paths don't match the wires"
+            assert len(self.paths) == self.num_agents, "Something's wrong. Number of paths don't match the wires"
 
         self.shuffle_all()
         for k, path in enumerate(self.paths):
@@ -133,7 +133,7 @@ class BFSBoard(AbstractBoard):
         self.empty_board = None
         self.partial_board = None
         self.unsolved_board = None
-        self.filled_wires = 0
+        self._wires_on_board = 0
 
     def shuffle_all(self) -> None:
         """Shuffles the starts, ends and paths.
@@ -156,7 +156,7 @@ class BFSBoard(AbstractBoard):
         self.starts.pop(wire)
         self.ends.pop(wire)
         self.paths.pop(wire)
-        self.filled_wires -= 1
+        self._wires_on_board -= 1
 
     @staticmethod
     def count_bends(path: List[tuple]) -> int:
@@ -329,10 +329,10 @@ class BFSBoard(AbstractBoard):
                 # a path has been successfully found
                 self.append_all(start, end, path)
                 self.grid.fill_grid(path)
-                self.filled_wires += 1
+                self._wires_on_board += 1
                 # print(f"Wire {i + 1} placed successfully after {attempts} attempts.")
 
-        return found, self.filled_wires
+        return found, self._wires_on_board
 
     def place_wires(self, verbose: Optional[bool] = False) -> None:
         """Places wires on the board.
@@ -341,36 +341,36 @@ class BFSBoard(AbstractBoard):
         Returns:
             None
         """
-        i = self.filled_wires
+        i = self._wires_on_board
         found = True
 
-        while i < self.wires and found:
+        while i < self.num_agents and found:
             found, _ = self.pick_and_place(i, verbose=verbose)
             i += 1
 
     def announce_failure(self):
         """Announces that board unable to be filled after max attempts."""
         print(
-            f'Fill unsuccessful for wire {self.filled_wires + 1} after {self.max_attempts} attempts. '
-            f'\n Returning {self.rows}x{self.columns} board with {self.filled_wires} wire(s).')
+            f'Fill unsuccessful for wire {self._wires_on_board + 1} after {self.max_attempts} attempts. '
+            f'\n Returning {self.rows}x{self.columns} board with {self._wires_on_board} wire(s).')
 
     def announce_success(self):
         """Announces that board has been filled."""
-        print(f'Fill successful. Returning {self.rows}x{self.columns} board with {self.filled_wires} wire(s)')
+        print(f'Fill successful. Returning {self.rows}x{self.columns} board with {self._wires_on_board} wire(s)')
 
     def return_boards(self, verbose: Optional[bool] = False) -> Tuple[np.ndarray, np.ndarray, int]:
         """Returns the board and the solved board.
         Returns:
             tuple containing the board, the solved board
         """
-        assert self.filled_wires <= self.wires, "Too many wires have been placed."
-        if self.filled_wires < self.wires:
+        assert self._wires_on_board <= self.num_agents, "Too many wires have been placed."
+        if self._wires_on_board < self.num_agents:
             if verbose:
                 self.announce_failure()
             self.populate_grid(hard_fill=True)
             self.partial_board = self.grid.layout.copy()
             self.unsolved_board = self.remove_routes(self.partial_board)
-            return self.partial_board, self.unsolved_board, self.filled_wires
+            return self.partial_board, self.unsolved_board, self._wires_on_board
         else:
             if verbose:
                 self.announce_success()
@@ -378,7 +378,7 @@ class BFSBoard(AbstractBoard):
             self.populate_grid()
             self.solved_board = self.grid.layout.copy()
             self.remove_routes()
-            return self.solved_board, self.empty_board, self.wires
+            return self.solved_board, self.empty_board, self.num_agents
 
     def fill_board_with_clipping(self, num_clips: int = 2, method: str = 'bends', verbose: Optional[bool] = False) -> \
             Tuple[np.ndarray, np.ndarray, int]:
@@ -518,7 +518,7 @@ class BFSBoard(AbstractBoard):
 
     def check_threshold(self, threshold_dict: Dict[str, int]) -> bool:
         """ Checks if the thresholds are met"""
-        if len(self.paths) < self.wires:
+        if len(self.paths) < self.num_agents:
             return False
         threshold_met = True
         for metric, threshold in threshold_dict.items():
