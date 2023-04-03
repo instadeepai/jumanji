@@ -4,14 +4,14 @@ import numpy as np
 import time
 from ic_routing_board_generation.ic_routing.env import Routing
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerators
+    BoardName
 from jumanji.environments.combinatorial.routing.evaluation import \
     is_board_complete, wire_length, proportion_connected
 from jumanji.types import StepType
 
 
 class Route:
-    def __init__(self, board_init: BoardGenerators=BoardGenerators.DUMMY, **kwargs):
+    def __init__(self, board_init: BoardName = BoardName.BFS_BASE, **kwargs):
         """Class attribute instantation.
 
         Args:
@@ -63,7 +63,6 @@ class Route:
 
         else:
             env = Routing(**kwargs)
-            print(kwargs["instance_generator_type"])
             print(f"Instantiating the {env.rows}x{env.cols} Routing Board for {env.num_agents} agents...")
 
         key = jax.random.PRNGKey(0)
@@ -127,13 +126,11 @@ class Route:
                 # workaround to keep track of grid before it resets
                 state_grid = state.grid  # TODO (MW): remove this workaround after timestep.LAST bug is fixed
                 total_reward += timestep.reward
-                # print(total_reward)
                 state_grid = state.grid
                 step_counter += 1
 
         time.sleep(1)
         env.close()
-        print(len(total_wire_lengths))
         return total_rewards, was_board_filled, total_wire_lengths, proportion_wires_connected, number_of_steps
 
 

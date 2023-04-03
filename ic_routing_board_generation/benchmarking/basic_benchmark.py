@@ -13,7 +13,7 @@ from ic_routing_board_generation.benchmarking.benchmark_utils import \
     make_benchmark_folder
 from ic_routing_board_generation.ic_routing.route import Route
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerators
+    BoardName
 
 
 class BasicBenchmark:
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
     benchmarks = [
         BoardGenerationParameters(rows=5, columns=5, number_of_wires=3,
-                                  generator_type=BoardGenerators.BFS_2),
+                                  generator_type=BoardName.BFS_2),
 
 
     ]

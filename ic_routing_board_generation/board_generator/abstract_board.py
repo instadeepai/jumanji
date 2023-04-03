@@ -5,9 +5,33 @@ import numpy as np
 
 class AbstractBoard(ABC):
     def __init__(self, rows: int, cols: int, num_agents: int):
-        self.rows = rows
-        self.cols = cols
-        self.num_agents = num_agents
+        self._rows = rows
+        self._cols = cols
+        self._num_agents = num_agents
+
+    @property
+    def rows(self):
+        return self._rows
+
+    @rows.setter
+    def rows(self, value):
+        self._rows = value
+
+    @property
+    def cols(self):
+        return self._cols
+
+    @cols.setter
+    def cols(self, value):
+        self._cols = value
+
+    @property
+    def num_agents(self):
+        return self._cols
+
+    @num_agents.setter
+    def num_agents(self, value):
+        self._num_agents = value
 
     @abstractmethod
     def return_training_board(self) -> np.ndarray:

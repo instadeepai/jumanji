@@ -21,7 +21,7 @@ from chex import Array, PRNGKey
 from jax import random
 
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerator, BoardGenerators
+    BoardGenerator, BoardName
 from jumanji import specs, wrappers
 from jumanji.env import Environment
 
@@ -69,7 +69,7 @@ class Routing(Environment[State]):
         rows: int = 12,
         cols: int = 12,
         num_agents: int = 3,
-        instance_generator_type: BoardGenerators = BoardGenerators.DUMMY,
+        instance_generator_type: BoardName = BoardName.BFS_BASE,
         reward_per_timestep: float = -0.03,
         reward_for_connection: float = 0.1,
         reward_for_blocked: float = -0.1,

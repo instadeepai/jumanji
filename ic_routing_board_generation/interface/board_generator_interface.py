@@ -1,35 +1,39 @@
 from enum import Enum
 
+from ic_routing_board_generation.board_generator.bfs_board import BFSBoard
+from ic_routing_board_generation.board_generator.bfs_board_variations import \
+    BFSBoardMinBends, BFSBoardFifo, BFSBoardShortest, BFSBoardLongest
+
+from ic_routing_board_generation.board_generator.board_generator_v1_1_2_rb import \
+    BoardV0
 from ic_routing_board_generation.board_generator.board_generator_v2_0_0_rb import \
-    Board
-from ic_routing_board_generation.board_generator.board_generator_v1_1_2_rb import Board as BoardV1
-from ic_routing_board_generation.board_generator.dummy_boar_generator import \
-    DummyBoard
-from ic_routing_board_generation.board_generator.ugo_generator import BFSBoard
+    RandomWalkBoard
 
 
-class BoardGenerators(str, Enum):
+class BoardName(str, Enum):
     """Enum of implemented board generators."""
-    BASELINE = "baseline random"
-    RANDY_V1 = "randy_v1"
-    RANDOM_ROUTE = "random route"
-    BFS = "BFS"
-    DUMMY = "dummy"
+    RANDOM_V0 = "random_v0"
+    RANDOM_WALK = "random_walk"
+    BFS_BASE = "BFS_base"
+    BFS_MIN_BENDS = "bfs_min_bend"
+    BFS_FIFO = "bfs_fifo"
+    BFS_SHORTEST = "bfs_short"
+    BFS_LONGEST = "bfs_long"
+
 
 class BoardGenerator:
     """Maps BoardGeneratorType to class of generator."""
     board_generator_dict = {
-        BoardGenerators.RANDY_V1: BoardV1,
-        BoardGenerators.RANDOM_ROUTE: Board,
-        BoardGenerators.BFS: BFSBoard,
-        BoardGenerators.DUMMY: DummyBoard,
+        BoardName.RANDOM_V0: BoardV0,
+        BoardName.RANDOM_WALK: RandomWalkBoard,
+        BoardName.BFS_BASE: BFSBoard,
+        BoardName.BFS_MIN_BENDS: BFSBoardMinBends,
+        BoardName.BFS_FIFO: BFSBoardFifo,
+        BoardName.BFS_SHORTEST: BFSBoardShortest,
+        BoardName.BFS_LONGEST: BFSBoardLongest,
     }
 
     @classmethod
-    def get_board_generator(cls, board_enum: BoardGenerators):
+    def get_board_generator(cls, board_enum: BoardName):
         """Return class of desired board generator."""
         return cls.board_generator_dict[board_enum]
-
-if __name__ == '__main__':
-    for el in BoardGenerators:
-        print(el)

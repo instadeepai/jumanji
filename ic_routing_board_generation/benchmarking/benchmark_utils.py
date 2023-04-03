@@ -7,7 +7,7 @@ from typing import List, Tuple
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters
 from ic_routing_board_generation.interface.board_generator_interface import \
-    BoardGenerators
+    BoardName
 
 
 def load_pickle(filename: str):
@@ -28,7 +28,7 @@ def generate_board_generation_params(
     grid_parameters: List[Tuple[int, int, int]],
 ) -> List[BoardGenerationParameters]:
     benchmarks_list = []
-    for board_generator in BoardGenerators:
+    for board_generator in BoardName:
         for parameters in grid_parameters:
             benchmark = BoardGenerationParameters(
                 rows=parameters[0], columns=parameters[0],
