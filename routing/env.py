@@ -36,7 +36,8 @@ from routing.types import Position, State
 from routing.instance_generator import (
     InstanceGenerator,
     RandomInstanceGenerator, 
-    RandyInstanceGenerator
+    RandyInstanceGenerator,
+    CustomInstanceGenerator
 )
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 
@@ -170,6 +171,8 @@ class Routing(Environment[State]):
             instance_generator_obj = RandomInstanceGenerator(**instance_generator_kwargs)
         elif instance_generator_type == "randy":
             instance_generator_obj = RandyInstanceGenerator(self.rows, self.cols, self.num_agents)
+        elif instance_generator_type == "other":
+            instance_generator_obj = CustomInstanceGenerator(self.rows, self.cols, self.num_agents)
         else:
             raise ValueError(
                 f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."

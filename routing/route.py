@@ -3,8 +3,6 @@ import jumanji
 import numpy as np
 import time
 from routing.env import Routing
-# from typing import Any, Optional
-# from routing import env_viewer
 
 
 
@@ -22,8 +20,10 @@ class Route:
     def bootstrap(self):
         if self.board_init == 'random':
             return "random pins"
-        else:
+        elif self.board_init == 'randy':
             return "solvable (randy_v1 pins)"
+        else:
+            return "other, custom"
 
     def insantiate_board(self, **kwargs):
         if 'instance_generator_type' in kwargs:
@@ -51,7 +51,7 @@ class Route:
                 print('Instantiating a 16x16 Routing Board...')
                 env = jumanji.make('Routing-n5-16x16-v0')
 
-        elif self.board_init == 'randy':
+        else:
             env = Routing(**kwargs)
             print(f"Instantiating the {env.rows}x{env.cols} Routing Board for {env.num_agents} agents...")
 

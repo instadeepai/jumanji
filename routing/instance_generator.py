@@ -104,3 +104,22 @@ class RandyInstanceGenerator(InstanceGenerator):
             finished_agents=jnp.zeros(self.num_agents, bool)
         )
         return grid, state
+
+
+class CustomInstanceGenerator(InstanceGenerator):
+    """Instance generator using a custom board (none of randy or random).
+    """
+    def __init__(self, rows: int, cols: int, num_agents: int) -> None:
+        super().__init__(rows, cols, num_agents)
+
+    def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
+        pins, _, _ = randy_route.board_generator(x_dim=self.cols, y_dim=self.rows, target_wires=self.num_agents) # edit this line here
+        grid = jnp.array(pins, int)
+
+        state = State(
+            key=key,
+            grid=grid,
+            step=jnp.array(0, int),
+            finished_agents=jnp.zeros(self.num_agents, bool)
+        )
+        return grid, state
