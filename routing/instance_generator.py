@@ -1,11 +1,11 @@
 import abc
-import jumanji.environments.combinatorial.routing.randy_route as randy_route
+import routing.randy_route as randy_route
 from chex import Array, PRNGKey
 from typing import Any, Tuple
 import jax
 import jax.numpy as jnp
 from jax import random
-from jumanji.environments.combinatorial.routing.types import (
+from routing.types import (
     State,
 )
 

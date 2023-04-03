@@ -2,7 +2,7 @@ import jax
 import jumanji
 import numpy as np
 import time
-from routing.env_test import Routing
+from routing.env import Routing
 # from typing import Any, Optional
 # from routing import env_viewer
 

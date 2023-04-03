@@ -22,8 +22,8 @@ from jax import random
 
 from jumanji import specs, wrappers
 from jumanji.env import Environment
-import env_viewer
-from constants import (
+from routing import env_viewer
+from routing.constants import (
     EMPTY,
     HEAD,
     NOOP,
@@ -32,8 +32,8 @@ from constants import (
     VIEWER_HEIGHT,
     VIEWER_WIDTH,
 )
-from types import Position, State
-from instance_generator import (
+from routing.types import Position, State
+from routing.instance_generator import (
     InstanceGenerator,
     RandomInstanceGenerator, 
     RandyInstanceGenerator
