@@ -1432,8 +1432,8 @@ number of scrambles at reset.</p>
         <td><code>generator</code></td>
         <td><code>Optional[jumanji.environments.logic.rubiks_cube.generator.Generator]</code></td>
         <td><p><code>Generator</code> used to generate problem instances on environment reset.
-Implemented options are [<code>ScramblingGenerator</code>].
-Defaults to <code>ScramblingGenerator</code>.
+Implemented options are [<code>ScramblingGenerator</code>]. Defaults to <code>ScramblingGenerator</code>,
+with 100 scrambles on reset.
 The generator will contain an attribute <code>cube_size</code>, corresponding to the number of
 cubies to an edge, and defaulting to 3.</p></td>
         <td><code>None</code></td>
@@ -1448,15 +1448,15 @@ cubies to an edge, and defaulting to 3.</p></td>
         <td><code>reward_fn</code></td>
         <td><code>Optional[jumanji.environments.logic.rubiks_cube.reward.RewardFn]</code></td>
         <td><p><code>RewardFn</code> whose <code>__call__</code> method computes the reward given the new state.
-Implemented options are [<code>SparseRewardFn</code>]. Defaults to <code>SparseRewardFn</code>.</p></td>
+Implemented options are [<code>SparseRewardFn</code>]. Defaults to <code>SparseRewardFn</code>, giving a
+reward of 1.0 if the cube is solved or otherwise 0.0.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>viewer</code></td>
         <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.logic.rubiks_cube.types.State]]</code></td>
-        <td><p>Viewer to support rendering and animation methods.
-Implemented options are [<code>RubiksCubeViewer</code>].
-Defaults to <code>RubiksCubeViewer</code>.</p></td>
+        <td><p><code>Viewer</code> to support rendering and animation methods.
+Implemented options are [<code>RubiksCubeViewer</code>]. Defaults to <code>RubiksCubeViewer</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -1672,7 +1672,7 @@ with cube_size//2 possible depths, and 3 possible directions.</p>
   <small>
     
       Last update:
-      2023-03-30
+      2023-04-03
     
   </small>
 </div>

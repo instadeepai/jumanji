@@ -1351,7 +1351,7 @@ Minesweeper            (<a class="autorefs autorefs-internal" title="jumanji.env
 </li>
 <li>
 <p>action:
-    multi discrete array containing the square to explore (height and width).</p>
+    multi discrete array containing the square to explore (row and col).</p>
 </li>
 <li>
 <p>reward: jax array (float32):
@@ -1417,7 +1417,7 @@ Minesweeper            (<a class="autorefs autorefs-internal" title="jumanji.env
 
 
 <h3 id="jumanji.environments.logic.minesweeper.env.Minesweeper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">num_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">num_mines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">reward_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">done_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">DoneFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">color_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reward_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">done_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">DoneFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1441,29 +1441,24 @@ Minesweeper            (<a class="autorefs autorefs-internal" title="jumanji.env
   </thead>
   <tbody>
       <tr>
-        <td><code>num_rows</code></td>
-        <td><code>int</code></td>
-        <td><p>number of rows, i.e. height of the board. Defaults to 10.</p></td>
-        <td><code>10</code></td>
-      </tr>
-      <tr>
-        <td><code>num_cols</code></td>
-        <td><code>int</code></td>
-        <td><p>number of columns, i.e. width of the board. Defaults to 10.</p></td>
-        <td><code>10</code></td>
-      </tr>
-      <tr>
-        <td><code>num_mines</code></td>
-        <td><code>int</code></td>
-        <td><p>number of mines on the board. Defaults to 10.</p></td>
-        <td><code>10</code></td>
+        <td><code>generator</code></td>
+        <td><code>Optional[jumanji.environments.logic.minesweeper.generator.Generator]</code></td>
+        <td><p><code>Generator</code> to generate problem instances on environment reset.
+Implemented options are [<code>SamplingGenerator</code>]. Defaults to <code>SamplingGenerator</code>.
+The generator will have attributes:
+    - num_rows: number of rows, i.e. height of the board. Defaults to 10.
+    - num_cols: number of columns, i.e. width of the board. Defaults to 10.
+    - num_mines: number of mines generated. Defaults to 10.</p></td>
+        <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>reward_function</code></td>
         <td><code>Optional[jumanji.environments.logic.minesweeper.reward.RewardFn]</code></td>
         <td><p><code>RewardFn</code> whose <code>__call__</code> method computes the reward of an
 environment transition based on the given current state and selected action.
-Implemented options are [<code>DefaultRewardFn</code>]. Defaults to <code>DefaultRewardFn</code>.</p></td>
+Implemented options are [<code>DefaultRewardFn</code>]. Defaults to <code>DefaultRewardFn</code>, giving
+a reward of 1.0 for revealing an empty square, 0.0 for revealing a mine, and
+0.0 for an invalid action (selecting an already revealed square).</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -1471,13 +1466,15 @@ Implemented options are [<code>DefaultRewardFn</code>]. Defaults to <code>Defaul
         <td><code>Optional[jumanji.environments.logic.minesweeper.done.DoneFn]</code></td>
         <td><p><code>DoneFn</code> whose <code>__call__</code> method computes the done signal given the
 current state, action taken, and next state.
-Implemented options are [<code>DefaultDoneFn</code>]. Defaults to <code>DefaultDoneFn</code>.</p></td>
+Implemented options are [<code>DefaultDoneFn</code>]. Defaults to <code>DefaultDoneFn</code>, ending the
+episode on solving the board, revealing a mine, or picking an invalid action.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>color_mapping</code></td>
-        <td><code>Optional[List[str]]</code></td>
-        <td><p>colour map used for rendering.</p></td>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.logic.minesweeper.types.State]]</code></td>
+        <td><p><code>Viewer</code> to support rendering and animation methods.
+Implemented options are [<code>MinesweeperViewer</code>]. Defaults to <code>MinesweeperViewer</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -1694,7 +1691,7 @@ An action consists of the height and width of the square to be explored.</p>
   <small>
     
       Last update:
-      2023-03-30
+      2023-04-03
     
   </small>
 </div>
