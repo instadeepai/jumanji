@@ -20,14 +20,16 @@ import jax.numpy as jnp
 from chex import Array, PRNGKey
 from jax import random
 
+from ic_routing_board_generation.interface.board_generator_interface import \
+    BoardGenerator, BoardGenerators
 from jumanji import specs, wrappers
 from jumanji.env import Environment
 
 from ic_routing_board_generation.ic_routing.instance_generator import (
     InstanceGenerator,
-    RandomInstanceGenerator, 
+    RandomInstanceGenerator,
     RandyInstanceGenerator,
-    CustomInstanceGenerator
+    CustomInstanceGenerator, UniversalInstanceGenerator
 )
 from jumanji.environments.combinatorial.routing import State, Position
 from jumanji.environments.combinatorial.routing.constants import EMPTY, \
@@ -71,7 +73,7 @@ class Routing(Environment[State]):
         rows: int = 12,
         cols: int = 12,
         num_agents: int = 3,
-        instance_generator_type: str = "randy",
+        instance_generator_type: BoardGenerators = BoardGenerators.DUMMY,
         reward_per_timestep: float = -0.03,
         reward_for_connection: float = 0.1,
         reward_for_blocked: float = -0.1,
@@ -102,10 +104,10 @@ class Routing(Environment[State]):
         self.num_agents = num_agents
 
         self.obs_ints = 2 + 3 * num_agents
-        self.instance_generator = self.create_instance_generator(
-            instance_generator_type, **instance_generator_kwargs
-        )
-
+        self.instance_generator = \
+            UniversalInstanceGenerator(
+                self.rows, self.cols,
+                self.num_agents, instance_generator_type)
         self._reward_time_step = jnp.array(reward_per_timestep, float)
         self._reward_connected = jnp.array(reward_for_connection, float)
         self._reward_blocked = jnp.array(reward_for_blocked, float)
@@ -134,45 +136,6 @@ class Routing(Environment[State]):
             minimum=0,
             maximum=self.obs_ints,
         )
-
-    # @classmethod
-    def create_instance_generator(
-        self,
-        # cls,
-        instance_generator_type: str, **instance_generator_kwargs: Any
-    ) -> InstanceGenerator:
-        """
-        Factory method for creating an instance generator.
-
-        This method can be overridden to add new instance generator types.
-
-        Args:
-            instance_generator_type: The type of instance generator to create. Possible values:
-                - 'random': Create the standard random instance generator.
-                - 'randy': Create a randy_v1 instance generator.
-            **instance_generator_kwargs:
-                Additional keyword arguments to pass to the instance generator constructor.
-
-        Returns:
-            An instance of `InstanceGenerator`.
-
-        Raises:
-            ValueError: If an unexpected value is provided for `instance_generator_type`.
-        """
-        instance_generator_obj: InstanceGenerator
-
-        if instance_generator_type == "random":
-            instance_generator_obj = RandomInstanceGenerator(**instance_generator_kwargs)
-        elif instance_generator_type == "randy":
-            instance_generator_obj = RandyInstanceGenerator(self.rows, self.cols, self.num_agents)
-        elif instance_generator_type == "other":
-            instance_generator_obj = CustomInstanceGenerator(self.rows, self.cols, self.num_agents)
-        else:
-            raise ValueError(
-                f"Unexpected value for 'instance_generator_type', got {instance_generator_type!r}."
-                "Possible values: 'random', 'randy'. 'other', or some custom string you define in this function a few lines up."
-            )
-        return instance_generator_obj
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. 5 actions: [0,1,2,3,4] -> [No Op, Left, Up, Right, Down].
