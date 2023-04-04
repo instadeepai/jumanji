@@ -226,7 +226,7 @@ class WFCUtils():
 
 
 class WFCBoard(AbstractBoard):
-    def __init__(self, x: int, y: int, weights: List[float]):
+    def __init__(self, x: int, y: int, num_agents: List[float]):
         """
         x: width of the board
         y: height of the board
@@ -236,9 +236,25 @@ class WFCBoard(AbstractBoard):
         self.grid = [[None for i in range(x)] for j in range(y)]
         # Generate the tile set. This includes how tiles can connect to each other
         self.abstract_tile = AbstractTile()
-        self.weights = weights
+        self.weights = self.generate_weights(x, y, num_agents)
         #self
         self.utils = WFCUtils()
+        self.num_agents = num_agents
+    
+    def generate_weights(self, x, y, num_agents):
+        """
+        Currently just hard-coding a set of weights for the tiles.
+
+        TODO: make this a function of the board size and number of agents
+        """
+        weights = [
+        6, # empty
+        7, 7, # wire
+        1, 1, 1, 1, # turn
+        0.5, 0.5, 0.5, 0.5 # start / end
+        ]
+        return weights
+
     
     def wire_separator(self, final_canvas):
         """ 
@@ -260,25 +276,22 @@ class WFCBoard(AbstractBoard):
         while np.any(canvas > 6):
             # Find the first start of a wire
             # This corresponds to values 7, 8, 9, 10
-            print(canvas)
             start = tuple(np.argwhere(canvas > 6)[0])
-            print("start is", start)
             # Follow the wire until it ends
             wire = self.follow_wire(start, canvas)
             # Add the wire to the output board
             # Change this to be proper values, not just the wire counter
-            output_board[start] = 4 + 3 * wire_counter
+            output_board[start] = 2 + 3 * wire_counter
             canvas[start] = 0
             output_board[wire[-1]] = 3 + 3 * wire_counter
             canvas[wire[-1]] = 0
             wire = wire[1:-1]
             for part in wire:
-                output_board[part] = 2 + 3 * wire_counter
+                output_board[part] = 1 + 3 * wire_counter
                 # Remove the wire from the input board
                 canvas[part] = 0
             # Increment the wire counter
             wire_counter += 1
-            print("wire_counter is", wire_counter)
 
         return output_board, wire_counter
     
@@ -327,6 +340,34 @@ class WFCBoard(AbstractBoard):
             current_direction = list(possible_directions)[0]
         
         return wire
+    
+    def remove_wires(self, wired_output, wire_counter):
+        """
+        TODO: Incorporate Ugo and Randy's fancy removal methods.
+        """
+        output = deepcopy(wired_output)
+        # Loop through the wires
+        upper_limit = 3 * self.num_agents
+        for i in range(self.x):
+            for j in range(self.y):
+                if output[i, j] > upper_limit:
+                    output[i, j] = 0
+        
+        return output
+
+
+    def update_weights(self):
+        """
+        Idea: decrease the weights corresponding to turns, straight lines, and empty space;
+        increase the weights corresponding to start and end points.
+        """
+        for i in range(len(self.weights)):
+            if i < 7:
+                self.weights[i] *= 0.8
+            else:
+                self.weights[i] *= 1.2
+        
+        return
 
 
     def wfc(self, seed: int = None):
@@ -383,13 +424,23 @@ class WFCBoard(AbstractBoard):
             entropy_board = utils.update_entropy(choices, rows, cols)
         info_history.append(deepcopy(info))
         canvas = info['canvas']
-        print(canvas)
         # Need to separate the individual wires
         wired_output, wire_counter = self.wire_separator(canvas)
         unwired_output = np.zeros(shape = (rows, cols))
+        # Remove wires to get the number of wires, 
+        # change weights and repeat if we have too few wires
+        if wire_counter < self.num_agents:
+            # Change the weights
+            self.update_weights()
+            # Repeat
+            return self.wfc()
+        else:
+            # Remove the wires
+            wired_output = self.remove_wires(wired_output, wire_counter)
+        # Create the unwired output
         for i in range(rows):
             for j in range(cols):
-                if wired_output[i, j] % 3 == 2:
+                if wired_output[i, j] % 3 == 1:
                     unwired_output[i, j] = 0
                 else:
                     unwired_output[i, j] = wired_output[i,j]
@@ -397,8 +448,12 @@ class WFCBoard(AbstractBoard):
     
 
     def return_training_board(self) -> np.ndarray:
-        _, _, unwired_output = self.wfc()
+        _, _, unwired_output, _ = self.wfc()
         return unwired_output
+    
+    def return_solved_board(self) -> np.ndarray:
+        _, wired_output, _, _ = self.wfc()
+        return wired_output
         
 
 
@@ -407,29 +462,7 @@ class WFCBoard(AbstractBoard):
 if __name__ == "__main__":
     # These correspond to the weights we will use to pick tiles
     # Organised by index
-    weights = [
-        6,
-        7, 7,
-        1, 1, 1, 1,
-        0.5, 0.5, 0.5, 0.5
-    ]
-    weight_string = str(weights)
-    board = WFCBoard(7, 7, weights)
+    board = WFCBoard(20, 20, 12)
     info, wired_output, unwired_output, wire_counter = board.wfc()
     print(wired_output)
     print(unwired_output)
-
-    from jax.numpy import asarray
-    from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
-    import time
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    print(timestr)
-    for i in range(5):
-        test_board = WFCBoard(20, 20, weights)
-        info, wired_output, unwired_output, wire_counter = test_board.wfc()
-        filled_array, empty_array = asarray(wired_output, dtype=int), asarray(unwired_output, dtype=int)
-        viewer = RoutingViewer(num_agents=wire_counter, grid_rows=20, grid_cols=20, viewer_width=500, viewer_height=500)
-        im_save1 = f'ic_routing_board_generation/wfc-investigation-boards/wfcboardempty{weight_string}{i}.png'
-        im_save2 = f'ic_routing_board_generation/wfc-investigation-boards/wfcboardsolved{weight_string}{i}.png'
-        viewer.render(empty_array, save_img=im_save1)
-        viewer.render(filled_array, save_img=im_save2)
