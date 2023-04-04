@@ -13,7 +13,6 @@ from jumanji.types import StepType
 class Route:
     def __init__(self, board_init: BoardName = BoardName.BFS_BASE, **kwargs):
         """Class attribute instantation.
-
         Args:
             board_init (optional): One of 'random' or 'randy'. An optional keyword that is used 
             to make code work in case no other **kwargs are provided.
@@ -23,13 +22,8 @@ class Route:
         self.reinitialisation_counter = 0
 
     def bootstrap(self):
-        # TODO (DK): You can now gate this using the enum (use .value from an enum)
-        if self.board_init == 'random':
-            return "random pins"
-        elif self.board_init == 'randy':
-            return "solvable (randy_v1 pins)"
-        else:
-            return "other, custom"
+        # e.g: BoardName.BFS_BASE yields 'BFS_base'
+        return self.board_init.value
 
     def insantiate_random_board(self, **kwargs):
         if 'rows' in kwargs:
@@ -151,7 +145,6 @@ class Route:
 #                          reward_for_connection, reward_for_blocked, 
 #                          reward_for_noop, step_limit, 
 #                          reward_for_terminal_step, renderer)
-
 #     def reset(self, key):
 #         pins, _, _ = rr.board_generator(x_dim=4, y_dim=4, target_wires=self.num_agents)
 #         grid = jnp.array(pins, int)
