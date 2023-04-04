@@ -49,6 +49,7 @@ class RoutingViewer:
 
         self.width = viewer_width
         self.height = viewer_height
+
         # Change for Ole to be able to run on ssh
         self.screen = pygame.display.set_mode((viewer_width, viewer_height))
         self.grid_unit = grid_unit
@@ -67,8 +68,7 @@ class RoutingViewer:
             self.palette.append((r, g, b))
 
     def render(self, grid: Array, save_img: Optional[str] = None) -> Array:
-        """
-        Render the grid of the environment.
+        """ Render the grid of the environment.
 
         Args:
             grid: the grid representing the Routing instance to render.
@@ -83,10 +83,10 @@ class RoutingViewer:
         for row in range(rows):
             for col in range(cols):
                 rect = (
-                    self.xoff + col * self.grid_unit,
-                    self.yoff + row * self.grid_unit,
-                    self.grid_unit,
-                    self.grid_unit,
+                    self.xoff + col * self.grid_unit, # x coordinate
+                    self.yoff + row * self.grid_unit, # y coordinate
+                    self.grid_unit, # x grid unit size
+                    self.grid_unit, # y grid unit size
                 )
                 value = grid[row, col]
                 self._draw_shape(rect, value)
