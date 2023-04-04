@@ -1,6 +1,6 @@
 # Render boards from env_viewer.py
 from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
-from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
+from ic_routing_board_generation.visualisation.env_viewer import RoutingViewer
 import numpy as np
 from jax.numpy import asarray
 from bfs_board import BFSBoard

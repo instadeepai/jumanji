@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from typing import List, Optional, Tuple
 
 import jax.numpy as jnp
@@ -19,7 +20,9 @@ import numpy as np
 import pygame
 from chex import Array
 
-from jumanji.environments.combinatorial.routing.constants import HEAD, TARGET
+# from jumanji.environments.combinatorial.routing.constants import HEAD, TARGET
+TARGET = 0
+HEAD = 2
 
 
 class RoutingViewer:
@@ -106,7 +109,7 @@ class RoutingViewer:
             value: Color value.
         """
         color = self.palette[value if value < 2 else 2 + (value - 2) // 3]
-        if value > 1 and (value - TARGET) % 3 == 0:
+        if value > 1 and (value - TARGET) % 3 == 0:                         # I am changing target and head to be of the new version 
             pygame.draw.ellipse(self.screen, color, rect, width=5)
         else:
             pygame.draw.rect(self.screen, color, rect)

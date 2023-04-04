@@ -51,8 +51,8 @@ if __name__ == '__main__':
         save_plots = True  # Change this to False if you want to just see the plots without saving
         save_simulation_data = True
         number_of_boards = 1000
-        benchmarks_list = [] # replace this wit list of BoardGenerationParameters per schema below
-        # benchmarks_list = [BoardGenerationParameters(rows=6, columns=6, number_of_wires=3, generator_type=BoardName.BFS_BASE)]
+        # benchmarks_list = [] # replace this wit list of BoardGenerationParameters per schema below
+        benchmarks_list = [BoardGenerationParameters(rows=6, columns=6, number_of_wires=3, generator_type=BoardName.BFS_BASE)]
 
         #########
         if not benchmarks_list:

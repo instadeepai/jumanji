@@ -420,7 +420,7 @@ if __name__ == "__main__":
     print(unwired_output)
 
     from jax.numpy import asarray
-    from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
+    from ic_routing_board_generation.visualisation.env_viewer import RoutingViewer
     import time
     timestr = time.strftime("%Y%m%d-%H%M%S")
     print(timestr)

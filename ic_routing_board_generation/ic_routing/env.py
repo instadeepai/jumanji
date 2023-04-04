@@ -117,6 +117,17 @@ class Routing(Environment[State]):
                 "Expected a renderer of type 'RoutingViewer', "
                 f"got {renderer} of type {type(renderer)}."
             )
+            self.viewer = renderer
+        
+        else:
+            self.viewer = RoutingViewer(
+                self.num_agents,
+                self.rows,
+                self.cols,
+                VIEWER_WIDTH,
+                VIEWER_HEIGHT,
+)
+
         self.viewer = renderer
 
     def observation_spec(self) -> specs.BoundedArray:
@@ -320,15 +331,6 @@ class Routing(Environment[State]):
         Returns:
             Array of rgb pixel values in the shape (width, height, rgb).
         """
-        if self.viewer is None:
-            self.viewer = RoutingViewer(
-                self.num_agents,
-                self.rows,
-                self.cols,
-                VIEWER_WIDTH,
-                VIEWER_HEIGHT,
-            )
-
         return self.viewer.render(state.grid)
 
     def close(self) -> None:
