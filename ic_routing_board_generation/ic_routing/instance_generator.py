@@ -26,8 +26,10 @@ class InstanceGenerator(abc.ABC):
         self.num_agents = num_agents
         self.board_generator = board_generator
 
+# TODO: I think the State() needs changing given the new jumanji version
+# specifically, finished_agents (and maybe step?)
 class UniversalInstanceGenerator(InstanceGenerator):
-    """Instance generator using a custom board (none of randy or random)."""
+    """Instance generator using a custom board."""
     def __init__(
         self, rows: int, cols: int, num_agents: int,
         board_generator: BoardName,
@@ -35,9 +37,9 @@ class UniversalInstanceGenerator(InstanceGenerator):
         super().__init__(rows, cols, num_agents, board_generator)
     def __call__(self, key:PRNGKey) -> Tuple[Array, State]:
         board_class = BoardGenerator.get_board_generator(board_enum=self.board_generator)
-        board = board_class(self.rows, self.cols, self.num_agents)
-        pins = board.return_training_board() # edit this line here
-        grid = jnp.array(pins, int)
+        board = board_class(self.rows, self.cols, self.num_agents) # instantiate class
+        pins = board.return_training_board() # edit this line here (a must-have method implemented for each custom board gen class)
+        grid = jnp.array(pins, dtype=int)    # jnp.array(object, dtype)
 
         state = State(
             key=key,

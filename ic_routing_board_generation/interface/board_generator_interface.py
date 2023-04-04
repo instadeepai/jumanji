@@ -31,7 +31,6 @@ class BoardGenerator:
         BoardName.BFS_SHORTEST: BFSBoardShortest,
         BoardName.BFS_LONGEST: BFSBoardLongest,
         BoardName.LSYSTEMS: LSystemBoardGen,
-
     }
 
     @classmethod

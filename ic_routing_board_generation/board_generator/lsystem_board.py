@@ -37,7 +37,7 @@ class LSystemBoardGen:
         """Construct agent from board info. 
         
         Each agent has the following attributes:
-        (agent_num, deque)
+        (agent_num:int, deque)
         """
         agents = []
         for agent_num in range(1, 1+self.agent_count):
@@ -55,6 +55,7 @@ class LSystemBoardGen:
         return empty_neighbour_coords[:,0,:]
 
     def push(self, agent_num):
+        """Pushes (grows) the agent in a random direction."""
         agent = self.agents[agent_num-1]
         growth_choice = np.random.randint(-1, 1) # choose to grow from the head or the tail, :TO UPDATE
         nbs = self.find_next_pos(agent[1][growth_choice])
@@ -72,6 +73,7 @@ class LSystemBoardGen:
                 agent[1].append(nbs[growth_loc])
 
     def pull(self, agent_num):
+        """Pulls (shrinks) the agent in a random direction."""
         agent = self.agents[agent_num-1]
         shrink_choice = np.random.randint(-1, 1) #:TO UPDATE
 
@@ -104,25 +106,45 @@ class LSystemBoardGen:
                     self.push(agent)
                 elif action == 'pull':
                     self.pull(agent)
+        
+        # a check to ensure each worm is at least 2 long
+        for agent in self.agents:
+            while len(agent[1]) < 2: # if the agent deque is less than 2 long,
+                self.push(agent[0]) # push it to make it 2 long
+        
         return None
 
-    def convert_to_jumanji(self, route=True):
+    def convert_to_jumanji(self, route=True, new_version=True):
         """Converts the generated board into a Jumanji-compatible one."""
         jumanji_board = copy.deepcopy(self.board)
         
-        for agent in self.agents:
-            # it _needs_ to be checked that the wires are at least 2 long for this procedure
-            jumanji_board[tuple(agent[1][0])] = self.board[tuple(agent[1][0])]*3 + 1
-            jumanji_board[tuple(agent[1][-1])] = self.board[tuple(agent[1][-1])]*3
-            agent_body_length = len(agent[1]) - 2
-            if agent_body_length > 0:
-                for i in range(1, 1+agent_body_length):
-                    if route:
-                        jumanji_board[tuple(agent[1][i])] = self.board[tuple(agent[1][i])]*3-1
-                    else:
-                        jumanji_board[tuple(agent[1][i])] = 0
-            
-        return jumanji_board
+        if not new_version:
+            for agent in self.agents:
+                # it _needs_ to be checked that the wires are at least 2 long for this procedure
+                jumanji_board[tuple(agent[1][0])] = self.board[tuple(agent[1][0])]*3 + 1 # head
+                jumanji_board[tuple(agent[1][-1])] = self.board[tuple(agent[1][-1])]*3   # tail
+                agent_body_length = len(agent[1]) - 2                                    # body
+                if agent_body_length > 0:
+                    for i in range(1, 1+agent_body_length):
+                        if route:
+                            jumanji_board[tuple(agent[1][i])] = self.board[tuple(agent[1][i])]*3-1 # body
+                        else:
+                            jumanji_board[tuple(agent[1][i])] = 0
+            return jumanji_board
+        
+        else:
+            for agent in self.agents:
+                # it _needs_ to be checked that the wires are at least 2 long for this procedure
+                jumanji_board[tuple(agent[1][0])] = self.board[tuple(agent[1][0])]*3 - 1 # position
+                jumanji_board[tuple(agent[1][-1])] = self.board[tuple(agent[1][-1])]*3   # target
+                agent_body_length = len(agent[1]) - 2                                    # path
+                if agent_body_length > 0:
+                    for i in range(1, 1+agent_body_length):
+                        if route:
+                            jumanji_board[tuple(agent[1][i])] = self.board[tuple(agent[1][i])]*3-2
+                        else:
+                            jumanji_board[tuple(agent[1][i])] = 0
+            return jumanji_board
 
     def return_training_board(self):
         self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
