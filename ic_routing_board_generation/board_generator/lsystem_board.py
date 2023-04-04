@@ -3,19 +3,22 @@ import copy
 from collections import deque
 import random
 
+from typing import List, SupportsFloat as Numeric
+
 
 class LSystemBoardGen:
-    def __init__(self, rows: int, columns: int, num_agents:int) -> None:
-        self.size = rows
-        # columns not implemented
+    def __init__(self, rows: int, cols: int, num_agents:int) -> None:
+        self.rows = rows
+        self.cols = cols
+
         self.agent_count = num_agents
-        self.board = self.initialise_starting_board(self.size, self.agent_count)
+        self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
         self.agents = self.assign_agent_states()
 
-    def initialise_starting_board(self, size:int, agent_count):
-        """Initialise as starting board of shape (size, size) with agent_count agents."""
+    def initialise_starting_board(self, rows:int, cols:int, agent_count:int)->np.ndarray:
+        """Initialise as starting board of shape (rows, cols) with agent_count agents."""
         # :TO UPDATE
-        board = np.zeros(shape=(size,size), dtype=int)
+        board = np.zeros(shape=(rows,cols), dtype=int)
         for agent in range(1, 1+agent_count):
             tries = 0
             while(1):
@@ -24,8 +27,8 @@ class LSystemBoardGen:
                     print(f'ERROR - NO BOARD SPACES FOUND AFTER {100} TRIES')
                     break
 
-                idx0 = np.random.randint(0, self.size)
-                idx1 = np.random.randint(0, self.size)
+                idx0 = np.random.randint(0, rows)
+                idx1 = np.random.randint(0, cols)
                 if board[idx0, idx1] != 0.0:
                     continue
                 else:
@@ -36,8 +39,7 @@ class LSystemBoardGen:
     def assign_agent_states(self):
         """Construct agent from board info. 
         
-        Each agent has the following attributes:
-        (agent_num:int, deque)
+        Each agent has the following attributes: (agent_num:int, deque)
         """
         agents = []
         for agent_num in range(1, 1+self.agent_count):
@@ -46,7 +48,7 @@ class LSystemBoardGen:
             agents.append([agent_num, agent_deque])
         return agents
 
-    def find_next_pos(self, loc:np.ndarray):
+    def find_next_pos(self, loc:np.ndarray)->np.ndarray:
         """Find the next empty spot for an agent head/tail."""
         empty_places = np.argwhere(self.board==0)
         empty_place_distances = np.sqrt(np.sum((loc-empty_places)**2, axis=1))
@@ -54,8 +56,8 @@ class LSystemBoardGen:
         empty_neighbour_coords = np.take(empty_places, empty_neighbour_places, axis=0)
         return empty_neighbour_coords[:,0,:]
 
-    def push(self, agent_num):
-        """Pushes (grows) the agent in a random direction."""
+    def push(self, agent_num:int)->None:
+        """Pushes (grows) agent agent_num in a random direction."""
         agent = self.agents[agent_num-1]
         growth_choice = np.random.randint(-1, 1) # choose to grow from the head or the tail, :TO UPDATE
         nbs = self.find_next_pos(agent[1][growth_choice])
@@ -63,8 +65,8 @@ class LSystemBoardGen:
         if len(nbs) == 0:
             return None
         else:
-            growth_loc = np.random.randint(0, len(nbs)) # choose a random growth direction
-            self.board[tuple(nbs[growth_loc])] = agent[0] # grow in a chosen direction
+            growth_loc = np.random.randint(0, len(nbs))     # choose a random growth direction
+            self.board[tuple(nbs[growth_loc])] = agent[0]   # grow in a chosen direction
 
             # update deque to account for new growth
             if growth_choice == 0:
@@ -72,7 +74,7 @@ class LSystemBoardGen:
             elif growth_choice == -1:
                 agent[1].append(nbs[growth_loc])
 
-    def pull(self, agent_num):
+    def pull(self, agent_num:int)->None:
         """Pulls (shrinks) the agent in a random direction."""
         agent = self.agents[agent_num-1]
         shrink_choice = np.random.randint(-1, 1) #:TO UPDATE
@@ -87,7 +89,7 @@ class LSystemBoardGen:
             elif shrink_choice == -1:
                 _ = agent[1].pop()
 
-    def fill(self, n_steps:int=5, pushpullnone_ratios=[2, 1, 1]):
+    def fill(self, n_steps:int=5, pushpullnone_ratios:List[Numeric]=[2, 1, 1])->None:
         """Fill the board from its current state.
         
         Args:
@@ -109,12 +111,12 @@ class LSystemBoardGen:
         
         # a check to ensure each worm is at least 2 long
         for agent in self.agents:
-            while len(agent[1]) < 2: # if the agent deque is less than 2 long,
-                self.push(agent[0]) # push it to make it 2 long
+            while len(agent[1]) < 2:        # if the agent deque is less than 2 long,
+                self.push(agent[0])         # push it to make it 2 long
         
         return None
 
-    def convert_to_jumanji(self, route=True, new_version=True):
+    def convert_to_jumanji(self, route=True, new_version=True)->np.ndarray:
         """Converts the generated board into a Jumanji-compatible one."""
         jumanji_board = copy.deepcopy(self.board)
         
@@ -146,19 +148,19 @@ class LSystemBoardGen:
                             jumanji_board[tuple(agent[1][i])] = 0
             return jumanji_board
 
-    def return_training_board(self):
-        self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
+    def return_training_board(self)->np.ndarray:
+        # self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
         return self.convert_to_jumanji(route=False)
 
-    def return_solved_board(self):
-        self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
+    def return_solved_board(self)->np.ndarray:
+        # self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
         return self.convert_to_jumanji(route=True)
 
 
 if __name__ == '__main__':
-    # Example usage
+    # Example usage:
     # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
-    board = LSystemBoardGen(size=10, num_agents=10)
+    board = LSystemBoardGen(rows=10, cols=10, num_agents=10)
 
     # Fill the board
     board.fill(n_steps=10, pushpullnone_ratios=[2,1,1]) # <- this is where most of the augmenting happens
