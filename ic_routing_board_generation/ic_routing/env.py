@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import functools
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, Union
 
 import jax
 import jax.numpy as jnp
@@ -30,7 +30,10 @@ from ic_routing_board_generation.ic_routing.instance_generator import \
 from jumanji.environments.combinatorial.routing import State, Position
 from jumanji.environments.combinatorial.routing.constants import EMPTY, \
     VIEWER_WIDTH, VIEWER_HEIGHT, HEAD, TARGET, NOOP, SOURCE
-from jumanji.environments.combinatorial.routing.env_viewer import RoutingViewer
+
+from ic_routing_board_generation.visualisation.env_viewer import RoutingViewer
+from jumanji.environments.routing.connector.viewer import ConnectorViewer
+
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 
 
@@ -76,7 +79,7 @@ class Routing(Environment[State]):
         reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
-        renderer: Optional[RoutingViewer] = None,
+        renderer: Optional[Union[RoutingViewer, ConnectorViewer]] = None,
         **instance_generator_kwargs: Any
     ):
         """Create the Routing Environment.
@@ -92,7 +95,7 @@ class Routing(Environment[State]):
             reward_for_noop: reward given if an agent performs a no-op (should be a small negative)
             step_limit: the number of steps allowed before an episode terminates.
             reward_for_terminal_step: the reward given if `step_limit` is reached.
-            renderer: an optional `RoutingViewer` instance to render the environment, if left as
+            renderer: an optional `RoutingViewer` or `ConnectorViewer` instance to render the environment, if left as
                 None a default viewer is created when render is called.
         """
         self.rows = rows
@@ -112,21 +115,20 @@ class Routing(Environment[State]):
         self._step_limit = step_limit
         self._reward_for_terminal_step = jnp.array(reward_for_terminal_step, float)
 
-        if renderer:
-            assert isinstance(renderer, RoutingViewer), (
-                "Expected a renderer of type 'RoutingViewer', "
-                f"got {renderer} of type {type(renderer)}."
-            )
-            self.viewer = renderer
-        
-        else:
-            self.viewer = RoutingViewer(
+        if isinstance(renderer, RoutingViewer):
+            self.viewer = renderer(
                 self.num_agents,
                 self.rows,
                 self.cols,
                 VIEWER_WIDTH,
-                VIEWER_HEIGHT,
-)
+                VIEWER_HEIGHT)
+        
+        else:
+            self.viewer = ConnectorViewer(
+                name = 'Routing',               # generic viewer window name
+                num_agents = self.num_agents,   
+                render_mode = "human",          # one of 'human', 'rgb_array'
+            )
 
         self.viewer = renderer
 
