@@ -40,7 +40,7 @@ class BoardProcessor:
         for i in range(self.board_layout.shape[0]):
             for j in range(self.board_layout.shape[1]):
                 # Check if the current position is a head
-                if self.board_layout[i][j] % 3 == 1:
+                if self.board_layout[i][j] % 3 == 2:
                     # Get the path
                     head_num = self.board_layout[i][j]
                     # print(head_num)
@@ -82,8 +82,8 @@ class BoardProcessor:
         row = [-1, 0, 1, 0]
         col = [0, 1, 0, -1]
 
-        wire_num = head_num - 2
-        target_num = wire_num + 1
+        wire_num = head_num - 1
+        target_num = head_num + 1
 
         # Loop through the possible movements
         for k in range(4):

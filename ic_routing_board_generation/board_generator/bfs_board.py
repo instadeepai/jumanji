@@ -72,9 +72,10 @@ class BFSBoard(AbstractBoard):
 
     def populate_grid(self, hard_fill: bool = False) -> None:
         """Populates the grid with the correct numbers.
-        Heads: encoded as 4, 7 , 10,... (x%3==1)
+        Routes: encoded as 1, 4, 7,... (x%3==1)
         Targets: encoded as 3, 6, 9,... (y%3==0)
-        Routes: encoded as 2, 5, 8,... (z%3==2)
+        Heads: encoded as 2, 5, 8,... (z%3==2)
+        all greater than 0
 
         Args:
             hard_fill: whether to hard fill the grid
@@ -87,9 +88,9 @@ class BFSBoard(AbstractBoard):
 
         self.shuffle_all()
         for k, path in enumerate(self.paths):
-            head = 3 * (k + 1) + 1
-            target = 3 * (k + 1)
-            route = 3 * (k + 1) - 1
+            head = 3*(k+1)-1
+            target = 3*(k+1)
+            route = 3*(k+1)-2
             self.grid.fill_grid(path, str_num=head, fill_num=route, end_num=target)
 
     def remove_routes(self, input_board: Optional[np.ndarray] = None) -> np.ndarray:
@@ -100,10 +101,10 @@ class BFSBoard(AbstractBoard):
             np.array: the board with the routes removed
         """
         if input_board is None:
-            self.empty_board = np.where(self.solved_board % 3 != 2, self.solved_board, 0)
+            self.empty_board = np.where(self.solved_board % 3 != 1, self.solved_board, 0)
             return self.empty_board
         else:
-            return np.where(input_board % 3 != 2, input_board, 0)
+            return np.where(input_board % 3 != 1, input_board, 0)
 
     def append_all(self, start: Tuple[int, int], end: Tuple[int, int], path: List[Tuple[int, int]]) -> None:
         """Appends the start, end and path to the corresponding lists.
