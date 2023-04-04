@@ -79,7 +79,7 @@ class Routing(Environment[State]):
         reward_for_noop: float = -0.01,
         step_limit: int = 50,
         reward_for_terminal_step: float = -0.1,
-        renderer: Optional[Union[RoutingViewer, ConnectorViewer]] = None,
+        renderer: Optional[Union[RoutingViewer, ConnectorViewer]] = ConnectorViewer,
         **instance_generator_kwargs: Any
     ):
         """Create the Routing Environment.
@@ -124,7 +124,7 @@ class Routing(Environment[State]):
                 VIEWER_HEIGHT)
         
         else:
-            self.viewer = ConnectorViewer(
+            self.viewer = renderer(
                 name = 'Routing',               # generic viewer window name
                 num_agents = self.num_agents,   
                 render_mode = "human",          # one of 'human', 'rgb_array'
