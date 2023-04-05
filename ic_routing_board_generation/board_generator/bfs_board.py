@@ -276,7 +276,7 @@ class BFSBoard(AbstractBoard):
         """
         # Check that there are enough wires to remove
         extra_wires = min(k, len(self.paths))
-        for _ in range(k):
+        for _ in range(extra_wires):
             self.grid.remove_path(self.paths[0])
             self.remove_wire(0)
 
