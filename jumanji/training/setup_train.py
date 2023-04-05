@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from typing import Tuple
 
 import chex
@@ -50,21 +51,6 @@ from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
-
-ENV_FACTORY = {
-    "bin_pack": BinPack,
-    "cvrp": CVRP,
-    "tsp": TSP,
-    "snake": Snake,
-    "rubiks_cube": RubiksCube,
-    "minesweeper": Minesweeper,
-    "knapsack": Knapsack,
-    "job_shop": JobShop,
-    "game_2048": Game2048,
-    "cleaner": Cleaner,
-    "maze": Maze,
-    "connector": Connector,
-}
 
 
 def setup_logger(cfg: DictConfig) -> Logger:

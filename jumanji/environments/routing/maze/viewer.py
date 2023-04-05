@@ -14,12 +14,13 @@
 
 from typing import Optional, Sequence
 
+import chex
 import matplotlib
 from numpy.typing import NDArray
 
-from jumanji.environments.commons.maze_utils.maze_generation import Maze
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from jumanji.environments.routing.maze.types import State
+from jumanji.viewer import Viewer
 
 EMPTY = 0
 WALL = 1
@@ -35,7 +36,12 @@ class MazeEnvViewer(MazeViewer):
         TARGET: [1, 0, 0],  # Red
     }
 
-    def __init__(self, name: str, render_mode: str = "human") -> None:
+    def __init__(
+        self,
+        name: str,
+        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
+    ) -> None:
         """Viewer for the Maze environment.
 
         Args:
@@ -75,7 +81,7 @@ class MazeEnvViewer(MazeViewer):
         mazes = [self._overlay_agent_and_target(state) for state in states]
         return super().animate(mazes, interval, save_path)
 
-    def _overlay_agent_and_target(self, state: State) -> Maze:
+    def _overlay_agent_and_target(self, state: State) -> chex.Array:
         maze = state.walls.astype(int)
         maze = maze.at[tuple(state.agent_position)].set(self.AGENT)
         return maze.at[tuple(state.target_position)].set(self.TARGET)

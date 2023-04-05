@@ -18,6 +18,7 @@ import pytest
 
 from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
+from jumanji.environments.logic.rubiks_cube.generator import ScramblingGenerator
 from jumanji.environments.logic.rubiks_cube.utils import make_solved_cube
 
 
@@ -76,4 +77,6 @@ def expected_scramble_result() -> chex.Array:
 @pytest.fixture
 def rubiks_cube() -> RubiksCube:
     """Instantiates a `RubiksCube` environment with 10 scrambles on reset."""
-    return RubiksCube(num_scrambles_on_reset=10)
+    return RubiksCube(
+        generator=ScramblingGenerator(cube_size=3, num_scrambles_on_reset=10)
+    )

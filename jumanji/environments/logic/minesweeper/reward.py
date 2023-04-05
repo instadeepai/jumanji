@@ -17,10 +17,6 @@ import abc
 import chex
 import jax.numpy as jnp
 
-from jumanji.environments.logic.minesweeper.constants import (
-    REVEALED_EMPTY_SQUARE_REWARD,
-    REVEALED_MINE_OR_INVALID_ACTION_REWARD,
-)
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.environments.logic.minesweeper.utils import explored_mine, is_valid_action
 
@@ -32,17 +28,29 @@ class RewardFn(abc.ABC):
 
 
 class DefaultRewardFn(RewardFn):
-    """A dense reward function: 1 for every timestep on which a mine is not explored
-    (or a small penalty if action is invalid), otherwise 0.
+    """A dense reward function corresponding to the 3 possible events:
+    - Revealing an empty square
+    - Revealing a mine
+    - Choosing an invalid action (an already revealed square)
     """
+
+    def __init__(
+        self,
+        revealed_empty_square_reward: float,
+        revealed_mine_reward: float,
+        invalid_action_reward: float,
+    ):
+        self.revealed_empty_square_reward = revealed_empty_square_reward
+        self.revelead_mine_reward = revealed_mine_reward
+        self.invalid_action_reward = invalid_action_reward
 
     def __call__(self, state: State, action: chex.Array) -> chex.Array:
         return jnp.where(
             is_valid_action(state=state, action=action),
             jnp.where(
                 explored_mine(state=state, action=action),
-                jnp.array(REVEALED_MINE_OR_INVALID_ACTION_REWARD, float),
-                jnp.array(REVEALED_EMPTY_SQUARE_REWARD, float),
+                jnp.array(self.revelead_mine_reward, float),
+                jnp.array(self.revealed_empty_square_reward, float),
             ),
-            jnp.array(REVEALED_MINE_OR_INVALID_ACTION_REWARD, float),
+            jnp.array(self.invalid_action_reward, float),
         )

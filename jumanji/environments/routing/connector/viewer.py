@@ -27,9 +27,10 @@ from jumanji.environments.routing.connector.utils import (
     is_path,
     is_target,
 )
+from jumanji.viewer import Viewer
 
 
-class ConnectorViewer:
+class ConnectorViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
 
     def __init__(self, name: str, num_agents: int, render_mode: str = "human") -> None:
