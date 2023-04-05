@@ -197,6 +197,7 @@ class DenseScheduleGenerator(Generator):
             2. At the next timestep, stochastically either:
                 - Reuse the previous jobs on the machines, or
                 - Randomly sample `num_machines` new jobs w/o replacement.
+            3. Repeat step 2 until the desired `makespan` is reached.
         - Extracting the info (duration and machine) about operations from the schedule and
          padding the operations to the max number of operations.
 
