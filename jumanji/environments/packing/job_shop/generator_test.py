@@ -110,9 +110,9 @@ class TestRandomGenerator:
 class TestMakespanGenerator:
     NUM_JOBS = 5
     NUM_MACHINES = 3
-    MAX_NUM_OPS = 6
-    MAX_OP_DURATION = 3
     MAKESPAN = 12
+    MAX_NUM_OPS = MAKESPAN
+    MAX_OP_DURATION = MAKESPAN
 
     @pytest.fixture
     def dense_schedule_generator(self) -> DenseScheduleGenerator:
@@ -140,8 +140,8 @@ class TestMakespanGenerator:
         """Validate that the random instance generator has the correct properties."""
         assert dense_schedule_generator.num_jobs == self.NUM_JOBS
         assert dense_schedule_generator.num_machines == self.NUM_MACHINES
-        assert dense_schedule_generator.max_num_ops == self.MAX_NUM_OPS
-        assert dense_schedule_generator.max_op_duration == self.MAX_OP_DURATION
+        assert dense_schedule_generator.max_num_ops == self.MAKESPAN
+        assert dense_schedule_generator.max_op_duration == self.MAKESPAN
         assert dense_schedule_generator.makespan == self.MAKESPAN
 
         key = jax.random.PRNGKey(0)
@@ -154,6 +154,7 @@ class TestMakespanGenerator:
         key = jax.random.PRNGKey(0)
         schedule = dense_schedule_generator._generate_schedule(key)
         assert schedule.shape == (self.NUM_MACHINES, self.MAKESPAN)
+        assert jnp.all((schedule >= 0) & (schedule < self.NUM_JOBS))
 
     def test_dense_schedule_generator__register_ops(
         self,
