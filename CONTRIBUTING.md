@@ -1,6 +1,11 @@
 # Contribution Guidelines
 
-Thank you for considering contributing to Jumanji! We love welcoming contributions from fellow programmers. There are several ways to contribute to the library, e.g. raising issues, writing documentation and code. This guide will help you in that process.
+Thank you for considering contributing to Jumanji! We love welcoming contributions from fellow
+programmers. There are several ways to contribute to the library, e.g. raising issues, writing
+documentation and code. This guide will help you in that process.
+
+To contribute a feature to Jumanji, one needs to fork the repository, implement the feature there,
+and then open a PR from the fork to the jumanji repository.
 
 ## Pull Request Checklist
 

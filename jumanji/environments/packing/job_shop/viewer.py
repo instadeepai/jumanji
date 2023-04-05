@@ -21,9 +21,10 @@ import numpy as np
 
 import jumanji.environments
 from jumanji.environments.packing.job_shop.types import State
+from jumanji.viewer import Viewer
 
 
-class JobShopViewer:
+class JobShopViewer(Viewer):
     FIGURE_SIZE = (15.0, 10.0)
     COLORMAP_NAME = "hsv"
 

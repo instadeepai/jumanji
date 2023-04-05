@@ -41,7 +41,6 @@ from typing import NamedTuple, Tuple
 import chex
 import jax
 import jax.numpy as jnp
-from typing_extensions import TypeAlias
 
 from jumanji.environments.commons.maze_utils.stack import (
     Stack,
@@ -50,8 +49,6 @@ from jumanji.environments.commons.maze_utils.stack import (
     stack_pop,
     stack_push,
 )
-
-Maze: TypeAlias = chex.Array
 
 EMPTY = 0
 WALL = 1
@@ -65,7 +62,7 @@ class MazeGenerationState(NamedTuple):
     - key: the Jax random generation key.
     """
 
-    maze: Maze
+    maze: chex.Array
     chambers: Stack
     key: chex.PRNGKey
 
@@ -79,7 +76,7 @@ def create_chambers_stack(maze_width: int, maze_height: int) -> Stack:
     return stack_push(chambers, jnp.array([0, 0, maze_width, maze_height]))
 
 
-def create_empty_maze(width: int, height: int) -> Maze:
+def create_empty_maze(width: int, height: int) -> chex.Array:
     """Create an empty maze."""
     return jnp.full((height, width), EMPTY, dtype=jnp.int8)
 
@@ -94,19 +91,19 @@ def random_odd(key: chex.PRNGKey, max_val: int) -> chex.Array:
     return jax.random.randint(key, (), 0, max_val // 2) * 2 + 1
 
 
-def draw_horizontal_wall(maze: Maze, x: int, y: int, width: int) -> Maze:
+def draw_horizontal_wall(maze: chex.Array, x: int, y: int, width: int) -> chex.Array:
     """Draw a horizontal wall on the maze starting from (x,y) with the specified width."""
 
-    def body_fun(i: int, maze: Maze) -> Maze:
+    def body_fun(i: int, maze: chex.Array) -> chex.Array:
         return maze.at[y, i].set(WALL)
 
     return jax.lax.fori_loop(x, x + width, body_fun, maze)
 
 
-def draw_vertical_wall(maze: Maze, x: int, y: int, height: int) -> Maze:
+def draw_vertical_wall(maze: chex.Array, x: int, y: int, height: int) -> chex.Array:
     """Draw a vertical wall on the maze starting from (x,y) with the specified height."""
 
-    def body_fun(i: int, maze: Maze) -> Maze:
+    def body_fun(i: int, maze: chex.Array) -> chex.Array:
         return maze.at[i, x].set(WALL)
 
     return jax.lax.fori_loop(y, y + height, body_fun, maze)
@@ -156,7 +153,7 @@ def split_vertically(
 
 def split_horizontally(
     state: MazeGenerationState, chamber: chex.Array
-) -> Tuple[Maze, Stack, chex.PRNGKey]:
+) -> Tuple[chex.Array, Stack, chex.PRNGKey]:
     """Split the chamber horizontally.
 
     Randomly draw a vertical wall to split the chamber horizontally. Randomly open a passage
@@ -202,7 +199,7 @@ def chambers_remaining(state: MazeGenerationState) -> int:
     return ~empty_stack(state.chambers)
 
 
-def generate_maze(width: int, height: int, key: chex.PRNGKey) -> Maze:
+def generate_maze(width: int, height: int, key: chex.PRNGKey) -> chex.Array:
     """Randomly generate a maze.
 
     Args:

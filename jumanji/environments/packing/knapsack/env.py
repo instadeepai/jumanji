@@ -22,10 +22,11 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.knapsack.env_viewer import KnapsackViewer
 from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
+from jumanji.environments.packing.knapsack.viewer import KnapsackViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class Knapsack(Environment[State]):
@@ -85,7 +86,7 @@ class Knapsack(Environment[State]):
         num_items: int = 50,
         total_budget: float = 12.5,
         reward_fn: Optional[RewardFn] = None,
-        render_mode: str = "human",
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `Knapsack` environment.
 
@@ -96,16 +97,16 @@ class Knapsack(Environment[State]):
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
                 Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
-            render_mode: string that defines the mode of rendering.
-                Choices are ["human, "rgb"], defaults to "human".
+            viewer: `Viewer` used for rendering. Defaults to `KnapsackViewer` with "human" render
+                mode.
         """
 
         self.num_items = num_items
         self.total_budget = total_budget
         self.reward_fn = reward_fn or DenseReward()
-        self.env_viewer = KnapsackViewer(
+        self._viewer = viewer or KnapsackViewer(
             name="Knapsack",
-            render_mode=render_mode,
+            render_mode="human",
             total_budget=total_budget,
         )
 
@@ -242,7 +243,7 @@ class Knapsack(Environment[State]):
         Args:
             state: the environment state to be rendered.
         """
-        return self.env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -261,7 +262,7 @@ class Knapsack(Environment[State]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self.env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -269,7 +270,7 @@ class Knapsack(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self.env_viewer.close()
+        self._viewer.close()
 
     def _update_state(self, state: State, action: chex.Numeric) -> State:
         """Updates the state of the environment.

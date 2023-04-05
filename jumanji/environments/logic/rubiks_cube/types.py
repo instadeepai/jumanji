@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-from chex import Array
 from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
@@ -32,14 +31,11 @@ class State:
     cube: 3D array whose cells contain the index of the corresponding colour of the sticker in the
         scramble.
     step_count: specifies how many timesteps have elapsed since environment reset.
-    action_history: array that indicates the entire history of applied moves (including those taken
-        on scrambling the cube in the environment reset).
     key: random key used for auto-reset.
     """
 
     cube: Cube  # (6, cube_size, cube_size)
     step_count: chex.Numeric  # ()
-    action_history: Array  # (num_scrambles_on_reset + time_limit, 3)
     key: chex.PRNGKey  # (2,)
 
 

@@ -13,16 +13,15 @@
 # limitations under the License.
 
 import chex
+import jax
 import jax.numpy as jnp
-from jax import random
-from jax.lax import dynamic_slice_in_dim
 
 from jumanji.environments.logic.minesweeper.constants import (
     IS_MINE,
     PATCH_SIZE,
     UNEXPLORED_ID,
 )
-from jumanji.environments.logic.minesweeper.types import Board, State
+from jumanji.environments.logic.minesweeper.types import State
 
 
 def create_flat_mine_locations(
@@ -30,11 +29,17 @@ def create_flat_mine_locations(
     num_rows: int,
     num_cols: int,
     num_mines: int,
-) -> Board:
+) -> chex.Array:
     """Create locations of mines on a board with a specified height, width, and number
     of mines. The locations are in flattened coordinates.
+
+    Args:
+        key: used for sampling mine positions.
+        num_rows: the height of the board.
+        num_cols: the width of the board.
+        num_mines: how many mines to place.
     """
-    return random.choice(
+    return jax.random.choice(
         key,
         num_rows * num_cols,
         shape=(num_mines,),
@@ -53,8 +58,7 @@ def is_solved(state: State) -> chex.Array:
 
 def is_valid_action(state: State, action: chex.Array) -> chex.Array:
     """Check if an action is exploring a square that has not already been explored."""
-    action_height, action_width = action
-    return state.board[action_height, action_width] == UNEXPLORED_ID
+    return state.board[tuple(action)] == UNEXPLORED_ID
 
 
 def get_mined_board(state: State) -> chex.Array:
@@ -68,28 +72,26 @@ def get_mined_board(state: State) -> chex.Array:
 
 def explored_mine(state: State, action: chex.Array) -> chex.Array:
     """Check if an action is exploring a square containing a mine."""
-    height, width = action
-    index = width + height * state.board.shape[-1]
+    row, col = action
+    index = col + row * state.board.shape[-1]
     mined_board = get_mined_board(state=state)
     return mined_board[index] == IS_MINE
 
 
 def count_adjacent_mines(state: State, action: chex.Array) -> chex.Array:
     """Count the number of mines in a 3x3 patch surrounding the selected action."""
-    action_height, action_width = action
-    mined_board = get_mined_board(state=state).reshape(
-        state.board.shape[-2], state.board.shape[-1]
-    )
+    action_row, action_col = action
+    mined_board = get_mined_board(state=state).reshape(*state.board.shape)
     pad_board = jnp.pad(mined_board, pad_width=PATCH_SIZE - 1)
-    selected_rows = dynamic_slice_in_dim(
-        pad_board, start_index=action_height + 1, slice_size=PATCH_SIZE, axis=-2
+    selected_rows = jax.lax.dynamic_slice_in_dim(
+        pad_board, start_index=action_row + 1, slice_size=PATCH_SIZE, axis=-2
     )
     return (
-        dynamic_slice_in_dim(
+        jax.lax.dynamic_slice_in_dim(
             selected_rows,
-            start_index=action_width + 1,
+            start_index=action_col + 1,
             slice_size=PATCH_SIZE,
             axis=-1,
         ).sum()
-        - mined_board[action_height, action_width]
+        - mined_board[tuple(action)]
     )
