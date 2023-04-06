@@ -6,8 +6,20 @@ from copy import deepcopy
 from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
 
 class AbstractTile():
+    """
+    Used to represent any possible 1x1 tile.
+
+    We store information about:
+    - The connections to the other tiles
+    - The neighbours that can connect to this tile
+    - The exclusions that cannot connect to this tile
+    """
+
     @property
     def get_all_tiles(self):
+        """
+        Return all possible tiles, labelled by their connections
+        """
         all_tiles = [
                         frozenset(),
                         frozenset({'top', 'bottom'}),
@@ -25,9 +37,15 @@ class AbstractTile():
     
     @property
     def get_all_directions(self):
+        """
+        Return all possible directions to connect to the tile
+        """
         return ['top', 'bottom', 'left', 'right'] 
 
     def get_reverse_direction(self, direction):
+        """
+        Return the opposite direction
+        """
         reverse_directions = {
             'top': 'bottom',
             'bottom': 'top',
@@ -38,6 +56,11 @@ class AbstractTile():
     
              
     def add_neighbours_exclusions(self):
+        """
+        For a given tile, add the neighbours and exclusions.
+        These are stored by looking at every possible direction, and checking if
+        the tile can connect to the other tile in that direction.
+        """
         # Add the neighbours
         for candidate in self.get_all_tiles:
             # Loop through all possible directions to connect to the tile
@@ -82,10 +105,16 @@ class Tile(AbstractTile):
 
 
 class WFCUtils():
+    """
+    Utility functions for the WFC algorithm
+    """
     def __init__(self):
         self.abstract_tile = AbstractTile()
 
     def check_side(self, side1, side2):
+        """
+        (Unsure!)
+        """
         ratio = 1.0
         num_pixels = np.prod(side1.shape)
         threshold = ratio * num_pixels
@@ -116,6 +145,18 @@ class WFCUtils():
 
 
     def reduce_prob(self, choices, tiles, row, col, rows, cols, TILE_IDX_LIST):
+        """
+        Reduce the probability of the remaining choices by removing invalid choices.
+
+        Args:
+            choices: The current choices for each tile
+            tiles: The current tiles
+            row: The current row
+            col: The current column
+            rows: The number of rows
+            cols: The number of columns
+            TILE_IDX_LIST: The list of possible tiles
+        """
         neighbor_choices = []
         # Changed this to be a function of the tile
         valid_choices = self.all_valid_choices(row, col, rows, cols, len(TILE_IDX_LIST))
@@ -147,6 +188,21 @@ class WFCUtils():
 
 
     def get_min_entropy_coord(self, entropy_board, observed):
+        """
+        Return the coordinates of the tile with the minimum entropy.
+
+        If there are multiple tiles with the same minimum entropy, return one
+        of them at random.
+
+        If there are no tiles with entropy > 0, return -1, -1
+
+        Args:
+            entropy_board (np.array): The entropy board
+            observed (np.array): The observed board
+
+        Returns:
+            (int, int): The coordinates of the tile with the minimum entropy
+        """
         rows, cols = entropy_board.shape
         min_row, min_col = -1, -1
         min_entropy = 1000
@@ -169,6 +225,9 @@ class WFCUtils():
 
 
     def update_entropy(self, choices, rows, cols):
+        """
+        Update the entropy board
+        """
         entropy_board = np.zeros(shape = (rows, cols))
         for row in range(rows):
             for col in range(cols):
@@ -177,6 +236,9 @@ class WFCUtils():
 
 
     def step(self, info, row_col = None):
+        """
+        Perform one step of the WFC algorithm
+        """
         entropy_board   = info['entropy_board']
         tile_idx_list   = info['tile_idx_list']
         observed        = info['observed']
@@ -226,10 +288,13 @@ class WFCUtils():
 
 
 class WFCBoard(AbstractBoard):
-    def __init__(self, x: int, y: int, num_agents: List[float]):
+    def __init__(self, x: int, y: int, num_agents: int):
         """
-        x: width of the board
-        y: height of the board
+
+        Args:
+            x: width of the board
+            y: height of the board
+            num_agents: number of agents
         """
         self.x = x
         self.y = y
@@ -241,11 +306,14 @@ class WFCBoard(AbstractBoard):
         self.utils = WFCUtils()
         self.num_agents = num_agents
     
-    def generate_weights(self, x, y, num_agents):
+    def generate_weights(self):
         """
         Currently just hard-coding a set of weights for the tiles.
 
         TODO: make this a function of the board size and number of agents
+
+        Returns:
+            weights (list): A list of weights for each tile
         """
         weights = [
         6, # empty
@@ -266,6 +334,13 @@ class WFCBoard(AbstractBoard):
             1.2. Follow the wire until it ends
             1.3. Add the wire to the output board
             1.4. Remove the wire from the input board
+        
+        Args:
+            final_canvas (np.array): The solved board with wires not separated
+
+        Returns:
+            output_array (np.array): The solved board with wires separated
+
         """
         canvas = deepcopy(final_canvas)
         # Initialise the output board
@@ -298,8 +373,12 @@ class WFCBoard(AbstractBoard):
     def follow_wire(self, start, canvas):
         """
         From a given start, follow the wire until it ends.
+
+        Args:
+            start:  Coordinates of the start of the wire
+            canvas: The board to follow the wire on
         Returns:
-            List of coordinates of the wire
+            wire: List of coordinates of the wire
         """
         # Initialise the wire
         wire = [start]
@@ -343,6 +422,12 @@ class WFCBoard(AbstractBoard):
     
     def remove_wires(self, wired_output, wire_counter):
         """
+        Given a solved board with wires, remove excess wires.
+
+        Args:
+            wired_output: solved board with wires
+            wire_counter: number of wires on the board
+
         TODO: Incorporate Ugo and Randy's fancy removal methods.
         """
         output = deepcopy(wired_output)
@@ -358,19 +443,31 @@ class WFCBoard(AbstractBoard):
 
     def update_weights(self):
         """
-        Idea: decrease the weights corresponding to turns, straight lines, and empty space;
+        Change the weights to make it more likely to generate a board with
+        more wires.
+
+        Works by decreasing the weights corresponding to turns, straight lines, and empty space;
         increase the weights corresponding to start and end points.
+
+        Edit weights in place.
         """
         for i in range(len(self.weights)):
             if i < 7:
                 self.weights[i] *= 0.8
             else:
                 self.weights[i] *= 1.2
-        
         return
 
 
-    def wfc(self, seed: int = None):
+    def wfc(self):
+        """
+        Main function that implements the WFC algorithm to create boards.
+
+        Returns:
+            info: dictionary containing information about the board
+            wired_output: final solved board as a numpy array
+            unwired_output: final solved board, with wires removed, as a numpy array
+        """
         cols = self.x
         rows = self.y
         tiles = AbstractTile().get_all_tiles
@@ -444,15 +541,21 @@ class WFCBoard(AbstractBoard):
                     unwired_output[i, j] = 0
                 else:
                     unwired_output[i, j] = wired_output[i,j]
-        return info, wired_output, unwired_output, wire_counter
+        return info, wired_output, unwired_output
     
 
     def return_training_board(self) -> np.ndarray:
-        _, _, unwired_output, _ = self.wfc()
+        """
+        Returns the board as a numpy array, with wires removed.
+        """
+        _, _, unwired_output = self.wfc()
         return unwired_output
     
     def return_solved_board(self) -> np.ndarray:
-        _, wired_output, _, _ = self.wfc()
+        """
+        Returns the board as a numpy array, with wires.
+        """
+        _, wired_output, _= self.wfc()
         return wired_output
         
 
