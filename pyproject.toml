@@ -50,7 +50,7 @@ version = "0.1.1"
 description = ""
 authors = ["Marta <marta.wolinska16@imperial.ac.uk>"]
 readme = "README.md"
-packages = [{include = "ic_routing_board_generation"}]
+packages = [{include = "ic_routing_board_generation"}, {include = "jumanji"}]
 
 [tool.poetry.dependencies]
 python = "<3.11,>=3.7"
