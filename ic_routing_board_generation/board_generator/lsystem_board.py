@@ -7,16 +7,20 @@ from typing import List, SupportsFloat as Numeric
 
 
 class LSystemBoardGen:
-    def __init__(self, rows: int, cols: int = None, num_agents:int = None) -> None:
-        if cols is None:
+    def __init__(self, rows, cols: int = None, num_agents:int = None) -> None:
+        if cols is not None:
+            self.rows = rows
+            self.cols = cols
+
+        elif isinstance(rows, int):
             self.rows = rows
             self.cols = rows
-        if len(rows) == 2:
+
+        elif len(rows) == 2:
             self.rows = rows[0]
             self.cols = rows[1]
         else:
-            self.rows = rows
-            self.cols = cols
+            raise ValueError('Rows and cols must be either int or tuple of length 2.')
 
         self.agent_count = num_agents
         self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
