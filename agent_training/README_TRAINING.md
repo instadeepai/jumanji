@@ -139,8 +139,8 @@ We will also copy the `agent_training` folder which contains `training_script.py
 
 Now run the following commands (assuming you're at jumanji_routing level):
 ```shell
-scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk -r /vol/bitbucket/dsk19/agent_training <your-username>@gpucluster2.doc.ic.ac.uk:~/vol/bitbucket/dsk19/
-scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk dist/jumanji_routing-0.1.0-py3-none-any.whl <your-username>@gpucluster2.doc.ic.ac.uk:~/vol/bitbucket/dsk19/
+scp -o ProxyJump=dsk19@shell5.doc.ic.ac.uk -r agent_training dsk19@gpucluster2.doc.ic.ac.uk:/vol/bitbucket/dsk19/
+scp -o ProxyJump=dsk19@shell5.doc.ic.ac.uk dist/jumanji_routing-0.1.1-py3-none-any.whl dsk19@gpucluster2.doc.ic.ac.uk:/vol/bitbucket/dsk19/
 ```
 
 Now ssh into the cluster and we will define the jobs.
