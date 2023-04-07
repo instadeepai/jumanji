@@ -11,12 +11,16 @@ class LSystemBoardGen:
         if cols is None:
             self.rows = rows
             self.cols = rows
-        if len(rows) == 2:
+
+        elif isinstance(rows, int):
+            self.rows = rows
+            self.cols = rows
+
+        elif len(rows) == 2:
             self.rows = rows[0]
             self.cols = rows[1]
         else:
-            self.rows = rows
-            self.cols = cols
+            raise ValueError('Rows and cols must be either int or tuple of length 2.')
 
         self.agent_count = num_agents
         self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
