@@ -139,8 +139,8 @@ We will also copy the `agent_training` folder which contains `training_script.py
 
 Now run the following commands (assuming you're at jumanji_routing level):
 ```shell
-scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk -r agent_training <your-username>@gpucluster2.doc.ic.ac.uk:~
-scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk dist/jumanji_routing-0.1.0-py3-none-any.whl <your-username>@gpucluster2.doc.ic.ac.uk:~
+scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk -r /vol/bitbucket/dsk19/agent_training <your-username>@gpucluster2.doc.ic.ac.uk:~/vol/bitbucket/dsk19/
+scp -o ProxyJump=<your-username>@shell5.doc.ic.ac.uk dist/jumanji_routing-0.1.0-py3-none-any.whl <your-username>@gpucluster2.doc.ic.ac.uk:~/vol/bitbucket/dsk19/
 ```
 
 Now ssh into the cluster and we will define the jobs.
@@ -149,6 +149,7 @@ Now ssh into the cluster and we will define the jobs.
 If this is your first time running a job since the wheel file was updated then install it into your virtual environment.
 If you're using a new wheel remember to uninstall the previous version.
 
+Might be better to do this on a non-gpu machine and place the pip install in `vol/bitbucket/dsk19/`
 ```shell
 export PATH=/vol/bitbucket/${USER}/myvenv/bin/:$PATH
 source activate
