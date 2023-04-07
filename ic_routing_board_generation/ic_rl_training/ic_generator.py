@@ -134,54 +134,93 @@ class ICGenerators(Generator):
         Returns:
             A `Connector` state.
         """
-        key, pos_key = jax.random.split(key)
-        starts_flat, targets_flat = jax.random.choice(
-            key=pos_key,
-            a=jnp.arange(self.grid_size**2),
-            shape=(2, self.num_agents),  # Start and target positions for all agents
-            replace=False,  # Start and target positions cannot overlap
-        )
 
-        # Create 2D points from the flat arrays.
-        starts = jnp.divmod(starts_flat, self.grid_size)
-        targets = jnp.divmod(targets_flat, self.grid_size)
+        if self.board_generator == "uniform":
+            key, pos_key = jax.random.split(key)
+            starts_flat, targets_flat = jax.random.choice(
+                key=pos_key,
+                a=jnp.arange(self.grid_size ** 2),
+                shape=(2, self.num_agents),
+                # Start and target positions for all agents
+                replace=False,  # Start and target positions cannot overlap
+            )
 
-        # Get the agent values for starts and positions.
-        agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
-        agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
+            # Create 2D points from the flat arrays.
+            starts = jnp.divmod(starts_flat, self.grid_size)
+            targets = jnp.divmod(targets_flat, self.grid_size)
 
-        # Create empty grid.
-        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
+            # Get the agent values for starts and positions.
+            agent_position_values = jax.vmap(get_position)(
+                jnp.arange(self.num_agents))
+            agent_target_values = jax.vmap(get_target)(
+                jnp.arange(self.num_agents))
 
-        board_class = BoardGenerator.get_board_generator(
-            board_enum=self.board_generator)
-        board = board_class(self.grid_size, self.grid_size, self.num_agents)
-        pins = board.return_training_board()
-        grid = jnp.array(pins, int)
+            # Create empty grid.
+            grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
 
-        starts_flat, targets_flat = get_heads_and_targets(pins)
+            # Place the agent values at starts and targets.
+            grid = grid.at[starts].set(agent_position_values)
+            grid = grid.at[targets].set(agent_target_values)
+
+            # Create the agent pytree that corresponds to the grid.
+            agents = jax.vmap(Agent)(
+                id=jnp.arange(self.num_agents),
+                start=jnp.stack(starts, axis=1),
+                target=jnp.stack(targets, axis=1),
+                position=jnp.stack(starts, axis=1),
+            )
+
+            step_count = jnp.array(0, jnp.int32)
+
+        else:
+            key, pos_key = jax.random.split(key)
+            starts_flat, targets_flat = jax.random.choice(
+                key=pos_key,
+                a=jnp.arange(self.grid_size**2),
+                shape=(2, self.num_agents),  # Start and target positions for all agents
+                replace=False,  # Start and target positions cannot overlap
+            )
+
+            # Create 2D points from the flat arrays.
+            starts = jnp.divmod(starts_flat, self.grid_size)
+            targets = jnp.divmod(targets_flat, self.grid_size)
+
+            # Get the agent values for starts and positions.
+            agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
+            agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
+
+            # Create empty grid.
+            grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
+
+            board_class = BoardGenerator.get_board_generator(
+                board_enum=self.board_generator)
+            board = board_class(self.grid_size, self.grid_size, self.num_agents)
+            pins = board.return_training_board()
+            grid = jnp.array(pins, int)
+
+            starts_flat, targets_flat = get_heads_and_targets(pins)
 
 
-        starts = jnp.divmod(starts_flat, self.grid_size)
-        targets = jnp.divmod(targets_flat, self.grid_size)
+            starts = jnp.divmod(starts_flat, self.grid_size)
+            targets = jnp.divmod(targets_flat, self.grid_size)
 
-        agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
-        agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
+            agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
+            agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
 
-        # Place the agent values at starts and targets.
-        grid = grid.at[starts].set(agent_position_values)
-        grid = grid.at[targets].set(agent_target_values)
+            # Place the agent values at starts and targets.
+            grid = grid.at[starts].set(agent_position_values)
+            grid = grid.at[targets].set(agent_target_values)
 
-        # Create the agent pytree that corresponds to the grid.
+            # Create the agent pytree that corresponds to the grid.
 
-        agents = jax.vmap(Agent)(
-            id=jnp.arange(self.num_agents),
-            start=jnp.stack(starts, axis=1),
-            target=jnp.stack(targets, axis=1),
+            agents = jax.vmap(Agent)(
+                id=jnp.arange(self.num_agents),
+                start=jnp.stack(starts, axis=1),
+                target=jnp.stack(targets, axis=1),
 
-            position=jnp.stack(starts, axis=1),
-        )
+                position=jnp.stack(starts, axis=1),
+            )
 
-        step_count = jnp.array(0, jnp.int32)
+            step_count = jnp.array(0, jnp.int32)
 
         return State(key=key, grid=grid, step_count=step_count, agents=agents)

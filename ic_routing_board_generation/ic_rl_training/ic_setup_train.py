@@ -20,7 +20,6 @@ import jax.numpy as jnp
 import optax
 from omegaconf import DictConfig
 
-import jumanji
 from ic_routing_board_generation.ic_rl_training.ic_generator import \
     ICGenerators, UniformRandomGenerator
 from ic_routing_board_generation.interface.board_generator_interface import \

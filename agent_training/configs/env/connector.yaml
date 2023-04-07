@@ -2,7 +2,7 @@ name: connector
 registered_version: Connector-v0
 
 ic_board:
-    board_name: uniform
+    board_name: bfs_base
     grid_size: 8
     num_agents: 5
 
