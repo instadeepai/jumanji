@@ -33,7 +33,7 @@ class BFSBoard(AbstractBoard):
         self.max_attempts = max_attempts
         self._wires_on_board = 0
         self.clip_method_dict = self.get_clip_method_dict()
-        # self.fill_board(verbose=False)
+        self.fill_board(verbose=False)
 
     def pick_start_end(self, min_dist: Optional[int] = None) -> Tuple:
         """Picks a random start and end point for a wire.
