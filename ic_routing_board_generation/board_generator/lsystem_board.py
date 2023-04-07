@@ -7,7 +7,7 @@ from typing import List, SupportsFloat as Numeric
 
 
 class LSystemBoardGen:
-    def __init__(self, rows: int, cols: int = None, num_agents:int = None) -> None:
+    def __init__(self, rows, cols: int = None, num_agents:int = None) -> None:
         if cols is None:
             self.rows = rows
             self.cols = rows
