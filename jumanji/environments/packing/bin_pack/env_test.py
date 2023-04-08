@@ -17,7 +17,6 @@ from typing import Callable
 import chex
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from jumanji import tree_utils
@@ -33,27 +32,9 @@ from jumanji.environments.packing.bin_pack.types import (
     item_from_space,
     location_from_space,
 )
-from jumanji.testing.env_not_smoke import SelectActionFn, check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
-
-
-@pytest.fixture
-def bin_pack_random_select_action(bin_pack: BinPack) -> SelectActionFn:
-    num_ems, num_items = np.asarray(bin_pack.action_spec().num_values)
-
-    def select_action(key: chex.PRNGKey, observation: Observation) -> chex.Array:
-        """Randomly sample valid actions, as determined by `observation.action_mask`."""
-        ems_item_id = jax.random.choice(
-            key=key,
-            a=num_ems * num_items,
-            p=observation.action_mask.flatten(),
-        )
-        ems_id, item_id = jnp.divmod(ems_item_id, num_items)
-        action = jnp.array([ems_id, item_id], jnp.int32)
-        return action
-
-    return jax.jit(select_action)  # type: ignore
 
 
 @pytest.fixture(scope="function")
@@ -160,17 +141,12 @@ def test_bin_pack__render_does_not_smoke(bin_pack: BinPack, dummy_state: State) 
     bin_pack.close()
 
 
-def test_bin_pack__does_not_smoke(
-    bin_pack: BinPack,
-    bin_pack_random_select_action: SelectActionFn,
-) -> None:
+def test_bin_pack__does_not_smoke(bin_pack: BinPack) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(bin_pack, bin_pack_random_select_action)
+    check_env_does_not_smoke(bin_pack)
 
 
-def test_bin_pack__pack_all_items_dummy_instance(
-    bin_pack: BinPack, bin_pack_random_select_action: SelectActionFn
-) -> None:
+def test_bin_pack__pack_all_items_dummy_instance(bin_pack: BinPack) -> None:
     """Functional test to check that the dummy instance can be completed with a random agent."""
     step_fn = jax.jit(bin_pack.step)
     key = jax.random.PRNGKey(0)
@@ -178,7 +154,9 @@ def test_bin_pack__pack_all_items_dummy_instance(
 
     while not timestep.last():
         action_key, key = jax.random.split(key)
-        action = bin_pack_random_select_action(action_key, timestep.observation)
+        action = bin_pack.action_spec().sample(
+            action_key, timestep.observation.action_mask
+        )
         state, timestep = step_fn(state, action)
 
     assert jnp.array_equal(state.items_placed, state.items_mask)

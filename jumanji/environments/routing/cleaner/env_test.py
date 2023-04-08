@@ -20,7 +20,7 @@ import pytest
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.cleaner.generator import Generator
-from jumanji.environments.routing.cleaner.types import Observation, State
+from jumanji.environments.routing.cleaner.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
@@ -176,19 +176,7 @@ class TestCleaner:
         assert jnp.all(action_mask[2] == jnp.array([False, False, False, True]))
 
     def test_cleaner__does_not_smoke(self, cleaner: Cleaner) -> None:
-        def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
-            @jax.vmap  # map over the keys and agents
-            def select_action(
-                key: chex.PRNGKey, agent_action_mask: chex.Array
-            ) -> chex.Array:
-                return jax.random.choice(
-                    key, jnp.arange(4), p=agent_action_mask.flatten()
-                )
-
-            subkeys = jax.random.split(key, cleaner.num_agents)
-            return select_action(subkeys, observation.action_mask)
-
-        check_env_does_not_smoke(cleaner, select_actions)
+        check_env_does_not_smoke(cleaner)
 
     def test_cleaner__compute_extras(self, cleaner: Cleaner, key: chex.PRNGKey) -> None:
         state, _ = cleaner.reset(key)

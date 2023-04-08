@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, TypeVar, Union
+from typing import Callable, Optional, TypeVar
 
 import chex
 import jax
-import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -26,42 +25,13 @@ Action = TypeVar("Action")
 SelectActionFn = Callable[[chex.PRNGKey, Observation], Action]
 
 
-def make_random_select_action_fn(
-    action_spec: Union[
-        specs.BoundedArray, specs.DiscreteArray, specs.MultiDiscreteArray
-    ]
-) -> SelectActionFn:
+def make_random_select_action_fn(action_spec: specs.Spec) -> SelectActionFn:
     """Create select action function that chooses random actions."""
 
-    def select_action(key: chex.PRNGKey, state: chex.ArrayTree) -> chex.ArrayTree:
-        del state
-        if (
-            isinstance(action_spec, specs.DiscreteArray)
-            or isinstance(action_spec, specs.MultiDiscreteArray)
-            or jnp.issubdtype(action_spec.dtype, jnp.integer)
-        ):
-            action = jax.random.randint(
-                key=key,
-                shape=action_spec.shape,
-                minval=action_spec.minimum,
-                maxval=action_spec.maximum + 1,
-                dtype=action_spec.dtype,
-            )
-        elif isinstance(action_spec, specs.BoundedArray):
-            assert jnp.issubdtype(action_spec.dtype, jnp.floating)
-            action = jax.random.uniform(
-                key=key,
-                shape=action_spec.shape,
-                dtype=action_spec.dtype,
-                minval=action_spec.minimum,
-                maxval=action_spec.maximum,
-            )
-        else:
-            raise ValueError(
-                "Only supported for action specs of type `specs.BoundedArray, "
-                "specs.DiscreteArray or specs.MultiDiscreteArray`."
-            )
-        return action
+    def select_action(key: chex.PRNGKey, observation: chex.ArrayTree) -> chex.ArrayTree:
+        if hasattr(observation, "action_mask"):
+            return action_spec.sample(key, observation.action_mask)
+        return action_spec.sample(key)
 
     return select_action
 
@@ -74,17 +44,8 @@ def check_env_does_not_smoke(
     """Run an episode of the environment, with a jitted step function to check no errors occur."""
     action_spec = env.action_spec()
     if select_action is None:
-        if isinstance(action_spec, specs.BoundedArray) or isinstance(
-            action_spec, specs.DiscreteArray
-        ):
-            select_action = make_random_select_action_fn(action_spec)
-        else:
-            raise NotImplementedError(
-                f"Currently the `make_random_select_action_fn` only works for environments with "
-                f"either discrete actions or bounded continuous actions. The input environment to "
-                f"this test has an action spec of type {action_spec}, and therefore requires "
-                f"a custom `SelectActionFn` to be provided to this test."
-            )
+        select_action = make_random_select_action_fn(action_spec)
+
     key = jax.random.PRNGKey(0)
     key, reset_key = jax.random.split(key)
     state, timestep = env.reset(reset_key)
