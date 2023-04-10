@@ -185,30 +185,11 @@ if __name__ == '__main__':
 
     # Fill the board
     board.fill(n_steps=10, pushpullnone_ratios=[2,1,1]) # <- this is where most of the augmenting happens
-    # print(board.return_training_board())
+    print(board.return_training_board())
     print(board.return_solved_board())
     
     # edit specific board wires
-    # board.push(agent_num=5) # <- causes the 5th wire to expand from either end, if possible
-    # board.pull(agent_num=1) # <- causes the 1st wire to contract from either end, if possible
-    # print(board.return_training_board())
-    # print(board.return_solved_board())
-    for i in range(1000):
-        p = random.random()
-        board3 = LSystemBoardGen(rows=10, cols=10, num_agents=5)
-        print(f'Board {i + 1} generated')
-        # Fill the board
-        board3.fill(n_steps=10, pushpullnone_ratios=[2, 1, 1])  # <- this is where most of the augmenting happens
-        print('filled the board the board')
-        if p < 0.1:
-            print('Solved Board: ')
-            print(board3.return_solved_board())
-        print(f'Board {i + 1} filled')
-        # boardprocessor3 = BoardProcessor(board3)
-        # print(f'Board {i + 1} processed')
-        # if p < 0.1:
-            # print(boardprocessor3.board_layout)
-        # boardprocessor3.get_board_statistics()
-        # print(f'Board {i + 1} statistics calculated')
-        # if (i + 1) % 100 == 0:
-            # print(f'{i + 1} boards processed')
+    board.push(agent_num=5) # <- causes the 5th wire to expand from either end, if possible
+    board.pull(agent_num=1) # <- causes the 1st wire to contract from either end, if possible
+    print(board.return_training_board())
+    print(board.return_solved_board())
