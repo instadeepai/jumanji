@@ -45,11 +45,16 @@ class LSystemBoardGen:
                     board[idx0, idx1] = agent
                     break
         return board
+    
+
+    # def add_one_agent(self, agent_num:int):
+        # pass
+
 
     def assign_agent_states(self):
         """Construct agent from board info. 
-        
-        Each agent has the following attributes: (agent_num:int, deque)
+
+        Each agent has the following attributes: (agent_num:int, deque).
         """
         agents = []
         for agent_num in range(1, 1+self.agent_count):
@@ -67,7 +72,7 @@ class LSystemBoardGen:
         return empty_neighbour_coords[:,0,:]
 
     def push(self, agent_num:int)->None:
-        """Pushes (grows) agent agent_num in a random direction."""
+        """Pushes (grows) agent `agent_num` in a random direction."""
         agent = self.agents[agent_num-1]
         growth_choice = np.random.randint(-1, 1) # choose to grow from the head or the tail, :TO UPDATE
         nbs = self.find_next_pos(agent[1][growth_choice])
@@ -121,9 +126,15 @@ class LSystemBoardGen:
         
         # a check to ensure each worm is at least 2 long
         for agent in self.agents:
-            while len(agent[1]) < 2:        # if the agent deque is less than 2 long,
-                self.push(agent[0])         # push it to make it 2 long
-        
+            tries = 0
+            while len(agent[1]) < 2:            # if the agent deque is less than 2 long,
+                self.push(agent[0])             # push it to make it 2 long
+                tries += 1
+                if tries == 10: # re-initialise the board due to a stuck length-1 node
+                    print('re-initialising the board')
+                    self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
+                    self.fill(n_steps, pushpullnone_ratios)
+    
         return None
 
     def convert_to_jumanji(self, route=True, new_version=True)->np.ndarray:
