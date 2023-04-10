@@ -305,8 +305,11 @@ class WFCBoard(AbstractBoard):
         #self
         self.utils = WFCUtils()
         self.num_agents = num_agents
+
+        # Generate the boards
+        _, self.wired_board, self.unwired_board = self.wfc()
     
-    def generate_weights(self):
+    def generate_weights(self, x, y, num_agents):
         """
         Currently just hard-coding a set of weights for the tiles.
 
@@ -548,15 +551,13 @@ class WFCBoard(AbstractBoard):
         """
         Returns the board as a numpy array, with wires removed.
         """
-        _, _, unwired_output = self.wfc()
-        return unwired_output
+        return self.unwired_board
     
     def return_solved_board(self) -> np.ndarray:
         """
         Returns the board as a numpy array, with wires.
         """
-        _, wired_output, _= self.wfc()
-        return wired_output
+        return self.wired_board
         
 
 
@@ -565,7 +566,8 @@ class WFCBoard(AbstractBoard):
 if __name__ == "__main__":
     # These correspond to the weights we will use to pick tiles
     # Organised by index
-    board = WFCBoard(20, 20, 12)
-    info, wired_output, unwired_output, wire_counter = board.wfc()
+    board = WFCBoard(8, 8, 5)
+    unwired_output = board.return_training_board()
+    wired_output = board.return_solved_board()
     print(wired_output)
     print(unwired_output)
