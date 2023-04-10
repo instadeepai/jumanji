@@ -125,7 +125,7 @@ class LSystemBoardGen:
                     self.pull(agent)
         
         # a check to ensure each worm is at least 2 long
-        for agent in self.agents:
+        for agent in self.agents: 
             tries = 0
             while len(agent[1]) < 2:            # if the agent deque is less than 2 long,
                 self.push(agent[0])             # push it to make it 2 long
