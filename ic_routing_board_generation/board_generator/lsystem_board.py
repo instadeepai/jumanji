@@ -182,7 +182,7 @@ class LSystemBoardGen:
         return self.convert_to_jumanji(route=False)
 
     def return_solved_board(self)->np.ndarray:
-        # self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
+        self.fill(n_steps=100, pushpullnone_ratios=[2,1,1])
         return self.convert_to_jumanji(route=True)
 
 
@@ -201,4 +201,3 @@ if __name__ == '__main__':
     board.pull(agent_num=1) # <- causes the 1st wire to contract from either end, if possible
     print(board.return_training_board())
     print(board.return_solved_board())
-    

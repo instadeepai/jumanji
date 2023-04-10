@@ -1,3 +1,5 @@
+import collections
+import itertools
 from collections import Counter
 from typing import List
 
@@ -20,6 +22,7 @@ class EvaluateEmptyBoard:
         self.empty_slot_score = -2
         self.end_score = 3
         self.wire_score = 2
+        self.scored_board = self.score_from_neighbours()
         self.board_statistics = self._get_board_statistics()
 
     def assess_board(self):
@@ -41,11 +44,20 @@ class EvaluateEmptyBoard:
 
         filter = np.array(
             [
-                [0, 1, 0],
                 [1, 2, 1],
-                [0, 1, 0],
+                [2, 4, 2],
+                [1, 2, 1],
             ]
         )
+
+        # filter = np.array(
+        #     [
+        #         [0, 1, 0],
+        #         [1, 2, 1],
+        #         [0, 1, 0],
+        #     ]
+        # )
+
         scores = []
         for row in range(1, len(padded_array) - 1):
             for column in range(1, len(padded_array[0]) - 1):
@@ -58,6 +70,7 @@ class EvaluateEmptyBoard:
                 scores.append(score)
 
         scored_array = np.array(scores).reshape((len(self.filled_board), len(self.filled_board[0])))
+        # print(len(np.unique(scored_array)))
         return scored_array
 
     def _change_heads_to_wire_ids(self) -> np.ndarray:
@@ -130,6 +143,7 @@ class EvaluateEmptyBoard:
     def _get_board_statistics(self):
         board_stats = BoardProcessor(self.filled_board).get_board_statistics()
         board_stats["count_detours"] = self.count_detours()
+        board_stats["heatmap_score_diversity"] = len(np.unique(self.scored_board))
         return board_stats
 
 
@@ -150,7 +164,8 @@ def evaluate_generator_outputs_averaged_on_n_boards(
         sum_all_boards = np.zeros([board_parameters.rows, board_parameters.columns])
         for board in board_list:
             board_evaluator = EvaluateEmptyBoard(board)
-            scored_board = board_evaluator.score_from_neighbours()
+            # scored_board = board_evaluator.score_from_neighbours()
+            scored_board = board_evaluator.scored_board
             sum_all_boards += scored_board
             if board_statistics is None:
                 board_statistics = board_evaluator.board_statistics
@@ -160,7 +175,15 @@ def evaluate_generator_outputs_averaged_on_n_boards(
                 new_board_statistics = board_evaluator.board_statistics
                 new_board_statistics.pop("wire_lengths")
                 new_board_statistics.pop("wire_bends")
-                board_statistics = Counter(board_statistics) + Counter(new_board_statistics)
+
+                # using defaultdict
+                temp_dict = collections.defaultdict(int)
+
+                for key, value in itertools.chain(board_statistics.items(), new_board_statistics.items()):
+                    temp_dict[key] += value
+
+                board_statistics = dict(temp_dict)
+                # board_statistics = Counter(board_statistics) + Counter(new_board_statistics)
 
         scores_list.append(sum_all_boards / number_of_boards)
         board_names.append(str(board_parameters.generator_type.value))

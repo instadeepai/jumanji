@@ -6,21 +6,21 @@ from ic_routing_board_generation.board_generator.grid import Grid
 
 
 class BFSBoard(AbstractBoard):
-    def __init__(self, rows: int, columns: int, num_agents: int, max_attempts: int = 10) -> None:
+    def __init__(self, rows: int, cols: int, num_agents: int, max_attempts: int = 10) -> None:
         """Constructor for the Board class.
 
         Args:
             rows: number of rows in the board
-            columns: number of columns in the board
+            cols: number of columns in the board
             num_agents: maximum number of wires to place on the board
             max_attempts: maximum number of attempts to fill the board
         Returns:
             None
             """
-        super().__init__(rows=rows, cols=columns, num_agents=num_agents)
+        super().__init__(rows=rows, cols=cols, num_agents=num_agents)
         self.rows = rows
-        self.columns = columns
-        self.grid = Grid(rows, columns)
+        self.columns = cols
+        self.grid = Grid(rows, cols)
         self.num_agents = num_agents
         self.paths = []
         self.starts = []
@@ -566,7 +566,7 @@ class BFSBoard(AbstractBoard):
 if __name__ == '__main__':
     # Example usage
     # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
-    board = BFSBoard(rows=10, columns=10, num_agents=10, max_attempts=10)
+    board = BFSBoard(rows=10, cols=10, num_agents=10, max_attempts=10)
 
     # Perform a standard fill
     board.fill_board(verbose=False)
