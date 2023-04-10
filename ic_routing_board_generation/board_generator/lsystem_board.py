@@ -184,3 +184,21 @@ class LSystemBoardGen:
     def return_solved_board(self)->np.ndarray:
         # self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
         return self.convert_to_jumanji(route=True)
+
+
+if __name__ == '__main__':
+    # Example usage
+    # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
+    board = LSystemBoardGen(rows=10, cols=10, num_agents=10)
+
+    # Fill the board
+    board.fill(n_steps=10, pushpullnone_ratios=[2,1,1]) # <- this is where most of the augmenting happens
+    print(board.return_training_board())
+    print(board.return_solved_board())
+    
+    # edit specific board wires
+    board.push(agent_num=5) # <- causes the 5th wire to expand from either end, if possible
+    board.pull(agent_num=1) # <- causes the 1st wire to contract from either end, if possible
+    print(board.return_training_board())
+    print(board.return_solved_board())
+    
