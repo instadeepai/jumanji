@@ -103,6 +103,8 @@ class LSystemBoardGen:
                 _ = agent[1].popleft()
             elif shrink_choice == -1:
                 _ = agent[1].pop()
+            else:
+                print('popping not done correctly')
 
     def fill(self, n_steps:int=5, pushpullnone_ratios:List[Numeric]=[2, 1, 1])->None:
         """Fill the board from its current state.
@@ -124,18 +126,24 @@ class LSystemBoardGen:
                 elif action == 'pull':
                     self.pull(agent)
         
+        
         # a check to ensure each worm is at least 2 long
-        for agent in self.agents: 
+        short_agents = [agent for agent in self.agents if len(agent[1])<2]
+        for agent in short_agents:
             tries = 0
-            while len(agent[1]) < 2:            # if the agent deque is less than 2 long,
-                self.push(agent[0])             # push it to make it 2 long
+            while len(agent[1])<2 and tries<10:            # if the agent deque is less than 2 long,
                 tries += 1
-                if tries == 10: # re-initialise the board due to a stuck length-1 node
-                    print('re-initialising the board')
+                self.push(agent[0])                        # push it to make it 2 long
+            else:
+                if len(agent[1]) >= 2:
+                    continue
+                else:
                     self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
+                    self.agents = self.assign_agent_states()
                     self.fill(n_steps, pushpullnone_ratios)
-    
+                    break
         return None
+            
 
     def convert_to_jumanji(self, route=True, new_version=True)->np.ndarray:
         """Converts the generated board into a Jumanji-compatible one."""
@@ -176,20 +184,3 @@ class LSystemBoardGen:
     def return_solved_board(self)->np.ndarray:
         # self.fill(n_steps=10, pushpullnone_ratios=[2,1,1])
         return self.convert_to_jumanji(route=True)
-
-
-if __name__ == '__main__':
-    # Example usage:
-    # Generate a board with 10 rows, 10 columns, 10 wires (num_agents) and with max 10 attempts to place each wire
-    board = LSystemBoardGen(rows=10, cols=10, num_agents=10)
-
-    # Fill the board
-    board.fill(n_steps=10, pushpullnone_ratios=[2,1,1]) # <- this is where most of the augmenting happens
-    print(board.return_training_board())
-    print(board.return_solved_board())
-    
-    # edit specific board wires
-    board.push(agent_num=5) # <- causes the 5th wire to expand from either end, if possible
-    board.pull(agent_num=1) # <- causes the 1st wire to contract from either end, if possible
-    print(board.return_training_board())
-    print(board.return_solved_board())
