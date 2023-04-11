@@ -26,12 +26,12 @@ from tqdm.auto import trange
 from jumanji.training import utils
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.loggers import TerminalLogger
-from ic_routing_board_generation.ic_rl_training.ic_setup_train import  (
+from ic_routing_board_generation.ic_rl_training.ic_setup_train import (
     setup_agent,
     setup_env,
     setup_evaluators,
     setup_logger,
-    setup_training_state,
+    setup_training_state, PickleLogger,
 )
 from jumanji.training.timer import Timer
 from jumanji.training.types import TrainingState
@@ -109,6 +109,8 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
                 label="train",
                 env_steps=env_steps,
             )
+    if isinstance(logger, PickleLogger):
+        return dict(logger.eval_log_stochastic)
 
 
 if __name__ == "__main__":

@@ -57,16 +57,20 @@ def generate_n_boards(
     board_list = []
     board_class = BoardGenerator.get_board_generator(board_parameters.generator_type)
     board_generator = board_class(
-        rows=board_parameters.rows, columns=board_parameters.columns,
+        rows=board_parameters.rows, cols=board_parameters.columns,
         num_agents=board_parameters.number_of_wires,
     )
     for _ in range(number_of_boards):
         board = None
-        none_coutner = 0
+        none_counter = 0
         while board is None:
+            board_generator = board_class(
+                rows=board_parameters.rows, cols=board_parameters.columns,
+                num_agents=board_parameters.number_of_wires,
+            )
             board = board_generator.return_solved_board()
-            none_coutner += 1
-            if none_coutner == 100:
+            none_counter += 1
+            if none_counter == 100:
                 raise ValueError("Failed to generate board 100 times")
         board_list.append(board)
 

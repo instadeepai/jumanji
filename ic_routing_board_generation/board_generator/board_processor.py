@@ -60,7 +60,8 @@ class BoardProcessor:
         while True:
             # Get the next position
             target_found, next_pos = self.get_next_pos(i, j, head_num)
-
+            if target_found is None:
+                break
             # Update the current position
             i, j = next_pos
             # Append the current position to the path
@@ -102,7 +103,7 @@ class BoardProcessor:
         # Return None if no valid position is found
         # print(f'head_num: {head_num}, wire_num: {wire_num}, target_num: {target_num}')
 
-        return None
+        return None, None
 
     def is_valid(self, i: int, j: int) -> bool:
         # Checks if the position is valid

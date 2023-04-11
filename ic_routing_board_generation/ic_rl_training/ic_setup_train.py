@@ -11,8 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from typing import Tuple, Optional
+import collections
+import json
+import logging
+from collections import defaultdict
+from itertools import chain
+from typing import Tuple, Optional, Dict, Any
 
 import chex
 import jax
@@ -55,6 +59,60 @@ from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
 from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
 
+class PickleLogger(Logger):
+    """Logs to terminal."""
+
+    def __init__(
+        self, name: Optional[str] = None, save_checkpoint: bool = False
+    ) -> None:
+        super().__init__(save_checkpoint=save_checkpoint)
+        if name:
+            logging.info(f"Experiment: {name}.")
+        self.file_name = "martas_test_file.json"
+        self.training_log = {}
+        self.eval_log_greedy = {}
+        self.eval_log_stochastic = {}
+        self.episode_counter = 0
+
+    def _format_values(self, data: Dict[str, Any]) -> str:
+        return {key: float(value) for key,value in sorted(data.items())}
+
+    def return_eval_dict(self):
+        return {key: (value / self.episode_counter) for key, value in self.eval_log_greedy.items()}
+
+    def write(
+        self,
+        data: Dict[str, Any],
+        label: Optional[str] = None,
+        env_steps: Optional[int] = None,
+    ) -> None:
+
+        self.episode_counter += 1
+
+        data = self._format_values(data)
+        if label == "train":
+            self.training_log = self._update_dictionary(self.training_log, data)
+        elif label == "eval_stochastic":
+            self.eval_log_stochastic = self._update_dictionary(self.eval_log_stochastic, data)
+        elif label == "eval_greedy":
+            self.eval_log_greedy = self._update_dictionary(self.eval_log_greedy, data)
+
+    def _update_dictionary(self, dictionary_to_update, new_dictionary):
+        temp_dict = collections.defaultdict(list)
+        if not dictionary_to_update:
+            # temp_dict = new_dictionary
+            for key, value in new_dictionary.items():
+                temp_dict[key] = [value]
+        else:
+            temp_dict = collections.defaultdict(list)
+            for key, value in dictionary_to_update.items():
+                temp_dict[key] = value + [new_dictionary[key]]
+            # temp_dict = collections.defaultdict(int)
+            # for key, value in chain(dictionary_to_update.items(), new_dictionary.items()):
+            #     temp_dict[key] += value
+
+        return temp_dict
+
 
 def setup_logger(cfg: DictConfig) -> Logger:
     logger: Logger
@@ -71,6 +129,11 @@ def setup_logger(cfg: DictConfig) -> Logger:
         )
     elif cfg.logger.type == "terminal":
         logger = TerminalLogger(
+            name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
+        )
+
+    elif cfg.logger.type == "pickle":
+        logger = PickleLogger(
             name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
         )
     else:
