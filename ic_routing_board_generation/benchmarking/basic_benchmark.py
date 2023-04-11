@@ -5,14 +5,19 @@ import jax.numpy as jnp
 import numpy as np
 from matplotlib import pyplot as plt
 
+from agent_training.training_script import train
 from ic_routing_board_generation.benchmarking.benchmark_data_model import \
     BoardGenerationParameters, BenchmarkData
 from ic_routing_board_generation.benchmarking.benchmark_utils import \
     make_benchmark_folder, files_list_from_benchmark_experiment
-from ic_routing_board_generation.ic_routing.route import Route
+import warnings
+warnings.filterwarnings("ignore")
+
+from hydra import compose, initialize
+
 
 # TODO (Marta): create master plotting loop for bar charts
-# TODO (Marta): refactor [plotting functions into plotting utils
+# TODO (Marta): refactor plotting functions into plotting utils
 
 class BasicBenchmark:
     def __init__(
@@ -50,24 +55,24 @@ class BasicBenchmark:
 
     @classmethod
     def from_simulation(cls,
-        benchmark_parameters_list: List[BoardGenerationParameters],
-        number_of_runs: int,
-        save_outputs: bool = False,
-    ):
-        # TODO (MW): Clean up this method
+                        benchmark_parameters_list: List[BoardGenerationParameters],
+                        num_epochs: int,
+                        save_outputs: bool = False,
+                        ):
         benchmark_data = []
         benchmark_folder = None if not save_outputs else make_benchmark_folder(with_time=True)
         for board_parameters in benchmark_parameters_list:
-            number_of_cells = board_parameters.rows * board_parameters.columns
-            router = Route(
-                instance_generator_type=board_parameters.generator_type,
-                rows=board_parameters.rows,
-                cols=board_parameters.columns,
-                num_agents=board_parameters.number_of_wires,
-                step_limit=number_of_cells,
-            )
-            simulation_outputs = router.route_for_benchmarking(number_of_boards=number_of_runs, **router.__dict__)
-            benchmark = BenchmarkData(*simulation_outputs, generator_type=board_parameters)
+            with initialize(version_base=None,
+                            config_path="../../agent_training/configs"):
+                cfg = compose(config_name="config.yaml",
+                              overrides=["agent=random", f"env.training.num_epochs={num_epochs}",
+                                  f"env.ic_board.board_name={board_parameters.generator_type.value}",
+                                         f"env.ic_board.grid_size={board_parameters.rows}",
+                                         f"env.ic_board.num_agents={board_parameters.number_of_wires}",
+                                         "logger.type=pickle",
+                                         "logger.save_checkpoint=false"])
+            simulation_outputs = train(cfg)
+            benchmark = BenchmarkData(**simulation_outputs, generator_type=board_parameters)
 
             if save_outputs:
                 filename = \
@@ -134,7 +139,7 @@ class BasicBenchmark:
 
     def master_plotting_loop_violin(self):
         for board_size in self.benchmark_data.keys():
-            for parameter in ["total_wire_lengths", "proportion_wires_connected", "number_of_steps"]:
+            for parameter in ["total_path_length", "ratio_connections", "episode_length"]:
                 violin_chart_data = []
                 labels = []
                 for board_data in self.benchmark_data[board_size]:
@@ -243,30 +248,14 @@ class BasicBenchmark:
         file_name: Optional[str] = None
     ):
         fig, ax = plt.subplots()
-        ax.violinplot(data, showmeans=True)
+        if len(data) == 1:
+            ax.violinplot(data[0], showmeans=True)
+        else:
+            ax.violinplot(data, showmeans=True)
         ax.set(
             title=title,
             ylabel=y_label,
         )
-
-        # quartile1, medians, quartile3 = np.percentile(data,
-        #                                               [25, 50, 75], axis=1)
-        # whiskers = np.array([
-        #     self._adjacent_values(sorted_array, q1, q3)
-        #     for sorted_array, q1, q3 in zip(data, quartile1, quartile3)])
-        # whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
-        #
-        # inds = np.arange(1, len(medians) + 1)
-        # ax.scatter(inds, medians, marker='o', color='white', s=30, zorder=3)
-        # ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=5)
-        # ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-',
-        #            lw=1)
-        # means = np.mean(data, axis =1)
-        # inds = np.arange(1, len(medians) + 1)
-        # # ax.scatter(inds, medians, marker='o', color='white', s=30, zorder=3)
-        # ax.scatter(inds, means, marker='x', color='k', s=30, zorder=3)
-        # ax.vlines(inds, quartile1, quartile3, color='blue', linestyle='-', lw=3)
-
         self._set_axis_style(ax, labels, x_label)
         plt.tight_layout()
 
@@ -274,7 +263,6 @@ class BasicBenchmark:
             fig.savefig(str(self.directory_string) + str(file_name))
         else:
             plt.show()
-
 
     def _adjacent_values(self, vals, q1, q3):
         upper_adjacent_value = q3 + (q3 - q1) * 1.5
@@ -304,42 +292,43 @@ class BasicBenchmark:
         for board_params in data_dict.keys():
             data_dict[board_params] = \
                 sorted(data_dict[board_params],
-                       key=lambda x:x.generator_type.generator_type)
+                       key=lambda x: x.generator_type.generator_type)
         return data_dict
 
+    # @staticmethod
+    # def _process_raw_benchmark_data(raw_benchmark_data, sort_by: str = "board_type"):
+    #     data_dict = {}
+    #     for benchmark in raw_benchmark_data:
+    #         if sort_by == "board_type":
+    #             board_params = benchmark.generator_type.generator_type.value
+    #         else:
+    #             board_params = str(benchmark.generator_type.rows) + "_" + str(
+    #                 benchmark.generator_type.columns) + "_" + str(
+    #                 benchmark.generator_type.number_of_wires)
+    #         data_dict[board_params] = [benchmark] if data_dict.get(
+    #             board_params) is None else data_dict.get(board_params) + [
+    #             benchmark]
+    #
+    #     for board_params in data_dict.keys():
+    #         if sort_by == "board_type":
+    #             data_dict[board_params] = \
+    #                 sorted(data_dict[board_params],
+    #                        key=lambda x: x.generator_type.number_of_wires)
+    #         else:
+    #             data_dict[board_params] = \
+    #                 sorted(data_dict[board_params],
+    #                        key=lambda x: x.generator_type.generator_type)
+    #     return data_dict
 
+    def _write_board_dim_id(self, benchmark: BenchmarkData):
+        return str(benchmark.generator_type.rows) + "_" + str(
+                    benchmark.generator_type.columns) + "_" + str(
+                    benchmark.generator_type.number_of_wires)
+
+    def decide_sorting_method(self):
+        pass
 
 if __name__ == '__main__':
     directory = "20230208_benchmark_23_45"
     all_files = files_list_from_benchmark_experiment(directory)
     benchmark = BasicBenchmark.from_file(all_files, directory_string=directory + "/")
-    print()
-
-
-    # benchmarks = [
-    #     BoardGenerationParameters(rows=5, columns=5, number_of_wires=3,
-    #                               generator_type=BoardName.BFS_2),
-    #
-    #
-    # ]
-    #
-    # # filenames = [
-    # #     "BFS 2_8x8_agent_5.pkl",
-    # #     "BFS_8x8_agent_5.pkl"
-    # # ]
-    # # dir_string = Path(__file__).parent.parent.parent
-    # # folder = "/ic_experiments/benchmarks/20230206_benchmark_14_03/"
-    # # directory = str(dir_string) + folder
-    #
-    # # benchmark = BasicBenchmark.from_file(filenames, directory)
-    # benchmark = BasicBenchmark.from_simulation(benchmarks, 1, False)
-    # print("bla")
-    # for board_size in benchmark.benchmark_data.keys():
-    #     mean_proportion = []
-    #     labels = []
-    #     for benchmark in benchmark.benchmark_data[board_size]:
-    #         labels.append(benchmark.generator_type.generator_type)
-
-
-
-    # benchmark.plot_all(save_outputs=True)

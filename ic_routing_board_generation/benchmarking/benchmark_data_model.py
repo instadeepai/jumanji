@@ -19,11 +19,12 @@ class BoardGenerationParameters:
 
 @dataclass
 class BenchmarkData:
-    total_reward: List[Array]
-    was_board_filled: List[bool]
-    total_wire_lengths: List[int]
-    proportion_wires_connected: List[float]
-    number_of_steps: List[int]
+    episode_length: List[float]
+    episode_return: List[Array]
+    num_connections: List[float]
+    ratio_connections: List[float]
+    time: List[float]
+    total_path_length: List[int]
     generator_type: Optional[BoardGenerationParameters] = None
 
     def return_plotting_dict(self):
@@ -42,32 +43,29 @@ class BenchmarkData:
         }
         return plotting_dict
     def average_reward_per_wire(self):
-        return jnp.mean(jnp.array(self.total_reward), axis=(0, 1))
+        return float(jnp.mean(jnp.array(self.episode_return), axis=0))
 
     def std_reward_per_wire(self):
-        return jnp.std(jnp.array(self.total_reward), axis=(0, 1))
+        return float(jnp.std(jnp.array(self.episode_return), axis=(0)))
 
     def average_total_wire_length(self):
-        return jnp.mean(jnp.array(self.total_wire_lengths), axis=0)
+        return float(jnp.mean(jnp.array(self.total_path_length), axis=0))
 
     def std_total_wire_length(self):
-        return jnp.std(jnp.array(self.total_wire_lengths), axis=0)
+        return float(jnp.std(jnp.array(self.total_path_length), axis=0))
 
     def average_proportion_of_wires_connected(self):
-        return jnp.mean(jnp.array(self.proportion_wires_connected), axis=0)
+        return float(jnp.mean(jnp.array(self.ratio_connections), axis=0))
 
     def std_proportion_of_wires_connected(self):
-        return jnp.std(jnp.array(self.proportion_wires_connected), axis=0)
+        return float(jnp.std(jnp.array(self.ratio_connections), axis=0))
 
     def average_steps_till_board_terminates(self):
-        return jnp.mean(jnp.array(self.number_of_steps), axis=0)
+        return float(jnp.mean(jnp.array(self.episode_length), axis=0))
 
     def std_steps_till_board_terminates(self):
-        return jnp.std(jnp.array(self.number_of_steps), axis=0)
+        return float(jnp.std(jnp.array(self.episode_length), axis=0))
 
-
-
-# TODO combine into 1 dataclass?
 
 if __name__ == '__main__':
     test = BenchmarkData

@@ -17,11 +17,11 @@ def run_benchmark_with_simulation(
     benchmarks_list: List[BoardGenerationParameters],
     save_plots: bool = False,
     save_simulation_data: bool = False,
-    number_of_runs: int = 1000,
+    num_epochs: int = 1000,
 ):
     benchmark = BasicBenchmark.from_simulation(
         benchmark_parameters_list=benchmarks_list,
-        number_of_runs=number_of_runs,
+        num_epochs=num_epochs,
         save_outputs=save_simulation_data,
     )
     benchmark.plot_all(save_outputs=save_plots)
@@ -47,10 +47,10 @@ if __name__ == '__main__':
     tic = time.time()
     if simulation:
         ######### Change these parameters if required
-        grid_params = [(8, 8, 5)]
+        grid_params = [(10, 10, 5)]
         save_plots = True  # Change this to False if you want to just see the plots without saving
         save_simulation_data = True
-        number_of_boards = 1000
+        num_epochs = 50
         benchmarks_list = [] # replace this wit list of BoardGenerationParameters per schema below
         # benchmarks_list = [BoardGenerationParameters(rows=6, columns=6, number_of_wires=3, generator_type=BoardName.BFS_BASE)]
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             benchmarks_list=benchmarks_list,
             save_plots=save_plots,
             save_simulation_data=save_simulation_data,
-            number_of_runs=number_of_boards, # number of boards for simulation
+            num_epochs=num_epochs, # number of boards for simulation
         )
     else:
         ######### Change these parameters are required
