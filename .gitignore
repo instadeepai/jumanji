@@ -2,6 +2,8 @@
 ic_routing_board_generation/board_generator/test-lsystems.ipynb
 test-route.ipynb
 agent_training/README_TRAINING_dk_copy.md
+ic_routing_board_generation/board_generator/uo_boardproc.py
+test-lsystems.ipynb
 
 
 # Byte-compiled / optimized / DLL files
