@@ -3,8 +3,12 @@ from enum import Enum
 from ic_routing_board_generation.board_generator.bfs_board import BFSBoard
 from ic_routing_board_generation.board_generator.bfs_board_variations import \
     BFSBoardMinBends, BFSBoardFifo, BFSBoardShortest, BFSBoardLongest
+from ic_routing_board_generation.board_generator.board_generator_numberlink_oj import \
+    NumberLinkBoard
 from ic_routing_board_generation.board_generator.board_generator_random_walk_rb import \
     RandomWalkBoard
+from ic_routing_board_generation.board_generator.board_generator_wfc_oj import \
+    WFCBoard
 
 from ic_routing_board_generation.board_generator.lsystem_board import \
     LSystemBoardGen
@@ -19,7 +23,8 @@ class BoardName(str, Enum):
     BFS_SHORTEST = "bfs_short"
     BFS_LONGEST = "bfs_long"
     LSYSTEMS = "lsystems_standard"
-
+    WFC = "wfc"
+    NUMBERLINK = "numberlink"
 
 class BoardGenerator:
     """Maps BoardGeneratorType to class of generator."""
@@ -31,7 +36,8 @@ class BoardGenerator:
         BoardName.BFS_SHORTEST: BFSBoardShortest,
         BoardName.BFS_LONGEST: BFSBoardLongest,
         BoardName.LSYSTEMS: LSystemBoardGen,
-
+        BoardName.WFC: WFCBoard,
+        BoardName.NUMBERLINK: NumberLinkBoard,
     }
 
     @classmethod
