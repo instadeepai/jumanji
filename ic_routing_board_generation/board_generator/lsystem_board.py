@@ -4,10 +4,12 @@ from collections import deque
 import random
 
 from typing import List, SupportsFloat as Numeric
+import chex
+import jax
 
 
 class LSystemBoardGen:
-    def __init__(self, rows, cols: int = None, num_agents:int = None) -> None:
+    def __init__(self, rows, cols: int = None, num_agents:int = None, key: chex.PRNGKey = jax.random.PRNGKey(0)) -> None:
         if cols is not None:
             self.rows = rows
             self.cols = cols
@@ -23,6 +25,7 @@ class LSystemBoardGen:
             raise ValueError('Rows and cols must be either int or tuple of length 2.')
 
         self.agent_count = num_agents
+        self.key = np.random.default_rng(np.asarray(key))
         self.board = self.initialise_starting_board(self.rows, self.cols, self.agent_count)
         self.agents = self.assign_agent_states()
 
@@ -37,8 +40,10 @@ class LSystemBoardGen:
                     print(f'ERROR - NO BOARD SPACES FOUND AFTER {100} TRIES')
                     break
 
-                idx0 = np.random.randint(0, rows)
-                idx1 = np.random.randint(0, cols)
+                # idx0 = np.random.randint(0, rows)
+                # idx1 = np.random.randint(0, cols)
+                idx0 = self.key.integers(0, rows)
+                idx1 = self.key.integers(0, cols)
                 if board[idx0, idx1] != 0.0:
                     continue
                 else:
@@ -74,13 +79,15 @@ class LSystemBoardGen:
     def push(self, agent_num:int)->None:
         """Pushes (grows) agent `agent_num` in a random direction."""
         agent = self.agents[agent_num-1]
-        growth_choice = np.random.randint(-1, 1) # choose to grow from the head or the tail, :TO UPDATE
+        # growth_choice = np.random.randint(-1, 1) # choose to grow from the head or the tail, :TO UPDATE
+        growth_choice = self.key.integers(-1, 1)
         nbs = self.find_next_pos(agent[1][growth_choice])
 
         if len(nbs) == 0:
             return None
         else:
-            growth_loc = np.random.randint(0, len(nbs))     # choose a random growth direction
+            # growth_loc = np.random.randint(0, len(nbs))     # choose a random growth direction
+            growth_loc = self.key.integers(0, len(nbs))
             self.board[tuple(nbs[growth_loc])] = agent[0]   # grow in a chosen direction
 
             # update deque to account for new growth
@@ -92,7 +99,8 @@ class LSystemBoardGen:
     def pull(self, agent_num:int)->None:
         """Pulls (shrinks) the agent in a random direction."""
         agent = self.agents[agent_num-1]
-        shrink_choice = np.random.randint(-1, 1) #:TO UPDATE
+        # shrink_choice = np.random.randint(-1, 1) #:TO UPDATE
+        shrink_choice = self.key.integers(-1, 1)
 
         if len(agent[1]) == 1:
             return None
