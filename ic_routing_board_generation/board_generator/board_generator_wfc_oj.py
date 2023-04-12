@@ -551,12 +551,16 @@ class WFCBoard(AbstractBoard):
         """
         Returns the board as a numpy array, with wires removed.
         """
+        # Change data type to int
+        self.unwired_board = self.unwired_board.astype(int)
         return self.unwired_board
     
     def return_solved_board(self) -> np.ndarray:
         """
         Returns the board as a numpy array, with wires.
         """
+        # Change data type to int
+        self.wired_board = self.wired_board.astype(int)
         return self.wired_board
         
 
