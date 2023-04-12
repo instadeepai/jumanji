@@ -288,7 +288,7 @@ class WFCUtils():
 
 
 class WFCBoard(AbstractBoard):
-    def __init__(self, x: int, y: int, num_agents: int):
+    def __init__(self, rows: int, cols: int, num_agents: int):
         """
 
         Args:
@@ -296,12 +296,12 @@ class WFCBoard(AbstractBoard):
             y: height of the board
             num_agents: number of agents
         """
-        self.x = x
-        self.y = y
-        self.grid = [[None for i in range(x)] for j in range(y)]
+        self.x = rows
+        self.y = cols
+        self.grid = [[None for i in range(self.x)] for j in range(self.y)]
         # Generate the tile set. This includes how tiles can connect to each other
         self.abstract_tile = AbstractTile()
-        self.weights = self.generate_weights(x, y, num_agents)
+        self.weights = self.generate_weights(self.x, self.y, num_agents)
         #self
         self.utils = WFCUtils()
         self.num_agents = num_agents

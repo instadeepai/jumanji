@@ -20,8 +20,8 @@ import numpy as np
 import sys
 import collections
 import string
-from colorama import Fore, Style
-from colorama import init as init_colorama
+# from colorama import Fore, Style
+# from colorama import init as init_colorama
 
 from ic_routing_board_generation.board_generator.abstract_board import AbstractBoard
 
@@ -361,9 +361,9 @@ def color_tubes(grid, no_colors=False):
 main from gen!
 """
 class NumberLinkBoard(AbstractBoard):
-    def __init__(self, width, height, num_agents):
-        self.width = width
-        self.height = height
+    def __init__(self, rows, cols, num_agents):
+        self.width = rows
+        self.height = cols
         self.num_agents = num_agents
         self.no_colors = True
         self.zero = True
