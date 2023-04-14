@@ -55,11 +55,10 @@ def test_explored_mine(
     expected_explored_mine_result: bool,
 ) -> None:
     """Test whether mines are being explored"""
-    action_height, action_width = action
     assert (
         explored_mine(
             manual_start_state,
-            jnp.array([action_height, action_width], dtype=jnp.int32),
+            jnp.array(action, dtype=jnp.int32),
         )
         == expected_explored_mine_result
     )
@@ -75,11 +74,10 @@ def test_count_adjacent_mines(
     expected_count_adjacent_mines_result: int,
 ) -> None:
     """Test whether the mine counting function is working as expected"""
-    action_height, action_width = action
     assert (
         count_adjacent_mines(
             manual_start_state,
-            jnp.array([action_height, action_width], dtype=jnp.int32),
+            jnp.array(action, dtype=jnp.int32),
         )
         == expected_count_adjacent_mines_result
     )
