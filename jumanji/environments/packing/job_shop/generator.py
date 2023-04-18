@@ -479,10 +479,3 @@ class DenseGenerator(Generator):
             get_job_info, init_job_id, xs=None, length=self.num_jobs
         )
         return ops_mids, ops_durs
-
-
-if __name__ == "__main__":
-    generator = DenseGenerator(20, 5, 100, 100, makespan=12)
-    k = jax.random.PRNGKey(42)
-    state = generator(k)
-    assert state
