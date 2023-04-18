@@ -187,7 +187,7 @@ class RandomGenerator(Generator):
         return state
 
 
-class DenseScheduleGenerator(Generator):
+class DenseGenerator(Generator):
     """`Generator` which creates a dense schedule of a specified makespan. This is done by:
         - Specifying the `makespan` (schedule length) and the `num_machines`.
         - Initialising an "empty" schedule.
@@ -213,7 +213,7 @@ class DenseScheduleGenerator(Generator):
         max_op_duration: int,
         makespan: int,
     ):
-        """Instantiate a `DenseScheduleGenerator`. Note that the `makespan` is an upper
+        """Instantiate a `DenseGenerator`. Note that the `makespan` is an upper
         bound to both `max_num_ops` and `max_op_duration`, hence they are not used.
 
         Args:
@@ -482,7 +482,7 @@ class DenseScheduleGenerator(Generator):
 
 
 if __name__ == "__main__":
-    generator = DenseScheduleGenerator(20, 5, 100, 100, makespan=12)
+    generator = DenseGenerator(20, 5, 100, 100, makespan=12)
     k = jax.random.PRNGKey(42)
     state = generator(k)
     assert state

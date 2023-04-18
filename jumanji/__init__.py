@@ -51,9 +51,8 @@ register(
 # largest ones are given in the observation.
 register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
 
-# Job-shop scheduling problem with 20 jobs, 10 machines, at most
-# 8 operations per job, and a max operation duration of 6 timesteps.
-register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
+# Job-shop scheduling problem with 20 jobs, 10 machines, and known optimal makespan of 40.
+register(id="JobShop-v1", entry_point="jumanji.environments:JobShop")
 
 # Knapsack problem with 50 randomly generated items, a total budget
 # of 12.5, and a dense reward function.

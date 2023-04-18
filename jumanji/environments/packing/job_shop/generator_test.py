@@ -19,7 +19,7 @@ import pytest
 
 from jumanji.environments.packing.job_shop.conftest import DummyGenerator
 from jumanji.environments.packing.job_shop.generator import (
-    DenseScheduleGenerator,
+    DenseGenerator,
     RandomGenerator,
     ToyGenerator,
 )
@@ -115,8 +115,8 @@ class TestMakespanGenerator:
     MAX_OP_DURATION = MAKESPAN
 
     @pytest.fixture
-    def dense_schedule_generator(self) -> DenseScheduleGenerator:
-        return DenseScheduleGenerator(
+    def dense_schedule_generator(self) -> DenseGenerator:
+        return DenseGenerator(
             num_jobs=self.NUM_JOBS,
             num_machines=self.NUM_MACHINES,
             max_num_ops=self.MAX_NUM_OPS,
@@ -135,7 +135,7 @@ class TestMakespanGenerator:
         )
 
     def test_dense_schedule_generator__attributes(
-        self, dense_schedule_generator: DenseScheduleGenerator
+        self, dense_schedule_generator: DenseGenerator
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert dense_schedule_generator.num_jobs == self.NUM_JOBS
@@ -149,7 +149,7 @@ class TestMakespanGenerator:
         assert isinstance(state, State)
 
     def test_dense_schedule_generator__generate_schedule(
-        self, dense_schedule_generator: DenseScheduleGenerator
+        self, dense_schedule_generator: DenseGenerator
     ) -> None:
         key = jax.random.PRNGKey(0)
         schedule = dense_schedule_generator._generate_schedule(key)
@@ -158,7 +158,7 @@ class TestMakespanGenerator:
 
     def test_dense_schedule_generator__register_ops(
         self,
-        dense_schedule_generator: DenseScheduleGenerator,
+        dense_schedule_generator: DenseGenerator,
         hardcoded_schedule: chex.Array,
     ) -> None:
         ops_machine_ids, ops_durations = dense_schedule_generator._register_ops(
@@ -190,7 +190,7 @@ class TestMakespanGenerator:
         )
 
     def test_dense_schedule_generator__jit_only_compiles_once(
-        self, dense_schedule_generator: DenseScheduleGenerator
+        self, dense_schedule_generator: DenseGenerator
     ) -> None:
         key = jax.random.PRNGKey(0)
         key_first, key_second = jax.random.split(key, 2)

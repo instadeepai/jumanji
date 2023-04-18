@@ -22,7 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.job_shop.generator import Generator, RandomGenerator
+from jumanji.environments.packing.job_shop.generator import DenseGenerator, Generator
 from jumanji.environments.packing.job_shop.types import Observation, State
 from jumanji.environments.packing.job_shop.viewer import JobShopViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -98,16 +98,16 @@ class JobShop(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Implemented options are ['ToyGenerator', 'RandomGenerator'].
-                Defaults to `RandomGenerator` with 20 jobs, 10 machines, up to 8 ops
-                for any given job, and a max operation duration of 6.
+                Implemented options are ['ToyGenerator', 'RandomGenerator', 'DenseGenerator`].
+                Defaults to `DenseGenerator` with 20 jobs, 10 machines, and a makespan of 40.
             viewer: `Viewer` used for rendering. Defaults to `JobShopViewer`.
         """
-        self.generator = generator or RandomGenerator(
+        self.generator = generator or DenseGenerator(
             num_jobs=20,
             num_machines=10,
-            max_num_ops=8,
-            max_op_duration=6,
+            max_num_ops=40,
+            max_op_duration=40,
+            makespan=40,
         )
         self.num_jobs = self.generator.num_jobs
         self.num_machines = self.generator.num_machines
