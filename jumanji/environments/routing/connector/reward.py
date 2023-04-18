@@ -43,9 +43,8 @@ class RewardFn(abc.ABC):
 
 
 class DenseRewardFn(RewardFn):
-    """Rewards each agent with 1.0 if it connects on that step, otherwise 0.0. Each agent also
-    receives a penalty of -0.03 at every timestep if they have not connected yet.
-    """
+    """Returns: reward of 1.0 for each agent that connects on that step and adds a penalty of
+    -0.03, per agent, at every timestep if they have not connected yet."""
 
     def __init__(
         self,
@@ -73,4 +72,4 @@ class DenseRewardFn(RewardFn):
         timestep_rewards = self.timestep_reward * jnp.asarray(
             ~state.agents.connected, float
         )
-        return connected_rewards + timestep_rewards
+        return jnp.sum(connected_rewards + timestep_rewards)

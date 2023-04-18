@@ -40,7 +40,6 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
-    switch_perspective,
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -147,14 +146,12 @@ class Connector(Environment[State]):
             state.agents, state.grid
         )
         observation = Observation(
-            grid=self._obs_from_grid(state.grid),
+            grid=state.grid,
             action_mask=action_mask,
             step_count=state.step_count,
         )
         extras = self._get_extras(state)
-        timestep = restart(
-            observation=observation, extras=extras, shape=(self.num_agents,)
-        )
+        timestep = restart(observation=observation, extras=extras)
         return state, timestep
 
     def step(
@@ -180,31 +177,26 @@ class Connector(Environment[State]):
             grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key
         )
 
-        # Construct timestep: get observations, rewards, discounts
-        grids = self._obs_from_grid(grid)
+        # Construct timestep: get rewards, discounts
         reward = self._reward_fn(state, action, new_state)
         action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
         observation = Observation(
-            grid=grids, action_mask=action_mask, step_count=new_state.step_count
+            grid=grid, action_mask=action_mask, step_count=new_state.step_count
         )
 
-        dones = jax.vmap(connected_or_blocked)(agents, action_mask)
-        discount = jnp.asarray(jnp.logical_not(dones), dtype=float)
+        dones = jnp.all(jax.vmap(connected_or_blocked)(agents, action_mask))
         extras = self._get_extras(new_state)
         timestep = jax.lax.cond(
-            dones.all() | (new_state.step_count >= self.time_limit),
+            dones | (new_state.step_count >= self.time_limit),
             lambda: termination(
                 reward=reward,
                 observation=observation,
                 extras=extras,
-                shape=self.num_agents,
             ),
             lambda: transition(
                 reward=reward,
                 observation=observation,
-                discount=discount,
                 extras=extras,
-                shape=self.num_agents,
             ),
         )
 
@@ -270,12 +262,6 @@ class Connector(Environment[State]):
         )
 
         return new_agent, new_grid
-
-    def _obs_from_grid(self, grid: chex.Array) -> chex.Array:
-        """Gets the observation vector for all agents."""
-        return jax.vmap(switch_perspective, (None, 0, None))(
-            grid, self._agent_ids, self.num_agents
-        )
 
     def _get_action_mask(self, agent: Agent, grid: chex.Array) -> chex.Array:
         """Gets an agent's action mask."""
@@ -349,7 +335,7 @@ class Connector(Environment[State]):
             - step_count: BoundedArray (int32) of shape ().
         """
         grid = specs.BoundedArray(
-            shape=(self.num_agents, self.grid_size, self.grid_size),
+            shape=(self.grid_size, self.grid_size),
             dtype=jnp.int32,
             name="grid",
             minimum=0,
@@ -397,7 +383,7 @@ class Connector(Environment[State]):
         Returns:
             reward_spec: a `specs.Array` spec of shape (num_agents,). One for each agent.
         """
-        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
+        return specs.Array(shape=(1,), dtype=float, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
         """
@@ -405,7 +391,7 @@ class Connector(Environment[State]):
             discount_spec: a `specs.Array` spec of shape (num_agents,). One for each agent
         """
         return specs.BoundedArray(
-            shape=(self.num_agents,),
+            shape=(1,),
             dtype=float,
             minimum=0.0,
             maximum=1.0,

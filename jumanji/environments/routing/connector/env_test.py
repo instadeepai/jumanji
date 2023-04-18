@@ -54,8 +54,8 @@ def test_connector__reset(connector: Connector, key: jax.random.KeyArray) -> Non
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
 
-    assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
-    assert jnp.array_equal(timestep.reward, jnp.zeros(connector.num_agents))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(1.0))
+    assert jnp.array_equal(timestep.reward, jnp.asarray(0.0))
     assert timestep.step_type == StepType.FIRST
 
 
@@ -91,7 +91,7 @@ def test_connector__step_connected(
     chex.assert_trees_all_equal(real_state2, state2)
 
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
     reward = connector._reward_fn(real_state1, action2, real_state2)
     assert jnp.array_equal(timestep.reward, reward)
 
@@ -143,7 +143,7 @@ def test_connector__step_blocked(
 
     assert jnp.array_equal(state.grid, expected_grid)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
 
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
@@ -162,12 +162,12 @@ def test_connector__step_horizon(connector: Connector, state: State) -> None:
         state, timestep = step_fn(state, actions)
 
         assert timestep.step_type != StepType.LAST
-        assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
+        assert jnp.array_equal(timestep.discount, jnp.asarray(1))
 
     # step 5
     state, timestep = step_fn(state, actions)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
 
 
 def test_connector__step_agents_collision(
@@ -228,47 +228,6 @@ def test_connector__step_agent_invalid(connector: Connector, state: State) -> No
 def test_connector__does_not_smoke(connector: Connector) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(connector)
-
-
-def test_connector__obs_from_grid(
-    connector: Connector,
-    grid: chex.Array,
-    path0: int,
-    path1: int,
-    path2: int,
-    targ0: int,
-    targ1: int,
-    targ2: int,
-    posi0: int,
-    posi1: int,
-    posi2: int,
-) -> None:
-    """Tests that observations are correctly generated given the grid."""
-    observations = connector._obs_from_grid(grid)
-
-    expected_agent_1 = jnp.array(
-        [
-            [EMPTY, EMPTY, targ2, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, posi2, path2, path2, EMPTY],
-            [EMPTY, EMPTY, EMPTY, targ1, posi1, EMPTY],
-            [targ0, EMPTY, posi0, EMPTY, path1, EMPTY],
-            [EMPTY, EMPTY, path0, EMPTY, path1, EMPTY],
-            [EMPTY, EMPTY, path0, EMPTY, EMPTY, EMPTY],
-        ]
-    )
-    expected_agent_2 = jnp.array(
-        [
-            [EMPTY, EMPTY, targ1, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, posi1, path1, path1, EMPTY],
-            [EMPTY, EMPTY, EMPTY, targ0, posi0, EMPTY],
-            [targ2, EMPTY, posi2, EMPTY, path0, EMPTY],
-            [EMPTY, EMPTY, path2, EMPTY, path0, EMPTY],
-            [EMPTY, EMPTY, path2, EMPTY, EMPTY, EMPTY],
-        ]
-    )
-
-    expected_obs = jnp.stack([grid, expected_agent_1, expected_agent_2])
-    assert jnp.array_equal(expected_obs, observations)
 
 
 def test_connector__get_action_mask(state: State, connector: Connector) -> None:
