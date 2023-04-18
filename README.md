@@ -211,7 +211,7 @@ If you use Jumanji in your work, please cite the library using:
         and Laurence Midgley and Shikha Surana and Cemlyn Waters and Alexandre Laterre},
   title = {Jumanji: a Suite of Diverse and Challenging Reinforcement Learning Environments in JAX},
   url = {https://github.com/instadeepai/jumanji},
-  version = {0.2.1},
+  version = {0.2.2},
   year = {2023},
 }
 ```
