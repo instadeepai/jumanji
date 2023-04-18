@@ -47,16 +47,16 @@ from jumanji.viewer import Viewer
 
 
 class Connector(Environment[State]):
-    """The `Connector` environment is a multi-agent gridworld problem where each agent must connect a
-    start to a target. However, when moving through this gridworld the agent leaves an impassable
-    trail behind it. Therefore, agents must connect to their targets without overlapping the routes
-    taken by any other agent.
+    """The `Connector` environment is a gridworld problem where multiple pairs of points must be
+    connected without overlapping the paths taken by any other pair of points. This is achieved
+    by allowing certain point to move to an adjacent cell at each step and each time a point moves,
+    it leaves a trail behind it. The goal is to connect all pairs of points.
 
     - observation - `Observation`
         - action mask: jax array (bool) of shape (num_agents, 5).
         - step_count: jax array (int32) of shape ()
             the current episode step.
-        - grid: jax array (int32) of shape (num_agents, size, size)
+        - grid: jax array (int32) of shape (size, size)
             - each 2d array (size, size) along axis 0 is the agent's local observation.
             - agents have ids from 0 to (num_agents - 1)
             - with 2 agents you might have a grid like this:
@@ -75,8 +75,8 @@ class Connector(Environment[State]):
         - each value in the array corresponds to an agent's action.
 
     - reward: jax array (float) of shape ():
-        - dense: each agent is given 1.0 if it connects on that step, otherwise 0.0. Additionally,
-            each agent that has not connected receives a penalty reward of -0.03.
+        - dense: reward is increased by 1 for each successful connection on that step. Additionally,
+            each pair of points that have not connected receives a penalty reward of -0.03.
 
     - episode termination: if an agent can't move, or the time limit is reached, or the agent
         connects to its target, it is considered done. Once all agents are done, the episode
@@ -376,24 +376,4 @@ class Connector(Environment[State]):
             num_values=jnp.array([5] * self.num_agents),
             dtype=jnp.int32,
             name="action",
-        )
-
-    def reward_spec(self) -> specs.Array:
-        """
-        Returns:
-            reward_spec: a `specs.Array` spec of shape (num_agents,). One for each agent.
-        """
-        return specs.Array(shape=(1,), dtype=float, name="reward")
-
-    def discount_spec(self) -> specs.BoundedArray:
-        """
-        Returns:
-            discount_spec: a `specs.Array` spec of shape (num_agents,). One for each agent
-        """
-        return specs.BoundedArray(
-            shape=(1,),
-            dtype=float,
-            minimum=0.0,
-            maximum=1.0,
-            name="discount",
         )
