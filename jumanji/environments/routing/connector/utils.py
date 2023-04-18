@@ -19,7 +19,6 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.connector.constants import (
-    AGENT_INITIAL_VALUE,
     EMPTY,
     PATH,
     POSITION,
