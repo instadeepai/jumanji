@@ -47,10 +47,10 @@ from jumanji.viewer import Viewer
 
 
 class Connector(Environment[State]):
-    """The `Connector` environment is a gridworld problem where multiple pairs of points must be
-    connected without overlapping the paths taken by any other pair of points. This is achieved
-    by allowing certain point to move to an adjacent cell at each step and each time a point moves,
-    it leaves a trail behind it. The goal is to connect all pairs of points.
+    """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
+    must be connected without overlapping the paths taken by any other set. This is achieved
+    by allowing certain points to move to an adjacent cell at each step. However, each time a
+    point moves it leaves an impassable trail behind it. The goal is to connect all sets.
 
     - observation - `Observation`
         - action mask: jax array (bool) of shape (num_agents, 5).
