@@ -42,6 +42,8 @@ register(
     kwargs={"time_limit": 20, "generator": partly_scrambled_rubiks_cube_generator},
 )
 
+# Sudoku - the standard Sudoku puzzle with grid of size 9x9.
+register(id="Sudoku-v0", entry_point="jumanji.environments:Sudoku")
 
 ###
 # Packing Environments
