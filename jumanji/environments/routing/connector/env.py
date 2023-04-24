@@ -57,8 +57,6 @@ class Connector(Environment[State]):
         - step_count: jax array (int32) of shape ()
             the current episode step.
         - grid: jax array (int32) of shape (grid_size, grid_size)
-            - each 2d array (grid_size, grid_size) along axis 0 is the agent's local observation.
-            - agents have ids from 0 to (num_agents - 1)
             - with 2 agents you might have a grid like this:
               4 0 1
               5 0 1
@@ -66,9 +64,6 @@ class Connector(Environment[State]):
               which means agent 1 has moved from the top right of the grid down and is currently in
               the bottom right corner and is aiming to get to the middle bottom cell. Agent 2
               started in the top left and moved down once towards its target in the bottom left.
-
-              This would just be agent 0's view, the numbers would be flipped for agent 1's view.
-              So the full observation would be of shape (2, 3, 3).
 
     - action: jax array (int32) of shape (num_agents,):
         - can take the values [0,1,2,3,4] which correspond to [No Op, Up, Right, Down, Left].
@@ -80,11 +75,12 @@ class Connector(Environment[State]):
 
     - episode termination: if an agent can't move, or the time limit is reached, or the agent
         connects to its target, it is considered done. Once all agents are done, the episode
-        terminates. The timestep discounts are of shape (num_agents,).
+        terminates. The timestep discounts are of shape (1,) and only set to `0` when all agents
+        are done.
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
-        - grid: jax array (int32) of shape (grid_size, grid_size) which corresponds to agent 0's observation.
+        - grid: jax array (int32) of shape (grid_size, grid_size) the observation.
         - step_count: jax array (int32) of shape () number of steps elapsed in the current episode.
 
     ```python
@@ -330,7 +326,7 @@ class Connector(Environment[State]):
 
         Returns:
             Spec for the `Observation` whose fields are:
-            - grid: BoundedArray (int32) of shape (num_agents, grid_size, grid_size).
+            - grid: BoundedArray (int32) of shape (grid_size, grid_size).
             - action_mask: BoundedArray (bool) of shape (num_agents, 5).
             - step_count: BoundedArray (int32) of shape ().
         """
