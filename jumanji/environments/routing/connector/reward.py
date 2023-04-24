@@ -44,7 +44,7 @@ class RewardFn(abc.ABC):
 
 class DenseRewardFn(RewardFn):
     """Returns: reward of 1.0 for each agent that connects on that step and adds a penalty of
-    -0.03, per agent, at every timestep if they have not connected yet."""
+    -0.03, per agent, at every timestep where they have yet to connect."""
 
     def __init__(
         self,

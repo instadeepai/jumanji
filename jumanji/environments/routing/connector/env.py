@@ -184,10 +184,10 @@ class Connector(Environment[State]):
             grid=grid, action_mask=action_mask, step_count=new_state.step_count
         )
 
-        dones = jnp.all(jax.vmap(connected_or_blocked)(agents, action_mask))
+        done = jnp.all(jax.vmap(connected_or_blocked)(agents, action_mask))
         extras = self._get_extras(new_state)
         timestep = jax.lax.cond(
-            dones | (new_state.step_count >= self.time_limit),
+            done | (new_state.step_count >= self.time_limit),
             lambda: termination(
                 reward=reward,
                 observation=observation,

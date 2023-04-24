@@ -49,7 +49,7 @@ def test_dense_reward(
     chex.assert_rank(reward, 0)
     assert jnp.isclose(reward, jnp.array(connected_reward + timestep_reward))
 
-    # Reward of none finished to all finished
+    # Reward for none finished to all finished
     reward = dense_reward_fn(state, action1, state2)
     chex.assert_rank(reward, 0)
     assert jnp.isclose(reward, jnp.array((connected_reward + timestep_reward) * 3))
