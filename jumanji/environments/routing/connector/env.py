@@ -56,8 +56,8 @@ class Connector(Environment[State]):
         - action mask: jax array (bool) of shape (num_agents, 5).
         - step_count: jax array (int32) of shape ()
             the current episode step.
-        - grid: jax array (int32) of shape (size, size)
-            - each 2d array (size, size) along axis 0 is the agent's local observation.
+        - grid: jax array (int32) of shape (grid_size, grid_size)
+            - each 2d array (grid_size, grid_size) along axis 0 is the agent's local observation.
             - agents have ids from 0 to (num_agents - 1)
             - with 2 agents you might have a grid like this:
               4 0 1
@@ -84,7 +84,7 @@ class Connector(Environment[State]):
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
-        - grid: jax array (int32) of shape (size, size) which corresponds to agent 0's observation.
+        - grid: jax array (int32) of shape (grid_size, grid_size) which corresponds to agent 0's observation.
         - step_count: jax array (int32) of shape () number of steps elapsed in the current episode.
 
     ```python

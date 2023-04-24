@@ -49,7 +49,7 @@ Agent2[path=4, position=5, target=6]
 Agent3[path=7, position=8, target=9]
 ```
 
-This would result in a grid like this:
+For example, on a 6x6 grid, a possible observation is shown below.
 
 ```
 [[ 2  0  3  0  0  0]
