@@ -40,7 +40,7 @@ class Generator(abc.ABC):
             key: random key.
 
         Returns:
-            A `Maze` representing a problem instance.
+            state: the generated state.
         """
 
 
@@ -86,7 +86,7 @@ class RandomGenerator(Generator):
             key: the Jax random number generation key.
 
         Returns:
-            maze: A generated maze as an array of booleans.
+            state: the generated state.
         """
         key, maze_key, agent_key = jax.random.split(key, 3)
 
