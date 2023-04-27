@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 import chex
 import jax
@@ -20,23 +20,23 @@ import jax.numpy as jnp
 
 from jumanji.environments.routing.connector.constants import (
     DOWN,
-    UP,
-    LEFT,
-    RIGHT,
-    NOOP,
-    POSITION,
-    PATH,
-    TARGET,
     EMPTY,
+    LEFT,
+    NOOP,
+    PATH,
+    POSITION,
+    RIGHT,
+    TARGET,
+    UP,
 )
 from jumanji.environments.routing.connector.types import Agent
 from jumanji.environments.routing.connector.utils import (
-    move_position,
-    move_agent,
     get_agent_grid,
     get_correction_mask,
-    get_target,
     get_position,
+    get_target,
+    move_agent,
+    move_position,
 )
 
 

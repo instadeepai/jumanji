@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, NamedTuple, TypeVar, Any
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
 
-AgentT = TypeVar("AgentT", bound="Agent")
-
+import chex
+import jax.numpy as jnp
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
 
-import chex
-import jax.numpy as jnp
+AgentT = TypeVar("AgentT", bound="Agent")
 
 
 @dataclass

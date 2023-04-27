@@ -1,18 +1,26 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from typing import Tuple
+
 import chex
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import Tuple
 
-
-
-from jumanji.environments.routing.connector.generation_methods import (
-    ParallelRandomWalk,
-)
+from jumanji.environments.routing.connector.generation_methods import ParallelRandomWalk
 from jumanji.environments.routing.connector.types import Agent
-
-
-
 
 ### grids for testing
 empty_grid = jnp.zeros((5, 5))
@@ -137,7 +145,7 @@ class TestParallelRandomWalk:
     def parallel_random_walk(self) -> ParallelRandomWalk:
         """Creates a generator with grid size of 5 and 3 agents."""
         return ParallelRandomWalk(rows=5, cols=5, num_agents=3)
-    
+
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -174,10 +182,10 @@ class TestParallelRandomWalk:
             _, _, board = parallel_random_walk.generate_board(jax.random.PRNGKey(i))
             boards_generated.append(board)
 
-        for i in range(number_of_keys_to_test):
+        for _i in range(number_of_keys_to_test):
             board = boards_generated.pop()
             for j in range(len(boards_generated)):
-                assert (board == boards_generated[j]).all() == False
+                assert not (board == boards_generated[j]).all()
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -205,12 +213,11 @@ class TestParallelRandomWalk:
         assert (new_grid == end_grid).all()
         assert (new_key == end_key).all()
 
-
     def test_initialise_agents(self, parallel_random_walk: ParallelRandomWalk) -> None:
         grid, agents = parallel_random_walk._initialise_agents(key, empty_grid)
         assert agents == agents_starting
         assert (grid == valid_starting_grid).all()
-    
+
     def test_place_agent_heads_on_grid(
         self, parallel_random_walk: ParallelRandomWalk
     ) -> None:
@@ -245,7 +252,6 @@ class TestParallelRandomWalk:
         )(empty_grid, agents_starting)
         assert (grid_per_agent == expected_output).all()
 
-
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -261,7 +267,6 @@ class TestParallelRandomWalk:
     ) -> None:
         continue_stepping = parallel_random_walk._continue_stepping(function_input)
         assert continue_stepping == expected_value
-
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -282,7 +287,6 @@ class TestParallelRandomWalk:
         )
         assert (dones == expected_value).all()
 
-
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -301,7 +305,6 @@ class TestParallelRandomWalk:
             function_input
         )
         assert (position_tuple == expected_value).all()
-
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -322,7 +325,6 @@ class TestParallelRandomWalk:
         )
         assert (position_tuple == expected_value).all()
 
-
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -342,7 +344,6 @@ class TestParallelRandomWalk:
         action = parallel_random_walk._action_from_positions(position_1, position_2)
         assert action == expected_value
 
-
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -361,7 +362,6 @@ class TestParallelRandomWalk:
     ) -> None:
         action = parallel_random_walk._action_from_tuple(function_input)
         assert action == expected_value
-
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -418,7 +418,6 @@ class TestParallelRandomWalk:
         grid, is_cell_free = parallel_random_walk._is_cell_free(grid_1, cell)
         assert is_cell_free == expected_value
 
-
     @staticmethod
     @pytest.mark.parametrize(
         ("function_input", "expected_value"),
@@ -441,7 +440,6 @@ class TestParallelRandomWalk:
         )(agent, grid, action)
         assert new_agents == expected_agents
         assert (new_grids == expected_grids).all()
-
 
     @staticmethod
     @pytest.mark.parametrize(

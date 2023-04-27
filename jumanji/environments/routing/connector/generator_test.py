@@ -17,7 +17,10 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.connector.generator import UniformRandomGenerator
+from jumanji.environments.routing.connector.generator import (
+    ParallelRandomWalkGenerator,
+    UniformRandomGenerator,
+)
 from jumanji.environments.routing.connector.utils import get_position, get_target
 
 
@@ -55,20 +58,6 @@ def test_uniform_random_generator__no_retrace(
 
     for key in keys:
         jitted_generator(key)
-
-
-
-
-import chex
-import jax
-import jax.numpy as jnp
-import pytest
-
-from jumanji.environments.routing.connector.generator import (
-    ParallelRandomWalkGenerator
-)
-from jumanji.environments.routing.connector.utils import get_position, get_target
-
 
 
 class TestParallelRandomWalkGenerator:
