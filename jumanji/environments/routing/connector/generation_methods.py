@@ -40,7 +40,7 @@ from jumanji.environments.routing.connector.utils import (
 )
 
 
-class ParallelRandomWalkBoard:
+class ParallelRandomWalk:
     def __init__(self, rows: int, cols: int, num_agents: int):
         self.cols = cols
         self.rows = rows
