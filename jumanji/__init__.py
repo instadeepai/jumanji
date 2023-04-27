@@ -14,6 +14,7 @@
 
 from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
+from jumanji.environments.logic.sudoku import generator as sudoku_generator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -42,8 +43,19 @@ register(
     kwargs={"time_limit": 20, "generator": partly_scrambled_rubiks_cube_generator},
 )
 
-# Sudoku - the standard Sudoku puzzle with grid of size 9x9.
+# Sudoku - the standard Sudoku puzzle with grid of size 9x9. By default 10000 puzzles
+# of mixed difficulties are set for reset.
 register(id="Sudoku-v0", entry_point="jumanji.environments:Sudoku")
+
+# Sudoku - the standard Sudoku puzzle with grid of size 9x9. Only 10 very easy puzzles
+# are set for reset, they all have 70/81 cells filled.
+very_easy_sudoku_generator = sudoku_generator.DatabaseGenerator(level="very-easy")
+register(
+    id="Sudoku-very-easy-v0",
+    entry_point="jumanji.environments:Sudoku",
+    kwargs={"generator": very_easy_sudoku_generator},
+)
+
 
 ###
 # Packing Environments

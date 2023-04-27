@@ -21,7 +21,7 @@ import matplotlib
 
 from jumanji import Environment, specs
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
-from jumanji.environments.logic.sudoku.generator import DummyGenerator, Generator
+from jumanji.environments.logic.sudoku.generator import DatabaseGenerator, Generator
 
 # from jumanji.environments.logic.sudoku.specs import ObservationSpec
 from jumanji.environments.logic.sudoku.types import Observation, State
@@ -81,7 +81,7 @@ class Sudoku(Environment[State]):
         viewer: Optional[Viewer[State]] = None,
     ):
         if generator is None:
-            generator = DummyGenerator()
+            generator = DatabaseGenerator(level="mixed")
 
         if viewer is None:
             viewer = SudokuViewer()

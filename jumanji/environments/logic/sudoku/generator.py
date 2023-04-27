@@ -13,14 +13,23 @@
 # limitations under the License.i
 
 import abc
+import os
+from typing import Optional
 
 import chex
+import jax
 import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.types import State
 from jumanji.environments.logic.sudoku.utils import update_action_mask
+
+DATABASES = {
+    "very-easy": "data/10_easy_puzzles.npy",  # 10 puzzles with 70 cells filled
+    "mixed": "data/10000_mixed_puzzles.npy",  # 10000 puzzles with a random number
+    # of cells filled
+}
 
 
 class Generator(abc.ABC):
@@ -38,23 +47,9 @@ class Generator(abc.ABC):
         pass
 
 
-# class CSVGenerator(Generator):
-#     def __init__(self, data_path: Path):
-#         self.data_path = data_path
-#         board = np.loadtxt(self.data_path, delimiter=",")
-#         action_mask = np.ma.make_mask(board)
-#         board = jnp.array(board, dtype=jnp.int8) - 1
-#         action_mask = jnp.array(action_mask, dtype=jnp.int8)
-#         action_mask = 1 - jnp.expand_dims(action_mask, -1).repeat(BOARD_WIDTH, axis=-1)
-#         action_mask = update_action_mask(action_mask, board)
-
-#         self.state = State(board=board, action_mask=action_mask)
-
-#     def __call__(self, key: PRNGKey):
-#         return self.state
-
-
 class DummyGenerator(Generator):
+    """Generates always the same board, for debugging purpose."""
+
     def __init__(
         self,
     ):
@@ -82,3 +77,43 @@ class DummyGenerator(Generator):
 
     def __call__(self, key: chex.PRNGKey):
         return State(board=self._board, action_mask=self._action_mask, key=key)
+
+
+class DatabaseGenerator(Generator):
+    """Generates a board by sampling uniformly inside a puzzle database"""
+
+    def __init__(
+        self,
+        level: str = "very-easy",
+        custom_boards: Optional[jnp.ndarray] = None,
+    ):
+        """
+        Args:
+            level: specifies the level of difficulty to sample the board from, they are
+                all defined in the
+                `jumanji.environments.logic.sudoku.generator.DATABASES` object.
+            custom_boards: if specified, it will be used instead of the database, the
+                expected format is an jnp.ndarray of shape (num_boards, 9, 9).
+        """
+
+        if custom_boards is None:
+            file_path = os.path.dirname(os.path.abspath(__file__))
+            database_file = DATABASES[level]
+            self._boards = jnp.load(os.path.join(file_path, database_file))
+        else:
+            self._boards = custom_boards
+
+    def __call__(self, key: chex.PRNGKey):
+
+        key, idx_key = jax.random.split(key)
+        idx = jax.random.randint(
+            idx_key, shape=(1,), minval=0, maxval=self._boards.shape[0]
+        )[0]
+        board = self._boards.take(idx, axis=0)
+        action_mask = board != 0
+        board = jnp.array(board, dtype=jnp.int32) - 1
+        action_mask = jnp.array(action_mask, dtype=jnp.int32)
+        action_mask = 1 - jnp.expand_dims(action_mask, -1).repeat(BOARD_WIDTH, axis=-1)
+        action_mask = update_action_mask(action_mask, board).astype(bool)
+
+        return State(board=board, action_mask=action_mask, key=key)
