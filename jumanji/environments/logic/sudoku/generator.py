@@ -39,7 +39,6 @@ from jumanji.environments.logic.sudoku.types import State
 from jumanji.environments.logic.sudoku.utils import update_action_mask
 
 DATABASES = {
-    "toy": "data/10_toy_puzzles.npy",  # 10 puzzles with 70 clues
     "very-easy": "data/1000_very_easy_puzzles.npy",  # 1000 puzzles with >= 46 clues
     "mixed": "data/10000_mixed_puzzles.npy",  # 10000 puzzles with a random number
     # of clues
@@ -112,7 +111,7 @@ class DatabaseGenerator(Generator):
 
     def __init__(
         self,
-        level: str = "very-easy",
+        level: str = "mixed",
         custom_boards: Optional[jnp.ndarray] = None,
     ):
         """
