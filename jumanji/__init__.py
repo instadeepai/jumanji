@@ -47,13 +47,13 @@ register(
 # of mixed difficulties are set for reset.
 register(id="Sudoku-v0", entry_point="jumanji.environments:Sudoku")
 
-# Sudoku - the standard Sudoku puzzle with grid of size 9x9. Only 10 very easy puzzles
+# Sudoku - the standard Sudoku puzzle with grid of size 9x9. Only 10 toy puzzles
 # are set for reset, they all have 70/81 cells filled.
-very_easy_sudoku_generator = sudoku_generator.DatabaseGenerator(level="very-easy")
+toy_sudoku_generator = sudoku_generator.DatabaseGenerator(level="toy")
 register(
-    id="Sudoku-very-easy-v0",
+    id="Sudoku-toy-v0",
     entry_point="jumanji.environments:Sudoku",
-    kwargs={"generator": very_easy_sudoku_generator},
+    kwargs={"generator": toy_sudoku_generator},
 )
 
 

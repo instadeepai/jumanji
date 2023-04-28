@@ -1,5 +1,5 @@
 name: sudoku
-registered_version: Sudoku-very-easy-v0
+registered_version: Sudoku-toy-v0
 
 network:
     num_channels: 32
@@ -10,7 +10,7 @@ training:
     num_epochs: 100
     num_learner_steps_per_epoch: 500
     n_steps: 20
-    total_batch_size: 512
+    total_batch_size: 128
 
 evaluation:
     eval_total_batch_size: 200
