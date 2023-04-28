@@ -154,7 +154,7 @@ class RubiksCube(Environment[State]):
             cube=state.cube,
             flattened_action=flattened_action,
         )
-        key, _ = jax.random.split(state.key)
+
         step_count = state.step_count + 1
         next_state = State(
             cube=cube,

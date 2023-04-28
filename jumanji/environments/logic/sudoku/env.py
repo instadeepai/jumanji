@@ -106,9 +106,11 @@ class Sudoku(Environment[State]):
         ).astype(bool)
 
         winning = validate_board(updated_board)
+
+        key, _ = jax.random.split(state.key)
         # creating next state
         next_state = State(
-            board=updated_board, action_mask=updated_action_mask, key=state.key
+            board=updated_board, action_mask=updated_action_mask, key=key
         )
 
         no_actions_avalaible = updated_action_mask.sum() == 0
