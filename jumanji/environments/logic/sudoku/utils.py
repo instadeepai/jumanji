@@ -77,12 +77,12 @@ def validate_board(board: chex.Array) -> chex.Array:
     """
 
     def _validate_row(row: chex.Array) -> chex.Array:
-        condition = jnp.nonzero(row, size=BOARD_WIDTH)[0] == jnp.arange(BOARD_WIDTH)
+        condition = jnp.sort(row) == jnp.arange(BOARD_WIDTH)
         return condition.all()
 
     condition_rows = jax.vmap(_validate_row)(board).all()
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    condition_boxes = jax.vmap(_validate_row)(jnp.array(BOX_IDX)).all()
+    condition_boxes = jax.vmap(_validate_row)(board[jnp.array(BOX_IDX)]).all()
 
     return condition_rows & condition_columns & condition_boxes
 
