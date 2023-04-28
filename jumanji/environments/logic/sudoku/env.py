@@ -117,7 +117,7 @@ class Sudoku(Environment[State]):
 
         # computing terminal condition
         done = invalid | winning | no_actions_avalaible
-        reward = self._reward_fn(state)
+        reward = self._reward_fn(next_state)
 
         observation = Observation(board=updated_board, action_mask=updated_action_mask)
 
