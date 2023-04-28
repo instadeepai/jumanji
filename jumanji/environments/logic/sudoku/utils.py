@@ -66,9 +66,11 @@ def validate_board(board: chex.Array) -> chex.Array:
         return condition.all()
 
     condition_rows = jax.vmap(_validate_row)(board).all()
+    print(condition_rows)
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    condition_boxes = jax.vmap(_validate_row)(board[jnp.array(BOX_IDX)]).all()
-
+    print(condition_columns)
+    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.array(BOX_IDX))).all()
+    print(condition_boxes)
     return condition_rows & condition_columns & condition_boxes
 
 

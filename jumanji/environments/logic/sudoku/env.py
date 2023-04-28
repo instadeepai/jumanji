@@ -82,8 +82,8 @@ class Sudoku(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
-
         self._generator = generator or DatabaseGenerator(level="mixed")
+        print(self._generator._boards.shape)
         self._reward_fn = reward_fn or SparseRewardFn()
         self._viewer = viewer or SudokuViewer()
 
