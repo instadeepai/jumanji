@@ -22,7 +22,7 @@ The observation given to the agent consists of:
 ## Action
 The action space is a `MultiDiscreteArray` of integer values representing coordinates of the square
 to explore and the digits to write in the cell, e.g. `[3, 6, 8]` for writing the digit `9`
-the cell located on the third row and sixth column. 
+the cell located on the third row and sixth column.
 
 
 ## Reward

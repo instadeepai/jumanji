@@ -18,47 +18,19 @@ import jax.numpy as jnp
 
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH, BOX_IDX
 
-# def create_board_csv():
-#     board = [
-#         [0, 0, 0, 8, 0, 1, 0, 0, 0],
-#         [0, 0, 0, 0, 0, 0, 0, 4, 3],
-#         [5, 0, 0, 0, 0, 0, 0, 0, 0],
-#         [0, 0, 0, 0, 7, 0, 8, 0, 0],
-#         [0, 0, 0, 0, 0, 0, 1, 0, 0],
-#         [0, 2, 0, 0, 3, 0, 0, 0, 0],
-#         [6, 0, 0, 0, 0, 0, 0, 7, 5],
-#         [0, 0, 3, 4, 0, 0, 0, 0, 0],
-#         [0, 0, 0, 2, 0, 0, 6, 0, 0],
-#     ]
-#     np.savetxt("test_puzzle.csv", board, delimiter=",")
-
-#     solved_board = [
-#         [2, 3, 7, 8, 4, 1, 5, 6, 9],
-#         [1, 8, 6, 7, 9, 5, 2, 4, 3],
-#         [5, 9, 4, 3, 2, 6, 7, 1, 8],
-#         [3, 1, 5, 6, 7, 4, 8, 9, 2],
-#         [4, 6, 9, 5, 8, 2, 1, 3, 7],
-#         [7, 2, 8, 1, 3, 9, 4, 5, 6],
-#         [6, 4, 2, 9, 1, 8, 3, 7, 5],
-#         [8, 5, 3, 4, 6, 7, 9, 2, 1],
-#         [9, 7, 1, 2, 5, 3, 6, 8, 4],
-#     ]
-
-#     np.savetxt("test_solution.csv", solved_board, delimiter=",")
-
 
 def apply_action(action: chex.Array, board: chex.Array) -> chex.Array:
     return board.at[action[0], action[1]].set(action[2])
 
 
-def validate_board(board: chex.Array) -> chex.Array:
+def puzzle_completed(board: chex.Array) -> chex.Array:
     """Checks that every row, column and 3x3 boxes includes all figures.
 
     Args:
         board: The sudoku board.
 
     Returns:
-        condition: A `bool` indicator that validates a solution or rejects it.
+        condition: A `bool` indicator that validates if the puzzle is solved.
     """
 
     def _validate_row(row: chex.Array) -> chex.Array:
@@ -66,11 +38,28 @@ def validate_board(board: chex.Array) -> chex.Array:
         return condition.all()
 
     condition_rows = jax.vmap(_validate_row)(board).all()
-    print(condition_rows)
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    print(condition_columns)
     condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.array(BOX_IDX))).all()
-    print(condition_boxes)
+    return condition_rows & condition_columns & condition_boxes
+
+
+def validate_board(board: chex.Array) -> chex.Array:
+    """Checks that every row, column and 3x3 boxes contain no duplicate number.
+
+    Args:
+        board: The sudoku board.
+
+    Returns:
+        condition: A `bool` indicator that validates a board or not.
+    """
+
+    def _validate_row(row: chex.Array) -> chex.Array:
+        return jax.nn.one_hot(row, BOARD_WIDTH).sum(axis=0).max() <= 1
+
+    condition_rows = jax.vmap(_validate_row)(board).all()
+    condition_columns = jax.vmap(_validate_row)(board.T).all()
+    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.array(BOX_IDX))).all()
+
     return condition_rows & condition_columns & condition_boxes
 
 

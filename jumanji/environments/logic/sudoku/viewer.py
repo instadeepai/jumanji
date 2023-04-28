@@ -127,7 +127,7 @@ class SudokuViewer(Viewer[State]):
         self._draw_board(ax)
         self._draw_figures(ax, state)
 
-    def _draw_figures(self, ax, state: State) -> None:
+    def _draw_figures(self, ax: plt.Axes, state: State) -> None:
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         board = state.board
         board_shape = board.shape

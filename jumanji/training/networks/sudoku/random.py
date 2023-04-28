@@ -12,46 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import chex
-import jax
-import jax.numpy as jnp
 
 from jumanji.environments.logic.sudoku import Sudoku
 from jumanji.training.networks.masked_categorical_random import (
-    ObservationWithActionMask,
     make_masked_categorical_random_ndim,
 )
 from jumanji.training.networks.protocols import RandomPolicy
 
-# def make_random_policy_sudoku() -> RandomPolicy:
-#     """Make random policy for the `Sudoku` environment."""
 
-#     def vmap_random_policy_sudoku(
-#         observation: ObservationWithActionMask,
-#         key: chex.PRNGKey,
-#     ) -> chex.Array:
-#         keys = jax.random.split(key, observation.action_mask.shape[0])
-
-#         return jax.vmap(random_policy_sudoku)(observation, keys)
-
-#     return vmap_random_policy_sudoku
-
-
-# def random_policy_sudoku(
-#     observation: ObservationWithActionMask,
-#     key: chex.PRNGKey,
-# ) -> chex.Array:
-#     raveled_mask = observation.action_mask.ravel()
-#     idx = jax.random.choice(
-#         key,
-#         jnp.arange(len(raveled_mask)),
-#         shape=(1,),
-#         p=raveled_mask / raveled_mask.sum(),
-#     )[0]
-#     unravel_idx = jnp.unravel_index(idx, observation.action_mask.shape)
-#     action = jnp.stack(unravel_idx)
-
-#     return action
 def make_random_policy_sudoku(sudoku: Sudoku) -> RandomPolicy:
     """Make random policy for the `Sudoku` environment."""
 

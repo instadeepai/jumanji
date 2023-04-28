@@ -154,12 +154,11 @@ class RubiksCube(Environment[State]):
             cube=state.cube,
             flattened_action=flattened_action,
         )
-
         step_count = state.step_count + 1
         next_state = State(
             cube=cube,
             step_count=step_count,
-            key=key,
+            key=state.key,
         )
         reward = self.reward_function(state=next_state)
         solved = is_solved(cube)

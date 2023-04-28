@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import jax
-import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.logic.sudoku.env import Sudoku
 from jumanji.environments.logic.sudoku.generator import DummyGenerator
-from jumanji.environments.logic.sudoku.types import State
 
 
 @pytest.fixture
 def sudoku_env() -> Sudoku:
-    """Fixture for a default sudoku environment with 10 rows and columns, and 10 mines."""
+    """Fixture for a default sudoku environment."""
     return Sudoku(generator=DummyGenerator())

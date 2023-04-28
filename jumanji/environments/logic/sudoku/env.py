@@ -28,8 +28,8 @@ from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
 from jumanji.environments.logic.sudoku.types import Observation, State
 from jumanji.environments.logic.sudoku.utils import (
     apply_action,
+    puzzle_completed,
     update_action_mask,
-    validate_board,
 )
 from jumanji.environments.logic.sudoku.viewer import SudokuViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -105,12 +105,11 @@ class Sudoku(Environment[State]):
             action_mask=state.action_mask, board=updated_board
         ).astype(bool)
 
-        winning = validate_board(updated_board)
+        winning = puzzle_completed(updated_board)
 
-        key, _ = jax.random.split(state.key)
         # creating next state
         next_state = State(
-            board=updated_board, action_mask=updated_action_mask, key=key
+            board=updated_board, action_mask=updated_action_mask, key=state.key
         )
 
         no_actions_avalaible = updated_action_mask.sum() == 0
