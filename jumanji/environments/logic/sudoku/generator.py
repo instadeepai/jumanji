@@ -26,9 +26,10 @@ from jumanji.environments.logic.sudoku.types import State
 from jumanji.environments.logic.sudoku.utils import update_action_mask
 
 DATABASES = {
-    "very-easy": "data/10_easy_puzzles.npy",  # 10 puzzles with 70 cells filled
+    "toy": "data/10_toy_puzzles.npy",  # 10 puzzles with 70 clues
+    "very-easy": "data/1000_very_easy_puzzles.npy",  # 1000 puzzles with >= 46 clues
     "mixed": "data/10000_mixed_puzzles.npy",  # 10000 puzzles with a random number
-    # of cells filled
+    # of clues
 }
 
 
@@ -53,25 +54,35 @@ class DummyGenerator(Generator):
     def __init__(
         self,
     ):
-        board = jnp.array(
-            [
-                [7, 8, 0, 4, 0, 0, 1, 2, 0],
-                [6, 0, 0, 0, 7, 5, 0, 0, 9],
-                [0, 0, 0, 6, 0, 1, 0, 7, 8],
-                [0, 0, 7, 0, 4, 0, 2, 6, 0],
-                [0, 0, 1, 0, 5, 0, 9, 3, 0],
-                [9, 0, 4, 0, 6, 0, 0, 0, 5],
-                [0, 7, 0, 3, 0, 0, 0, 1, 2],
-                [1, 2, 0, 0, 0, 7, 4, 0, 0],
-                [0, 4, 9, 2, 0, 6, 0, 0, 7],
-            ]
-        )
+        board = [
+            [0, 0, 0, 8, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 4, 3],
+            [5, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 7, 0, 8, 0, 0],
+            [0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 2, 0, 0, 3, 0, 0, 0, 0],
+            [6, 0, 0, 0, 0, 0, 0, 7, 5],
+            [0, 0, 3, 4, 0, 0, 0, 0, 0],
+            [0, 0, 0, 2, 0, 0, 6, 0, 0],
+        ]
+        solved_board = [
+            [2, 3, 7, 8, 4, 1, 5, 6, 9],
+            [1, 8, 6, 7, 9, 5, 2, 4, 3],
+            [5, 9, 4, 3, 2, 6, 7, 1, 8],
+            [3, 1, 5, 6, 7, 4, 8, 9, 2],
+            [4, 6, 9, 5, 8, 2, 1, 3, 7],
+            [7, 2, 8, 1, 3, 9, 4, 5, 6],
+            [6, 4, 2, 9, 1, 8, 3, 7, 5],
+            [8, 5, 3, 4, 6, 7, 9, 2, 1],
+            [9, 7, 1, 2, 5, 3, 6, 8, 4],
+        ]
 
         action_mask = np.ma.make_mask(board)
         board = jnp.array(board, dtype=jnp.int32) - 1
         action_mask = jnp.array(action_mask, dtype=jnp.int32)
         action_mask = 1 - jnp.expand_dims(action_mask, -1).repeat(BOARD_WIDTH, axis=-1)
         action_mask = update_action_mask(action_mask, board).astype(bool)
+        self._solved_board = jnp.array(solved_board, dtype=jnp.int32) - 1
         self._board = board
         self._action_mask = action_mask
 

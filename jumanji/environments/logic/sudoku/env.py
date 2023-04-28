@@ -22,6 +22,7 @@ import matplotlib
 from jumanji import Environment, specs
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.generator import DatabaseGenerator, Generator
+from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
 
 # from jumanji.environments.logic.sudoku.specs import ObservationSpec
 from jumanji.environments.logic.sudoku.types import Observation, State
@@ -78,16 +79,13 @@ class Sudoku(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
+        reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
-        if generator is None:
-            generator = DatabaseGenerator(level="mixed")
 
-        if viewer is None:
-            viewer = SudokuViewer()
-
-        self._viewer = viewer
-        self._generator = generator
+        self._generator = generator or DatabaseGenerator(level="mixed")
+        self._reward_fn = reward_fn or SparseRewardFn()
+        self._viewer = viewer or SudokuViewer()
 
     def __repr__(self) -> str:
         return f"Sudoku(grid_size={BOARD_WIDTH}x{BOARD_WIDTH})"
@@ -118,7 +116,7 @@ class Sudoku(Environment[State]):
 
         # computing terminal condition
         done = invalid | winning | no_actions_avalaible
-        reward = winning * 1.0
+        reward = self._reward_fn(state)
 
         observation = Observation(board=updated_board, action_mask=updated_action_mask)
 

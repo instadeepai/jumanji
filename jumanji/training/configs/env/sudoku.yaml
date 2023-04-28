@@ -1,5 +1,5 @@
 name: sudoku
-registered_version: Sudoku-v0
+registered_version: Sudoku-very-easy-v0
 
 network:
     num_channels: 32
