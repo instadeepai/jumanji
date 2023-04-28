@@ -36,7 +36,9 @@ class TestRandomGenerator:
         return RandomGenerator(self.HEIGHT, self.WIDTH, self.NUM_AGENTS)
 
     def test_random_instance_generator_values(
-        self, key: chex.PRNGKey, instance_generator: RandomGenerator,
+        self,
+        key: chex.PRNGKey,
+        instance_generator: RandomGenerator,
     ) -> None:
         state = instance_generator(key)
 
