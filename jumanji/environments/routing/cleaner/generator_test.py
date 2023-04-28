@@ -44,3 +44,4 @@ class TestRandomGenerator:
         assert jnp.sum(jnp.logical_and(state.grid != WALL, state.grid != DIRTY)) == 1
         assert state.grid[0, 0] == CLEAN  # Only the top-left tile is clean
         assert state.step_count == 0
+        assert state.grid.shape == (self.WIDTH, self.HEIGHT)
