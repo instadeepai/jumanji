@@ -74,3 +74,4 @@ repos:
         args:
           - --license-filepath=license_header.txt
           - --comment-style=#
+        exclude: .npy$
