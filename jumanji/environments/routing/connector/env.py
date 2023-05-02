@@ -79,7 +79,7 @@ class Connector(Environment[State]):
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
-        - grid: jax array (int32) of shape (grid_size, grid_size) the observation.
+        - grid: jax array (int32) of shape (grid_size, grid_size) giving the observation.
         - step_count: jax array (int32) of shape () number of steps elapsed in the current episode.
 
     ```python
