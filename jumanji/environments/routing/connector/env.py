@@ -70,7 +70,7 @@ class Connector(Environment[State]):
         - each value in the array corresponds to an agent's action.
 
     - reward: jax array (float) of shape ():
-        - dense: reward is increased by 1 for each successful connection on that step. Additionally,
+        - dense: reward is 1 for each successful connection on that step. Additionally,
             each pair of points that have not connected receives a penalty reward of -0.03.
 
     - episode termination:
