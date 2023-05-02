@@ -54,8 +54,8 @@ def test_connector__reset(connector: Connector, key: jax.random.KeyArray) -> Non
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
 
-    assert jnp.array_equal(timestep.discount, jnp.asarray(1.0))
-    assert jnp.array_equal(timestep.reward, jnp.asarray(0.0))
+    assert timestep.discount == 1.0
+    assert timestep.reward == 0.0
     assert timestep.step_type == StepType.FIRST
 
 

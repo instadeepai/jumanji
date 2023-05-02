@@ -17,10 +17,10 @@ moves due to being blocked.
 At each step observation contains 3 items: a grid, an action mask for each agent and
 the episode step count.
 
-- `grid`: jax array (int32) of shape `(grid_size, grid_size)`, a 2D matrix for each
-   agent that represents pairs of points that need to be connected. Each agent has three types of
-   points: **position**, **target** and **path** which are represented by different numbers on the
-   grid. The **position** of an agent has to connect to its **target**, leaving a **path** behind
+- `grid`: jax array (int32) of shape `(grid_size, grid_size)`, a 2D matrix that represents pairs 
+   of points that need to be connected. Each agent has three types of points: **position**,
+   **target** and **path** which are represented by different numbers on the grid. The 
+   **position** of an agent has to connect to its **target**, leaving a **path** behind
    it as it moves across the grid forming its route. Each agent connects to only 1 target.
 
 - `action_mask`: jax array (bool) of shape `(num_agents, 5)`, indicates which actions each agent

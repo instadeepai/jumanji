@@ -73,10 +73,9 @@ class Connector(Environment[State]):
         - dense: reward is increased by 1 for each successful connection on that step. Additionally,
             each pair of points that have not connected receives a penalty reward of -0.03.
 
-    - episode termination: if an agent can't move, or the time limit is reached, or the agent
-        connects to its target, it is considered done. Once all agents are done, the episode
-        terminates. The timestep discounts are of shape (1,) and only set to `0` when all agents
-        are done.
+    - episode termination:
+        * all agents either can't move (no available actions) or have connected to their target.
+        * the time limit is reached.
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.
@@ -173,7 +172,7 @@ class Connector(Environment[State]):
             grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key
         )
 
-        # Construct timestep: get rewards, discounts
+        # Construct timestep: get reward, legal actions and done
         reward = self._reward_fn(state, action, new_state)
         action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
         observation = Observation(
