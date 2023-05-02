@@ -27,11 +27,11 @@ class TestRandomGenerator:
     HEIGHT = 7
     NUM_AGENTS = 3
 
-    @pytest.fixture()
+    @pytest.fixture
     def key(self) -> chex.PRNGKey:
         return jax.random.PRNGKey(0)
 
-    @pytest.fixture()
+    @pytest.fixture
     def instance_generator(self) -> RandomGenerator:
         return RandomGenerator(self.HEIGHT, self.WIDTH, self.NUM_AGENTS)
 
