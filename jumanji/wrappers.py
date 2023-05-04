@@ -480,8 +480,7 @@ class VmapAutoResetWrapper(Wrapper):
 
         # Replace observation with reset observation.
         timestep = timestep.replace(  # type: ignore
-            observation=reset_timestep.observation,
-            step_type=reset_timestep.step_type,
+            observation=reset_timestep.observation
         )
 
         return state, timestep
