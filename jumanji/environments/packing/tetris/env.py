@@ -221,6 +221,7 @@ class Tetris(Environment[State]):
         new_tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(
             key, self.tetrominoes_list
         )
+        grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self.calculate_action_mask(grid_padded_cliped, tetrominoe_index)
         action_mask = jnp.squeeze(action_mask)
         colored_tetrominoe = tetrominoe * (grid_padded.max())
