@@ -15,7 +15,6 @@
 from typing import Optional, Sequence, Tuple
 
 import matplotlib
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 import jumanji
@@ -30,7 +29,7 @@ class SudokuViewer(Viewer[State]):
         name: str = "Sudoku",
     ) -> None:
         self._name = name
-        self._animation: Optional[animation.Animation] = None
+        self._animation: Optional[matplotlib.animation.Animation] = None
 
     def render(
         self,
@@ -86,7 +85,7 @@ class SudokuViewer(Viewer[State]):
         states: Sequence[State],
         interval: int = 500,
         save_path: Optional[str] = None,
-    ) -> animation.FuncAnimation:
+    ) -> matplotlib.animation.FuncAnimation:
         fig, ax = plt.subplots(figsize=(6, 6))
         plt.title(f"{self._name}")
 
@@ -94,7 +93,7 @@ class SudokuViewer(Viewer[State]):
             state = states[state_index]
             self.render(state, ax=ax)
 
-        animation = animation.FuncAnimation(
+        animation = matplotlib.animation.FuncAnimation(
             fig, make_frame, frames=len(states), interval=interval, blit=False
         )
 
