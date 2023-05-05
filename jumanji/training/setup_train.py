@@ -245,7 +245,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
-
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         actor_critic_networks = networks.make_actor_critic_networks_rubiks_cube(
