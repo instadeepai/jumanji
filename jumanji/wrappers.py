@@ -354,7 +354,7 @@ class VmapWrapper(Wrapper):
 class AutoResetWrapper(Wrapper):
     """Automatically resets environments that are done. Once the terminal state is reached,
     the state, observation, and step_type are reset. The observation and step_type of the
-    terminal TimeStep is reset to the reset observation and StepType.FIRST, respectively.
+    terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
     The reward, discount, and extras retrieved from the transition to the terminal state.
     WARNING: do not `jax.vmap` the wrapped environment (e.g. do not use with the `VmapWrapper`),
     which would lead to inefficient computation due to both the `step` and `reset` functions
