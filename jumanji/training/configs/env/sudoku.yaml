@@ -4,8 +4,8 @@ registered_version: Sudoku-very-easy-v0
 network:
     key_size: 64
     num_heads: 4
-    policy_layers: [64]
-    value_layers: [64]
+    policy_layers: [128]
+    value_layers: [128]
 
 training:
     num_epochs: 100
@@ -24,4 +24,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 4e-4
+    learning_rate: 5e-4
