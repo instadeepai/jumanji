@@ -94,14 +94,14 @@ class SudokuViewer(Viewer[State]):
             state = states[state_index]
             self.render(state, ax=ax)
 
-        _animation = animation.FuncAnimation(
+        animation = animation.FuncAnimation(
             fig, make_frame, frames=len(states), interval=interval, blit=False
         )
 
         if save_path:
-            _animation.save(save_path)
+            animation.save(save_path)
 
-        return _animation
+        return animation
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         exists = plt.fignum_exists(self._name)
