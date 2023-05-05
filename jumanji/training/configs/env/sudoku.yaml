@@ -2,9 +2,10 @@ name: sudoku
 registered_version: Sudoku-very-easy-v0
 
 network:
-    num_channels: 32
-    policy_layers: [64, 64]
-    value_layers: [128, 128]
+    key_size: 64
+    num_heads: 4
+    policy_layers: [64]
+    value_layers: [64]
 
 training:
     num_epochs: 100

@@ -257,9 +257,10 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
 
     elif cfg.env.name == "sudoku":
         assert isinstance(env.unwrapped, Sudoku)
-        actor_critic_networks = networks.make_actor_critic_networks_sudoku(
+        actor_critic_networks = networks.make_equivariant_actor_critic_networks_sudoku(
             sudoku=env.unwrapped,
-            num_channels=cfg.env.network.num_channels,
+            num_heads=cfg.env.network.num_heads,
+            key_size=cfg.env.network.key_size,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )

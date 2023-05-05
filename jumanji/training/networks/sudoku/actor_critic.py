@@ -31,7 +31,7 @@ from jumanji.training.networks.parametric_distribution import (
 )
 
 
-def make_actor_critic_networks_sudoku(
+def make_cnn_actor_critic_networks_sudoku(
     sudoku: Sudoku,
     num_channels: int,
     policy_layers: Sequence[int],
@@ -52,6 +52,38 @@ def make_actor_critic_networks_sudoku(
         num_outputs=1,
         mlp_units=value_layers,
         conv_n_channels=num_channels,
+    )
+    return ActorCriticNetworks(
+        policy_network=policy_network,
+        value_network=value_network,
+        parametric_action_distribution=parametric_action_distribution,
+    )
+
+
+def make_equivariant_actor_critic_networks_sudoku(
+    sudoku: Sudoku,
+    num_heads: int,
+    key_size: int,
+    policy_layers: Sequence[int],
+    value_layers: Sequence[int],
+) -> ActorCriticNetworks:
+    """Make actor-critic networks for the `Sudoku` environment."""
+    num_actions = sudoku.action_spec().num_values
+    parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
+        action_spec_num_values=np.asarray(num_actions)
+    )
+
+    policy_network = make_sudoku_equivariant(
+        is_critic=False,
+        mlp_units=policy_layers,
+        key_size=key_size,
+        num_heads=num_heads,
+    )
+    value_network = make_sudoku_equivariant(
+        is_critic=True,
+        mlp_units=value_layers,
+        key_size=key_size,
+        num_heads=num_heads,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -84,6 +116,48 @@ def make_sudoku_cnn(
         else:
             logits = head(embedding)
             logits = logits.reshape(-1, BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH)
+
+            logits = jnp.where(
+                observation.action_mask, logits, jnp.finfo(jnp.float32).min
+            )
+
+            return logits.reshape(observation.action_mask.shape[0], -1)
+
+    init, apply = hk.without_apply_rng(hk.transform(network_fn))
+    return FeedForwardNetwork(init=init, apply=apply)
+
+
+def make_sudoku_equivariant(
+    is_critic: bool,
+    num_heads: int = 4,
+    key_size: int = 64,
+    mlp_units: Sequence[int] = (64,),
+) -> FeedForwardNetwork:
+    def network_fn(observation: Observation) -> chex.Array:
+        board = observation.board
+        board = jax.nn.one_hot(board, BOARD_WIDTH)
+        board = board.reshape(board.shape[0], BOARD_WIDTH**2, BOARD_WIDTH)
+        board = jnp.transpose(board, (0, 2, 1))
+        w_init = hk.initializers.VarianceScaling(2.0, "fan_in", "uniform")
+        embedding = hk.MultiHeadAttention(num_heads, key_size, w_init=w_init)(
+            board, board, board
+        )
+
+        if is_critic:
+            logits = hk.nets.MLP((*mlp_units, 1), activate_final=False)(embedding)
+            logits = logits.squeeze(axis=-1)
+            value = jnp.mean(logits, axis=-1)
+            return value
+        else:
+            logits = hk.nets.MLP((*mlp_units, BOARD_WIDTH**2), activate_final=False)(
+                embedding
+            )
+
+            logits = jnp.transpose(logits, (0, 2, 1))
+
+            logits = logits.reshape(
+                board.shape[0], BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH
+            )
 
             logits = jnp.where(
                 observation.action_mask, logits, jnp.finfo(jnp.float32).min
