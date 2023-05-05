@@ -46,9 +46,10 @@ class SudokuViewer(Viewer[State]):
             fig = ax.figure
             ax.clear()
         self._draw(ax, state)
-        ax.text(
-            -0.5, -0.5, f"Remaining actions: {state.action_mask.sum()}", fontsize=14
-        )
+        # Uncomment to display the remaining-actions number.
+        # ax.text(
+        #     -0.5, -0.5, f"Remaining actions: {state.action_mask.sum()}", fontsize=14
+        # )
         self._display_human(fig)
 
     def _draw_board(self, ax: plt.Axes) -> None:

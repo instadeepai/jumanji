@@ -37,7 +37,8 @@ def make_cnn_actor_critic_networks_sudoku(
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `Sudoku` environment."""
+    """Make actor-critic networks for the `Sudoku` environment. Uses the
+    CNN network architecture."""
     num_actions = sudoku.action_spec().num_values
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=np.asarray(num_actions)
@@ -67,7 +68,8 @@ def make_equivariant_actor_critic_networks_sudoku(
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `Sudoku` environment."""
+    """Make actor-critic networks for the `Sudoku` environment. Uses the
+    digits-permutation equivariant network architecture."""
     num_actions = sudoku.action_spec().num_values
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=np.asarray(num_actions)
@@ -133,6 +135,8 @@ def make_sudoku_equivariant(
     key_size: int = 64,
     mlp_units: Sequence[int] = (64,),
 ) -> FeedForwardNetwork:
+    """A network that is equivariant to a permutation of digits."""
+
     def network_fn(observation: Observation) -> chex.Array:
         board = observation.board
         board = jax.nn.one_hot(board, BOARD_WIDTH)
