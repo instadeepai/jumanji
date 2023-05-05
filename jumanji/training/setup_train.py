@@ -245,7 +245,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
-
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         actor_critic_networks = networks.make_actor_critic_networks_rubiks_cube(
@@ -254,7 +253,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             step_count_embed_dim=cfg.env.network.step_count_embed_dim,
             dense_layer_dims=cfg.env.network.dense_layer_dims,
         )
-
     elif cfg.env.name == "sudoku":
         assert isinstance(env.unwrapped, Sudoku)
         actor_critic_networks = networks.make_equivariant_actor_critic_networks_sudoku(
