@@ -23,8 +23,6 @@ from jumanji import Environment, specs
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.generator import DatabaseGenerator, Generator
 from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
-
-# from jumanji.environments.logic.sudoku.specs import ObservationSpec
 from jumanji.environments.logic.sudoku.types import Observation, State
 from jumanji.environments.logic.sudoku.utils import (
     apply_action,
@@ -116,7 +114,9 @@ class Sudoku(Environment[State]):
 
         # computing terminal condition
         done = invalid | winning | no_actions_avalaible
-        reward = self._reward_fn(next_state)
+        reward = self._reward_fn(
+            state=state, new_state=next_state, action=action, done=done
+        )
 
         observation = Observation(board=updated_board, action_mask=updated_action_mask)
 

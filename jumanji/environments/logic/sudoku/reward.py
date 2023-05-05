@@ -23,13 +23,17 @@ from jumanji.environments.logic.sudoku.utils import puzzle_completed
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, state: State) -> chex.Array:
+    def __call__(
+        self, state: State, action: chex.Array, new_state: State, done: jnp.ndarray
+    ) -> chex.Array:
         """Call method for computing the reward given new state."""
 
 
 class SparseRewardFn(RewardFn):
     """A sparse reward function, returning +1 if sudoku is solved and otherwise 0."""
 
-    def __call__(self, state: State) -> chex.Array:
-        solved = puzzle_completed(state.board)
+    def __call__(
+        self, state: State, action: chex.Array, new_state: State, done: jnp.ndarray
+    ) -> chex.Array:
+        solved = puzzle_completed(new_state.board)
         return jnp.array(solved, float)
