@@ -29,6 +29,7 @@ from jumanji.training.networks.actor_critic import (
 from jumanji.training.networks.parametric_distribution import (
     FactorisedActionSpaceParametricDistribution,
 )
+from jumanji.training.networks.transformer_block import TransformerBlock
 
 
 def make_cnn_actor_critic_networks_sudoku(
@@ -142,10 +143,12 @@ def make_sudoku_equivariant(
         board = jax.nn.one_hot(board, BOARD_WIDTH)
         board = board.reshape(board.shape[0], BOARD_WIDTH**2, BOARD_WIDTH)
         board = jnp.transpose(board, (0, 2, 1))
-        w_init = hk.initializers.VarianceScaling(2.0, "fan_in", "uniform")
-        embedding = hk.MultiHeadAttention(num_heads, key_size, w_init=w_init)(
-            board, board, board
-        )
+        embedding = TransformerBlock(
+            num_heads=num_heads,
+            key_size=key_size,
+            mlp_units=mlp_units,
+            w_init_scale=1.0,
+        )(board, board, board)
 
         if is_critic:
             logits = hk.nets.MLP((*mlp_units, 1), activate_final=False)(embedding)
