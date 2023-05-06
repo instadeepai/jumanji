@@ -2,16 +2,16 @@ name: sudoku
 registered_version: Sudoku-very-easy-v0
 
 network:
-    key_size: 16
-    num_heads: 8
+    key_size: 32
+    num_heads: 4
     policy_layers: [128]
     value_layers: [128]
 
 training:
-    num_epochs: 100
+    num_epochs: 200
     num_learner_steps_per_epoch: 500
     n_steps: 20
-    total_batch_size: 128
+    total_batch_size: 256
 
 evaluation:
     eval_total_batch_size: 1000
