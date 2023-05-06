@@ -143,6 +143,8 @@ def make_sudoku_equivariant(
         board = jax.nn.one_hot(board, BOARD_WIDTH)
         board = board.reshape(board.shape[0], BOARD_WIDTH**2, BOARD_WIDTH)
         board = jnp.transpose(board, (0, 2, 1))
+        board = hk.nets.MLP((key_size * num_heads), activate_final=True)(board)
+
         embedding = TransformerBlock(
             num_heads=num_heads,
             key_size=key_size,
@@ -151,14 +153,12 @@ def make_sudoku_equivariant(
         )(board, board, board)
 
         if is_critic:
-            logits = hk.nets.MLP((*mlp_units, 1), activate_final=False)(embedding)
+            logits = hk.nets.MLP((1,), activate_final=False)(embedding)
             logits = logits.squeeze(axis=-1)
             value = jnp.mean(logits, axis=-1)
             return value
         else:
-            logits = hk.nets.MLP((*mlp_units, BOARD_WIDTH**2), activate_final=False)(
-                embedding
-            )
+            logits = hk.nets.MLP((BOARD_WIDTH**2,), activate_final=False)(embedding)
 
             logits = jnp.transpose(logits, (0, 2, 1))
 
