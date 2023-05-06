@@ -33,10 +33,12 @@ class TestRandomGenerator:
 
     @pytest.fixture
     def instance_generator(self) -> RandomGenerator:
-        return RandomGenerator(self.WIDTH, self.HEIGHT, self.NUM_AGENTS)
+        return RandomGenerator(self.HEIGHT, self.WIDTH, self.NUM_AGENTS)
 
     def test_random_instance_generator_values(
-        self, key: chex.PRNGKey, instance_generator: RandomGenerator
+        self,
+        key: chex.PRNGKey,
+        instance_generator: RandomGenerator,
     ) -> None:
         state = instance_generator(key)
 
@@ -44,3 +46,4 @@ class TestRandomGenerator:
         assert jnp.sum(jnp.logical_and(state.grid != WALL, state.grid != DIRTY)) == 1
         assert state.grid[0, 0] == CLEAN  # Only the top-left tile is clean
         assert state.step_count == 0
+        assert state.grid.shape == (self.HEIGHT, self.WIDTH)
