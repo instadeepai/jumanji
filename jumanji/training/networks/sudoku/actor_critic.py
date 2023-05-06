@@ -143,7 +143,7 @@ def make_sudoku_equivariant(
         board = jax.nn.one_hot(board, BOARD_WIDTH)
         board = board.reshape(board.shape[0], BOARD_WIDTH**2, BOARD_WIDTH)
         board = jnp.transpose(board, (0, 2, 1))
-        board = hk.nets.MLP((key_size * num_heads), activate_final=True)(board)
+        board = hk.nets.MLP((key_size * num_heads,), activate_final=True)(board)
 
         embedding = TransformerBlock(
             num_heads=num_heads,
