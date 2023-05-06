@@ -10,8 +10,8 @@ network:
 training:
     num_epochs: 200
     num_learner_steps_per_epoch: 500
-    n_steps: 20
-    total_batch_size: 256
+    n_steps: 40
+    total_batch_size: 64
 
 evaluation:
     eval_total_batch_size: 1000
