@@ -53,7 +53,7 @@ class DefaultRewardFn(RewardFn):
             reward_values: array with rewards for each type of event.
               This is a list with 3 values. The first is the reward for
               connecting a node, the second is the reward for non connection
-              and the third is the reward for an invalid option
+              and the third is the reward for an invalid option.
         """
 
         self._reward_connected = reward_values[0]
