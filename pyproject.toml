@@ -41,5 +41,6 @@ module = [
     "haiku.*",
     "hydra.*",
     "omegaconf.*",
+    "networkx.*",
 ]
 ignore_missing_imports = true
