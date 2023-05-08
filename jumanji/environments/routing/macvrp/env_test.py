@@ -28,9 +28,8 @@ from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
-
 class TestEnvironmentSpec:
-    def test_macvrp__reset(macvrp_env: MACVRP) -> None:
+    def test_macvrp__reset(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted reset of the environment."""
         chex.clear_trace_counter()
         reset_fn = jax.jit(chex.assert_max_traces(macvrp_env.reset, n=1))
@@ -67,7 +66,7 @@ class TestEnvironmentSpec:
         assert_is_jax_array_tree(state)
 
 
-    def test_macvrp__step(macvrp_env: MACVRP) -> None:
+    def test_macvrp__step(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
@@ -136,7 +135,7 @@ class TestEnvironmentSpec:
         assert np.all(new_state.vehicles.positions == 0)
 
 
-    def test_macvrp__update_state(macvrp_env: MACVRP) -> None:
+    def test_macvrp__update_state(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
@@ -184,7 +183,7 @@ class TestEnvironmentSpec:
         assert jax.numpy.array_equal(state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16))
 
 
-    def test_macvrp__state_to_observation_timestep(macvrp_env: MACVRP) -> None:
+    def test_macvrp__state_to_observation_timestep(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
@@ -232,7 +231,7 @@ class TestEnvironmentSpec:
         assert np.array_equal(timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32))
 
 
-    def test_env_macvrp__does_not_smoke(macvrp_env: MACVRP) -> None:
+    def test_env_macvrp__does_not_smoke(self, macvrp_env: MACVRP) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
             @jax.vmap  # map over the agents
             def select_action(
