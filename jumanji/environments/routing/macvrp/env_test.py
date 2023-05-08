@@ -15,16 +15,18 @@
 import chex
 import jax
 import numpy as np
-from jumanji.environments.routing.macvrp.env import MACVRP, Observation
+from jumanji.environments.routing.macvrp.env import MACVRP
 from jumanji.environments.routing.macvrp.test_data import (
     test_action_mask,
     test_node_demand,
 )
+from jumanji.environments.routing.macvrp.env import Observation
 from jumanji.environments.routing.macvrp.types import State
 from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
+
 
 
 class TestEnvironmentSpec:
@@ -247,5 +249,4 @@ class TestEnvironmentSpec:
 
             subkeys = jax.random.split(key, macvrp_env.num_vehicles)
             return select_action(subkeys, observation.action_mask)
-
         check_env_does_not_smoke(macvrp_env, select_actions)

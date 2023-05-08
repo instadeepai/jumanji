@@ -69,32 +69,40 @@ class MACVRPViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `CVRP` environment.
+    def render(self, state: State, save_path: Optional[str] = None) -> chex.Array:
+        """Render the state of the environment.
 
         Args:
-            state: the environment state to render.
+            state: the current state of the environment to render.
+            save_path: optional name to save frame as.
+
+        Return:
+            pixel RGB array
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
+        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
-        self._prepare_figure(ax)
         self._add_tour(ax, state)
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
-        blit: bool = False,
+        save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
-            blit: whether to use blitting, which optimises the animation by only re-drawing
-                pieces of the plot that have changed. Defaults to False.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
+
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
@@ -104,17 +112,22 @@ class MACVRPViewer(Viewer):
         plt.close(fig)
         self._prepare_figure(ax)
 
-        def animate(state_index: int) -> None:
+        def make_frame(state_index: int) -> None:
             state = states[state_index]
             self._add_tour(ax, state)
 
+        # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
-            animate,
+            make_frame,
             frames=len(states),
-            blit=blit,
             interval=interval,
         )
+
+        # Save the animation as a gif.
+        if save_path:
+            self._animation.save(save_path)
+
         return self._animation
 
     def close(self) -> None:
