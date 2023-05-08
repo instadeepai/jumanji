@@ -74,6 +74,10 @@ register(id="Connector-v0", entry_point="jumanji.environments:Connector")
 # a maximum demand for each node of 10, and a dense reward function.
 register(id="CVRP-v1", entry_point="jumanji.environments:CVRP")
 
+# MACVRP with 20 randomly generated nodes, a maximum capacity of 60, 2 vehicles,
+# a maximum demand for each node of 10, and a dense reward function.
+register(id="MACVRP20-v0", entry_point="jumanji.environments:MACVRP")
+
 # Maze with 10 rows and 10 columns, a time limit of 100 and a random maze generator.
 register(id="Maze-v0", entry_point="jumanji.environments:Maze")
 
