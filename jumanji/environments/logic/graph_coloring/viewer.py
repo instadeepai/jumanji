@@ -15,14 +15,14 @@
 from typing import List, Optional, Sequence, Tuple
 
 import chex
-import jumanji.environments
 import matplotlib.animation as animation
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
-from jumanji.viewer import Viewer
 
+import jumanji.environments
 from jumanji.environments.logic.graph_coloring.types import State
+from jumanji.viewer import Viewer
 
 
 class GraphColoringViewer(Viewer):

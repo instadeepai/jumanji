@@ -19,16 +19,16 @@ import jax
 import jax.numpy as jnp
 import matplotlib.animation as animation
 from jax import lax
+
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.types import TimeStep, restart, termination, transition
-
 from jumanji.environments.logic.graph_coloring.generator import (
     Generator,
     RandomGenerator,
 )
 from jumanji.environments.logic.graph_coloring.types import Observation, State
 from jumanji.environments.logic.graph_coloring.viewer import GraphColoringViewer
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class GraphColoring(Environment[State]):
@@ -67,8 +67,8 @@ class GraphColoring(Environment[State]):
 
         Args:
             generator: callable to instantiate environment instances.
-                Defaults to `RandomGenerator` with `num_nodes = 20`,
-                and `percent_connected = 0.5` parameters.
+                Defaults to `RandomGenerator` with `num_nodes = 100`,
+                and `percent_connected = 0.8` parameters.
         """
         self.generator = generator or RandomGenerator(
             num_nodes=100,
