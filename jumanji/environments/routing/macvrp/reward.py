@@ -21,6 +21,12 @@ import numpy as np
 from jumanji.environments.routing.cvrp.types import State
 
 class RewardFn(abc.ABC):
+    def __init__(self, num_vechicles, num_customers, map_max) -> None:
+        self.num_vehicles = num_vechicles
+        self.num_customers = num_customers
+        self.map_max = map_max
+        super().__init__()
+
     @abc.abstractmethod
     def __call__(
         self,
@@ -63,9 +69,8 @@ class DenseReward(RewardFn):
         # By default, returns the negative distance between the previous and new node.
         reward = jax.lax.select(
             is_done,
-            is_final_timestep,
-            lambda state: jax.numpy.float32(0),
-            state,
+            is_final_timestep(state),
+            jax.numpy.float32(0),
         )
      
         return reward

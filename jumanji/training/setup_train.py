@@ -24,6 +24,7 @@ import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
+    MACVRP,
     TSP,
     BinPack,
     Cleaner,
@@ -145,6 +146,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
+    elif cfg.env.name == "macvrp":
+        assert isinstance(env.unwrapped, MACVRP)
+        random_policy = networks.make_random_policy_macvrp()
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         random_policy = networks.make_random_policy_rubiks_cube(
@@ -232,6 +236,13 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
+        )
+    elif cfg.env.name == "macvrp":
+        assert isinstance(env.unwrapped, MACVRP)
+        actor_critic_networks = networks.make_actor_critic_networks_macvrp(
+            macvrp=env.unwrapped,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
         )
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)

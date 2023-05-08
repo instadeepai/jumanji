@@ -16,7 +16,7 @@ from typing import Tuple
 
 import jax
 import chex
-from jumanji.environments.routing.constants import DEPOT_IDX
+from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
 
 def compute_time_penalties(
     local_times: chex.Array,

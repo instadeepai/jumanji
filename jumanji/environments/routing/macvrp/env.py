@@ -21,7 +21,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.macvrp.env_viewer import MACVRPViewer
+from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 from jumanji.viewer import Viewer
 from jumanji.environments.routing.macvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.macvrp.specs import (
@@ -46,7 +46,7 @@ from jumanji.environments.routing.macvrp.utils import (
     generate_problem,
     get_init_settings,
 )
-from jumanji.types import Action, TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class MACVRP(Environment[State]):
@@ -134,7 +134,7 @@ class MACVRP(Environment[State]):
 
         self.max_local_time = 2.0 * jax.numpy.sqrt(2.0) * self.map_max * self.num_customers
 
-        self.reward_fn = reward_fn or DenseReward()
+        self.reward_fn = reward_fn or DenseReward(self.num_vehicles, self.num_customers, self.map_max)
 
         # Create viewer used for rendering
         self._env_viewer = viewer or MACVRPViewer(
@@ -205,7 +205,7 @@ class MACVRP(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, actions: Action) -> Tuple[State, TimeStep]:
+    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
         """
         Run one timestep of the environment's dynamics.
 
@@ -391,7 +391,7 @@ class MACVRP(Environment[State]):
         """
         return self._env_viewer.render(state)
 
-    def _update_state(self, state: State, actions: Action) -> State:
+    def _update_state(self, state: State, actions: chex.Array) -> State:
         """
         Updates the state of the environment.
 
