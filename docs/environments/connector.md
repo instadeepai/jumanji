@@ -74,4 +74,4 @@ Rewards are provided in the shape `(num_agents,)` so that each agent can have a 
 
 
 ## Registered Versions 📖
-- `Connector-v0`, grid size of 10 and 5 agents.
+- `Connector-v1`, grid size of 10 and 5 agents.
