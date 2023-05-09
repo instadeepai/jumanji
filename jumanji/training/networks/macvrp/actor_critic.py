@@ -31,37 +31,6 @@ from jumanji.training.networks.parametric_distribution import (
 )
 from jumanji.training.networks.transformer_block import TransformerBlock
 
-class PositionalEncoding(hk.Module):
-    def __init__(self, d_model: int, max_len: int = 5000, name: Optional[str] = None):
-        super(PositionalEncoding, self).__init__(name=name)
-        self.d_model = d_model
-        self.max_len = max_len
-
-        # Create matrix of shape (max_len, d_model) representing the positional encoding
-        # for an input sequence of length max_len
-        pos_enc = jnp.zeros((self.max_len, self.d_model))
-        position = jnp.arange(0, self.max_len, dtype=np.float32)[:, None]
-        div_term = jnp.exp(
-            jnp.arange(0, self.d_model, 2) * (-math.log(10000.0) / self.d_model)
-        )
-        pos_enc = pos_enc.at[:, 0::2].set(jnp.sin(position * div_term))
-        pos_enc = pos_enc.at[:, 1::2].set(jnp.cos(position * div_term))
-        pos_enc = pos_enc[None]  # (1, max_len, d_model)
-        self.pos_enc = pos_enc
-
-    def __call__(self, embedding: chex.Array) -> chex.Array:
-        """Add positional encodings to the embedding for each word in the input sequence.
-
-        Args:
-            embedding: input sequence embeddings of shape (B, N, D) where
-                B is the batch size, N is input sequence length, and D is
-                the embedding dimensionality i.e. d_model.
-
-        Returns:
-            Tensor of shape (B, N, D).
-        """
-        return embedding + self.pos_enc[:, : embedding.shape[1], :]
-
 def make_actor_critic_networks_macvrp(
     macvrp: MACVRP,
     num_vehicles: int,
@@ -71,9 +40,13 @@ def make_actor_critic_networks_macvrp(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Create an actor-critic network for the `MACVRP` environment."""
-    num_values = np.asarray(macvrp.action_spec().num_values)
+
+    # Add depot to the number of customers
+    num_customers += 1
+
+    num_actions = macvrp.action_spec().maximum
     parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
+        num_values=np.asarray(num_actions).reshape(1)
     )
     policy_network = make_actor_network_macvrp(
         num_vehicles=num_vehicles,
@@ -116,45 +89,52 @@ class MACVRPTorso(hk.Module):
 
     def __call__(self, observation: Observation) -> chex.Array:
         # Vehicle encoder
-        m_remaining_times = observation.vehicles_remaining_times.astype(float)[
-            ..., None
-        ]  # (B, M, 1)
+        batch_size = observation.nodes.coordinates.shape[0]
+
+        concat_list = [
+            observation.main_vehicles.positions.reshape(batch_size, self.num_vehicles, -1),
+            observation.main_vehicles.local_times.reshape(batch_size, self.num_vehicles, -1),
+            observation.main_vehicles.capacities.reshape(batch_size, self.num_vehicles, -1),
+        ]
+        o_vehicles = jnp.concatenate(concat_list, axis=-1)
+
         vehicle_embeddings = self.self_attention_vehicles(
-            m_remaining_times
-        )  # (B, M, D)
+            o_vehicles
+        )  # (B, V, D)
 
         # customer encoder
-        o_vehicle_ids = observation.ops_vehicle_ids  # (B, J, O)
-        o_durations = observation.ops_durations.astype(float)  # (B, J, O)
-        o_mask = observation.ops_mask  # (B, J, O)
-        customer_embeddings = jax.vmap(
-            self.customer_encoder, in_axes=(-2, -2, -2, None), out_axes=-2
-        )(
-            o_durations,
-            o_vehicle_ids,
-            o_mask,
-            vehicle_embeddings,
-        )  # (B, J, D)
-        # Add embedding for no-op
-        no_op_emb = hk.Linear(self.model_size)(
-            jnp.ones((o_mask.shape[0], 1, 1))
-        )  # (B, 1, D)
-        customer_embeddings = jnp.concatenate(
-            [customer_embeddings, no_op_emb], axis=-2
-        )  # (B, J+1, D)
+        concat_list = [
+            observation.nodes.coordinates[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.nodes.demands[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.windows.start[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.windows.end[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.coeffs.early[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.coeffs.late[:, 0].reshape(batch_size, self.num_customers, -1),
+            
+        ]
 
+
+        o_customers = jnp.concatenate(concat_list, axis=-1)
+
+        # (B, C, D)
+        customer_embeddings = self.customer_encoder(
+                                                        o_customers,
+                                                        vehicle_embeddings,
+                                                    )  
+                                            
         # Joint (vehicles & customers) self-attention
         embeddings = jnp.concatenate(
             [vehicle_embeddings, customer_embeddings], axis=-2
-        )  # (M+J+1, D)
-        embeddings = self.self_attention_joint_vehicles_ops(embeddings)
+        )  # (V+C+1, D)
+
+        embeddings = self.self_attention_joint_vehicles_customers(embeddings)
         return embeddings
 
     def self_attention_vehicles(self, m_remaining_times: chex.Array) -> chex.Array:
         # Projection of vehicles' remaining times
         embeddings = hk.Linear(self.model_size, name="remaining_times_projection")(
             m_remaining_times
-        )  # (B, M, D)
+        )  # (B, V, D)
         for block_id in range(self.num_vehicles):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -168,36 +148,19 @@ class MACVRPTorso(hk.Module):
                 query=embeddings,
                 key=embeddings,
                 value=embeddings,
-            )  # (B, M, D)
+            )  # (B, V, D)
         return embeddings
 
     def customer_encoder(
         self,
-        o_durations: chex.Array,
-        o_vehicle_ids: chex.Array,
-        o_mask: chex.Array,
-        m_embedding: chex.Array,
+        o_customers: chex.Array,
+        v_embedding: chex.Array,
     ) -> chex.Array:
-        # Compute mask for self attention between operations
-        valid_ops_mask = self._make_self_attention_mask(o_mask)  # (B, 1, O, O)
 
         # Projection of the operations
-        embeddings = hk.Linear(self.model_size, name="durations_projection")(
-            o_durations[..., None]
+        embeddings = hk.Linear(self.model_size, name="o_customer_projections")(
+            o_customers
         )  # (B, O, D)
-
-        # Add positional encoding since the operations in each customer must be executed sequentially
-        max_num_ops = o_durations.shape[-1]
-        pos_encoder = PositionalEncoding(
-            d_model=self.model_size, max_len=max_num_ops, name="positional_encoding"
-        )
-        embeddings = pos_encoder(embeddings)
-
-        # Compute cross attention mask
-        num_vehicles = m_embedding.shape[-2]
-        cross_attn_mask = self._make_cross_attention_mask(
-            o_vehicle_ids, num_vehicles, o_mask
-        )  # (B, 1, O, M)
 
         for block_id in range(self.num_customers):
             # Self attention between the operations in the given customer
@@ -207,10 +170,10 @@ class MACVRPTorso(hk.Module):
                 mlp_units=self.transformer_mlp_units,
                 w_init_scale=1 / self.num_customers,
                 model_size=self.model_size,
-                name=f"self_attention_ops_durations_block_{block_id}",
+                name=f"self_attention_customer_block_{block_id}",
             )
             embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings, mask=valid_ops_mask
+                query=embeddings, key=embeddings, value=embeddings,
             )
 
             # Cross attention between the customer's ops embedding and vehicle embedding
@@ -224,16 +187,13 @@ class MACVRPTorso(hk.Module):
             )
             embeddings = transformer_block(
                 query=embeddings,
-                key=m_embedding,
-                value=m_embedding,
-                mask=cross_attn_mask,
+                key=v_embedding,
+                value=v_embedding,
             )
-
-        embeddings = jnp.sum(embeddings, axis=-2, where=o_mask[..., None])  # (B, D)
 
         return embeddings
 
-    def self_attention_joint_vehicles_ops(self, embeddings: chex.Array) -> chex.Array:
+    def self_attention_joint_vehicles_customers(self, embeddings: chex.Array) -> chex.Array:
         for block_id in range(self.num_customers):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -249,24 +209,6 @@ class MACVRPTorso(hk.Module):
                 value=embeddings,
             )
         return embeddings
-
-    def _make_self_attention_mask(self, mask: chex.Array) -> chex.Array:
-        # Use the same mask for the query and the key.
-        mask = jnp.einsum("...i,...j->...ij", mask, mask)  # (B, O, O)
-        # Expand on the head dimension.
-        mask = jnp.expand_dims(mask, axis=-3)  # (B, 1, O, O)
-        return mask
-
-    def _make_cross_attention_mask(
-        self, o_vehicle_ids: chex.Array, num_vehicles: int, o_mask: chex.Array
-    ) -> chex.Array:
-        # One-hot encode o_vehicle_ids to satisfy permutation equivariance
-        o_vehicle_ids = jax.nn.one_hot(o_vehicle_ids, num_vehicles)  # (B, O, M)
-        mask = jnp.logical_and(o_vehicle_ids, o_mask[..., None])  # (B, O, M)
-        # Expand on the head dimension.
-        mask = jnp.expand_dims(mask, axis=-3)  # (B, 1, O, M)
-        return mask
-
 
 def make_actor_network_macvrp(
     num_vehicles: int,
@@ -284,8 +226,8 @@ def make_actor_network_macvrp(
             transformer_mlp_units=transformer_mlp_units,
             name="actor_torso",
         )
-        embeddings = torso(observation)  # (B, M+J+1, D)
-        num_vehicles = observation.vehicles_remaining_times.shape[-1]
+        embeddings = torso(observation)  # (B, V+C+1, D)
+        
         vehicle_embeddings, customer_embeddings = jnp.split(
             embeddings, (num_vehicles,), axis=-2
         )
@@ -295,7 +237,7 @@ def make_actor_network_macvrp(
         customer_embeddings = hk.Linear(32, name="policy_head_customers")(customer_embeddings)
         logits = jnp.einsum(
             "...mk,...jk->...mj", vehicle_embeddings, customer_embeddings
-        )  # (B, M, J+1)
+        )  # (B, V, C+1)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 
@@ -319,7 +261,7 @@ def make_critic_network_macvrp(
             transformer_mlp_units=transformer_mlp_units,
             name="critic_torso",
         )
-        embeddings = torso(observation)  # (B, M+J+1, D)
+        embeddings = torso(observation)  # (B, V+C+1, D)
         # Sum embeddings over the sequence length (vehicles + customers).
         embedding = jnp.sum(embeddings, axis=-2)
         value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)

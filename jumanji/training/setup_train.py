@@ -241,8 +241,11 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, MACVRP)
         actor_critic_networks = networks.make_actor_critic_networks_macvrp(
             macvrp=env.unwrapped,
-            policy_layers=cfg.env.network.policy_layers,
-            value_layers=cfg.env.network.value_layers,
+            num_vehicles=cfg.env.network.num_vehicles,
+            num_customers=cfg.env.network.num_customers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
