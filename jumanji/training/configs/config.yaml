@@ -8,5 +8,5 @@ seed: 0
 
 logger:
     type: terminal  # [neptune, tensorboard, terminal]
-    save_checkpoint: false  # [false, true]
+    save_checkpoint: true  # [false, true]
     name: ${agent}_${env.name}
