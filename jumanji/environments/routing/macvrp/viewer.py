@@ -15,15 +15,16 @@
 from itertools import groupby
 from typing import Callable, Optional, Sequence, Tuple
 
+import chex
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-import chex
 from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.routing.macvrp.types import State
 from jumanji.viewer import Viewer
+
 
 class MACVRPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)

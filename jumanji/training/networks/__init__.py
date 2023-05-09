@@ -30,8 +30,6 @@ from jumanji.training.networks.connector.actor_critic import (
 from jumanji.training.networks.connector.random import make_random_policy_connector
 from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
-from jumanji.training.networks.macvrp.actor_critic import make_actor_critic_networks_macvrp
-from jumanji.training.networks.macvrp.random import make_random_policy_macvrp
 from jumanji.training.networks.game_2048.actor_critic import (
     make_actor_critic_networks_game_2048,
 )
@@ -44,6 +42,10 @@ from jumanji.training.networks.knapsack.actor_critic import (
     make_actor_critic_networks_knapsack,
 )
 from jumanji.training.networks.knapsack.random import make_random_policy_knapsack
+from jumanji.training.networks.macvrp.actor_critic import (
+    make_actor_critic_networks_macvrp,
+)
+from jumanji.training.networks.macvrp.random import make_random_policy_macvrp
 from jumanji.training.networks.maze.actor_critic import make_actor_critic_networks_maze
 from jumanji.training.networks.maze.random import make_random_policy_maze
 from jumanji.training.networks.minesweeper.actor_critic import (

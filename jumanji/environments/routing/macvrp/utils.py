@@ -14,9 +14,11 @@
 
 from typing import Tuple
 
-import jax
 import chex
+import jax
+
 from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
+
 
 def compute_time_penalties(
     local_times: chex.Array,
@@ -53,7 +55,9 @@ def compute_distance(
     start_node_coordinates: chex.Array, end_node_coordinates: chex.Array
 ) -> jax.numpy.float32:
     """Calculate the distance traveled between two nodes"""
-    return jax.numpy.linalg.norm((start_node_coordinates - end_node_coordinates), axis=1)
+    return jax.numpy.linalg.norm(
+        (start_node_coordinates - end_node_coordinates), axis=1
+    )
 
 
 def generate_problem(
@@ -83,7 +87,8 @@ def generate_problem(
     # The total demands are controlled to less than the total capacity of all
     # vehicles to ensure a feasible solution.
     node_demands = jax.numpy.asarray(
-        node_demands * (total_capacity / jax.numpy.sum(node_demands)), dtype=jax.numpy.int16
+        node_demands * (total_capacity / jax.numpy.sum(node_demands)),
+        dtype=jax.numpy.int16,
     )
 
     window_start_times = jax.random.uniform(

@@ -14,15 +14,13 @@
 
 from typing import Optional, Tuple
 
-import jax
 import chex
+import jax
 import numpy as np
 from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
-from jumanji.viewer import Viewer
 from jumanji.environments.routing.macvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.macvrp.specs import (
     NodeSpec,
@@ -46,7 +44,9 @@ from jumanji.environments.routing.macvrp.utils import (
     generate_problem,
     get_init_settings,
 )
+from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class MACVRP(Environment[State]):
@@ -66,7 +66,6 @@ class MACVRP(Environment[State]):
     [1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
     Multi-Agent Reinforcement Learning Approach".
     """
-
 
     # Use this
     """Instantiates a `CVRP` environment.
@@ -98,14 +97,13 @@ class MACVRP(Environment[State]):
             num_vehicles: number of vehicles in the environment. Defaults to 2.
             render_mode: render mode used by the viewer. Defaults to "human".
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
-                transition. The function must compute the reward based on the current state 
+                transition. The function must compute the reward based on the current state
                 and whether the environment is done.
                 Implemented options are [`DenseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `MACVRPViewer` with "human" render mode.
+            viewer: `Viewer` used for rendering. Defaults to `MACVRPViewer` with "human" render
+                mode.
         """
 
-
-        
         self.num_customers = num_customers
         self.num_vehicles = num_vehicles
 
@@ -132,9 +130,13 @@ class MACVRP(Environment[State]):
 
         self.max_end_window = self.max_start_window + self.time_window_length
 
-        self.max_local_time = 2.0 * jax.numpy.sqrt(2.0) * self.map_max * self.num_customers
+        self.max_local_time = (
+            2.0 * jax.numpy.sqrt(2.0) * self.map_max * self.num_customers
+        )
 
-        self.reward_fn = reward_fn or DenseReward(self.num_vehicles, self.num_customers, self.map_max)
+        self.reward_fn = reward_fn or DenseReward(
+            self.num_vehicles, self.num_customers, self.map_max
+        )
 
         # Create viewer used for rendering
         self._env_viewer = viewer or MACVRPViewer(
@@ -193,7 +195,9 @@ class MACVRP(Environment[State]):
                 capacities=jax.numpy.ones(self.num_vehicles, dtype=jax.numpy.int16)
                 * self.max_capacity,
                 distances=jax.numpy.zeros(self.num_vehicles, dtype=jax.numpy.float32),
-                time_penalties=jax.numpy.zeros(self.num_vehicles, dtype=jax.numpy.float32),
+                time_penalties=jax.numpy.zeros(
+                    self.num_vehicles, dtype=jax.numpy.float32
+                ),
             ),
             order=jax.numpy.zeros(
                 (self.num_vehicles, 2 * self.num_customers), dtype=jax.numpy.int16
@@ -573,7 +577,7 @@ class MACVRP(Environment[State]):
         Returns:
             timestep: TimeStep object containing the timestep of the environment.
         """
-        
+
         observation = self._state_to_observation(state)
         is_done = (state.nodes.demands.sum() == 0) & (
             state.vehicles.positions == DEPOT_IDX

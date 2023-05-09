@@ -15,10 +15,10 @@
 from typing import Any
 
 import chex
+import jax
 import pytest
 
 from jumanji import specs
-import jax
 from jumanji.environments.routing.macvrp.env import MACVRP
 from jumanji.environments.routing.macvrp.specs import ObservationSpec
 from jumanji.environments.routing.macvrp.types import Observation
@@ -133,4 +133,6 @@ class TestObservationSpec:
             }.difference([arg_name])
 
             for attr_name in arg_names:
-                chex.assert_equal(new_spec._specs[attr_name], old_spec._specs[attr_name])
+                chex.assert_equal(
+                    new_spec._specs[attr_name], old_spec._specs[attr_name]
+                )

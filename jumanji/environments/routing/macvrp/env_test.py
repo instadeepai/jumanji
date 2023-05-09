@@ -15,14 +15,14 @@
 import chex
 import jax
 import numpy as np
-from jumanji.environments.routing.macvrp.env import MACVRP
+
+from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
+from jumanji.environments.routing.macvrp.env import MACVRP, Observation
 from jumanji.environments.routing.macvrp.test_data import (
     test_action_mask,
     test_node_demand,
 )
-from jumanji.environments.routing.macvrp.env import Observation
 from jumanji.environments.routing.macvrp.types import State
-from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
@@ -65,7 +65,6 @@ class TestEnvironmentSpec:
 
         assert_is_jax_array_tree(state)
 
-
     def test_macvrp__step(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
@@ -77,7 +76,9 @@ class TestEnvironmentSpec:
         # Check the timestep step type is FIRST
         assert timestep.first()
         # Starting position is depot, new action to visit first node
-        new_actions = jax.numpy.array(jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16)
+        new_actions = jax.numpy.array(
+            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+        )
 
         step_fn = jax.jit(chex.assert_max_traces(macvrp_env.step, n=1))
         new_state, next_timestep = step_fn(state, new_actions)
@@ -134,12 +135,13 @@ class TestEnvironmentSpec:
         # Check that all the agents are at the depot.
         assert np.all(new_state.vehicles.positions == 0)
 
-
     def test_macvrp__update_state(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
-        _update_state_fn = jax.jit(chex.assert_max_traces(macvrp_env._update_state, n=1))
+        _update_state_fn = jax.jit(
+            chex.assert_max_traces(macvrp_env._update_state, n=1)
+        )
 
         key = jax.random.PRNGKey(0)
         state, _ = macvrp_env.reset(key)
@@ -149,10 +151,14 @@ class TestEnvironmentSpec:
         assert np.all(state.step_count == 1)
 
         # Check that the agents are all at the depot
-        assert jax.numpy.array_equal(state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16))
+        assert jax.numpy.array_equal(
+            state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16)
+        )
 
         # Starting position is depot, new action to visit first node
-        new_actions = jax.numpy.array(jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16)
+        new_actions = jax.numpy.array(
+            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+        )
 
         new_state = _update_state_fn(state, new_actions)
 
@@ -167,7 +173,9 @@ class TestEnvironmentSpec:
         )
 
         # Check that the node coordinates remained the same
-        assert jax.numpy.array_equal(state.nodes.coordinates, new_state.nodes.coordinates)
+        assert jax.numpy.array_equal(
+            state.nodes.coordinates, new_state.nodes.coordinates
+        )
 
         new_actions = jax.numpy.array([0, 0], dtype=np.int16)
 
@@ -180,14 +188,17 @@ class TestEnvironmentSpec:
         assert np.all(new_state.step_count == 3)
 
         # Check that the agents are all at the depot again
-        assert jax.numpy.array_equal(state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16))
-
+        assert jax.numpy.array_equal(
+            state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16)
+        )
 
     def test_macvrp__state_to_observation_timestep(self, macvrp_env: MACVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
-        _update_state_fn = jax.jit(chex.assert_max_traces(macvrp_env._update_state, n=1))
+        _update_state_fn = jax.jit(
+            chex.assert_max_traces(macvrp_env._update_state, n=1)
+        )
         _state_to_observation_fn = jax.jit(
             chex.assert_max_traces(macvrp_env._state_to_observation, n=1)
         )
@@ -199,7 +210,9 @@ class TestEnvironmentSpec:
         state, _ = macvrp_env.reset(key)
 
         # Starting position is depot, new action to visit first node
-        new_actions = jax.numpy.array(jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16)
+        new_actions = jax.numpy.array(
+            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+        )
 
         new_state = _update_state_fn(state, new_actions)
 
@@ -212,7 +225,8 @@ class TestEnvironmentSpec:
 
         # Check that the other_vehicles_postions array is correct
         assert np.array_equal(
-            obs.other_vehicles.positions, jax.numpy.array([[2], [1]], dtype=jax.numpy.int16)
+            obs.other_vehicles.positions,
+            jax.numpy.array([[2], [1]], dtype=jax.numpy.int16),
         )
 
         # Check that the node demands and action masks are correct.
@@ -227,9 +241,12 @@ class TestEnvironmentSpec:
         assert timestep.mid()
 
         # Check that the reward and discount values are correct
-        assert np.array_equal(timestep.reward, jax.numpy.array(0.0, dtype=jax.numpy.float32))
-        assert np.array_equal(timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32))
-
+        assert np.array_equal(
+            timestep.reward, jax.numpy.array(0.0, dtype=jax.numpy.float32)
+        )
+        assert np.array_equal(
+            timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32)
+        )
 
     def test_env_macvrp__does_not_smoke(self, macvrp_env: MACVRP) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
@@ -248,4 +265,5 @@ class TestEnvironmentSpec:
 
             subkeys = jax.random.split(key, macvrp_env.num_vehicles)
             return select_action(subkeys, observation.action_mask)
+
         check_env_does_not_smoke(macvrp_env, select_actions)

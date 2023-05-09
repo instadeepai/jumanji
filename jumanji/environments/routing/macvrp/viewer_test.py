@@ -13,21 +13,16 @@
 # limitations under the License.
 
 import os
-import numpy as np
 
-import jax
-
-from jumanji.environments.routing.macvrp.env import MACVRP
-from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 import chex
 import jax
 import numpy as np
-from jumanji.environments.routing.macvrp.env import Observation
+
+from jumanji.environments.routing.macvrp.env import MACVRP, Observation
+from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 
 
-def test_render(
-    macvrp_env: MACVRP
-) -> None:
+def test_render(macvrp_env: MACVRP) -> None:
     """Test that viewer works and the frame is saved."""
 
     key = jax.random.PRNGKey(0)
@@ -36,18 +31,20 @@ def test_render(
     state, timestep = reset_fn(key)
 
     viewer = MACVRPViewer(
-            name="MACVRP",
-            num_vehicles=macvrp_env.num_vehicles,
-            num_customers=macvrp_env.num_customers,
-            map_max=macvrp_env.map_max,
-            render_mode="human",
-        )
-    
+        name="MACVRP",
+        num_vehicles=macvrp_env.num_vehicles,
+        num_customers=macvrp_env.num_customers,
+        map_max=macvrp_env.map_max,
+        render_mode="human",
+    )
+
     # Starting position is depot, new action to visit first node
-    new_actions = jax.numpy.array(jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16)
+    new_actions = jax.numpy.array(
+        jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+    )
 
     new_state, next_timestep = step_fn(state, new_actions)
-    
+
     save_path = "render_test.png"
     viewer.render(new_state, save_path=save_path)
 
@@ -55,10 +52,9 @@ def test_render(
     os.remove(save_path)
 
 
-def test_animation(
-    macvrp_env: MACVRP
-) -> None:
+def test_animation(macvrp_env: MACVRP) -> None:
     """Test the viewer's animation function."""
+
     def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
         @jax.vmap  # map over the agents
         def select_action(
@@ -81,22 +77,22 @@ def test_animation(
     step_fn = jax.jit(macvrp_env.step)
     state, timestep = reset_fn(key)
     viewer = MACVRPViewer(
-            name="MACVRP",
-            num_vehicles=macvrp_env.num_vehicles,
-            num_customers=macvrp_env.num_customers,
-            map_max=macvrp_env.map_max,
-            render_mode="human",
-        )
+        name="MACVRP",
+        num_vehicles=macvrp_env.num_vehicles,
+        num_customers=macvrp_env.num_customers,
+        map_max=macvrp_env.map_max,
+        render_mode="human",
+    )
 
     save_path = "render_test.gif"
     states = [state]
-    
-    for i in range(10):
+
+    for _ in range(10):
         key, use_key = jax.random.split(key)
         actions = select_actions(use_key, timestep.observation)
         state, timestep = step_fn(state, actions)
         states.append(state)
-    
+
     viewer.animate(states, save_path=save_path)
 
     assert os.path.exists(save_path)

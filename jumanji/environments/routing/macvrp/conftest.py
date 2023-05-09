@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import pytest
+
 from jumanji.environments.routing.macvrp.env import MACVRP
+
 
 @pytest.fixture
 def macvrp_env() -> MACVRP:

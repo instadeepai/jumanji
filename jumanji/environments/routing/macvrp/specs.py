@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import copy
-from dataclasses import asdict, _is_dataclass_instance
+from dataclasses import _is_dataclass_instance, asdict
 from typing import Any, Union
 
 from jumanji import specs
@@ -66,12 +66,11 @@ class BaseSpec(specs.Spec[Any]):
         """
 
         if type(value) is not dict:
-            
+
             if _is_dataclass_instance(value):
                 value = asdict(value)
             else:
                 value = value._asdict()
-
 
         args = {}
         for spec_name, spec in self._specs.items():

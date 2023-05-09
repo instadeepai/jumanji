@@ -20,6 +20,7 @@ import numpy as np
 
 from jumanji.environments.routing.cvrp.types import State
 
+
 class RewardFn(abc.ABC):
     def __init__(self, num_vechicles, num_customers, map_max) -> None:
         self.num_vehicles = num_vechicles
@@ -39,6 +40,7 @@ class RewardFn(abc.ABC):
         whether the action is valid.
         """
 
+
 class DenseReward(RewardFn):
     """The negative distance between the current city and the chosen next city to go to length at
     the end of the episode. It also includes the distance to the depot to complete the tour.
@@ -50,21 +52,20 @@ class DenseReward(RewardFn):
         state: State,
         is_done: bool,
     ) -> chex.Numeric:
-
         def is_final_timestep(state: State) -> bool:
-             return jax.lax.cond(
-                    jax.numpy.any(state.step_count > self.num_customers * 2),
-                    # Penalise for running into step limit. This is not including max time
-                    # penalties as the distance penalties are already enough.
-                    lambda state: -2
-                    * self.map_max
-                    * np.sqrt(2)
-                    * self.num_customers
-                    * self.num_vehicles,
-                    lambda state: -state.vehicles.distances.sum()
-                    - state.vehicles.time_penalties.sum(),
-                    state,
-                )
+            return jax.lax.cond(
+                jax.numpy.any(state.step_count > self.num_customers * 2),
+                # Penalise for running into step limit. This is not including max time
+                # penalties as the distance penalties are already enough.
+                lambda state: -2
+                * self.map_max
+                * np.sqrt(2)
+                * self.num_customers
+                * self.num_vehicles,
+                lambda state: -state.vehicles.distances.sum()
+                - state.vehicles.time_penalties.sum(),
+                state,
+            )
 
         # By default, returns the negative distance between the previous and new node.
         reward = jax.lax.select(
@@ -72,5 +73,5 @@ class DenseReward(RewardFn):
             is_final_timestep(state),
             jax.numpy.float32(0),
         )
-     
+
         return reward
