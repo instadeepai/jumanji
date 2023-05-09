@@ -581,7 +581,7 @@ class MACVRP(Environment[State]):
         observation = self._state_to_observation(state)
         is_done = (state.nodes.demands.sum() == 0) & (
             state.vehicles.positions == DEPOT_IDX
-        ).all() | np.any(state.step_count >= self.num_customers * 2)
+        ).all() | np.any(state.step_count > self.num_customers * 2)
         reward = self.reward_fn(state, is_done)
 
         timestep: TimeStep = jax.lax.cond(
