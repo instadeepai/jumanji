@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
 from typing import Optional, Sequence
 
 import chex
 import haiku as hk
-import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -30,6 +28,7 @@ from jumanji.training.networks.parametric_distribution import (
     MultiCategoricalParametricDistribution,
 )
 from jumanji.training.networks.transformer_block import TransformerBlock
+
 
 def make_actor_critic_networks_macvrp(
     macvrp: MACVRP,
@@ -92,36 +91,40 @@ class MACVRPTorso(hk.Module):
         batch_size = observation.nodes.coordinates.shape[0]
 
         concat_list = [
-            observation.main_vehicles.positions.reshape(batch_size, self.num_vehicles, -1),
-            observation.main_vehicles.local_times.reshape(batch_size, self.num_vehicles, -1),
-            observation.main_vehicles.capacities.reshape(batch_size, self.num_vehicles, -1),
+            observation.main_vehicles.positions.reshape(
+                batch_size, self.num_vehicles, -1
+            ),
+            observation.main_vehicles.local_times.reshape(
+                batch_size, self.num_vehicles, -1
+            ),
+            observation.main_vehicles.capacities.reshape(
+                batch_size, self.num_vehicles, -1
+            ),
         ]
         o_vehicles = jnp.concatenate(concat_list, axis=-1)
 
-        vehicle_embeddings = self.self_attention_vehicles(
-            o_vehicles
-        )  # (B, V, D)
+        vehicle_embeddings = self.self_attention_vehicles(o_vehicles)  # (B, V, D)
 
         # customer encoder
         concat_list = [
-            observation.nodes.coordinates[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.nodes.coordinates[:, 0].reshape(
+                batch_size, self.num_customers, -1
+            ),
             observation.nodes.demands[:, 0].reshape(batch_size, self.num_customers, -1),
             observation.windows.start[:, 0].reshape(batch_size, self.num_customers, -1),
             observation.windows.end[:, 0].reshape(batch_size, self.num_customers, -1),
             observation.coeffs.early[:, 0].reshape(batch_size, self.num_customers, -1),
             observation.coeffs.late[:, 0].reshape(batch_size, self.num_customers, -1),
-            
         ]
-
 
         o_customers = jnp.concatenate(concat_list, axis=-1)
 
         # (B, C, D)
         customer_embeddings = self.customer_encoder(
-                                                        o_customers,
-                                                        vehicle_embeddings,
-                                                    )  
-                                            
+            o_customers,
+            vehicle_embeddings,
+        )
+
         # Joint (vehicles & customers) self-attention
         embeddings = jnp.concatenate(
             [vehicle_embeddings, customer_embeddings], axis=-2
@@ -173,7 +176,9 @@ class MACVRPTorso(hk.Module):
                 name=f"self_attention_customer_block_{block_id}",
             )
             embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings,
+                query=embeddings,
+                key=embeddings,
+                value=embeddings,
             )
 
             # Cross attention between the customer's ops embedding and vehicle embedding
@@ -193,7 +198,9 @@ class MACVRPTorso(hk.Module):
 
         return embeddings
 
-    def self_attention_joint_vehicles_customers(self, embeddings: chex.Array) -> chex.Array:
+    def self_attention_joint_vehicles_customers(
+        self, embeddings: chex.Array
+    ) -> chex.Array:
         for block_id in range(self.num_customers):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -209,6 +216,7 @@ class MACVRPTorso(hk.Module):
                 value=embeddings,
             )
         return embeddings
+
 
 def make_actor_network_macvrp(
     num_vehicles: int,
@@ -227,14 +235,16 @@ def make_actor_network_macvrp(
             name="actor_torso",
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
-        
+
         vehicle_embeddings, customer_embeddings = jnp.split(
             embeddings, (num_vehicles,), axis=-2
         )
         vehicle_embeddings = hk.Linear(32, name="policy_head_vehicles")(
             vehicle_embeddings
         )
-        customer_embeddings = hk.Linear(32, name="policy_head_customers")(customer_embeddings)
+        customer_embeddings = hk.Linear(32, name="policy_head_customers")(
+            customer_embeddings
+        )
         logits = jnp.einsum(
             "...mk,...jk->...mj", vehicle_embeddings, customer_embeddings
         )  # (B, V, C+1)
@@ -269,4 +279,3 @@ def make_critic_network_macvrp(
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)
-
