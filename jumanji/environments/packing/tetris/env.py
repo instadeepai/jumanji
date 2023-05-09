@@ -129,7 +129,8 @@ class Tetris(Environment[State]):
             utils.tetrominoe_action_mask(grid_padded, all_rotations[i])
             for i in range(4)
         ]
-        return jnp.array(action_mask)
+        action_mask = jnp.array(action_mask)
+        return jnp.squeeze(action_mask)
 
     def _rotate(self, rotation_degree: int, tetrominoe_index: int) -> chex.Array:
         """Calculate the Rotated Tetrominoe Matrix.
@@ -137,7 +138,7 @@ class Tetris(Environment[State]):
         given the desired rotation angle and an index to retrieve the block
         from a list of tetrominoes.
 
-        Inputs:
+        Args:
             rotation_degree: The desired rotation angle, which can be 0, 90, 180, or 270 degrees.
             tetrominoe_index: An index used to retrieve a specific tetrominoe
             from the 'self.tetrominoes_list'.
@@ -193,13 +194,14 @@ class Tetris(Environment[State]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: State, action: tuple) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
-            state: State object containing the dynamics of the environment.
-            rotation_degree: integer contains the rotation degree.
-            x_position: integer contains the selected position for the tetrominoe in the grid.
+            state: `State` object containing the dynamics of the environment.
+            action: `Array` containing the x_position and rotation_index of the tetrominoe.
 
         Returns:
             next_state: State corresponding to the next state of the environment,
@@ -209,20 +211,24 @@ class Tetris(Environment[State]):
         grid_padded = state.grid_padded
         action_mask = state.action_mask
         tetrominoe_index = state.tetrominoe_index
+        # Generate new PRNG key
         key, subkey = jax.random.split(state.key)
+        # Rotate tetrominoe.
         tetrominoe = self._rotate(rotation_degree, tetrominoe_index)
+        # Place the tetrominoe in the selected place
         grid_padded, y_position = utils.place_tetrominoe(
             grid_padded, tetrominoe, x_position
         )
+        # a line is full when it doesn't contain any 0.
         full_lines = jnp.all(grid_padded[:, : self.num_cols], axis=1)
         nbr_full_lines = sum(full_lines)
         grid_padded = utils.clean_lines(grid_padded, full_lines)
+        # Generate new tetrominoe
         new_tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(
             key, self.tetrominoes_list
         )
         grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetrominoe_index)
-        action_mask = jnp.squeeze(action_mask)
         # The maximum should be bigger than 0.
         # In case the grid is empty the color should be set 0.
         color = jnp.array([1, grid_padded.max()])
