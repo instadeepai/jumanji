@@ -28,7 +28,7 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ]
         ```
 
-- `tetrominoe`: Jax array (bool) of shape `(4, 4)`, where True indicates a filled cell and False indicates an empty cell. 
+- `tetrominoe`: Jax array (bool) of shape `(4, 4)`, where True indicates a filled cell and False indicates an empty cell.
 
     + Here is an example of an **I** tetrominoe:
         ```
@@ -40,7 +40,7 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ]
         ```
 - `action_mask`: jax array (bool) of shape `(4, num_cols)`, indicating which actions are valid in the current state of the environment. Each row in the action mask corresponds to a Tetromino for a certain rotation (example: the first row for 0 degrees rotation, the second row for 90 degrees rotation, and so on).
-    + Here is an example of an action mask that corresponds to the same grid and the tetrominoe examples: 
+    + Here is an example of an action mask that corresponds to the same grid and the tetrominoe examples:
 
         ```
         [
@@ -56,7 +56,7 @@ The action space in Tetris is represented as a `MultiDiscreteArray` of two integ
 
 
 ## Reward
-Dense: the reward is based on the number of lines cleared and the reward_list `[0, 40, 100, 300, 1200]`. If no lines are cleared, the reward is 0. As the number of cleared lines increases, so does the reward, with the maximum reward of 1200 being awarded for clearing four lines at once. 
+Dense: the reward is based on the number of lines cleared and the reward_list `[0, 40, 100, 300, 1200]`. If no lines are cleared, the reward is 0. As the number of cleared lines increases, so does the reward, with the maximum reward of 1200 being awarded for clearing four lines at once.
 
 
 ## Registered Versions 📖
