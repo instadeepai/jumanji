@@ -122,6 +122,34 @@ def generate_problem(
         late_coef,
     )
 
+def get_6_customer_init_settings(
+    num_vehicles: int,
+) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
+    if num_vehicles not in [2, 3]:
+        raise ValueError("num_vehicles must be 2 or 3 for num_customers=6")
+    """
+        This example is not part of the original problem, but servers as an 
+            easy debugging environment.
+    """
+
+    map_max = 10
+    max_capacity = 20
+    max_start_window = 10.0
+    early_coef_rand = (0.0, 0.2)
+    late_coef_rand = (0.0, 1.0)
+    if num_vehicles == 2:
+        customer_demand_max = 10
+    else:
+        customer_demand_max = 20
+
+    return (
+        map_max,
+        max_capacity,
+        max_start_window,
+        early_coef_rand,
+        late_coef_rand,
+        customer_demand_max,
+    )
 
 def get_20_customer_init_settings(
     num_vehicles: int,
@@ -229,14 +257,14 @@ def get_150_customer_init_settings(
 def get_init_settings(
     num_customers: int, num_vehicles: int
 ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
-    if num_customers == 20:
+    if num_customers == 6:
+        return get_6_customer_init_settings(num_vehicles)
+    elif num_customers == 20:
         return get_20_customer_init_settings(num_vehicles)
     elif num_customers == 50:
         return get_50_customer_init_settings(num_vehicles)
-
     elif num_customers == 100:
         return get_100_customer_init_settings(num_vehicles)
-
     elif num_customers == 150:
         return get_150_customer_init_settings(num_vehicles)
 

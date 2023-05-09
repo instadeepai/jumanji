@@ -83,7 +83,7 @@ class MACVRP(Environment[State]):
 
     def __init__(
         self,
-        num_customers: int = 20,
+        num_customers: int = 6,
         num_vehicles: int = 2,
         render_mode: str = "human",
         reward_fn: Optional[RewardFn] = None,

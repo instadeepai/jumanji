@@ -45,6 +45,7 @@ The reward is 0 at every step but the last, where the reward is
 the negative of the length of the path chosen by all the agents combined. Time penalities are added if the agents arrived early or late to specific customers. If an illegal action was taken the episode ends with a large negative reward.
 
 ## Registered Versions 📖
+- `MACVRP6-v0`, MACVRP problem with 6 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 for two vehicles and 20 for three vehicles.
 - `MACVRP20-v0`, MACVRP problem with 20 customers (randomly generated), maximum capacity of 60, and maximum demand of 10 for two vehicles and 15 for three vehicles.
 - `MACVRP50-v0`, MACVRP problem with 50 customers (randomly generated), maximum capacity of 150, and maximum demand of 10, 20, 25 for two, three and four vehicles.
 - `MACVRP100-v0`, MACVRP problem with 100 customers (randomly generated), maximum capacity of 50, and maximum demand of 10, 20, 25 for two, three and four vehicles.
