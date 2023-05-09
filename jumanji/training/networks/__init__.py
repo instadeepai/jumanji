@@ -56,5 +56,9 @@ from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,
 )
 from jumanji.training.networks.snake.random import make_random_policy_snake
+from jumanji.training.networks.tetris.actor_critic import (
+    make_actor_critic_networks_tetris,
+)
+from jumanji.training.networks.tetris.random import make_random_policy_tetris
 from jumanji.training.networks.tsp.actor_critic import make_actor_critic_networks_tsp
 from jumanji.training.networks.tsp.random import make_random_policy_tsp

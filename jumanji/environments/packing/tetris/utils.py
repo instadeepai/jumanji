@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from typing import Tuple
+
 import chex
 
 # check if jax is installed properly
@@ -20,7 +22,9 @@ import jax
 import jax.numpy as jnp
 
 
-def sample_tetrominoe_list(key: chex.PRNGKey, tetrominoes_list: chex.Array) -> tuple:
+def sample_tetrominoe_list(
+    key: chex.PRNGKey, tetrominoes_list: chex.Array
+) -> Tuple[chex.Array, int]:
     """Sample a tetrominoe from defined list of tetrominoes.
 
     Args:
@@ -85,7 +89,7 @@ def tetrominoe_action_mask(
 
 def place_tetrominoe(
     grid_padded: chex.Array, tetrominoe: chex.Array, x_position: int
-) -> chex.Array:
+) -> Tuple[chex.Array, int]:
     """Place a Tetrominoe in the Game Grid.
 
     This function takes in a "grid" container, a "tetrominoe" block,

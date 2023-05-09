@@ -18,10 +18,11 @@ from jumanji.environments.logic import game_2048, minesweeper, rubiks_cube
 from jumanji.environments.logic.game_2048.env import Game2048
 from jumanji.environments.logic.minesweeper import Minesweeper
 from jumanji.environments.logic.rubiks_cube import RubiksCube
-from jumanji.environments.packing import bin_pack, job_shop, knapsack
+from jumanji.environments.packing import bin_pack, job_shop, knapsack, tetris
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.environments.packing.job_shop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
+from jumanji.environments.packing.tetris.env import Tetris
 from jumanji.environments.routing import cleaner, connector, cvrp, maze, snake, tsp
 from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.connector.env import Connector

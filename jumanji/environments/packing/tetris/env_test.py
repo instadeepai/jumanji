@@ -86,10 +86,15 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
 
 def test_rotate(tetris_env: Tetris) -> None:
     """Test the jited rotate method"""
-    rotate_fn = jit(tetris_env.rotate)
+    rotate_fn = jit(tetris_env._rotate)
     tetrominoe = rotate_fn(2, 0)
     expected_tetrominoe = jnp.array(
-        [[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]]
+        [
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+        ]
     )
     assert tetrominoe.shape == (4, 4)
     assert (tetrominoe == expected_tetrominoe).all()
@@ -97,7 +102,7 @@ def test_rotate(tetris_env: Tetris) -> None:
 
 def test_calculate_action_mask(tetris_env: Tetris, grid: chex.Array) -> None:
     """Test the jited rotate method"""
-    action_mask = tetris_env.calculate_action_mask(grid, 0)
+    action_mask = tetris_env._calculate_action_mask(grid, 0)
     expected_action_mask = jnp.array(
         [
             [True, False, False, True, True, False],

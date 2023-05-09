@@ -229,7 +229,7 @@ class TetrisViewer(Viewer):
         grids = []
         scores = []
         for state in states:
-            scores.append(state.score)
+            scores.append(state.score - state.reward)
             if not state.is_reset:
                 old_grid = state.grid_padded_old
                 x_shift_grids = self._move_tetrominoe(state, old_grid)
