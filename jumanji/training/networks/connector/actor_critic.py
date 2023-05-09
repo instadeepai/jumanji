@@ -21,11 +21,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.routing.connector import Connector, Observation
-from jumanji.environments.routing.connector.constants import (
-    AGENT_INITIAL_VALUE,
-    PATH,
-    POSITION,
-    TARGET,
+from jumanji.environments.routing.connector.utils import (
+    get_path,
+    get_position,
+    get_target,
 )
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
@@ -60,6 +59,7 @@ def make_actor_critic_networks_connector(
         env_time_limit=connector.time_limit,
     )
     value_network = make_critic_network_connector(
+        num_agents=num_values[0],
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -74,33 +74,25 @@ def make_actor_critic_networks_connector(
     )
 
 
-def process_grid(grid: chex.Array) -> chex.Array:
-    def channels_for_one_agent(agent_grid: chex.Array) -> chex.Array:
-        """Concatenates two feature maps: the info of the agent and the info about all other agents
-        in an indiscernible way (to keep permutation equivariance).
-        """
-        agent_grid = jnp.expand_dims(agent_grid, -1)
-        agent_mask = (
-            (agent_grid == PATH) | (agent_grid == TARGET) | (agent_grid == POSITION)
-        )
-        agent_channel = jnp.where(
-            agent_mask,
-            agent_grid,
-            0,
-        )
-        offset = AGENT_INITIAL_VALUE
-        others_channel = offset + (agent_grid - offset) % 3
-        others_channel = jnp.where(
-            agent_mask | (agent_grid == 0),
-            0,
-            others_channel,
-        )
-        channels = jnp.concatenate(
-            [agent_channel, others_channel], axis=-1
-        )  # [G, G, 2]
-        return channels
+def process_grid(grid: chex.Array, agent_id: chex.Numeric) -> chex.Array:
+    """Concatenates two feature maps: the info of the agent and the info about all other agents
+    in an indiscernible way (to keep permutation equivariance).
+    """
+    agent_path = get_path(agent_id)
+    agent_target = get_target(agent_id)
+    agent_pos = get_position(agent_id)
+    agent_grid = jnp.expand_dims(grid, -1)
+    agent_mask = (
+        (agent_grid == agent_path)
+        | (agent_grid == agent_target)
+        | (agent_grid == agent_pos)
+    )
+    # [G, G, 1]
+    agent_channel = jnp.where(agent_mask, agent_grid, 0)
+    others_channel = jnp.where(agent_mask | (agent_grid == 0), 0, agent_grid)
+    # [G, G, 2]
+    channels = jnp.concatenate([agent_channel, others_channel], axis=-1)
 
-    channels = jax.vmap(channels_for_one_agent)(grid)  # (N, G, G, 2)
     return channels.astype(float)
 
 
@@ -113,6 +105,7 @@ class ConnectorTorso(hk.Module):
         transformer_mlp_units: Sequence[int],
         conv_n_channels: int,
         env_time_limit: int,
+        num_agents: int,
         name: Optional[str] = None,
     ):
         super().__init__(name=name)
@@ -121,6 +114,7 @@ class ConnectorTorso(hk.Module):
         self.transformer_key_size = transformer_key_size
         self.transformer_mlp_units = transformer_mlp_units
         self.model_size = transformer_num_heads * transformer_key_size
+        self.num_agents = num_agents
         self.cnn_block = hk.Sequential(
             [
                 hk.Conv2D(conv_n_channels, (3, 3), 1, padding="VALID"),
@@ -138,7 +132,11 @@ class ConnectorTorso(hk.Module):
         self.env_time_limit = env_time_limit
 
     def __call__(self, observation: Observation) -> chex.Array:
-        grid = jax.vmap(process_grid)(observation.grid)  # (B, N, G, G, 2)
+        agent_ids = jnp.arange(self.num_agents)
+        # (N, B, G, G, 2)
+        grid = jax.vmap(process_grid, (None, 0))(observation.grid, agent_ids)
+        grid = jnp.transpose(grid, (1, 0, 2, 3, 4))  # (B, N, G, G, 2)
+
         embeddings = jax.vmap(self.cnn_block)(grid)  # (B, N, H)
         embeddings = self._augment_with_step_count(embeddings, observation.step_count)
 
@@ -179,7 +177,7 @@ class ConnectorTorso(hk.Module):
         self, embeddings: chex.Array, step_count: chex.Array
     ) -> chex.Array:
         step_count = jnp.asarray(step_count / self.env_time_limit, float)
-        num_agents = embeddings.shape[-2]
+        num_agents = self.num_agents  # embeddings.shape[-2]
         step_count = jnp.repeat(step_count[:, None], num_agents, axis=-1)[..., None]
         embeddings = jnp.concatenate([embeddings, step_count], axis=-1)
         return embeddings
@@ -203,6 +201,7 @@ def make_actor_network_connector(
             conv_n_channels=conv_n_channels,
             env_time_limit=env_time_limit,
             name="policy_torso",
+            num_agents=num_actions,
         )
         embeddings = torso(observation)
         logits = hk.nets.MLP((*transformer_mlp_units, num_actions), name="policy_head")(
@@ -216,6 +215,7 @@ def make_actor_network_connector(
 
 
 def make_critic_network_connector(
+    num_agents: int,
     transformer_num_blocks: int,
     transformer_num_heads: int,
     transformer_key_size: int,
@@ -232,6 +232,7 @@ def make_critic_network_connector(
             conv_n_channels=conv_n_channels,
             env_time_limit=env_time_limit,
             name="critic_torso",
+            num_agents=num_agents,
         )
         embeddings = torso(observation)
         # Sum embeddings over the sequence length (num_agents).
