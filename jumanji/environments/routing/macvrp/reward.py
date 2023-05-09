@@ -18,11 +18,11 @@ import chex
 import jax
 import numpy as np
 
-from jumanji.environments.routing.cvrp.types import State
+from jumanji.environments.routing.macvrp.types import State
 
 
 class RewardFn(abc.ABC):
-    def __init__(self, num_vechicles, num_customers, map_max) -> None:
+    def __init__(self, num_vechicles: int, num_customers: int, map_max: int) -> None:
         self.num_vehicles = num_vechicles
         self.num_customers = num_customers
         self.map_max = map_max
@@ -32,9 +32,7 @@ class RewardFn(abc.ABC):
     def __call__(
         self,
         state: State,
-        action: chex.Numeric,
-        next_state: State,
-        is_valid: bool,
+        is_done: bool,
     ) -> chex.Numeric:
         """Compute the reward based on the current state, the chosen action, the next state and
         whether the action is valid.
@@ -53,7 +51,7 @@ class DenseReward(RewardFn):
         is_done: bool,
     ) -> chex.Numeric:
         def is_final_timestep(state: State) -> bool:
-            return jax.lax.cond(
+            return jax.lax.cond(  # type: ignore
                 jax.numpy.any(state.step_count > self.num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.

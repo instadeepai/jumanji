@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import copy
-from dataclasses import _is_dataclass_instance, asdict
-from typing import Any, Union
+from dataclasses import _is_dataclass_instance, asdict  # type: ignore
+from typing import Any, Dict, Union
 
 from jumanji import specs
 from jumanji.environments.routing.macvrp.types import (
@@ -142,7 +142,7 @@ class VehicleSpec(BaseSpec):
         time_penalties_spec: Union[specs.BoundedArray, None] = None,
     ):
         super().__init__(name="vehicle")
-        self._specs = {
+        self._specs: Dict[str, Any] = {
             "local_times_spec": local_times_spec,
             "positions_spec": positions_spec,
             "capacities_spec": capacities_spec,

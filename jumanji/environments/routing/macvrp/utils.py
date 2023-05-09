@@ -122,13 +122,14 @@ def generate_problem(
         late_coef,
     )
 
+
 def get_6_customer_init_settings(
     num_vehicles: int,
 ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
     if num_vehicles not in [2, 3]:
         raise ValueError("num_vehicles must be 2 or 3 for num_customers=6")
     """
-        This example is not part of the original problem, but servers as an 
+        This example is not part of the original problem, but servers as an
             easy debugging environment.
     """
 
@@ -150,6 +151,7 @@ def get_6_customer_init_settings(
         late_coef_rand,
         customer_demand_max,
     )
+
 
 def get_20_customer_init_settings(
     num_vehicles: int,
