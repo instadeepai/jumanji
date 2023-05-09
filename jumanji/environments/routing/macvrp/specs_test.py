@@ -50,7 +50,7 @@ class TestObservationSpec:
         """Test that a different shape of an observation element breaks the
         validation given the observation spec."""
         observation = observation_spec.validate(observation)
-        modified_shape_observation = observation.replace(
+        modified_shape_observation = observation._replace(
             action_mask=observation.action_mask[None, ...]
         )
         with pytest.raises(ValueError):
@@ -62,7 +62,7 @@ class TestObservationSpec:
         """Test that a different dtype of an observation element breaks the
         validation given the observation spec."""
         observation = observation_spec.validate(observation)
-        modified_dtype_observation = observation.replace(
+        modified_dtype_observation = observation._replace(
             action_mask=observation.action_mask.astype(jax.numpy.float16)
         )
         with pytest.raises(ValueError):
@@ -82,45 +82,46 @@ class TestObservationSpec:
         args = [
             (
                 "nodes_spec",
-                observation_spec.specs["nodes_spec"]
-                .specs["coordinates_spec"]
+                observation_spec._specs["nodes_spec"]
+                ._specs["coordinates_spec"]
                 .replace(shape=(3, 4)),
             ),
             (
                 "windows_spec",
-                observation_spec.specs["windows_spec"]
-                .specs["start_spec"]
+                observation_spec._specs["windows_spec"]
+                ._specs["start_spec"]
                 .replace(shape=(3, 4)),
             ),
             (
                 "coeffs_spec",
-                observation_spec.specs["coeffs_spec"]
-                .specs["early_spec"]
+                observation_spec._specs["coeffs_spec"]
+                ._specs["early_spec"]
                 .replace(shape=(3, 4)),
             ),
             (
                 "other_vehicles_spec",
-                observation_spec.specs["other_vehicles_spec"]
-                .specs["capacities_spec"]
+                observation_spec._specs["other_vehicles_spec"]
+                ._specs["capacities_spec"]
                 .replace(name="new_name"),
             ),
             (
                 "main_vehicles_spec",
-                observation_spec.specs["main_vehicles_spec"]
-                .specs["capacities_spec"]
+                observation_spec._specs["main_vehicles_spec"]
+                ._specs["capacities_spec"]
                 .replace(name="new_name"),
             ),
             (
                 "action_mask_spec",
-                observation_spec.specs["action_mask_spec"].replace(name="new_name"),
+                observation_spec._specs["action_mask_spec"].replace(name="new_name"),
             ),
         ]
 
         for arg_name, new_value in args:
             old_spec = observation_spec
             new_spec = old_spec.replace(**{arg_name: new_value})
+
             assert new_spec != old_spec
-            assert new_spec.specs[arg_name] == new_value
+            assert new_spec._specs[arg_name] == new_value
 
             arg_names = {
                 "nodes_spec",
@@ -132,4 +133,4 @@ class TestObservationSpec:
             }.difference([arg_name])
 
             for attr_name in arg_names:
-                chex.assert_equal(new_spec.specs[attr_name], old_spec.specs[attr_name])
+                chex.assert_equal(new_spec._specs[attr_name], old_spec._specs[attr_name])

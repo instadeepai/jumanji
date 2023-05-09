@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import copy
-from dataclasses import asdict
+from dataclasses import asdict, _is_dataclass_instance
 from typing import Any, Union
 
 from jumanji import specs
@@ -31,12 +31,12 @@ class BaseSpec(specs.Spec[Any]):
         self,
         **kwargs: Any,
     ):
-        self.specs = kwargs
+        self._specs = kwargs
         self.obj_type: Any = lambda args: None
 
     def __repr__(self) -> str:
         return_str = f"{self.obj_type}(\n"
-        for spec_name, spec in self.specs.items():
+        for spec_name, spec in self._specs.items():
             return_str += f". {spec_name}={repr(spec)},\n"
         return return_str
 
@@ -44,7 +44,7 @@ class BaseSpec(specs.Spec[Any]):
         """Generate a value which conforms to this spec."""
 
         args = {}
-        for spec_name, spec in self.specs.items():
+        for spec_name, spec in self._specs.items():
             attr_name = spec_name.rsplit("_spec")[0]
             if spec is not None:
                 args[attr_name] = spec.generate_value()
@@ -66,10 +66,15 @@ class BaseSpec(specs.Spec[Any]):
         """
 
         if type(value) is not dict:
-            value = asdict(value)
+            
+            if _is_dataclass_instance(value):
+                value = asdict(value)
+            else:
+                value = value._asdict()
+
 
         args = {}
-        for spec_name, spec in self.specs.items():
+        for spec_name, spec in self._specs.items():
             attr_name = spec_name.rsplit("_spec")[0]
             if spec is not None:
                 args[attr_name] = spec.validate(value[attr_name])
@@ -86,7 +91,7 @@ class BaseSpec(specs.Spec[Any]):
             A new copy of `Spec`.
         """
 
-        all_kwargs = copy.copy(self.specs)
+        all_kwargs = copy.copy(self._specs)
         all_kwargs.update(kwargs)
 
         return type(self)(**all_kwargs)
@@ -99,7 +104,7 @@ class NodeSpec(BaseSpec):
         demands_spec: specs.BoundedArray,
     ):
         super().__init__(name="node")
-        self.specs = {
+        self._specs = {
             "coordinates_spec": coordinates_spec,
             "demands_spec": demands_spec,
         }
@@ -113,7 +118,7 @@ class TimeWindowSpec(BaseSpec):
         end_spec: specs.BoundedArray,
     ):
         super().__init__(name="time_window")
-        self.specs = {"start_spec": start_spec, "end_spec": end_spec}
+        self._specs = {"start_spec": start_spec, "end_spec": end_spec}
         self.obj_type = TimeWindow
 
 
@@ -124,7 +129,7 @@ class PenalityCoeffSpec(BaseSpec):
         late_spec: specs.BoundedArray,
     ):
         super().__init__(name="penality_coeff")
-        self.specs = {"early_spec": early_spec, "late_spec": late_spec}
+        self._specs = {"early_spec": early_spec, "late_spec": late_spec}
         self.obj_type = PenalityCoeff
 
 
@@ -138,7 +143,7 @@ class VehicleSpec(BaseSpec):
         time_penalties_spec: Union[specs.BoundedArray, None] = None,
     ):
         super().__init__(name="vehicle")
-        self.specs = {
+        self._specs = {
             "local_times_spec": local_times_spec,
             "positions_spec": positions_spec,
             "capacities_spec": capacities_spec,
@@ -159,7 +164,7 @@ class ObservationSpec(BaseSpec):
         action_mask_spec: specs.BoundedArray,
     ):
         super().__init__(name="observation")
-        self.specs = {
+        self._specs = {
             "nodes_spec": nodes_spec,
             "windows_spec": windows_spec,
             "coeffs_spec": coeffs_spec,
