@@ -179,34 +179,10 @@ class Maze(Environment[State]):
                 after a reset.
         """
 
-        key, maze_key, agent_key = jax.random.split(key, 3)
+        state = self.generator(key)
 
-        walls = self.generator(maze_key)
-
-        # Randomise agent start and target positions.
-        start_and_target_indices = jax.random.choice(
-            agent_key,
-            jnp.arange(self.num_rows * self.num_cols),
-            (2,),
-            replace=False,
-            p=~walls.flatten(),
-        )
-        (agent_row, target_row), (agent_col, target_col) = jnp.divmod(
-            start_and_target_indices, self.num_cols
-        )
-
-        agent_position = Position(row=agent_row, col=agent_col)
-        target_position = Position(row=target_row, col=target_col)
-
-        # Build the state.
-        state = State(
-            agent_position=agent_position,
-            target_position=target_position,
-            walls=walls,
-            action_mask=self._compute_action_mask(walls, agent_position),
-            key=key,
-            step_count=jnp.array(0, jnp.int32),
-        )
+        # Create the action mask and update the state
+        state.action_mask = self._compute_action_mask(state.walls, state.agent_position)
 
         # Generate the observation from the environment state.
         observation = self._observation_from_state(state)
