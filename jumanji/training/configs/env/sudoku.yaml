@@ -8,10 +8,10 @@ network:
     value_layers: [128]
 
 training:
-    num_epochs: 200
-    num_learner_steps_per_epoch: 500
+    num_epochs: 300
+    num_learner_steps_per_epoch: 1000
     n_steps: 40
-    total_batch_size: 64
+    total_batch_size: 128
 
 evaluation:
     eval_total_batch_size: 1000
@@ -24,4 +24,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 2e-4
+    learning_rate: 1e-4
