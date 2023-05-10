@@ -15,7 +15,7 @@ from typing import Optional, Sequence
 
 import chex
 import haiku as hk
-import jax.numpy as jnp
+import jax
 import numpy as np
 
 from jumanji.environments.routing.macvrp import MACVRP
@@ -101,7 +101,18 @@ class MACVRPTorso(hk.Module):
                 batch_size, self.num_vehicles, -1
             ),
         ]
-        o_vehicles = jnp.concatenate(concat_list, axis=-1)
+        o_vehicles = jax.numpy.concatenate(concat_list, axis=-1)
+
+        # Add vehicle ids to be able to break symmetry in
+        # the initial observations
+        o_vehicle_ids = jax.numpy.identity(self.num_vehicles)
+
+        # Duplicate over the batch dimension
+        o_vehicle_ids = jax.numpy.tile(o_vehicle_ids, (batch_size, 1, 1))  # (B, V, V)
+
+        o_vehicles = jax.numpy.concatenate(
+            [o_vehicles, o_vehicle_ids], axis=-1
+        )  # (B, V, D)
 
         vehicle_embeddings = self.self_attention_vehicles(o_vehicles)  # (B, V, D)
 
@@ -117,7 +128,7 @@ class MACVRPTorso(hk.Module):
             observation.coeffs.late[:, 0].reshape(batch_size, self.num_customers, -1),
         ]
 
-        o_customers = jnp.concatenate(concat_list, axis=-1)
+        o_customers = jax.numpy.concatenate(concat_list, axis=-1)
 
         # (B, C, D)
         customer_embeddings = self.customer_encoder(
@@ -126,7 +137,7 @@ class MACVRPTorso(hk.Module):
         )
 
         # Joint (vehicles & customers) self-attention
-        embeddings = jnp.concatenate(
+        embeddings = jax.numpy.concatenate(
             [vehicle_embeddings, customer_embeddings], axis=-2
         )  # (V+C+1, D)
 
@@ -236,19 +247,26 @@ def make_actor_network_macvrp(
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
 
-        vehicle_embeddings, customer_embeddings = jnp.split(
+        vehicle_embeddings, customer_embeddings = jax.numpy.split(
             embeddings, (num_vehicles,), axis=-2
         )
+
         vehicle_embeddings = hk.Linear(32, name="policy_head_vehicles")(
             vehicle_embeddings
         )
+
+        logits = jax.numpy.einsum(
+            "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings
+        )  # (B, V, C+1)
+
         customer_embeddings = hk.Linear(32, name="policy_head_customers")(
             customer_embeddings
         )
-        logits = jnp.einsum(
-            "...mk,...jk->...mj", vehicle_embeddings, customer_embeddings
-        )  # (B, V, C+1)
-        logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
+
+        logits = jax.numpy.where(
+            observation.action_mask, logits, jax.numpy.finfo(jax.numpy.float32).min
+        )
+
         return logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
@@ -273,9 +291,9 @@ def make_critic_network_macvrp(
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
         # Sum embeddings over the sequence length (vehicles + customers).
-        embedding = jnp.sum(embeddings, axis=-2)
+        embedding = jax.numpy.sum(embeddings, axis=-2)
         value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)
-        return jnp.squeeze(value, axis=-1)
+        return jax.numpy.squeeze(value, axis=-1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)
