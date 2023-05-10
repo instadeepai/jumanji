@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
+import matplotlib
 import numpy as np
 from numpy.typing import NDArray
 
@@ -394,6 +395,25 @@ class MACVRP(Environment[State]):
             rgb_array: the RGB image of the state as an array.
         """
         return self._env_viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save_path: Optional[str] = None,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Create an animation from a sequence of states.
+
+        Args:
+            states: sequence of `State` corresponding to subsequent timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
+
+        Returns:
+            animation that can export to gif, mp4, or render with HTML.
+        """
+        return self._env_viewer.animate(states, interval, save_path)
 
     def _update_state(self, state: State, actions: chex.Array) -> State:
         """

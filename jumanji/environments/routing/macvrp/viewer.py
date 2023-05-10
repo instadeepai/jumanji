@@ -55,8 +55,8 @@ class MACVRPViewer(Viewer):
         self._num_customers = num_customers
         self._map_max = map_max
 
-        # Each route to and from depot has a different color
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_customers)
+        # Each vehicle has a different colour
+        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
@@ -229,10 +229,10 @@ class MACVRPViewer(Viewer):
                 coords_grouped = self._group_tour(coords)
 
                 # Draw each route in different colour
-                for coords_route, col_id in zip(
+                for coords_route, _ in zip(
                     coords_grouped, np.arange(0, len(coords_grouped))
                 ):
-                    self._draw_route(ax, coords_route, col_id)
+                    self._draw_route(ax, coords_route, i)
 
         # Draw the depot node
         ax.scatter(
