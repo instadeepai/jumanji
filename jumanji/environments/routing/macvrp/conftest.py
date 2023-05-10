@@ -20,4 +20,4 @@ from jumanji.environments.routing.macvrp.env import MACVRP
 @pytest.fixture
 def macvrp_env() -> MACVRP:
     """Instantiates a default MACVRP environment."""
-    return MACVRP()
+    return MACVRP(num_vehicles=2, num_customers=20)
