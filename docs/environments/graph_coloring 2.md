@@ -10,7 +10,7 @@ Graph Coloring is a combinatorial optimization problem where the objective is to
 
 ## Observation
 
-The observation in the Graph Coloring environment includes information about the graph, the colors assigned to the vertices, the action mask, and the current node index.
+The observation in the GraphColoring environment includes information about the graph, the colors assigned to the vertices, the action mask, and the current node index.
 
 - `graph`: jax array (bool) of shape (num_nodes, num_nodes), representing the adjacency matrix of the graph.
   - For example, a random observation of the graph adjacency matrix:
