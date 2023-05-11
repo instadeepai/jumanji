@@ -127,7 +127,6 @@ class GraphColoring(Environment[State]):
 
         # Update the colors array with the chosen action.
         colors = state.colors.at[state.current_node_index].set(action)
-        colored_nodes = colors >= 0
 
         # Determine if all nodes have been assigned a color
         all_nodes_colored = jnp.all(colors >= 0)
