@@ -174,7 +174,7 @@ class GraphColoring(Environment[State]):
         done = jnp.logical_or(all_nodes_colored, invalid_action_taken)
 
         # Update the current node index
-        next_node_index = (state.current_node_index + jnp.array(1)) % num_nodes
+        next_node_index = (state.current_node_index + 1) % num_nodes
 
         next_state = State(
             adj_matrix=state.adj_matrix,
