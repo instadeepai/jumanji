@@ -63,21 +63,23 @@ def validate_board(board: chex.Array) -> chex.Array:
     return condition_rows & condition_columns & condition_boxes
 
 
-def update_action_mask(action_mask: chex.Array, board: chex.Array) -> chex.Array:
+def get_action_mask(board: chex.Array) -> chex.Array:
     """Updates the action mask according to the current board state.
 
     Args:
-        action_mask: The action mask.
         board: The sudoku board.
 
     Returns:
         The updated action mask.
     """
-    row_mask = 1 - jax.nn.one_hot(board, BOARD_WIDTH).any(axis=1) * 1
-    column_mask = 1 - jax.nn.one_hot(board.T, BOARD_WIDTH).any(axis=1) * 1
+    action_mask = board == -1
+    action_mask = jnp.expand_dims(action_mask, -1).repeat(BOARD_WIDTH, axis=-1)
+
+    row_mask = ~jax.nn.one_hot(board, BOARD_WIDTH).any(axis=1)
+    column_mask = ~jax.nn.one_hot(board.T, BOARD_WIDTH).any(axis=1)
 
     boxes = board.reshape(BOARD_WIDTH**2).take(jnp.array(BOX_IDX))
-    box_mask = 1 - jax.nn.one_hot(boxes, BOARD_WIDTH).any(axis=1) * 1
+    box_mask = ~jax.nn.one_hot(boxes, BOARD_WIDTH).any(axis=1)
 
     boxes_action_mask = action_mask.reshape(BOARD_WIDTH**2, BOARD_WIDTH)[
         jnp.array(BOX_IDX)
@@ -90,10 +92,7 @@ def update_action_mask(action_mask: chex.Array, board: chex.Array) -> chex.Array
         .set(boxes_action_mask)
         .reshape(BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH)
     )
-    action_mask *= row_mask.reshape(BOARD_WIDTH, 1, BOARD_WIDTH)
-    action_mask *= column_mask.reshape(1, BOARD_WIDTH, BOARD_WIDTH)
-    board_mask = (board == -1) * 1
-
-    action_mask *= board_mask.reshape(BOARD_WIDTH, BOARD_WIDTH, 1)
+    action_mask &= row_mask.reshape(BOARD_WIDTH, 1, BOARD_WIDTH)
+    action_mask &= column_mask.reshape(1, BOARD_WIDTH, BOARD_WIDTH)
 
     return action_mask

@@ -55,7 +55,6 @@ class SudokuViewer(Viewer[State]):
     def _draw_board(self, ax: plt.Axes) -> None:
         # Draw the square box that delimits the board.
         ax.axis("off")
-        lines = []
 
         _linewidth = 2.5
         ax.plot([0, 0], [0, BOARD_WIDTH], "-k", lw=_linewidth)
@@ -74,12 +73,8 @@ class SudokuViewer(Viewer[State]):
             vline = matplotlib.lines.Line2D(
                 [i, i], [0, BOARD_WIDTH], color="k", linewidth=_linewidth
             )
-
-            lines.append(hline)
-            lines.append(vline)
-
-        for line in lines:
-            ax.add_line(line)
+            ax.add_line(hline)
+            ax.add_line(vline)
 
     def animate(
         self,
@@ -146,8 +141,6 @@ class SudokuViewer(Viewer[State]):
                         verticalalignment="center",
                         fontsize=16,
                     )
-
-        return
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():

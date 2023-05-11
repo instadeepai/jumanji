@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BOARD_WIDTH: int = 9
+BOARD_WIDTH = 9
 
 
 BOX_IDX = [

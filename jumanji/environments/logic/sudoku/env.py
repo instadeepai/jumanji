@@ -26,8 +26,8 @@ from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
 from jumanji.environments.logic.sudoku.types import Observation, State
 from jumanji.environments.logic.sudoku.utils import (
     apply_action,
+    get_action_mask,
     puzzle_completed,
-    update_action_mask,
 )
 from jumanji.environments.logic.sudoku.viewer import SudokuViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -99,9 +99,7 @@ class Sudoku(Environment[State]):
         # check if action is valid
         invalid = state.action_mask[action[0], action[1], action[2]] == 0
         updated_board = apply_action(action=action, board=state.board)
-        updated_action_mask = update_action_mask(
-            action_mask=state.action_mask, board=updated_board
-        ).astype(bool)
+        updated_action_mask = get_action_mask(board=updated_board)
 
         winning = puzzle_completed(updated_board)
 

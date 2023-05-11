@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import product
+
 import chex
 import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.utils import (
+    get_action_mask,
     puzzle_completed,
-    update_action_mask,
     validate_board,
 )
 
@@ -100,23 +102,18 @@ def test_validate_board(board: chex.Array, expected_validation: chex.Array) -> N
 
 
 @pytest.mark.parametrize("board", (initial_board_sample,))
-def test_update_action_mask(board: chex.Array) -> None:
-    """Tests that the update_action_mask function returns the correct action mask"""
-    action_mask = board != 0
+def test_get_action_mask(board: chex.Array) -> None:
+    """Tests that the get_action_mask function returns the correct action mask"""
 
     board = jnp.array(board, dtype=jnp.int32) - 1
-    action_mask = jnp.array(action_mask, dtype=jnp.int32)
-    action_mask = 1 - jnp.expand_dims(action_mask, -1).repeat(BOARD_WIDTH, axis=-1)
 
-    action_mask = update_action_mask(action_mask, board).astype(bool)
+    action_mask = get_action_mask(board)
 
-    for i in range(BOARD_WIDTH):
-        for j in range(BOARD_WIDTH):
-            for k in range(BOARD_WIDTH):
-                action = [i, j, k]
-                is_action_supposed_valid = action_mask[action[0], action[1], action[2]]
-                new_board = board.at[action[0], action[1]].set(action[2])
-                new_board_valid = validate_board(new_board)
-                cell_empty = board[action[0], action[1]] == -1
-                is_action_valid = new_board_valid and cell_empty
-                assert is_action_supposed_valid == is_action_valid
+    for i, j, k in product(range(BOARD_WIDTH), range(BOARD_WIDTH), range(BOARD_WIDTH)):
+        action = [i, j, k]
+        is_action_supposed_valid = action_mask[action[0], action[1], action[2]]
+        new_board = board.at[action[0], action[1]].set(action[2])
+        new_board_valid = validate_board(new_board)
+        cell_empty = board[action[0], action[1]] == -1
+        is_action_valid = new_board_valid and cell_empty
+        assert is_action_supposed_valid == is_action_valid
