@@ -89,7 +89,7 @@ class GraphColoring(Environment[State]):
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
-        """Resets the environment to its initial state
+        """Resets the environment to an initial state.
 
         Returns:
             the initial state and timestep.
