@@ -19,6 +19,7 @@ import jax
 import jax.numpy as jnp
 import matplotlib.animation as animation
 from jax import lax
+from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -29,6 +30,7 @@ from jumanji.environments.logic.graph_coloring.generator import (
 from jumanji.environments.logic.graph_coloring.types import Observation, State
 from jumanji.environments.logic.graph_coloring.viewer import GraphColoringViewer
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class GraphColoring(Environment[State]):
@@ -81,6 +83,7 @@ class GraphColoring(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
+        viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiate a `GraphColoring` environment.
 
@@ -94,8 +97,9 @@ class GraphColoring(Environment[State]):
             percent_connected=0.8,
         )
         num_nodes, percent_connected = self.generator.specs()
+
         # Create viewer used for rendering
-        self._env_viewer = GraphColoringViewer(
+        self._env_viewer = viewer or GraphColoringViewer(
             num_nodes=num_nodes, name="GraphColoring"
         )
 
@@ -242,15 +246,13 @@ class GraphColoring(Environment[State]):
         valid_actions = valid_actions.at[action_mask].set(False)
         return valid_actions[:-1]
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the GraphColoring.
 
         Args:
             state: is the current game state to be rendered.
-            save_path: the path where the image should be saved. If it is None, the plot
-            will not be stored.
         """
-        return self._env_viewer.render(state=state, save_path=save_path)
+        return self._env_viewer.render(state=state)
 
     def animate(
         self,
