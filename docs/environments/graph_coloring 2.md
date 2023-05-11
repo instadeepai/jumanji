@@ -49,4 +49,4 @@ An episode terminates when all nodes in the graph have been assigned a color. Th
 
 ## Registered Versions 📖
 
-GraphColoring-v0: The default settings for the Graph Coloring problem with a configurable number of nodes and colors.
+- `GraphColoring-v0`: The default settings for the `GraphColoring` problem with a configurable number of nodes and connectivity.
