@@ -29,7 +29,7 @@ class GraphColoringViewer(Viewer):
     def __init__(
         self,
         num_nodes: int,
-        name: str = "Graph Coloring",
+        name: str = "GraphColoring",
     ) -> None:
         self._name = name
         self._num_nodes = num_nodes

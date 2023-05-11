@@ -32,31 +32,50 @@ from jumanji.types import TimeStep, restart, termination, transition
 
 
 class GraphColoring(Environment[State]):
-    """A JAX implementation of the Graph Coloring problem.
+    """Environment for the GraphColoring problem.
+    The problem is a combinatorial optimization task where the goal is
+      to assign a color to each vertex of a graph
+      in such a way that no two adjacent vertices share the same color.
+    The problem is usually formulated as minimizing the number of colors used.
 
-    - observation: Observation
-        - current_node_index: jax array (int) with shape (), index of the current node
-        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
-            adjacency matrix of the graph
-        - colors: jax array (int32) of shape (num_nodes,):
-            each item in the array is a node in the graph and it's value denotes it's color.
-            (-1 if not assigned, otherwise 0 to num_nodes-1)
-        - action_mask: jax array (bool) of shape (num_nodes,):
-            valid colors (actions) are identified with `True`, invalid ones with `False`.
+    - observation: `Observation`
+        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes),
+            representing the adjacency matrix of the graph.
+        - colors: jax array (int32) of shape (num_nodes,),
+            representing the current color assignments for the vertices.
+        - action_mask: jax array (bool) of shape (num_colors,),
+            indicating which actions are valid in the current state of the environment.
+        - current_node_index: integer representing the current node being colored.
 
     - action: int, the color to be assigned to the current node (0 to num_nodes - 1)
 
-    - reward: float
+     - reward: float, a sparse reward is provided at the end of the episode.
+        Equals the negative of the number of unique colors used to color all vertices in the graph.
+        If an invalid action is taken, the reward is the negative of the total number of colors.
 
     - episode termination:
-        - if all nodes have been assigned a color or if invalid action is taken, it terminates.
+        - if all nodes have been assigned a color or if an invalid action is taken.
 
-    - state: State
-        - current_node_index: jax array (int) with shape (), index of the current node
-        - colors: jax array (int32) of shape (num_nodes,):
-            color assigned to each node, -1 if not assigned
-        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
-            adjacency matrix of the graph
+    - state: `State`
+        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes),
+            representing the adjacency matrix of the graph.
+        - colors: jax array (int32) of shape (num_nodes,),
+            color assigned to each node, -1 if not assigned.
+        - current_node_index: jax array (int) with shape (),
+            index of the current node.
+        - key: jax array (uint32) of shape (2,),
+            random key used to generate random numbers at each step and for auto-reset.
+
+    ```python
+    from jumanji.environments import GraphColoring
+    env = GraphColoring()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(
@@ -77,14 +96,14 @@ class GraphColoring(Environment[State]):
         num_nodes, percent_connected = self.generator.specs()
         # Create viewer used for rendering
         self._env_viewer = GraphColoringViewer(
-            num_nodes=num_nodes, name="Graph Coloring"
+            num_nodes=num_nodes, name="GraphColoring"
         )
 
     def __repr__(self) -> str:
         """Returns: str: the string representation of the environment."""
         num_nodes, percent_connected = self.generator.specs()
         return (
-            f"Graph coloring(number of nodes={num_nodes}, "
+            f"GraphColoring(number of nodes={num_nodes}, "
             f"percent connected={percent_connected * 100}% "
         )
 
@@ -224,7 +243,7 @@ class GraphColoring(Environment[State]):
         return valid_actions[:-1]
 
     def render(self, state: State, save_path: Optional[str] = None) -> None:
-        """Renders the current state of the graph coloring.
+        """Renders the current state of the GraphColoring.
 
         Args:
             state: is the current game state to be rendered.
@@ -239,7 +258,7 @@ class GraphColoring(Environment[State]):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
-        """Creates an animated gif of the Graph Coloring based on the sequence of game states.
+        """Creates an animated gif of the GraphColoring based on the sequence of game states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
