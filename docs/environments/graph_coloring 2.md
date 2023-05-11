@@ -39,7 +39,7 @@ The action space is a DiscreteArray of integer values in [0, 1, ..., num_colors 
 
 The reward in the Graph Coloring environment is given as follows:
 
-- `reward`: A reward is provided based on the number of unique colors used if all nodes have been assigned a color. The reward is equal to the negative of the number of unique colors used.
+- `sparse reward`: a reward is provided at the end of the episode and equals the negative of the number of unique colors used to color all vertices in the graph.
 
 The agent's goal is to find a valid coloring using as few colors as possible while avoiding conflicts with adjacent nodes.
 
