@@ -142,6 +142,16 @@ class GraphColoring(Environment[State]):
     def step(
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
+        """Updates the environment state after the agent takes an action.
+
+        Args:
+            state: the current state of the environment.
+            action: the action taken by the agent.
+
+        Returns:
+            state: the new state of the environment.
+            timestep: the next timestep.
+        """
         num_nodes, _ = self.generator.specs()
         # Get the valid actions for the current state.
         valid_actions = self._get_valid_actions(state)
