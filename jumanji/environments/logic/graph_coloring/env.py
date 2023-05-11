@@ -130,7 +130,7 @@ class GraphColoring(Environment[State]):
         colored_nodes = colors >= 0
 
         # Determine if all nodes have been assigned a color
-        all_nodes_colored = jnp.count_nonzero(colored_nodes) == num_nodes
+        all_nodes_colored = jnp.all(colors >= 0)
 
         # Calculate the reward
         unique_colors_used = jnp.unique(colors, size=num_nodes, fill_value=-1)
