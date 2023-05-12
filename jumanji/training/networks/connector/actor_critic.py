@@ -185,7 +185,7 @@ class ConnectorTorso(hk.Module):
         self, embeddings: chex.Array, step_count: chex.Array
     ) -> chex.Array:
         step_count = jnp.asarray(step_count / self.env_time_limit, float)
-        num_agents = self.num_agents  # embeddings.shape[-2]
+        num_agents = self.num_agents
         step_count = jnp.repeat(step_count[:, None], num_agents, axis=-1)[..., None]
         embeddings = jnp.concatenate([embeddings, step_count], axis=-1)
         return embeddings

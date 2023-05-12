@@ -361,8 +361,8 @@ class Connector(Environment[State]):
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec for the Connector environment.
 
-        5 actions: [0,1,2,3,4] -> [No Op, Up, Right, Down, Left]. Since this is a multi-agent
-        environment, the environment expects an array of actions of shape (num_agents,).
+        5 actions: [0,1,2,3,4] -> [No Op, Up, Right, Down, Left]. Since this is an environment with
+        a multi-dimensional action space, it expects an array of actions of shape (num_agents,).
 
         Returns:
             observation_spec: `MultiDiscreteArray` of shape (num_agents,).
