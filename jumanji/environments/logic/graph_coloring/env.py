@@ -170,7 +170,7 @@ class GraphColoring(Environment[State]):
         # Calculate the reward
         unique_colors_used = jnp.unique(colors, size=num_nodes, fill_value=-1)
         num_unique_colors = jnp.count_nonzero(unique_colors_used >= 0)
-        reward = jnp.where(all_nodes_colored, -num_unique_colors, 0.0).sum()
+        reward = jnp.where(all_nodes_colored, -num_unique_colors, 0.0)
 
         # Apply the maximum penalty when an invalid action is taken and terminate the episode
         reward = jnp.where(invalid_action_taken, -num_nodes, reward)
