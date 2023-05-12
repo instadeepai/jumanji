@@ -151,7 +151,7 @@ class MACVRP(Environment[State]):
     def __repr__(self) -> str:
         return f"MACVRP(num_customers={self.num_customers}, num_vehicles={self.num_vehicles})"
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """
         Resets the environment.
 
