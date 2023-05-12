@@ -64,7 +64,7 @@ class State:
 class Observation(NamedTuple):
     """
     grid: the game grid, filled with zeros for the empty cells and with
-            ones for the filled cells.
+        ones for the filled cells.
     tetrominoe: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
             directions to move in.
