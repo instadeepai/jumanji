@@ -68,7 +68,7 @@ register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 
 # Connector with grid size of 10 and 5 agents.
-register(id="Connector-v0", entry_point="jumanji.environments:Connector")
+register(id="Connector-v1", entry_point="jumanji.environments:Connector")
 
 # CVRP with 20 randomly generated nodes, a maximum capacity of 30,
 # a maximum demand for each node of 10, and a dense reward function.
