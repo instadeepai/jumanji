@@ -31,7 +31,10 @@ def test_render(
 
     env, state, _ = deterministic_coop_env
     viewer = Renderer(
-        env.num_agents, env._nodes_to_connect, num_nodes=env.num_nodes, edges=env._edges
+        env.num_agents,
+        env._nodes_to_connect,
+        num_nodes=env.num_nodes,
+        adj_matrix=env._adj_matrix,
     )
     save_path = "render_test_img.png"
     viewer.render(state, save_path=save_path)
@@ -47,7 +50,10 @@ def test_animation(
 
     env, state, _ = deterministic_coop_env
     viewer = Renderer(
-        env.num_agents, env._nodes_to_connect, num_nodes=env.num_nodes, edges=env._edges
+        env.num_agents,
+        env._nodes_to_connect,
+        num_nodes=env.num_nodes,
+        adj_matrix=env._adj_matrix,
     )
     step_fn = jax.jit(env.step)
     save_path = "render_test_gif.gif"

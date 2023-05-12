@@ -23,6 +23,18 @@ from jumanji.environments.routing.cmst.constants import EMPTY_EDGE, EMPTY_NODE
 from jumanji.environments.routing.cmst.types import Graph
 
 
+def build_adjecency_matrix(num_nodes: int, edges: jnp.ndarray) -> jnp.ndarray:
+    """Build adjaceny matrix from an array with edges."""
+
+    adj_matrix = jnp.zeros((num_nodes, num_nodes), dtype=int)
+    num_edges = edges.shape[0]
+    for i in range(num_edges):
+        adj_matrix = adj_matrix.at[edges[i, 0], edges[i, 1]].set(1)
+        adj_matrix = adj_matrix.at[edges[i, 1], edges[i, 0]].set(1)
+
+    return adj_matrix
+
+
 def check_num_edges(nodes: List[int], num_edges: jnp.int32) -> None:
     """Checks that the number of requested edges is acceptable."""
 

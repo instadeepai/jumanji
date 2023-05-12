@@ -43,10 +43,7 @@ def test__cmst_agent_observation(
     # conn_nodes = jnp.array([[1, -1, -1], [3, -1, -1]], dtype=jnp.int32)
 
     obs_node_types = jnp.array(
-        [
-            [1, 0, -1, 2, -1, 3, 1, -1, 3, 1, -1, -1],
-            [3, 2, -1, 0, -1, 1, 3, -1, 1, 3, -1, -1],
-        ],
+        [1, 0, -1, 2, -1, 3, 1, -1, 3, 1, -1, -1],
         dtype=jnp.int32,
     )
 
@@ -88,7 +85,7 @@ def test__cmst_split_gn_reset(coop_split_gn_env: CoopMinSpanTree) -> None:
     assert state.step_count == 0
 
     # Initial position is equal to current node
-    assert jnp.all(state.connected_nodes[:, 0] == state.position)
+    assert jnp.all(state.connected_nodes[:, 0] == state.positions)
     # Assert no agent is done
     assert jnp.all(~state.finished_agents)
 
@@ -116,7 +113,7 @@ def test__cmst_step(coop_split_gn_env: CoopMinSpanTree) -> None:
     # Check that the state has changed
     assert not jnp.array_equal(new_state.connected_nodes, state.connected_nodes)
     assert not jnp.array_equal(new_state.position_index, state.position_index)
-    assert not jnp.array_equal(new_state.position, state.position)
+    assert not jnp.array_equal(new_state.positions, state.positions)
     assert not jnp.array_equal(new_state.node_edges, state.node_edges)
     assert not jnp.array_equal(new_state.action_mask, state.action_mask)
     assert not jnp.array_equal(new_state.step_count, state.step_count)
@@ -198,7 +195,7 @@ def test__cmst_action_masking(
     new_state, _ = step_fn(state, action)
 
     # agent 1 shouldn't be able to acess node 4 any more
-    assert jnp.array_equal(state.position[1], new_state.position[1])
+    assert jnp.array_equal(state.positions[1], new_state.positions[1])
     assert not jnp.array_equal(state.action_mask[1], new_state.action_mask[1])
 
 

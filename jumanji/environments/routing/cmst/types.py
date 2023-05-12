@@ -27,7 +27,7 @@ import jax.numpy as jnp
 class State:
     """
     node_types: array with node types (-1 represents utility nodes).
-    edges: array with all egdes in the graph.
+    adj_matrix: array with adjacency matrix.
     connected_nodes: array of node indices denoting route (-1 --> not filled yet).
     connected_nodes_index: array tracking connected nodes.
     node_edges: array used to track active edges.
@@ -40,11 +40,11 @@ class State:
     """
 
     node_types: chex.Array  # (num_nodes,)
-    edges: chex.Array  # (num_edges, 2)
+    adj_matrix: chex.Array  # (num_nodes, num_nodes)
     connected_nodes: chex.Array  # (num_agents, step_limit)
     connected_nodes_index: chex.Array  # (num_agents, num_nodes)
     node_edges: chex.Array  # (num_agents, num_nodes, num_nodes)
-    position: chex.Array  # (num_agents,)
+    positions: chex.Array  # (num_agents,)
     position_index: chex.Array  # (num_agents,)
     action_mask: chex.Array  # (num_agents, num_nodes)
     finished_agents: chex.Array  # (num_agents,)
@@ -55,7 +55,7 @@ class State:
 class Observation(NamedTuple):
     """
     node_types: array with node types
-        If we have for example 12 nodes these correponds to
+        If we have for example 12 nodes these corresponds to
         the indices 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  11.
         Now consider we have 2 agents. Agent 0 wants to connect the nodes
         (0,1,9) and agent 1 the nodes (3,5,8). The remaining nodes are
@@ -69,7 +69,7 @@ class Observation(NamedTuple):
         we represent the agent's observation using the following rules.
         Each agent should see it nodes already connected on its path as 0,
         and nodes it still has to connect as 1. The next agent nodes will
-        represented by 2 and 3, the next by 4 and 5 and so on. The utilitiy
+        represented by 2 and 3, the next by 4 and 5 and so on. The utility
         unconnected nodes will still be represented by -1
         In our 12 node example above we expect the observation view node_types
         to have the following values
@@ -80,10 +80,7 @@ class Observation(NamedTuple):
                 ],
                 dtype=jnp.int32,
             )
-    edges: array with all edges in the graph.
-        If we have a graph with 3 nodes with [0, 1, 3] and edges
-        (0,1) and (1,3). The edges array will have values:
-        egdes = jnp.array([[0,1], [1,3]]).
+    adj_matrix: adjacency matrix.
     positions: node on which the agent is currently located.
         In our current problem this will be jnp.array([1,3])
     action_masks: binary mask (True/False <--> valid/invalid action)
@@ -91,9 +88,9 @@ class Observation(NamedTuple):
         do we have a valid edge to every other node.
     """
 
-    node_types: chex.Array  # (num_agents, num_nodes)
-    edges: chex.Array  # (num_agents, num_edges, 2)
-    position: chex.Array  # (num_agents,)
+    node_types: chex.Array  # (num_nodes)
+    adj_matrix: chex.Array  # (num_nodes, num_nodes)
+    positions: chex.Array  # (num_agents,)
     action_mask: chex.Array  # (num_agents, num_nodes)
 
 

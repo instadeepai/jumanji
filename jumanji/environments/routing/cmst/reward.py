@@ -87,7 +87,7 @@ class DefaultRewardFn(RewardFn):
             reward_i = self.reward_fun(
                 nodes_to_connect[agent],
                 actions[agent],
-                state.position[agent],
+                state.positions[agent],
             )
             rewards = rewards.at[agent].set(reward_i)
 

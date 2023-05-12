@@ -17,7 +17,6 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 import networkx as nx
-import numpy as np
 
 from jumanji.environments.routing.cmst.constants import UTILITY_NODE
 from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
@@ -28,15 +27,15 @@ def check_generator(params: Tuple, data: Tuple) -> None:
 
     (
         num_nodes,
-        num_edges,
-        max_degree,
+        _,
+        _,
         num_agents,
         num_nodes_per_agent,
         max_step,
     ) = params
     (
         node_types,
-        edges,
+        adj_matrix,
         agents_pos,
         conn_nodes,
         conn_nodes_index,
@@ -46,22 +45,19 @@ def check_generator(params: Tuple, data: Tuple) -> None:
 
     assert jnp.min(node_types) == UTILITY_NODE
     assert jnp.max(node_types) == num_agents - 1
-    assert edges.shape == (num_agents, num_edges, 2)
     assert agents_pos.shape == (num_agents,)
     assert conn_nodes.shape == (num_agents, max_step)
     assert conn_nodes_index.shape == (num_agents, num_nodes)
     assert node_edges.shape == (num_nodes, num_nodes)
     assert nodes_to_connect.shape == (num_agents, num_nodes_per_agent)
 
-    for i in range(num_edges):
-        edge = edges[0, i]
-        assert node_edges[edge[0], edge[1]] == edge[1]
-        assert node_edges[edge[1], edge[0]] == edge[0]
-
     # Test that the graph is connected
     graph = nx.Graph()
     graph.add_nodes_from(list(range(num_nodes)))
-    edges_list = list(np.asarray(edges[0]))
+    # Find the indices of non-zero elements in the adjacency matrix
+    row_indices, col_indices = jnp.nonzero(adj_matrix)
+    # Create the edge list as a list of tuples (source, target)
+    edges_list = [(int(row), int(col)) for row, col in zip(row_indices, col_indices)]
     graph.add_edges_from(edges_list)
     assert nx.is_connected(graph)
 

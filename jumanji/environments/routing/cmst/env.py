@@ -22,7 +22,6 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cmst.constants import (
     DUMMY_NODE,
-    EMPTY_EDGE,
     EMPTY_NODE,
     INVALID_ALREADY_TRAVERSED,
     INVALID_CHOICE,
@@ -52,17 +51,16 @@ class CoopMinSpanTree(Environment[State]):
     not greater than (0.8 x num_agents x num_nodes_per_agent).
 
     - observation: Observation
-        - node_type: jax array (int) of shape (num_agents, num_nodes).
+        - node_types: jax array (int) of shape (num_nodes):
             the component type of each node (-1 represents utility nodes).
-        - edges: jax array (int) of shape (num_edges, 2).
-            all the edges in the graph.
-        - position: jax array (int) of shape (num_agents,).plt.style.use('dark_background')
+        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
+            adjacency matrix of the graph.
+        - positions: jax array (int) of shape (num_agents,):
             the index of the last visited node.
-        - action_mask: jax array (bool) of shape (num_agent, num_nodes).
+        - action_mask: jax array (bool) of shape (num_agent, num_nodes):
             binary mask (False/True <--> invalid/valid action).
 
-    - reward: jax array (float) of shape (num_agents,).
-        - each agent's reward.
+    - reward: float
 
     - action: jax array (int) of shape (num_agents,): [0,1,..., num_nodes-1]
         Each agent selects the next node to which it wants to connect.
@@ -70,14 +68,14 @@ class CoopMinSpanTree(Environment[State]):
     - state: State
         - node_type: jax array (int) of shape (num_nodes,).
             the component type of each node (-1 represents utility nodes).
-        - edges: jax array (int) of shape (num_edges, 2).
-            all the edges in the graph.
+        - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
+            adjacency matrix of the graph.
         - connected_nodes: jax array (int) of shape (num_agents, step_limit).
             we only count each node visit once.
         - connected_nodes_index: jax array (int) of shape (num_agents, num_nodes).
         - position_index: jax array (int) of shape (num_agents,).
         - node_edges: jax array (int) of shape (num_agents, num_nodes, num_nodes).
-        - position: jax array (int) of shape (num_agents,).
+        - positions: jax array (int) of shape (num_agents,).
             the index of the last visited node.
         - action_mask: jax array (bool) of shape (num_agent, num_nodes).
             binary mask (False/True <--> invalid/valid action).
@@ -173,7 +171,7 @@ class CoopMinSpanTree(Environment[State]):
         self._nodes_to_connect = EMPTY_NODE * jnp.ones(
             (self.num_agents, self.num_nodes_per_agent), dtype=jnp.int32
         )
-        self._edges = EMPTY_EDGE * jnp.ones((self.num_edges, 2), dtype=jnp.int32)
+        self._adj_matrix = jnp.zeros((self.num_nodes, self.num_nodes), dtype=jnp.int32)
 
     def __repr__(self) -> str:
         return (
@@ -201,40 +199,40 @@ class CoopMinSpanTree(Environment[State]):
             observation.
         """
         node_types = specs.BoundedArray(
-            shape=(self.num_agents, self.num_nodes),
+            shape=(self.num_nodes),
             minimum=-1,
             maximum=self.num_agents * 2 - 1,
             dtype=jnp.int32,
             name="node_types",
         )
-        edges = specs.BoundedArray(
-            shape=(self.num_agents, self.num_edges, 2),
+        adj_matrix = specs.BoundedArray(
+            shape=(self.num_nodes, self.num_nodes),
             minimum=0,
-            maximum=self.num_nodes - 1,
+            maximum=1,
             dtype=jnp.int32,
-            name="edges",
+            name="adj_matrix",
         )
-        position = specs.BoundedArray(
+        positions = specs.BoundedArray(
             shape=(self.num_agents,),
             minimum=-1,
             maximum=self.num_nodes - 1,
             dtype=jnp.int32,
-            name="position",
+            name="positions",
         )
         action_mask = specs.BoundedArray(
             shape=(self.num_agents, self.num_nodes),
             dtype=bool,
             minimum=False,
             maximum=True,
-            name="action mask",
+            name="action_mask",
         )
 
         return specs.Spec(
             Observation,
             "ObservationSpec",
             node_types=node_types,
-            edges=edges,
-            position=position,
+            adj_matrix=adj_matrix,
+            positions=positions,
             action_mask=action_mask,
         )
 
@@ -254,7 +252,7 @@ class CoopMinSpanTree(Environment[State]):
 
         (
             node_types,
-            edges,
+            adj_matrix,
             agents_pos,
             conn_nodes,
             conn_nodes_index,
@@ -263,7 +261,7 @@ class CoopMinSpanTree(Environment[State]):
         ) = self._generator_fn(problem_key)
 
         self._nodes_to_connect = nodes_to_connect
-        self._edges = edges
+        self._adj_matrix = adj_matrix
 
         active_node_edges = jnp.repeat(node_edges[None, ...], self.num_agents, axis=0)
         active_node_edges = self._update_active_edges(
@@ -273,11 +271,11 @@ class CoopMinSpanTree(Environment[State]):
 
         state = State(
             node_types=node_types,
-            edges=edges,
+            adj_matrix=adj_matrix,
             connected_nodes=conn_nodes,
             connected_nodes_index=conn_nodes_index,
             position_index=jnp.zeros((self.num_agents), dtype=jnp.int32),
-            position=agents_pos,
+            positions=agents_pos,
             node_edges=active_node_edges,
             action_mask=self._update_action_mask(
                 active_node_edges, agents_pos, finished_agents
@@ -321,7 +319,7 @@ class CoopMinSpanTree(Environment[State]):
                 lambda *_: (
                     connected_nodes,
                     conn_index,
-                    state.position[agent_id],
+                    state.positions[agent_id],
                     indices,
                 ),
                 connected_nodes,
@@ -339,7 +337,7 @@ class CoopMinSpanTree(Environment[State]):
 
         connected_nodes = jnp.zeros_like(state.connected_nodes)
         connected_nodes_index = jnp.zeros_like(state.connected_nodes_index)
-        agents_pos = jnp.zeros_like(state.position)
+        agents_pos = jnp.zeros_like(state.positions)
         position_index = jnp.zeros_like(state.position_index)
 
         for agent in range(self.num_agents):
@@ -363,11 +361,11 @@ class CoopMinSpanTree(Environment[State]):
 
         state = State(
             node_types=state.node_types,
-            edges=state.edges,
+            adj_matrix=state.adj_matrix,
             connected_nodes=connected_nodes,
             connected_nodes_index=connected_nodes_index,
             position_index=position_index,
-            position=agents_pos,
+            positions=agents_pos,
             node_edges=active_node_edges,
             action_mask=self._update_action_mask(
                 active_node_edges, agents_pos, state.finished_agents
@@ -395,8 +393,8 @@ class CoopMinSpanTree(Environment[State]):
 
         return Observation(
             node_types=node_types,
-            edges=state.edges,
-            position=state.position,
+            adj_matrix=state.adj_matrix,
+            positions=state.positions,
             action_mask=state.action_mask,
         )
 
@@ -420,7 +418,7 @@ class CoopMinSpanTree(Environment[State]):
             * ~state.finished_agents
         )
 
-        # sum the rewards to make the environment single agent
+        # sum the rewards to make the environment is single agent
         reward = jnp.sum(rewards)
 
         # update the state now
@@ -511,20 +509,16 @@ class CoopMinSpanTree(Environment[State]):
     def _get_obsv(
         self, node_types: chex.Array, connected_nodes_index: chex.Array
     ) -> chex.Array:
-        """Get each agents individual observations
+        """Encode the node type
 
         Args:
             node_types (Array): The environment state node_types.
             connected_nodes_index (Array): Nodes connected by each agent.
         Returns:
-            agent_node_types (Array): each agents local observation stacked on top of
-                each other in the shape (num_agents, num_nodes).
+            agent_node_types (Array): agents local observation (num_nodes).
         """
 
-        agent_ids = jnp.arange(self.num_agents, dtype=int)
-        return jax.vmap(self._agent_node_types, in_axes=(None, None, 0))(
-            node_types, connected_nodes_index, agent_ids
-        )
+        return self._agent_node_types(node_types, connected_nodes_index, 0)
 
     def _update_action_mask(
         self, node_edges: chex.Array, position: chex.Array, finished_agents: chex.Array
@@ -611,7 +605,7 @@ class CoopMinSpanTree(Environment[State]):
             node = node_edges[position, action]
             return node
 
-        nodes = jax.vmap(_get_agent_node)(state.node_edges, state.position, action)
+        nodes = jax.vmap(_get_agent_node)(state.node_edges, state.positions, action)
 
         new_actions = jnp.ones_like(action) * INVALID_CHOICE
 
@@ -755,7 +749,7 @@ class CoopMinSpanTree(Environment[State]):
                 self.num_agents,
                 self._nodes_to_connect,
                 num_nodes=self.num_nodes,
-                edges=self._edges,
+                adj_matrix=self._adj_matrix,
             )
 
         return self._renderer.render(state)
@@ -778,6 +772,6 @@ class CoopMinSpanTree(Environment[State]):
                 self.num_agents,
                 self._nodes_to_connect,
                 num_nodes=self.num_nodes,
-                edges=self._edges,
+                adj_matrix=self._adj_matrix,
             )
         self._renderer.animate(states, interval, save_path)

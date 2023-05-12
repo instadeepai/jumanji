@@ -21,6 +21,7 @@ import pytest
 from jumanji.environments.routing.cmst.env import CoopMinSpanTree
 from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
 from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.cmst.utils import build_adjecency_matrix
 from jumanji.types import TimeStep, restart
 
 
@@ -82,6 +83,8 @@ def deterministic_coop_env() -> Tuple[CoopMinSpanTree, State, TimeStep]:
         dtype=jnp.int32,
     )
 
+    adj_matrix = build_adjecency_matrix(12, edges)
+
     node_edges = jnp.ones((12, 12)) * -1
     node_edges = node_edges.at[0, [1, 3]].set(jnp.array([1, 3]))
     node_edges = node_edges.at[1, [0, 2, 4]].set(jnp.array([0, 2, 4]))
@@ -108,24 +111,24 @@ def deterministic_coop_env() -> Tuple[CoopMinSpanTree, State, TimeStep]:
     conn_nodes_index = conn_nodes_index.at[0, 1].set(1)
     conn_nodes_index = conn_nodes_index.at[1, 3].set(3)
 
-    position = jnp.array([1, 3], dtype=jnp.int32)
+    positions = jnp.array([1, 3], dtype=jnp.int32)
 
     active_node_edges = jnp.repeat(node_edges[None, ...], num_agents, axis=0)
     active_node_edges = env._update_active_edges(
-        active_node_edges, position, node_types
+        active_node_edges, positions, node_types
     )
     finished_agents = jnp.zeros((num_agents), dtype=bool)
 
     state = State(
         node_types=node_types,
-        edges=edges,
+        adj_matrix=adj_matrix,
         connected_nodes=conn_nodes,
         connected_nodes_index=conn_nodes_index,
         position_index=jnp.zeros((num_agents), dtype=jnp.int32),
-        position=position,
+        positions=positions,
         node_edges=active_node_edges,
         action_mask=env._update_action_mask(
-            active_node_edges, position, finished_agents
+            active_node_edges, positions, finished_agents
         ),
         finished_agents=finished_agents,
         step_count=jnp.array(0, int),

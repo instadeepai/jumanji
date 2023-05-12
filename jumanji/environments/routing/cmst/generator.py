@@ -20,7 +20,10 @@ from chex import Array, PRNGKey
 from jax import numpy as jnp
 
 from jumanji.environments.routing.cmst.constants import EMPTY_NODE
-from jumanji.environments.routing.cmst.utils import multi_random_walk
+from jumanji.environments.routing.cmst.utils import (
+    build_adjecency_matrix,
+    multi_random_walk,
+)
 
 
 class Generator(ABC):
@@ -90,7 +93,7 @@ class SplitRandomGenerator(Generator):
         )
 
         node_edges = graph.node_edges
-        edges = jnp.repeat(graph.edges[None, ...], self._num_agents, axis=0)
+        adj_matrix = build_adjecency_matrix(self._num_nodes, graph.edges)
 
         state_nodes_to_connect = EMPTY_NODE * (
             jnp.ones((self._num_agents, self._num_nodes_per_agent), dtype=jnp.int32)
@@ -126,7 +129,7 @@ class SplitRandomGenerator(Generator):
 
         return (
             node_types,
-            edges,
+            adj_matrix,
             agents_pos,
             conn_nodes,
             conn_nodes_index,

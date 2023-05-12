@@ -41,7 +41,7 @@ class Renderer:
         num_agents: int,
         nodes_to_connect: chex.Array,
         num_nodes: int,
-        edges: chex.Array,
+        adj_matrix: chex.Array,
         name: str = "cmst",
     ) -> None:
         """Create a ConnectorRenderer instance for rendering the Connector environment.
@@ -50,7 +50,7 @@ class Renderer:
             num_agents: Number of agents in the environment.
             nodes_to_connect: The nodes to connect by each agent.
             num_nodes: The total number of nodes.
-            edges: The edges of the graph.
+            adj_matrix: The adjacency matrix of the graph.
         """
 
         self.num_agents = num_agents
@@ -61,12 +61,6 @@ class Renderer:
 
         self.node_scale = 5 + int(np.sqrt(self.num_nodes))
         self.node_radius = 0.05 * 5 / self.node_scale
-
-        adj_matrix = jnp.zeros((num_nodes, num_nodes), dtype=int)
-        num_edges = edges.shape[1]
-        for i in range(num_edges):
-            adj_matrix = adj_matrix.at[edges[0, i, 0], edges[0, i, 1]].set(1)
-            adj_matrix = adj_matrix.at[edges[0, i, 1], edges[0, i, 0]].set(1)
 
         self.positions = self._spring_layout(adj_matrix)
 
@@ -118,7 +112,7 @@ class Renderer:
             ax: figure axes on which to plot.
         """
 
-        edges = self.build_edges(state.edges, state.connected_nodes)
+        edges = self.build_edges(state.adj_matrix, state.connected_nodes)
         # draw edges
         for e in edges.values():
             (n1, n2), color = e
@@ -135,7 +129,7 @@ class Renderer:
             else:
                 fcolor = black
 
-            if node in state.position:
+            if node in state.positions:
                 lcolor = yellow
             else:
                 lcolor = grey
@@ -160,7 +154,7 @@ class Renderer:
             )
 
     def build_edges(
-        self, edges_arr: chex.Array, connected_nodes: chex.Array
+        self, adj_matrix: chex.Array, connected_nodes: chex.Array
     ) -> Dict[Tuple[int, ...], List[Tuple[float, ...]]]:
 
         # normalize id for either order
@@ -171,10 +165,14 @@ class Renderer:
         edges: Dict[Tuple[int, ...], List[Tuple[float, ...]]] = {}
 
         # convert to numpy
-        edges_arr = np.asarray(edges_arr)
         connected_nodes = np.asarray(connected_nodes)
+        row_indices, col_indices = jnp.nonzero(adj_matrix)
+        # Create the edge list as a list of tuples (source, target)
+        edges_list = [
+            (int(row), int(col)) for row, col in zip(row_indices, col_indices)
+        ]
 
-        for edge in edges_arr:
+        for edge in edges_list:
             n1, n2 = edge
             eid = edge_id(n1, n2)
             if eid not in edges:
