@@ -1,5 +1,5 @@
 name: macvrp
-registered_version: MACVRP6-v0
+registered_version: MACVRP-v0
 
 network:
     num_vehicles: 2
