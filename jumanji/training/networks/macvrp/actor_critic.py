@@ -290,7 +290,7 @@ def make_critic_network_macvrp(
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
         # Sum embeddings over the sequence length (vehicles + customers).
-        embedding = jax.numpy.sum(embeddings, axis=-2)
+        embedding = jax.numpy.mean(embeddings, axis=-2)
         value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)
         return jax.numpy.squeeze(value, axis=-1)
 
