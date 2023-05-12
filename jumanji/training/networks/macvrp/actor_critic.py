@@ -266,7 +266,6 @@ def make_actor_network_macvrp(
         logits = jax.numpy.where(
             observation.action_mask, logits, jax.numpy.finfo(jax.numpy.float32).min
         )
-
         return logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

@@ -23,20 +23,14 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.macvrp.reward import RewardFn, SparseReward
-from jumanji.environments.routing.macvrp.specs import (
-    NodeSpec,
-    ObservationSpec,
-    PenalityCoeffSpec,
-    TimeWindowSpec,
-    VehicleSpec,
-)
 from jumanji.environments.routing.macvrp.types import (
     Node,
     Observation,
+    ObsVehicle,
     PenalityCoeff,
     State,
+    StateVehicle,
     TimeWindow,
-    Vehicle,
 )
 from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
@@ -187,7 +181,7 @@ class MACVRP(Environment[State]):
             nodes=Node(coordinates=node_coordinates, demands=node_demands),
             windows=TimeWindow(start=window_start_times, end=window_end_times),
             coeffs=PenalityCoeff(early=early_coefs, late=late_coefs),
-            vehicles=Vehicle(
+            vehicles=StateVehicle(
                 positions=np.int16([DEPOT_IDX] * self.num_vehicles),
                 local_times=jax.numpy.zeros(self.num_vehicles, dtype=jax.numpy.float32),
                 capacities=jax.numpy.ones(self.num_vehicles, dtype=jax.numpy.int16)
@@ -226,7 +220,7 @@ class MACVRP(Environment[State]):
         timestep = self._state_to_timestep(state)
         return state, timestep
 
-    def observation_spec(self) -> ObservationSpec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """
         Returns the observation spec.
 
@@ -348,28 +342,56 @@ class MACVRP(Environment[State]):
             name="action_mask",
         )
 
-        return ObservationSpec(
-            nodes_spec=NodeSpec(
-                coordinates_spec=node_coordinates,
-                demands_spec=node_demands,
-            ),
-            windows_spec=TimeWindowSpec(
-                start_spec=node_time_windows_start, end_spec=node_time_windows_end
-            ),
-            coeffs_spec=PenalityCoeffSpec(
-                early_spec=node_penalty_coeffs_start, late_spec=node_penalty_coeffs_end
-            ),
-            other_vehicles_spec=VehicleSpec(
-                positions_spec=other_vehicles_positions,
-                local_times_spec=other_vehicles_local_times,
-                capacities_spec=other_vehicles_capacities,
-            ),
-            main_vehicles_spec=VehicleSpec(
-                positions_spec=vehicle_position,
-                local_times_spec=vehicle_local_time,
-                capacities_spec=vehicle_capacity,
-            ),
-            action_mask_spec=action_mask,
+        # Node spec
+        node_dict = {
+            "coordinates": node_coordinates,
+            "demands": node_demands,
+        }
+        nodes_spec = specs.Spec(Node, "NodesSpec", **node_dict)
+
+        # Window spec
+        window_dict = {
+            "start": node_time_windows_start,
+            "end": node_time_windows_end,
+        }
+        windows_spec = specs.Spec(TimeWindow, "WindowSpec", **window_dict)
+
+        # Penality spec
+        penality_dict = {
+            "early": node_penalty_coeffs_start,
+            "late": node_penalty_coeffs_end,
+        }
+        penality_spec = specs.Spec(PenalityCoeff, "PenalitySpec", **penality_dict)
+
+        # Other vehicle spec
+        other_vehicle_dict = {
+            "positions": other_vehicles_positions,
+            "local_times": other_vehicles_local_times,
+            "capacities": other_vehicles_capacities,
+        }
+        other_vehicle_spec = specs.Spec(
+            ObsVehicle, "OtherVehicleSpec", **other_vehicle_dict
+        )
+
+        # Main vehicle spec
+        main_vehicle_dict = {
+            "positions": vehicle_position,
+            "local_times": vehicle_local_time,
+            "capacities": vehicle_capacity,
+        }
+        main_vehicle_spec = specs.Spec(
+            ObsVehicle, "MainVehicleSpec", **main_vehicle_dict
+        )
+
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            nodes=nodes_spec,
+            windows=windows_spec,
+            coeffs=penality_spec,
+            other_vehicles=other_vehicle_spec,
+            main_vehicles=main_vehicle_spec,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.BoundedArray:
@@ -484,7 +506,7 @@ class MACVRP(Environment[State]):
             ),
             windows=state.windows,
             coeffs=state.coeffs,
-            vehicles=Vehicle(
+            vehicles=StateVehicle(
                 local_times=vehicle_local_times,
                 positions=next_nodes,
                 capacities=vehicle_capacities,
@@ -575,12 +597,12 @@ class MACVRP(Environment[State]):
                 early=jax.numpy.tile(state.coeffs.early, (self.num_vehicles, 1)),
                 late=jax.numpy.tile(state.coeffs.late, (self.num_vehicles, 1)),
             ),
-            other_vehicles=Vehicle(
+            other_vehicles=ObsVehicle(
                 positions=other_vehicles_positions,
                 local_times=other_vehicles_local_times,
                 capacities=other_vehicles_capacities,
             ),
-            main_vehicles=Vehicle(
+            main_vehicles=ObsVehicle(
                 positions=state.vehicles.positions,
                 local_times=state.vehicles.local_times,
                 capacities=state.vehicles.capacities,
