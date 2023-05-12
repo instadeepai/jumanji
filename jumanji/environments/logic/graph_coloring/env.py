@@ -203,11 +203,18 @@ class GraphColoring(Environment[State]):
         return next_state, timestep
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec containing the graph, colors, and current node index.
+        """Returns the observation spec.
 
         Returns:
-            observation_spec:
-                - ObservationSpec tree of the graph, colors, and current node index spec.
+            Spec for the `Observation` whose fields are:
+            - adj_matrix: BoundedArray (bool) of shape (num_nodes, num_nodes).
+                Represents the adjacency matrix of the graph.
+            - action_mask: BoundedArray (bool) of shape (num_nodes,).
+                Represents the valid actions in the current state.
+            - colors: BoundedArray (int32) of shape (num_nodes,).
+                Represents the colors assigned to each node.
+            - current_node_index: BoundedArray (int32) of shape ().
+                Represents the index of the current node.
         """
         num_nodes, percent_connected = self.generator.specs()
         return specs.Spec(
