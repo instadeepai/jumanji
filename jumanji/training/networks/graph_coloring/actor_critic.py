@@ -87,7 +87,7 @@ class GraphColoringTorso(hk.Module):
 
     def embed_nodes(self, nodes: chex.Array) -> chex.Array:
         nodes_float = nodes.astype(jnp.float32)
-        nodes_leaves = jnp.stack(jtree.tree_leaves(nodes_float), axis=-1)
+        nodes_leaves = nodes_float
         embeddings = hk.Linear(self.model_size, name="node_projection")(nodes_leaves)
         return embeddings
 
