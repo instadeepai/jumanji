@@ -84,16 +84,14 @@ class GraphColoringTorso(hk.Module):
         mask = jnp.expand_dims(adj_matrix, axis=-3)
         return mask
 
-    def embed_nodes(self, nodes: chex.Array) -> chex.Array:
-        nodes_float = nodes.astype(jnp.float32)
-        nodes_leaves = nodes_float
-        embeddings = hk.Linear(self.model_size, name="node_projection")(nodes_leaves)
-        return embeddings
+    def embed_nodes(self, nodes_colored: chex.Array) -> chex.Array:
+        node_embeddings = hk.Linear(self.model_size)(
+            nodes_colored[..., None].astype(float)
+        )
+        return node_embeddings
 
-    def embed_colors(self, colors: chex.Array) -> chex.Array:
-        color_float = colors.astype(jnp.float32)
-        colors_leaves = color_float
-        embeddings = hk.Linear(self.model_size, name="color_projection")(colors_leaves)
+    def embed_colors(self, colors_used: chex.Array) -> chex.Array:
+        embeddings = hk.Linear(self.model_size)(colors_used[..., None].astype(float))
         return embeddings
 
     def __call__(self, observation: Observation) -> chex.Array:
@@ -121,10 +119,10 @@ class GraphColoringTorso(hk.Module):
         """
 
         batch_size, num_nodes = observation.colors.shape
-        colors_range = jnp.arange(num_nodes)[None]
-        colors_used = jnp.any(
-            observation.colors[..., jnp.newaxis] == colors_range, axis=1
-        )
+        colors_used = jnp.isin(observation.colors, jnp.arange(num_nodes))
+        color_embeddings = hk.Linear(self.model_size)(
+            colors_used[..., None].astype(float)
+        )  # Shape (batch_size, num_colors, 128)
 
         nodes_colored = observation.colors >= 0
 
