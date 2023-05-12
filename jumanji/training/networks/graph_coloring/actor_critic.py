@@ -18,7 +18,6 @@ from typing import Optional, Sequence
 import chex
 import haiku as hk
 import jax.numpy as jnp
-import jax.tree_util as jtree
 
 from jumanji.environments.logic.graph_coloring import GraphColoring, Observation
 from jumanji.training.networks.actor_critic import (
@@ -217,7 +216,9 @@ class GraphColoringTorso(hk.Module):
 
             node_embeddings = new_node_embeddings
 
-        current_node_embeddings = jnp.take(node_embeddings, observation.current_node_index, axis=1)
+        current_node_embeddings = jnp.take(
+            node_embeddings, observation.current_node_index, axis=1
+        )
         new_embedding = TransformerBlock(
             num_heads=self.transformer_num_heads,
             key_size=self.transformer_key_size,
