@@ -109,7 +109,7 @@ class Tetris(Environment[State]):
     def _calculate_action_mask(
         self, grid_padded: chex.Array, tetrominoe_index: int
     ) -> chex.Array:
-        """Calculate the Mask for Legal Actions in the Game.
+        """Calculate the mask for legal actions in the game.
 
         Args:
             grid_padded: The container where the game takes place.
