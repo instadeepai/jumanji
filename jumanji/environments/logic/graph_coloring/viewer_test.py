@@ -16,28 +16,27 @@ import os
 
 import jax.numpy as jnp
 import jax.random as random
+import matplotlib.animation
 import matplotlib.pyplot as plt
+import pytest
 
 from jumanji.environments.logic.graph_coloring import GraphColoring
-from jumanji.environments.logic.graph_coloring.viewer import GraphColoringViewer
 
 
-def test_render(graph_coloring: GraphColoring) -> None:
+def test_render(monkeypatch: pytest.MonkeyPatch, graph_coloring: GraphColoring) -> None:
+    """Check that the render method builds the figure but does not display it."""
+    monkeypatch.setattr(plt, "show", lambda fig: None)
     key = random.PRNGKey(0)
     state, _ = graph_coloring.reset(key)
-    num_nodes, _ = graph_coloring.generator.specs()
 
-    viewer = GraphColoringViewer(num_nodes)
-    viewer.render(state)
-
-    plt.show()
+    graph_coloring.render(state)
+    graph_coloring.close()
 
 
 def test_animate(graph_coloring: GraphColoring) -> None:
-
+    """Check that the animation method creates the animation correctly and can save to a gif."""
     key = random.PRNGKey(0)
     state, _ = graph_coloring.reset(key)
-    num_nodes, _ = graph_coloring.generator.specs()
 
     num_steps = 5
     states = [state]
@@ -47,31 +46,14 @@ def test_animate(graph_coloring: GraphColoring) -> None:
         states.append(new_state)
         state = new_state
 
-    viewer = GraphColoringViewer(num_nodes)
-    viewer.animate(states, interval=500)
-    plt.show()
-
-
-def test_save_render(graph_coloring: GraphColoring) -> None:
-
-    key = random.PRNGKey(0)
-    state, _ = graph_coloring.reset(key)
-    num_nodes, _ = graph_coloring.generator.specs()
-
-    viewer = GraphColoringViewer(num_nodes)
-
-    save_path = "render_test.png"
-    viewer.render(state, save_path=save_path)
-
-    assert os.path.exists(save_path)
-    os.remove(save_path)
+    animation = graph_coloring.animate(states, interval=500)
+    assert isinstance(animation, matplotlib.animation.Animation)
 
 
 def test_save_animation(graph_coloring: GraphColoring) -> None:
 
     key = random.PRNGKey(0)
     state, _ = graph_coloring.reset(key)
-    num_nodes, _ = graph_coloring.generator.specs()
 
     num_steps = 5
     states = [state]
@@ -81,10 +63,8 @@ def test_save_animation(graph_coloring: GraphColoring) -> None:
         states.append(new_state)
         state = new_state
 
-    viewer = GraphColoringViewer(num_nodes)
-
     save_path = "animation_test.gif"
-    viewer.animate(states, interval=500, save_path=save_path)
+    graph_coloring.animate(states, interval=500, save_path=save_path)
 
     assert os.path.exists(save_path)
     os.remove(save_path)
