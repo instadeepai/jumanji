@@ -97,10 +97,28 @@ class GraphColoringTorso(hk.Module):
         return embeddings
 
     def __call__(self, observation: Observation) -> chex.Array:
-        # observation.action_mask => colors available
-        # observation.colors => nodes that are colored
-        # node embedding check if it's colored or not
-        # cross attention => for each color true if the node is colored with it
+        """
+        Transforms the observation using a series of transformations.
+
+        The observation is composed of the following components:
+        - observation.action_mask: Represents the colors that are available for the current node.
+        - observation.colors: Represents the colors assigned to each node.
+            Nodes without an assigned color are marked with -1.
+        - observation.current_node_index: Represents the node currently being considered.
+
+        The function first determines which colors are used and which nodes are colored.
+        Then it embeds the colors and nodes, and creates a mask for the adjacency matrix.
+        It further creates two masks to track the relation between colors and nodes.
+        Then the function applies a series of transformer blocks to compute:
+            self-attention on nodes and colors and the cross-attention between nodes and colors.
+        Finally, it extracts the embedding for the current node and computes a new embedding.
+
+        Args:
+            observation: The observation to be transformed.
+
+        Returns:
+            new_embedding: The transformed observation.
+        """
 
         batch_size, num_nodes = observation.colors.shape
         colors_range = jnp.arange(num_nodes)[None]
