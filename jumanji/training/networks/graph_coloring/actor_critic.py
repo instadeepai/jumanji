@@ -217,10 +217,7 @@ class GraphColoringTorso(hk.Module):
 
             node_embeddings = new_node_embeddings
 
-        batch_indices = jnp.arange(node_embeddings.shape[0])
-        current_node_embeddings = node_embeddings[
-            batch_indices, observation.current_node_index
-        ]
+        current_node_embeddings = jnp.take(node_embeddings, observation.current_node_index, axis=1)
         new_embedding = TransformerBlock(
             num_heads=self.transformer_num_heads,
             key_size=self.transformer_key_size,
