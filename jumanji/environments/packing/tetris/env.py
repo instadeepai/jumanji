@@ -112,8 +112,8 @@ class Tetris(Environment[State]):
         """Calculate the mask for legal actions in the game.
 
         Args:
-            grid_padded: The container where the game takes place.
-            tetrominoe: The block that will be placed within the grid_padded.
+            grid_padded: the container where the game takes place.
+            tetromino: the block that will be placed within the grid_padded.
 
         Return:
             action_mask: jnp boolean array of size=(4 x 'self.num_cols').
