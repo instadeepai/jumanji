@@ -67,7 +67,7 @@ class Observation(NamedTuple):
         ones for the filled cells.
     tetrominoe: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
-            directions to move in.
+        orientations and columns to select.
     """
 
     grid: chex.Array  # (num_rows, num_cols)
