@@ -35,8 +35,7 @@ from jumanji.viewer import Viewer
 
 
 class Tetris(Environment[State]):
-    """
-    RL Environment for the game of Tetris.
+    """RL Environment for the game of Tetris.
     The environment has a grid where the player can place tetrominoes.
     The environment has the following characteristics:
 
