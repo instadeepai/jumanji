@@ -104,7 +104,6 @@ def make_network_cnn(
             masked_logits = jnp.where(
                 observation.action_mask, output, jnp.finfo(jnp.float32).min
             ).reshape(observation.action_mask.shape[0], -1)
-
             return masked_logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
