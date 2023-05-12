@@ -262,10 +262,16 @@ class GraphColoring(Environment[State]):
     def _get_valid_actions(self, state: State) -> chex.Array:
         """Returns a boolean array indicating the valid colors for the current node."""
         num_nodes, percent_connected = self.generator.specs()
+
+        # Create a boolean array of size (num_nodes + 1) set to True.
+        # The extra element is to accommodate for the -1 index
+        # which represents nodes that have not been colored yet.
         valid_actions = jnp.ones(num_nodes + 1, dtype=bool)
         row = state.adj_matrix[state.current_node_index, :]
         action_mask = jnp.where(row, state.colors, -1)
         valid_actions = valid_actions.at[action_mask].set(False)
+
+        # Exclude the last element (which corresponds to -1 index)
         return valid_actions[:-1]
 
     def render(self, state: State) -> Optional[NDArray]:
