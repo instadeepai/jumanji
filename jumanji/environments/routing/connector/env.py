@@ -74,8 +74,8 @@ class Connector(Environment[State]):
             each pair of points that have not connected receives a penalty reward of -0.03.
 
     - episode termination:
-        * all agents either can't move (no available actions) or have connected to their target.
-        * the time limit is reached.
+        - all agents either can't move (no available actions) or have connected to their target.
+        - the time limit is reached.
 
     - state: State:
         - key: jax PRNG key used to randomly spawn agents and targets.

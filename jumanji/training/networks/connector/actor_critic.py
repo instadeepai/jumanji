@@ -89,11 +89,11 @@ def process_grid(grid: chex.Array, num_agents: jnp.int32) -> chex.Array:
             | (agent_grid == agent_target)
             | (agent_grid == agent_pos)
         )
-        # only current agent's info as values: 1, 2 or 3
+        # Only current agent's info as values: 1, 2 or 3
         # [G, G, 1]
         agent_channel = jnp.where(agent_mask, agent_grid - 3 * agent_id, 0)
 
-        # collapse all other agent values into just 1, 2 or 3
+        # Collapse all other agent values into just 1, 2 or 3
         offset = AGENT_INITIAL_VALUE
         others_channel = offset + (agent_grid - offset) % 3
         # [G, G, 1]
