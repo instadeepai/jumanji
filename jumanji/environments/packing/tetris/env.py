@@ -159,7 +159,7 @@ class Tetris(Environment[State]):
         Returns:
             state: State corresponding to the new state of the environment,
             timestep: TimeStep corresponding to the first timestep returned by the
-            environment.
+                environment.
         """
         grid_padded = jnp.zeros(
             shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32
