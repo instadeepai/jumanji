@@ -61,8 +61,7 @@ def test_tetris_env_reset(tetris_env: Tetris) -> None:
     assert state.grid_padded.shape[1] == (timestep.observation.grid.shape[1] + 3)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
-    assert_is_jax_array_tree(state)
-    assert_is_jax_array_tree(timestep)
+    assert_is_jax_array_tree(state, timestep)
 
 
 def test_tetris_env_step(tetris_env: Tetris) -> None:
