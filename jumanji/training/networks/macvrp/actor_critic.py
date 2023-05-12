@@ -255,13 +255,13 @@ def make_actor_network_macvrp(
             vehicle_embeddings
         )
 
-        logits = jax.numpy.einsum(
-            "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings
-        )  # (B, V, C+1)
-
         customer_embeddings = hk.Linear(32, name="policy_head_customers")(
             customer_embeddings
         )
+
+        logits = jax.numpy.einsum(
+            "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings
+        )  # (B, V, C+1)
 
         logits = jax.numpy.where(
             observation.action_mask, logits, jax.numpy.finfo(jax.numpy.float32).min
