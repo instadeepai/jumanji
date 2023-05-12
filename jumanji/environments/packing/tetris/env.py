@@ -132,21 +132,20 @@ class Tetris(Environment[State]):
         action_mask = jnp.array(action_mask)
         return jnp.squeeze(action_mask)
 
-    def _rotate(self, rotation_degree: int, tetrominoe_index: int) -> chex.Array:
-        """Calculate the Rotated Tetrominoe Matrix.
+    def _rotate(self, rotation_index: int, tetrominoe_index: int) -> chex.Array:
+        """Calculate the rotated tetromino matrix.
         This function calculates a matrix representation of a rotated "tetrominoe" block,
-        given the desired rotation angle and an index to retrieve the block
+        given the desired rotation index and the tetromino index to retrieve the block
         from a list of tetrominoes.
 
         Args:
-            rotation_degree: The desired rotation angle, which can be 0, 90, 180, or 270 degrees.
-            tetrominoe_index: An index used to retrieve a specific tetrominoe
-            from the 'self.tetrominoes_list'.
+            rotation_index: the desired rotation index, which maps to 0, 90, 180, or 270 degrees.
+            tetrominoe_index: an index used to retrieve a specific tetromino
+                from the 'self.tetrominoes_list'.
 
         Return:
-            rotated_tetrominoe (matrix): chex.array representation of the rotated tetrominoe block.
+            rotated_tetrominoe: array representation of the rotated tetromino block.
         """
-        rotation_index = rotation_degree
         rotated_tetrominoe = self.tetrominoes_list[tetrominoe_index, rotation_index]
         rotated_tetrominoe = jnp.squeeze(rotated_tetrominoe)
         return rotated_tetrominoe
