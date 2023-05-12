@@ -29,12 +29,14 @@ class State:
     adj_matrix: adjacency matrix used to represent the graph.
     colors: array giving the color index of each node.
     current_node_index: current node being colored.
+    action_mask: binary mask indicating the validity of assigning a color to the current node.
     key: random key used for generating random numbers at each step.
     """
 
     adj_matrix: chex.Array  # (num_nodes, num_nodes)
     colors: chex.Array  # (num_nodes,)
     current_node_index: chex.Numeric  # ()
+    action_mask: chex.Array  # (num_colors,)
     key: chex.PRNGKey  # (2,)
 
 

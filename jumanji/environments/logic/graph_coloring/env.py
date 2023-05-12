@@ -65,6 +65,8 @@ class GraphColoring(Environment[State]):
             color assigned to each node, -1 if not assigned.
         - current_node_index: jax array (int) with shape (),
             index of the current node.
+        - action_mask: jax array (bool) of shape (num_colors,),
+            indicating which actions are valid in the current state of the environment.
         - key: jax array (uint32) of shape (2,),
             random key used to generate random numbers at each step and for auto-reset.
 
@@ -127,6 +129,7 @@ class GraphColoring(Environment[State]):
             adj_matrix=adj_matrix,
             colors=colors,
             current_node_index=jnp.array(0),
+            action_mask=action_mask,
             key=key,
         )
         obs = Observation(
@@ -154,7 +157,7 @@ class GraphColoring(Environment[State]):
         """
         num_nodes, _ = self.generator.specs()
         # Get the valid actions for the current state.
-        valid_actions = self._get_valid_actions(state)
+        valid_actions = state.action_mask
         # Check if the chosen action is invalid (not in valid_actions).
         invalid_action_taken = jnp.logical_not(valid_actions[action])
 
@@ -180,12 +183,14 @@ class GraphColoring(Environment[State]):
             adj_matrix=state.adj_matrix,
             colors=colors,
             current_node_index=next_node_index,
+            action_mask=valid_actions,
             key=state.key,
         )
+        next_state.action_mask = self._get_valid_actions(next_state)
         obs = Observation(
             adj_matrix=state.adj_matrix,
             colors=colors,
-            action_mask=self._get_valid_actions(next_state),
+            action_mask=next_state.action_mask,
             current_node_index=next_node_index,
         )
         timestep = lax.cond(
