@@ -40,11 +40,10 @@ class Tetris(Environment[State]):
     The environment has the following characteristics:
 
     - observation: `Observation`
-        - grid: jax array (int) representing the current state of the grid.
-            The grid is of shape (num_rows, num_cols).
-        - tetrominoe: jax array (int) representing the current tetrominoe.
-            The shape of the tetrominoe can vary and will be queried
-            from a tetrominoe list.
+        - grid: jax array (int32) of shape (num_rows, num_cols)
+            representing the current state of the grid.
+        - tetrominoe: jax array (int32) of shape (4, 4)
+            representing the current tetrominoe sampled from the tetrominoe list.
         - action_mask: jax array (bool) of shape (4,  num_cols).
             For each tetrominoe there are 4 rotations, each one corresponds
             to a line in the action_mask.
