@@ -16,7 +16,6 @@ import abc
 
 import chex
 import jax
-import numpy as np
 
 from jumanji.environments.routing.macvrp.types import State
 
@@ -26,7 +25,14 @@ class RewardFn(abc.ABC):
         self.num_vehicles = num_vechicles
         self.num_customers = num_customers
         self.map_max = map_max
-        super().__init__()
+        # This is the maximum negative reward that can be given to an agent.
+        self.large_negate_reward = (
+            -2
+            * self.map_max
+            * jax.numpy.sqrt(2)
+            * self.num_customers
+            * self.num_vehicles
+        )
 
     @abc.abstractmethod
     def __call__(
@@ -39,7 +45,7 @@ class RewardFn(abc.ABC):
         """
 
 
-class DenseReward(RewardFn):
+class SparseReward(RewardFn):
     """The negative distance between the current city and the chosen next city to go to length at
     the end of the episode. It also includes the distance to the depot to complete the tour.
     Note that the reward is `-2 * num_nodes * sqrt(2)` if the chosen action is invalid.
@@ -50,16 +56,12 @@ class DenseReward(RewardFn):
         state: State,
         is_done: bool,
     ) -> chex.Numeric:
-        def is_final_timestep(state: State) -> bool:
+        def compute_episode_reward(state: State) -> float:
             return jax.lax.cond(  # type: ignore
                 jax.numpy.any(state.step_count > self.num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
-                lambda state: -2
-                * self.map_max
-                * np.sqrt(2)
-                * self.num_customers
-                * self.num_vehicles,
+                lambda state: self.large_negate_reward,
                 lambda state: -state.vehicles.distances.sum()
                 - state.vehicles.time_penalties.sum(),
                 state,
@@ -68,7 +70,7 @@ class DenseReward(RewardFn):
         # By default, returns the negative distance between the previous and new node.
         reward = jax.lax.select(
             is_done,
-            is_final_timestep(state),
+            compute_episode_reward(state),
             jax.numpy.float32(0),
         )
 

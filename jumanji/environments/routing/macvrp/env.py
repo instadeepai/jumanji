@@ -22,7 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.macvrp.reward import DenseReward, RewardFn
+from jumanji.environments.routing.macvrp.reward import RewardFn, SparseReward
 from jumanji.environments.routing.macvrp.specs import (
     NodeSpec,
     ObservationSpec,
@@ -68,8 +68,7 @@ class MACVRP(Environment[State]):
     Multi-Agent Reinforcement Learning Approach".
     """
 
-    # Use this
-    """Instantiates a `CVRP` environment.
+    """Instantiates a `MACVRP` environment.
 
         Args:
             num_nodes: number of city nodes in the environment. Defaults to 20.
@@ -78,7 +77,7 @@ class MACVRP(Environment[State]):
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
-                Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
+                Implemented options are [`SparseReward`]. Defaults to `DenseReward`.
             viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
         """
 
@@ -86,7 +85,6 @@ class MACVRP(Environment[State]):
         self,
         num_customers: int = 6,
         num_vehicles: int = 2,
-        render_mode: str = "human",
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer] = None,
     ):
@@ -96,7 +94,6 @@ class MACVRP(Environment[State]):
         Args:
             num_customers: number of customer nodes in the environment. Defaults to 20.
             num_vehicles: number of vehicles in the environment. Defaults to 2.
-            render_mode: render mode used by the viewer. Defaults to "human".
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
@@ -135,17 +132,17 @@ class MACVRP(Environment[State]):
             2.0 * jax.numpy.sqrt(2.0) * self.map_max * self.num_customers
         )
 
-        self.reward_fn = reward_fn or DenseReward(
+        self.reward_fn = reward_fn or SparseReward(
             self.num_vehicles, self.num_customers, self.map_max
         )
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or MACVRPViewer(
+        self._viewer = viewer or MACVRPViewer(
             name="MACVRP",
             num_vehicles=self.num_vehicles,
             num_customers=self.num_customers,
             map_max=self.map_max,
-            render_mode=render_mode,
+            render_mode="human",
         )
 
     def __repr__(self) -> str:
@@ -204,13 +201,16 @@ class MACVRP(Environment[State]):
                 (self.num_vehicles, 2 * self.num_customers), dtype=jax.numpy.int16
             ),
             step_count=jax.numpy.ones((), dtype=np.int16),
+            key=jax.random.PRNGKey(0),
         )
 
         timestep = restart(observation=self._state_to_observation(state))
 
         return state, timestep
 
-    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, actions: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 
@@ -394,7 +394,7 @@ class MACVRP(Environment[State]):
         Returns:
             rgb_array: the RGB image of the state as an array.
         """
-        return self._env_viewer.render(state)
+        return self._viewer.render(state)
 
     def animate(
         self,
@@ -413,7 +413,7 @@ class MACVRP(Environment[State]):
         Returns:
             animation that can export to gif, mp4, or render with HTML.
         """
-        return self._env_viewer.animate(states, interval, save_path)
+        return self._viewer.animate(states, interval, save_path)
 
     def _update_state(self, state: State, actions: chex.Array) -> State:
         """
@@ -493,6 +493,7 @@ class MACVRP(Environment[State]):
             ),
             step_count=state.step_count + 1,
             order=order,
+            key=state.key,
         )
 
     def _state_to_observation(self, state: State) -> Observation:

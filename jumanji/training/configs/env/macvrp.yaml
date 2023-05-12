@@ -11,7 +11,7 @@ network:
 training:
     num_epochs: 10
     num_learner_steps_per_epoch: 200
-    n_steps: 10
+    n_steps: 15
     total_batch_size: 32 # 128
 
 evaluation:
@@ -20,8 +20,8 @@ evaluation:
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.99
-    bootstrapping_factor: 0.95
+    discount_factor: 1.0
+    bootstrapping_factor: 1.00
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01

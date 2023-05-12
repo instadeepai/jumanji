@@ -27,15 +27,16 @@ def compute_time_penalties(
     early_coefs: chex.Array,
     late_coefs: chex.Array,
 ) -> chex.Array:
-    """Calculate the time penalties for this step."""
+    """Calculate the time penalties for this step.
+    The time penalties are calculated as the sum of the early and late penalties.
+    The early penalty is calculated as the difference between the local time and the window
+        start time multiplied by the early coefficient. The late penalty is calculated as the
+        difference between the window end time and the local time multiplied by the late
+        coefficient.
+    The early and late penalties are only calculated if the local time is outside the window.
+    If the local time is inside the window, the early and late penalties are zero.
 
-    # Calculate the time penalties for this step.
-    # The time penalties are calculated as the sum of the early and late penalties.
-    # The early penalty is calculated as the difference between the local time and the window
-    # start time multiplied by the early coefficient. The late penalty is calculated as the
-    # difference between the window end time and the local time multiplied by the late coefficient.
-    # The early and late penalties are only calculated if the local time is outside the window.
-    # If the local time is inside the window, the early and late penalties are zero.
+    """
     early_penalty = jax.numpy.where(
         local_times < window_start,
         (window_start - local_times) * early_coefs,
