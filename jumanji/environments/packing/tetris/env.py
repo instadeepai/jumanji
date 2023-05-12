@@ -45,11 +45,11 @@ class Tetris(Environment[State]):
         - tetrominoe: jax array (int32) of shape (4, 4)
             representing the current tetrominoe sampled from the tetrominoe list.
         - action_mask: jax array (bool) of shape (4,  num_cols).
-            For each tetrominoe there are 4 rotations, each one corresponds
+            For each tetromino there are 4 rotations, each one corresponds
             to a line in the action_mask.
             Mask of the joint action space: True if the action
             (x_position and rotation degree) is feasible
-            for the current tetrominoe and grid state.
+            for the current tetromino and grid state.
     - action: `Tuple`
         - x_position: int between 0 and num_cols - 1 (included).
         - rotation_degree: the degree to rotate the tetromino (0, 90, 180, or 270).
