@@ -6,7 +6,7 @@
 
 We provide here a Jax JIT-able implementation of the game Tetris. Tetris is a popular single-player game that is played on a 2D grid by fitting falling blocks of various Tetrominoes together to create horizontal lines without any gaps. As each line is completed, it disappears, and the player earns points. If the stack of blocks reaches the top of the game grid, the game ends. The objective of Tetris is to score as many points as possible before the game ends, by clearing as many lines as possible. Tetris consists of 7 types of Tetrominoes, which are shapes that represent the letters "I", "O", "S", "Z", "L", "J", and "T" as shown in the image below.
 <p align="center">
-    <img src="https://www.researchgate.net/publication/276133486/figure/fig1/AS:1086774763888648@1636118703157/The-standard-naming-convention-for-the-seven-Tetrominoes.jpg" width="500"/>
+    <img src="../img/tetrominoes.png" width="500"/>
 </p>
 
 ## Observation
