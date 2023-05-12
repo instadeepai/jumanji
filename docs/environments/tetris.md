@@ -1,4 +1,4 @@
-# 2048 Environment
+# Tetris Environment
 
 <p align="center">
     <img src="../env_anim/tetris.gif" width="500"/>
