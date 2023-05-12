@@ -51,13 +51,15 @@ class Tetris(Environment[State]):
             (x_position and rotation degree) is feasible
             for the current tetromino and grid state.
     - action: `Tuple`
+        - rotation_index: The degree index determines the rotation of the
+            tetromino: 0 corresponds to 0 degrees, 1 corresponds to 90 degrees,
+            2 corresponds to 180 degrees, and 3 corresponds to 270 degrees.
         - x_position: int between 0 and num_cols - 1 (included).
-        - rotation_degree: the degree to rotate the tetromino (0, 90, 180, or 270).
 
     - reward:
         The reward is 0 if no lines was cleared by the action and a convex function of the number
         of cleared lines otherwise.
-        
+
     - episode termination:
         if the tetromino cannot be placed anymore (i.e., it hits the top of the grid).
 
@@ -200,13 +202,13 @@ class Tetris(Environment[State]):
 
         Args:
             state: `State` object containing the dynamics of the environment.
-            action: `Array` containing the x_position and rotation_index of the tetrominoe.
+            action: `chex.Array` containing the rotation_index and x_position of the tetrominoe.
 
         Returns:
             next_state: State corresponding to the next state of the environment,
             next_timestep: TimeStep corresponding to the timestep returned by the environment.
         """
-        x_position, rotation_degree = action
+        rotation_degree, x_position = action
         grid_padded = state.grid_padded
         action_mask = state.action_mask
         tetrominoe_index = state.tetrominoe_index

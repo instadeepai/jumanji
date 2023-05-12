@@ -28,7 +28,7 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ]
         ```
 
-- `tetrominoe`: Jax array (bool) of shape `(4, 4)`, where True indicates a filled cell and False indicates an empty cell.
+- `tetrominoe`: Jax array (int32) of shape `(4, 4)`, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.
 
     + Here is an example of an **I** tetrominoe:
         ```
