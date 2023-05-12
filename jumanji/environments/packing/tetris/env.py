@@ -53,10 +53,13 @@ class Tetris(Environment[State]):
     - action: `Tuple`
         - x_position: int between 0 and num_cols - 1 (included).
         - rotation_degree: the degree to rotate the tetromino (0, 90, 180, or 270).
+
     - reward:
-        The reward is given based on the number of lines cleared by the player.
+        The reward is 0 if no lines was cleared by the action and a convex function of the number
+        of cleared lines otherwise.
+        
     - episode termination:
-        if the tetrominoe cannot be placed anymore (i.e., it hits the top of the grid).
+        if the tetromino cannot be placed anymore (i.e., it hits the top of the grid).
 
     ```python
     from jumanji.environments import Tetris
