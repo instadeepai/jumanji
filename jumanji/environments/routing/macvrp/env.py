@@ -17,11 +17,14 @@ from typing import Optional, Sequence, Tuple
 import chex
 import jax
 import matplotlib
-import numpy as np
 from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.routing.macvrp.generator import (
+    Generator,
+    UniformRandomGenerator,
+)
 from jumanji.environments.routing.macvrp.reward import RewardFn, SparseReward
 from jumanji.environments.routing.macvrp.types import (
     Node,
@@ -36,8 +39,6 @@ from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
     compute_distance,
     compute_time_penalties,
-    generate_problem,
-    get_init_settings,
 )
 from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -77,8 +78,7 @@ class MACVRP(Environment[State]):
 
     def __init__(
         self,
-        num_customers: int = 6,
-        num_vehicles: int = 2,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer] = None,
     ):
@@ -86,8 +86,9 @@ class MACVRP(Environment[State]):
         Instantiates a `MACVRP` environment.
 
         Args:
-            num_customers: number of customer nodes in the environment. Defaults to 20.
-            num_vehicles: number of vehicles in the environment. Defaults to 2.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are [`UniformRandomGenerator`].
+                Defaults to `UniformRandomGenerator` with `num_customers=20` and `num_vehicles=2`.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
@@ -96,51 +97,48 @@ class MACVRP(Environment[State]):
                 mode.
         """
 
-        self.num_customers = num_customers
-        self.num_vehicles = num_vehicles
-
-        # Scenario are taken from the paper
-
-        # From the paper: All distances are represented by Euclidean distances in the plane,
-        # and the speeds of all  vehicles are assumed to be identical (i.e., it takes one
-        # unit of time to travel one unit of distance)
-        self.speed = 1
-
-        # Note: The time window detail could not be found in the paper for
-        # the 20, 50 and 150 customer scenarios. We use the 150 customer scenario's
-        # time window of 20 for them.
-        self.time_window_length = 20
-
-        (
-            self.map_max,
-            self.max_capacity,
-            self.max_start_window,
-            self.early_coef_rand,
-            self.late_coef_rand,
-            self.customer_demand_max,
-        ) = get_init_settings(num_customers, num_vehicles)
-
-        self.max_end_window = self.max_start_window + self.time_window_length
-
-        self.max_local_time = (
-            2.0 * jax.numpy.sqrt(2.0) * self.map_max * self.num_customers
+        # Create generator used for generating new environments
+        self._generator = generator or UniformRandomGenerator(
+            num_customers=6,
+            num_vehicles=2,
         )
 
-        self.reward_fn = reward_fn or SparseReward(
-            self.num_vehicles, self.num_customers, self.map_max
+        self._max_capacity = self._generator._max_capacity
+        self._map_max = self._generator._map_max
+        self._customer_demand_max = self._generator._customer_demand_max
+        self._max_start_window = self._generator._max_start_window
+        self._max_end_window = self._generator._max_end_window
+        self._time_window_length = self._generator._time_window_length
+        self._early_coef_rand = self._generator._early_coef_rand
+        self._late_coef_rand = self._generator._late_coef_rand
+        self._num_customers = self._generator._num_customers
+        self._num_vehicles = self._generator._num_vehicles
+
+        # Create reward function used for computing rewards
+        self._reward_fn = reward_fn or SparseReward(
+            self._num_vehicles, self._num_customers, self._map_max
         )
 
         # Create viewer used for rendering
         self._viewer = viewer or MACVRPViewer(
             name="MACVRP",
-            num_vehicles=self.num_vehicles,
-            num_customers=self.num_customers,
-            map_max=self.map_max,
+            num_vehicles=self._num_vehicles,
+            num_customers=self._num_customers,
+            map_max=self._map_max,
             render_mode="human",
         )
 
+        self._max_local_time = (
+            2.0 * jax.numpy.sqrt(2.0) * self._map_max * self._num_customers
+        )
+
+        # From the paper: All distances are represented by Euclidean distances in the plane,
+        # and the speeds of all  vehicles are assumed to be identical (i.e., it takes one
+        # unit of time to travel one unit of distance)
+        self._speed = 1
+
     def __repr__(self) -> str:
-        return f"MACVRP(num_customers={self.num_customers}, num_vehicles={self.num_vehicles})"
+        return f"MACVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """
@@ -154,49 +152,8 @@ class MACVRP(Environment[State]):
              timestep: TimeStep object corresponding to the first timestep returned by the
                 environment.
         """
-        # This split is uncessary, but it makes the code more readable.
-        problem_key, _ = jax.random.split(key)
 
-        total_capacity = self.max_capacity * self.num_vehicles
-        (
-            node_coordinates,
-            node_demands,
-            window_start_times,
-            window_end_times,
-            early_coefs,
-            late_coefs,
-        ) = generate_problem(
-            problem_key,
-            self.num_customers,
-            total_capacity,
-            self.map_max,
-            self.customer_demand_max,
-            self.max_start_window,
-            self.time_window_length,
-            self.early_coef_rand,
-            self.late_coef_rand,
-        )
-
-        state = State(
-            nodes=Node(coordinates=node_coordinates, demands=node_demands),
-            windows=TimeWindow(start=window_start_times, end=window_end_times),
-            coeffs=PenalityCoeff(early=early_coefs, late=late_coefs),
-            vehicles=StateVehicle(
-                positions=np.int16([DEPOT_IDX] * self.num_vehicles),
-                local_times=jax.numpy.zeros(self.num_vehicles, dtype=jax.numpy.float32),
-                capacities=jax.numpy.ones(self.num_vehicles, dtype=jax.numpy.int16)
-                * self.max_capacity,
-                distances=jax.numpy.zeros(self.num_vehicles, dtype=jax.numpy.float32),
-                time_penalties=jax.numpy.zeros(
-                    self.num_vehicles, dtype=jax.numpy.float32
-                ),
-            ),
-            order=jax.numpy.zeros(
-                (self.num_vehicles, 2 * self.num_customers), dtype=jax.numpy.int16
-            ),
-            step_count=jax.numpy.ones((), dtype=np.int16),
-            key=jax.random.PRNGKey(0),
-        )
+        state = self._generator(key)
 
         timestep = restart(observation=self._state_to_observation(state))
 
@@ -217,6 +174,7 @@ class MACVRP(Environment[State]):
                 as well as the timestep to be observed.
         """
         state = self._update_state(state, actions)
+
         timestep = self._state_to_timestep(state)
         return state, timestep
 
@@ -230,114 +188,114 @@ class MACVRP(Environment[State]):
         """
 
         node_coordinates = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1, 2),
+            shape=(self._num_vehicles, self._num_customers + 1, 2),
             minimum=0.0,
-            maximum=self.map_max,
+            maximum=self._map_max,
             dtype=jax.numpy.float32,
             name="node_coordinates",
         )
 
         node_demands = specs.BoundedArray(
             shape=(
-                self.num_vehicles,
-                self.num_customers + 1,
+                self._num_vehicles,
+                self._num_customers + 1,
             ),
             minimum=0,
-            maximum=self.max_capacity,
+            maximum=self._max_capacity,
             dtype=jax.numpy.int16,
             name="node_demands",
         )
 
         node_time_windows_start = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1),
+            shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
-            maximum=self.max_end_window,
+            maximum=self._max_end_window,
             dtype=jax.numpy.float32,
             name="node_time_windows_start",
         )
 
         node_time_windows_end = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1),
+            shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
-            maximum=self.max_end_window,
+            maximum=self._max_end_window,
             dtype=jax.numpy.float32,
             name="node_time_windows_end",
         )
 
         node_penalty_coeffs_start = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1),
+            shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
-            maximum=self.late_coef_rand[-1],
+            maximum=self._late_coef_rand[-1],
             dtype=jax.numpy.float32,
             name="node_penalty_coeffs_start",
         )
 
         node_penalty_coeffs_end = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1),
+            shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
-            maximum=self.late_coef_rand[-1],
+            maximum=self._late_coef_rand[-1],
             dtype=jax.numpy.float32,
             name="node_penalty_coeffs_end",
         )
 
         other_vehicles_positions = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_vehicles - 1),
+            shape=(self._num_vehicles, self._num_vehicles - 1),
             minimum=0,
-            maximum=self.num_customers + 1,
+            maximum=self._num_customers + 1,
             dtype=jax.numpy.int16,
             name="other_vehicles_positions",
         )
 
         other_vehicles_local_times = specs.BoundedArray(
             shape=(
-                self.num_vehicles,
-                self.num_vehicles - 1,
+                self._num_vehicles,
+                self._num_vehicles - 1,
             ),
             minimum=0.0,
-            maximum=self.max_local_time,
+            maximum=self._max_local_time,
             dtype=jax.numpy.float32,
             name="other_vehicles_local_times",
         )
 
         other_vehicles_capacities = specs.BoundedArray(
             shape=(
-                self.num_vehicles,
-                self.num_vehicles - 1,
+                self._num_vehicles,
+                self._num_vehicles - 1,
             ),
             minimum=0,
-            maximum=self.max_capacity,
+            maximum=self._max_capacity,
             dtype=jax.numpy.int16,
             name="other_vehicles_capacities",
         )
 
         vehicle_position = specs.BoundedArray(
-            shape=(self.num_vehicles,),
+            shape=(self._num_vehicles,),
             minimum=0,
-            maximum=self.num_customers + 1,
+            maximum=self._num_customers + 1,
             dtype=jax.numpy.int16,
             name="vehicle_position",
         )
 
         vehicle_local_time = specs.BoundedArray(
-            shape=(self.num_vehicles,),
+            shape=(self._num_vehicles,),
             minimum=0.0,
-            maximum=self.max_local_time,
+            maximum=self._max_local_time,
             dtype=jax.numpy.float32,
             name="vehicle_local_time",
         )
 
         vehicle_capacity = specs.BoundedArray(
-            shape=(self.num_vehicles,),
+            shape=(self._num_vehicles,),
             minimum=0,
-            maximum=self.max_capacity,
+            maximum=self._max_capacity,
             dtype=jax.numpy.int16,
             name="vehicle_capacity",
         )
 
         action_mask = specs.BoundedArray(
-            shape=(self.num_vehicles, self.num_customers + 1),
+            shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0,
-            maximum=self.num_customers + 1,
+            maximum=self._num_customers + 1,
             dtype=jax.numpy.bool_,
             name="action_mask",
         )
@@ -403,7 +361,11 @@ class MACVRP(Environment[State]):
         """
 
         return specs.BoundedArray(
-            (self.num_vehicles,), jax.numpy.int16, 0, self.num_customers + 1, "actions"
+            (self._num_vehicles,),
+            jax.numpy.int16,
+            0,
+            self._num_customers + 1,
+            "actions",
         )
 
     def render(self, state: State) -> Optional[NDArray]:
@@ -463,7 +425,7 @@ class MACVRP(Environment[State]):
         # Zero node selections where more than one vehicle selected a valid conditional
         # action to visit the same node.
         values, unique_indices = jax.numpy.unique(
-            next_nodes, return_index=True, size=self.num_vehicles
+            next_nodes, return_index=True, size=self._num_vehicles
         )
         new_nodes = jax.numpy.zeros(len(next_nodes), dtype=next_nodes.dtype)
         new_nodes = new_nodes.at[unique_indices].set(values)
@@ -474,7 +436,7 @@ class MACVRP(Environment[State]):
         step_travel_distances = compute_distance(start_coords, end_coords)
         vehicle_distances = state.vehicles.distances + step_travel_distances
         vehicle_local_times = (
-            state.vehicles.local_times + step_travel_distances / self.speed
+            state.vehicles.local_times + step_travel_distances / self._speed
         )
 
         # Update the vehicle time penalties.
@@ -489,7 +451,7 @@ class MACVRP(Environment[State]):
         # Calculate the new vehicle capacities. Restore vehicle capacities at depot.
         vehicle_capacities = jax.numpy.where(
             next_nodes == DEPOT_IDX,
-            self.max_capacity,
+            self._max_capacity,
             state.vehicles.capacities - state.nodes.demands[next_nodes],
         )
 
@@ -530,22 +492,22 @@ class MACVRP(Environment[State]):
         """
 
         other_vehicles_positions = jax.numpy.zeros(
-            (self.num_vehicles, self.num_vehicles - 1), dtype=jax.numpy.int16
+            (self._num_vehicles, self._num_vehicles - 1), dtype=jax.numpy.int16
         )
 
         other_vehicles_local_times = jax.numpy.zeros(
-            (self.num_vehicles, self.num_vehicles - 1)
+            (self._num_vehicles, self._num_vehicles - 1)
         )
         other_vehicles_capacities = jax.numpy.zeros(
-            (self.num_vehicles, self.num_vehicles - 1), dtype=jax.numpy.int16
+            (self._num_vehicles, self._num_vehicles - 1), dtype=jax.numpy.int16
         )
 
         action_mask = jax.numpy.ones(
-            (self.num_vehicles, self.num_customers + 1), dtype=jax.numpy.bool_
+            (self._num_vehicles, self._num_customers + 1), dtype=jax.numpy.bool_
         )
 
         # Generate the other vehicle coordinates
-        for i in range(self.num_vehicles):
+        for i in range(self._num_vehicles):
             other_vehicles_positions = other_vehicles_positions.at[i].set(
                 jax.numpy.concatenate(
                     [
@@ -585,17 +547,17 @@ class MACVRP(Environment[State]):
         return Observation(
             nodes=Node(
                 coordinates=jax.numpy.tile(
-                    state.nodes.coordinates, (self.num_vehicles, 1, 1)
+                    state.nodes.coordinates, (self._num_vehicles, 1, 1)
                 ),
-                demands=jax.numpy.tile(state.nodes.demands, (self.num_vehicles, 1)),
+                demands=jax.numpy.tile(state.nodes.demands, (self._num_vehicles, 1)),
             ),
             windows=TimeWindow(
-                start=jax.numpy.tile(state.windows.start, (self.num_vehicles, 1)),
-                end=jax.numpy.tile(state.windows.end, (self.num_vehicles, 1)),
+                start=jax.numpy.tile(state.windows.start, (self._num_vehicles, 1)),
+                end=jax.numpy.tile(state.windows.end, (self._num_vehicles, 1)),
             ),
             coeffs=PenalityCoeff(
-                early=jax.numpy.tile(state.coeffs.early, (self.num_vehicles, 1)),
-                late=jax.numpy.tile(state.coeffs.late, (self.num_vehicles, 1)),
+                early=jax.numpy.tile(state.coeffs.early, (self._num_vehicles, 1)),
+                late=jax.numpy.tile(state.coeffs.late, (self._num_vehicles, 1)),
             ),
             other_vehicles=ObsVehicle(
                 positions=other_vehicles_positions,
@@ -624,8 +586,8 @@ class MACVRP(Environment[State]):
         observation = self._state_to_observation(state)
         is_done = (state.nodes.demands.sum() == 0) & (
             state.vehicles.positions == DEPOT_IDX
-        ).all() | jax.numpy.any(state.step_count > self.num_customers * 2)
-        reward = self.reward_fn(state, is_done)
+        ).all() | jax.numpy.any(state.step_count > self._num_customers * 2)
+        reward = self._reward_fn(state, is_done)
 
         timestep: TimeStep = jax.lax.cond(
             is_done,

@@ -15,9 +15,14 @@
 import pytest
 
 from jumanji.environments.routing.macvrp.env import MACVRP
+from jumanji.environments.routing.macvrp.generator import UniformRandomGenerator
 
 
 @pytest.fixture
 def macvrp_env() -> MACVRP:
     """Instantiates a default MACVRP environment."""
-    return MACVRP(num_vehicles=2, num_customers=20)
+
+    # Create the generator
+    generator = UniformRandomGenerator(num_vehicles=2, num_customers=20)
+
+    return MACVRP(generator=generator)

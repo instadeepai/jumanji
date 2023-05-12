@@ -272,4 +272,4 @@ def get_init_settings(
         return get_150_customer_init_settings(num_vehicles)
 
     else:
-        raise ValueError("num_customers must be one of [20, 50, 100, 150]")
+        raise ValueError("num_customers must be one of [6, 20, 50, 100, 150]")

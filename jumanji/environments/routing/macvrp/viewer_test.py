@@ -32,15 +32,15 @@ def test_render(macvrp_env: MACVRP) -> None:
 
     viewer = MACVRPViewer(
         name="MACVRP",
-        num_vehicles=macvrp_env.num_vehicles,
-        num_customers=macvrp_env.num_customers,
-        map_max=macvrp_env.map_max,
+        num_vehicles=macvrp_env._num_vehicles,
+        num_customers=macvrp_env._num_customers,
+        map_max=macvrp_env._map_max,
         render_mode="human",
     )
 
     # Starting position is depot, new action to visit first node
     new_actions = jax.numpy.array(
-        jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+        jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
     )
 
     new_state, next_timestep = step_fn(state, new_actions)
@@ -69,7 +69,7 @@ def test_animation(macvrp_env: MACVRP) -> None:
                 dtype=np.int16,
             )
 
-        subkeys = jax.random.split(key, macvrp_env.num_vehicles)
+        subkeys = jax.random.split(key, macvrp_env._num_vehicles)
         return select_action(subkeys, observation.action_mask)
 
     key = jax.random.PRNGKey(1)
@@ -78,9 +78,9 @@ def test_animation(macvrp_env: MACVRP) -> None:
     state, timestep = reset_fn(key)
     viewer = MACVRPViewer(
         name="MACVRP",
-        num_vehicles=macvrp_env.num_vehicles,
-        num_customers=macvrp_env.num_customers,
-        map_max=macvrp_env.map_max,
+        num_vehicles=macvrp_env._num_vehicles,
+        num_customers=macvrp_env._num_customers,
+        map_max=macvrp_env._map_max,
         render_mode="human",
     )
 

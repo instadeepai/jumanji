@@ -44,7 +44,7 @@ class TestEnvironmentSpec:
         assert isinstance(state, State)
 
         # Initial position is at depot, so current capacity is max capacity
-        assert jax.numpy.all(state.vehicles.capacities == macvrp_env.max_capacity)
+        assert jax.numpy.all(state.vehicles.capacities == macvrp_env._max_capacity)
 
         # # All vechicles are at the depot
         assert jax.numpy.all(state.vehicles.positions == DEPOT_IDX)
@@ -54,14 +54,14 @@ class TestEnvironmentSpec:
 
         # Check that the time windows are valid.
         assert jax.numpy.all(0 < state.windows.start)
-        assert jax.numpy.all(state.windows.start < macvrp_env.max_start_window)
+        assert jax.numpy.all(state.windows.start < macvrp_env._max_start_window)
         assert jax.numpy.all(state.windows.end > state.windows.start)
 
         # Check that the early_coefs and late_coefs are valid.
-        assert jax.numpy.all(macvrp_env.early_coef_rand[0] <= state.coeffs.early)
-        assert jax.numpy.all(state.coeffs.early < macvrp_env.early_coef_rand[1])
-        assert jax.numpy.all(macvrp_env.late_coef_rand[0] <= state.coeffs.late)
-        assert jax.numpy.all(state.coeffs.late < macvrp_env.late_coef_rand[1])
+        assert jax.numpy.all(macvrp_env._early_coef_rand[0] <= state.coeffs.early)
+        assert jax.numpy.all(state.coeffs.early < macvrp_env._early_coef_rand[1])
+        assert jax.numpy.all(macvrp_env._late_coef_rand[0] <= state.coeffs.late)
+        assert jax.numpy.all(state.coeffs.late < macvrp_env._late_coef_rand[1])
 
         assert_is_jax_array_tree(state)
 
@@ -77,18 +77,18 @@ class TestEnvironmentSpec:
         assert timestep.first()
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
         step_fn = jax.jit(chex.assert_max_traces(macvrp_env.step, n=1))
         new_state, next_timestep = step_fn(state, new_actions)
 
-        # # Check that the state has changed
+        # Check that the state has changed
         assert not jax.numpy.array_equal(
             new_state.vehicles.time_penalties, state.vehicles.distances
         )  # Some time penalties are 0
 
-        for i in range(macvrp_env.num_vehicles):
+        for i in range(macvrp_env._num_vehicles):
             assert not jax.numpy.array_equal(
                 new_state.vehicles.positions[i], state.vehicles.positions[i]
             )
@@ -108,12 +108,12 @@ class TestEnvironmentSpec:
 
         # Take another set of valid actions.
         new_actions: list = []
-        node_i = macvrp_env.num_vehicles
-        while len(new_actions) < macvrp_env.num_vehicles:
+        node_i = macvrp_env._num_vehicles
+        while len(new_actions) < macvrp_env._num_vehicles:
             if new_state.nodes.demands[node_i] > 0:
                 new_actions.append(node_i)
             node_i += 1
-            if node_i >= macvrp_env.num_customers:
+            if node_i >= macvrp_env._num_customers:
                 raise ValueError(
                     "There is not enough customer demand for a second action.."
                 )
@@ -157,7 +157,7 @@ class TestEnvironmentSpec:
 
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
         new_state = _update_state_fn(state, new_actions)
@@ -211,7 +211,7 @@ class TestEnvironmentSpec:
 
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env.num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
         new_state = _update_state_fn(state, new_actions)
@@ -263,7 +263,7 @@ class TestEnvironmentSpec:
                     dtype=np.int16,
                 )
 
-            subkeys = jax.random.split(key, macvrp_env.num_vehicles)
+            subkeys = jax.random.split(key, macvrp_env._num_vehicles)
             return select_action(subkeys, observation.action_mask)
 
         check_env_does_not_smoke(macvrp_env, select_actions)
