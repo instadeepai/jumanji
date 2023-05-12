@@ -131,7 +131,7 @@ def get_6_customer_init_settings(
         raise ValueError("num_vehicles must be 2 or 3 for num_customers=6")
     """
         This example is not part of the original problem, but servers as an
-            easy debugging environment.
+            simpler environment to experiment with.
     """
 
     map_max = 10
