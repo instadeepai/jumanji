@@ -89,7 +89,7 @@ class Tetris(Environment[State]):
         self.num_cols = num_cols
         self.padded_num_rows = num_rows + 3
         self.padded_num_cols = num_cols + 3
-        self.tetrominoes_list = jnp.array(TETROMINOES_LIST)
+        self.tetrominoes_list = jnp.array(TETROMINOES_LIST, jnp.int32)
         self.reward_list = jnp.array(REWARD_LIST, float)
 
         self._viewer = viewer or TetrisViewer(
