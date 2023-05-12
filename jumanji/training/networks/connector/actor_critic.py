@@ -21,6 +21,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.routing.connector import Connector, Observation
+from jumanji.environments.routing.connector.constants import AGENT_INITIAL_VALUE
 from jumanji.environments.routing.connector.utils import (
     get_path,
     get_position,
@@ -74,25 +75,35 @@ def make_actor_critic_networks_connector(
     )
 
 
-def process_grid(grid: chex.Array, agent_id: chex.Numeric) -> chex.Array:
-    """Concatenates two feature maps: the info of the agent and the info about all other agents
-    in an indiscernible way (to keep permutation equivariance).
-    """
-    agent_path = get_path(agent_id)
-    agent_target = get_target(agent_id)
-    agent_pos = get_position(agent_id)
-    agent_grid = jnp.expand_dims(grid, -1)
-    agent_mask = (
-        (agent_grid == agent_path)
-        | (agent_grid == agent_target)
-        | (agent_grid == agent_pos)
-    )
-    # [G, G, 1]
-    agent_channel = jnp.where(agent_mask, agent_grid, 0)
-    others_channel = jnp.where(agent_mask | (agent_grid == 0), 0, agent_grid)
-    # [G, G, 2]
-    channels = jnp.concatenate([agent_channel, others_channel], axis=-1)
+def process_grid(grid: chex.Array, num_agents: jnp.int32) -> chex.Array:
+    def channel_per_agent(agent_grid: chex.Array, agent_id: jnp.int32) -> chex.Array:
+        """Concatenates two feature maps: the info of the agent and the info about all other agents
+        in an indiscernible way (to keep permutation equivariance).
+        """
+        agent_path = get_path(agent_id)
+        agent_target = get_target(agent_id)
+        agent_pos = get_position(agent_id)
+        agent_grid = jnp.expand_dims(agent_grid, -1)
+        agent_mask = (
+            (agent_grid == agent_path)
+            | (agent_grid == agent_target)
+            | (agent_grid == agent_pos)
+        )
+        # only current agent's info as values: 1, 2 or 3
+        # [G, G, 1]
+        agent_channel = jnp.where(agent_mask, agent_grid - 3 * agent_id, 0)
 
+        # collapse all other agent values into just 1, 2 or 3
+        offset = AGENT_INITIAL_VALUE
+        others_channel = offset + (agent_grid - offset) % 3
+        # [G, G, 1]
+        others_channel = jnp.where(agent_mask | (agent_grid == 0), 0, others_channel)
+        # [G, G, 2]
+        channels = jnp.concatenate([agent_channel, others_channel], axis=-1)
+        return channels
+
+    # (N, G, G, 2)
+    channels = jax.vmap(channel_per_agent, (None, 0))(grid, jnp.arange(num_agents))
     return channels.astype(float)
 
 
@@ -132,11 +143,8 @@ class ConnectorTorso(hk.Module):
         self.env_time_limit = env_time_limit
 
     def __call__(self, observation: Observation) -> chex.Array:
-        agent_ids = jnp.arange(self.num_agents)
-        # (N, B, G, G, 2)
-        grid = jax.vmap(process_grid, (None, 0))(observation.grid, agent_ids)
-        grid = jnp.transpose(grid, (1, 0, 2, 3, 4))  # (B, N, G, G, 2)
-
+        # (B, N, G, G, 2)
+        grid = jax.vmap(process_grid, (0, None))(observation.grid, self.num_agents)
         embeddings = jax.vmap(self.cnn_block)(grid)  # (B, N, H)
         embeddings = self._augment_with_step_count(embeddings, observation.step_count)
 
