@@ -79,8 +79,7 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
     assert next_state.grid_padded.sum() == state.grid_padded.sum() + 4
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
-    assert_is_jax_array_tree(next_state)
-    assert_is_jax_array_tree(next_timestep)
+    assert_is_jax_array_tree(next_state, next_timestep)
 
 
 def test_rotate(tetris_env: Tetris) -> None:
