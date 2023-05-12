@@ -16,8 +16,6 @@
 from typing import Tuple
 
 import chex
-
-# check if jax is installed properly
 import jax
 import jax.numpy as jnp
 
