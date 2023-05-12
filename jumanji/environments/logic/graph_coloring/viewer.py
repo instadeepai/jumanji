@@ -33,6 +33,11 @@ class GraphColoringViewer(Viewer):
     ) -> None:
         self._name = name
         self._num_nodes = num_nodes
+
+        # Set the scale of the graph based on the number of nodes,
+        # so the graph grows (at a decelerating rate) with more nodes.
+        self.node_scale = 5 + int(np.sqrt(self._num_nodes))
+
         colormap_indecies = np.arange(0, 1, 1 / num_nodes)
         colormap = cm.get_cmap("hsv", num_nodes + 1)
         self._color_mapping = []
@@ -50,38 +55,9 @@ class GraphColoringViewer(Viewer):
         ax: Optional[plt.Axes] = None,
     ) -> None:
         self._clear_display()
-
-        node_scale = 5 + int(np.sqrt(self._num_nodes))
-        node_radius = 0.05 * 5 / node_scale
-
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(node_scale, node_scale))
-            plt.title(f"{self._name}")
-        else:
-            fig = ax.figure
-            ax.clear()
-
-        pos = self._spring_layout(state.adj_matrix)
-
-        for i, (x, y) in enumerate(pos):
-            ax.add_artist(
-                plt.Circle(
-                    (x, y), node_radius, color=self._color_mapping[state.colors[i]]
-                )
-            )
-            ax.text(
-                x, y, str(i), color="white", ha="center", va="center", weight="bold"
-            )
-
-        for i in range(self._num_nodes):
-            for j in range(i + 1, self._num_nodes):
-                if state.adj_matrix[i, j]:
-                    ax.plot(
-                        [pos[i][0], pos[j][0]],
-                        [pos[i][1], pos[j][1]],
-                        color=self._color_mapping[i],
-                        linewidth=0.5,
-                    )
+        fig, ax = self._get_fig_ax(ax)
+        self._render_nodes(ax, state)
+        self._render_edges(ax, state)
 
         ax.set_xlim(-0.5, 0.50)
         ax.set_ylim(-0.50, 0.50)
@@ -99,8 +75,7 @@ class GraphColoringViewer(Viewer):
         interval: int = 500,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
-        node_scale = max(5, self._num_nodes // 2)
-        fig, ax = plt.subplots(figsize=(node_scale, node_scale))
+        fig, ax = self._get_fig_ax(ax=None)
         plt.title(f"{self._name}")
 
         def make_frame(state_index: int) -> None:
@@ -209,3 +184,40 @@ class GraphColoringViewer(Viewer):
             pos = np.clip(pos, -1, 1)  # Keep positions within the [-1, 1] range
 
         return [(float(p[0]), float(p[1])) for p in pos]
+
+    def _get_fig_ax(self, ax: Optional[plt.Axes]) -> Tuple[plt.Figure, plt.Axes]:
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(self.node_scale, self.node_scale))
+            plt.title(f"{self._name}")
+        else:
+            fig = ax.figure
+            ax.clear()
+        return fig, ax
+
+    def _render_nodes(self, ax: plt.Axes, state: State) -> None:
+        # Set the radius of the nodes as a fraction of the scale,
+        # so nodes appear smaller when there are more of them.
+        node_radius = 0.05 * 5 / self.node_scale
+
+        pos = self._spring_layout(state.adj_matrix)
+        for i, (x, y) in enumerate(pos):
+            ax.add_artist(
+                plt.Circle(
+                    (x, y), node_radius, color=self._color_mapping[state.colors[i]]
+                )
+            )
+            ax.text(
+                x, y, str(i), color="white", ha="center", va="center", weight="bold"
+            )
+
+    def _render_edges(self, ax: plt.Axes, state: State) -> None:
+        pos = self._spring_layout(state.adj_matrix)
+        for i in range(self._num_nodes):
+            for j in range(i + 1, self._num_nodes):
+                if state.adj_matrix[i, j]:
+                    ax.plot(
+                        [pos[i][0], pos[j][0]],
+                        [pos[i][1], pos[j][1]],
+                        color=self._color_mapping[i],
+                        linewidth=0.5,
+                    )
