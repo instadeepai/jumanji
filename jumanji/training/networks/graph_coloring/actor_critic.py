@@ -104,7 +104,7 @@ class GraphColoringTorso(hk.Module):
         # cross attention => for each color true if the node is colored with it
 
         batch_size, num_nodes = observation.colors.shape
-        colors_range = jnp.arange(num_nodes).reshape(1, -1)
+        colors_range = jnp.arange(num_nodes)[None]
         colors_used = jnp.any(
             observation.colors[..., jnp.newaxis] == colors_range, axis=1
         )
