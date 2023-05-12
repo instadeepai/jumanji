@@ -125,7 +125,6 @@ class Tetris(Environment[State]):
             and the fourth row corresponding to a rotation of 270 degrees.
         """
         all_rotations = self.tetrominoes_list[tetrominoe_index]
-        all_rotations = jnp.squeeze(all_rotations)
         action_mask = [
             utils.tetrominoe_action_mask(grid_padded, all_rotations[i])
             for i in range(4)
