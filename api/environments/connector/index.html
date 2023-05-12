@@ -1181,20 +1181,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.connector.env.Connector.reward_spec" class="md-nav__link">
-    reward_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.connector.env.Connector.discount_spec" class="md-nav__link">
-    discount_spec()
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1348,10 +1334,10 @@ Connector            (<a class="autorefs autorefs-internal" title="jumanji.env.E
 
     <div class="doc doc-contents first">
 
-      <p>The <code>Connector</code> environment is a multi-agent gridworld problem where each agent must connect a
-start to a target. However, when moving through this gridworld the agent leaves an impassable
-trail behind it. Therefore, agents must connect to their targets without overlapping the routes
-taken by any other agent.</p>
+      <p>The <code>Connector</code> environment is a gridworld problem where multiple pairs of points (sets)
+must be connected without overlapping the paths taken by any other set. This is achieved
+by allowing certain points to move to an adjacent cell at each step. However, each time a
+point moves it leaves an impassable trail behind it. The goal is to connect all sets.</p>
 <ul>
 <li>
 <p>observation - <code>Observation</code></p>
@@ -1359,11 +1345,7 @@ taken by any other agent.</p>
 <li>action mask: jax array (bool) of shape (num_agents, 5).</li>
 <li>step_count: jax array (int32) of shape ()
     the current episode step.</li>
-<li>
-<p>grid: jax array (int32) of shape (num_agents, size, size)</p>
-<ul>
-<li>each 2d array (size, size) along axis 0 is the agent's local observation.</li>
-<li>agents have ids from 0 to (num_agents - 1)</li>
+<li>grid: jax array (int32) of shape (grid_size, grid_size)<ul>
 <li>with 2 agents you might have a grid like this:
   4 0 1
   5 0 1
@@ -1372,8 +1354,6 @@ taken by any other agent.</p>
   the bottom right corner and is aiming to get to the middle bottom cell. Agent 2
   started in the top left and moved down once towards its target in the bottom left.</li>
 </ul>
-<p>This would just be agent 0's view, the numbers would be flipped for agent 1's view.
-  So the full observation would be of shape (2, 3, 3).</p>
 </li>
 </ul>
 </li>
@@ -1387,20 +1367,22 @@ taken by any other agent.</p>
 <li>
 <p>reward: jax array (float) of shape ():</p>
 <ul>
-<li>dense: each agent is given 1.0 if it connects on that step, otherwise 0.0. Additionally,
-    each agent that has not connected receives a penalty reward of -0.03.</li>
+<li>dense: reward is 1 for each successful connection on that step. Additionally,
+    each pair of points that have not connected receives a penalty reward of -0.03.</li>
 </ul>
 </li>
 <li>
-<p>episode termination: if an agent can't move, or the time limit is reached, or the agent
-    connects to its target, it is considered done. Once all agents are done, the episode
-    terminates. The timestep discounts are of shape (num_agents,).</p>
+<p>episode termination:</p>
+<ul>
+<li>all agents either can't move (no available actions) or have connected to their target.</li>
+<li>the time limit is reached.</li>
+</ul>
 </li>
 <li>
 <p>state: State:</p>
 <ul>
 <li>key: jax PRNG key used to randomly spawn agents and targets.</li>
-<li>grid: jax array (int32) of shape (size, size) which corresponds to agent 0's observation.</li>
+<li>grid: jax array (int32) of shape (grid_size, grid_size) giving the observation.</li>
 <li>step_count: jax array (int32) of shape () number of steps elapsed in the current episode.</li>
 </ul>
 </li>
@@ -1621,7 +1603,7 @@ timestep: <code>TimeStep</code> object corresponding the timestep returned by th
     <tr>
       <td><code>Spec for the `Observation` whose fields are</code></td>
       <td><ul>
-<li>grid: BoundedArray (int32) of shape (num_agents, grid_size, grid_size).</li>
+<li>grid: BoundedArray (int32) of shape (grid_size, grid_size).</li>
 <li>action_mask: BoundedArray (bool) of shape (num_agents, 5).</li>
 <li>step_count: BoundedArray (int32) of shape ().</li>
 </ul></td>
@@ -1647,8 +1629,8 @@ timestep: <code>TimeStep</code> object corresponding the timestep returned by th
     <div class="doc doc-contents ">
 
       <p>Returns the action spec for the Connector environment.</p>
-<p>5 actions: [0,1,2,3,4] -&gt; [No Op, Up, Right, Down, Left]. Since this is a multi-agent
-environment, the environment expects an array of actions of shape (num_agents,).</p>
+<p>5 actions: [0,1,2,3,4] -&gt; [No Op, Up, Right, Down, Left]. Since this is an environment with
+a multi-dimensional action space, it expects an array of actions of shape (num_agents,).</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -1671,74 +1653,6 @@ environment, the environment expects an array of actions of shape (num_agents,).
 
 
 
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.connector.env.Connector.reward_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
-
-
-<a href="#jumanji.environments.routing.connector.env.Connector.reward_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>reward_spec</code></td>
-      <td><p>a <code>specs.Array</code> spec of shape (num_agents,). One for each agent.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.connector.env.Connector.discount_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoundedArray</span></code>
-
-
-<a href="#jumanji.environments.routing.connector.env.Connector.discount_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>discount_spec</code></td>
-      <td><p>a <code>specs.Array</code> spec of shape (num_agents,). One for each agent</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
 
 
   </div>
@@ -1752,7 +1666,7 @@ environment, the environment expects an array of actions of shape (num_agents,).
   <small>
     
       Last update:
-      2023-05-09
+      2023-05-12
     
   </small>
 </div>

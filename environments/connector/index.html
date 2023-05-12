@@ -664,13 +664,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#current-agent-multi-agent" class="md-nav__link">
-    Current Agent (multi-agent)
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1331,30 +1324,15 @@ it leaves behind a path, which is impassable by all agents. Thus, agents need to
 to allow each other to connect to their own targets without overlapping.</p>
 <p>An episode ends when all agents have connected to their targets or no agents can make any further
 moves due to being blocked.</p>
-<blockquote>
-<p>⚠️ Warning</p>
-<p>This environment is multi-agent, i.e. the observation, action and action mask are batched on the
-agent dimension.</p>
-<ul>
-<li>
-<p>If used in a multi-agent RL setting, one can direclty vmap the agents' inference functions on
-the observation they receive or unpack the observation and give it to each agent manually, e.g.
-<code>agents_obs = [jax.tree_util.tree_map(lambda x: x[i] if x.ndim&gt;0 else x, obs) for i in range(len(obs.grid))]</code>.</p>
-</li>
-<li>
-<p>If used in a single-agent RL setting, one can use <code>jumanji.wrappers.MultiToSingleWrapper</code> to
-make it a single-agent environment.</p>
-</li>
-</ul>
-</blockquote>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>At each step observation contains 3 items: a grid for each agent, an action mask for each agent and
+<p>At each step observation contains 3 items: a grid, an action mask for each agent and
 the episode step count.</p>
 <ul>
 <li>
-<p><code>grid</code>: jax array (int32) of shape <code>(num_agents, grid_size, grid_size)</code>, a 2D matrix for each
-   agent that represents pairs of points that need to be connected from the perspective of each
-   agent. The <strong>position</strong> of an agent has to connect to its <strong>target</strong>, leaving a <strong>path</strong> behind
+<p><code>grid</code>: jax array (int32) of shape <code>(grid_size, grid_size)</code>, a 2D matrix that represents pairs
+   of points that need to be connected. Each agent has three types of points: <strong>position</strong>,
+   <strong>target</strong> and <strong>path</strong> which are represented by different numbers on the grid. The
+   <strong>position</strong> of an agent has to connect to its <strong>target</strong>, leaving a <strong>path</strong> behind
    it as it moves across the grid forming its route. Each agent connects to only 1 target.</p>
 </li>
 <li>
@@ -1367,7 +1345,7 @@ the episode step count.</p>
 </li>
 </ul>
 <h3 id="encoding">Encoding<a class="headerlink" href="#encoding" title="Permanent link">#</a></h3>
-<p>Each agent has 3 components represented in the observation space: position, target, and path. Each
+<p>Each agent has 3 components represented in the observation space: <strong>position</strong>, <strong>target</strong>, and <strong>path</strong>. Each
 agent in the environment will have an integer representing their components.</p>
 <ul>
 <li>
@@ -1377,8 +1355,7 @@ agent in the environment will have an integer representing their components.</p>
 <p>Targets are encoded starting from 3 in multiples of 3: 3, 6, 9, …</p>
 </li>
 <li>
-<p>Paths appear in the location of the head once it moves, starting from 1 in
-    multiples of 3: 1, 4, 7, …</p>
+<p>Paths appear in the location of the head once it moves, starting from 1 in multiples of 3: 1, 4, 7, …</p>
 </li>
 </ul>
 <p>Every group of 3 corresponds to 1 agent: (1,2,3), (4,5,6), …</p>
@@ -1389,7 +1366,7 @@ agent in the environment will have an integer representing their components.</p>
 Agent2[path=4, position=5, target=6]
 Agent3[path=7, position=8, target=9]
 </code></pre></div></td></tr></table></div></p>
-<p>For example, on a 6x6 grid, the starting observation is shown below.</p>
+<p>For example, on a 6x6 grid, a possible observation is shown below.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1402,26 +1379,17 @@ Agent3[path=7, position=8, target=9]
  [ 0  0  0  8  0  0]
  [ 0  0  6  7  7  7]]
 </code></pre></div></td></tr></table></div>
-<h3 id="current-agent-multi-agent">Current Agent (multi-agent)<a class="headerlink" href="#current-agent-multi-agent" title="Permanent link">#</a></h3>
-<p>Given that this is a multi-agent environment, each agent gets its own observation thus we must
-have a way to represent the current agent, so that the actor/learner knows which agent its actions
-will apply to. The current agent is always encoded as <code>(1,2,3)</code> in the observations. However, this
-notion of current agent only exists in the observations, in the state agent 0 is always encoded
-as <code>(1,2,3)</code>.</p>
-<p>The implementation shifts all other agents' values to make the <code>(1,2,3)</code> values represent the
-current agent, so in each agent’s observation it will be represented by <code>(1,2,3)</code>.
-This means that the agent with the values <code>(4,5,6)</code> will always be the next agent to act.</p>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
 <p>The action space is a <code>MultiDiscreteArray</code> of shape <code>(num_agents,)</code> of integer values in the range
 of <code>[0, 4]</code>. Each value corresponds to an agent moving in 1 of 4 cardinal directions or taking the
 no-op action. That is, [0, 1, 2, 3, 4] -&gt; [No Op, Up, Right, Down, Left].</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>The reward is <strong>dense</strong>: +1.0 for each agent that connects at that step and -0.03 for each agent that has not
+<p>The reward is <strong>dense</strong>: +1.0 per agent that connects at that step and -0.03 per agent that has not
 connected yet.</p>
 <p>Rewards are provided in the shape <code>(num_agents,)</code> so that each agent can have a reward.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
-<li><code>Connector-v0</code>, grid size of 10 and 5 agents.</li>
+<li><code>Connector-v1</code>, grid size of 10 and 5 agents.</li>
 </ul>
 
   <hr>
@@ -1429,7 +1397,7 @@ connected yet.</p>
   <small>
     
       Last update:
-      2023-05-09
+      2023-05-12
     
   </small>
 </div>
