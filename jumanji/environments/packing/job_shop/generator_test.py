@@ -155,8 +155,9 @@ class TestDenseGenerator:
         assert jnp.all((schedule >= 0) & (schedule < self.NUM_JOBS))
 
         # Check that no column in the schedule contains duplicates
-        _, counts = jnp.unique(schedule, return_counts=True, axis=0)
-        assert jnp.all(counts <= 1)
+        for t in range(self.MAKESPAN):
+            unique_jobs = jnp.unique(schedule[:, t])
+            assert len(unique_jobs) == self.NUM_MACHINES
 
     def test_dense_generator__register_ops(
         self,
