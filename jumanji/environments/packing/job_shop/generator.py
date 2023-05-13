@@ -214,7 +214,7 @@ class DenseGenerator(Generator):
         makespan: int,
     ):
         """Instantiate a `DenseGenerator`. Note that the `makespan` is an upper
-        bound to both `max_num_ops` and `max_op_duration`, hence they are not used.
+        bound to both `max_num_ops` and `max_op_duration`, hence they are deleted.
 
         Args:
             num_jobs: the number of jobs that need to be scheduled.
