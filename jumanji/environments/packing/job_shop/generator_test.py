@@ -154,12 +154,16 @@ class TestDenseGenerator:
         assert schedule.shape == (self.NUM_MACHINES, self.MAKESPAN)
         assert jnp.all((schedule >= 0) & (schedule < self.NUM_JOBS))
 
-        # Check that no column in the schedule contains duplicates
-        for t in range(self.MAKESPAN):
-            num_unique_jobs = len(jnp.unique(schedule[:, t]))
-            assert (
-                num_unique_jobs == self.NUM_MACHINES
-            ), f"{num_unique_jobs} ≠ {self.NUM_MACHINES} at t={t}."
+        # For 20 different randomly generated dense schedules, check
+        # that no column in any schedule contains duplicates
+        keys = jax.random.split(key, 20)
+        for k in keys:
+            schedule = dense_generator._generate_schedule(k)
+            for t in range(self.MAKESPAN):
+                num_unique_jobs = len(jnp.unique(schedule[:, t]))
+                assert (
+                    num_unique_jobs == self.NUM_MACHINES
+                ), f"{num_unique_jobs} ≠ {self.NUM_MACHINES} at t={t}."
 
     def test_dense_generator__register_ops(
         self,
