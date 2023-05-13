@@ -311,14 +311,12 @@ class DenseGenerator(Generator):
                     _key, _job_mask, _machine_id = _carry
                     _key, reuse_op_key, _job_key = jax.random.split(_key, num=3)
 
+                    # Reuse the previous job with probability 0.5
                     prev_job_id = prev_col[_machine_id]
-                    _job_mask = _job_mask.at[prev_job_id].set(True)
-
-                    # Reuse the previous job with probability 0.7
-                    reuse_op = jax.random.uniform(reuse_op_key, shape=()) > 0.3
+                    reuse_op = jax.random.uniform(reuse_op_key, shape=()) > 0.5
                     job_id = jax.lax.cond(
                         reuse_op,
-                        lambda _: prev_col[_machine_id],
+                        lambda _: prev_job_id,
                         lambda _: jax.random.choice(
                             _job_key, all_job_ids, (), p=_job_mask
                         ),
@@ -328,11 +326,10 @@ class DenseGenerator(Generator):
                     return (_key, _job_mask, _machine_id + 1), job_id
 
                 # Define initial conditions for the scan
-                # init_job_mask = jax.vmap(
-                #     lambda _job_id, _col: ~jnp.any(_col == _job_id),
-                #     in_axes=(0, None),
-                # )(all_job_ids, prev_col)
-                init_job_mask = jnp.ones(self.num_jobs, dtype=jnp.bool_)
+                init_job_mask = jax.vmap(
+                    lambda _job_id, _col: ~jnp.any(_col == _job_id),
+                    in_axes=(0, None),
+                )(all_job_ids, prev_col)
                 init_machine_id = 0
                 init_carry = (key, init_job_mask, init_machine_id)
                 _, col = jax.lax.scan(
@@ -368,7 +365,7 @@ class DenseGenerator(Generator):
             replace=False,
         )
         init_carry = (key, 0, init_col)
-        final_carry, schedule_transposed = jax.lax.scan(
+        _, schedule_transposed = jax.lax.scan(
             lambda carry, _: insert_col(carry, _),
             init_carry,
             xs=None,
