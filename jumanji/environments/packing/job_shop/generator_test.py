@@ -156,8 +156,10 @@ class TestDenseGenerator:
 
         # Check that no column in the schedule contains duplicates
         for t in range(self.MAKESPAN):
-            unique_jobs = jnp.unique(schedule[:, t])
-            assert len(unique_jobs) == self.NUM_MACHINES
+            num_unique_jobs = len(jnp.unique(schedule[:, t]))
+            assert (
+                num_unique_jobs == self.NUM_MACHINES
+            ), f"{num_unique_jobs} ≠ {self.NUM_MACHINES} at t={t}."
 
     def test_dense_generator__register_ops(
         self,
