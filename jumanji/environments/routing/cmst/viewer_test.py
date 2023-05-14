@@ -66,4 +66,4 @@ def test_animation(
     viewer.animate(states, save_path=save_path)
 
     assert os.path.exists(save_path)
-    # os.remove(save_path)
+    os.remove(save_path)
