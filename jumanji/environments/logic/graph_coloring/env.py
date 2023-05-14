@@ -91,14 +91,11 @@ class GraphColoring(Environment[State]):
 
         Args:
             generator: callable to instantiate environment instances.
-                Defaults to `RandomGenerator` with `num_nodes = 100`
+                Defaults to `RandomGenerator`.
             viewer: callable to instantiate environment viewer.
-                Defaults to `GraphColoringViewer`
+                Defaults to `GraphColoringViewer`.
         """
-        self.generator = generator or RandomGenerator(
-            num_nodes=100,
-            percent_connected=0.8,
-        )
+        self.generator = generator or RandomGenerator()
         num_nodes = self.generator.get_num_nodes()
 
         # Create viewer used for rendering

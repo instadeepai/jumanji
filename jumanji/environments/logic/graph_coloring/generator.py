@@ -51,7 +51,9 @@ class RandomGenerator(Generator):
 
     """
 
-    def __init__(self, num_nodes: int, percent_connected: Optional[float] = None):
+    def __init__(
+        self, num_nodes: Optional[int] = None, percent_connected: Optional[float] = None
+    ):
         """
         Initialize the RandomGraphColoringGenerator.
 
@@ -59,12 +61,13 @@ class RandomGenerator(Generator):
             num_nodes: The number of nodes in the graph. The number of colors available for
                 coloring is equal to the number of nodes. This means that the graph is always
                 colorable with the given colors.
+                The default value of `num_nodes` is 100.
             percent_connected: A float between 0 and 1 representing the percentage of connections
-                in the graph compared to a fully connected graph.,
-            The default value of `percent_connected is 0.8.
+                in the graph compared to a fully connected graph.
+                The default value of `percent_connected` is 0.8.
         """
 
-        self.num_nodes = num_nodes
+        self.num_nodes = num_nodes or 100
         self.percent_connected = percent_connected or 0.8
         assert (
             self.percent_connected < 1
