@@ -40,30 +40,16 @@ class Renderer(Viewer):
     def __init__(
         self,
         num_agents: int,
-        nodes_to_connect: chex.Array,
-        num_nodes: int,
-        adj_matrix: chex.Array,
         name: str = "CoopMinSpanTree",
     ) -> None:
         """Create a ConnectorRenderer instance for rendering the Connector environment.
 
         Args:
             num_agents: Number of agents in the environment.
-            nodes_to_connect: The nodes to connect by each agent.
-            num_nodes: The total number of nodes.
-            adj_matrix: The adjacency matrix of the graph.
         """
 
-        self.num_agents = num_agents
-
-        self.num_nodes = num_nodes
-        self.nodes_to_connect = nodes_to_connect
         self._name = name
-
-        self.node_scale = 5 + int(np.sqrt(self.num_nodes))
-        self.node_radius = 0.05 * 5 / self.node_scale
-
-        self.positions = self._spring_layout(adj_matrix)
+        self.num_agents = num_agents
 
         # Pick display method. Only one mode avaliable
         self._display: Callable[[plt.Figure], Optional[NDArray]]
@@ -94,9 +80,11 @@ class Renderer(Viewer):
         Return:
             pixel RGB array
         """
+        num_nodes = state.adj_matrix.shape[0]
+        node_scale = 5 + int(np.sqrt(num_nodes))
 
         self._clear_display()
-        fig, ax = self._get_fig_ax()
+        fig, ax = self._get_fig_ax(node_scale)
         fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
         self._draw_graph(state, ax)
@@ -111,18 +99,24 @@ class Renderer(Viewer):
             ax: figure axes on which to plot.
         """
 
+        positions = self._spring_layout(state.adj_matrix)
+
+        num_nodes = state.adj_matrix.shape[0]
+        node_scale = 5 + int(np.sqrt(num_nodes))
+        node_radius = 0.05 * 5 / node_scale
+
         edges = self.build_edges(state.adj_matrix, state.connected_nodes)
         # draw edges
         for e in edges.values():
             (n1, n2), color = e
             n1, n2 = int(n1), int(n2)
-            x_values = [self.positions[n1][0], self.positions[n2][0]]
-            y_values = [self.positions[n1][1], self.positions[n2][1]]
+            x_values = [positions[n1][0], positions[n2][0]]
+            y_values = [positions[n1][1], positions[n2][1]]
             ax.plot(x_values, y_values, c=color, linewidth=2)
 
         # draw nodes
-        for node in range(self.num_nodes):
-            pos = np.where(self.nodes_to_connect == node)[0]
+        for node in range(num_nodes):
+            pos = np.where(state.nodes_to_connect == node)[0]
             if len(pos) == 1:
                 fcolor = self.palette[pos[0]]
             else:
@@ -134,17 +128,17 @@ class Renderer(Viewer):
                 lcolor = blue
 
             self.circle_fill(
-                self.positions[node],
+                positions[node],
                 lcolor,
                 fcolor,
-                self.node_radius,
-                0.2 * self.node_radius,
+                node_radius,
+                0.2 * node_radius,
                 ax,
             )
 
             ax.text(
-                self.positions[node][0],
-                self.positions[node][1],
+                positions[node][0],
+                positions[node][1],
                 node,
                 color="white",
                 ha="center",
@@ -222,8 +216,11 @@ class Renderer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
+
+        num_nodes = states[0].adj_matrix.shape[0]
+        node_scale = 5 + int(np.sqrt(num_nodes))
         fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=(self.node_scale, self.node_scale)
+            num=f"{self._name}Animation", figsize=(node_scale, node_scale)
         )
         plt.close(fig)
 
@@ -249,9 +246,9 @@ class Renderer(Viewer):
     def close(self) -> None:
         plt.close(self._name)
 
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
+    def _get_fig_ax(self, node_scale: float) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, (self.node_scale, self.node_scale))
+        fig = plt.figure(self._name, (node_scale, node_scale))
         # plt.style.use("dark_background")
         if recreate:
             if not plt.isinteractive():
@@ -281,8 +278,9 @@ class Renderer(Viewer):
     def _compute_repulsive_forces(
         self, repulsive_forces: np.ndarray, pos: np.ndarray, k: float
     ) -> np.ndarray:
-        for i in range(self.num_nodes):
-            for j in range(i + 1, self.num_nodes):
+        num_nodes = repulsive_forces.shape[0]
+        for i in range(num_nodes):
+            for j in range(i + 1, num_nodes):
                 delta = pos[i] - pos[j]
                 distance = np.linalg.norm(delta)
                 direction = delta / (distance + 1e-6)
@@ -299,8 +297,9 @@ class Renderer(Viewer):
         pos: np.ndarray,
         k: float,
     ) -> np.ndarray:
-        for i in range(self.num_nodes):
-            for j in range(self.num_nodes):
+        num_nodes = graph.shape[0]
+        for i in range(num_nodes):
+            for j in range(num_nodes):
                 if graph[i, j]:
                     delta = pos[i] - pos[j]
                     distance = np.linalg.norm(delta)
@@ -328,19 +327,20 @@ class Renderer(Viewer):
         Returns:
             A list of tuples representing the 2D positions of nodes in the graph.
         """
+        num_nodes = graph.shape[0]
         rng = np.random.default_rng(seed)
-        pos = rng.random((self.num_nodes, 2)) * 2 - 1
+        pos = rng.random((num_nodes, 2)) * 2 - 1
 
         iterations = 100
-        k = np.sqrt(1 / self.num_nodes)
+        k = np.sqrt(1 / num_nodes)
         temperature = 2.0  # Added a temperature variable
 
         for _ in range(iterations):
             repulsive_forces = self._compute_repulsive_forces(
-                np.zeros((self.num_nodes, 2)), pos, k
+                np.zeros((num_nodes, 2)), pos, k
             )
             attractive_forces = self._compute_attractive_forces(
-                graph, np.zeros((self.num_nodes, 2)), pos, k
+                graph, np.zeros((num_nodes, 2)), pos, k
             )
 
             pos += (repulsive_forces + attractive_forces) * temperature

@@ -725,9 +725,6 @@ class CoopMinSpanTree(Environment[State]):
         if self._renderer is None:
             self._renderer = Renderer(
                 self.num_agents,
-                state.nodes_to_connect,
-                num_nodes=self.num_nodes,
-                adj_matrix=state.adj_matrix,
             )
 
         return self._renderer.render(state)
@@ -748,8 +745,5 @@ class CoopMinSpanTree(Environment[State]):
         if self._renderer is None:
             self._renderer = Renderer(
                 self.num_agents,
-                states[0].nodes_to_connect,
-                num_nodes=self.num_nodes,
-                adj_matrix=states[0].adj_matrix,
             )
         self._renderer.animate(states, interval, save_path)
