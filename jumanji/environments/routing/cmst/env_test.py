@@ -38,7 +38,7 @@ def test__cmst_agent_observation(
 
     _, _, timestep = deterministic_coop_env
 
-    # noodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11
+    # nodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11
     # node_types = jnp.array([0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1], dtype=jnp.int32)
     # conn_nodes = jnp.array([[1, -1, -1], [3, -1, -1]], dtype=jnp.int32)
 

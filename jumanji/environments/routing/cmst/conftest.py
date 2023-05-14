@@ -58,7 +58,7 @@ def deterministic_coop_env() -> Tuple[CoopMinSpanTree, State, TimeStep]:
     key = jax.random.PRNGKey(0)
 
     num_agents = 2
-    env._nodes_to_connect = jnp.array([[0, 1, 6], [3, 5, 8]], dtype=jnp.int32)
+    nodes_to_connect = jnp.array([[0, 1, 6], [3, 5, 8]], dtype=jnp.int32)
 
     edges = jnp.array(
         [
@@ -124,6 +124,7 @@ def deterministic_coop_env() -> Tuple[CoopMinSpanTree, State, TimeStep]:
         adj_matrix=adj_matrix,
         connected_nodes=conn_nodes,
         connected_nodes_index=conn_nodes_index,
+        nodes_to_connect=nodes_to_connect,
         position_index=jnp.zeros((num_agents), dtype=jnp.int32),
         positions=positions,
         node_edges=active_node_edges,

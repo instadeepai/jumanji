@@ -24,6 +24,8 @@ from jumanji.training.networks.cleaner.actor_critic import (
     make_actor_critic_networks_cleaner,
 )
 from jumanji.training.networks.cleaner.random import make_random_policy_cleaner
+from jumanji.training.networks.cmst.actor_critic import make_actor_critic_networks_cmst
+from jumanji.training.networks.cmst.random import make_random_policy_cmst
 from jumanji.training.networks.connector.actor_critic import (
     make_actor_critic_networks_connector,
 )

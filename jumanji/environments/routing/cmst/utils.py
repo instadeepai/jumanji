@@ -27,10 +27,8 @@ def build_adjecency_matrix(num_nodes: int, edges: jnp.ndarray) -> jnp.ndarray:
     """Build adjaceny matrix from an array with edges."""
 
     adj_matrix = jnp.zeros((num_nodes, num_nodes), dtype=int)
-    num_edges = edges.shape[0]
-    for i in range(num_edges):
-        adj_matrix = adj_matrix.at[edges[i, 0], edges[i, 1]].set(1)
-        adj_matrix = adj_matrix.at[edges[i, 1], edges[i, 0]].set(1)
+    adj_matrix = adj_matrix.at[edges[:, 0], edges[:, 1]].set(1)
+    adj_matrix = adj_matrix.at[edges[:, 1], edges[:, 0]].set(1)
 
     return adj_matrix
 
@@ -176,13 +174,13 @@ def init_graph_merge(
 def correct_graph_offset(graph: Graph, offset: int) -> Graph:
     """Correct the node offset applied when generating split graphs.
 
-    To generate a solvable problem we split the graphs in sub graphs.
-    For example if want a fully connected graph with 12 nodes and 2 agents,
-    we will first construct to 2 subgraphs with 6 nodes each. Each graph
-    will have nodes labeled [0,1,2...,5], hence before merging both graphs
-    we need to rename the nodes of one of graphs to be [6,7,...11]. To
-    do this we use the offset parameter which in this case will be 6 to
-    do the renaming.
+    To generate a solvable problem, we split the graphs into subgraphs.
+    For example, if we want a fully connected graph with 12 nodes and 2 agents,
+    we first construct two subgraphs with 6 nodes each.
+    Each graph will have nodes labeled [0, 1, 2, ..., 5].
+    Before merging the two graphs, we need to rename the nodes of one graph to be [6, 7, ..., 11].
+    To accomplish this, we use the offset parameter,
+    which in this case will be 6, to perform the renaming.
     """
 
     nodes = graph.nodes + offset
@@ -342,18 +340,18 @@ def random_walk(
     nodes: chex.Array, num_edges: jnp.int32, max_degree: jnp.int32, key: chex.PRNGKey
 ) -> Graph:
     """Create a uniform spanning tree (UST) using a random walk,
-    then add random edges until the number of desired edges is reached.
+    then add random edges until the desired number of edges is reached.
     https://en.wikipedia.org/wiki/Uniform_spanning_tree
 
     Args:
-        nodes: array with nodes labels (indices from 0 to num_nodes-1).
-        num_edges: total number of desired edges in the graph.
-        max_degree: highest a degree a node can have.
-        key: base key from which all other keys are generated for any random sampling.
+        nodes: Array with node labels (indices from 0 to num_nodes-1).
+        num_edges: Total number of desired edges in the graph.
+        max_degree: The highest degree a node can have.
+        key: Base key from which all other keys are generated for any random sampling.
 
     Returns:
-        graph: a random fully connected graph with desired number of nodes, number of edges and
-            and maximum degree.
+        graph: A random fully connected graph with
+             the desired number of nodes, number of edges, and maximum degree.
     """
 
     check_num_edges(nodes, num_edges)
@@ -459,20 +457,19 @@ def multi_random_walk(
     max_degree: jnp.int32,
     key: chex.PRNGKey,
 ) -> Tuple[Graph, List[chex.Array]]:
-    """Create a uniform spanning tree (UST) using a random walk,
-    by combining muliple spanning trees using random edges among the nodes
-    of the different spanning trees.
+    """Create a uniform spanning tree (UST) using a random walk by combining multiple spanning trees
+    using random edges among the nodes of the different spanning trees.
 
     Args:
-        nodes: array with nodes labels (indices from 0 to num_nodes-1).
-        num_edges: total number of desired edges in the graph.
-        max_degree: highest a degree a node can have.
-        num_agents: number of sub trees to generate before merging.
-        key: base key from which all other keys are generated for any random sampling.
+        nodes: Array with node labels (indices from 0 to num_nodes-1).
+        num_edges: Total number of desired edges in the graph.
+        max_degree: The highest degree a node can have.
+        num_agents: Number of subtrees to generate before merging.
+        key: Base key from which all other keys are generated for any random sampling.
 
     Returns:
-        graph: a random fully connected graph with desired number of nodes, number of edges and
-            and maximum degree.
+        graph: A random fully connected graph with
+           the desired number of nodes, number of edges, and maximum degree.
     """
 
     check_num_edges(nodes, num_edges)
@@ -482,14 +479,14 @@ def multi_random_walk(
     nodes_per_sub_graph_offset = [
         nodes_per_sub_graph[i] - nodes_offsets[i] for i in range(num_agents)
     ]
-
     num_nodes_per_sub_graph = [len(nodes_i) for nodes_i in nodes_per_sub_graph]
 
     # We use the following code to compute the number of edges per subgraph.
-    # We either use the minimum number edges possible for each subgraph
-    # or half the total number of edges divided by the number of agents.
-    # It is not always possible for latter to be possible.
-    # Hence we use the max of both value to guarantee the subgraph is connected.
+    # min_edges = num_nodes - 1
+    # max_edges = num_nodes * (num_nodes - 1) // 2
+    # mean_edges = num_edges // num_agents // 2
+    # num_edges_per_sub_graph = min(max(min_edges, mean_edges), max_edges
+
     total_edges_sub_graph = num_edges // 2
     edges_per_sub_graph = jnp.array_split(jnp.arange(total_edges_sub_graph), num_agents)
     num_edges_per_sub_graph_limits = [

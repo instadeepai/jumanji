@@ -26,15 +26,16 @@ import jax.numpy as jnp
 @dataclass
 class State:
     """
-    node_types: array with node types (-1 represents utility nodes).
-    adj_matrix: array with adjacency matrix.
-    connected_nodes: array of node indices denoting route (-1 --> not filled yet).
-    connected_nodes_index: array tracking connected nodes.
-    node_edges: array used to track active edges.
-    position: array with agents current positions.
-    position_index: array with current index position in connected_nodes.
+    node_types: Array with node types (-1 represents utility nodes).
+    adj_matrix: Array with adjacency matrix.
+    connected_nodes: Array of node indices denoting route (-1 --> not filled yet).
+    connected_nodes_index: Array tracking connected nodes.
+    nodes_to_connect: array with the nodes that each agent needs to connect.
+    node_edges: Array used to track active edges.
+    position: Array with agents current positions.
+    position_index: Array with current index position in connected_nodes.
     action_mask: array with current action mask for each agent.
-    finished_agents: array indicating if an agent's nodes are fully connected.
+    finished_agents: Array indicating if an agent's nodes are fully connected.
     step_count: integer to keep track of the number of steps.
     key: state PRNGkey.
     """
@@ -43,6 +44,7 @@ class State:
     adj_matrix: chex.Array  # (num_nodes, num_nodes)
     connected_nodes: chex.Array  # (num_agents, step_limit)
     connected_nodes_index: chex.Array  # (num_agents, num_nodes)
+    nodes_to_connect: chex.Array  # (num_agents, num_nodes_to_connect_per_agent)
     node_edges: chex.Array  # (num_agents, num_nodes, num_nodes)
     positions: chex.Array  # (num_agents,)
     position_index: chex.Array  # (num_agents,)
@@ -54,38 +56,40 @@ class State:
 
 class Observation(NamedTuple):
     """
-    node_types: array with node types
-        If we have for example 12 nodes these corresponds to
-        the indices 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  11.
-        Now consider we have 2 agents. Agent 0 wants to connect the nodes
-        (0,1,9) and agent 1 the nodes (3,5,8). The remaining nodes are
-        considered as utility nodes. So in the state view the node_types
-        are [0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1].
-        When we generate the problem, each agent starts from one of its
-        nodes. So if agent 0 starts on node 1 and agent 1 on node 3,
-        the connected_nodes array will have values [1, -1, ...] and
-        [3, -1, ...] respectively.
-        Using the state view of the node_types and the connected nodes,
-        we represent the agent's observation using the following rules.
-        Each agent should see it nodes already connected on its path as 0,
-        and nodes it still has to connect as 1. The next agent nodes will
-        represented by 2 and 3, the next by 4 and 5 and so on. The utility
-        unconnected nodes will still be represented by -1
-        In our 12 node example above we expect the observation view node_types
-        to have the following values
-            node_types = jnp.array(
-                [
-                    [ 1,  0, -1,  2, -1,  3,  1, -1,  3,  1, -1, -1],
-                    [ 3,  2, -1,  0, -1,  1,  3, -1,  1,  3, -1, -1],
-                ],
-                dtype=jnp.int32,
-            )
-    adj_matrix: adjacency matrix.
-    positions: node on which the agent is currently located.
-        In our current problem this will be jnp.array([1,3])
-    action_masks: binary mask (True/False <--> valid/invalid action)
-        Given the current node on which the agent is,
-        do we have a valid edge to every other node.
+    node_types: Array representing the types of nodes in the problem.
+        For example, if we have 12 nodes, their indices are 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.
+        Let's consider we have 2 agents. Agent 0 wants to connect nodes (0, 1, 9),
+        and agent 1 wants to connect nodes (3, 5, 8).
+        The remaining nodes are considered utility nodes.
+        Therefore, in the state view, the node_types are
+        represented as [0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1].
+        When generating the problem, each agent starts from one of its nodes.
+        So, if agent 0 starts on node 1 and agent 1 on node 3,
+        the connected_nodes array will have values [1, -1, ...] and [3, -1, ...] respectively.
+        The agent's observation is represented using the following rules:
+        - Each agent should see its connected nodes on the path as 0.
+        - Nodes that the agent still needs to connect are represented as 1.
+        - The next agent's nodes are represented by 2 and 3, the next by 4 and 5, and so on.
+        - Utility unconnected nodes are represented by -1.
+        For the 12 node example mentioned above,
+        the expected observation view node_types will have the following values:
+        node_types = jnp.array(
+            [
+                [1, 0, -1, 2, -1, 3, 1, -1, 3, 1, -1, -1],
+                [3, 2, -1, 0, -1, 1, 3, -1, 1, 3, -1, -1],
+            ],
+            dtype=jnp.int32,
+        )
+        Note: to make the environment single agent, we use the first agent's observation.
+
+    adj_matrix: Adjacency matrix representing the connections between nodes.
+
+    positions: Current node positions of the agents.
+        In our current problem, this will be represented as jnp.array([1, 3]).
+
+    action_masks: Binary mask indicating the validity of each action.
+        Given the current node on which the agent is located,
+        this mask determines if there is a valid edge to every other node.
     """
 
     node_types: chex.Array  # (num_nodes)
@@ -97,11 +101,11 @@ class Observation(NamedTuple):
 @dataclass
 class Graph:
     """
-    nodes: array with nodes (jnp.arange(number of nodes)).
-    edges: array with all egdes in the graph.
-    edge_codes: array with edge codes.
+    nodes: Array with node indices (jnp.arange(number of nodes)).
+    edges: Array with all egdes in the graph.
+    edge_codes: Array with edge codes.
     max_degree: (int).
-    node_degree: array with degree of every node.
+    node_degree: Array with the degree of every node.
     edge_index: (int) index location for the next edge.
     """
 

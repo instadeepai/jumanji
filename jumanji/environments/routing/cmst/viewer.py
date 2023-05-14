@@ -24,6 +24,7 @@ from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.routing.cmst.types import State
+from jumanji.viewer import Viewer
 
 grey = (100 / 255, 100 / 255, 100 / 255)
 white = (255 / 255, 255 / 255, 255 / 255)
@@ -33,7 +34,7 @@ black = (0 / 255, 0 / 255, 0 / 255)
 blue = (50 / 255, 50 / 255, 160 / 255)
 
 
-class Renderer:
+class Renderer(Viewer):
     """Viewer class for the Cooperative Minimum Spanning Tree environment."""
 
     def __init__(
@@ -42,7 +43,7 @@ class Renderer:
         nodes_to_connect: chex.Array,
         num_nodes: int,
         adj_matrix: chex.Array,
-        name: str = "cmst",
+        name: str = "CoopMinSpanTree",
     ) -> None:
         """Create a ConnectorRenderer instance for rendering the Connector environment.
 
@@ -83,7 +84,7 @@ class Renderer:
 
         self._animation: Optional[matplotlib.animation.Animation] = None
 
-    def render(self, state: State, save_path: Optional[str] = None) -> chex.Array:
+    def render(self, state: State) -> chex.Array:
         """Render the state of the environment.
 
         Args:
@@ -99,8 +100,6 @@ class Renderer:
         fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
         self._draw_graph(state, ax)
-        if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
 
         return self._display(fig)
 
@@ -132,7 +131,7 @@ class Renderer:
             if node in state.positions:
                 lcolor = yellow
             else:
-                lcolor = grey
+                lcolor = blue
 
             self.circle_fill(
                 self.positions[node],
@@ -152,6 +151,11 @@ class Renderer:
                 va="center",
                 weight="bold",
             )
+
+        ax.set_axis_off()
+        ax.set_aspect(1)
+        ax.relim()
+        ax.autoscale_view()
 
     def build_edges(
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
@@ -208,11 +212,13 @@ class Renderer:
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of Connector grids.
+
         Args:
             states: sequence of states to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 2000.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
+
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
@@ -308,8 +314,7 @@ class Renderer:
     def _spring_layout(
         self, graph: chex.Array, seed: int = 42
     ) -> List[Tuple[float, float]]:
-        """
-        Compute a 2D spring layout for the given graph using
+        """Compute a 2D spring layout for the given graph using
         the Fruchterman-Reingold force-directed algorithm.
 
         The algorithm computes a layout by simulating the graph as a physical system,

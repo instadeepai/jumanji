@@ -1,8 +1,8 @@
 defaults:
     - _self_
-    - env: snake  # [bin_pack, cleaner, connector, cvrp, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
+    - env: cmst  # [bin_pack, cleaner, connector, cvrp, cmst, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
 
-agent: random  # [random, a2c]
+agent: a2c  # [random, a2c]
 
 seed: 0
 

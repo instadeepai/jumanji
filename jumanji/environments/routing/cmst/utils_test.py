@@ -19,6 +19,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.cmst.utils import (
+    build_adjecency_matrix,
     check_num_edges,
     correct_edge_code_offset,
     get_edge_code,
@@ -26,6 +27,26 @@ from jumanji.environments.routing.cmst.utils import (
     multi_random_walk,
     random_walk,
 )
+
+
+def test_adj_matrix_construction() -> None:
+    num_nodes = 5
+    edges = jnp.array([[0, 1], [1, 2], [2, 3], [3, 4]])
+
+    adj_matrix = build_adjecency_matrix(num_nodes, edges)
+
+    expected_adj_matrix = jnp.array(
+        [
+            [0, 1, 0, 0, 0],
+            [1, 0, 1, 0, 0],
+            [0, 1, 0, 1, 0],
+            [0, 0, 1, 0, 1],
+            [0, 0, 0, 1, 0],
+        ],
+        dtype=int,
+    )
+
+    assert jnp.array_equal(adj_matrix, expected_adj_matrix)
 
 
 def test__check_num_edges() -> None:

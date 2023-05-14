@@ -36,7 +36,7 @@ class RewardFn(abc.ABC):
 
         Args:
             state: Environment state
-            actions: action taken by all the agents to reach this state.
+            actions: Actions taken by all the agents to reach this state.
             nodes_to_connect: Array containing the nodes each agent needs to connect.
         Returns:
             reward
@@ -52,7 +52,7 @@ class DefaultRewardFn(RewardFn):
         Args:
             reward_values: array with rewards for each type of event.
               This is a list with 3 values. The first is the reward for
-              connecting a node, the second is the reward for non connection
+              connecting a node, the second is the reward for a non connection
               and the third is the reward for an invalid option.
         """
 
