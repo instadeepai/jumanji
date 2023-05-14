@@ -56,8 +56,9 @@ class GraphColoringViewer(Viewer):
     ) -> None:
         self._clear_display()
         fig, ax = self._get_fig_ax(ax)
-        self._render_nodes(ax, state)
-        self._render_edges(ax, state)
+        pos = self._spring_layout(state.adj_matrix)
+        self._render_nodes(ax, pos, state)
+        self._render_edges(ax, pos, state)
 
         ax.set_xlim(-0.5, 0.50)
         ax.set_ylim(-0.50, 0.50)
@@ -194,12 +195,13 @@ class GraphColoringViewer(Viewer):
             ax.clear()
         return fig, ax
 
-    def _render_nodes(self, ax: plt.Axes, state: State) -> None:
+    def _render_nodes(
+        self, ax: plt.Axes, pos: List[Tuple[float, float]], state: State
+    ) -> None:
         # Set the radius of the nodes as a fraction of the scale,
         # so nodes appear smaller when there are more of them.
         node_radius = 0.05 * 5 / self.node_scale
 
-        pos = self._spring_layout(state.adj_matrix)
         for i, (x, y) in enumerate(pos):
             ax.add_artist(
                 plt.Circle(
@@ -210,8 +212,9 @@ class GraphColoringViewer(Viewer):
                 x, y, str(i), color="white", ha="center", va="center", weight="bold"
             )
 
-    def _render_edges(self, ax: plt.Axes, state: State) -> None:
-        pos = self._spring_layout(state.adj_matrix)
+    def _render_edges(
+        self, ax: plt.Axes, pos: List[Tuple[float, float]], state: State
+    ) -> None:
         for i in range(self._num_nodes):
             for j in range(i + 1, self._num_nodes):
                 if state.adj_matrix[i, j]:
