@@ -446,12 +446,11 @@ class DenseGenerator(Generator):
             None,
         )
 
-        return (
-            _inner_key,
-            _job_mask.at[job_id].set(False),
-            prev_col,
-            machine_id + 1,
-        ), job_id
+        # Update the job mask to reflect that the chosen job can
+        # no longer be scheduled on any of the remaining machines
+        _job_mask = _job_mask.at[job_id].set(False)
+
+        return (_inner_key, _job_mask, prev_col, machine_id + 1), job_id
 
 
 if __name__ == "__main__":
