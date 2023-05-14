@@ -263,7 +263,9 @@ def make_actor_network_graph_coloring(
             name="policy_torso",
         )
         embeddings = torso(observation)  # (B, N, H)
-        logits = hk.Linear(1, name="policy_head")(embeddings)  # (B, N, 1)
+        logits = hk.nets.MLP((torso.model_size, 1), name="policy_head")(
+            embeddings
+        )  # (B, N, 1)
         logits = jnp.squeeze(logits, axis=-1)  # (B, N)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
