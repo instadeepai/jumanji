@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import abc
-from typing import Tuple
+from typing import Optional
 
 import chex
 import jax
@@ -22,12 +22,11 @@ from jax import numpy as jnp
 
 class Generator(abc.ABC):
     @abc.abstractmethod
-    def specs(self) -> Tuple[int, float]:
-        """Specs of the problem instances generated.
+    def get_num_nodes(self) -> int:
+        """Number of nodes of the problem instances generated.
 
         Returns:
             `num_nodes` of the generated instances.
-            `percent_connected` of the generated instances.
         """
 
     @abc.abstractmethod
@@ -52,7 +51,7 @@ class RandomGenerator(Generator):
 
     """
 
-    def __init__(self, num_nodes: int, percent_connected: float):
+    def __init__(self, num_nodes: int, percent_connected: Optional[float] = None):
         """
         Initialize the RandomGraphColoringGenerator.
 
@@ -61,17 +60,25 @@ class RandomGenerator(Generator):
                 coloring is equal to the number of nodes. This means that the graph is always
                 colorable with the given colors.
             percent_connected: A float between 0 and 1 representing the percentage of connections
-                in the graph compared to a fully connected graph.
+                in the graph compared to a fully connected graph.,
+            The default value of `percent_connected is 0.8.
         """
 
         self.num_nodes = num_nodes
-        self.percent_connected = percent_connected
+        self.percent_connected = percent_connected or 0.8
         assert (
             self.percent_connected < 1
         ), f"percent_connected={self.percent_connected} exceeds edges of a fully-connected graph."
 
-    def specs(self) -> Tuple[int, float]:
-        return self.num_nodes, self.percent_connected
+    def get_num_nodes(self) -> int:
+        return self.num_nodes
+
+    def __repr__(self) -> str:
+        """Returns: str: the string representation of the environment generator."""
+        return (
+            f"GraphColoring(number of nodes={self.num_nodes}, "
+            f"percent connected={self.percent_connected * 100}% "
+        )
 
     def _create_edges(self, key: chex.PRNGKey) -> chex.Array:
         """

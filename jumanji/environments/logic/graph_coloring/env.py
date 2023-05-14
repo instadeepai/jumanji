@@ -91,14 +91,15 @@ class GraphColoring(Environment[State]):
 
         Args:
             generator: callable to instantiate environment instances.
-                Defaults to `RandomGenerator` with `num_nodes = 100`,
-                and `percent_connected = 0.8` parameters.
+                Defaults to `RandomGenerator` with `num_nodes = 100`
+            viewer: callable to instantiate environment viewer.
+                Defaults to `GraphColoringViewer`
         """
         self.generator = generator or RandomGenerator(
             num_nodes=100,
             percent_connected=0.8,
         )
-        num_nodes, percent_connected = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or GraphColoringViewer(
@@ -107,11 +108,7 @@ class GraphColoring(Environment[State]):
 
     def __repr__(self) -> str:
         """Returns: str: the string representation of the environment."""
-        num_nodes, percent_connected = self.generator.specs()
-        return (
-            f"GraphColoring(number of nodes={num_nodes}, "
-            f"percent connected={percent_connected * 100}% "
-        )
+        return f"GraphColouring({self.generator!r})"
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
@@ -119,7 +116,7 @@ class GraphColoring(Environment[State]):
         Returns:
             the initial state and timestep.
         """
-        num_nodes, percent_connected = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
         colors = jnp.full(num_nodes, -1, dtype=jnp.int32)
         key, subkey = jax.random.split(key)
         adj_matrix = self.generator(subkey)
@@ -155,7 +152,7 @@ class GraphColoring(Environment[State]):
             state: the new state of the environment.
             timestep: the next timestep.
         """
-        num_nodes, _ = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
         # Get the valid actions for the current state.
         valid_actions = state.action_mask
         # Check if the chosen action is invalid (not in valid_actions).
@@ -216,7 +213,7 @@ class GraphColoring(Environment[State]):
             - current_node_index: BoundedArray (int32) of shape ().
                 Represents the index of the current node.
         """
-        num_nodes, percent_connected = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
         return specs.Spec(
             Observation,
             "ObservationSpec",
@@ -256,12 +253,12 @@ class GraphColoring(Environment[State]):
         Returns:
             action_spec: specs.DiscreteArray object
         """
-        num_nodes, percent_connected = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
         return specs.DiscreteArray(num_values=num_nodes, name="action", dtype=jnp.int32)
 
     def _get_valid_actions(self, state: State) -> chex.Array:
         """Returns a boolean array indicating the valid colors for the current node."""
-        num_nodes, percent_connected = self.generator.specs()
+        num_nodes = self.generator.get_num_nodes()
 
         # Create a boolean array of size (num_nodes + 1) set to True.
         # The extra element is to accommodate for the -1 index
