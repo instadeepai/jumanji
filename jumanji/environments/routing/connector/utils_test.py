@@ -34,7 +34,6 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
-    switch_perspective,
 )
 from jumanji.tree_utils import tree_slice
 
@@ -151,49 +150,3 @@ def test_get_agent_grid(grid: chex.Array) -> None:
         | (agent_2_grid == get_target(2))
         | (agent_2_grid == get_position(2))
     )
-
-
-def test_switch_perspective(grid: chex.Array) -> None:
-    """Tests that observations are correctly generated given the grid."""
-    observations0 = switch_perspective(grid, agent_id=0, num_agents=3)
-    observations1 = switch_perspective(grid, agent_id=1, num_agents=3)
-    observations2 = switch_perspective(grid, agent_id=2, num_agents=3)
-
-    path0 = get_path(0)
-    path1 = get_path(1)
-    path2 = get_path(2)
-
-    targ0 = get_target(0)
-    targ1 = get_target(1)
-    targ2 = get_target(2)
-
-    posi0 = get_position(0)
-    posi1 = get_position(1)
-    posi2 = get_position(2)
-
-    empty = EMPTY
-
-    expected_agent_1 = jnp.array(
-        [
-            [empty, empty, targ2, empty, empty, empty],
-            [empty, empty, posi2, path2, path2, empty],
-            [empty, empty, empty, targ1, posi1, empty],
-            [targ0, empty, posi0, empty, path1, empty],
-            [empty, empty, path0, empty, path1, empty],
-            [empty, empty, path0, empty, empty, empty],
-        ]
-    )
-    expected_agent_2 = jnp.array(
-        [
-            [empty, empty, targ1, empty, empty, empty],
-            [empty, empty, posi1, path1, path1, empty],
-            [empty, empty, empty, targ0, posi0, empty],
-            [targ2, empty, posi2, empty, path0, empty],
-            [empty, empty, path2, empty, path0, empty],
-            [empty, empty, path2, empty, empty, empty],
-        ]
-    )
-
-    assert (grid == observations0).all()
-    assert (expected_agent_1 == observations1).all()
-    assert (expected_agent_2 == observations2).all()
