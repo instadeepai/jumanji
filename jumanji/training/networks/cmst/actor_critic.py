@@ -18,7 +18,6 @@ import chex
 import haiku as hk
 import jax
 import jax.numpy as jnp
-import jax.tree_util as jtree
 
 from jumanji.environments.routing.cmst import CoopMinSpanTree, Observation
 from jumanji.training.networks.actor_critic import (
