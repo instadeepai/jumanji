@@ -172,9 +172,6 @@ class GraphColoringTorso(hk.Module):
         nodes_cross_colors_mask = jnp.expand_dims(
             nodes_cross_colors_mask, axis=1
         )  # Shape (batch_size, 1, num_nodes, num_colors)
-        nodes_cross_colors_mask = jnp.repeat(
-            nodes_cross_colors_mask, repeats=self.transformer_num_heads, axis=1
-        )  # Shape (batch_size, transformer_num_heads, num_nodes, num_colors)
 
         for block_id in range(self.num_transformer_layers):
             # Self-attention on nodes.
