@@ -297,13 +297,17 @@ class DenseGenerator(Generator):
 
         def insert_col(carry, _):
             _scan_key, _init_col = carry
-            _scan_key, rand_col_key = jax.random.split(_scan_key)
-            col = jax.random.choice(
-                rand_col_key,
-                all_job_ids,
-                (self.num_machines,),
-                replace=False,
+            _scan_key, inner_key = jax.random.split(_scan_key)
+
+            init_job_mask = jnp.ones(shape=self.num_jobs, dtype=jnp.bool_)
+            init_machine_id = 0
+            inner_init_carry = inner_key, init_job_mask, _init_col, init_machine_id
+            _, col = jax.lax.scan(
+                lambda inner_carry, _: self.insert_operation(inner_carry, _),
+                inner_init_carry,
+                xs=jnp.arange(self.num_machines),
             )
+
             return (_scan_key, col), col
 
         init_col = jax.random.choice(
@@ -313,7 +317,7 @@ class DenseGenerator(Generator):
             replace=False,
         )
         init_carry = scan_key, init_col
-        final_carry, schedule_transposed = jax.lax.scan(
+        _, schedule_transposed = jax.lax.scan(
             lambda carry, _: insert_col(carry, _),
             init_carry,
             xs=jnp.arange(self.makespan),
@@ -424,9 +428,33 @@ class DenseGenerator(Generator):
         )
         return ops_mids, ops_durs
 
+    def insert_operation(self, carry, _):
+        _inner_key, _job_mask, prev_col, machine_id = carry
+        _inner_key, reuse_key, job_key = jax.random.split(_inner_key, num=3)
+
+        all_job_ids = jnp.arange(self.num_jobs)
+
+        # Use the previous job on the machine with some probability and
+        # if the job hasn't already been scheduled in this timestep
+        prev_job_id = prev_col[machine_id]
+        reuse = jax.random.uniform(reuse_key, shape=()) >= 0.5
+        is_available = _job_mask[prev_job_id]
+        job_id = jax.lax.cond(
+            reuse & is_available,
+            lambda _: prev_job_id,
+            lambda _: jax.random.choice(job_key, all_job_ids, (), p=_job_mask),
+            None,
+        )
+
+        return (
+            _inner_key,
+            _job_mask.at[job_id].set(False),
+            prev_col,
+            machine_id + 1,
+        ), job_id
+
 
 if __name__ == "__main__":
     gen = DenseGenerator(10, 5, 14, 14, 14)
     key = jax.random.PRNGKey(0)
     state = gen(key)
-
