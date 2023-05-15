@@ -18,7 +18,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.cmst.env import CoopMinSpanTree
+from jumanji.environments.routing.cmst.env import CMST
 from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
 from jumanji.environments.routing.cmst.types import State
 from jumanji.environments.routing.cmst.utils import build_adjecency_matrix
@@ -26,31 +26,31 @@ from jumanji.types import TimeStep, restart
 
 
 @pytest.fixture(scope="module")
-def coop_split_gn_env() -> CoopMinSpanTree:
-    """Instantiates a default Cooperative mininum spanning tree environment."""
-    return CoopMinSpanTree(
-        generator_fn=SplitRandomGenerator,
+def cmst_split_gn_env() -> CMST:
+    """Instantiates a default `CMST` environment."""
+    return CMST(
+        generator_fn=None,
         reward_fn=None,
-        reward_values=(0.1, -0.03, -0.01),
     )
 
 
 @pytest.fixture(scope="module")
-def deterministic_coop_env() -> Tuple[CoopMinSpanTree, State, TimeStep]:
-    """Instantiates a cooperative minimum spanning tree."""
+def deterministic_cmst_env() -> Tuple[CMST, State, TimeStep]:
+    """Instantiates a `CMST` environment."""
 
     num_nodes_per_agent = 3
 
-    env = CoopMinSpanTree(
-        num_nodes=12,
-        num_edges=18,
-        max_degree=5,
-        num_agents=2,
-        num_nodes_per_agent=num_nodes_per_agent,
-        step_limit=12,
-        generator_fn=SplitRandomGenerator,
+    env = CMST(
+        generator_fn=SplitRandomGenerator(
+            num_nodes=12,
+            num_edges=18,
+            max_degree=5,
+            num_agents=2,
+            num_nodes_per_agent=num_nodes_per_agent,
+            max_step=12,
+        ),
         reward_fn=None,
-        reward_values=(0.1, -0.03, -0.01),
+        step_limit=12,
     )
 
     state, timestep = env.reset(jax.random.PRNGKey(10))

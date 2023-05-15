@@ -26,13 +26,13 @@ from jumanji.environments.routing.cmst.types import State
 
 
 class RewardFn(abc.ABC):
-    """Abstract class for `Connector` rewards."""
+    """Abstract class for `CMST` rewards."""
 
     @abc.abstractmethod
     def __call__(
         self, state: State, actions: chex.Array, nodes_to_connect: chex.Array
     ) -> chex.Array:
-        """The reward function used in the CMST environment.
+        """The reward function used in the `CMST` environment.
 
         Args:
             state: Environment state
@@ -43,11 +43,11 @@ class RewardFn(abc.ABC):
         """
 
 
-class DefaultRewardFn(RewardFn):
-    """Default reward function."""
+class DenseRewardFn(RewardFn):
+    """Dense reward function."""
 
     def __init__(self, reward_values: chex.Array) -> None:
-        """Instantiates the default reward function.
+        """Instantiates the dense reward function.
 
         Args:
             reward_values: array with rewards for each type of event.

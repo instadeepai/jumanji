@@ -23,12 +23,12 @@ from omegaconf import DictConfig
 import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
+    CMST,
     CVRP,
     TSP,
     BinPack,
     Cleaner,
     Connector,
-    CoopMinSpanTree,
     Game2048,
     JobShop,
     Knapsack,
@@ -166,7 +166,7 @@ def _setup_random_policy(  # noqa: CCR001
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
     elif cfg.env.name == "cmst":
-        assert isinstance(env.unwrapped, CoopMinSpanTree)
+        assert isinstance(env.unwrapped, CMST)
         random_policy = networks.make_random_policy_cmst()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
@@ -287,14 +287,13 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             conv_n_channels=cfg.env.network.conv_n_channels,
         )
     elif cfg.env.name == "cmst":
-        assert isinstance(env.unwrapped, CoopMinSpanTree)
+        assert isinstance(env.unwrapped, CMST)
         actor_critic_networks = networks.make_actor_critic_networks_cmst(
             cmst=env.unwrapped,
             num_transformer_layers=cfg.env.network.num_transformer_layers,
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
-            num_actions=cfg.env.network.num_actions,
         )
 
     else:

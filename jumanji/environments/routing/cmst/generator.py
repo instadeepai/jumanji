@@ -27,16 +27,16 @@ from jumanji.environments.routing.cmst.utils import (
 
 
 class Generator(ABC):
-    """Base class for generators for the CMST environment."""
+    """Base class for generators for the `CMST` environment."""
 
     def __init__(
         self,
-        num_nodes: jnp.int32,
-        num_edges: jnp.int32,
-        max_degree: jnp.int32,
-        num_agents: jnp.int32,
-        num_nodes_per_agent: jnp.int32,
-        max_step: jnp.int32,
+        num_nodes: int,
+        num_edges: int,
+        max_degree: int,
+        num_agents: int,
+        num_nodes_per_agent: int,
+        max_step: int,
     ) -> None:
         """Initialises a graph generator.
 
@@ -54,6 +54,24 @@ class Generator(ABC):
         self._num_nodes_per_agent = num_nodes_per_agent
         self._total_comps = num_nodes_per_agent * num_agents
         self._max_step = max_step
+
+        if num_nodes_per_agent * num_agents > num_nodes * 0.8:
+            raise ValueError(
+                f"The number of nodes to connect i.e. {num_nodes_per_agent * num_agents} "
+                f"should be much less than the number of nodes, which is {int(0.8*num_nodes)}."
+            )
+
+    @property
+    def num_agents(self) -> int:
+        return self._num_agents
+
+    @property
+    def num_nodes(self) -> int:
+        return self._num_nodes
+
+    @property
+    def num_nodes_per_agent(self) -> int:
+        return self._num_nodes_per_agent
 
     @abstractmethod
     def __call__(self, key: PRNGKey) -> Tuple[Array, ...]:

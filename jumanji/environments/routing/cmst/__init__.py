@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.cmst.env import CoopMinSpanTree
+from jumanji.environments.routing.cmst.env import CMST
 from jumanji.environments.routing.cmst.types import Observation, State

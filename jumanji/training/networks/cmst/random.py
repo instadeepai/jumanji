@@ -19,5 +19,5 @@ from jumanji.training.networks.protocols import RandomPolicy
 
 
 def make_random_policy_cmst() -> RandomPolicy:
-    """Make random policy for CMST."""
+    """Make random policy for the CMST environment."""
     return masked_categorical_random

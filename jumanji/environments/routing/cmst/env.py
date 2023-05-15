@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Sequence, Tuple, Type
+from typing import Any, Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -30,15 +30,17 @@ from jumanji.environments.routing.cmst.constants import (
     UTILITY_NODE,
 )
 from jumanji.environments.routing.cmst.generator import Generator, SplitRandomGenerator
-from jumanji.environments.routing.cmst.reward import DefaultRewardFn, RewardFn
+from jumanji.environments.routing.cmst.reward import DenseRewardFn, RewardFn
 from jumanji.environments.routing.cmst.types import Observation, State
-from jumanji.environments.routing.cmst.viewer import Renderer
+from jumanji.environments.routing.cmst.viewer import CMSTViewer
 from jumanji.types import TimeStep, restart, termination, transition, truncation
+from jumanji.viewer import Viewer
 
 
-class CoopMinSpanTree(Environment[State]):
-    """The cooperative minimum spanning tree (CMST) environment consists of a random connected graph
-    with groups of nodes (same node types) that need to be connected.
+class CMST(Environment[State]):
+    """The `CMST` (Cooperative Minimum Spanning Tree) environment
+    consists of a random connected graph
+    with groups of nodes (same node types) that needs to be connected.
     The goal of the environment is to connect all nodes of the same type together
     without using the same utility nodes (nodes that do not belong to any group of nodes).
 
@@ -112,69 +114,39 @@ class CoopMinSpanTree(Environment[State]):
 
     def __init__(
         self,
-        num_nodes: int = 12,
-        num_edges: int = 24,
-        max_degree: int = 5,
-        num_agents: int = 2,
-        num_nodes_per_agent: int = 3,
-        step_limit: int = 70,
+        generator_fn: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
-        reward_values: Tuple = (0.1, -0.03, -0.01),  # (5.0, -0.2, -0.1)
-        generator_fn: Type[Generator] = SplitRandomGenerator,
-        renderer: Optional[Renderer] = None,
+        step_limit: int = 50,
+        viewer: Optional[Viewer[State]] = None,
     ):
-        """Create the Cooperative Minimum Spanning Tree environment.
+        """Create the `CMST` environment.
 
         Args:
-            num_nodes: number of nodes in the graph.
-            num_edges: number of edges in the graph.
-            max_degree: highest degree a node can have.
-            num_agents: number of agents.
-            num_nodes_per_agent: number of nodes to connect by each agent.
-            step_limit: the number of steps allowed before an episode terminates.
-            reward_fn: reward function.
-            reward_values: reward values to use if we the default reward function.
-                This is an array with 3 values. The first element is the reward
-                for connection, the second is reward for no conncection and the last
-                is the reward for and invalid choice.
-            generator_fn: environment generator.
-            renderer: envirnonment viewer.
+            generator_fn: `Generator` whose `__call__` instantiates an environment instance.
+                Implemented options are [`SplitRandomGenerator`].
+            reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
+                Implemented options are [`DefualtRewardFn`]. Defaults to `DefaultRewardFn`.
+            step_limit: the number of steps allowed before an episode terminates. Defaults to 50.
+            viewer: `Viewer` used for rendering. Defaults to `CMSTViewer`
         """
 
-        if num_nodes_per_agent * num_agents > num_nodes * 0.8:
-            raise ValueError(
-                f"The number of nodes to connect i.e. {num_nodes_per_agent * num_agents} "
-                f"should be much less than the number of nodes, which is {int(0.8*num_nodes)}."
-            )
+        self._generator_fn = generator_fn or SplitRandomGenerator(
+            num_nodes=12,
+            num_edges=24,
+            max_degree=5,
+            num_agents=2,
+            num_nodes_per_agent=3,
+            max_step=step_limit,
+        )
 
-        self.num_nodes = num_nodes
-        self.num_edges = num_edges
-        self.num_agents = num_agents
-        self.num_nodes_per_agent = num_nodes_per_agent
-        self.max_degree = max_degree
+        self.num_agents = self._generator_fn.num_agents
+        self.num_nodes = self._generator_fn.num_nodes
+        self.num_nodes_per_agent = self._generator_fn.num_nodes_per_agent
 
+        self._reward_fn = reward_fn or DenseRewardFn(reward_values=(0.1, -0.03, -0.01))
+
+        self._renderer = viewer
         self._step_limit = step_limit
-        self._reward_fn = reward_fn or DefaultRewardFn(
-            reward_values=tuple(reward_values)
-        )
-
-        self._generator_fn = generator_fn(
-            num_nodes,
-            num_edges,
-            max_degree,
-            num_agents,
-            num_nodes_per_agent,
-            step_limit,
-        )
-
-        self._renderer = renderer
-
-    def __repr__(self) -> str:
-        return (
-            f"CMST(num_nodes={self.num_nodes}, num_edges={self.num_edges}, "
-            f"num_agents={self.num_agents}, num_components={self.num_nodes_per_agent})"
-            f"max_degree={self.max_degree}"
-        )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec.
@@ -723,7 +695,7 @@ class CoopMinSpanTree(Environment[State]):
             Array of rgb pixel values in the shape (width, height, rgb).
         """
         if self._renderer is None:
-            self._renderer = Renderer(
+            self._renderer = CMSTViewer(
                 self.num_agents,
             )
 
@@ -743,7 +715,7 @@ class CoopMinSpanTree(Environment[State]):
             save_path: Optional path to save the animation.
         """
         if self._renderer is None:
-            self._renderer = Renderer(
+            self._renderer = CMSTViewer(
                 self.num_agents,
             )
         self._renderer.animate(states, interval, save_path)

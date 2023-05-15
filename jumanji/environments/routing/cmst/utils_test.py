@@ -29,7 +29,7 @@ from jumanji.environments.routing.cmst.utils import (
 )
 
 
-def test_adj_matrix_construction() -> None:
+def test__adj_matrix_construction() -> None:
     num_nodes = 5
     edges = jnp.array([[0, 1], [1, 2], [2, 3], [3, 4]])
 

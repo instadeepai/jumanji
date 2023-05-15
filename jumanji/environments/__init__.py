@@ -32,7 +32,7 @@ from jumanji.environments.routing import (
     tsp,
 )
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.cmst.env import CoopMinSpanTree
+from jumanji.environments.routing.cmst.env import CMST
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze

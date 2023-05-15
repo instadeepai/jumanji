@@ -30,7 +30,7 @@
   <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
   <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
-  <img src="docs/env_anim/cmst.gif" alt="CoopMinSpanTree" width="30%" />
+  <img src="docs/env_anim/cmst.gif" alt="CMST" width="30%" />
 </p>
 
 
@@ -91,7 +91,7 @@ problems.
 | :mag: Maze   | Routing  | `Maze-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)      | [doc](https://instadeepai.github.io/jumanji/environments/maze/)        |
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
-| Cooperative Minimum Spanning Tree Problem | Routing  | `CoopMinSpanTree-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cmst)    | [doc](https://instadeepai.github.io/jumanji/environments/cmst/)    |
+| Cooperative Minimum Spanning Tree Problem | Routing  | `CMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cmst)    | [doc](https://instadeepai.github.io/jumanji/environments/cmst/)    |
 
 
 ## Installation 🎬

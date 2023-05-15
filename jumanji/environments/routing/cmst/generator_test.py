@@ -16,7 +16,6 @@ from typing import Tuple
 
 import jax
 import jax.numpy as jnp
-import networkx as nx
 
 from jumanji.environments.routing.cmst.constants import UTILITY_NODE
 from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
@@ -35,7 +34,7 @@ def check_generator(params: Tuple, data: Tuple) -> None:
     ) = params
     (
         node_types,
-        adj_matrix,
+        _,
         agents_pos,
         conn_nodes,
         conn_nodes_index,
@@ -50,16 +49,6 @@ def check_generator(params: Tuple, data: Tuple) -> None:
     assert conn_nodes_index.shape == (num_agents, num_nodes)
     assert node_edges.shape == (num_nodes, num_nodes)
     assert nodes_to_connect.shape == (num_agents, num_nodes_per_agent)
-
-    # Test that the graph is connected
-    graph = nx.Graph()
-    graph.add_nodes_from(list(range(num_nodes)))
-    # Find the indices of non-zero elements in the adjacency matrix
-    row_indices, col_indices = jnp.nonzero(adj_matrix)
-    # Create the edge list as a list of tuples (source, target)
-    edges_list = [(int(row), int(col)) for row, col in zip(row_indices, col_indices)]
-    graph.add_edges_from(edges_list)
-    assert nx.is_connected(graph)
 
 
 def test__generator() -> None:

@@ -19,7 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst import CoopMinSpanTree, Observation
+from jumanji.environments.routing.cmst import CMST, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -31,27 +31,24 @@ from jumanji.training.networks.transformer_block import TransformerBlock
 
 
 def make_actor_critic_networks_cmst(
-    cmst: CoopMinSpanTree,
-    num_actions: int,
+    cmst: CMST,
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `GraphColoring` environment."""
+    """Make actor-critic networks for the `CMST` environment."""
     num_values = cmst.action_spec().num_values
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
     policy_network = make_actor_network_cmst(
-        num_actions=num_actions,
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
     )
     value_network = make_critic_network_cmst(
-        num_actions=num_actions,
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -64,7 +61,7 @@ def make_actor_critic_networks_cmst(
     )
 
 
-class CoopMinSpanTreeTorso(hk.Module):
+class CMSTTorso(hk.Module):
     def __init__(
         self,
         num_transformer_layers: int,
@@ -222,14 +219,13 @@ class CoopMinSpanTreeTorso(hk.Module):
 
 
 def make_actor_network_cmst(
-    num_actions: int,
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = CoopMinSpanTreeTorso(
+        torso = CMSTTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
@@ -237,9 +233,9 @@ def make_actor_network_cmst(
             name="policy_torso",
         )
 
-        embeddings = torso(observation)  # (B, N, H)
-        logits = hk.Linear(num_actions, name="policy_head")(embeddings)  # (B, N, A)
-        # logits = jnp.squeeze(logits, axis=-1)  # (B, N)
+        num_actions = observation.action_mask.shape[-1]
+        embeddings = torso(observation)  # (B, A, H)
+        logits = hk.Linear(num_actions, name="policy_head")(embeddings)  # (B, A, N)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 
@@ -248,14 +244,13 @@ def make_actor_network_cmst(
 
 
 def make_critic_network_cmst(
-    num_actions: int,
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = CoopMinSpanTreeTorso(
+        torso = CMSTTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,

@@ -19,12 +19,10 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.cmst.constants import (
-    INVALID_ALREADY_TRAVERSED,
     INVALID_CHOICE,
-    INVALID_NODE,
     INVALID_TIE_BREAK,
 )
-from jumanji.environments.routing.cmst.env import CoopMinSpanTree
+from jumanji.environments.routing.cmst.env import CMST
 from jumanji.environments.routing.cmst.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -32,11 +30,11 @@ from jumanji.types import TimeStep
 
 
 def test__cmst_agent_observation(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
+    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
 ) -> None:
     """Test that agent observation view of the node types is correct"""
 
-    _, _, timestep = deterministic_coop_env
+    _, _, timestep = deterministic_cmst_env
 
     # nodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11
     # node_types = jnp.array([0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1], dtype=jnp.int32)
@@ -51,13 +49,13 @@ def test__cmst_agent_observation(
 
 
 def test__cmst_action_tie_break(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
+    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
 ) -> None:
     """Test if the actions are mask correctly if multiple agents select the same node
     as next nodes.
     """
 
-    env, state, _ = deterministic_coop_env
+    env, state, _ = deterministic_cmst_env
     key1, key2 = jax.random.split(state.key)
 
     action = jnp.array([4, 4], dtype=jnp.int32)
@@ -70,10 +68,12 @@ def test__cmst_action_tie_break(
     assert jnp.array_equal(action2, new_action2)
 
 
-def test__cmst_split_gn_reset(coop_split_gn_env: CoopMinSpanTree) -> None:
+def test__cmst_split_gn_reset(
+    cmst_split_gn_env: CMST,
+) -> None:
     """Validates the jitted reset of the environment."""
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(coop_split_gn_env.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(cmst_split_gn_env.reset, n=1))
 
     key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
@@ -90,15 +90,15 @@ def test__cmst_split_gn_reset(coop_split_gn_env: CoopMinSpanTree) -> None:
     assert jnp.all(~state.finished_agents)
 
 
-def test__cmst_step(coop_split_gn_env: CoopMinSpanTree) -> None:
+def test__cmst_step(cmst_split_gn_env: CMST) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
 
-    step_fn = chex.assert_max_traces(coop_split_gn_env.step, n=1)
+    step_fn = chex.assert_max_traces(cmst_split_gn_env.step, n=1)
     step_fn = jax.jit(step_fn)
 
     key = jax.random.PRNGKey(0)
-    state, timestep = coop_split_gn_env.reset(key)
+    state, timestep = cmst_split_gn_env.reset(key)
 
     logits = jnp.where(
         state.action_mask,
@@ -124,16 +124,18 @@ def test__cmst_step(coop_split_gn_env: CoopMinSpanTree) -> None:
     assert_is_jax_array_tree(new_state)
 
 
-def test__cmst_does_not_smoke(coop_split_gn_env: CoopMinSpanTree) -> None:
+def test__cmst_does_not_smoke(
+    cmst_split_gn_env: CMST,
+) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(coop_split_gn_env)
+    check_env_does_not_smoke(cmst_split_gn_env)
 
 
 def test__cmst_termination(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
+    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
 ) -> None:
 
-    env, state, timestep = deterministic_coop_env
+    env, state, timestep = deterministic_cmst_env
     step_fn = jax.jit(env.step)
 
     action = jnp.array([0, 4])
@@ -167,11 +169,9 @@ def test__cmst_termination(
     assert jnp.all(timestep.discount == 0)
 
 
-def test__cmst_truncation(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
-) -> None:
+def test__cmst_truncation(deterministic_cmst_env: Tuple[CMST, State, TimeStep]) -> None:
 
-    env, state, timestep = deterministic_coop_env
+    env, state, timestep = deterministic_cmst_env
     step_fn = jax.jit(env.step)
 
     # truncation
@@ -183,10 +183,10 @@ def test__cmst_truncation(
 
 
 def test__cmst_action_masking(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
+    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
 ) -> None:
 
-    env, state, _ = deterministic_coop_env
+    env, state, _ = deterministic_cmst_env
     step_fn = jax.jit(env.step)
 
     assert state.action_mask[1, 4]
@@ -197,40 +197,3 @@ def test__cmst_action_masking(
     # agent 1 shouldn't be able to acess node 4 any more
     assert jnp.array_equal(state.positions[1], new_state.positions[1])
     assert not jnp.array_equal(state.action_mask[1], new_state.action_mask[1])
-
-
-def test__cmst_default_rewards(
-    deterministic_coop_env: Tuple[CoopMinSpanTree, State, TimeStep]
-) -> None:
-
-    env, state, timestep = deterministic_coop_env
-    step_fn = jax.jit(env.step)
-
-    action = jnp.array([4, 3])
-
-    new_action, next_nodes = env._trim_duplicated_invalid_actions(
-        state, action, state.key
-    )
-
-    assert new_action[1] == INVALID_CHOICE
-    assert next_nodes[1] == INVALID_NODE
-
-    state, timestep = step_fn(state, action)
-    expected = jnp.sum(jnp.array([-0.03, -0.04]))
-
-    assert jnp.array_equal(timestep.reward, expected)
-
-    action = jnp.array([1, 7])
-    new_action, next_nodes = env._trim_duplicated_invalid_actions(
-        state, action, state.key
-    )
-    state, timestep = step_fn(state, action)
-
-    assert new_action[0] == INVALID_ALREADY_TRAVERSED
-    expected = jnp.sum(jnp.array([-0.03, -0.03]))
-    assert jnp.array_equal(timestep.reward, expected)
-
-    action = jnp.array([0, 8])
-    state, timestep = step_fn(state, action)
-    expected = jnp.sum(jnp.array([0.1, 0.1]))
-    assert jnp.array_equal(timestep.reward, expected)

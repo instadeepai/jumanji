@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import chex
@@ -34,15 +33,15 @@ black = (0 / 255, 0 / 255, 0 / 255)
 blue = (50 / 255, 50 / 255, 160 / 255)
 
 
-class Renderer(Viewer):
-    """Viewer class for the Cooperative Minimum Spanning Tree environment."""
+class CMSTViewer(Viewer):
+    """Viewer class for the CMST environment."""
 
     def __init__(
         self,
         num_agents: int,
-        name: str = "CoopMinSpanTree",
+        name: str = "CMST",
     ) -> None:
-        """Create a ConnectorRenderer instance for rendering the Connector environment.
+        """Create a `CMSTViewer` instance for rendering the `CMST` environment.
 
         Args:
             num_agents: Number of agents in the environment.
@@ -56,7 +55,6 @@ class Renderer(Viewer):
         self._display = self._display_human
 
         np.random.seed(0)
-        random.seed(0)
 
         self.palette: List[Tuple[float, float, float]] = []
 

@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.cmst.env.CoopMinSpanTree
+::: jumanji.environments.routing.cmst.env.CMST
     selection:
       members:
         - __init__
