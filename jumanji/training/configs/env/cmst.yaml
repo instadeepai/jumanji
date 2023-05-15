@@ -1,0 +1,27 @@
+name: cmst
+registered_version: CMST-v0
+
+network:
+    num_transformer_layers: 2
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+
+training:
+    num_epochs: 500
+    num_learner_steps_per_epoch: 100
+    n_steps: 20
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 5000
+    greedy_eval_total_batch_size: 5000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 2e-4
