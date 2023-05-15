@@ -50,7 +50,7 @@ class Tetris(Environment[State]):
             Mask of the joint action space: True if the action
             (x_position and rotation degree) is feasible
             for the current tetromino and grid state.
-    - action: `Tuple`
+    - action: multi discrete array of shape (2,)
         - rotation_index: The degree index determines the rotation of the
             tetromino: 0 corresponds to 0 degrees, 1 corresponds to 90 degrees,
             2 corresponds to 180 degrees, and 3 corresponds to 270 degrees.
@@ -77,14 +77,14 @@ class Tetris(Environment[State]):
 
     def __init__(
         self,
-        num_rows: int = 20,
+        num_rows: int = 10,
         num_cols: int = 10,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Tetris` environment.
 
         Args:
-            num_rows: number of rows of the 2D grid. Defaults to 20.
+            num_rows: number of rows of the 2D grid. Defaults to 10.
             num_cols: number of columns of the 2D grid. Defaults to 10.
         """
         self.num_rows = num_rows
