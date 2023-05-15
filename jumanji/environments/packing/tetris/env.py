@@ -292,9 +292,9 @@ class Tetris(Environment[State]):
             ),
             tetrominoe=specs.BoundedArray(
                 shape=(4, 4),
-                dtype=bool,
-                minimum=False,
-                maximum=True,
+                dtype=jnp.int32,
+                minimum=0,
+                maximum=1,
                 name="tetrominoe",
             ),
             action_mask=specs.BoundedArray(

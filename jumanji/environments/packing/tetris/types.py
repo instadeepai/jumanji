@@ -51,14 +51,14 @@ class State:
     tetrominoe_index: chex.Numeric  # index for selecting a tetrominoe
     old_tetrominoe_rotated: chex.Array  # (4, 4)
     new_tetrominoe: chex.Array  # (4, 4)
-    x_position: chex.Array  # (1,)
-    y_position: chex.Array  # (1,)
+    x_position: chex.Array  # ()
+    y_position: chex.Array  # ()
     action_mask: chex.Array  # (4, num_cols)
-    full_lines: chex.Array  # (num_rows)
-    score: chex.Array  # (1,)
-    reward: chex.Array  # (1,)
+    full_lines: chex.Array  # (num_rows,)
+    score: chex.Array  # ()
+    reward: chex.Array  # ()
     key: chex.PRNGKey  # (2,)
-    is_reset: chex.Array  # (1)
+    is_reset: chex.Array  # ()
 
 
 class Observation(NamedTuple):
