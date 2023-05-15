@@ -57,9 +57,9 @@ def full_lines() -> chex.Array:
 
 
 @pytest.fixture
-def tetrominoe() -> chex.Array:
-    """Random tetrominoe"""
-    tetrominoe = jnp.array(
+def tetromino() -> chex.Array:
+    """Random tetromino"""
+    tetromino = jnp.array(
         [
             [1, 1, 0, 0],
             [1, 0, 0, 0],
@@ -67,7 +67,7 @@ def tetrominoe() -> chex.Array:
             [0, 0, 0, 0],
         ]
     )
-    return tetrominoe
+    return tetromino
 
 
 def test_clean_lines(grid_padded: chex.Array, full_lines: chex.Array) -> None:
@@ -77,33 +77,31 @@ def test_clean_lines(grid_padded: chex.Array, full_lines: chex.Array) -> None:
     assert new_grid_padded.sum() + new_grid_padded.shape[1] - 3 == grid_padded.sum()
 
 
-def test_place_tetrominoe(grid_padded: chex.Array, tetrominoe: chex.Array) -> None:
-    """Test the jited place_tetrominoe function"""
-    place_tetrominoe_fn = jax.jit(utils.place_tetrominoe, static_argnums=2)
-    new_grid_padded, _ = place_tetrominoe_fn(grid_padded, tetrominoe, 0)
+def test_place_tetromino(grid_padded: chex.Array, tetromino: chex.Array) -> None:
+    """Test the jited place_tetromino function"""
+    place_tetromino_fn = jax.jit(utils.place_tetromino, static_argnums=2)
+    new_grid_padded, _ = place_tetromino_fn(grid_padded, tetromino, 0)
     cells_count = jnp.clip(new_grid_padded, a_max=1).sum()
     old_cells_count = jnp.clip(grid_padded, a_max=1).sum() + 4
-    assert cells_count == old_cells_count  # is the number of filled cells a tetrominoe
-    expected_binary_grid_padded = grid_padded.at[2:6, 0:4].add(tetrominoe)
+    assert cells_count == old_cells_count  # is the number of filled cells a tetromino
+    expected_binary_grid_padded = grid_padded.at[2:6, 0:4].add(tetromino)
     new_grid_padded_binary = jnp.clip(new_grid_padded, a_max=1)
     assert (expected_binary_grid_padded == new_grid_padded_binary).all()
 
 
-def test_tetrominoe_action_mask(
-    grid_padded: chex.Array, tetrominoe: chex.Array
-) -> None:
-    """Test the jited tetrominoe_action_mask function"""
-    action_mask = utils.tetrominoe_action_mask(grid_padded, tetrominoe)
+def test_tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> None:
+    """Test the jited tetromino_action_mask function"""
+    action_mask = utils.tetromino_action_mask(grid_padded, tetromino)
     expected_action_mask = jnp.array([True, True, True, False, False, False])
     assert (action_mask == expected_action_mask).all()
 
 
-def test_sample_tetrominoe_list() -> None:
-    """Test the jited sample_tetrominoe_list"""
+def test_sample_tetromino_list() -> None:
+    """Test the jited sample_tetromino_list"""
     tetrominoes_list = jnp.array(TETROMINOES_LIST)
-    sample_tetrominoe_list_fn = jax.jit(utils.sample_tetrominoe_list)
+    sample_tetromino_list_fn = jax.jit(utils.sample_tetromino_list)
     key = jax.random.PRNGKey(1)
-    tetrominoe, tetrominoe_index = sample_tetrominoe_list_fn(key, tetrominoes_list)
-    assert tetrominoe.shape == (4, 4)
-    assert tetrominoe.sum() == 4
-    assert tetrominoe_index in range(len(TETROMINOES_LIST))
+    tetromino, tetromino_index = sample_tetromino_list_fn(key, tetrominoes_list)
+    assert tetromino.shape == (4, 4)
+    assert tetromino.sum() == 4
+    assert tetromino_index in range(len(tetrominoes_list))

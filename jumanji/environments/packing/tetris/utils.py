@@ -20,63 +20,60 @@ import jax
 import jax.numpy as jnp
 
 
-def sample_tetrominoe_list(
+def sample_tetromino_list(
     key: chex.PRNGKey, tetrominoes_list: chex.Array
 ) -> Tuple[chex.Array, chex.Array]:
-    """Sample a tetrominoe from defined list of tetrominoes.
+    """Sample a tetromino from defined list of tetrominoes.
 
     Args:
         key:PRINGkey to generate a random tetrominoe
         tetrominoes_list:jnp array of all tetrominoes to sample from.
 
     Returns:
-        tetrominoe:jnp bool array of size (4,4) represents the selected tetrominoe
-        tetrominoe_index:index of the tetrominoe in the tetrominoes_list
+        tetromino:jnp bool array of size (4,4) represents the selected tetromino
+        tetromino_index:index of the tetromino in the tetrominoes_list
     """
     # Generate a reandom integer from 0 to len(tetrominoes_list)
-    tetrominoe_index = jax.random.randint(key, (), 0, len(tetrominoes_list))
-    all_rotations = tetrominoes_list[tetrominoe_index]
+    tetromino_index = jax.random.randint(key, (), 0, len(tetrominoes_list))
+    all_rotations = tetrominoes_list[tetromino_index]
     rotation_index = 0
-    tetrominoe = all_rotations[rotation_index]
-    return tetrominoe, tetrominoe_index
+    tetromino = all_rotations[rotation_index]
+    return tetromino, tetromino_index
 
 
-def tetrominoe_action_mask(
-    grid_padded: chex.Array, tetrominoe: chex.Array
-) -> chex.Array:
-    """check all possible positions for one side of a tetrominoe.
+def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> chex.Array:
+    """check all possible positions for one side of a tetromino.
     Steps:
         1) fix y=0
-        2) create a list for possible x position by checking the first line in the tetrominoe (y=0)
-        3) for each tetrominoe's x_position check if the tetrominoe
+        2) create a list for possible x position by checking the first line in the tetromino (y=0)
+        3) for each tetromino's x_position check if the tetromino
            is in the right padding and generate a boolean list.
         4) join the 2 lists to get a list for all valid positions and not in the right padding.
         5) return the resulted list.
 
     Args:
         grid_padded:grid_padded to check positions in it.
-        tetrominoe:tetrominoe to check  for all possible positions in the grid_padded.
+        tetromino:tetromino to check  for all possible positions in the grid_padded.
 
     Returns:
-        action_mask:jnp bool array of size (1,num_cols) corresponds
-        to all possible positions for one side of a tetrominoe in the grid_padded.
+        action_mask:jnp bool array of size (num_cols,) corresponds
+        to all possible positions for one side of a tetromino in the grid_padded.
     """
-    tetrominoe_mask = tetrominoe.at[1, :].set(tetrominoe[1, :] + tetrominoe[2, :])
-    tetrominoe_mask = tetrominoe_mask.at[0, :].set(
-        tetrominoe_mask[0, :] + tetrominoe_mask[1, :]
+    tetromino_mask = tetromino.at[1, :].set(tetromino[1, :] + tetromino[2, :])
+    tetromino_mask = tetromino_mask.at[0, :].set(
+        tetromino_mask[0, :] + tetromino_mask[1, :]
     )
-    tetrominoe_mask = jnp.clip(tetrominoe_mask, a_max=1)
+    tetromino_mask = jnp.clip(tetromino_mask, a_max=1)
     num_cols = grid_padded.shape[1] - 3
     list_action_mask = jnp.array(
         [
-            grid_padded.at[0:4, i : i + 4].add(tetrominoe_mask)[0:4, i : i + 4].max()
-            < 2
+            grid_padded.at[0:4, i : i + 4].add(tetromino_mask)[0:4, i : i + 4].max() < 2
             for i in range(0, num_cols)
         ]
     )
     right_cells = jnp.array(
         [
-            grid_padded.at[0:4, i : i + 4].add(tetrominoe)[:, num_cols:].max() < 1
+            grid_padded.at[0:4, i : i + 4].add(tetromino)[:, num_cols:].max() < 1
             for i in range(0, num_cols)
         ]
     )
@@ -84,27 +81,27 @@ def tetrominoe_action_mask(
     return action_mask
 
 
-def place_tetrominoe(
-    grid_padded: chex.Array, tetrominoe: chex.Array, x_position: int
+def place_tetromino(
+    grid_padded: chex.Array, tetromino: chex.Array, x_position: int
 ) -> Tuple[chex.Array, int]:
-    """Place a Tetrominoe in the Game Grid.
+    """Place a Tetromino in the Game Grid.
 
-    This function takes in a "grid" container, a "tetrominoe" block,
+    This function takes in a "grid" container, a "tetromino" block,
     and an 'x_position' value, and calculates the block's y position and
     places it in the grid.
 
     Args:
-        grid_padded: The container of the new tetrominoe.
-        tetrominoe: The tetrominoe that that that will be placed in the grid_padded.
-        x_position: The position x of the tetrominoe in the grid_padded.
+        grid_padded: The container of the new tetromino.
+        tetromino: The tetromino that that that will be placed in the grid_padded.
+        x_position: The position x of the tetromino in the grid_padded.
 
     Returns:
-        grid_padded: The updated grid_padded with the new tetrominoe.
-        y_position: Position of the tetrominoe
+        grid_padded: The updated grid_padded with the new tetromino.
+        y_position: Position of the tetromino
     """
     # `possible_positions` is a list of booleans with a size of 21,
-    # It represents all possible y positions for a tetrominoe in the grid_padded.
-    # A tetrominoe's possible position is a position where the tetrominoe is not on top
+    # It represents all possible y positions for a tetromino in the grid_padded.
+    # A tetromino's possible position is a position where the tetromino is not on top
     # of a filled cell.
     num_rows = grid_padded.shape[0] - 3
     grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
@@ -113,18 +110,18 @@ def place_tetrominoe(
             (
                 grid_padded_cliped
                 + jax.lax.dynamic_update_slice(
-                    jnp.zeros_like(grid_padded_cliped), tetrominoe, (i, x_position)
+                    jnp.zeros_like(grid_padded_cliped), tetromino, (i, x_position)
                 )
             ).max()
             < 2
             for i in range(0, num_rows)
         ]
     )
-    tetrominoe_padd = tetrominoe.sum(axis=1) > 0
+    tetromino_padd = tetromino.sum(axis=1) > 0
     # calculate the number of rows padding if needed at the begining.
     # true for possible padding and false for non possible padding.
-    tetrominoe_padd = jnp.logical_not(jnp.flip(tetrominoe_padd[1:]))
-    possible_padding = jnp.logical_and(possible_positions[-3:], tetrominoe_padd)
+    tetromino_padd = jnp.logical_not(jnp.flip(tetromino_padd[1:]))
+    possible_padding = jnp.logical_and(possible_positions[-3:], tetromino_padd)
     possible_positions = possible_positions.at[-3:].set(possible_padding)
     y_position = jax.lax.cond(
         possible_positions[:-3].sum() == possible_positions.shape[0] - 3,
@@ -136,10 +133,10 @@ def place_tetrominoe(
     # (last true before the first false).
     y_position = (jnp.argmin(possible_positions) - 1).astype(int)
     # Update the grid_padded.
-    tetrominoe_color_id = grid_padded.max() + 1
-    tetrominoe = tetrominoe * tetrominoe_color_id
+    tetromino_color_id = grid_padded.max() + 1
+    tetromino = tetromino * tetromino_color_id
     new_grid_padded = jax.lax.dynamic_update_slice(
-        grid_padded, tetrominoe, (y_position, x_position)
+        grid_padded, tetromino, (y_position, x_position)
     )
     # get the max of the old and the new grid_padded.
     grid_padded = jnp.maximum(grid_padded, new_grid_padded)

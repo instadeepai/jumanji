@@ -87,14 +87,14 @@ class TetrisViewer(Viewer):
         self._add_grid_image(grid, ax)
         return self._display(fig)
 
-    def _move_tetrominoe(
+    def _move_tetromino(
         self, state: State, old_padded_grid: chex.Array
     ) -> List[chex.Array]:
-        """shifts the tetrominoe from center to the selected position
+        """shifts the tetromino from center to the selected position
 
         Args:
             state: `State` object containing the current environment state.
-            old_padded_grid: `chex.Array` containing the grid before placing the tetrominoe.
+            old_padded_grid: `chex.Array` containing the grid before placing the tetromino.
 
         Returns:
             grids: `List[NDArray]` contais a list of grids.
@@ -105,14 +105,14 @@ class TetrisViewer(Viewer):
         # step is 1 to move to the right and -1 to move to the left
         step = 1 if center_position < state.x_position else -1
         for xi in range(center_position, state.x_position + step, step):
-            tetrominoe_zonne = jnp.zeros((4, state.grid_padded.shape[1]))
-            tetrominoe_zonne = tetrominoe_zonne.at[0:4, xi : xi + 4].add(
-                state.old_tetrominoe_rotated
+            tetromino_zonne = jnp.zeros((4, state.grid_padded.shape[1]))
+            tetromino_zonne = tetromino_zonne.at[0:4, xi : xi + 4].add(
+                state.old_tetromino_rotated
             )
             # delete the cols dedicated for the right padding
-            tetrominoe_zonne = tetrominoe_zonne[:, : self.num_cols]
-            # Stack the tetrominoe with grid position
-            mixed_grid = np.vstack((tetrominoe_zonne, grid))
+            tetromino_zonne = tetromino_zonne[:, : self.num_cols]
+            # Stack the tetromino with grid position
+            mixed_grid = np.vstack((tetromino_zonne, grid))
             grids.append(mixed_grid)
         return grids
 
@@ -143,7 +143,7 @@ class TetrisViewer(Viewer):
         return animation_list
 
     def _create_rendering_grid(self, state: State) -> chex.Array:
-        """Create a grid that contains tetrominoe and the envirement gerid.
+        """Create a grid that contains tetromino and the envirement gerid.
 
         Args:
             state: `State` object containing the current environment state.
@@ -152,40 +152,40 @@ class TetrisViewer(Viewer):
             rendering_grid: `chex.Array` (self.num_rows+4, self.num_cols)
         """
         grid = state.grid_padded[: self.num_rows, : self.num_cols]
-        tetrominoe = np.zeros((4, self.num_cols))
+        tetromino = np.zeros((4, self.num_cols))
         center_position = self.num_cols - 4
-        tetrominoe_color_id = state.grid_padded.max() + 1
-        colored_tetrominoe = state.new_tetrominoe * tetrominoe_color_id
-        tetrominoe[0:4, center_position : center_position + 4] = colored_tetrominoe
-        rendering_grid = np.vstack((tetrominoe, grid))
+        tetromino_color_id = state.grid_padded.max() + 1
+        colored_tetromino = state.new_tetromino * tetromino_color_id
+        tetromino[0:4, center_position : center_position + 4] = colored_tetromino
+        rendering_grid = np.vstack((tetromino, grid))
         return rendering_grid
 
-    def _drop_tetrominoe(
+    def _drop_tetromino(
         self, state: State, old_padded_grid: chex.Array
     ) -> List[NDArray]:
-        """Creates animation while the tetrominoe is droping verticaly.
+        """Creates animation while the tetromino is droping verticaly.
 
         Args:
             state: `State` object containing the current environment state.
-            old_padded_grid: `chex.Array` containing the grid before placing the last tetrominoe
+            old_padded_grid: `chex.Array` containing the grid before placing the last tetromino
 
         Returns:
             grids: List[NDArray] contais a list of grids.
         """
         grids = []
-        # `y_position` describes the position of the tetrominoe in the grid.
-        # `y_position` may contain a value -1 if it bellongs to first tetrominoe.
+        # `y_position` describes the position of the tetromino in the grid.
+        # `y_position` may contain a value -1 if it bellongs to first tetromino.
         y_position = state.y_position if state.y_position != -1 else self.num_rows - 1
-        # Stack the tetrominoe's rows on top of the grid.
+        # Stack the tetromino's rows on top of the grid.
         rendering_grid = jnp.vstack(
             (np.zeros((4, old_padded_grid.shape[1])), old_padded_grid)
         )
-        # the animation grid contains 4 rows at the top dedicated to show the tetrominoe.
+        # the animation grid contains 4 rows at the top dedicated to show the tetromino.
         for yi in range(y_position + 4 + 1):
-            # Place the tetrominoe.
+            # Place the tetromino.
             grid = rendering_grid.at[
                 yi : yi + 4, state.x_position : state.x_position + 4
-            ].add(state.old_tetrominoe_rotated)
+            ].add(state.old_tetromino_rotated)
             # Crop the grid (delete the 3 rows and columns padding at the bottom and the right.)
             grid = grid[: self.num_rows + 4, : self.num_cols]
             grids.append(grid)
@@ -232,8 +232,8 @@ class TetrisViewer(Viewer):
             scores.append(state.score - state.reward)
             if not state.is_reset:
                 old_grid = state.grid_padded_old
-                x_shift_grids = self._move_tetrominoe(state, old_grid)
-                y_shift_grids = self._drop_tetrominoe(state, old_grid)
+                x_shift_grids = self._move_tetromino(state, old_grid)
+                y_shift_grids = self._drop_tetromino(state, old_grid)
                 grids += x_shift_grids
                 grids += y_shift_grids
                 score = state.score - state.reward

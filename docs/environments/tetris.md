@@ -10,7 +10,7 @@ We provide here a Jax JIT-able implementation of the game Tetris. Tetris is a po
 </p>
 
 ## Observation
-The observation in Tetris includes information about the grid, the Tetrominoe and the action mask.
+The observation in Tetris includes information about the grid, the Tetromino and the action mask.
 
 - `grid`: Jax array (int32) of shape `(num_rows, num_cols)`, representing the current grid
     state. The grid is filled with zeros for the empty cells and with ones for the filled cells.
@@ -28,9 +28,9 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ]
         ```
 
-- `tetrominoe`: Jax array (int32) of shape `(4, 4)`, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.
+- `tetromino`: Jax array (int32) of shape `(4, 4)`, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.
 
-    + Here is an example of an **I** tetrominoe:
+    + Here is an example of an **I** tetromino:
         ```
         [
             [1, 0, 0, 0],
@@ -40,7 +40,7 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ]
         ```
 - `action_mask`: jax array (bool) of shape `(4, num_cols)`, indicating which actions are valid in the current state of the environment. Each row in the action mask corresponds to a Tetromino for a certain rotation (example: the first row for 0 degrees rotation, the second row for 90 degrees rotation, and so on).
-    + Here is an example of an action mask that corresponds to the same grid and the tetrominoe examples:
+    + Here is an example of an action mask that corresponds to the same grid and the tetromino examples:
 
         ```
         [
@@ -52,7 +52,7 @@ The observation in Tetris includes information about the grid, the Tetrominoe an
         ```
 ## Action
 
-The action space in Tetris is represented as a `MultiDiscreteArray` of two integer values. The first integer value corresponds to the selected X-position where the Tetrominoe will be placed, and the second integer value represents the index for the rotation degree. The rotation degree index can take four possible values: 0 for "0 degrees", 1 for "90 degrees", 2 for "180 degrees", and 3 for "270 degrees". For example, an action of [7, 2] means placing the Tetrominoe in the seventh column with a rotation of 180 degrees.
+The action space in Tetris is represented as a `MultiDiscreteArray` of two integer values. The first integer value corresponds to the selected X-position where the Tetromino will be placed, and the second integer value represents the index for the rotation degree. The rotation degree index can take four possible values: 0 for "0 degrees", 1 for "90 degrees", 2 for "180 degrees", and 3 for "270 degrees". For example, an action of [7, 2] means placing the Tetromino in the seventh column with a rotation of 180 degrees.
 
 
 ## Reward

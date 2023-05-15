@@ -31,12 +31,12 @@ class State:
         the right and 3 rows at the bottom. This padding enables the encoding of tetrominoes
         as 4x4 matrices, while ensuring that they can be placed without going out of bounds.
     grid_padded_old: similar to grid padded, used to save the grid before
-        placing the last tetrominoe.
-    tetrominoe_index: index to map the tetrominoe block.
-    old_tetrominoe_rotated: a copy of the placed tetrominoe in the last step.
-    new_tetrominoe: the new tetrominoe that needs to be placed.
-    x_position: the selected x position for the last placed tetrominoe.
-    y_position: the calculated y position for the last placed tetrominoe.
+        placing the last tetromino.
+    tetromino_index: index to map the tetromino block.
+    old_tetromino_rotated: a copy of the placed tetromino in the last step.
+    new_tetromino: the new tetromino that needs to be placed.
+    x_position: the selected x position for the last placed tetromino.
+    y_position: the calculated y position for the last placed tetromino.
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
         directions to move in.
     full_lines: saves the full lines in the last step.
@@ -48,9 +48,9 @@ class State:
 
     grid_padded: chex.Array  # (num_rows+3, num_cols+3)
     grid_padded_old: chex.Array  # (num_rows+3, num_cols+3)
-    tetrominoe_index: chex.Numeric  # ()
-    old_tetrominoe_rotated: chex.Array  # (4, 4)
-    new_tetrominoe: chex.Array  # (4, 4)
+    tetromino_index: chex.Numeric  # ()
+    old_tetromino_rotated: chex.Array  # (4, 4)
+    new_tetromino: chex.Array  # (4, 4)
     x_position: chex.Array  # ()
     y_position: chex.Array  # ()
     action_mask: chex.Array  # (4, num_cols)
@@ -65,11 +65,11 @@ class Observation(NamedTuple):
     """
     grid: the game grid, filled with zeros for the empty cells and with
         ones for the filled cells.
-    tetrominoe: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
+    tetromino: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
         orientations and columns to select.
     """
 
     grid: chex.Array  # (num_rows, num_cols)
-    tetrominoe: chex.Array  # (4, 4)
+    tetromino: chex.Array  # (4, 4)
     action_mask: chex.Array  # (4, num_cols)

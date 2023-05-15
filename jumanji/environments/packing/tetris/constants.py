@@ -22,8 +22,8 @@ REWARD_LIST = [0, 40, 100, 300, 1200]
 # TETROMINOES_LIST is a collection of 7 distinct tetromino shapes,
 # with each shape represented as a 4x4 grid of cells.
 # Each tetromino has 4 possible rotations (0, 90, 180, and 270 degrees).
-# `TETROMINOES_LIST` has shape (7, 4) where 7 is the number of tetrominoe types
-# and 4 is the number of possible rotations of each tetrominoe.
+# `TETROMINOES_LIST` has shape (7, 4) where 7 is the number of tetromino types
+# and 4 is the number of possible rotations of each tetromino.
 TETROMINOES_LIST = [
     [
         [
