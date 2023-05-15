@@ -48,7 +48,7 @@ class State:
 
     grid_padded: chex.Array  # (num_rows+3, num_cols+3)
     grid_padded_old: chex.Array  # (num_rows+3, num_cols+3)
-    tetrominoe_index: chex.Numeric  # index for selecting a tetrominoe
+    tetrominoe_index: chex.Numeric  # ()
     old_tetrominoe_rotated: chex.Array  # (4, 4)
     new_tetrominoe: chex.Array  # (4, 4)
     x_position: chex.Array  # ()

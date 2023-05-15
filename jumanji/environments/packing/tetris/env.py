@@ -256,7 +256,7 @@ class Tetris(Environment[State]):
             action_mask=action_mask,
         )
         next_timestep = jax.lax.cond(
-            action_mask.sum() == 0,
+            ~jnp.any(action_mask) | ~state.action_mask[tuple(action)],
             termination,
             transition,
             self.reward_list[nbr_full_lines],
