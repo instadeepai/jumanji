@@ -108,9 +108,7 @@ class Tetris(Environment[State]):
             ]
         )
 
-    def _calculate_action_mask(
-        self, grid_padded: chex.Array, tetrominoe_index: int
-    ) -> chex.Array:
+    def _calculate_action_mask(self, grid_padded: chex.Array, tetrominoe_index: int) -> chex.Array:
         """Calculate the mask for legal actions in the game.
 
         Args:
@@ -128,8 +126,7 @@ class Tetris(Environment[State]):
         """
         all_rotations = self.tetrominoes_list[tetrominoe_index]
         action_mask = [
-            utils.tetrominoe_action_mask(grid_padded, all_rotations[i])
-            for i in range(4)
+            utils.tetrominoe_action_mask(grid_padded, all_rotations[i]) for i in range(4)
         ]
         action_mask = jnp.array(action_mask)
         return jnp.squeeze(action_mask)
@@ -163,12 +160,8 @@ class Tetris(Environment[State]):
             timestep: TimeStep corresponding to the first timestep returned by the
                 environment.
         """
-        grid_padded = jnp.zeros(
-            shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32
-        )
-        tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(
-            key, self.tetrominoes_list
-        )
+        grid_padded = jnp.zeros(shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32)
+        tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(key, self.tetrominoes_list)
 
         action_mask = self._calculate_action_mask(grid_padded, tetrominoe_index)
         state = State(
@@ -177,12 +170,12 @@ class Tetris(Environment[State]):
             tetrominoe_index=tetrominoe_index,
             old_tetrominoe_rotated=tetrominoe,
             new_tetrominoe=tetrominoe,
-            x_position=0,
-            y_position=0,
+            x_position=jnp.array(0, jnp.int32),
+            y_position=jnp.array(0, jnp.int32),
             action_mask=action_mask,
             full_lines=jnp.full((self.num_rows), False),
-            score=0,
-            reward=0,
+            score=jnp.array(0, jnp.int32),
+            reward=jnp.array(0, float),
             key=key,
             is_reset=True,
         )
@@ -195,9 +188,7 @@ class Tetris(Environment[State]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -217,17 +208,13 @@ class Tetris(Environment[State]):
         # Rotate tetrominoe.
         tetrominoe = self._rotate(rotation_degree, tetrominoe_index)
         # Place the tetrominoe in the selected place
-        grid_padded, y_position = utils.place_tetrominoe(
-            grid_padded, tetrominoe, x_position
-        )
+        grid_padded, y_position = utils.place_tetrominoe(grid_padded, tetrominoe, x_position)
         # a line is full when it doesn't contain any 0.
         full_lines = jnp.all(grid_padded[:, : self.num_cols], axis=1)
         nbr_full_lines = sum(full_lines)
         grid_padded = utils.clean_lines(grid_padded, full_lines)
         # Generate new tetrominoe
-        new_tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(
-            key, self.tetrominoes_list
-        )
+        new_tetrominoe, tetrominoe_index = utils.sample_tetrominoe_list(key, self.tetrominoes_list)
         grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetrominoe_index)
         # The maximum should be bigger than 0.
