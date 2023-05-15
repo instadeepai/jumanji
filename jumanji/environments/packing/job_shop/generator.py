@@ -212,6 +212,7 @@ class DenseGenerator(Generator):
         max_num_ops: int,
         max_op_duration: int,
         makespan: int,
+        prob_reuse_threshold: float = 0.5,
     ):
         """Instantiate a `DenseGenerator`. Note that the `makespan` is an upper
         bound to both `max_num_ops` and `max_op_duration`, hence they are deleted.
@@ -223,6 +224,10 @@ class DenseGenerator(Generator):
             max_op_duration: the maximum processing time of any given operation.
             makespan: the length of the schedule. By construction, this will be the
                 shortest possible length of the schedule.
+            prob_reuse_threshold: the threshold probability of reusing the previous
+                job_id on a given machine. When generating the schedule, this quantity
+                determines how likely a machine is to try to reuse the job_id in the
+                previous timestep.
         """
         del max_op_duration
         del max_num_ops
@@ -238,6 +243,7 @@ class DenseGenerator(Generator):
             max_op_duration=makespan,
         )
         self.makespan = makespan
+        self.prob_reuse_threshold = prob_reuse_threshold
 
     def __call__(self, key: chex.PRNGKey) -> State:
         key, schedule_key = jax.random.split(key)
@@ -437,7 +443,7 @@ class DenseGenerator(Generator):
         # Use the previous job on the machine with some probability and
         # if the job hasn't already been scheduled in this timestep
         prev_job_id = prev_col[machine_id]
-        reuse = jax.random.uniform(reuse_key, shape=()) >= 0.5
+        reuse = jax.random.uniform(reuse_key, shape=()) >= self.prob_reuse_threshold
         is_available = _job_mask[prev_job_id]
         job_id = jax.lax.cond(
             reuse & is_available,

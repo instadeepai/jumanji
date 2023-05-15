@@ -108,9 +108,9 @@ class TestRandomGenerator:
 
 
 class TestDenseGenerator:
-    NUM_JOBS = 15
-    NUM_MACHINES = 10
-    MAKESPAN = 14
+    NUM_JOBS = 5
+    NUM_MACHINES = 3
+    MAKESPAN = 12
     MAX_NUM_OPS = MAKESPAN
     MAX_OP_DURATION = MAKESPAN
 
