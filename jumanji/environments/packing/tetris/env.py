@@ -131,7 +131,7 @@ class Tetris(Environment[State]):
             utils.tetromino_action_mask(grid_padded, all_rotations[i]) for i in range(4)
         ]
         action_mask = jnp.array(action_mask)
-        return jnp.squeeze(action_mask)
+        return action_mask
 
     def _rotate(self, rotation_index: int, tetromino_index: int) -> chex.Array:
         """Calculate the rotated tetromino matrix.
