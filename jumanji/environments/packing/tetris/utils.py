@@ -22,7 +22,7 @@ import jax.numpy as jnp
 
 def sample_tetrominoe_list(
     key: chex.PRNGKey, tetrominoes_list: chex.Array
-) -> Tuple[chex.Array, int]:
+) -> Tuple[chex.Array, chex.Array]:
     """Sample a tetrominoe from defined list of tetrominoes.
 
     Args:
@@ -34,9 +34,8 @@ def sample_tetrominoe_list(
         tetrominoe_index:index of the tetrominoe in the tetrominoes_list
     """
     # Generate a reandom integer from 0 to len(tetrominoes_list)
-    tetrominoe_index = jax.random.randint(key, (1,), 0, len(tetrominoes_list))
+    tetrominoe_index = jax.random.randint(key, (), 0, len(tetrominoes_list))
     all_rotations = tetrominoes_list[tetrominoe_index]
-    all_rotations = jnp.squeeze(all_rotations)
     rotation_index = 0
     tetrominoe = all_rotations[rotation_index]
     return tetrominoe, tetrominoe_index
