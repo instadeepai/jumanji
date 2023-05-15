@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import chex
 import jax.numpy as jnp
@@ -21,8 +21,6 @@ if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
 else:
     from chex import dataclass
-
-AgentT = TypeVar("AgentT", bound="Agent")
 
 
 @dataclass
@@ -44,7 +42,7 @@ class Agent:
         """returns: True if the agent has reached its target."""
         return jnp.all(self.position == self.target, axis=-1)
 
-    def __eq__(self: AgentT, agent_2: Any) -> chex.Array:
+    def __eq__(self: "Agent", agent_2: Any) -> chex.Array:
         if not isinstance(agent_2, Agent):
             return NotImplemented
         same_ids = (agent_2.id == self.id).all()
