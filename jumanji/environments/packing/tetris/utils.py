@@ -158,7 +158,7 @@ def clean_lines(grid_padded: chex.Array, full_lines: chex.Array) -> chex.Array:
 
     Args:
         grid_padded:Container of the game.
-        full_lines:jnp array of size(1, num_rows) contains a list of
+        full_lines:jnp array of size(num_rows,) contains a list of
         booleans that represents full lines (full lines are true, and False for uncomplete lines).
 
     Returns:
