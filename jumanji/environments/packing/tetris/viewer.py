@@ -220,7 +220,7 @@ class TetrisViewer(Viewer):
                 grid_index: `int`
             """
             ax.clear()
-            ax.invert_yaxis()  # TODO fix missing scores.
+            ax.invert_yaxis()
             fig.suptitle(f"Tetris    Score: {int(scores[grid_index])}", size=20)
             grid = grids[grid_index]
 
