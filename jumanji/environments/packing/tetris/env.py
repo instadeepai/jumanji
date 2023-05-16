@@ -213,7 +213,9 @@ class Tetris(Environment[State]):
         # Generate new PRNG key
         key, subkey = jax.random.split(state.key)
         # Rotate tetromino.
-        tetromino = self._rotate(rotation_degree, tetromino_index)
+        tetromino = (
+            state.new_tetromino
+        )  # TODO self._rotate(rotation_degree, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(
             grid_padded, tetromino, x_position

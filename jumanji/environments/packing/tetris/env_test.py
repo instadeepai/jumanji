@@ -69,10 +69,12 @@ def test_tetris_env_reset(tetris_env: Tetris) -> None:
 def test_tetris_env_step(tetris_env: Tetris) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(tetris_env.step, n=1), static_argnums=1)
+    step_fn = jax.jit(chex.assert_max_traces(tetris_env.step, n=2))
     key = jax.random.PRNGKey(0)
     state, timestep = tetris_env.reset(key)
     action = (0, 4)
+    _ = step_fn(state, action)
+    _ = step_fn(state, action)
     _ = step_fn(state, action)
     action = (0, 0)
     next_state, next_timestep = step_fn(state, action)
