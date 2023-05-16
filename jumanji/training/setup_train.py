@@ -80,7 +80,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
     env: Environment = jumanji.make(cfg.env.registered_version)
-    if isinstance(env, Tetris):
+    if isinstance(env, Connector):
         env = MultiToSingleWrapper(env)
     return env
 
@@ -126,7 +126,7 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
 
 def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
-) -> RandomPolicy:
+) -> RandomPolicy:  # noqa: CCR001
     assert cfg.agent == "random"
     if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
@@ -288,6 +288,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "tetris":
+        assert isinstance(env.unwrapped, Tetris)
+        actor_critic_networks = networks.make_actor_critic_networks_tetris(
+            tetris=env.unwrapped,
+            conv_num_channels=cfg.env.network.conv_num_channels,
+            tetromino_layer_dims=cfg.env.network.tetrominoe_layer_dims,
+            final_layer_dims=cfg.env.network.final_layer_dims,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
