@@ -31,7 +31,7 @@ def sample_tetromino_list(
 
     Returns:
         tetromino:jnp bool array of size (4,4) represents the selected tetromino
-        tetromino_index:index of the tetromino in the tetrominoes_list
+        tetromino_index: index of the tetromino in the tetrominoes_list
     """
     # Generate a reandom integer from 0 to len(tetrominoes_list)
     tetromino_index = jax.random.randint(key, (), 0, len(tetrominoes_list))
@@ -52,11 +52,11 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
         5) return the resulted list.
 
     Args:
-        grid_padded:grid_padded to check positions in it.
-        tetromino:tetromino to check  for all possible positions in the grid_padded.
+        grid_padded: grid_padded to check positions in it.
+        tetromino: tetromino to check  for all possible positions in the grid_padded.
 
     Returns:
-        action_mask:jnp bool array of size (num_cols,) corresponds
+        action_mask: jnp bool array of size (num_cols,) corresponds
         to all possible positions for one side of a tetromino in the grid_padded.
     """
     tetromino_mask = tetromino.at[1, :].set(tetromino[1, :] + tetromino[2, :])
@@ -111,13 +111,13 @@ def place_tetromino(
     places it in the grid.
 
     Args:
-        grid_padded: The container of the new tetromino.
-        tetromino: The tetromino that that that will be placed in the grid_padded.
-        x_position: The position x of the tetromino in the grid_padded.
+        grid_padded: the container of the new tetromino.
+        tetromino: the tetromino that that that will be placed in the grid_padded.
+        x_position: the position x of the tetromino in the grid_padded.
 
     Returns:
-        grid_padded: The updated grid_padded with the new tetromino.
-        y_position: Position of the tetromino
+        grid_padded: the updated grid_padded with the new tetromino.
+        y_position: position of the tetromino
     """
     # `possible_positions` is a list of booleans with a size of 21,
     # It represents all possible y positions for a tetromino in the grid_padded.
@@ -177,12 +177,12 @@ def clean_lines(grid_padded: chex.Array, full_lines: chex.Array) -> chex.Array:
         5) Return the updated grid_padded.
 
     Args:
-        grid_padded:Container of the game.
-        full_lines:jnp array of size(num_rows,) contains a list of
+        grid_padded: container of the game.
+        full_lines: jnp array of size(num_rows,) contains a list of
         booleans that represents full lines (full lines are true, and False for uncomplete lines).
 
     Returns:
-        grid_padded:updated grid_padded.
+        grid_padded: updated grid_padded.
     """
     indices = jnp.argsort(
         jnp.logical_not(full_lines)
