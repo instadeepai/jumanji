@@ -67,7 +67,7 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
     num_cols = grid_padded.shape[1] - 3
     num_rows = grid_padded.shape[0] - 3
 
-    list_action_mask = jax.vmap(
+    list_action_mask = ~jax.vmap(
         lambda x, i: jnp.any(
             jax.lax.dynamic_slice(
                 x
@@ -82,7 +82,7 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
         in_axes=(None, 0),
     )(grid_padded[:4, :], jnp.arange(num_cols))
 
-    right_cells = jax.vmap(
+    right_cells = ~jax.vmap(
         lambda x, i: jnp.any(
             jax.lax.dynamic_slice(
                 x
