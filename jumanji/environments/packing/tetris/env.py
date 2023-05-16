@@ -157,8 +157,8 @@ class Tetris(Environment[State]):
             key: needed for generating new tetrominoes.
 
         Returns:
-            state: State corresponding to the new state of the environment,
-            timestep: TimeStep corresponding to the first timestep returned by the
+            state: `State` corresponding to the new state of the environment,
+            timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
         grid_padded = jnp.zeros(
@@ -203,8 +203,8 @@ class Tetris(Environment[State]):
             action: `chex.Array` containing the rotation_index and x_position of the tetromino.
 
         Returns:
-            next_state: State corresponding to the next state of the environment,
-            next_timestep: TimeStep corresponding to the timestep returned by the environment.
+            next_state: `State` corresponding to the next state of the environment,
+            next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         rotation_degree, x_position = action
         grid_padded = state.grid_padded

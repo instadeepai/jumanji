@@ -221,7 +221,7 @@ class TetrisViewer(Viewer):
             """
             ax.clear()
             ax.invert_yaxis()  # TODO fix missing scores.
-            fig.suptitle(f"Tetris    Score: {int(scores[grid_index//2])}", size=20)
+            fig.suptitle(f"Tetris    Score: {int(scores[grid_index])}", size=20)
             grid = grids[grid_index]
 
             self._add_grid_image(grid, ax)
@@ -242,7 +242,7 @@ class TetrisViewer(Viewer):
                 ]
                 if state.full_lines.sum() > 0:
                     grids += self._crush_lines(state, grids[-1])
-            # grids.append(self.create_rendering_grid(state))
+                    scores += [score for i in range(len(grids) - len(scores))]
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
