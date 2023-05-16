@@ -65,18 +65,38 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
     )
     tetromino_mask = jnp.clip(tetromino_mask, a_max=1)
     num_cols = grid_padded.shape[1] - 3
-    list_action_mask = jnp.array(
-        [
-            grid_padded.at[0:4, i : i + 4].add(tetromino_mask)[0:4, i : i + 4].max() < 2
-            for i in range(0, num_cols)
-        ]
-    )
-    right_cells = jnp.array(
-        [
-            grid_padded.at[0:4, i : i + 4].add(tetromino)[:, num_cols:].max() < 1
-            for i in range(0, num_cols)
-        ]
-    )
+    num_rows = grid_padded.shape[0] - 3
+
+    list_action_mask = jax.vmap(
+        lambda x, i: jnp.any(
+            jax.lax.dynamic_slice(
+                x
+                + jax.lax.dynamic_update_slice(
+                    jnp.zeros_like(x), tetromino_mask, (0, i)
+                ),
+                start_indices=(0, i),
+                slice_sizes=(4, 4),
+            )
+            >= 2
+        ),
+        in_axes=(None, 0),
+    )(grid_padded[:4, :], jnp.arange(num_cols))
+
+    right_cells = jax.vmap(
+        lambda x, i: jnp.any(
+            jax.lax.dynamic_slice(
+                x
+                + jax.lax.dynamic_update_slice(
+                    jnp.zeros_like(x), tetromino_mask, (0, i)
+                ),
+                start_indices=(0, num_cols),
+                slice_sizes=(num_rows, 3),
+            )
+            >= 1
+        ),
+        in_axes=(None, 0),
+    )(grid_padded, jnp.arange(num_cols))
+
     action_mask = jnp.logical_and(list_action_mask, right_cells)
     return action_mask
 
@@ -105,18 +125,21 @@ def place_tetromino(
     # of a filled cell.
     num_rows = grid_padded.shape[0] - 3
     grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
-    possible_positions = jnp.array(
-        [
-            (
-                grid_padded_cliped
+
+    possible_positions = jax.vmap(
+        lambda x, i: ~jnp.any(
+            jax.lax.dynamic_slice(
+                x
                 + jax.lax.dynamic_update_slice(
-                    jnp.zeros_like(grid_padded_cliped), tetromino, (i, x_position)
-                )
-            ).max()
-            < 2
-            for i in range(0, num_rows)
-        ]
-    )
+                    jnp.zeros_like(x), tetromino, (i, x_position)
+                ),
+                start_indices=(i, x_position),
+                slice_sizes=(4, 4),
+            )
+            >= 2
+        ),
+        in_axes=(None, 0),
+    )(grid_padded_cliped, jnp.arange(num_rows))
     tetromino_padd = tetromino.sum(axis=1) > 0
     # calculate the number of rows padding if needed at the begining.
     # true for possible padding and false for non possible padding.

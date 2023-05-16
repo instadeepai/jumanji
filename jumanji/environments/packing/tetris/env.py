@@ -127,10 +127,9 @@ class Tetris(Environment[State]):
             and the fourth row corresponding to a rotation of 270 degrees.
         """
         all_rotations = self.TETROMINOES_LIST[tetromino_index]
-        action_mask = [
-            utils.tetromino_action_mask(grid_padded, all_rotations[i]) for i in range(4)
-        ]
-        action_mask = jnp.array(action_mask)
+        action_mask = jax.vmap(utils.tetromino_action_mask, in_axes=(None, 0))(
+            grid_padded, all_rotations
+        )
         return action_mask
 
     def _rotate(self, rotation_index: int, tetromino_index: int) -> chex.Array:
