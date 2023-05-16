@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import chex
+import jax
 import pytest
-from jax import jit
 from jax import numpy as jnp
-from jax import random
 
 from jumanji.environments.packing.tetris.env import Tetris
 from jumanji.environments.packing.tetris.types import State
@@ -51,8 +50,10 @@ def grid() -> chex.Array:
 
 def test_tetris_env_reset(tetris_env: Tetris) -> None:
     """Validates the jitted reset of the environment."""
-    reset_fn = jit(chex.assert_max_traces(tetris_env.reset, n=1))
-    key = random.PRNGKey(0)
+    reset_fn = jax.jit(chex.assert_max_traces(tetris_env.reset, n=1))
+    key = jax.random.PRNGKey(0)
+    _ = reset_fn(key)
+    # Call again to check it does not compile twice.
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
@@ -68,13 +69,13 @@ def test_tetris_env_reset(tetris_env: Tetris) -> None:
 def test_tetris_env_step(tetris_env: Tetris) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
-    step_fn = jit(chex.assert_max_traces(tetris_env.step, n=1), static_argnums=1)
-    key = random.PRNGKey(0)
+    step_fn = jax.jit(chex.assert_max_traces(tetris_env.step, n=1), static_argnums=1)
+    key = jax.random.PRNGKey(0)
     state, timestep = tetris_env.reset(key)
-    # For this board, this action will be a non-mined square
-    action = (0, 0)  # tetris_env.action_spec().generate_value()
+    action = (0, 4)
+    _ = step_fn(state, action)
+    action = (0, 0)
     next_state, next_timestep = step_fn(state, action)
-
     # Check that the state has changed
     assert not jnp.array_equal(next_state.grid_padded, state.grid_padded)
     assert next_state.grid_padded.sum() == state.grid_padded.sum() + 4
@@ -86,7 +87,7 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
 
 def test_rotate(tetris_env: Tetris) -> None:
     """Test the jited rotate method"""
-    rotate_fn = jit(tetris_env._rotate)
+    rotate_fn = jax.jit(tetris_env._rotate)
     tetromino = rotate_fn(2, 0)
     expected_tetromino = jnp.array(
         [
