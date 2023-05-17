@@ -108,7 +108,9 @@ class Tetris(Environment[State]):
             ]
         )
 
-    def _calculate_action_mask(self, grid_padded: chex.Array, tetromino_index: int) -> chex.Array:
+    def _calculate_action_mask(
+        self, grid_padded: chex.Array, tetromino_index: int
+    ) -> chex.Array:
         """Calculate the mask for legal actions in the game.
 
         Args:
@@ -159,8 +161,12 @@ class Tetris(Environment[State]):
             timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
-        grid_padded = jnp.zeros(shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32)
-        tetromino, tetromino_index = utils.sample_tetromino_list(key, self.TETROMINOES_LIST)
+        grid_padded = jnp.zeros(
+            shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32
+        )
+        tetromino, tetromino_index = utils.sample_tetromino_list(
+            key, self.TETROMINOES_LIST
+        )
 
         action_mask = self._calculate_action_mask(grid_padded, tetromino_index)
         state = State(
@@ -187,7 +193,9 @@ class Tetris(Environment[State]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -200,6 +208,7 @@ class Tetris(Environment[State]):
         """
         rotation_degree, x_position = action
         grid_padded = state.grid_padded
+        # jax.debug.print("🤯 {action} 🤯", action=action)
         action_mask = state.action_mask
         tetromino_index = state.tetromino_index
         # Generate new PRNG key
@@ -207,13 +216,17 @@ class Tetris(Environment[State]):
         # Rotate tetromino.
         tetromino = self._rotate(rotation_degree, tetromino_index)
         # Place the tetromino in the selected place
-        grid_padded, y_position = utils.place_tetromino(grid_padded, tetromino, x_position)
+        grid_padded, y_position = utils.place_tetromino(
+            grid_padded, tetromino, x_position
+        )
         # a line is full when it doesn't contain any 0.
         full_lines = jnp.all(grid_padded[:, : self.num_cols], axis=1)
         nbr_full_lines = sum(full_lines)
         grid_padded = utils.clean_lines(grid_padded, full_lines)
         # Generate new tetromino
-        new_tetromino, tetromino_index = utils.sample_tetromino_list(key, self.TETROMINOES_LIST)
+        new_tetromino, tetromino_index = utils.sample_tetromino_list(
+            key, self.TETROMINOES_LIST
+        )
         grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetromino_index)
         # The maximum should be bigger than 0.
@@ -294,14 +307,14 @@ class Tetris(Environment[State]):
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. An action consists of two pieces of information:
-        the x-position of the leftmost part of the tetromino and its amount of
-        rotation (number of 90-degree rotations).
+        the amount of rotation (number of 90-degree rotations) and the x-position of
+        the leftmost part of the tetromino.
 
         Returns:
             The action spec, which is a `specs.MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([self.num_cols, NUM_ROTATIONS]),
+            num_values=jnp.array([NUM_ROTATIONS, self.num_cols]),
             name="action",
             dtype=jnp.int32,
         )

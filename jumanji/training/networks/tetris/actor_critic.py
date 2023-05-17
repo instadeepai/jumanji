@@ -97,7 +97,7 @@ def make_network_cnn(
         output = jnp.concatenate([grid_embeddings, tetromino_embeddings], axis=-1)
         final_layers = hk.nets.MLP(final_layer_dims)
         output = final_layers(output)
-        output = output.squeeze().reshape(-1, 4, 8)
+        output = output.squeeze().reshape(-1, 4, 10)
         if critic:
             return jnp.mean(output, axis=(-1, -2))
         else:
