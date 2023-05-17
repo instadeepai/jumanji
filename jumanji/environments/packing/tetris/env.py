@@ -108,9 +108,7 @@ class Tetris(Environment[State]):
             ]
         )
 
-    def _calculate_action_mask(
-        self, grid_padded: chex.Array, tetromino_index: int
-    ) -> chex.Array:
+    def _calculate_action_mask(self, grid_padded: chex.Array, tetromino_index: int) -> chex.Array:
         """Calculate the mask for legal actions in the game.
 
         Args:
@@ -161,12 +159,8 @@ class Tetris(Environment[State]):
             timestep: `TimeStep` corresponding to the first timestep returned by the
                 environment.
         """
-        grid_padded = jnp.zeros(
-            shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32
-        )
-        tetromino, tetromino_index = utils.sample_tetromino_list(
-            key, self.TETROMINOES_LIST
-        )
+        grid_padded = jnp.zeros(shape=(self.padded_num_rows, self.padded_num_cols), dtype=jnp.int32)
+        tetromino, tetromino_index = utils.sample_tetromino_list(key, self.TETROMINOES_LIST)
 
         action_mask = self._calculate_action_mask(grid_padded, tetromino_index)
         state = State(
@@ -178,8 +172,8 @@ class Tetris(Environment[State]):
             x_position=jnp.array(0, jnp.int32),
             y_position=jnp.array(0, jnp.int32),
             action_mask=action_mask,
-            full_lines=jnp.full((self.num_rows), False),
-            score=jnp.array(0, jnp.int32),
+            full_lines=jnp.full((self.num_rows + 3), False),
+            score=jnp.array(0, float),
             reward=jnp.array(0, float),
             key=key,
             is_reset=True,
@@ -193,9 +187,7 @@ class Tetris(Environment[State]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -213,21 +205,15 @@ class Tetris(Environment[State]):
         # Generate new PRNG key
         key, subkey = jax.random.split(state.key)
         # Rotate tetromino.
-        tetromino = (
-            state.new_tetromino
-        )  # TODO self._rotate(rotation_degree, tetromino_index)
+        tetromino = self._rotate(rotation_degree, tetromino_index)
         # Place the tetromino in the selected place
-        grid_padded, y_position = utils.place_tetromino(
-            grid_padded, tetromino, x_position
-        )
+        grid_padded, y_position = utils.place_tetromino(grid_padded, tetromino, x_position)
         # a line is full when it doesn't contain any 0.
         full_lines = jnp.all(grid_padded[:, : self.num_cols], axis=1)
         nbr_full_lines = sum(full_lines)
         grid_padded = utils.clean_lines(grid_padded, full_lines)
         # Generate new tetromino
-        new_tetromino, tetromino_index = utils.sample_tetromino_list(
-            key, self.TETROMINOES_LIST
-        )
+        new_tetromino, tetromino_index = utils.sample_tetromino_list(key, self.TETROMINOES_LIST)
         grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetromino_index)
         # The maximum should be bigger than 0.
