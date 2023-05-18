@@ -208,7 +208,6 @@ class Tetris(Environment[State]):
         """
         rotation_degree, x_position = action
         grid_padded = state.grid_padded
-        # jax.debug.print("🤯 {action} 🤯", action=action)
         action_mask = state.action_mask
         tetromino_index = state.tetromino_index
         # Generate new PRNG key

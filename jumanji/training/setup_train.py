@@ -294,7 +294,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         actor_critic_networks = networks.make_actor_critic_networks_tetris(
             tetris=env.unwrapped,
             conv_num_channels=cfg.env.network.conv_num_channels,
-            tetromino_layer_dims=cfg.env.network.tetrominoe_layer_dims,
+            tetromino_layers=cfg.env.network.tetromino_layers,
             final_layer_dims=cfg.env.network.final_layer_dims,
         )
     else:
