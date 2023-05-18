@@ -57,7 +57,7 @@ class DummyGenerator(Generator):
 
     def __call__(self, key: PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a travelling salesman
-        problem instance without any visited jobs.
+        problem instance without any visited cities.
 
         Args:
             key: jax random key for any stochasticity used in the generation process. Not used
