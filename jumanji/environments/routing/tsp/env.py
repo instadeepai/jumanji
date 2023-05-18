@@ -23,6 +23,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
 from jumanji.environments.routing.tsp.viewer import TSPViewer
@@ -90,14 +91,15 @@ class TSP(Environment[State]):
 
     def __init__(
         self,
-        num_cities: int = 20,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `TSP` environment.
 
         Args:
-            num_cities: number of cities to visit. Defaults to 20.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                Default option is 'RandomGenerator' which defaults to a TSP instance with 20 cities.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
@@ -105,7 +107,10 @@ class TSP(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `TSPViewer` with "human" render mode.
         """
 
-        self.num_cities = num_cities
+        self.generator = generator or RandomGenerator(
+            num_cities=20,
+        )
+        self.num_cities = self.generator.num_cities
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or TSPViewer(name="TSP", render_mode="human")
 
@@ -123,18 +128,7 @@ class TSP(Environment[State]):
             timestep: TimeStep object corresponding to the first timestep returned
                 by the environment.
         """
-        key, sample_key = jax.random.split(key)
-        coordinates = jax.random.uniform(
-            sample_key, (self.num_cities, 2), minval=0, maxval=1
-        )
-        state = State(
-            coordinates=coordinates,
-            position=jnp.array(-1, jnp.int32),
-            visited_mask=jnp.zeros(self.num_cities, dtype=bool),
-            trajectory=jnp.full(self.num_cities, -1, jnp.int32),
-            num_visited=jnp.array(0, jnp.int32),
-            key=key,
-        )
+        state = self.generator(key)
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
