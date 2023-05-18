@@ -82,10 +82,9 @@ class RandomGenerator(Generator):
             f"percent connected={self.percent_connected * 100}% "
         )
 
-    def _create_edges(self, key: chex.PRNGKey) -> chex.Array:
-        """
-        Creates an adjacency matrix representing the edges of an undirected graph
-        using the Erdős-Rényi model G(n, p).
+    def __call__(self, key: chex.PRNGKey) -> chex.Array:
+        """Generate a random graph adjacency matrix representing
+        the edges of an undirected graph using the Erdős-Rényi model G(n, p).
         Args:
             key: A Chex PRNGKey used for random number generation.
         Returns:
@@ -105,21 +104,7 @@ class RandomGenerator(Generator):
 
         # Make sure the graph is undirected (symmetric) and without self-loops.
         adj_matrix = jnp.tril(adj_matrix, k=-1)  # Keep only the lower triangular part.
-        adj_matrix += (
-            adj_matrix.T
-        )  # Copy the lower triangular part to the upper triangular part.
+        # Copy the lower triangular part to the upper triangular part.
+        adj_matrix += adj_matrix.T
 
-        return adj_matrix
-
-    def __call__(self, key: chex.PRNGKey) -> chex.Array:
-        """Generate a random graph.
-
-        Args:
-            key: random key (consumed).
-
-        Returns:
-            An `adj_matrix` of shape (num_nodes, num_nodes)
-                representing the adjacency matrix of the graph.
-        """
-        adj_matrix = self._create_edges(key)
         return adj_matrix
