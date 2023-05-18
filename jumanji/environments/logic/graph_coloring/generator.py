@@ -70,8 +70,8 @@ class RandomGenerator(Generator):
         self.num_nodes = num_nodes or 100
         self.percent_connected = percent_connected or 0.8
         assert (
-            self.percent_connected < 1
-        ), f"percent_connected={self.percent_connected} exceeds edges of a fully-connected graph."
+            0 < self.percent_connected < 1
+        ), f"percent_connected={self.percent_connected} must be between 0 and 1."
 
     def get_num_nodes(self) -> int:
         return self.num_nodes
