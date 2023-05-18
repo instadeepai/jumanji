@@ -51,9 +51,7 @@ class DummyGenerator(Generator):
     """
 
     def __init__(self) -> None:
-        super().__init__(
-            num_cities=5,
-        )
+        super().__init__(num_cities=5)
 
     def __call__(self, key: PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a travelling salesman
