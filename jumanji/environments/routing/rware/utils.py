@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 from jumanji.tree_utils import tree_add_element, tree_slice
 
-from zathura.environments.routing.rware.types import (
+from jumanji.environments.routing.rware.types import (
     _AGENTS,
     _SHELVES,
     Action,

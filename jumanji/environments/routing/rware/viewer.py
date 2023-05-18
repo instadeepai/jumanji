@@ -26,7 +26,7 @@ from jumanji.viewer import Viewer
 from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
-from zathura.environments.routing.rware.types import Direction, State
+from jumanji.environments.routing.rware.types import Direction, State
 
 RAD2DEG = 57.29577951308232
 FIGURE_SIZE = (5, 5)

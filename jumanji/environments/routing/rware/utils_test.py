@@ -18,14 +18,14 @@ import jax.numpy as jnp
 import pytest
 from jumanji.tree_utils import tree_slice
 
-from zathura.environments.routing.rware.types import (
+from jumanji.environments.routing.rware.types import (
     Action,
     Agent,
     Position,
     Shelf,
     State,
 )
-from zathura.environments.routing.rware.utils import (
+from jumanji.environments.routing.rware.utils import (
     calculate_num_observation_features,
     compute_action_mask,
     get_agent_view,

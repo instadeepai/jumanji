@@ -16,7 +16,7 @@ import chex
 import jax
 import pytest
 
-from zathura.environments.routing.rware.generator import RandomGenerator
+from jumanji.environments.routing.rware.generator import RandomGenerator
 
 
 @pytest.fixture

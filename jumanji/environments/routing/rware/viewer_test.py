@@ -20,8 +20,8 @@ import numpy as jnp
 import py
 import pytest
 
-from zathura.environments.routing.rware import Rware
-from zathura.environments.routing.rware.viewer import RwareViewer
+from jumanji.environments.routing.rware import Rware
+from jumanji.environments.routing.rware.viewer import RwareViewer
 
 
 def test_rware_viewer__render(

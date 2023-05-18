@@ -23,8 +23,8 @@ from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep
 
-from zathura.environments.routing.rware.env import Rware
-from zathura.environments.routing.rware.types import State
+from jumanji.environments.routing.rware.env import Rware
+from jumanji.environments.routing.rware.types import State
 
 
 def test_rware__specs(rware_env: Rware) -> None:

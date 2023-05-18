@@ -25,9 +25,9 @@ from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep, restart, transition, truncation
 from jumanji.viewer import Viewer
 
-from zathura.environments.routing.rware import utils
-from zathura.environments.routing.rware.generator import Generator, RandomGenerator
-from zathura.environments.routing.rware.types import (
+from jumanji.environments.routing.rware import utils
+from jumanji.environments.routing.rware.generator import Generator, RandomGenerator
+from jumanji.environments.routing.rware.types import (
     _SHELVES,
     Action,
     Agent,
@@ -36,7 +36,7 @@ from zathura.environments.routing.rware.types import (
     Shelf,
     State,
 )
-from zathura.environments.routing.rware.viewer import RwareViewer
+from jumanji.environments.routing.rware.viewer import RwareViewer
 
 
 class Rware(Environment[State]):

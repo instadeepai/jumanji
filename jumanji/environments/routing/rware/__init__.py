@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from zathura.environments.routing.rware.env import Rware
-from zathura.environments.routing.rware.types import Observation, State
+from jumanji.environments.routing.rware.env import Rware
+from jumanji.environments.routing.rware.types import Observation, State

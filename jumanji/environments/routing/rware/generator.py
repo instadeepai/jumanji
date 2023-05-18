@@ -19,8 +19,8 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from zathura.environments.routing.rware import utils
-from zathura.environments.routing.rware.types import State
+from jumanji.environments.routing.rware import utils
+from jumanji.environments.routing.rware.types import State
 
 
 class Generator(abc.ABC):

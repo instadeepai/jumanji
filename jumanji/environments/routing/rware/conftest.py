@@ -19,9 +19,9 @@ import jax.numpy as jnp
 import pytest
 from jumanji.types import TimeStep
 
-from zathura.environments.routing.rware import Rware
-from zathura.environments.routing.rware.generator import RandomGenerator
-from zathura.environments.routing.rware.types import Agent, Position, Shelf, State
+from jumanji.environments.routing.rware import Rware
+from jumanji.environments.routing.rware.generator import RandomGenerator
+from jumanji.environments.routing.rware.types import Agent, Position, Shelf, State
 
 
 @pytest.fixture(scope="module")
