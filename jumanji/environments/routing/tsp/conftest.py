@@ -15,7 +15,7 @@
 import jax
 import jax.numpy as jnp
 import pytest
-from chex import PRNGKey
+import chex
 
 from jumanji.environments.routing.tsp.env import TSP
 from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
