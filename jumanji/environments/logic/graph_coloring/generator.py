@@ -48,7 +48,6 @@ class RandomGenerator(Generator):
     The adjacency matrix is generated such that the graph is undirected and loop-less.
     The graph is generated with a specified number of nodes and percentage of connectivity,
     which is used as a proxy for the edge probability in the Erdős-Rényi model.
-
     """
 
     def __init__(
