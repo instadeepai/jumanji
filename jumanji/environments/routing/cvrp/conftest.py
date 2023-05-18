@@ -69,6 +69,15 @@ class DummyGenerator(Generator):
         )
 
     def __call__(self, key: PRNGKey) -> State:
+        """Call method responsible for generating a new state. It returns a capacitated vehicle
+        routing problem without any visited cities and starting at the depot node.
+
+        Args:
+            key: jax random key for any stochasticity used in the generation process. Not used
+                in this instance generator.
+        Returns:
+            A CVRP State.
+        """
         del key
 
         coordinates = jnp.array(
