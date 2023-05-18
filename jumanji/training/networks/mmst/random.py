@@ -18,6 +18,6 @@ from jumanji.training.networks.masked_categorical_random import (
 from jumanji.training.networks.protocols import RandomPolicy
 
 
-def make_random_policy_cmst() -> RandomPolicy:
-    """Make random policy for the CMST environment."""
+def make_random_policy_mmst() -> RandomPolicy:
+    """Make random policy for the MMST environment."""
     return masked_categorical_random

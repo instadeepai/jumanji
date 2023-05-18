@@ -18,28 +18,28 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst.env import CMST
-from jumanji.environments.routing.cmst.types import State
-from jumanji.environments.routing.cmst.viewer import CMSTViewer
+from jumanji.environments.routing.mmst.env import MMST
+from jumanji.environments.routing.mmst.types import State
+from jumanji.environments.routing.mmst.viewer import MMSTViewer
 from jumanji.types import TimeStep
 
 
-def test__render(deterministic_cmst_env: Tuple[CMST, State, TimeStep]) -> None:
+def test__render(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
     """Test that viewer works and the frame is saved."""
 
-    env, state, _ = deterministic_cmst_env
-    viewer = CMSTViewer(
+    env, state, _ = deterministic_mmst_env
+    viewer = MMSTViewer(
         env.num_agents,
     )
 
     viewer.render(state)
 
 
-def test__animation(deterministic_cmst_env: Tuple[CMST, State, TimeStep]) -> None:
+def test__animation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
     """Test the viewer's animation function."""
 
-    env, state, _ = deterministic_cmst_env
-    viewer = CMSTViewer(
+    env, state, _ = deterministic_mmst_env
+    viewer = MMSTViewer(
         env.num_agents,
     )
     step_fn = jax.jit(env.step)

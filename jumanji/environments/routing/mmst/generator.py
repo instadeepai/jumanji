@@ -19,15 +19,15 @@ import jax
 from chex import Array, PRNGKey
 from jax import numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import EMPTY_NODE
-from jumanji.environments.routing.cmst.utils import (
+from jumanji.environments.routing.mmst.constants import EMPTY_NODE
+from jumanji.environments.routing.mmst.utils import (
     build_adjecency_matrix,
     multi_random_walk,
 )
 
 
 class Generator(ABC):
-    """Base class for generators for the `CMST` environment."""
+    """Base class for generators for the `MMST` environment."""
 
     def __init__(
         self,

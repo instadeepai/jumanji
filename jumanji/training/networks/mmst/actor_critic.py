@@ -19,7 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst import CMST, Observation
+from jumanji.environments.routing.mmst import MMST, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -30,25 +30,25 @@ from jumanji.training.networks.parametric_distribution import (
 from jumanji.training.networks.transformer_block import TransformerBlock
 
 
-def make_actor_critic_networks_cmst(
-    cmst: CMST,
+def make_actor_critic_networks_mmst(
+    mmst: MMST,
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `CMST` environment."""
-    num_values = cmst.action_spec().num_values
+    """Make actor-critic networks for the `MMST` environment."""
+    num_values = mmst.action_spec().num_values
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
-    policy_network = make_actor_network_cmst(
+    policy_network = make_actor_network_mmst(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
     )
-    value_network = make_critic_network_cmst(
+    value_network = make_critic_network_mmst(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -61,7 +61,7 @@ def make_actor_critic_networks_cmst(
     )
 
 
-class CMSTTorso(hk.Module):
+class MMSTTorso(hk.Module):
     def __init__(
         self,
         num_transformer_layers: int,
@@ -218,14 +218,14 @@ class CMSTTorso(hk.Module):
         return new_embedding
 
 
-def make_actor_network_cmst(
+def make_actor_network_mmst(
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = CMSTTorso(
+        torso = MMSTTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
@@ -243,14 +243,14 @@ def make_actor_network_cmst(
     return FeedForwardNetwork(init=init, apply=apply)
 
 
-def make_critic_network_cmst(
+def make_critic_network_mmst(
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = CMSTTorso(
+        torso = MMSTTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,

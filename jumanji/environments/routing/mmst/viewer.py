@@ -22,7 +22,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.mmst.types import State
 from jumanji.viewer import Viewer
 
 grey = (100 / 255, 100 / 255, 100 / 255)
@@ -33,15 +33,15 @@ black = (0 / 255, 0 / 255, 0 / 255)
 blue = (50 / 255, 50 / 255, 160 / 255)
 
 
-class CMSTViewer(Viewer):
-    """Viewer class for the CMST environment."""
+class MMSTViewer(Viewer):
+    """Viewer class for the MMST environment."""
 
     def __init__(
         self,
         num_agents: int,
-        name: str = "CMST",
+        name: str = "MMST",
     ) -> None:
-        """Create a `CMSTViewer` instance for rendering the `CMST` environment.
+        """Create a `MMSTViewer` instance for rendering the `MMST` environment.
 
         Args:
             num_agents: Number of agents in the environment.

@@ -18,23 +18,23 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import (
+from jumanji.environments.routing.mmst.constants import (
     INVALID_CHOICE,
     INVALID_TIE_BREAK,
 )
-from jumanji.environments.routing.cmst.env import CMST
-from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.mmst.env import MMST
+from jumanji.environments.routing.mmst.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
-def test__cmst_agent_observation(
-    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
+def test__mmst_agent_observation(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
     """Test that agent observation view of the node types is correct"""
 
-    _, _, timestep = deterministic_cmst_env
+    _, _, timestep = deterministic_mmst_env
 
     # nodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11
     # node_types = jnp.array([0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1], dtype=jnp.int32)
@@ -48,14 +48,14 @@ def test__cmst_agent_observation(
     assert jnp.array_equal(timestep.observation.node_types, obs_node_types)
 
 
-def test__cmst_action_tie_break(
-    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
+def test__mmst_action_tie_break(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
     """Test if the actions are mask correctly if multiple agents select the same node
     as next nodes.
     """
 
-    env, state, _ = deterministic_cmst_env
+    env, state, _ = deterministic_mmst_env
     key1, key2 = jax.random.split(state.key)
 
     action = jnp.array([4, 4], dtype=jnp.int32)
@@ -68,12 +68,12 @@ def test__cmst_action_tie_break(
     assert jnp.array_equal(action2, new_action2)
 
 
-def test__cmst_split_gn_reset(
-    cmst_split_gn_env: CMST,
+def test__mmst_split_gn_reset(
+    mmst_split_gn_env: MMST,
 ) -> None:
     """Validates the jitted reset of the environment."""
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(cmst_split_gn_env.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(mmst_split_gn_env.reset, n=1))
 
     key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
@@ -90,15 +90,15 @@ def test__cmst_split_gn_reset(
     assert jnp.all(~state.finished_agents)
 
 
-def test__cmst_step(cmst_split_gn_env: CMST) -> None:
+def test__mmst_step(mmst_split_gn_env: MMST) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
 
-    step_fn = chex.assert_max_traces(cmst_split_gn_env.step, n=1)
+    step_fn = chex.assert_max_traces(mmst_split_gn_env.step, n=1)
     step_fn = jax.jit(step_fn)
 
     key = jax.random.PRNGKey(0)
-    state, timestep = cmst_split_gn_env.reset(key)
+    state, timestep = mmst_split_gn_env.reset(key)
 
     logits = jnp.where(
         state.action_mask,
@@ -124,18 +124,18 @@ def test__cmst_step(cmst_split_gn_env: CMST) -> None:
     assert_is_jax_array_tree(new_state)
 
 
-def test__cmst_does_not_smoke(
-    cmst_split_gn_env: CMST,
+def test__mmst_does_not_smoke(
+    mmst_split_gn_env: MMST,
 ) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(cmst_split_gn_env)
+    check_env_does_not_smoke(mmst_split_gn_env)
 
 
-def test__cmst_termination(
-    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
+def test__mmst_termination(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
 
-    env, state, timestep = deterministic_cmst_env
+    env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
     action = jnp.array([0, 4])
@@ -169,9 +169,9 @@ def test__cmst_termination(
     assert jnp.all(timestep.discount == 0)
 
 
-def test__cmst_truncation(deterministic_cmst_env: Tuple[CMST, State, TimeStep]) -> None:
+def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
 
-    env, state, timestep = deterministic_cmst_env
+    env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
     # truncation
@@ -182,11 +182,11 @@ def test__cmst_truncation(deterministic_cmst_env: Tuple[CMST, State, TimeStep]) 
     assert not jnp.all(timestep.discount == 0)
 
 
-def test__cmst_action_masking(
-    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
+def test__mmst_action_masking(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
 
-    env, state, _ = deterministic_cmst_env
+    env, state, _ = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
     assert state.action_mask[1, 4]

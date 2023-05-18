@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.cmst.env.CMST
+::: jumanji.environments.routing.mmst.env.MMST
     selection:
       members:
         - __init__

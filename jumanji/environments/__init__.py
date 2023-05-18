@@ -24,18 +24,18 @@ from jumanji.environments.packing.job_shop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.routing import (
     cleaner,
-    cmst,
     connector,
     cvrp,
     maze,
+    mmst,
     snake,
     tsp,
 )
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.cmst.env import CMST
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
+from jumanji.environments.routing.mmst.env import MMST
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
 

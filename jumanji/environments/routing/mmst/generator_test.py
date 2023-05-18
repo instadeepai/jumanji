@@ -17,8 +17,8 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import UTILITY_NODE
-from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
+from jumanji.environments.routing.mmst.constants import UTILITY_NODE
+from jumanji.environments.routing.mmst.generator import SplitRandomGenerator
 
 
 def check_generator(params: Tuple, data: Tuple) -> None:

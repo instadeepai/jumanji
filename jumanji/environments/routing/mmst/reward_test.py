@@ -17,24 +17,24 @@ from typing import Tuple
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import (
+from jumanji.environments.routing.mmst.constants import (
     INVALID_ALREADY_TRAVERSED,
     INVALID_CHOICE,
     INVALID_NODE,
 )
-from jumanji.environments.routing.cmst.env import CMST
-from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.mmst.env import MMST
+from jumanji.environments.routing.mmst.types import State
 from jumanji.types import TimeStep
 
 
-def test__cmst_dense_rewards(
-    deterministic_cmst_env: Tuple[CMST, State, TimeStep]
+def test__mmst_dense_rewards(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
     """Test that the defautl dense reward function works correctly."""
 
     # Default reward values are (0.1, -0.03, -0.01)
     # for (connection, no connection, invalid action)
-    env, state, timestep = deterministic_cmst_env
+    env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
     action = jnp.array([4, 3])

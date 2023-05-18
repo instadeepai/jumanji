@@ -18,29 +18,29 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.cmst.env import CMST
-from jumanji.environments.routing.cmst.generator import SplitRandomGenerator
-from jumanji.environments.routing.cmst.types import State
-from jumanji.environments.routing.cmst.utils import build_adjecency_matrix
+from jumanji.environments.routing.mmst.env import MMST
+from jumanji.environments.routing.mmst.generator import SplitRandomGenerator
+from jumanji.environments.routing.mmst.types import State
+from jumanji.environments.routing.mmst.utils import build_adjecency_matrix
 from jumanji.types import TimeStep, restart
 
 
 @pytest.fixture(scope="module")
-def cmst_split_gn_env() -> CMST:
-    """Instantiates a default `CMST` environment."""
-    return CMST(
+def mmst_split_gn_env() -> MMST:
+    """Instantiates a default `MMST` environment."""
+    return MMST(
         generator_fn=None,
         reward_fn=None,
     )
 
 
 @pytest.fixture(scope="module")
-def deterministic_cmst_env() -> Tuple[CMST, State, TimeStep]:
-    """Instantiates a `CMST` environment."""
+def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
+    """Instantiates a `MMST` environment."""
 
     num_nodes_per_agent = 3
 
-    env = CMST(
+    env = MMST(
         generator_fn=SplitRandomGenerator(
             num_nodes=12,
             num_edges=18,

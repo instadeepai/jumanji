@@ -1,10 +1,10 @@
-# CMST Environment
+# MMST Environment
 
 <p align="center">
-        <img src="../env_anim/cmst.gif" width="600"/>
+        <img src="../env_anim/mmst.gif" width="600"/>
 </p>
 
-The cooperative minimum spanning tree (cmst) environment consists of a random connected graph
+The cooperative minimum spanning tree (mmst) environment consists of a random connected graph
 with groups of nodes (same node types) that needs to be connected.
 The goal of the environment is to connect all nodes of the same type together
 without using the same utility nodes (nodes that do not belong to any group of nodes).
@@ -73,4 +73,4 @@ The total step reward is the sum of rewards per agent.
 
 
 ## Registered Versions 📖
-- `CMST-v0`, 2 agents, 12 nodes, 24 edges and 3 nodes to connect per agent.
+- `MMST-v0`, 2 agents, 12 nodes, 24 edges and 3 nodes to connect per agent.

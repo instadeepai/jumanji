@@ -70,9 +70,9 @@ register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 # Connector with grid size of 10 and 5 agents.
 register(id="Connector-v1", entry_point="jumanji.environments:Connector")
 
-# CMST with 2 agents, 12 nodes, 24 edges and 3 nodes to connect
+# MMST with 2 agents, 12 nodes, 24 edges and 3 nodes to connect
 # per agent.
-register(id="CMST-v0", entry_point="jumanji.environments:CMST")
+register(id="MMST-v0", entry_point="jumanji.environments:MMST")
 
 # CVRP with 20 randomly generated nodes, a maximum capacity of 30,
 # a maximum demand for each node of 10, and a dense reward function.

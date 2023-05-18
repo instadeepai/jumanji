@@ -18,7 +18,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.cmst.utils import (
+from jumanji.environments.routing.mmst.utils import (
     build_adjecency_matrix,
     check_num_edges,
     correct_edge_code_offset,

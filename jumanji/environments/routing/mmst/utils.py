@@ -19,8 +19,8 @@ import jax
 import numpy as np
 from jax import numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import EMPTY_EDGE, EMPTY_NODE
-from jumanji.environments.routing.cmst.types import Graph
+from jumanji.environments.routing.mmst.constants import EMPTY_EDGE, EMPTY_NODE
+from jumanji.environments.routing.mmst.types import Graph
 
 
 def build_adjecency_matrix(num_nodes: int, edges: jnp.ndarray) -> jnp.ndarray:

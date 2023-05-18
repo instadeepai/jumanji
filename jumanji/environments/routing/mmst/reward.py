@@ -18,21 +18,21 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.cmst.constants import (
+from jumanji.environments.routing.mmst.constants import (
     INVALID_CHOICE,
     INVALID_TIE_BREAK,
 )
-from jumanji.environments.routing.cmst.types import State
+from jumanji.environments.routing.mmst.types import State
 
 
 class RewardFn(abc.ABC):
-    """Abstract class for `CMST` rewards."""
+    """Abstract class for `MMST` rewards."""
 
     @abc.abstractmethod
     def __call__(
         self, state: State, actions: chex.Array, nodes_to_connect: chex.Array
     ) -> chex.Array:
-        """The reward function used in the `CMST` environment.
+        """The reward function used in the `MMST` environment.
 
         Args:
             state: Environment state

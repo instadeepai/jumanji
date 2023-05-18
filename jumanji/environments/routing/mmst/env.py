@@ -20,7 +20,7 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.cmst.constants import (
+from jumanji.environments.routing.mmst.constants import (
     DUMMY_NODE,
     EMPTY_NODE,
     INVALID_ALREADY_TRAVERSED,
@@ -29,16 +29,16 @@ from jumanji.environments.routing.cmst.constants import (
     INVALID_TIE_BREAK,
     UTILITY_NODE,
 )
-from jumanji.environments.routing.cmst.generator import Generator, SplitRandomGenerator
-from jumanji.environments.routing.cmst.reward import DenseRewardFn, RewardFn
-from jumanji.environments.routing.cmst.types import Observation, State
-from jumanji.environments.routing.cmst.viewer import CMSTViewer
+from jumanji.environments.routing.mmst.generator import Generator, SplitRandomGenerator
+from jumanji.environments.routing.mmst.reward import DenseRewardFn, RewardFn
+from jumanji.environments.routing.mmst.types import Observation, State
+from jumanji.environments.routing.mmst.viewer import MMSTViewer
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
-class CMST(Environment[State]):
-    """The `CMST` (Cooperative Minimum Spanning Tree) environment
+class MMST(Environment[State]):
+    """The `MMST` (Multi Minimum Spanning Tree) environment
     consists of a random connected graph
     with groups of nodes (same node types) that needs to be connected.
     The goal of the environment is to connect all nodes of the same type together
@@ -119,7 +119,7 @@ class CMST(Environment[State]):
         step_limit: int = 50,
         viewer: Optional[Viewer[State]] = None,
     ):
-        """Create the `CMST` environment.
+        """Create the `MMST` environment.
 
         Args:
             generator_fn: `Generator` whose `__call__` instantiates an environment instance.
@@ -127,7 +127,7 @@ class CMST(Environment[State]):
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DefualtRewardFn`]. Defaults to `DefaultRewardFn`.
             step_limit: the number of steps allowed before an episode terminates. Defaults to 50.
-            viewer: `Viewer` used for rendering. Defaults to `CMSTViewer`
+            viewer: `Viewer` used for rendering. Defaults to `MMSTViewer`
         """
 
         self._generator_fn = generator_fn or SplitRandomGenerator(
@@ -695,7 +695,7 @@ class CMST(Environment[State]):
             Array of rgb pixel values in the shape (width, height, rgb).
         """
         if self._renderer is None:
-            self._renderer = CMSTViewer(
+            self._renderer = MMSTViewer(
                 self.num_agents,
             )
 
@@ -715,7 +715,7 @@ class CMST(Environment[State]):
             save_path: Optional path to save the animation.
         """
         if self._renderer is None:
-            self._renderer = CMSTViewer(
+            self._renderer = MMSTViewer(
                 self.num_agents,
             )
         self._renderer.animate(states, interval, save_path)

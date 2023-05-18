@@ -24,8 +24,6 @@ from jumanji.training.networks.cleaner.actor_critic import (
     make_actor_critic_networks_cleaner,
 )
 from jumanji.training.networks.cleaner.random import make_random_policy_cleaner
-from jumanji.training.networks.cmst.actor_critic import make_actor_critic_networks_cmst
-from jumanji.training.networks.cmst.random import make_random_policy_cmst
 from jumanji.training.networks.connector.actor_critic import (
     make_actor_critic_networks_connector,
 )
@@ -50,6 +48,8 @@ from jumanji.training.networks.minesweeper.actor_critic import (
     make_actor_critic_networks_minesweeper,
 )
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
+from jumanji.training.networks.mmst.actor_critic import make_actor_critic_networks_mmst
+from jumanji.training.networks.mmst.random import make_random_policy_mmst
 from jumanji.training.networks.rubiks_cube.actor_critic import (
     make_actor_critic_networks_rubiks_cube,
 )
