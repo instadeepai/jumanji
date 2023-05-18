@@ -26,9 +26,7 @@ class Generator(abc.ABC):
     for generating a problem instance when the environment is reset.
     """
 
-    def __init__(self,
-                 num_cities: int
-    ):
+    def __init__(self, num_cities: int):
         """Abstract class implementing the attribute `num_cities`.
 
         Args:

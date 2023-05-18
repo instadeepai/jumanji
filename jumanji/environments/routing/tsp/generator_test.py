@@ -17,9 +17,7 @@ import jax
 import pytest
 
 from jumanji.environments.routing.tsp.conftest import DummyGenerator
-from jumanji.environments.routing.tsp.generator import (
-    RandomGenerator,
-)
+from jumanji.environments.routing.tsp.generator import RandomGenerator
 from jumanji.environments.routing.tsp.types import State
 from jumanji.testing.pytrees import assert_trees_are_different, assert_trees_are_equal
 

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import jax
 import jax.numpy as jnp
+import pytest
 from chex import PRNGKey
 
 from jumanji.environments.routing.tsp.env import TSP
+from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
 from jumanji.environments.routing.tsp.reward import DenseReward, SparseReward
 from jumanji.environments.routing.tsp.types import State
-from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
 
 
 @pytest.fixture
@@ -69,7 +69,9 @@ class DummyGenerator(Generator):
         """
         del key
 
-        coordinates = jnp.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]])
+        coordinates = jnp.array(
+            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]]
+        )
 
         # Initially, the position is set to -1, which means that the agent is not in any city.
         position = jnp.array(-1, jnp.int32)
