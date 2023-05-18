@@ -21,10 +21,10 @@ from jax import numpy as jnp
 
 
 class Generator(abc.ABC):
+    @property
     @abc.abstractmethod
-    def get_num_nodes(self) -> int:
+    def num_nodes(self) -> int:
         """Number of nodes of the problem instances generated.
-
         Returns:
             `num_nodes` of the generated instances.
         """
@@ -66,14 +66,15 @@ class RandomGenerator(Generator):
                 The default value of `percent_connected` is 0.8.
         """
 
-        self.num_nodes = num_nodes or 100
+        self._num_nodes = num_nodes or 100
         self.percent_connected = percent_connected or 0.8
         assert (
             0 < self.percent_connected < 1
         ), f"percent_connected={self.percent_connected} must be between 0 and 1."
 
-    def get_num_nodes(self) -> int:
-        return self.num_nodes
+    @property
+    def num_nodes(self) -> int:
+        return self._num_nodes
 
     def __repr__(self) -> str:
         """Returns: str: the string representation of the environment generator."""
