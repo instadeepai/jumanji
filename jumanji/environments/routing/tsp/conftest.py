@@ -69,7 +69,8 @@ class DummyGenerator(Generator):
         del key
 
         coordinates = jnp.array(
-            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]]
+            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]],
+            float,
         )
 
         # Initially, the position is set to -1, which means that the agent is not in any city.
