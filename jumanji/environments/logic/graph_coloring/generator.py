@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import abc
-from typing import Optional
 
 import chex
 import jax
@@ -50,9 +49,7 @@ class RandomGenerator(Generator):
     which is used as a proxy for the edge probability in the Erdős-Rényi model.
     """
 
-    def __init__(
-        self, num_nodes: Optional[int] = None, percent_connected: Optional[float] = None
-    ):
+    def __init__(self, num_nodes: int, percent_connected: float):
         """
         Initialize the RandomGraphColoringGenerator.
 
@@ -60,14 +57,12 @@ class RandomGenerator(Generator):
             num_nodes: The number of nodes in the graph. The number of colors available for
                 coloring is equal to the number of nodes. This means that the graph is always
                 colorable with the given colors.
-                The default value of `num_nodes` is 100.
             percent_connected: A float between 0 and 1 representing the percentage of connections
                 in the graph compared to a fully connected graph.
-                The default value of `percent_connected` is 0.8.
         """
 
-        self._num_nodes = num_nodes or 100
-        self.percent_connected = percent_connected or 0.8
+        self._num_nodes = num_nodes
+        self.percent_connected = percent_connected
         assert (
             0 < self.percent_connected < 1
         ), f"percent_connected={self.percent_connected} must be between 0 and 1."
