@@ -24,7 +24,7 @@ The observation in the GraphColoring environment includes information about the 
   - For example, an initial color assignment:
     ```[-1, -1, -1, -1]```
 
-- `action_mask`: A JAX array of boolean values, shaped (num_colors,), which indicates the valid actions in the current state of the environment. Each position in the array corresponds to a color. True at a position signifies that the corresponding color can be used to color a node, while False indicates the opposite.
+- `action_mask`: a JAX array of boolean values, shaped (num_colors,), which indicates the valid actions in the current state of the environment. Each position in the array corresponds to a color. True at a position signifies that the corresponding color can be used to color a node, while False indicates the opposite.
   - For example, for 4 number of colors available:
     ```[True, False, True, False]```
 
