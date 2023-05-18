@@ -47,8 +47,7 @@ def tsp_sparse_reward(sparse_reward: SparseReward) -> TSP:
 
 class DummyGenerator(Generator):
     """Hardcoded `Generator` mainly used for testing and debugging. It deterministically
-    outputs a hardcoded instance with 3 jobs, 3 machines, a max of 3 ops for any job, and a max
-    duration of 4 time steps for any operation.
+    outputs a hardcoded instance with 5 cities.
     """
 
     def __init__(self) -> None:
