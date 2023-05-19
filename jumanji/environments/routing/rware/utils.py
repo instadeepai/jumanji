@@ -18,7 +18,6 @@ from typing import Tuple, Union
 import chex
 import jax
 import jax.numpy as jnp
-from jumanji.tree_utils import tree_add_element, tree_slice
 
 from jumanji.environments.routing.rware.types import (
     _AGENTS,
@@ -30,6 +29,7 @@ from jumanji.environments.routing.rware.types import (
     Position,
     Shelf,
 )
+from jumanji.tree_utils import tree_add_element, tree_slice
 
 
 def get_entity_ids(entities: Entity) -> chex.Array:

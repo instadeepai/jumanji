@@ -17,16 +17,16 @@
 from typing import Any, Callable, Optional, Sequence, Tuple
 
 import chex
-import jumanji
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from jumanji.tree_utils import tree_slice
-from jumanji.viewer import Viewer
 from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
+import jumanji
 from jumanji.environments.routing.rware.types import Direction, State
+from jumanji.tree_utils import tree_slice
+from jumanji.viewer import Viewer
 
 RAD2DEG = 57.29577951308232
 FIGURE_SIZE = (5, 5)

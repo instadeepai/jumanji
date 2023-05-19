@@ -34,6 +34,7 @@ from jumanji.environments import (
     Maze,
     Minesweeper,
     RubiksCube,
+    Rware,
     Snake,
 )
 from jumanji.training import networks
@@ -164,6 +165,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "rware":
+        assert isinstance(env.unwrapped, Rware)
+        random_policy = networks.make_random_policy_rware()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

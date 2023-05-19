@@ -19,12 +19,9 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.tree_utils import tree_slice
-from jumanji.types import TimeStep, restart, transition, truncation
-from jumanji.viewer import Viewer
-
 from jumanji.environments.routing.rware import utils
 from jumanji.environments.routing.rware.generator import Generator, RandomGenerator
 from jumanji.environments.routing.rware.types import (
@@ -37,6 +34,9 @@ from jumanji.environments.routing.rware.types import (
     State,
 )
 from jumanji.environments.routing.rware.viewer import RwareViewer
+from jumanji.tree_utils import tree_slice
+from jumanji.types import TimeStep, restart, transition, truncation
+from jumanji.viewer import Viewer
 
 
 class Rware(Environment[State]):
@@ -256,12 +256,16 @@ class Rware(Environment[State]):
 
         # compute shared reward for all agents and update request queue
         # if a requested shelf has been successfully delivered to the goal
-        reward = 0
+        reward = jnp.array(0, dtype=jnp.float32)
 
         def update_reward_and_request_queue_scan(
-            carry_info: Tuple[chex.PRNGKey, int, chex.Array, chex.Array, chex.Array],
+            carry_info: Tuple[
+                chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array
+            ],
             goal: chex.Array,
-        ) -> Tuple[Tuple[chex.PRNGKey, int, chex.Array, chex.Array, chex.Array], None]:
+        ) -> Tuple[
+            Tuple[chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array], None
+        ]:
             key, reward, request_queue, grid, shelves = carry_info
             (
                 key,
@@ -412,7 +416,7 @@ class Rware(Environment[State]):
     def _update_reward_and_request_queue(
         self,
         key: chex.PRNGKey,
-        reward: int,
+        reward: chex.Array,
         request_queue: chex.Array,
         grid: chex.Array,
         shelves: chex.Array,
@@ -437,7 +441,7 @@ class Rware(Environment[State]):
 
         def reward_and_update_request_queue_if_shelf_in_goal(
             key: chex.PRNGKey,
-            reward: int,
+            reward: jnp.int32,
             request_queue: chex.Array,
             shelves: chex.Array,
             shelf_id: int,
@@ -461,7 +465,7 @@ class Rware(Environment[State]):
             request_queue = request_queue.at[replace_index].set(new_request_id)
 
             # also reward the agents
-            reward += 1
+            reward += 1.0
 
             # update requested shelf
             shelves = utils.update_shelf(shelves, shelf_id - 1, "is_requested", 0)
@@ -520,4 +524,4 @@ class Rware(Environment[State]):
         Environments will automatically :meth:`close()` themselves when
         garbage collected or when the program exits.
         """
-        self._env_viewer.close()
+        self._viewer.close()

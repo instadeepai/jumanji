@@ -16,7 +16,6 @@ import chex
 import jax
 import jax.numpy as jnp
 import pytest
-from jumanji.tree_utils import tree_slice
 
 from jumanji.environments.routing.rware.types import (
     Action,
@@ -40,6 +39,7 @@ from jumanji.environments.routing.rware.utils import (
     update_shelf,
     write_to_observation,
 )
+from jumanji.tree_utils import tree_slice
 
 
 @pytest.fixture

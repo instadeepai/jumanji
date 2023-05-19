@@ -18,13 +18,13 @@ import chex
 import jax
 import jax.numpy as jnp
 from jax import random
+
+from jumanji.environments.routing.rware.env import Rware
+from jumanji.environments.routing.rware.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep
-
-from jumanji.environments.routing.rware.env import Rware
-from jumanji.environments.routing.rware.types import State
 
 
 def test_rware__specs(rware_env: Rware) -> None:
