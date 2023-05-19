@@ -18,7 +18,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.tsp.env import TSP
-from jumanji.environments.routing.tsp.generator import Generator, RandomUniformGenerator
+from jumanji.environments.routing.tsp.generator import Generator, UniformGenerator
 from jumanji.environments.routing.tsp.reward import DenseReward, SparseReward
 from jumanji.environments.routing.tsp.types import State
 
@@ -36,13 +36,13 @@ def sparse_reward() -> SparseReward:
 @pytest.fixture
 def tsp_dense_reward(dense_reward: DenseReward) -> TSP:
     """Instantiates a TSP environment with dense rewards and 5 cities."""
-    return TSP(generator=RandomUniformGenerator(num_cities=5), reward_fn=dense_reward)
+    return TSP(generator=UniformGenerator(num_cities=5), reward_fn=dense_reward)
 
 
 @pytest.fixture
 def tsp_sparse_reward(sparse_reward: SparseReward) -> TSP:
     """Instantiates a TSP environment with sparse rewards and 5 cities."""
-    return TSP(generator=RandomUniformGenerator(num_cities=5), reward_fn=sparse_reward)
+    return TSP(generator=UniformGenerator(num_cities=5), reward_fn=sparse_reward)
 
 
 class DummyGenerator(Generator):

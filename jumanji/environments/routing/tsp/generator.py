@@ -46,7 +46,7 @@ class Generator(abc.ABC):
         """
 
 
-class RandomUniformGenerator(Generator):
+class UniformGenerator(Generator):
     """Instance generator that generates a random uniform instance of the traveling salesman
     problem. Given the number of cities, the coordinates of the cities are randomly sampled from a
     uniform distribution on the unit square.
