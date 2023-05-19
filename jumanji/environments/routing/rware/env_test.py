@@ -32,7 +32,9 @@ def test_rware__specs(rware_env: Rware) -> None:
     action_spec = rware_env.action_spec()
     observation_spec = rware_env.observation_spec()
 
-    assert observation_spec.agents_view.shape == (2, 66)
+    jax.debug.print("observation_space: {g}", g=observation_spec)
+
+    assert observation_spec.agents_views.shape == (2, 66)  # type: ignore
     assert action_spec.num_values.shape[0] == rware_env.num_agents
     assert action_spec.num_values[0] == 5
 

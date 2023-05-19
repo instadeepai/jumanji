@@ -317,11 +317,11 @@ class Rware(Environment[State]):
         return next_state, timestep
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Specification of the observation of the `Cleaner` environment.
+        """Specification of the observation of the `Rware` environment.
         Returns:
             Spec for the `Observation`, consisting of the fields:
                 - agents_view: Array (int32) of shape (num_agents, num_obs_features).
-                - action_mask: BoundedArray (bool) of shape (num_agent, 4).
+                - action_mask: BoundedArray (bool) of shape (num_agent, 5).
                 - step_count: BoundedArray (int32) of shape ().
         """
         agents_view = specs.Array(
@@ -339,7 +339,7 @@ class Rware(Environment[State]):
             step_count=step_count,
         )
 
-    def action_spec(self) -> specs.Spec:
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. 5 actions: [0,1,2,3,4] -> [No Op, Forward, Left, Right, Toggle_load].
         Since this is a multi-agent environment, the environment expects an array of actions.
         This array is of shape (num_agents,).
