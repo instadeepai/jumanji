@@ -85,7 +85,7 @@ class Sudoku(Environment[State]):
         if generator is None:
             file_path = os.path.dirname(os.path.abspath(__file__))
             database_file = DATABASES["mixed"]
-            database = jnp.load(os.path.join(file_path, database_file))
+            database = jnp.load(os.path.join(file_path, "data", database_file))
 
         self._generator = generator or DatabaseGenerator(database=database)
         self._reward_fn = reward_fn or SparseRewardFn()
