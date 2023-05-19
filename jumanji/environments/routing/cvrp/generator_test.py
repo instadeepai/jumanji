@@ -17,7 +17,7 @@ import jax
 import pytest
 
 from jumanji.environments.routing.cvrp.conftest import DummyGenerator
-from jumanji.environments.routing.cvrp.generator import RandomUniformGenerator
+from jumanji.environments.routing.cvrp.generator import UniformGenerator
 from jumanji.environments.routing.cvrp.types import State
 from jumanji.testing.pytrees import assert_trees_are_different, assert_trees_are_equal
 
@@ -45,31 +45,29 @@ class TestDummyGenerator:
         assert_trees_are_equal(state1, state2)
 
 
-class TestRandomGenerator:
+class TestUniformGenerator:
     @pytest.fixture
-    def random_generator(self) -> RandomUniformGenerator:
-        return RandomUniformGenerator(
+    def uniform_generator(self) -> UniformGenerator:
+        return UniformGenerator(
             num_nodes=20,
             max_capacity=30,
             max_demand=10,
         )
 
-    def test_random_generator__properties(
-        self, random_generator: RandomUniformGenerator
+    def test_uniform_generator__properties(
+        self, uniform_generator: UniformGenerator
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
-        assert random_generator.num_nodes == 20
-        assert random_generator.max_capacity == 30
-        assert random_generator.max_demand == 10
+        assert uniform_generator.num_nodes == 20
+        assert uniform_generator.max_capacity == 30
+        assert uniform_generator.max_demand == 10
 
-    def test_random_generator__call(
-        self, random_generator: RandomUniformGenerator
-    ) -> None:
+    def test_random_generator__call(self, uniform_generator: UniformGenerator) -> None:
         """Validate that the random instance generator's call function is jit-able and compiles
         only once. Also check that giving two different keys results in two different instances.
         """
         chex.clear_trace_counter()
-        call_fn = jax.jit(chex.assert_max_traces(random_generator.__call__, n=1))
+        call_fn = jax.jit(chex.assert_max_traces(uniform_generator.__call__, n=1))
         state1 = call_fn(key=jax.random.PRNGKey(1))
         assert isinstance(state1, State)
 

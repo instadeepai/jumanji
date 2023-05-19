@@ -22,10 +22,7 @@ import matplotlib
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
-from jumanji.environments.routing.cvrp.generator import (
-    Generator,
-    RandomUniformGenerator,
-)
+from jumanji.environments.routing.cvrp.generator import Generator, UniformGenerator
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
 from jumanji.environments.routing.cvrp.viewer import CVRPViewer
@@ -108,7 +105,7 @@ class CVRP(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Default option is 'RandomUniformGenerator' which defaults to a CVRP instance with 20
+                Default option is 'UniformGenerator' which defaults to a CVRP instance with 20
                 cities, a maximum vehicle capacity of 30, and a maximum city demand of 10.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
@@ -117,7 +114,7 @@ class CVRP(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
         """
 
-        self.generator = generator or RandomUniformGenerator(
+        self.generator = generator or UniformGenerator(
             num_nodes=20,
             max_capacity=30,
             max_demand=10,
