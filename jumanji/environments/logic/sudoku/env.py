@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -21,6 +22,7 @@ import matplotlib
 
 from jumanji import Environment, specs
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
+from jumanji.environments.logic.sudoku.data import DATABASES
 from jumanji.environments.logic.sudoku.generator import DatabaseGenerator, Generator
 from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
 from jumanji.environments.logic.sudoku.types import Observation, State
@@ -80,7 +82,12 @@ class Sudoku(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
-        self._generator = generator or DatabaseGenerator(level="mixed")
+        if generator is None:
+            file_path = os.path.dirname(os.path.abspath(__file__))
+            database_file = DATABASES["mixed"]
+            database = jnp.load(os.path.join(file_path, database_file))
+
+        self._generator = generator or DatabaseGenerator(database=database)
         self._reward_fn = reward_fn or SparseRewardFn()
         self._viewer = viewer or SudokuViewer()
 

@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+import numpy as np
+
 from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
+from jumanji.environments.logic.sudoku import data as sudoku_data
 from jumanji.environments.logic.sudoku import generator as sudoku_generator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
@@ -45,11 +50,18 @@ register(
 
 # Sudoku - the standard Sudoku puzzle with grid of size 9x9. By default 10000 puzzles
 # of mixed difficulties are set for reset.
+
 register(id="Sudoku-v0", entry_point="jumanji.environments:Sudoku")
 
 # Sudoku - the standard Sudoku puzzle with grid of size 9x9. 1000 puzzles of very-easy
 # difficulty (>46 clues) are set for reset.
-very_easy_sudoku_generator = sudoku_generator.DatabaseGenerator(level="very-easy")
+
+
+sudoku_path = os.path.join("jumanji", "environments", "logic", "sudoku", "data")
+database_file = sudoku_data.DATABASES["very-easy"]
+database = np.load(os.path.join(sudoku_path, database_file))
+
+very_easy_sudoku_generator = sudoku_generator.DatabaseGenerator(database=database)
 register(
     id="Sudoku-very-easy-v0",
     entry_point="jumanji.environments:Sudoku",

@@ -39,7 +39,9 @@ def puzzle_completed(board: chex.Array) -> chex.Array:
 
     condition_rows = jax.vmap(_validate_row)(board).all()
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.array(BOX_IDX))).all()
+    condition_boxes = jax.vmap(_validate_row)(
+        jnp.take(board, jnp.asarray(BOX_IDX))
+    ).all()
     return condition_rows & condition_columns & condition_boxes
 
 
@@ -58,7 +60,7 @@ def validate_board(board: chex.Array) -> chex.Array:
 
     condition_rows = jax.vmap(_validate_row)(board).all()
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.array(BOX_IDX))).all()
+    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, BOX_IDX)).all()
 
     return condition_rows & condition_columns & condition_boxes
 
@@ -78,17 +80,15 @@ def get_action_mask(board: chex.Array) -> chex.Array:
     row_mask = ~jax.nn.one_hot(board, BOARD_WIDTH).any(axis=1)
     column_mask = ~jax.nn.one_hot(board.T, BOARD_WIDTH).any(axis=1)
 
-    boxes = board.reshape(BOARD_WIDTH**2).take(jnp.array(BOX_IDX))
+    boxes = board.reshape(BOARD_WIDTH**2).take(BOX_IDX)
     box_mask = ~jax.nn.one_hot(boxes, BOARD_WIDTH).any(axis=1)
 
-    boxes_action_mask = action_mask.reshape(BOARD_WIDTH**2, BOARD_WIDTH)[
-        jnp.array(BOX_IDX)
-    ]
+    boxes_action_mask = action_mask.reshape(BOARD_WIDTH**2, BOARD_WIDTH)[BOX_IDX]
     boxes_action_mask *= box_mask.reshape(BOARD_WIDTH, 1, BOARD_WIDTH)
 
     action_mask = (
         action_mask.reshape(BOARD_WIDTH**2, BOARD_WIDTH)
-        .at[jnp.array(BOX_IDX)]
+        .at[BOX_IDX]
         .set(boxes_action_mask)
         .reshape(BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH)
     )

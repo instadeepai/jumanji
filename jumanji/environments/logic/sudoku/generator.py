@@ -27,8 +27,6 @@
 # limitations under the License.i
 
 import abc
-import os
-from typing import Optional
 
 import chex
 import jax
@@ -36,12 +34,6 @@ import jax.numpy as jnp
 
 from jumanji.environments.logic.sudoku.types import State
 from jumanji.environments.logic.sudoku.utils import get_action_mask
-
-DATABASES = {
-    "very-easy": "data/1000_very_easy_puzzles.npy",  # 1000 puzzles with >= 46 clues
-    "mixed": "data/10000_mixed_puzzles.npy",  # 10000 puzzles with a random number
-    # of clues
-}
 
 
 class Generator(abc.ABC):
@@ -92,9 +84,9 @@ class DummyGenerator(Generator):
             ]
         )
 
-        board = jnp.array(board, dtype=jnp.int32) - 1
+        board = jnp.asarray(board, dtype=jnp.int32) - 1
         action_mask = get_action_mask(board)
-        self._solved_board = jnp.array(solved_board, dtype=jnp.int32) - 1
+        self._solved_board = jnp.asarray(solved_board, dtype=jnp.int32) - 1
         self._board = board
         self._action_mask = action_mask
 
@@ -105,26 +97,14 @@ class DummyGenerator(Generator):
 class DatabaseGenerator(Generator):
     """Generates a board by sampling uniformly inside a puzzle database"""
 
-    def __init__(
-        self,
-        level: str = "mixed",
-        custom_boards: Optional[jnp.ndarray] = None,
-    ):
+    def __init__(self, database: chex.Array):
         """
         Args:
-            level: specifies the level of difficulty to sample the board from, they are
-                all defined in the
-                `jumanji.environments.logic.sudoku.generator.DATABASES` object.
-            custom_boards: if specified, it will be used instead of the database, the
-                expected format is an jnp.ndarray of shape (num_boards, 9, 9).
+            database: a jnp.ndarray of shape (num_boards, 9, 9), the expected format is
+            a 0 for an empty cell and and integer between 1 and 9 for a filled cell.
         """
 
-        if custom_boards is None:
-            file_path = os.path.dirname(os.path.abspath(__file__))
-            database_file = DATABASES[level]
-            self._boards = jnp.load(os.path.join(file_path, database_file))
-        else:
-            self._boards = custom_boards
+        self._boards = jnp.asarray(database)
 
     def __call__(self, key: chex.PRNGKey) -> State:
         key, idx_key = jax.random.split(key)
@@ -132,7 +112,7 @@ class DatabaseGenerator(Generator):
             idx_key, shape=(1,), minval=0, maxval=self._boards.shape[0]
         )[0]
         board = self._boards.take(idx, axis=0)
-        board = jnp.array(board, dtype=jnp.int32) - 1
+        board = jnp.asarray(board, dtype=jnp.int32) - 1
         action_mask = get_action_mask(board)
 
         return State(board=board, action_mask=action_mask, key=key)
