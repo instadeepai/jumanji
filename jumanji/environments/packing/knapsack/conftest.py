@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
 import jax
 import jax.numpy as jnp
 import pytest
-from chex import PRNGKey
 
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.packing.knapsack.generator import Generator, RandomGenerator
@@ -59,7 +59,7 @@ class DummyGenerator(Generator):
     def __init__(self) -> None:
         super().__init__(num_items=5, total_budget=2.5)
 
-    def __call__(self, key: PRNGKey) -> State:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a knapsack problem
         instance without any items placed.
 
@@ -71,8 +71,8 @@ class DummyGenerator(Generator):
         """
         del key
 
-        weights = jnp.array([0.1, 0.3, 0.5, 0.7, 0.9])
-        values = jnp.array([0.3, 0.4, 0.5, 0.6, 0.7])
+        weights = jnp.array([0.1, 0.3, 0.5, 0.7, 0.9], float)
+        values = jnp.array([0.3, 0.4, 0.5, 0.6, 0.7], float)
 
         # Initially, no items are packed.
         packed_items = jnp.array([False, False, False, False, False], dtype=bool)
