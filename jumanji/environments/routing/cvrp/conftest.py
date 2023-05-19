@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
 import jax
 import jax.numpy as jnp
 import pytest
-from chex import PRNGKey
 
 from jumanji.environments.routing.cvrp.env import CVRP
-from jumanji.environments.routing.cvrp.generator import Generator, RandomGenerator
+from jumanji.environments.routing.cvrp.generator import (
+    Generator,
+    RandomUniformGenerator,
+)
 from jumanji.environments.routing.cvrp.reward import DenseReward, SparseReward
 from jumanji.environments.routing.cvrp.types import State
 
@@ -39,7 +42,7 @@ def cvrp_dense_reward(dense_reward: DenseReward) -> CVRP:
     and maximum demand of 2.
     """
     return CVRP(
-        generator=RandomGenerator(num_nodes=5, max_capacity=3, max_demand=2),
+        generator=RandomUniformGenerator(num_nodes=5, max_capacity=3, max_demand=2),
         reward_fn=dense_reward,
     )
 
@@ -50,7 +53,7 @@ def cvrp_sparse_reward(sparse_reward: SparseReward) -> CVRP:
     and maximum demand of 2.
     """
     return CVRP(
-        generator=RandomGenerator(num_nodes=5, max_capacity=3, max_demand=2),
+        generator=RandomUniformGenerator(num_nodes=5, max_capacity=3, max_demand=2),
         reward_fn=sparse_reward,
     )
 
@@ -62,13 +65,9 @@ class DummyGenerator(Generator):
     """
 
     def __init__(self) -> None:
-        super().__init__(
-            num_nodes=4,
-            max_capacity=6,
-            max_demand=3,
-        )
+        super().__init__(num_nodes=4, max_capacity=6, max_demand=3)
 
-    def __call__(self, key: PRNGKey) -> State:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a capacitated vehicle
         routing problem without any visited cities and starting at the depot node.
 
@@ -81,9 +80,9 @@ class DummyGenerator(Generator):
         del key
 
         coordinates = jnp.array(
-            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]]
+            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]], float
         )
-        demands = jnp.array([0, 1, 2, 1, 2])
+        demands = jnp.array([0, 1, 2, 1, 2], jnp.int32)
 
         # The initial position is set at the depot.
         position = jnp.array(0, jnp.int32)

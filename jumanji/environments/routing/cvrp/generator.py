@@ -56,7 +56,7 @@ class Generator(abc.ABC):
         """
 
 
-class RandomGenerator(Generator):
+class RandomUniformGenerator(Generator):
     """Instance generator that generates a random uniform instance of the capacitated vehicle
     routing problem. Given the number of nodes, maximum capacity of the vehicle and maximum demand
     of the nodes, the generation works as follows. The coordinates of the cities and the depot are
