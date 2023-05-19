@@ -43,20 +43,20 @@ class TestDummyGenerator:
         assert_trees_are_equal(state1, state2)
 
 
-class TestRandomGenerator:
+class TestUniformGenerator:
     @pytest.fixture
     def uniform_generator(self) -> UniformGenerator:
         return UniformGenerator(
             num_cities=50,
         )
 
-    def test_random_generator__properties(
+    def test_uniform_generator__properties(
         self, uniform_generator: UniformGenerator
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert uniform_generator.num_cities == 50
 
-    def test_random_generator__call(self, uniform_generator: UniformGenerator) -> None:
+    def test_uniform_generator__call(self, uniform_generator: UniformGenerator) -> None:
         """Validate that the random instance generator's call function is jit-able and compiles
         only once. Also check that giving two different keys results in two different instances.
         """
