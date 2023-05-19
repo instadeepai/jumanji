@@ -99,8 +99,8 @@ class TSP(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Default option is 'UniformGenerator' which defaults to a TSP instance with 20
-                cities.
+                The default option is 'UniformGenerator' which randomly generates
+                TSP instances with 20 cities sampled from a uniform distribution.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
