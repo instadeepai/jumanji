@@ -17,7 +17,7 @@ Once a shelf has been delivered, a new shelf is requested at random. Agents star
 
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 
-- `agents_view`: jax array (int32) of shape `(num_agent, num_obs_features)`, array representing the agent's view of other agents
+- `agents_view`: jax array (int32) of shape `(num_agents, num_obs_features)`, array representing the agent's view of other agents
     and shelves.
 
 - `action_mask`: jax array (bool) of shape `(num_agents, 5)`, array specifying, for each agent,
@@ -43,4 +43,4 @@ delivered successfully during the time step (i.e., +1 for each shelf).
 
 ## Registered Versions 📖
 
-- `Rware-v0`, a room of size 10x10 with 3 agents.
+- `Rware-v0`, a warehouse with 2 agents each with a sensor range of 1, a warehouse floor with 1 shelf row, 3 shelf columns, a column height of 8 and a shelf request queue of 4.
