@@ -129,12 +129,12 @@ class UniformRandomGenerator(Generator):
 
 class RandomWalkGenerator(Generator):
     """Randomly generates `Connector` grids that are guaranteed be solvable. This generator places
-    start positions randomly on the grid and performs a random walk from each.  Targets are placed
+    start positions randomly on the grid and performs a random walk from each. Targets are placed
     at their terminuses.
     """
 
     def __init__(self, grid_size: int, num_agents: int) -> None:
-        """Instantiates a `ParallelRandomWalkGenerator.
+        """Instantiates a `RandomWalkGenerator.
 
         Args:
             grid_size: size of the square grid to generate.
@@ -147,17 +147,19 @@ class RandomWalkGenerator(Generator):
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
 
+        Args:
+            key: used to randomly generate the connector grid.
+
         Returns:
             A `Connector` state.
         """
-        key, _ = jax.random.split(key)
-
+        key, board_key = jax.random.split(key)
         grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
-        starts, targets, _ = self.generate_board(key)
+        starts, targets, _ = self.generate_board(board_key)
         starts = tuple(starts)
         targets = tuple(targets)
-        agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
-        agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
+        agent_position_values = get_position(jnp.arange(self.num_agents))
+        agent_target_values = get_target(jnp.arange(self.num_agents))
 
         # Transpose the agent_position_values to match the shape of the grid.
         # Place the agent values at starts and targets.
@@ -214,8 +216,8 @@ class RandomWalkGenerator(Generator):
     ) -> Tuple[chex.PRNGKey, chex.Array, Agent]:
         """Takes one step for all agents."""
         key, grid, agents = stepping_tuple
-        agents, grid = self._step_agents(key, grid, agents)
         key, next_key = jax.random.split(key)
+        agents, grid = self._step_agents(key, grid, agents)
         return next_key, grid, agents
 
     def _step_agents(
@@ -264,10 +266,10 @@ class RandomWalkGenerator(Generator):
         # Create the new grid by fixing old one with correction mask and adding the obstacles
         return agents, joined_grid + correction_mask
 
-    def _initialise_agents(
+    def _initialize_agents(
         self, key: chex.PRNGKey, grid: chex.Array
     ) -> Tuple[chex.Array, Agent]:
-        """Initialises agents using random starting point and places heads on grid.
+        """Initializes agents using random starting point and places heads on the grid.
 
         Args:
             key: random key.
@@ -350,10 +352,10 @@ class RandomWalkGenerator(Generator):
         return action
 
     def _convert_flat_position_to_tuple(self, position: chex.Array) -> chex.Array:
-        return jnp.array([(position // self.cols), (position % self.cols)], dtype=int)
+        return jnp.array([(position // self.cols), (position % self.cols)], dtype=jnp.int32)
 
     def _convert_tuple_to_flat_position(self, position: chex.Array) -> chex.Array:
-        return jnp.array((position[0] * self.cols + position[1]), int)
+        return jnp.array((position[0] * self.cols + position[1]), jnp.int32)
 
     def _action_from_positions(
         self, position_1: chex.Array, position_2: chex.Array
@@ -559,8 +561,8 @@ class RandomWalkGenerator(Generator):
         targets: Tuple[Any, ...],
     ) -> chex.Array:
         """Updates grid array with all agent encodings."""
-        agent_position_values = jax.vmap(get_position)(jnp.arange(self.num_agents))
-        agent_target_values = jax.vmap(get_target)(jnp.arange(self.num_agents))
+        agent_position_values = get_position(jnp.arange(self.num_agents))
+        agent_target_values = get_target(jnp.arange(self.num_agents))
         # Transpose the agent_position_values to match the shape of the grid.
         # Place the agent values at starts and targets.
         solved_grid = solved_grid.at[heads].set(agent_position_values)

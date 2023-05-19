@@ -77,7 +77,7 @@ def test_uniform_random_generator__no_retrace(
         jitted_generator(key)
 
 
-class TesRandomWalkGenerator:
+class TestRandomWalkGenerator:
     @pytest.fixture
     def random_walk_generator(self) -> RandomWalkGenerator:
         """Creates a generator with grid size of 5 and 3 agents."""
