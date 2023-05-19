@@ -66,6 +66,13 @@ class UniformGenerator(Generator):
     """
 
     def __init__(self, num_nodes: int, max_capacity: int, max_demand: int):
+        """Instantiates a `UniformGenerator`.
+
+        Args:
+            num_nodes: number of city nodes in the environment.
+            max_capacity: maximum capacity of the vehicle.
+            max_demand: maximum demand of each node.
+        """
         super().__init__(num_nodes, max_capacity, max_demand)
 
     def __call__(self, key: chex.PRNGKey) -> State:
