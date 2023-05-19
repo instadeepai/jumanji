@@ -250,6 +250,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             step_count_embed_dim=cfg.env.network.step_count_embed_dim,
             dense_layer_dims=cfg.env.network.dense_layer_dims,
         )
+    elif cfg.env.name == "rware":
+        assert isinstance(env.unwrapped, Rware)
+        actor_critic_networks = networks.make_actor_critic_networks_rware(
+            rware=env.unwrapped,
+            agents_view_embed_dim=cfg.env.network.agents_view_embed_dim,
+            step_count_embed_dim=cfg.env.network.step_count_embed_dim,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
         actor_critic_networks = networks.make_actor_critic_networks_minesweeper(

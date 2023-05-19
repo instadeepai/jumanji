@@ -1,6 +1,12 @@
 name: rware
 registered_version: Rware-v0
 
+network:
+    agents_view_embed_dim: 512
+    step_count_embed_dim: 4
+    policy_layers: [64]
+    value_layers: [128]  
+
 training:
     num_epochs: 500
     num_learner_steps_per_epoch: 100
@@ -10,3 +16,12 @@ training:
 evaluation:
     eval_total_batch_size: 5000
     greedy_eval_total_batch_size: 5000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 3e-4
