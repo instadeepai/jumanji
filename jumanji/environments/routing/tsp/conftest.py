@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
 import jax
 import jax.numpy as jnp
 import pytest
-import chex
 
 from jumanji.environments.routing.tsp.env import TSP
-from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
+from jumanji.environments.routing.tsp.generator import Generator, RandomUniformGenerator
 from jumanji.environments.routing.tsp.reward import DenseReward, SparseReward
 from jumanji.environments.routing.tsp.types import State
 
@@ -36,13 +36,13 @@ def sparse_reward() -> SparseReward:
 @pytest.fixture
 def tsp_dense_reward(dense_reward: DenseReward) -> TSP:
     """Instantiates a TSP environment with dense rewards and 5 cities."""
-    return TSP(generator=RandomGenerator(num_cities=5), reward_fn=dense_reward)
+    return TSP(generator=RandomUniformGenerator(num_cities=5), reward_fn=dense_reward)
 
 
 @pytest.fixture
 def tsp_sparse_reward(sparse_reward: SparseReward) -> TSP:
     """Instantiates a TSP environment with sparse rewards and 5 cities."""
-    return TSP(generator=RandomGenerator(num_cities=5), reward_fn=sparse_reward)
+    return TSP(generator=RandomUniformGenerator(num_cities=5), reward_fn=sparse_reward)
 
 
 class DummyGenerator(Generator):
@@ -53,7 +53,7 @@ class DummyGenerator(Generator):
     def __init__(self) -> None:
         super().__init__(num_cities=5)
 
-    def __call__(self, key: PRNGKey) -> State:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a travelling salesman
         problem instance without any visited cities.
 

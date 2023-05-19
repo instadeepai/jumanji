@@ -23,7 +23,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.tsp.generator import Generator, RandomGenerator
+from jumanji.environments.routing.tsp.generator import Generator, RandomUniformGenerator
 from jumanji.environments.routing.tsp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.tsp.types import Observation, State
 from jumanji.environments.routing.tsp.viewer import TSPViewer
@@ -99,7 +99,8 @@ class TSP(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Default option is 'RandomGenerator' which defaults to a TSP instance with 20 cities.
+                Default option is 'RandomUniformGenerator' which defaults to a TSP instance with 20
+                cities.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
@@ -107,7 +108,7 @@ class TSP(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `TSPViewer` with "human" render mode.
         """
 
-        self.generator = generator or RandomGenerator(
+        self.generator = generator or RandomUniformGenerator(
             num_cities=20,
         )
         self.num_cities = self.generator.num_cities

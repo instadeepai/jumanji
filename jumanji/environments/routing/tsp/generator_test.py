@@ -17,7 +17,7 @@ import jax
 import pytest
 
 from jumanji.environments.routing.tsp.conftest import DummyGenerator
-from jumanji.environments.routing.tsp.generator import RandomGenerator
+from jumanji.environments.routing.tsp.generator import RandomUniformGenerator
 from jumanji.environments.routing.tsp.types import State
 from jumanji.testing.pytrees import assert_trees_are_different, assert_trees_are_equal
 
@@ -45,18 +45,20 @@ class TestDummyGenerator:
 
 class TestRandomGenerator:
     @pytest.fixture
-    def random_generator(self) -> RandomGenerator:
-        return RandomGenerator(
+    def random_generator(self) -> RandomUniformGenerator:
+        return RandomUniformGenerator(
             num_cities=50,
         )
 
     def test_random_generator__properties(
-        self, random_generator: RandomGenerator
+        self, random_generator: RandomUniformGenerator
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert random_generator.num_cities == 50
 
-    def test_random_generator__call(self, random_generator: RandomGenerator) -> None:
+    def test_random_generator__call(
+        self, random_generator: RandomUniformGenerator
+    ) -> None:
         """Validate that the random instance generator's call function is jit-able and compiles
         only once. Also check that giving two different keys results in two different instances.
         """
