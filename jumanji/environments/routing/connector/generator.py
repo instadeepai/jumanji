@@ -141,8 +141,8 @@ class RandomWalkGenerator(Generator):
             num_agents: number of agents/paths on the grid.
         """
         super().__init__(grid_size, num_agents)
-        self.cols = grid_size
-        self.rows = grid_size
+        # self.grid_size = grid_size
+        # self.rows = grid_size
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
@@ -191,9 +191,9 @@ class RandomWalkGenerator(Generator):
             Tuple containing head and targets positions for each wire and the solved board
             generated in the random walk.
         """
-        grid = self._return_blank_board()
+        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
         key, step_key = jax.random.split(key)
-        grid, agents = self._initialise_agents(key, grid)
+        grid, agents = self._initialize_agents(key, grid)
 
         stepping_tuple = (step_key, grid, agents)
 
@@ -276,23 +276,23 @@ class RandomWalkGenerator(Generator):
             grid: empty grid.
 
         Returns:
-            Tuple of grid with populated starting points and agents initialised with
+            Tuple of grid with populated starting points and agents initialized with
             the same starting points.
         """
         starts_flat = jax.random.choice(
             key=key,
-            a=jnp.arange(self.rows * self.cols),
+            a=jnp.arange(self.grid_size * self.grid_size),
             shape=(self.num_agents,),
             # Start positions for all agents
             replace=False,
         )
 
         # Create 2D points from the flat arrays.
-        starts = jnp.divmod(starts_flat, self.cols)
+        starts = jnp.divmod(starts_flat, self.grid_size)
         # Fill target with default value as targets will be assigned aftert random walk
         targets = jnp.full((2, self.num_agents), -1)
 
-        # Initialise agents
+        # Initialize agents
         agents = jax.vmap(Agent)(
             id=jnp.arange(self.num_agents),
             start=jnp.stack(starts, axis=1),
@@ -304,7 +304,6 @@ class RandomWalkGenerator(Generator):
             grid, agents
         )
         grid = grid.max(axis=0)
-        grid = jnp.array(grid, dtype=int)
         return grid, agents
 
     def _place_agent_heads_on_grid(self, grid: chex.Array, agent: Agent) -> chex.Array:
@@ -352,10 +351,12 @@ class RandomWalkGenerator(Generator):
         return action
 
     def _convert_flat_position_to_tuple(self, position: chex.Array) -> chex.Array:
-        return jnp.array([(position // self.cols), (position % self.cols)], dtype=jnp.int32)
+        return jnp.array(
+            [(position // self.grid_size), (position % self.grid_size)], dtype=jnp.int32
+        )
 
     def _convert_tuple_to_flat_position(self, position: chex.Array) -> chex.Array:
-        return jnp.array((position[0] * self.cols + position[1]), jnp.int32)
+        return jnp.array((position[0] * self.grid_size + position[1]), jnp.int32)
 
     def _action_from_positions(
         self, position_1: chex.Array, position_2: chex.Array
@@ -395,16 +396,16 @@ class RandomWalkGenerator(Generator):
             (padded with -1's if less than 4 adjacent cells).
         """
         available_moves = jnp.full(4, cell)
-        direction_operations = jnp.array([-1 * self.rows, self.rows, -1, 1])
+        direction_operations = jnp.array([-1 * self.grid_size, self.grid_size, -1, 1])
         # Create a mask to check 0 <= index < total size
         cells_to_check = available_moves + direction_operations
-        is_id_in_grid = cells_to_check < self.rows * self.cols
+        is_id_in_grid = cells_to_check < self.grid_size * self.grid_size
         is_id_positive = 0 <= cells_to_check
         mask = is_id_positive & is_id_in_grid
 
         # Ensure adjacent cells doesn't involve going off the grid
-        unflatten_available = jnp.divmod(cells_to_check, self.cols)
-        unflatten_current = jnp.divmod(cell, self.cols)
+        unflatten_available = jnp.divmod(cells_to_check, self.grid_size)
+        unflatten_current = jnp.divmod(cell, self.grid_size)
         is_same_row = unflatten_available[0] == unflatten_current[0]
         is_same_col = unflatten_available[1] == unflatten_current[1]
         row_col_mask = is_same_row | is_same_col
@@ -427,7 +428,7 @@ class RandomWalkGenerator(Generator):
         """
         adjacent_cells = self._adjacent_cells(cell)
         # Get the wire id of the current cell
-        value = grid[jnp.divmod(cell, self.cols)]
+        value = grid[jnp.divmod(cell, self.grid_size)]
         wire_id = (value - 1) // 3
 
         available_cells_mask = jax.vmap(self._is_cell_free, in_axes=(None, 0))(
@@ -455,7 +456,7 @@ class RandomWalkGenerator(Generator):
         Returns:
             Boolean indicating whether the cell is free or not.
         """
-        coordinate = jnp.divmod(cell, self.cols)
+        coordinate = jnp.divmod(cell, self.grid_size)
         return (cell != -1) & (grid[coordinate] == 0)
 
     def _is_cell_doubling_back(
@@ -478,7 +479,7 @@ class RandomWalkGenerator(Generator):
         def is_cell_doubling_back_inner(
             grid: chex.Array, cell: chex.Array
         ) -> chex.Array:
-            coordinate = jnp.divmod(cell, self.cols)
+            coordinate = jnp.divmod(cell, self.grid_size)
             cell_value = grid[tuple(coordinate)]
             touching_self = (
                 (cell_value == 3 * wire_id + POSITION)
@@ -549,10 +550,6 @@ class RandomWalkGenerator(Generator):
         not_connected = ~agent.connected
 
         return in_bounds & open_cell & not_connected
-
-    def _return_blank_board(self) -> chex.Array:
-        """Return empty grid of correct size."""
-        return jnp.zeros((self.rows, self.cols), dtype=int)
 
     def update_solved_board_with_head_target_encodings(
         self,
