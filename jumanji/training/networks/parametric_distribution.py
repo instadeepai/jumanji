@@ -110,9 +110,16 @@ class ParametricDistribution(abc.ABC):
         self, parameters: chex.Array, other_parameters: chex.Array
     ) -> chex.Array:
         """KL divergence is invariant with respect to transformation by the same bijector."""
+        if not isinstance(self._postprocessor, IdentityBijector):
+            raise ValueError("KL is not implemented for non-identity bijectors.")
         dist = self.create_dist(parameters)
         other_dist = self.create_dist(other_parameters)
-        return dist.kl_divergence(other_dist)
+        kl_divergence = dist.kl_divergence(other_dist)
+        if self._event_ndims == 1:
+            kl_divergence = jnp.sum(kl_divergence, axis=-1)
+        else:
+            assert self._event_ndims == 0
+        return kl_divergence
 
 
 class CategoricalParametricDistribution(ParametricDistribution):
