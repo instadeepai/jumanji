@@ -141,8 +141,6 @@ class RandomWalkGenerator(Generator):
             num_agents: number of agents/paths on the grid.
         """
         super().__init__(grid_size, num_agents)
-        # self.grid_size = grid_size
-        # self.rows = grid_size
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
@@ -154,27 +152,7 @@ class RandomWalkGenerator(Generator):
             A `Connector` state.
         """
         key, board_key = jax.random.split(key)
-        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
-        starts, targets, _ = self.generate_board(board_key)
-        starts = tuple(starts)
-        targets = tuple(targets)
-        agent_position_values = get_position(jnp.arange(self.num_agents))
-        agent_target_values = get_target(jnp.arange(self.num_agents))
-
-        # Transpose the agent_position_values to match the shape of the grid.
-        # Place the agent values at starts and targets.
-        grid = grid.at[starts].set(agent_position_values)
-        grid = grid.at[targets].set(agent_target_values)
-
-        # Create the agent pytree that corresponds to the grid.
-
-        agents = jax.vmap(Agent)(
-            id=jnp.arange(self.num_agents),
-            start=jnp.stack(starts, axis=1),
-            target=jnp.stack(targets, axis=1),
-            position=jnp.stack(starts, axis=1),
-        )
-
+        solved_grid, agents, grid = self.generate_board(board_key)
         step_count = jnp.array(0, jnp.int32)
 
         return State(key=key, grid=grid, step_count=step_count, agents=agents)
@@ -204,12 +182,20 @@ class RandomWalkGenerator(Generator):
         # Convert heads and targets to format accepted by generator
         heads = agents.start.T
         targets = agents.position.T
+        agents.target = agents.position
+        agents.position = agents.start
 
         solved_grid = self.update_solved_board_with_head_target_encodings(
             grid, tuple(heads), tuple(targets)
         )
 
-        return heads, targets, solved_grid
+        agent_position_values = get_position(jnp.arange(self.num_agents))
+        agent_target_values = get_target(jnp.arange(self.num_agents))
+        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
+        grid = grid.at[tuple(agents.start.T)].set(agent_position_values)
+        grid = grid.at[tuple(agents.target.T)].set(agent_target_values)
+
+        return solved_grid, agents, grid
 
     def _step(
         self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent]
@@ -300,10 +286,10 @@ class RandomWalkGenerator(Generator):
             position=jnp.stack(starts, axis=1),
         )
         # Place agent heads on grid
-        grid = jax.vmap(self._place_agent_heads_on_grid, in_axes=(None, 0))(
+        grids = jax.vmap(self._place_agent_heads_on_grid, in_axes=(None, 0))(
             grid, agents
         )
-        grid = grid.max(axis=0)
+        grid = grids.max(axis=0)
         return grid, agents
 
     def _place_agent_heads_on_grid(self, grid: chex.Array, agent: Agent) -> chex.Array:
