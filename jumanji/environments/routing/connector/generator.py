@@ -157,9 +157,7 @@ class RandomWalkGenerator(Generator):
 
         return State(key=key, grid=grid, step_count=step_count, agents=agents)
 
-    def generate_board(
-        self, key: chex.PRNGKey
-    ) -> Tuple[chex.Array, chex.Array, chex.Array]:
+    def generate_board(self, key: chex.PRNGKey) -> Tuple[chex.Array, Agent, chex.Array]:
         """Generates solvable board using random walk.
 
         Args:
@@ -233,7 +231,6 @@ class RandomWalkGenerator(Generator):
         # Get grids with only values related to a single agent.
         # For example: remove all other agents from agent 1's grid. Do this for all agents.
         agent_grids = jax.vmap(get_agent_grid)(agent_ids, grids)
-        # joined_grid = self._join_grid_based_on_length(agent_grids, agents)
         joined_grid = jnp.max(agent_grids, 0)  # join the grids
 
         # Create a correction mask for possible collisions (see the docs of `get_correction_mask`)
@@ -252,25 +249,6 @@ class RandomWalkGenerator(Generator):
         )(collided_agents, agents, new_agents)
         # Create the new grid by fixing old one with correction mask and adding the obstacles
         return agents, joined_grid + correction_mask
-
-    def _join_grid_based_on_length(
-        self, grids: chex.Array, agents: Agent
-    ) -> chex.Array:
-        joined_grid = jnp.max(grids, 0)
-        collisions = (grids != 0).astype(int).sum(axis=0)
-        collided_wires = (
-            grids * jnp.stack(jnp.array([collisions > 1]) * self.num_agents) != 0
-        )
-        colision_position = self._convert_flat_position_to_tuple(
-            jnp.argmax(collided_wires)
-        )
-        values_at_position = grids[:, colision_position[0], colision_position[1]]
-        wire_lengths = jax.vmap(self._agent_length)(agents)
-        wire_length_order = jnp.argsort(wire_lengths)
-        sorted_values = values_at_position[wire_length_order]
-        jax.debug.print("sorted_values {x}", x=sorted_values)
-        joined_grid = joined_grid.at[tuple(colision_position)].set(sorted_values[0])
-        return joined_grid
 
     def _initialize_agents(
         self, key: chex.PRNGKey, grid: chex.Array
@@ -311,9 +289,6 @@ class RandomWalkGenerator(Generator):
         )
         grid = grids.max(axis=0)
         return grid, agents
-
-    def _agent_length(self, agent: Agent) -> int:
-        return jnp.abs(agent.position - agent.start).sum()
 
     def _place_agent_heads_on_grid(self, grid: chex.Array, agent: Agent) -> chex.Array:
         """Updates grid with agent starting positions."""
