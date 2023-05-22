@@ -61,7 +61,7 @@ def test_game_2048__step_jit(game_2048: Game2048) -> None:
     """Confirm that the step is only compiled once when jitted."""
     key = jax.random.PRNGKey(0)
     state, timestep = game_2048.reset(key)
-    action = jnp.array(0)
+    action = jnp.argmax(state.action_mask)
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(game_2048.step, n=1))
@@ -75,6 +75,7 @@ def test_game_2048__step_jit(game_2048: Game2048) -> None:
 
     # New step
     state = new_state
+    action = jnp.argmax(state.action_mask)
     new_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
