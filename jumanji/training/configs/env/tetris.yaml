@@ -13,8 +13,8 @@ training:
     total_batch_size: 64
 
 evaluation:
-    eval_total_batch_size: 10
-    greedy_eval_total_batch_size: 10
+    eval_total_batch_size: 100
+    greedy_eval_total_batch_size: 100
 
 a2c:
     normalize_advantage: False
@@ -23,4 +23,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 2e-4
+    learning_rate: 1e-3
