@@ -59,7 +59,7 @@ class Jigsaw(Environment[State]):
         self.num_row_pieces = self.generator.num_row_pieces
         self.num_col_pieces = self.generator.num_col_pieces
         self.num_pieces = self.num_row_pieces * self.num_col_pieces
-        self.board_dim = (
+        self.num_rows, self.num_cols = (
             compute_grid_dim(self.num_row_pieces),
             compute_grid_dim(self.num_col_pieces),
         )
@@ -70,7 +70,7 @@ class Jigsaw(Environment[State]):
 
     def __repr__(self) -> str:
         return (
-            f"Jigsaw environment with a puzzle size of ({self.board_dim[0]}x{self.board_dim[1]}) "
+            f"Jigsaw environment with a puzzle size of ({self.num_rows}x{self.num_cols}) "
             f"with {self.num_row_pieces} row pieces, {self.num_col_pieces} column "
             f"pieces. Each piece has dimension (3x3)."
         )
@@ -220,7 +220,7 @@ class Jigsaw(Environment[State]):
         """
 
         current_board = specs.BoundedArray(
-            shape=(self.board_dim[0], self.board_dim[1]),
+            shape=(self.num_rows, self.num_cols),
             minimum=0,
             maximum=self.num_pieces,
             dtype=jnp.float32,
@@ -263,8 +263,8 @@ class Jigsaw(Environment[State]):
             - max_col_position: int between 0 and max_col_position - 1 (included).
         """
 
-        max_row_position = self.board_dim[0] - 3
-        max_col_position = self.board_dim[1] - 3
+        max_row_position = self.num_rows - 3
+        max_col_position = self.num_cols - 3
 
         return specs.MultiDiscreteArray(
             num_values=jnp.array(
