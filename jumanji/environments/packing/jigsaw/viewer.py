@@ -54,7 +54,9 @@ class JigsawViewer(Viewer):
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Empty grid colour should be white.
         for colormap_idx in colormap_indices:
-            self.colors.append(colormap(colormap_idx))
+            # Give the pieces an alpha of 0.7.
+            r, g, b, _ = colormap(colormap_idx)
+            self.colors.append((r, g, b, 0.7))
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
@@ -172,6 +174,16 @@ class JigsawViewer(Viewer):
     ) -> None:
         cell = plt.Rectangle((col, row), 1, 1, **self._get_cell_attributes(cell_value))
         ax.add_patch(cell)
+        if cell_value != 0:
+            ax.text(
+                col + 0.5,
+                row + 0.5,
+                str(int(cell_value)),
+                color="#606060",
+                ha="center",
+                va="center",
+                fontsize="xx-large",
+            )
 
     def _get_cell_attributes(self, cell_value: int) -> Dict[str, Any]:
         color = self.colors[int(cell_value)]
