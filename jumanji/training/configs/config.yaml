@@ -1,6 +1,6 @@
 defaults:
     - _self_
-    - env: snake  # [bin_pack, cleaner, connector, cvrp, game_2048, jigsaw, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
+    - env: jigsaw  # [bin_pack, cleaner, connector, cvrp, game_2048, jigsaw, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
 
 agent: random  # [random, a2c]
 

@@ -34,6 +34,7 @@ from jumanji.training.networks.game_2048.actor_critic import (
     make_actor_critic_networks_game_2048,
 )
 from jumanji.training.networks.game_2048.random import make_random_policy_game_2048
+from jumanji.training.networks.jigsaw.random import make_random_policy_jigsaw
 from jumanji.training.networks.job_shop.actor_critic import (
     make_actor_critic_networks_job_shop,
 )

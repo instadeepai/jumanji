@@ -51,6 +51,10 @@ register(
 # largest ones are given in the observation.
 register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
 
+# Jigsaw puzzle with 25 pieces and a random puzzle generator.
+# The puzzle must be completed in `num_pieces` steps.
+register(id="Jigsaw-v0", entry_point="jumanji.environments:Jigsaw")
+
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
 register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
