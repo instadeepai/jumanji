@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.packing.jigsaw.env import JigSaw
+from jumanji.environments.packing.jigsaw.env import Jigsaw
 from jumanji.environments.packing.jigsaw.types import Observation, State

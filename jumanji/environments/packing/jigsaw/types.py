@@ -27,15 +27,12 @@ class Observation(NamedTuple):
     current_board: 2D array with the current state of board.
     pieces: 3D array with the pieces to be placed on the board. Here each piece is a
         2D array with shape (3, 3).
-    board_action_mask: 2D array showing where on the board pieces have already been
-        placed.
-    piece_action_mask: array showing which pieces can be placed on the board.
+    action_mask: array showing which pieces can be placed on the board.
     """
 
     current_board: chex.Array  # (num_rows, num_cols)
     pieces: chex.Array  # (num_pieces, 3, 3)
-    board_action_mask: chex.Array  # (num_rows, num_cols)
-    piece_action_mask: chex.Array  # (num_pieces,)
+    action_mask: chex.Array  # (num_pieces,)
 
 
 @dataclass
@@ -51,9 +48,7 @@ class State:
     solved_board: 2D array showing the solved board state.
     pieces: 3D array with the pieces to be placed on the board. Here each piece is a
         2D array with shape (3, 3).
-    board_action_mask: 2D array showing where pieces on the board have been
-        placed.
-    piece_action_mask: array showing which pieces can be placed on the board.
+    action_mask: array showing which pieces can be placed on the board.
     current_board: 2D array with the current state of board.
     step_count: number of steps taken in the environment.
     key: random key used for board generation.
@@ -64,8 +59,7 @@ class State:
     num_pieces: chex.Numeric  # ()
     solved_board: chex.Array  # (num_rows, num_cols)
     pieces: chex.Array  # (num_pieces, 3, 3)
-    board_action_mask: chex.Array  # (num_rows, num_cols)
-    piece_action_mask: chex.Array  # (num_pieces,)
+    action_mask: chex.Array  # (num_pieces,)
     current_board: chex.Array  # (num_rows, num_cols)
     step_count: chex.Numeric  # ()
     key: chex.PRNGKey  # (2,)

@@ -18,7 +18,7 @@ import chex
 import jax
 from jax import numpy as jnp
 
-from jumanji.environments.packing.jigsaw.env import JigSaw
+from jumanji.environments.packing.jigsaw.env import Jigsaw
 from jumanji.environments.packing.jigsaw.generator import (
     RandomJigsawGenerator,
     ToyJigsawGeneratorNoRotation,
@@ -29,7 +29,7 @@ SAVE_GIF = False
 
 # Very basic example of a random agent acting in the Jigsaw environment.
 # Each episode will generate a completely new instance of the jigsaw puzzle.
-env = JigSaw(
+env = Jigsaw(
     generator=RandomJigsawGenerator(
         num_col_pieces=5,
         num_row_pieces=5,
@@ -85,7 +85,7 @@ if SAVE_GIF:
 # An example of solving a puzzle by stepping a
 # dummy environment with a dense reward function.
 print("STARTING DENSE REWARD EXAMPLE")
-env = JigSaw(generator=ToyJigsawGeneratorNoRotation())
+env = Jigsaw(generator=ToyJigsawGeneratorNoRotation())
 state, timestep = env.reset(step_key)
 print("CURRENT BOARD:")
 print(state.current_board, "\n")
@@ -114,7 +114,7 @@ print()
 # An example of solving a puzzle by stepping a
 # dummy environment with a sparse reward function.
 print("STARTING SPARSE REWARD EXAMPLE")
-env = JigSaw(generator=ToyJigsawGeneratorNoRotation(), reward_fn=SparseReward())
+env = Jigsaw(generator=ToyJigsawGeneratorNoRotation(), reward_fn=SparseReward())
 state, timestep = env.reset(step_key)
 print("CURRENT BOARD:")
 print(state.current_board, "\n")

@@ -48,8 +48,7 @@ def state_with_no_pieces_placed(
         num_pieces=4,
         pieces=pieces,
         solved_board=solved_board,
-        board_action_mask=jnp.zeros_like(solved_board),
-        piece_action_mask=jnp.ones(4, dtype=bool),
+        action_mask=jnp.ones(4, dtype=bool),
         current_board=jnp.zeros_like(solved_board),
         step_count=0,
         key=key,
@@ -71,8 +70,7 @@ def state_with_piece_one_placed(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
-        board_action_mask=board_with_piece_one_placed,
-        piece_action_mask=jnp.array(
+        action_mask=jnp.array(
             [
                 False,
                 True,
@@ -98,7 +96,6 @@ def state_needing_only_piece_one(
 
     key, new_key = jax.random.split(key)
 
-    board_action_mask = jnp.ones_like(solved_board) - board_with_piece_one_placed
     current_board = solved_board - board_with_piece_one_placed
 
     return State(
@@ -106,8 +103,7 @@ def state_needing_only_piece_one(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
-        board_action_mask=board_action_mask,
-        piece_action_mask=jnp.array(
+        action_mask=jnp.array(
             [
                 True,
                 False,
@@ -137,8 +133,7 @@ def solved_state(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
-        board_action_mask=jnp.ones_like(solved_board),
-        piece_action_mask=jnp.array(
+        action_mask=jnp.array(
             [
                 False,
                 False,

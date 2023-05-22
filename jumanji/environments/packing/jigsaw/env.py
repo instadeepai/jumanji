@@ -34,7 +34,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class JigSaw(Environment[State]):
+class Jigsaw(Environment[State]):
 
     """A Jigsaw solving environment."""
 
@@ -51,8 +51,8 @@ class JigSaw(Environment[State]):
         """
 
         default_generator = RandomJigsawGenerator(
-            num_row_pieces=3,
-            num_col_pieces=3,
+            num_row_pieces=5,
+            num_col_pieces=5,
         )
 
         self.generator = generator or default_generator
@@ -92,11 +92,7 @@ class JigSaw(Environment[State]):
 
         board_state = self.generator(key)
 
-        board_action_mask = jnp.zeros_like(board_state.solved_board)
-        piece_action_mask = jnp.ones(self.num_pieces, dtype=bool)
-
-        board_state.board_action_mask = board_action_mask
-        board_state.piece_action_mask = piece_action_mask
+        board_state.action_mask = jnp.ones(self.num_pieces, dtype=bool)
         board_state.current_board = jnp.zeros_like(board_state.solved_board)
 
         obs = self._observation_from_state(board_state)
@@ -116,19 +112,19 @@ class JigSaw(Environment[State]):
         Returns:
             a tuple of the next state and a time step.
         """
+        # Unpack and use actions
+        piece_idx, rotation, row_idx, col_idx = action
 
-        chosen_piece = state.pieces[action[0]]
+        chosen_piece = state.pieces[piece_idx]
 
         # Rotate chosen piece
-        chosen_piece = rotate_piece(chosen_piece, action[1])
+        chosen_piece = rotate_piece(chosen_piece, rotation)
 
-        grid_piece = self._expand_piece_to_board(
-            state, chosen_piece, action[2], action[3]
-        )
+        grid_piece = self._expand_piece_to_board(state, chosen_piece, row_idx, col_idx)
 
         grid_mask_piece = self._get_ones_like_expanded_piece(grid_piece=grid_piece)
 
-        action_is_legal = self._check_action_is_legal(action[0], state, grid_mask_piece)
+        action_is_legal = self._check_action_is_legal(piece_idx, state, grid_mask_piece)
 
         next_state_legal = State(
             col_nibs_idxs=state.col_nibs_idxs,
@@ -136,8 +132,7 @@ class JigSaw(Environment[State]):
             solved_board=state.solved_board,
             current_board=state.current_board + grid_piece,
             pieces=state.pieces,
-            piece_action_mask=state.piece_action_mask.at[action[0]].set(False),
-            board_action_mask=state.board_action_mask + grid_mask_piece,
+            action_mask=state.action_mask.at[piece_idx].set(False),
             num_pieces=state.num_pieces,
             key=state.key,
             step_count=state.step_count + 1,
@@ -149,8 +144,7 @@ class JigSaw(Environment[State]):
             solved_board=state.solved_board,
             current_board=state.current_board,
             pieces=state.pieces,
-            piece_action_mask=state.piece_action_mask,
-            board_action_mask=state.board_action_mask,
+            action_mask=state.action_mask,
             num_pieces=state.num_pieces,
             key=state.key,
             step_count=state.step_count + 1,
@@ -222,8 +216,7 @@ class JigSaw(Environment[State]):
             Spec for each filed in the observation:
             - current_board: BoundedArray (int) of shape (board_dim[0], board_dim[1]).
             - pieces: BoundedArray (int) of shape (num_pieces, 3, 3).
-            - piece_action_mask: BoundedArray (bool) of shape (num_pieces,).
-            - board_action_mask: BoundedArray (int) of shape (board_dim[0], board_dim[1]).
+            - action_mask: BoundedArray (bool) of shape (num_pieces,).
         """
 
         current_board = specs.BoundedArray(
@@ -242,20 +235,12 @@ class JigSaw(Environment[State]):
             name="pieces",
         )
 
-        piece_action_mask = specs.BoundedArray(
+        action_mask = specs.BoundedArray(
             shape=(self.num_pieces,),
             minimum=False,
             maximum=True,
             dtype=bool,
-            name="piece_action_mask",
-        )
-
-        board_action_mask = specs.BoundedArray(
-            shape=(self.board_dim[0], self.board_dim[1]),
-            minimum=0,
-            maximum=1,
-            dtype=jnp.float32,
-            name="board_action_mask",
+            name="action_mask",
         )
 
         return specs.Spec(
@@ -263,8 +248,7 @@ class JigSaw(Environment[State]):
             "ObservationSpec",
             current_board=current_board,
             pieces=pieces,
-            piece_action_mask=piece_action_mask,
-            board_action_mask=board_action_mask,
+            action_mask=action_mask,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -321,9 +305,9 @@ class JigSaw(Environment[State]):
             True if the action is legal, False otherwise.
         """
 
-        placed_mask = state.board_action_mask + grid_mask_piece
+        placed_mask = (state.current_board > 0.0) + grid_mask_piece
 
-        legal: bool = state.piece_action_mask[action] & (jnp.max(placed_mask) <= 1)
+        legal: bool = state.action_mask[action] & (jnp.max(placed_mask) <= 1)
 
         return legal
 
@@ -381,7 +365,6 @@ class JigSaw(Environment[State]):
 
         return Observation(
             current_board=state.current_board,
-            board_action_mask=state.board_action_mask,
-            piece_action_mask=state.piece_action_mask,
+            action_mask=state.action_mask,
             pieces=state.pieces,
         )
