@@ -86,11 +86,11 @@ valid_starting_grid_after_1_step = jnp.array(
 )
 valid_starting_grid_initialize_agents = jnp.array(
     [
-        [0.0, 0.0, 5.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 6.0],
+        [0.0, 0.0, 0.0, 0.0, 5.0],
+        [0.0, 3.0, 0.0, 0.0, 0.0],
+        [0.0, 2.0, 8.0, 9.0, 0.0],
         [0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 2.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 8.0],
     ],
     dtype=jnp.int32,
 )
@@ -108,22 +108,22 @@ valid_solved_grid_1 = jnp.array(
 
 valid_training_grid = jnp.array(
     [
-        [9, 0, 6, 0, 0],
-        [3, 0, 0, 0, 0],
+        [0, 0, 0, 3, 8],
+        [2, 6, 0, 0, 0],
+        [0, 0, 9, 0, 0],
+        [0, 0, 5, 0, 0],
         [0, 0, 0, 0, 0],
-        [0, 8, 0, 5, 0],
-        [0, 0, 2, 0, 0],
     ],
     dtype=jnp.int32,
 )
 
 valid_solved_grid_2 = jnp.array(
     [
-        [9, 7, 6, 4, 0],
-        [3, 7, 7, 4, 0],
-        [1, 0, 7, 4, 0],
-        [1, 8, 7, 5, 0],
-        [1, 1, 2, 0, 0],
+        [1, 1, 1, 3, 8],
+        [2, 6, 7, 7, 7],
+        [0, 4, 9, 0, 0],
+        [0, 4, 5, 0, 0],
+        [0, 0, 0, 0, 0],
     ],
     dtype=jnp.int32,
 )
@@ -185,9 +185,9 @@ agents_starting = Agent(
 
 agents_starting_initialise_agents = Agent(
     id=jnp.array([0, 1, 2]),
-    start=jnp.array([[2, 4], [0, 2], [4, 4]]),
+    start=jnp.array([[2, 1], [0, 4], [3, 3]]),
     target=jnp.array([[-1, -1], [-1, -1], [-1, -1]]),
-    position=jnp.array([[2, 4], [0, 2], [4, 4]]),
+    position=jnp.array([[3, 1], [1, 4], [3, 2]]),
 )
 agents_starting_move_after_1_step = Agent(
     id=jnp.array([0, 1, 2]),
@@ -205,9 +205,9 @@ agents_starting_move_1_step_up = Agent(
 
 generate_board_agents = Agent(
     id=jnp.array([0, 1, 2]),
-    start=jnp.array([[4, 2], [3, 3], [3, 1]]),
-    target=jnp.array([[1, 0], [0, 2], [0, 0]]),
-    position=jnp.array([[4, 2], [3, 3], [3, 1]]),
+    start=jnp.array([[1, 0], [3, 2], [0, 4]]),
+    target=jnp.array([[0, 3], [1, 1], [2, 2]]),
+    position=jnp.array([[1, 0], [3, 2], [0, 4]]),
 )
 
 key = jax.random.PRNGKey(0)
@@ -316,7 +316,6 @@ class TestRandomWalkGenerator:
     ) -> None:
         end_key, end_grid, end_agents = expected_value
         new_key, new_grid, new_agents = random_walk_generator._step(function_input)
-        print(new_agents)
         assert new_agents == end_agents
         assert (new_grid == end_grid).all()
         assert (new_key == end_key).all()
