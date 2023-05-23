@@ -427,8 +427,9 @@ class MACVRP(Environment[State]):
         values, unique_indices = jax.numpy.unique(
             next_nodes, return_index=True, size=self._num_vehicles
         )
-        new_nodes = jax.numpy.zeros(len(next_nodes), dtype=next_nodes.dtype)
-        new_nodes = new_nodes.at[unique_indices].set(values)
+
+        next_nodes = jax.numpy.zeros(len(next_nodes), dtype=next_nodes.dtype)
+        next_nodes = next_nodes.at[unique_indices].set(values)
 
         # Update the vehicle distances and local times.
         start_coords = state.nodes.coordinates[state.vehicles.positions]
