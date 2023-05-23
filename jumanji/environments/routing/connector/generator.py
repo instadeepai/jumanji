@@ -584,18 +584,3 @@ class RandomWalkGenerator(Generator):
         solved_grid = solved_grid.at[heads].set(agent_position_values)
         solved_grid = solved_grid.at[targets].set(agent_target_values)
         return solved_grid
-
-
-if __name__ == "__main__":
-    board_gen = RandomWalkGenerator(5, 3)
-    key = jax.random.PRNGKey(0)
-    key_1, key_2 = jax.random.split(key, 2)
-    grid = jnp.zeros((5, 5))
-    # board_output = board_gen._initialize_agents(key, grid)
-    test_2 = board_gen(key)
-    #
-    print(test_2)
-    # print(board_output[2])
-    # # print(board_output[4])
-    # print(test_2)
-    # print()
