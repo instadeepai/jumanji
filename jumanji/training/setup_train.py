@@ -167,7 +167,9 @@ def _setup_random_policy(  # noqa: CCR001
         random_policy = networks.make_random_policy_connector()
     elif cfg.env.name == "jigsaw":
         assert isinstance(env.unwrapped, Jigsaw)
-        random_policy = networks.make_random_policy_jigsaw()
+        random_policy = networks.make_random_policy_jigsaw(
+            jigsaw=env.unwrapped,
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

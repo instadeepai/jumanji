@@ -50,8 +50,17 @@ for ep in range(50):
     start_time = time.time()
     while not timestep.last():
         step_key, piece_key, rot_key, row_key, col_key = jax.random.split(step_key, 5)
-        piece_id = jax.random.randint(
-            piece_key, shape=(), minval=0, maxval=action_spec.maximum[0] + 1
+
+        # Only select a random piece from pieces that are true in the timestep.action_mask
+        # (i.e. pieces that are not yet placed)
+        probs = timestep.observation.action_mask[: env.num_pieces] / jnp.sum(
+            timestep.observation.action_mask[: env.num_pieces]
+        )
+        piece_id = jax.random.choice(
+            a=action_spec.maximum[0] + 1,
+            shape=(),
+            key=piece_key,
+            p=probs,
         )
         rotation = jax.random.randint(
             rot_key, shape=(), minval=0, maxval=action_spec.maximum[1] + 1
