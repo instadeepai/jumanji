@@ -88,7 +88,7 @@ class MACVRP(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
-                Defaults to `UniformRandomGenerator` with `num_customers=20` and `num_vehicles=2`.
+                Defaults to `UniformRandomGenerator` with `num_customers=6` and `num_vehicles=2`.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
@@ -129,7 +129,7 @@ class MACVRP(Environment[State]):
         )
 
         self._max_local_time = (
-            2.0 * jax.numpy.sqrt(2.0) * self._map_max * self._num_customers
+            2.0 * jax.numpy.sqrt(2.0) * self._map_max * self._num_customers / self._speed
         )
 
         # From the paper: All distances are represented by Euclidean distances in the plane,
@@ -301,44 +301,34 @@ class MACVRP(Environment[State]):
         )
 
         # Node spec
-        node_dict = {
-            "coordinates": node_coordinates,
-            "demands": node_demands,
-        }
-        nodes_spec = specs.Spec(Node, "NodesSpec", **node_dict)
+        nodes_spec = specs.Spec(Node, "NodesSpec", 
+                                coordinates=node_coordinates,
+                                demands=node_demands)
 
         # Window spec
-        window_dict = {
-            "start": node_time_windows_start,
-            "end": node_time_windows_end,
-        }
-        windows_spec = specs.Spec(TimeWindow, "WindowSpec", **window_dict)
+        windows_spec = specs.Spec(TimeWindow, "WindowSpec",
+                                  start=node_time_windows_start,
+                                  end=node_time_windows_end)
 
         # Penality spec
-        penality_dict = {
-            "early": node_penalty_coeffs_start,
-            "late": node_penalty_coeffs_end,
-        }
-        penality_spec = specs.Spec(PenalityCoeff, "PenalitySpec", **penality_dict)
+        penality_spec = specs.Spec(PenalityCoeff, "PenalitySpec",
+                                   early=node_penalty_coeffs_start,
+                                   late=node_penalty_coeffs_end)
 
         # Other vehicle spec
-        other_vehicle_dict = {
-            "positions": other_vehicles_positions,
-            "local_times": other_vehicles_local_times,
-            "capacities": other_vehicles_capacities,
-        }
         other_vehicle_spec = specs.Spec(
-            ObsVehicle, "OtherVehicleSpec", **other_vehicle_dict
+            ObsVehicle, "OtherVehicleSpec",
+            positions=other_vehicles_positions,
+            local_times=other_vehicles_local_times,
+            capacities=other_vehicles_capacities,
         )
 
         # Main vehicle spec
-        main_vehicle_dict = {
-            "positions": vehicle_position,
-            "local_times": vehicle_local_time,
-            "capacities": vehicle_capacity,
-        }
         main_vehicle_spec = specs.Spec(
-            ObsVehicle, "MainVehicleSpec", **main_vehicle_dict
+            ObsVehicle, "MainVehicleSpec", 
+            positions=vehicle_position,
+            local_times=vehicle_local_time,
+            capacities=vehicle_capacity,
         )
 
         return specs.Spec(
