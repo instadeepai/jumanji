@@ -116,7 +116,7 @@ class MMST(Environment[State]):
         self,
         generator_fn: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
-        step_limit: int = 50,
+        step_limit: int = 100,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Create the `MMST` environment.
@@ -131,11 +131,11 @@ class MMST(Environment[State]):
         """
 
         self._generator_fn = generator_fn or SplitRandomGenerator(
-            num_nodes=12,
-            num_edges=24,
+            num_nodes=36,
+            num_edges=72,
             max_degree=5,
-            num_agents=2,
-            num_nodes_per_agent=3,
+            num_agents=3,
+            num_nodes_per_agent=4,
             max_step=step_limit,
         )
 
@@ -143,7 +143,7 @@ class MMST(Environment[State]):
         self.num_nodes = self._generator_fn.num_nodes
         self.num_nodes_per_agent = self._generator_fn.num_nodes_per_agent
 
-        self._reward_fn = reward_fn or DenseRewardFn(reward_values=(0.1, -0.03, -0.01))
+        self._reward_fn = reward_fn or DenseRewardFn(reward_values=(1.0, -0.03, -0.03))
 
         self._renderer = viewer
         self._step_limit = step_limit

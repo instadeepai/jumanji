@@ -66,11 +66,11 @@ been used by another agent.
 
 
 ## Reward
-An agent recieves a reward of 0.1 every step it gets a valid connection, a reward of -0.03 if it does not
-connect and an extra penalty of -0.01 if choses an invalid action.
+An agent recieves a reward of 1.0 every step it gets a valid connection, a reward of -0.03 if it does not
+connect and an extra penalty of -0.03 if choses an invalid action.
 
 The total step reward is the sum of rewards per agent.
 
 
 ## Registered Versions 📖
-- `MMST-v0`, 2 agents, 12 nodes, 24 edges and 3 nodes to connect per agent.
+- `MMST-v0`, 3 agents, 36 nodes, 27 edges and 4 nodes to connect per agent.
