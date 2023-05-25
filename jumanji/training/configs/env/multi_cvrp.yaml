@@ -1,4 +1,4 @@
-name: macvrp
+name: multi_cvrp
 registered_version: MultiCVRP-v0
 
 network:
