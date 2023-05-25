@@ -6,7 +6,7 @@
 
 We provide here a Jax JIT-able implementation of the Graph Coloring environment.
 
-GraphColoring is a combinatorial optimization problem where the objective is to assign a color to each vertex of a graph in such a way that no two adjacent vertices share the same color. The problem is usually formulated as minimizing the number of colors used. The Graph Coloring environment is an episodic, single-agent setting that allows for the exploration of graph coloring algorithms and reinforcement learning methods.
+Graph coloring is a combinatorial optimization problem where the objective is to assign a color to each vertex of a graph in such a way that no two adjacent vertices share the same color. The problem is usually formulated as minimizing the number of colors used. The `GraphColoring` environment is an episodic, single-agent setting that allows for the exploration of graph coloring algorithms and reinforcement learning methods.
 
 ## Observation
 
