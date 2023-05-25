@@ -114,7 +114,7 @@ class GraphColoring(Environment[State]):
         """Resets the environment to an initial state.
 
         Returns:
-            the initial state and timestep.
+            The initial state and timestep.
         """
         colors = jnp.full(self.num_nodes, -1, dtype=jnp.int32)
         key, subkey = jax.random.split(key)
