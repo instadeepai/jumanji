@@ -245,7 +245,7 @@ class GraphColoring(Environment[State]):
         )
 
     def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec. size of number of nodes & a value of 0.
+        """Specification of the action for the `GraphColoring` environment.
 
         Returns:
             action_spec: specs.DiscreteArray object
