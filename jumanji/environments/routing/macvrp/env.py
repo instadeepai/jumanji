@@ -129,13 +129,17 @@ class MACVRP(Environment[State]):
         )
 
         self._max_local_time = (
-            2.0 * jax.numpy.sqrt(2.0) * self._map_max * self._num_customers / self._speed
+            2.0
+            * jax.numpy.sqrt(2.0)
+            * self._map_max
+            * self._num_customers
+            / self._speed
         )
 
         # From the paper: All distances are represented by Euclidean distances in the plane,
         # and the speeds of all  vehicles are assumed to be identical (i.e., it takes one
         # unit of time to travel one unit of distance)
-        self._speed = 1
+        self._speed: int = 1
 
     def __repr__(self) -> str:
         return f"MACVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
@@ -301,23 +305,30 @@ class MACVRP(Environment[State]):
         )
 
         # Node spec
-        nodes_spec = specs.Spec(Node, "NodesSpec", 
-                                coordinates=node_coordinates,
-                                demands=node_demands)
+        nodes_spec = specs.Spec(
+            Node, "NodesSpec", coordinates=node_coordinates, demands=node_demands
+        )
 
         # Window spec
-        windows_spec = specs.Spec(TimeWindow, "WindowSpec",
-                                  start=node_time_windows_start,
-                                  end=node_time_windows_end)
+        windows_spec = specs.Spec(
+            TimeWindow,
+            "WindowSpec",
+            start=node_time_windows_start,
+            end=node_time_windows_end,
+        )
 
         # Penality spec
-        penality_spec = specs.Spec(PenalityCoeff, "PenalitySpec",
-                                   early=node_penalty_coeffs_start,
-                                   late=node_penalty_coeffs_end)
+        penality_spec = specs.Spec(
+            PenalityCoeff,
+            "PenalitySpec",
+            early=node_penalty_coeffs_start,
+            late=node_penalty_coeffs_end,
+        )
 
         # Other vehicle spec
         other_vehicle_spec = specs.Spec(
-            ObsVehicle, "OtherVehicleSpec",
+            ObsVehicle,
+            "OtherVehicleSpec",
             positions=other_vehicles_positions,
             local_times=other_vehicles_local_times,
             capacities=other_vehicles_capacities,
@@ -325,7 +336,8 @@ class MACVRP(Environment[State]):
 
         # Main vehicle spec
         main_vehicle_spec = specs.Spec(
-            ObsVehicle, "MainVehicleSpec", 
+            ObsVehicle,
+            "MainVehicleSpec",
             positions=vehicle_position,
             local_times=vehicle_local_time,
             capacities=vehicle_capacity,
@@ -497,40 +509,30 @@ class MACVRP(Environment[State]):
             (self._num_vehicles, self._num_customers + 1), dtype=jax.numpy.bool_
         )
 
-        # Generate the other vehicle coordinates
-        for i in range(self._num_vehicles):
-            other_vehicles_positions = other_vehicles_positions.at[i].set(
-                jax.numpy.concatenate(
-                    [
-                        state.vehicles.positions[:i],
-                        state.vehicles.positions[i + 1 :],  # noqa
-                    ]
-                )
-            )
+        def mask_index(arr: chex.Array, ind: int) -> chex.Array:
+            n = arr.shape[0]
+            indices = jax.numpy.arange(n - 1) + (jax.numpy.arange(n - 1) >= ind)
+            return arr[indices]
 
-            other_vehicles_local_times = other_vehicles_local_times.at[i].set(
-                jax.numpy.concatenate(
-                    [
-                        state.vehicles.local_times[:i],
-                        state.vehicles.local_times[i + 1 :],  # noqa
-                    ]
-                )
-            )
-            other_vehicles_capacities = other_vehicles_capacities.at[i].set(
-                jax.numpy.concatenate(
-                    [
-                        state.vehicles.capacities[:i],
-                        state.vehicles.capacities[i + 1 :],  # noqa
-                    ]
-                )
-            )
+        mask_indices = jax.vmap(mask_index, in_axes=(None, 0))
+        other_vehicles_positions = mask_indices(
+            state.vehicles.positions, jax.numpy.arange(self._num_vehicles)
+        )
+        other_vehicles_capacities = mask_indices(
+            state.vehicles.capacities, jax.numpy.arange(self._num_vehicles)
+        )
+        other_vehicles_local_times = mask_indices(
+            state.vehicles.local_times, jax.numpy.arange(self._num_vehicles)
+        )
 
-            # The action is valid if the node has a
-            # non-zero demand and the vehicle has enough capacity.
-            action_mask = action_mask.at[i].set(
-                (state.vehicles.capacities[i] >= state.nodes.demands)
-                & (state.nodes.demands > 0.0)
-            )
+        # The action is valid if the node has a
+        # non-zero demand and the vehicle has enough capacity.
+        def single_vehicle_action_mask(capacity: chex.Array) -> chex.Array:
+            return (capacity >= state.nodes.demands) & (state.nodes.demands > 0.0)
+
+        action_mask = jax.vmap(single_vehicle_action_mask, in_axes=(None, 0))(
+            state.vehicles.capacities
+        )
 
         # The depot is always a valid action (True).
         action_mask = action_mask.at[:, DEPOT_IDX].set(True)
