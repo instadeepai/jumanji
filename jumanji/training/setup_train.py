@@ -234,7 +234,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
         )
-    elif cfg.env.name == "MultiCVRP":
+    elif cfg.env.name == "multi_cvrp":
         assert isinstance(env.unwrapped, MultiCVRP)
         actor_critic_networks = networks.make_actor_critic_networks_multicvrp(
             MultiCVRP=env.unwrapped,
