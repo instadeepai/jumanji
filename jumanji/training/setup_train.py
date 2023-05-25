@@ -143,7 +143,7 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
-    elif cfg.env.name == "MultiCVRP":
+    elif cfg.env.name == "multi_cvrp":
         assert isinstance(env.unwrapped, MultiCVRP)
         random_policy = networks.make_random_policy_multicvrp()
     elif cfg.env.name == "rubiks_cube":
