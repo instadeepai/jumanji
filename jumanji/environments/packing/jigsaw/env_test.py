@@ -106,21 +106,21 @@ def simple_env_board_state_4() -> chex.Array:
 
 
 @pytest.fixture
-def simple_env_action_mask_1() -> chex.Array:
-    """The state of the piece action mask in the simplified example after 1 correct action."""
-    return jnp.array([False, True, True, True])
+def simple_env_placed_pieces_1() -> chex.Array:
+    """Placed pieces array in the simplified env after 1 piece has been placed."""
+    return jnp.array([True, False, False, False])
 
 
 @pytest.fixture
 def simple_env_action_mask_2() -> chex.Array:
-    """The state of the piece action mask in the simplified example after 2 correct actions."""
-    return jnp.array([False, False, True, True])
+    """Placed pieces array in the simplified env after 2 pieces have been placed."""
+    return jnp.array([True, True, False, False])
 
 
 @pytest.fixture
-def simple_env_action_mask_3() -> chex.Array:
-    """The state of the piece action mask in the simplified example after 3 correct actions."""
-    return jnp.array([False, False, False, True])
+def simple_env_placed_pieces_3() -> chex.Array:
+    """Placed pieces array in the simplified env after 3 pieces have been placed."""
+    return jnp.array([True, True, True, False])
 
 
 def test_jigsaw__reset_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
@@ -162,7 +162,7 @@ def test_jigsaw__step_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
     assert_is_jax_array_tree(state_1)
 
     # Call the step method again to ensure it is not compiling twice.
-    action_1 = jnp.array([1, 0, 2, 2])
+    action_1 = jnp.array([1, 0, 3, 3])
     state_2, timestep_2 = step_fn(state_1, action_1)
 
     # Check that the state contains DeviceArrays to verify that it is jitted.
@@ -194,8 +194,6 @@ def test_jigsaw___expand_piece_to_board(
     jigsaw: Jigsaw, key: chex.PRNGKey, piece: chex.Array
 ) -> None:
     """Test that a piece is correctly set on a grid of zeros."""
-    print()
-    print(piece)
     state, _ = jigsaw.reset(key)
     expanded_grid_with_piece = jigsaw._expand_piece_to_board(state, piece, 2, 1)
     # fmt: off
@@ -220,9 +218,9 @@ def test_jigsaw__completed_episode_with_dense_reward(
     simple_env_board_state_2: chex.Array,
     simple_env_board_state_3: chex.Array,
     simple_env_board_state_4: chex.Array,
-    simple_env_action_mask_1: chex.Array,
+    simple_env_placed_pieces_1: chex.Array,
     simple_env_action_mask_2: chex.Array,
-    simple_env_action_mask_3: chex.Array,
+    simple_env_placed_pieces_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the Jigsaw environment
     with a dense reward until completion. It will check that the reward is
@@ -250,21 +248,21 @@ def test_jigsaw__completed_episode_with_dense_reward(
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.current_board == simple_env_board_state_1)
     assert timestep.reward == 6.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_1)
+    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 0, 0, 2]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.current_board == simple_env_board_state_2)
     assert timestep.reward == 6.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_2)
+    assert jnp.all(state.placed_pieces == simple_env_action_mask_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 0, 2, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.current_board == simple_env_board_state_3)
     assert timestep.reward == 6.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_3)
+    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
@@ -280,9 +278,9 @@ def test_jigsaw__completed_episode_with_sparse_reward(
     simple_env_board_state_2: chex.Array,
     simple_env_board_state_3: chex.Array,
     simple_env_board_state_4: chex.Array,
-    simple_env_action_mask_1: chex.Array,
+    simple_env_placed_pieces_1: chex.Array,
     simple_env_action_mask_2: chex.Array,
-    simple_env_action_mask_3: chex.Array,
+    simple_env_placed_pieces_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the Jigsaw environment
     with a sparse reward until completion. It will check that the reward is
@@ -311,21 +309,22 @@ def test_jigsaw__completed_episode_with_sparse_reward(
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.current_board == simple_env_board_state_1)
     assert timestep.reward == 0.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_1)
+    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 2, 0, 2]))
     assert timestep.step_type == StepType.MID
+
     assert jnp.all(state.current_board == simple_env_board_state_2)
     assert timestep.reward == 0.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_2)
+    assert jnp.all(state.placed_pieces == simple_env_action_mask_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 1, 2, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.current_board == simple_env_board_state_3)
     assert timestep.reward == 0.0
-    assert jnp.all(state.action_mask == simple_env_action_mask_3)
+    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))

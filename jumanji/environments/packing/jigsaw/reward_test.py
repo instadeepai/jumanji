@@ -48,7 +48,8 @@ def state_with_no_pieces_placed(
         num_pieces=4,
         pieces=pieces,
         solved_board=solved_board,
-        action_mask=jnp.ones(4, dtype=bool),
+        action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
+        placed_pieces=jnp.zeros(4, dtype=bool),
         current_board=jnp.zeros_like(solved_board),
         step_count=0,
         key=key,
@@ -70,12 +71,21 @@ def state_with_piece_one_placed(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
+        # TODO: Add the correct full action mask here.
         action_mask=jnp.array(
             [
                 False,
                 True,
                 True,
                 True,
+            ]
+        ),
+        placed_pieces=jnp.array(
+            [
+                True,
+                False,
+                False,
+                False,
             ]
         ),
         current_board=board_with_piece_one_placed,
@@ -103,12 +113,21 @@ def state_needing_only_piece_one(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
+        # TODO: Add the correct full action mask here.
         action_mask=jnp.array(
             [
                 True,
                 False,
                 True,
                 True,
+            ]
+        ),
+        placed_pieces=jnp.array(
+            [
+                True,
+                False,
+                False,
+                False,
             ]
         ),
         current_board=current_board,
@@ -133,12 +152,13 @@ def solved_state(
         col_nibs_idxs=jnp.array([2]),
         num_pieces=4,
         solved_board=solved_board,
-        action_mask=jnp.array(
+        action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
+        placed_pieces=jnp.array(
             [
-                False,
-                False,
-                False,
-                False,
+                True,
+                True,
+                True,
+                True,
             ]
         ),
         current_board=solved_board,

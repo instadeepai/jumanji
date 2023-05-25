@@ -78,7 +78,7 @@ def test_random_jigsaw_generator__call(
     assert all(state.pieces[i].shape == (3, 3) for i in range(4))
     assert state.col_nibs_idxs == jnp.array([2])
     assert state.row_nibs_idxs == jnp.array([2])
-    assert state.action_mask.shape == (4,)
+    assert state.action_mask.shape == (4, 4, 2, 2)
     assert state.step_count == 0
 
 

@@ -25,7 +25,7 @@ from jumanji.environments.packing.jigsaw.generator import (
 )
 from jumanji.environments.packing.jigsaw.reward import SparseReward
 
-SAVE_GIF = False
+SAVE_GIF = True
 
 # Very basic example of a random agent acting in the Jigsaw environment.
 # Each episode will generate a completely new instance of the jigsaw puzzle.
@@ -41,7 +41,7 @@ jit_step = jax.jit(chex.assert_max_traces(env.step, n=1))
 jit_reset = jax.jit(chex.assert_max_traces(env.reset, n=1))
 episode_returns: list = []
 states: list = []
-for ep in range(50):
+for ep in range(30):
     step_key, reset_key = jax.random.split(step_key)
     state, timestep = jit_reset(key=reset_key)
     states.append(state)
@@ -53,14 +53,18 @@ for ep in range(50):
 
         # Only select a random piece from pieces that are true in the timestep.action_mask
         # (i.e. pieces that are not yet placed)
-        probs = timestep.observation.action_mask[: env.num_pieces] / jnp.sum(
-            timestep.observation.action_mask[: env.num_pieces]
-        )
-        piece_id = jax.random.choice(
-            a=action_spec.maximum[0] + 1,
-            shape=(),
-            key=piece_key,
-            p=probs,
+        # piece_action_mask = timestep.observation.action_mask[:, 0, 0, 0]
+        # probs = piece_action_mask / jnp.sum(
+        #     piece_action_mask
+        # )
+        # piece_id = jax.random.choice(
+        #     a=action_spec.maximum[0] + 1,
+        #     shape=(),
+        #     key=piece_key,
+        #     p=probs,
+        # )
+        piece_id = jax.random.randint(
+            piece_key, shape=(), minval=0, maxval=action_spec.maximum[0] + 1
         )
         rotation = jax.random.randint(
             rot_key, shape=(), minval=0, maxval=action_spec.maximum[1] + 1
@@ -89,7 +93,7 @@ for ep in range(50):
 print(f"Average return: {jnp.mean(jnp.array(episode_returns))}, SPS: {int(sps)}\n")
 
 if SAVE_GIF:
-    env.animate(states=states, interval=200, save_path="big_env.gif")
+    env.animate(states=states, interval=200, save_path="big_env_2.gif")
 
 # An example of solving a puzzle by stepping a
 # dummy environment with a dense reward function.

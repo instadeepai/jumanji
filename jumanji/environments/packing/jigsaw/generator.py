@@ -296,10 +296,13 @@ class RandomJigsawGenerator(InstanceGenerator):
             num_pieces=num_pieces,
             col_nibs_idxs=col_nibs_idxs,
             row_nibs_idxs=row_nibs_idxs,
-            action_mask=jnp.ones(num_pieces, dtype=bool),
+            action_mask=jnp.ones(
+                (num_pieces, 4, grid_row_dim - 3, grid_col_dim - 3), dtype=bool
+            ),
             current_board=jnp.zeros_like(solved_board),
             step_count=0,
             key=key,
+            placed_pieces=jnp.zeros((num_pieces), dtype=bool),
         )
 
 
@@ -339,12 +342,13 @@ class ToyJigsawGeneratorWithRotation(InstanceGenerator):
             solved_board=mock_solved_grid,
             pieces=mock_pieces,
             current_board=jnp.zeros_like(mock_solved_grid),
-            action_mask=jnp.ones(4, dtype=bool),
+            action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
             col_nibs_idxs=jnp.array([2], dtype=jnp.int32),
             row_nibs_idxs=jnp.array([2], dtype=jnp.int32),
             num_pieces=jnp.int32(4),
             key=jax.random.PRNGKey(0),
             step_count=0,
+            placed_pieces=jnp.zeros(4, dtype=bool),
         )
 
 
@@ -390,7 +394,8 @@ class ToyJigsawGeneratorNoRotation(InstanceGenerator):
             row_nibs_idxs=jnp.array([2], dtype=jnp.int32),
             num_pieces=jnp.int32(4),
             key=jax.random.PRNGKey(0),
-            action_mask=jnp.ones(4, dtype=bool),
+            action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
             current_board=jnp.zeros_like(mock_solved_grid),
             step_count=0,
+            placed_pieces=jnp.zeros(4, dtype=bool),
         )
