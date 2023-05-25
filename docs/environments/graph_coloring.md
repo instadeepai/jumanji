@@ -47,7 +47,7 @@ The agent's goal is to find a valid coloring using as few colors as possible whi
 
 The goal of the agent is to find a valid coloring using as few colors as possible. An episode in the graph coloring environment can terminate under two conditions:
 
-1. All nodes have been assigned a color: the environment iteratively assigns colors to nodes. When all nodes have a color assigned (i.e., there are no nodes with a color value of -1), the episode ends. This is the natural termination condition and ideally the one we'd like the agent to achieve. In the code, this is checked by the line all_nodes_colored = jnp.all(colors >= 0).
+1. All nodes have been assigned a color: the environment iteratively assigns colors to nodes. When all nodes have a color assigned (i.e., there are no nodes with a color value of -1), the episode ends. This is the natural termination condition and ideally the one we'd like the agent to achieve.
 
 2. Invalid action is taken: an action is considered invalid if it tries to assign a color to a node that is not within the allowed color set for that node at that time. The allowed color set for each node is updated after every action. If an invalid action is attempted, the episode immediately terminates and the agent receives a large negative reward. This encourages the agent to learn valid actions and discourages it from making invalid actions.
 
