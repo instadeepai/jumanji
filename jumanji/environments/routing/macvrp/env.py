@@ -39,6 +39,7 @@ from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
     compute_distance,
     compute_time_penalties,
+    max_single_vehicle_distance,
 )
 from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -109,7 +110,6 @@ class MACVRP(Environment[State]):
         self._max_start_window = self._generator._max_start_window
         self._max_end_window = self._generator._max_end_window
         self._time_window_length = self._generator._time_window_length
-        self._early_coef_rand = self._generator._early_coef_rand
         self._late_coef_rand = self._generator._late_coef_rand
         self._num_customers = self._generator._num_customers
         self._num_vehicles = self._generator._num_vehicles
@@ -129,10 +129,7 @@ class MACVRP(Environment[State]):
         )
 
         self._max_local_time = (
-            2.0
-            * jax.numpy.sqrt(2.0)
-            * self._map_max
-            * self._num_customers
+            max_single_vehicle_distance(self._map_max, self._num_customers)
             / self._speed
         )
 

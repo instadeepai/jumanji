@@ -18,20 +18,18 @@ import chex
 import jax
 
 from jumanji.environments.routing.macvrp.types import State
+from jumanji.environments.routing.macvrp.utils import max_single_vehicle_distance
 
 
 class RewardFn(abc.ABC):
     def __init__(self, num_vechicles: int, num_customers: int, map_max: int) -> None:
-        self.num_vehicles = num_vechicles
-        self.num_customers = num_customers
-        self.map_max = map_max
+        self._num_vehicles = num_vechicles
+        self._num_customers = num_customers
+        self._map_max = map_max
         # This is the maximum negative reward that can be given to an agent.
-        self.large_negate_reward = (
-            -2
-            * self.map_max
-            * jax.numpy.sqrt(2)
-            * self.num_customers
-            * self.num_vehicles
+        self._large_negate_reward = (
+            -max_single_vehicle_distance(self._map_max, self._num_customers)
+            * self._num_vehicles
         )
 
     @abc.abstractmethod
@@ -58,10 +56,10 @@ class SparseReward(RewardFn):
     ) -> chex.Numeric:
         def compute_episode_reward(state: State) -> float:
             return jax.lax.cond(  # type: ignore
-                jax.numpy.any(state.step_count > self.num_customers * 2),
+                jax.numpy.any(state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
-                lambda state: self.large_negate_reward,
+                lambda state: self._large_negate_reward,
                 lambda state: -state.vehicles.distances.sum()
                 - state.vehicles.time_penalties.sum(),
                 state,

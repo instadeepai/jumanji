@@ -24,7 +24,7 @@ from jumanji.environments.routing.macvrp.test_data import (
 from jumanji.environments.routing.macvrp.utils import (
     compute_distance,
     compute_time_penalties,
-    generate_problem,
+    generate_uniform_random_problem,
     get_init_settings,
 )
 
@@ -53,7 +53,7 @@ class TestObservationSpec:
 
         assert np.array_equal(distances, np.array([1.0, 2.0], dtype=np.float32))
 
-    def test_generate_problem(self) -> None:
+    def test_generate_uniform_random_problem(self) -> None:
         """Test whether a problem can be generated correctly using the
         20, 50, 100 and 150 customer settings."""
 
@@ -80,7 +80,7 @@ class TestObservationSpec:
             window_end_times,
             early_coefs,
             late_coefs,
-        ) = generate_problem(
+        ) = generate_uniform_random_problem(
             key,
             num_customers,
             total_capacity,
@@ -113,7 +113,7 @@ class TestObservationSpec:
             window_end_times,
             early_coefs,
             late_coefs,
-        ) = generate_problem(
+        ) = generate_uniform_random_problem(
             key,
             num_customers,
             total_capacity,
@@ -146,7 +146,7 @@ class TestObservationSpec:
             window_end_times,
             early_coefs,
             late_coefs,
-        ) = generate_problem(
+        ) = generate_uniform_random_problem(
             key,
             num_customers,
             total_capacity,
@@ -181,7 +181,7 @@ class TestObservationSpec:
             window_end_times,
             early_coefs,
             late_coefs,
-        ) = generate_problem(
+        ) = generate_uniform_random_problem(
             key,
             num_customers,
             total_capacity,

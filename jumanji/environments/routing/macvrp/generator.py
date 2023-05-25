@@ -26,7 +26,7 @@ from jumanji.environments.routing.macvrp.types import (
 )
 from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
-    generate_problem,
+    generate_uniform_random_problem,
     get_init_settings,
 )
 
@@ -53,7 +53,6 @@ class Generator(abc.ABC):
             self._map_max,
             self._max_capacity,
             self._max_start_window,
-            self._early_coef_rand,
             self._late_coef_rand,
             self._customer_demand_max,
         ) = get_init_settings(self.num_customers, self.num_vehicles)
@@ -100,6 +99,7 @@ class UniformRandomGenerator(Generator):
         problem_key, _ = jax.random.split(key)
 
         total_capacity = self._max_capacity * self._num_vehicles
+
         (
             node_coordinates,
             node_demands,
@@ -107,7 +107,7 @@ class UniformRandomGenerator(Generator):
             window_end_times,
             early_coefs,
             late_coefs,
-        ) = generate_problem(
+        ) = generate_uniform_random_problem(
             problem_key,
             self._num_customers,
             total_capacity,

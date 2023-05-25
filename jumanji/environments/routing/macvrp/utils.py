@@ -52,6 +52,10 @@ def compute_time_penalties(
     return time_penalties
 
 
+def max_single_vehicle_distance(map_max: int, num_customers: int) -> int:
+    return 2 * map_max * jax.numpy.sqrt(2) * num_customers
+
+
 def compute_distance(
     start_node_coordinates: chex.Array, end_node_coordinates: chex.Array
 ) -> jax.numpy.float32:
@@ -61,7 +65,7 @@ def compute_distance(
     )
 
 
-def generate_problem(
+def generate_uniform_random_problem(
     key: chex.PRNGKey,
     num_customers: jax.numpy.int16,
     total_capacity: jax.numpy.int16,
@@ -84,13 +88,6 @@ def generate_problem(
         demand_key, (num_customers + 1,), minval=0, maxval=customer_demand_max
     )
     node_demands = node_demands.at[DEPOT_IDX].set(0)
-
-    # The total demands are controlled to less than the total capacity of all
-    # vehicles to ensure a feasible solution.
-    node_demands = jax.numpy.asarray(
-        node_demands * (total_capacity / jax.numpy.sum(node_demands)),
-        dtype=jax.numpy.int16,
-    )
 
     window_start_times = jax.random.uniform(
         window_key, (num_customers + 1,), minval=0, maxval=max_start_window
@@ -127,22 +124,21 @@ def generate_problem(
 def get_6_customer_init_settings(
     num_vehicles: int,
 ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
+    """
+    This example is not part of the original problem, but serves as an
+        simpler environment to experiment with.
+    """
+
     if num_vehicles not in [2, 3]:
         raise ValueError("num_vehicles must be 2 or 3 for num_customers=6")
-    """
-        This example is not part of the original problem, but serves as an
-            simpler environment to experiment with.
-    """
 
     map_max = 10
     max_capacity = 20
     max_start_window = 10.0
     early_coef_rand = (0.0, 0.2)
     late_coef_rand = (0.0, 1.0)
-    if num_vehicles == 2:
-        customer_demand_max = 10
-    else:
-        customer_demand_max = 20
+
+    customer_demand_max = 10 if num_vehicles == 2 else 20
 
     return (
         map_max,
