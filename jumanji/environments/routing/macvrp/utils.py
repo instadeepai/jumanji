@@ -108,6 +108,15 @@ def generate_uniform_random_problem(
     )
     node_demands = node_demands.at[DEPOT_IDX].set(0)
 
+     # vehicles to ensure a feasible solution.
+    node_demands = jax.numpy.asarray(
+        node_demands * (total_capacity / jax.numpy.sum(node_demands)),
+        dtype=jax.numpy.int16,
+    )
+
+    # Limit the node max values to be less than customer_demand_max
+    node_demands = jax.numpy.minimum(node_demands, customer_demand_max)
+
     window_start_times = jax.random.uniform(
         window_key, (num_customers + 1,), minval=0, maxval=max_start_window
     )

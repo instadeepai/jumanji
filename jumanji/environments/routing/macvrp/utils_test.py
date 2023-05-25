@@ -125,6 +125,7 @@ class TestObservationSpec:
             late_coef_rand,
         )
 
+        print("got: ", np.array2string(node_demands, separator=","))
         assert np.array_equal(node_demands, fifty_correct_node_demands)
 
         # 100 customer setting
