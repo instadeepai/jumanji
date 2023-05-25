@@ -143,6 +143,13 @@ class GraphColoring(Environment[State]):
     ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
+        Specifically, this function allows the agent to choose
+        a color for the current node (based on the action taken)
+        in a graph coloring problem.
+        It then updates the state of the environment based on
+        the color chosen and calculates the reward based on
+        the validity of the action and the completion of the coloring task.
+
         Args:
             state: the current state of the environment.
             action: the action taken by the agent.
