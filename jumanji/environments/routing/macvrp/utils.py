@@ -130,7 +130,7 @@ def get_6_customer_init_settings(
     if num_vehicles not in [2, 3]:
         raise ValueError("num_vehicles must be 2 or 3 for num_customers=6")
     """
-        This example is not part of the original problem, but servers as an
+        This example is not part of the original problem, but serves as an
             simpler environment to experiment with.
     """
 
