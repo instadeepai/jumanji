@@ -28,9 +28,7 @@ def create_action_mask(
     def single_vehicle_action_mask(capacity: chex.Array) -> chex.Array:
         return (capacity >= node_demands) & (node_demands > 0.0)
 
-    action_mask = jax.vmap(single_vehicle_action_mask, in_axes=(0,))(
-        vehicle_capacities
-    )
+    action_mask = jax.vmap(single_vehicle_action_mask, in_axes=(0,))(vehicle_capacities)
 
     # The depot is always a valid action (True).
     action_mask = action_mask.at[:, DEPOT_IDX].set(True)
@@ -108,7 +106,7 @@ def generate_uniform_random_problem(
     )
     node_demands = node_demands.at[DEPOT_IDX].set(0)
 
-     # vehicles to ensure a feasible solution.
+    # vehicles to ensure a feasible solution.
     node_demands = jax.numpy.asarray(
         node_demands * (total_capacity / jax.numpy.sum(node_demands)),
         dtype=jax.numpy.int16,
