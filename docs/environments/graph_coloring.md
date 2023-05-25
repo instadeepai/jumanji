@@ -33,7 +33,7 @@ The observation in the `GraphColoring` environment includes information about th
 
 ## Action
 
-The action space is a DiscreteArray of integer values in [0, 1, ..., num_colors - 1]. Each action corresponds to assigning a color to the current node.
+The action space is a DiscreteArray of integer values in `[0, 1, ..., num_colors - 1]`. Each action corresponds to assigning a color to the current node.
 
 ## Reward
 
