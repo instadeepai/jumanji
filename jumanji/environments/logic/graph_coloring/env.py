@@ -104,7 +104,7 @@ class GraphColoring(Environment[State]):
 
         # Create viewer used for rendering
         self._env_viewer = viewer or GraphColoringViewer(
-            num_nodes=num_nodes, name="GraphColoring"
+            num_nodes=self.num_nodes, name="GraphColoring"
         )
 
     def __repr__(self) -> str:
@@ -117,12 +117,11 @@ class GraphColoring(Environment[State]):
         Returns:
             the initial state and timestep.
         """
-        num_nodes = self.generator.num_nodes
-        colors = jnp.full(num_nodes, -1, dtype=jnp.int32)
+        colors = jnp.full(self.num_nodes, -1, dtype=jnp.int32)
         key, subkey = jax.random.split(key)
         adj_matrix = self.generator(subkey)
 
-        action_mask = jnp.ones(num_nodes, dtype=bool)
+        action_mask = jnp.ones(self.num_nodes, dtype=bool)
         state = State(
             adj_matrix=adj_matrix,
             colors=colors,
@@ -153,7 +152,6 @@ class GraphColoring(Environment[State]):
             state: the new state of the environment.
             timestep: the next timestep.
         """
-        num_nodes = self.generator.num_nodes
         # Get the valid actions for the current state.
         valid_actions = state.action_mask
         # Check if the chosen action is invalid (not in valid_actions).
@@ -166,16 +164,16 @@ class GraphColoring(Environment[State]):
         all_nodes_colored = jnp.all(colors >= 0)
 
         # Calculate the reward
-        unique_colors_used = jnp.unique(colors, size=num_nodes, fill_value=-1)
+        unique_colors_used = jnp.unique(colors, size=self.num_nodes, fill_value=-1)
         num_unique_colors = jnp.count_nonzero(unique_colors_used >= 0)
         reward = jnp.where(all_nodes_colored, -num_unique_colors, 0.0)
 
         # Apply the maximum penalty when an invalid action is taken and terminate the episode
-        reward = jnp.where(invalid_action_taken, -num_nodes, reward)
+        reward = jnp.where(invalid_action_taken, -self.num_nodes, reward)
         done = jnp.logical_or(all_nodes_colored, invalid_action_taken)
 
         # Update the current node index
-        next_node_index = (state.current_node_index + 1) % num_nodes
+        next_node_index = (state.current_node_index + 1) % self.num_nodes
 
         next_state = State(
             adj_matrix=state.adj_matrix,
@@ -214,36 +212,35 @@ class GraphColoring(Environment[State]):
             - current_node_index: BoundedArray (int32) of shape ().
                 Represents the index of the current node.
         """
-        num_nodes = self.generator.num_nodes
         return specs.Spec(
             Observation,
             "ObservationSpec",
             adj_matrix=specs.BoundedArray(
-                shape=(num_nodes, num_nodes),
+                shape=(self.num_nodes, self.num_nodes),
                 dtype=bool,
                 minimum=False,
                 maximum=True,
                 name="adj_matrix",
             ),
             action_mask=specs.BoundedArray(
-                shape=(num_nodes,),
+                shape=(self.num_nodes,),
                 dtype=bool,
                 minimum=False,
                 maximum=True,
                 name="action_mask",
             ),
             colors=specs.BoundedArray(
-                shape=(num_nodes,),
+                shape=(self.num_nodes,),
                 dtype=jnp.int32,
                 minimum=-1,
-                maximum=num_nodes - 1,
+                maximum=self.num_nodes - 1,
                 name="colors",
             ),
             current_node_index=specs.BoundedArray(
                 shape=(),
                 dtype=jnp.int32,
                 minimum=0,
-                maximum=num_nodes - 1,
+                maximum=self.num_nodes - 1,
                 name="current_node_index",
             ),
         )
@@ -254,17 +251,16 @@ class GraphColoring(Environment[State]):
         Returns:
             action_spec: specs.DiscreteArray object
         """
-        num_nodes = self.generator.num_nodes
-        return specs.DiscreteArray(num_values=num_nodes, name="action", dtype=jnp.int32)
+        return specs.DiscreteArray(
+            num_values=self.num_nodes, name="action", dtype=jnp.int32
+        )
 
     def _get_valid_actions(self, state: State) -> chex.Array:
         """Returns a boolean array indicating the valid colors for the current node."""
-        num_nodes = self.generator.num_nodes
-
         # Create a boolean array of size (num_nodes + 1) set to True.
         # The extra element is to accommodate for the -1 index
         # which represents nodes that have not been colored yet.
-        valid_actions = jnp.ones(num_nodes + 1, dtype=bool)
+        valid_actions = jnp.ones(self.num_nodes + 1, dtype=bool)
         row = state.adj_matrix[state.current_node_index, :]
         action_mask = jnp.where(row, state.colors, -1)
         valid_actions = valid_actions.at[action_mask].set(False)
