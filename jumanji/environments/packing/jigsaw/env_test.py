@@ -194,8 +194,8 @@ def test_jigsaw___expand_piece_to_board(
     jigsaw: Jigsaw, key: chex.PRNGKey, piece: chex.Array
 ) -> None:
     """Test that a piece is correctly set on a grid of zeros."""
-    state, _ = jigsaw.reset(key)
-    expanded_grid_with_piece = jigsaw._expand_piece_to_board(state, piece, 2, 1)
+    _, _ = jigsaw.reset(key)
+    expanded_grid_with_piece = jigsaw._expand_piece_to_board(piece, 2, 1)
     # fmt: off
     expected_expanded_grid = jnp.array(
         [

@@ -51,8 +51,8 @@ class Jigsaw(Environment[State]):
         """
 
         default_generator = RandomJigsawGenerator(
-            num_row_pieces=3,
-            num_col_pieces=3,
+            num_row_pieces=5,
+            num_col_pieces=5,
         )
 
         self.generator = generator or default_generator
@@ -76,27 +76,20 @@ class Jigsaw(Environment[State]):
         )
 
     def reset(
-        self, key: chex.PRNGKey, generate_new_board: bool = False
+        self,
+        key: chex.PRNGKey,
     ) -> Tuple[State, TimeStep[Observation]]:
 
         """Resets the environment.
 
         Args:
             key: PRNG key for generating a new instance.
-            generate_new_board: whether to generate a new board
-                or reset the current one.
 
         Returns:
             a tuple of the initial state and a time step.
         """
 
         board_state = self.generator(key)
-
-        # board_state.action_mask = jnp.ones((
-        # self.num_pieces, 4, self.num_rows-3, self.num_cols-3,
-        # ), dtype=bool)
-        # board_state.current_board = jnp.zeros_like(board_state.solved_board)
-        # board_state.placed_pieces = jnp.zeros((self.num_pieces,), dtype=bool)
 
         obs = self._observation_from_state(board_state)
         timestep = restart(observation=obs)
@@ -123,57 +116,40 @@ class Jigsaw(Environment[State]):
         # Rotate chosen piece
         chosen_piece = rotate_piece(chosen_piece, rotation)
 
-        grid_piece = self._expand_piece_to_board(state, chosen_piece, row_idx, col_idx)
+        grid_piece = self._expand_piece_to_board(chosen_piece, row_idx, col_idx)
         grid_mask_piece = self._get_ones_like_expanded_piece(grid_piece=grid_piece)
 
-        action_is_legal = self._check_action_is_legal(action, state, grid_mask_piece)
-
-        next_state_legal = State(
-            col_nibs_idxs=state.col_nibs_idxs,
-            row_nibs_idxs=state.row_nibs_idxs,
-            solved_board=state.solved_board,
-            current_board=state.current_board + grid_piece,
-            pieces=state.pieces,
-            action_mask=state.action_mask,  # filler for now
-            num_pieces=state.num_pieces,
-            key=state.key,
-            step_count=state.step_count + 1,
-            placed_pieces=state.placed_pieces.at[piece_idx].set(True),
+        action_is_legal = self._check_action_is_legal(
+            action, state.current_board, state.placed_pieces, grid_mask_piece
         )
 
-        next_state_illegal = State(
-            col_nibs_idxs=state.col_nibs_idxs,
-            row_nibs_idxs=state.row_nibs_idxs,
-            solved_board=state.solved_board,
-            current_board=state.current_board,
-            pieces=state.pieces,
-            action_mask=state.action_mask,
-            num_pieces=state.num_pieces,
-            key=state.key,
-            step_count=state.step_count + 1,
-            placed_pieces=state.placed_pieces,
-        )
-
-        # Transition board to new state if the action is legal
-        # otherwise, stay in the same state.
-        next_state = jax.lax.cond(
+        # If the action is legal
+        new_board = jax.lax.cond(
             action_is_legal,
-            lambda: next_state_legal,
-            lambda: next_state_illegal,
+            lambda: state.current_board + grid_piece,
+            lambda: state.current_board,
+        )
+        placed_pieces = jax.lax.cond(
+            action_is_legal,
+            lambda: state.placed_pieces.at[piece_idx].set(True),
+            lambda: state.placed_pieces,
         )
 
-        full_action_mask = self._make_full_action_mask(next_state)
+        new_action_mask = self._make_full_action_mask(
+            new_board, state.pieces, placed_pieces
+        )
+
         next_state = State(
-            col_nibs_idxs=next_state.col_nibs_idxs,
-            row_nibs_idxs=next_state.row_nibs_idxs,
-            solved_board=next_state.solved_board,
-            current_board=next_state.current_board,
-            pieces=next_state.pieces,
-            action_mask=full_action_mask,  # filler for now
-            num_pieces=next_state.num_pieces,
-            key=next_state.key,
-            step_count=next_state.step_count,
-            placed_pieces=next_state.placed_pieces,
+            col_nibs_idxs=state.col_nibs_idxs,
+            row_nibs_idxs=state.row_nibs_idxs,
+            solved_board=state.solved_board,
+            current_board=new_board,
+            pieces=state.pieces,
+            action_mask=new_action_mask,
+            num_pieces=state.num_pieces,
+            key=state.key,
+            step_count=state.step_count + 1,
+            placed_pieces=placed_pieces,
         )
 
         done = self._check_done(next_state)
@@ -312,7 +288,11 @@ class Jigsaw(Environment[State]):
         return done
 
     def _check_action_is_legal(
-        self, action: chex.Numeric, state: State, grid_mask_piece: chex.Array
+        self,
+        action: chex.Numeric,
+        current_board: chex.Array,
+        placed_pieces: chex.Array,
+        grid_mask_piece: chex.Array,
     ) -> bool:
         """Checks if the action is legal by considering the action mask and the
            board mask. An action is legal if the action mask is True for that action
@@ -330,12 +310,9 @@ class Jigsaw(Environment[State]):
 
         piece_idx, _, _, _ = action
 
-        placed_mask = (state.current_board > 0.0) + grid_mask_piece
+        placed_mask = (current_board > 0.0) + grid_mask_piece
 
-        # legal: bool = state.action_mask[
-        # piece_idx, rotation, row, col
-        # ] & (jnp.max(placed_mask) <= 1)
-        legal: bool = (~state.placed_pieces[piece_idx]) & (jnp.max(placed_mask) <= 1)
+        legal: bool = (~placed_pieces[piece_idx]) & (jnp.max(placed_mask) <= 1)
 
         return legal
 
@@ -352,7 +329,6 @@ class Jigsaw(Environment[State]):
 
     def _expand_piece_to_board(
         self,
-        state: State,
         piece: chex.Array,
         row_coord: chex.Numeric,
         col_coord: chex.Numeric,
@@ -371,8 +347,7 @@ class Jigsaw(Environment[State]):
             Grid of zeroes with values where the piece is placed.
         """
 
-        grid_with_piece = jnp.zeros_like(state.solved_board)
-
+        grid_with_piece = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.float32)
         place_location = (row_coord, col_coord)
 
         grid_with_piece = jax.lax.dynamic_update_slice(
@@ -399,7 +374,7 @@ class Jigsaw(Environment[State]):
 
     def _expand_all_pieces_to_boards(
         self,
-        state: State,
+        pieces: chex.Array,
         piece_idxs: chex.Array,
         rotations: chex.Array,
         rows: chex.Array,
@@ -409,12 +384,13 @@ class Jigsaw(Environment[State]):
         # and generates a grid for each piece. It then returns an array of these grids.
 
         batch_expand_piece_to_board = jax.vmap(
-            self._expand_piece_to_board, in_axes=(None, 0, 0, 0)
+            self._expand_piece_to_board, in_axes=(0, 0, 0)
         )
 
-        pieces = state.pieces[piece_idxs]
-        rotated_pieces = jax.vmap(rotate_piece, in_axes=(0, 0))(pieces, rotations)
-        grids = batch_expand_piece_to_board(state, rotated_pieces, rows, cols)
+        # TODO: Better naming here.
+        all_pieces = pieces[piece_idxs]
+        rotated_pieces = jax.vmap(rotate_piece, in_axes=(0, 0))(all_pieces, rotations)
+        grids = batch_expand_piece_to_board(rotated_pieces, rows, cols)
 
         batch_get_ones_like_expanded_piece = jax.vmap(
             self._get_ones_like_expanded_piece, in_axes=(0)
@@ -422,9 +398,16 @@ class Jigsaw(Environment[State]):
         grids = batch_get_ones_like_expanded_piece(grids)
         return grids
 
-    def _make_full_action_mask(self, state: State) -> chex.Array:
+    def _make_full_action_mask(
+        self, current_board: chex.Array, pieces: chex.Array, placed_pieces: chex.Array
+    ) -> chex.Array:
         """Create a mask of possible actions based on the current state."""
-        num_pieces, num_rotations, num_rows, num_cols = state.action_mask.shape
+        num_pieces, num_rotations, num_rows, num_cols = (
+            self.num_pieces,
+            4,
+            self.num_rows - 3,
+            self.num_cols - 3,
+        )
 
         pieces_grid, rotations_grid, rows_grid, cols_grid = jnp.meshgrid(
             jnp.arange(num_pieces),
@@ -434,7 +417,7 @@ class Jigsaw(Environment[State]):
         )
 
         grid_mask_pieces = self._expand_all_pieces_to_boards(
-            state,
+            pieces,
             pieces_grid.flatten(),
             rotations_grid.flatten(),
             rows_grid.flatten(),
@@ -442,13 +425,14 @@ class Jigsaw(Environment[State]):
         )
 
         batch_check_action_is_legal = jax.vmap(
-            self._check_action_is_legal, in_axes=(0, None, 0)
+            self._check_action_is_legal, in_axes=(0, None, None, 0)
         )
         legal_actions = batch_check_action_is_legal(
             jnp.stack(
                 (pieces_grid, rotations_grid, rows_grid, cols_grid), axis=-1
             ).reshape(-1, 4),
-            state,
+            current_board,
+            placed_pieces,
             grid_mask_pieces,
         )
 
@@ -457,7 +441,7 @@ class Jigsaw(Environment[State]):
         )
 
         # Now set all current placed pieces to false in the mask.
-        placed_pieces_array = state.placed_pieces.reshape((self.num_pieces, 1, 1, 1))
+        placed_pieces_array = placed_pieces.reshape((self.num_pieces, 1, 1, 1))
         placed_pieces_mask = jnp.tile(
             placed_pieces_array, (1, num_rotations, num_rows, num_cols)
         )
