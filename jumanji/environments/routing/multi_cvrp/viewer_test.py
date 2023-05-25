@@ -19,7 +19,7 @@ import jax
 import numpy as np
 
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
-from jumanji.environments.routing.multi_cvrp.viewer import MACVRPViewer
+from jumanji.environments.routing.multi_cvrp.viewer import MultiCVRPViewer
 
 
 def test_render(multicvrp_env: MultiCVRP) -> None:
@@ -30,7 +30,7 @@ def test_render(multicvrp_env: MultiCVRP) -> None:
     step_fn = jax.jit(multicvrp_env.step)
     state, timestep = reset_fn(key)
 
-    viewer = MACVRPViewer(
+    viewer = MultiCVRPViewer(
         name="MultiCVRP",
         num_vehicles=multicvrp_env._num_vehicles,
         num_customers=multicvrp_env._num_customers,
@@ -76,7 +76,7 @@ def test_animation(multicvrp_env: MultiCVRP) -> None:
     reset_fn = jax.jit(multicvrp_env.reset)
     step_fn = jax.jit(multicvrp_env.step)
     state, timestep = reset_fn(key)
-    viewer = MACVRPViewer(
+    viewer = MultiCVRPViewer(
         name="MultiCVRP",
         num_vehicles=multicvrp_env._num_vehicles,
         num_customers=multicvrp_env._num_customers,

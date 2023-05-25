@@ -68,7 +68,7 @@ def make_actor_critic_networks_multicvrp(
     )
 
 
-class MACVRPTorso(hk.Module):
+class MultiCVRPTorso(hk.Module):
     def __init__(
         self,
         num_vehicles: int,
@@ -237,7 +237,7 @@ def make_actor_network_multicvrp(
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = MACVRPTorso(
+        torso = MultiCVRPTorso(
             num_vehicles=num_vehicles,
             num_customers=num_customers,
             transformer_num_heads=transformer_num_heads,
@@ -280,7 +280,7 @@ def make_critic_network_multicvrp(
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = MACVRPTorso(
+        torso = MultiCVRPTorso(
             num_vehicles=num_vehicles,
             num_customers=num_customers,
             transformer_num_heads=transformer_num_heads,

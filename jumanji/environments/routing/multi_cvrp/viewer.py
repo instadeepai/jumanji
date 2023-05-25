@@ -26,7 +26,7 @@ from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.viewer import Viewer
 
 
-class MACVRPViewer(Viewer):
+class MultiCVRPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"

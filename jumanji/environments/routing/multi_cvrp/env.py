@@ -42,7 +42,7 @@ from jumanji.environments.routing.multi_cvrp.utils import (
     create_action_mask,
     max_single_vehicle_distance,
 )
-from jumanji.environments.routing.multi_cvrp.viewer import MACVRPViewer
+from jumanji.environments.routing.multi_cvrp.viewer import MultiCVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
@@ -95,7 +95,7 @@ class MultiCVRP(Environment[State]):
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
                 Implemented options are [`DenseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `MACVRPViewer` with "human" render
+            viewer: `Viewer` used for rendering. Defaults to `MultiCVRPViewer` with "human" render
                 mode.
         """
 
@@ -122,7 +122,7 @@ class MultiCVRP(Environment[State]):
         )
 
         # Create viewer used for rendering
-        self._viewer = viewer or MACVRPViewer(
+        self._viewer = viewer or MultiCVRPViewer(
             name="MultiCVRP",
             num_vehicles=self._num_vehicles,
             num_customers=self._num_customers,
