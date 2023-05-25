@@ -72,7 +72,6 @@ class RandomGenerator(Generator):
         return self._num_nodes
 
     def __repr__(self) -> str:
-        """Returns: str: the string representation of the environment generator."""
         return (
             f"GraphColoring(number of nodes={self.num_nodes}, "
             f"percent connected={self.percent_connected * 100}% "

@@ -108,7 +108,6 @@ class GraphColoring(Environment[State]):
         )
 
     def __repr__(self) -> str:
-        """Returns: str: the string representation of the environment."""
         return f"GraphColouring({self.generator!r})"
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
