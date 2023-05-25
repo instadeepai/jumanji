@@ -122,6 +122,7 @@ class State:
     order: This array stores the history of each vehicle by tracking what customer each
         vehicle was at each environment step. This is used for rendering.
     step_count: The current step count in the environment.
+    action_mask: This array stores the marginal action mask for each vehicle.
     key: random key used for auto-reset.
     """
 
@@ -132,6 +133,7 @@ class State:
     order: chex.Array  # Shape: (num_vehicles, 2 * num_customers,) - this size is
     # worst-case when hitting the max step length.
     step_count: chex.Array  # Shape: ()
+    action_mask: chex.Array  # Shape: (num_vehicles, num_customers + 1)
     key: chex.PRNGKey  # (2,)
 
 

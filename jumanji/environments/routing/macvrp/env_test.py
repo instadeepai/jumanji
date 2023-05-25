@@ -58,6 +58,8 @@ class TestEnvironmentSpec:
         assert jax.numpy.all(state.windows.end > state.windows.start)
 
         # Check that the early_coefs and late_coefs are valid.
+        assert jax.numpy.all(macvrp_env._early_coef_rand[0] <= state.coeffs.early)
+        assert jax.numpy.all(state.coeffs.early < macvrp_env._early_coef_rand[1])
         assert jax.numpy.all(macvrp_env._late_coef_rand[0] <= state.coeffs.late)
         assert jax.numpy.all(state.coeffs.late < macvrp_env._late_coef_rand[1])
 

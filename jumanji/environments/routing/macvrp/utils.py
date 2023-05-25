@@ -20,6 +20,23 @@ import jax
 from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
 
 
+def create_action_mask(
+    node_demands: chex.Array, vehicle_capacities: chex.Array
+) -> chex.Array:
+    # The action is valid if the node has a
+    # non-zero demand and the vehicle has enough capacity.
+    def single_vehicle_action_mask(capacity: chex.Array) -> chex.Array:
+        return (capacity >= node_demands) & (node_demands > 0.0)
+
+    action_mask = jax.vmap(single_vehicle_action_mask, in_axes=(0,))(
+        vehicle_capacities
+    )
+
+    # The depot is always a valid action (True).
+    action_mask = action_mask.at[:, DEPOT_IDX].set(True)
+    return action_mask
+
+
 def compute_time_penalties(
     local_times: chex.Array,
     window_start: chex.Array,
@@ -52,7 +69,9 @@ def compute_time_penalties(
     return time_penalties
 
 
-def max_single_vehicle_distance(map_max: int, num_customers: int) -> int:
+def max_single_vehicle_distance(
+    map_max: chex.Array, num_customers: chex.Array
+) -> chex.Array:
     return 2 * map_max * jax.numpy.sqrt(2) * num_customers
 
 

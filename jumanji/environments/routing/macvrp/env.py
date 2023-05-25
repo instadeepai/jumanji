@@ -39,6 +39,7 @@ from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
     compute_distance,
     compute_time_penalties,
+    create_action_mask,
     max_single_vehicle_distance,
 )
 from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
@@ -110,6 +111,7 @@ class MACVRP(Environment[State]):
         self._max_start_window = self._generator._max_start_window
         self._max_end_window = self._generator._max_end_window
         self._time_window_length = self._generator._time_window_length
+        self._early_coef_rand = self._generator._early_coef_rand
         self._late_coef_rand = self._generator._late_coef_rand
         self._num_customers = self._generator._num_customers
         self._num_vehicles = self._generator._num_vehicles
@@ -128,15 +130,15 @@ class MACVRP(Environment[State]):
             render_mode="human",
         )
 
-        self._max_local_time = (
-            max_single_vehicle_distance(self._map_max, self._num_customers)
-            / self._speed
-        )
-
         # From the paper: All distances are represented by Euclidean distances in the plane,
         # and the speeds of all  vehicles are assumed to be identical (i.e., it takes one
         # unit of time to travel one unit of distance)
         self._speed: int = 1
+
+        self._max_local_time = (
+            max_single_vehicle_distance(self._map_max, self._num_customers)
+            / self._speed
+        )
 
     def __repr__(self) -> str:
         return f"MACVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
@@ -477,6 +479,7 @@ class MACVRP(Environment[State]):
             ),
             step_count=state.step_count + 1,
             order=order,
+            action_mask=create_action_mask(node_demands, vehicle_capacities),
             key=state.key,
         )
 
@@ -502,10 +505,6 @@ class MACVRP(Environment[State]):
             (self._num_vehicles, self._num_vehicles - 1), dtype=jax.numpy.int16
         )
 
-        action_mask = jax.numpy.ones(
-            (self._num_vehicles, self._num_customers + 1), dtype=jax.numpy.bool_
-        )
-
         def mask_index(arr: chex.Array, ind: int) -> chex.Array:
             n = arr.shape[0]
             indices = jax.numpy.arange(n - 1) + (jax.numpy.arange(n - 1) >= ind)
@@ -521,18 +520,6 @@ class MACVRP(Environment[State]):
         other_vehicles_local_times = mask_indices(
             state.vehicles.local_times, jax.numpy.arange(self._num_vehicles)
         )
-
-        # The action is valid if the node has a
-        # non-zero demand and the vehicle has enough capacity.
-        def single_vehicle_action_mask(capacity: chex.Array) -> chex.Array:
-            return (capacity >= state.nodes.demands) & (state.nodes.demands > 0.0)
-
-        action_mask = jax.vmap(single_vehicle_action_mask, in_axes=(None, 0))(
-            state.vehicles.capacities
-        )
-
-        # The depot is always a valid action (True).
-        action_mask = action_mask.at[:, DEPOT_IDX].set(True)
 
         return Observation(
             nodes=Node(
@@ -559,7 +546,7 @@ class MACVRP(Environment[State]):
                 local_times=state.vehicles.local_times,
                 capacities=state.vehicles.capacities,
             ),
-            action_mask=action_mask,
+            action_mask=state.action_mask,
         )
 
     def _state_to_timestep(self, state: State) -> TimeStep:

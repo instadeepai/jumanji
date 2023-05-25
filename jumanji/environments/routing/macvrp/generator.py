@@ -26,6 +26,7 @@ from jumanji.environments.routing.macvrp.types import (
 )
 from jumanji.environments.routing.macvrp.utils import (
     DEPOT_IDX,
+    create_action_mask,
     generate_uniform_random_problem,
     get_init_settings,
 )
@@ -53,6 +54,7 @@ class Generator(abc.ABC):
             self._map_max,
             self._max_capacity,
             self._max_start_window,
+            self._early_coef_rand,
             self._late_coef_rand,
             self._customer_demand_max,
         ) = get_init_settings(self.num_customers, self.num_vehicles)
@@ -118,7 +120,10 @@ class UniformRandomGenerator(Generator):
             self._early_coef_rand,
             self._late_coef_rand,
         )
-
+        capacities = (
+            jax.numpy.ones(self._num_vehicles, dtype=jax.numpy.int16)
+            * self._max_capacity
+        )
         state = State(
             nodes=Node(coordinates=node_coordinates, demands=node_demands),
             windows=TimeWindow(start=window_start_times, end=window_end_times),
@@ -128,8 +133,7 @@ class UniformRandomGenerator(Generator):
                 local_times=jax.numpy.zeros(
                     self._num_vehicles, dtype=jax.numpy.float32
                 ),
-                capacities=jax.numpy.ones(self._num_vehicles, dtype=jax.numpy.int16)
-                * self._max_capacity,
+                capacities=capacities,
                 distances=jax.numpy.zeros(self._num_vehicles, dtype=jax.numpy.float32),
                 time_penalties=jax.numpy.zeros(
                     self._num_vehicles, dtype=jax.numpy.float32
@@ -138,6 +142,7 @@ class UniformRandomGenerator(Generator):
             order=jax.numpy.zeros(
                 (self._num_vehicles, 2 * self._num_customers), dtype=jax.numpy.int16
             ),
+            action_mask=create_action_mask(node_demands, capacities),
             step_count=jax.numpy.ones((), dtype=jax.numpy.int16),
             key=jax.random.PRNGKey(0),
         )
