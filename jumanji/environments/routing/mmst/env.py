@@ -45,12 +45,12 @@ class MMST(Environment[State]):
     without using the same utility nodes (nodes that do not belong to any group of nodes).
 
     Note: routing problems are randomly generated and may not be solvable!
-    Additionally, the total number of nodes should be at least 20% more than
-    the number of nodes we want to connect. This is to guarantee we have enough remaining
-    nodes to create a path with all the nodes we want to connect. In the current implementation,
-    the total number of nodes to connect (by all agents) should be less than
-    80% of the total number of nodes. An exception will be raised if the number of nodes is
-    not greater than (0.8 x num_agents x num_nodes_per_agent).
+
+    Requirements: The total number of nodes should be at least 20% more than
+    the number of nodes we want to connect to guarantee we have enough remaining
+    nodes to create a path with all the nodes we want to connect.
+    An exception will be raised if the number of nodes is not greater
+    than (0.8 x num_agents x num_nodes_per_agent).
 
     - observation: Observation
         - node_types: jax array (int) of shape (num_nodes):
@@ -124,8 +124,11 @@ class MMST(Environment[State]):
         Args:
             generator_fn: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`SplitRandomGenerator`].
+                Defaults to `SplitRandomGenerator(num_nodes=36, num_edges=72, max_degree=5,
+                num_agents=3, num_nodes_per_agent=4, max_step=step_limit)`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
-                Implemented options are [`DefualtRewardFn`]. Defaults to `DefaultRewardFn`.
+                Implemented options are [`DenseRewardFn`].
+                Defaults to `DenseRewardFn(reward_values=(1.0, -0.03, -0.03))`.
             step_limit: the number of steps allowed before an episode terminates. Defaults to 50.
             viewer: `Viewer` used for rendering. Defaults to `MMSTViewer`
         """
@@ -145,7 +148,7 @@ class MMST(Environment[State]):
 
         self._reward_fn = reward_fn or DenseRewardFn(reward_values=(1.0, -0.03, -0.03))
 
-        self._renderer = viewer
+        self._env_viewer = viewer
         self._step_limit = step_limit
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -163,8 +166,14 @@ class MMST(Environment[State]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a Tuple containing the spec for each of the constituent fields of an
-            observation.
+            Spec for the `Observation` whose fields are:
+            - node_types: BoundedArray (int32) of shape (num_nodes,).
+            - adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
+                Represents the adjacency matrix of the graph.
+            - positions: BoundedArray (int32) of shape (num_agents).
+                Current node position of agent.
+            - action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
+                Represents the valid actions in the current state.
         """
         node_types = specs.BoundedArray(
             shape=(self.num_nodes,),
@@ -694,12 +703,12 @@ class MMST(Environment[State]):
         Returns:
             Array of rgb pixel values in the shape (width, height, rgb).
         """
-        if self._renderer is None:
-            self._renderer = MMSTViewer(
+        if self._env_viewer is None:
+            self._env_viewer = MMSTViewer(
                 self.num_agents,
             )
 
-        return self._renderer.render(state)
+        return self._env_viewer.render(state)
 
     def animate(
         self,
@@ -714,8 +723,8 @@ class MMST(Environment[State]):
             interval: Time between frames in milliseconds.
             save_path: Optional path to save the animation.
         """
-        if self._renderer is None:
-            self._renderer = MMSTViewer(
+        if self._env_viewer is None:
+            self._env_viewer = MMSTViewer(
                 self.num_agents,
             )
-        self._renderer.animate(states, interval, save_path)
+        self._env_viewer.animate(states, interval, save_path)

@@ -50,8 +50,8 @@ class State:
     position_index: chex.Array  # (num_agents,)
     action_mask: chex.Array  # (num_agents, num_nodes)
     finished_agents: chex.Array  # (num_agents,)
-    step_count: jnp.int32
-    key: chex.PRNGKey
+    step_count: jnp.int32  # ()
+    key: chex.PRNGKey  # (2,)
 
 
 class Observation(NamedTuple):
@@ -109,10 +109,10 @@ class Graph:
     edge_index: (int) index location for the next edge.
     """
 
-    nodes: chex.Array
-    edges: chex.Array
-    edge_codes: chex.Array
-    max_degree: int
-    node_degree: chex.Array
-    edge_index: int
-    node_edges: chex.Array
+    nodes: chex.Array  # (num_nodes,)
+    edges: chex.Array  # (num_edges, 2)
+    edge_codes: chex.Array  # (num_edges,)
+    max_degree: jnp.int32  # ()
+    node_degree: chex.Array  # (num_nodes,)
+    edge_index: jnp.int32  # ()
+    node_edges: chex.Array  # (num_nodes, num_nodes)

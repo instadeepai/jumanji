@@ -58,7 +58,9 @@ class Generator(ABC):
         if num_nodes_per_agent * num_agents > num_nodes * 0.8:
             raise ValueError(
                 f"The number of nodes to connect i.e. {num_nodes_per_agent * num_agents} "
-                f"should be much less than the number of nodes, which is {int(0.8*num_nodes)}."
+                f"should be much less than than 80% of the total number of nodes. "
+                f"This is to guarantee there are enough remaining nodes to "
+                f"create a path with all the nodes we want to connect."
             )
 
     @property
@@ -105,28 +107,19 @@ class SplitRandomGenerator(Generator):
     def __call__(self, key: PRNGKey) -> Tuple[Array, ...]:
         graph_key, key = jax.random.split(key)
 
-        nodes = jnp.arange(self._num_nodes, dtype=jnp.int32)
-        graph, nodes_per_sub_graph = multi_random_walk(
-            nodes, self._num_edges, self._num_agents, self._max_degree, graph_key
-        )
+        # Generate a random graph.
+        adj_matrix, node_edges, nodes_per_sub_graph = self._generate_graph(graph_key)
 
-        node_edges = graph.node_edges
-        adj_matrix = build_adjecency_matrix(self._num_nodes, graph.edges)
+        # Initialise empty arrays for the different states.
+        (
+            state_nodes_to_connect,
+            node_types,
+            conn_nodes,
+            conn_nodes_index,
+            agents_pos,
+        ) = self._initialise_states()
 
-        state_nodes_to_connect = EMPTY_NODE * (
-            jnp.ones((self._num_agents, self._num_nodes_per_agent), dtype=jnp.int32)
-        )
-
-        node_types = EMPTY_NODE * jnp.ones(self._num_nodes, dtype=jnp.int32)
-        conn_nodes = EMPTY_NODE * jnp.ones(
-            (self._num_agents, self._max_step), dtype=jnp.int32
-        )
-        conn_nodes_index = EMPTY_NODE * jnp.ones(
-            (self._num_agents, self._num_nodes), dtype=jnp.int32
-        )
-
-        agents_pos = jnp.zeros((self._num_agents), dtype=jnp.int32)
-
+        # Populate the states.
         for agent in range(self._num_agents):
             select_key, key = jax.random.split(key)
             agent_components = jax.random.choice(
@@ -153,4 +146,41 @@ class SplitRandomGenerator(Generator):
             conn_nodes_index,
             node_edges,
             state_nodes_to_connect,
+        )
+
+    def _generate_graph(self, key: PRNGKey) -> Tuple[Array, Array, Array]:
+
+        nodes = jnp.arange(self._num_nodes, dtype=jnp.int32)
+        graph, nodes_per_sub_graph = multi_random_walk(
+            nodes, self._num_edges, self._num_agents, self._max_degree, key
+        )
+
+        node_edges = graph.node_edges
+        adj_matrix = build_adjecency_matrix(self._num_nodes, graph.edges)
+
+        return adj_matrix, node_edges, nodes_per_sub_graph
+
+    def _initialise_states(self) -> Tuple[Array, Array, Array, Array, Array]:
+        """Initialises arrays to hold environment states"""
+
+        state_nodes_to_connect = EMPTY_NODE * (
+            jnp.ones((self._num_agents, self._num_nodes_per_agent), dtype=jnp.int32)
+        )
+
+        node_types = EMPTY_NODE * jnp.ones(self._num_nodes, dtype=jnp.int32)
+        conn_nodes = EMPTY_NODE * jnp.ones(
+            (self._num_agents, self._max_step), dtype=jnp.int32
+        )
+        conn_nodes_index = EMPTY_NODE * jnp.ones(
+            (self._num_agents, self._num_nodes), dtype=jnp.int32
+        )
+
+        agents_pos = jnp.zeros((self._num_agents), dtype=jnp.int32)
+
+        return (
+            state_nodes_to_connect,
+            node_types,
+            conn_nodes,
+            conn_nodes_index,
+            agents_pos,
         )
