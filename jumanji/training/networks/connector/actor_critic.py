@@ -50,8 +50,11 @@ def make_actor_critic_networks_connector(
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
+    num_agents = num_values.shape[0]
+    num_actions = num_values[0]
     policy_network = make_actor_network_connector(
-        num_actions=num_values[0],
+        num_agents=num_agents,
+        num_actions=num_actions,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -60,7 +63,7 @@ def make_actor_critic_networks_connector(
         env_time_limit=connector.time_limit,
     )
     value_network = make_critic_network_connector(
-        num_agents=num_values[0],
+        num_agents=num_agents,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -192,6 +195,7 @@ class ConnectorTorso(hk.Module):
 
 
 def make_actor_network_connector(
+    num_agents: int,
     num_actions: int,
     transformer_num_blocks: int,
     transformer_num_heads: int,
@@ -209,7 +213,7 @@ def make_actor_network_connector(
             conv_n_channels=conv_n_channels,
             env_time_limit=env_time_limit,
             name="policy_torso",
-            num_agents=num_actions,
+            num_agents=num_agents,
         )
         embeddings = torso(observation)
         logits = hk.nets.MLP((*transformer_mlp_units, num_actions), name="policy_head")(
