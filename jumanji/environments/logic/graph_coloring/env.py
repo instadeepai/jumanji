@@ -273,7 +273,7 @@ class GraphColoring(Environment[State]):
         return valid_actions[:-1]
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Renders the current state of the GraphColoring.
+        """Renders the current state of the `GraphColoring` environment.
 
         Args:
             state: is the current game state to be rendered.
