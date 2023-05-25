@@ -20,7 +20,7 @@ The observation in the GraphColoring environment includes information about the 
         [False,  True, False,  True],
         [ True, False,  True, False]]```
 
-- `colors`: a JAX array (int32) of shape (num_nodes,), representing the current color assignments for the vertices. Initially, all elements are set to -1, indicating that no colors have been assigned yet.
+- `colors`: a JAX array (int32) of shape `(num_nodes,)`, representing the current color assignments for the vertices. Initially, all elements are set to -1, indicating that no colors have been assigned yet.
   - For example, an initial color assignment:
     ```[-1, -1, -1, -1]```
 
