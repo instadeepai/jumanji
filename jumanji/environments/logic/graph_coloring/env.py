@@ -100,7 +100,7 @@ class GraphColoring(Environment[State]):
         self.generator = generator or RandomGenerator(
             num_nodes=100, percent_connected=0.8
         )
-        num_nodes = self.generator.num_nodes
+        self.num_nodes = self.generator.num_nodes
 
         # Create viewer used for rendering
         self._env_viewer = viewer or GraphColoringViewer(
