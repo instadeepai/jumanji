@@ -12,17 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
-from jumanji.environments.routing.macvrp.env import MACVRP
-from jumanji.environments.routing.macvrp.generator import UniformRandomGenerator
-
-
-@pytest.fixture
-def macvrp_env() -> MACVRP:
-    """Instantiates a default MACVRP environment."""
-
-    # Create the generator
-    generator = UniformRandomGenerator(num_vehicles=2, num_customers=20)
-
-    return MACVRP(generator=generator)
+from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
+from jumanji.environments.routing.multi_cvrp.types import Observation, State

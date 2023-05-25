@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.macvrp.env.MACVRP
+::: jumanji.environments.routing.multi_cvrp.env.MultiCVRP
     selection:
       members:
         - __init__

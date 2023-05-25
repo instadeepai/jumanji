@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.networks.masked_categorical_random import (
-    masked_categorical_random,
-)
-from jumanji.training.networks.protocols import RandomPolicy
+import pytest
+
+from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
+from jumanji.environments.routing.multi_cvrp.generator import UniformRandomGenerator
 
 
-def make_random_policy_macvrp() -> RandomPolicy:
-    """Make random policy for MACVRP."""
-    return masked_categorical_random
+@pytest.fixture
+def multicvrp_env() -> MultiCVRP:
+    """Instantiates a default MultiCVRP environment."""
+
+    # Create the generator
+    generator = UniformRandomGenerator(num_vehicles=2, num_customers=20)
+
+    return MultiCVRP(generator=generator)

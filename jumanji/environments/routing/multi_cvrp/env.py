@@ -21,12 +21,12 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.macvrp.generator import (
+from jumanji.environments.routing.multi_cvrp.generator import (
     Generator,
     UniformRandomGenerator,
 )
-from jumanji.environments.routing.macvrp.reward import RewardFn, SparseReward
-from jumanji.environments.routing.macvrp.types import (
+from jumanji.environments.routing.multi_cvrp.reward import RewardFn, SparseReward
+from jumanji.environments.routing.multi_cvrp.types import (
     Node,
     Observation,
     ObsVehicle,
@@ -35,22 +35,22 @@ from jumanji.environments.routing.macvrp.types import (
     StateVehicle,
     TimeWindow,
 )
-from jumanji.environments.routing.macvrp.utils import (
+from jumanji.environments.routing.multi_cvrp.utils import (
     DEPOT_IDX,
     compute_distance,
     compute_time_penalties,
     create_action_mask,
     max_single_vehicle_distance,
 )
-from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
+from jumanji.environments.routing.multi_cvrp.viewer import MACVRPViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MACVRP(Environment[State]):
+class MultiCVRP(Environment[State]):
     """
     Multi-Vehicle Routing Problems with Soft Time Windows (MVRPSTW) environment as described in [1].
-    We simplfy the naming to multi-agent capacitated vehicle routing problem (MACVRP).
+    We simplfy the naming to multi-agent capacitated vehicle routing problem (MultiCVRP).
 
     - reward: jax array (float32)
         this global reward is provided to each agent. The reward is equal to the negative sum of the
@@ -59,13 +59,13 @@ class MACVRP(Environment[State]):
 
     - observation and state:
         the observation and state variable types are defined in:
-        jumanji/environments/routing/macvrp/types.py
+        jumanji/environments/routing/MultiCVRP/types.py
 
     [1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
     Multi-Agent Reinforcement Learning Approach".
     """
 
-    """Instantiates a `MACVRP` environment.
+    """Instantiates a `MultiCVRP` environment.
 
         Args:
             num_nodes: number of city nodes in the environment. Defaults to 20.
@@ -85,7 +85,7 @@ class MACVRP(Environment[State]):
         viewer: Optional[Viewer] = None,
     ):
         """
-        Instantiates a `MACVRP` environment.
+        Instantiates a `MultiCVRP` environment.
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
@@ -123,7 +123,7 @@ class MACVRP(Environment[State]):
 
         # Create viewer used for rendering
         self._viewer = viewer or MACVRPViewer(
-            name="MACVRP",
+            name="MultiCVRP",
             num_vehicles=self._num_vehicles,
             num_customers=self._num_customers,
             map_max=self._map_max,
@@ -141,7 +141,7 @@ class MACVRP(Environment[State]):
         )
 
     def __repr__(self) -> str:
-        return f"MACVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
+        return f"MultiCVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """

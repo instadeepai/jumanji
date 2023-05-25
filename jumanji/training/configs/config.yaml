@@ -1,6 +1,6 @@
 defaults:
     - _self_
-    - env: macvrp  # [bin_pack, cleaner, connector, cvrp, macvrp, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
+    - env: MultiCVRP  # [bin_pack, cleaner, connector, cvrp, MultiCVRP, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, snake, tsp]
 
 agent: a2c  # [random, a2c]
 

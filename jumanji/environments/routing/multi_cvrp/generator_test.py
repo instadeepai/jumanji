@@ -17,8 +17,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.macvrp.generator import UniformRandomGenerator
-from jumanji.environments.routing.macvrp.utils import DEPOT_IDX
+from jumanji.environments.routing.multi_cvrp.generator import UniformRandomGenerator
+from jumanji.environments.routing.multi_cvrp.utils import DEPOT_IDX
 
 
 @pytest.fixture

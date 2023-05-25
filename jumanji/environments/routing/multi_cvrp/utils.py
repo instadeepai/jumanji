@@ -17,7 +17,7 @@ from typing import Tuple
 import chex
 import jax
 
-from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
+from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 
 
 def create_action_mask(

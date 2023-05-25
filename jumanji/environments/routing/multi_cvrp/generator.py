@@ -17,14 +17,14 @@ import abc
 import chex
 import jax
 
-from jumanji.environments.routing.macvrp.types import (
+from jumanji.environments.routing.multi_cvrp.types import (
     Node,
     PenalityCoeff,
     State,
     StateVehicle,
     TimeWindow,
 )
-from jumanji.environments.routing.macvrp.utils import (
+from jumanji.environments.routing.multi_cvrp.utils import (
     DEPOT_IDX,
     create_action_mask,
     generate_uniform_random_problem,
@@ -36,7 +36,7 @@ class Generator(abc.ABC):
     """Base class for generators for the MACVPR environment."""
 
     def __init__(self, num_customers: int, num_vehicles: int) -> None:
-        """Initialises a macvrp generator, used to generate the problem.
+        """Initialises a MultiCVRP generator, used to generate the problem.
 
         Args:
             num_customers: number of customer nodes in the environment.
@@ -71,10 +71,10 @@ class Generator(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a `MACVRP` state.
+        """Generates a `MultiCVRP` state.
 
         Returns:
-            A `MACVRP` state.
+            A `MultiCVRP` state.
         """
 
 
@@ -82,7 +82,7 @@ class UniformRandomGenerator(Generator):
     """Randomly (uniformly) places the customers and vehicles on a fixed size map."""
 
     def __init__(self, num_customers: int, num_vehicles: int) -> None:
-        """Initialises a macvrp generator, used to generate the problem.
+        """Initialises a MultiCVRP generator, used to generate the problem.
 
         Args:
             num_customers: number of customer nodes in the environment.

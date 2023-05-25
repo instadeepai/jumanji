@@ -15,13 +15,13 @@
 import jax
 import numpy as np
 
-from jumanji.environments.routing.macvrp.test_data import (
+from jumanji.environments.routing.multi_cvrp.test_data import (
     fifty_correct_node_demands,
     one_hundred_window_end_times,
     one_hundred_window_start_times,
     twenty_correct_node_coordinates,
 )
-from jumanji.environments.routing.macvrp.utils import (
+from jumanji.environments.routing.multi_cvrp.utils import (
     compute_distance,
     compute_time_penalties,
     generate_uniform_random_problem,

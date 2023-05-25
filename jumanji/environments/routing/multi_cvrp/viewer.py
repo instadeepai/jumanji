@@ -22,7 +22,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.routing.macvrp.types import State
+from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.viewer import Viewer
 
 
@@ -42,7 +42,7 @@ class MACVRPViewer(Viewer):
         map_max: int,
         render_mode: str = "human",
     ) -> None:
-        """Viewer for the MACVRP environment.
+        """Viewer for the MultiCVRP environment.
 
         Args:
             name: the window name to be used when initialising the window.

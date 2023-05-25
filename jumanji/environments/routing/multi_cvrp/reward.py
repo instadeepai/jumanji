@@ -17,8 +17,8 @@ import abc
 import chex
 import jax
 
-from jumanji.environments.routing.macvrp.types import State
-from jumanji.environments.routing.macvrp.utils import max_single_vehicle_distance
+from jumanji.environments.routing.multi_cvrp.types import State
+from jumanji.environments.routing.multi_cvrp.utils import max_single_vehicle_distance
 
 
 class RewardFn(abc.ABC):

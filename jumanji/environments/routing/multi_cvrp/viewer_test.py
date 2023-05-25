@@ -18,29 +18,29 @@ import chex
 import jax
 import numpy as np
 
-from jumanji.environments.routing.macvrp.env import MACVRP, Observation
-from jumanji.environments.routing.macvrp.viewer import MACVRPViewer
+from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
+from jumanji.environments.routing.multi_cvrp.viewer import MACVRPViewer
 
 
-def test_render(macvrp_env: MACVRP) -> None:
+def test_render(multicvrp_env: MultiCVRP) -> None:
     """Test that viewer works and the frame is saved."""
 
     key = jax.random.PRNGKey(0)
-    reset_fn = jax.jit(macvrp_env.reset)
-    step_fn = jax.jit(macvrp_env.step)
+    reset_fn = jax.jit(multicvrp_env.reset)
+    step_fn = jax.jit(multicvrp_env.step)
     state, timestep = reset_fn(key)
 
     viewer = MACVRPViewer(
-        name="MACVRP",
-        num_vehicles=macvrp_env._num_vehicles,
-        num_customers=macvrp_env._num_customers,
-        map_max=macvrp_env._map_max,
+        name="MultiCVRP",
+        num_vehicles=multicvrp_env._num_vehicles,
+        num_customers=multicvrp_env._num_customers,
+        map_max=multicvrp_env._map_max,
         render_mode="human",
     )
 
     # Starting position is depot, new action to visit first node
     new_actions = jax.numpy.array(
-        jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
+        jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
     )
 
     new_state, next_timestep = step_fn(state, new_actions)
@@ -52,7 +52,7 @@ def test_render(macvrp_env: MACVRP) -> None:
     os.remove(save_path)
 
 
-def test_animation(macvrp_env: MACVRP) -> None:
+def test_animation(multicvrp_env: MultiCVRP) -> None:
     """Test the viewer's animation function."""
 
     def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
@@ -69,18 +69,18 @@ def test_animation(macvrp_env: MACVRP) -> None:
                 dtype=np.int16,
             )
 
-        subkeys = jax.random.split(key, macvrp_env._num_vehicles)
+        subkeys = jax.random.split(key, multicvrp_env._num_vehicles)
         return select_action(subkeys, observation.action_mask)
 
     key = jax.random.PRNGKey(1)
-    reset_fn = jax.jit(macvrp_env.reset)
-    step_fn = jax.jit(macvrp_env.step)
+    reset_fn = jax.jit(multicvrp_env.reset)
+    step_fn = jax.jit(multicvrp_env.step)
     state, timestep = reset_fn(key)
     viewer = MACVRPViewer(
-        name="MACVRP",
-        num_vehicles=macvrp_env._num_vehicles,
-        num_customers=macvrp_env._num_customers,
-        map_max=macvrp_env._map_max,
+        name="MultiCVRP",
+        num_vehicles=multicvrp_env._num_vehicles,
+        num_customers=multicvrp_env._num_customers,
+        map_max=multicvrp_env._map_max,
         render_mode="human",
     )
 

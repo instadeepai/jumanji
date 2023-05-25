@@ -16,23 +16,23 @@ import chex
 import jax
 import numpy as np
 
-from jumanji.environments.routing.macvrp.constants import DEPOT_IDX
-from jumanji.environments.routing.macvrp.env import MACVRP, Observation
-from jumanji.environments.routing.macvrp.test_data import (
+from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
+from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
+from jumanji.environments.routing.multi_cvrp.test_data import (
     test_action_mask,
     test_node_demand,
 )
-from jumanji.environments.routing.macvrp.types import State
+from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
 class TestEnvironmentSpec:
-    def test_macvrp__reset(self, macvrp_env: MACVRP) -> None:
+    def test_multicvrp__reset(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted reset of the environment."""
         chex.clear_trace_counter()
-        reset_fn = jax.jit(chex.assert_max_traces(macvrp_env.reset, n=1))
+        reset_fn = jax.jit(chex.assert_max_traces(multicvrp_env.reset, n=1))
 
         key = jax.random.PRNGKey(0)
         state, timestep = reset_fn(key)
@@ -44,7 +44,7 @@ class TestEnvironmentSpec:
         assert isinstance(state, State)
 
         # Initial position is at depot, so current capacity is max capacity
-        assert jax.numpy.all(state.vehicles.capacities == macvrp_env._max_capacity)
+        assert jax.numpy.all(state.vehicles.capacities == multicvrp_env._max_capacity)
 
         # # All vechicles are at the depot
         assert jax.numpy.all(state.vehicles.positions == DEPOT_IDX)
@@ -54,33 +54,33 @@ class TestEnvironmentSpec:
 
         # Check that the time windows are valid.
         assert jax.numpy.all(0 < state.windows.start)
-        assert jax.numpy.all(state.windows.start < macvrp_env._max_start_window)
+        assert jax.numpy.all(state.windows.start < multicvrp_env._max_start_window)
         assert jax.numpy.all(state.windows.end > state.windows.start)
 
         # Check that the early_coefs and late_coefs are valid.
-        assert jax.numpy.all(macvrp_env._early_coef_rand[0] <= state.coeffs.early)
-        assert jax.numpy.all(state.coeffs.early < macvrp_env._early_coef_rand[1])
-        assert jax.numpy.all(macvrp_env._late_coef_rand[0] <= state.coeffs.late)
-        assert jax.numpy.all(state.coeffs.late < macvrp_env._late_coef_rand[1])
+        assert jax.numpy.all(multicvrp_env._early_coef_rand[0] <= state.coeffs.early)
+        assert jax.numpy.all(state.coeffs.early < multicvrp_env._early_coef_rand[1])
+        assert jax.numpy.all(multicvrp_env._late_coef_rand[0] <= state.coeffs.late)
+        assert jax.numpy.all(state.coeffs.late < multicvrp_env._late_coef_rand[1])
 
         assert_is_jax_array_tree(state)
 
-    def test_macvrp__step(self, macvrp_env: MACVRP) -> None:
+    def test_multicvrp__step(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
         key = jax.random.PRNGKey(0)
-        reset_fn = jax.jit(chex.assert_max_traces(macvrp_env.reset, n=1))
+        reset_fn = jax.jit(chex.assert_max_traces(multicvrp_env.reset, n=1))
         state, timestep = reset_fn(key)
 
         # Check the timestep step type is FIRST
         assert timestep.first()
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
-        step_fn = jax.jit(chex.assert_max_traces(macvrp_env.step, n=1))
+        step_fn = jax.jit(chex.assert_max_traces(multicvrp_env.step, n=1))
         new_state, next_timestep = step_fn(state, new_actions)
 
         # Check that the state has changed
@@ -88,7 +88,7 @@ class TestEnvironmentSpec:
             new_state.vehicles.distances, state.vehicles.distances
         )  # Some time penalties are 0
 
-        for i in range(macvrp_env._num_vehicles):
+        for i in range(multicvrp_env._num_vehicles):
             assert not jax.numpy.array_equal(
                 new_state.vehicles.positions[i], state.vehicles.positions[i]
             )
@@ -108,12 +108,12 @@ class TestEnvironmentSpec:
 
         # Take another set of valid actions.
         new_actions: list = []
-        node_i = macvrp_env._num_vehicles
-        while len(new_actions) < macvrp_env._num_vehicles:
+        node_i = multicvrp_env._num_vehicles
+        while len(new_actions) < multicvrp_env._num_vehicles:
             if new_state.nodes.demands[node_i] > 0:
                 new_actions.append(node_i)
             node_i += 1
-            if node_i >= macvrp_env._num_customers:
+            if node_i >= multicvrp_env._num_customers:
                 raise ValueError(
                     "There is not enough customer demand for a second action.."
                 )
@@ -135,16 +135,16 @@ class TestEnvironmentSpec:
         # Check that all the agents are at the depot.
         assert np.all(new_state.vehicles.positions == 0)
 
-    def test_macvrp__update_state(self, macvrp_env: MACVRP) -> None:
+    def test_multicvrp__update_state(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
         _update_state_fn = jax.jit(
-            chex.assert_max_traces(macvrp_env._update_state, n=1)
+            chex.assert_max_traces(multicvrp_env._update_state, n=1)
         )
 
         key = jax.random.PRNGKey(0)
-        state, _ = macvrp_env.reset(key)
+        state, _ = multicvrp_env.reset(key)
 
         # Check the order and step_count
         assert np.all(state.order == 0)
@@ -157,7 +157,7 @@ class TestEnvironmentSpec:
 
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
         new_state = _update_state_fn(state, new_actions)
@@ -192,26 +192,28 @@ class TestEnvironmentSpec:
             state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16)
         )
 
-    def test_macvrp__state_to_observation_timestep(self, macvrp_env: MACVRP) -> None:
+    def test_multicvrp__state_to_observation_timestep(
+        self, multicvrp_env: MultiCVRP
+    ) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
         _update_state_fn = jax.jit(
-            chex.assert_max_traces(macvrp_env._update_state, n=1)
+            chex.assert_max_traces(multicvrp_env._update_state, n=1)
         )
         _state_to_observation_fn = jax.jit(
-            chex.assert_max_traces(macvrp_env._state_to_observation, n=1)
+            chex.assert_max_traces(multicvrp_env._state_to_observation, n=1)
         )
         _state_to_timestep_fn = jax.jit(
-            chex.assert_max_traces(macvrp_env._state_to_timestep, n=1)
+            chex.assert_max_traces(multicvrp_env._state_to_timestep, n=1)
         )
 
         key = jax.random.PRNGKey(0)
-        state, _ = macvrp_env.reset(key)
+        state, _ = multicvrp_env.reset(key)
 
         # Starting position is depot, new action to visit first node
         new_actions = jax.numpy.array(
-            jax.numpy.arange(1, macvrp_env._num_vehicles + 1), dtype=np.int16
+            jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
         new_state = _update_state_fn(state, new_actions)
@@ -248,7 +250,7 @@ class TestEnvironmentSpec:
             timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32)
         )
 
-    def test_env_macvrp__does_not_smoke(self, macvrp_env: MACVRP) -> None:
+    def test_env_multicvrp__does_not_smoke(self, multicvrp_env: MultiCVRP) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
             @jax.vmap  # map over the agents
             def select_action(
@@ -263,7 +265,7 @@ class TestEnvironmentSpec:
                     dtype=np.int16,
                 )
 
-            subkeys = jax.random.split(key, macvrp_env._num_vehicles)
+            subkeys = jax.random.split(key, multicvrp_env._num_vehicles)
             return select_action(subkeys, observation.action_mask)
 
-        check_env_does_not_smoke(macvrp_env, select_actions)
+        check_env_does_not_smoke(multicvrp_env, select_actions)

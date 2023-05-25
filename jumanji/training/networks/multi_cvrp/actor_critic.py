@@ -18,8 +18,8 @@ import haiku as hk
 import jax
 import numpy as np
 
-from jumanji.environments.routing.macvrp import MACVRP
-from jumanji.environments.routing.macvrp.types import Observation
+from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
+from jumanji.environments.routing.multi_cvrp.types import Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -30,31 +30,31 @@ from jumanji.training.networks.parametric_distribution import (
 from jumanji.training.networks.transformer_block import TransformerBlock
 
 
-def make_actor_critic_networks_macvrp(
-    macvrp: MACVRP,
+def make_actor_critic_networks_multicvrp(
+    MultiCVRP: MultiCVRP,  # noqa: N803
     num_vehicles: int,
     num_customers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Create an actor-critic network for the `MACVRP` environment."""
+    """Create an actor-critic network for the `MultiCVRP` environment."""
 
     # Add depot to the number of customers
     num_customers += 1
 
-    num_actions = macvrp.action_spec().maximum
+    num_actions = MultiCVRP.action_spec().maximum
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=np.asarray(num_actions).reshape(1)
     )
-    policy_network = make_actor_network_macvrp(
+    policy_network = make_actor_network_multicvrp(
         num_vehicles=num_vehicles,
         num_customers=num_customers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
     )
-    value_network = make_critic_network_macvrp(
+    value_network = make_critic_network_multicvrp(
         num_vehicles=num_vehicles,
         num_customers=num_customers,
         transformer_num_heads=transformer_num_heads,
@@ -229,7 +229,7 @@ class MACVRPTorso(hk.Module):
         return embeddings
 
 
-def make_actor_network_macvrp(
+def make_actor_network_multicvrp(
     num_vehicles: int,
     num_customers: int,
     transformer_num_heads: int,
@@ -272,7 +272,7 @@ def make_actor_network_macvrp(
     return FeedForwardNetwork(init=init, apply=apply)
 
 
-def make_critic_network_macvrp(
+def make_critic_network_multicvrp(
     num_vehicles: int,
     num_customers: int,
     transformer_num_heads: int,
