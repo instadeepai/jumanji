@@ -108,7 +108,7 @@ class GraphColoring(Environment[State]):
         )
 
     def __repr__(self) -> str:
-        return f"GraphColouring({self.generator!r})"
+        return repr(self.generator)
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
@@ -160,7 +160,7 @@ class GraphColoring(Environment[State]):
         """
         # Get the valid actions for the current state.
         valid_actions = state.action_mask
-        
+
         # Check if the chosen action is invalid (not in valid_actions).
         invalid_action_taken = jnp.logical_not(valid_actions[action])
 

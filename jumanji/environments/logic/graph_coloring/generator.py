@@ -74,7 +74,7 @@ class RandomGenerator(Generator):
     def __repr__(self) -> str:
         return (
             f"GraphColoring(number of nodes={self.num_nodes}, "
-            f"percent connected={self.percent_connected * 100}% "
+            f"percent connected={self.percent_connected * 100}%)"
         )
 
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
