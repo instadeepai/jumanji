@@ -160,6 +160,7 @@ class GraphColoring(Environment[State]):
         """
         # Get the valid actions for the current state.
         valid_actions = state.action_mask
+        
         # Check if the chosen action is invalid (not in valid_actions).
         invalid_action_taken = jnp.logical_not(valid_actions[action])
 
