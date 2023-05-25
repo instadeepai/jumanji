@@ -37,7 +37,7 @@ The action space is a DiscreteArray of integer values in `[0, 1, ..., num_colors
 
 ## Reward
 
-The reward in the GraphColoring environment is given as follows:
+The reward in the `GraphColoring` environment is given as follows:
 
 - `sparse reward`: a reward is provided at the end of the episode and equals the negative of the number of unique colors used to color all vertices in the graph.
 
