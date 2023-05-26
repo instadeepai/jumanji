@@ -50,6 +50,7 @@ def make_actor_critic_networks_connector(
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
+    # num_values is of shape (num_agents,) and contains num_actions everywhere.
     num_agents = num_values.shape[0]
     num_actions = num_values[0]
     policy_network = make_actor_network_connector(
