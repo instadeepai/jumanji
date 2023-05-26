@@ -22,6 +22,7 @@ import matplotlib
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
+from jumanji.environments.routing.cvrp.generator import Generator, UniformGenerator
 from jumanji.environments.routing.cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.cvrp.types import Observation, State
 from jumanji.environments.routing.cvrp.viewer import CVRPViewer
@@ -96,18 +97,17 @@ class CVRP(Environment[State]):
 
     def __init__(
         self,
-        num_nodes: int = 20,
-        max_capacity: int = 30,
-        max_demand: int = 10,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `CVRP` environment.
 
         Args:
-            num_nodes: number of city nodes in the environment. Defaults to 20.
-            max_capacity: maximum capacity of the vehicle. Defaults to 30.
-            max_demand: maximum demand of each node. Defaults to 10.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                The default option is 'UniformGenerator' which randomly generates
+                CVRP instances with 20 cities sampled from a uniform distribution,
+                a maximum vehicle capacity of 30, and a maximum city demand of 10.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
@@ -115,14 +115,19 @@ class CVRP(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
         """
 
-        if max_capacity < max_demand:
+        self.generator = generator or UniformGenerator(
+            num_nodes=20,
+            max_capacity=30,
+            max_demand=10,
+        )
+        self.num_nodes = self.generator.num_nodes
+        self.max_capacity = self.generator.max_capacity
+        self.max_demand = self.generator.max_demand
+        if self.max_capacity < self.max_demand:
             raise ValueError(
                 f"The demand associated with each node must be lower than the maximum capacity, "
-                f"hence the maximum capacity must be >= {max_demand}."
+                f"hence the maximum capacity must be >= {self.max_demand}."
             )
-        self.num_nodes = num_nodes
-        self.max_capacity = max_capacity
-        self.max_demand = max_demand
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or CVRPViewer(
             name="CVRP",
@@ -147,25 +152,7 @@ class CVRP(Environment[State]):
              timestep: `TimeStep` object corresponding to the first timestep returned by the
                 environment.
         """
-        key, coordinates_key, demands_key = jax.random.split(key, 3)
-        coordinates = jax.random.uniform(
-            coordinates_key, (self.num_nodes + 1, 2), minval=0, maxval=1
-        )
-        demands = jax.random.randint(
-            demands_key, (self.num_nodes + 1,), minval=1, maxval=self.max_demand
-        )
-        demands = demands.at[DEPOT_IDX].set(0)
-        visited_mask = jnp.zeros(self.num_nodes + 1, dtype=bool).at[DEPOT_IDX].set(True)
-        state = State(
-            coordinates=coordinates,
-            demands=demands,
-            position=jnp.array(DEPOT_IDX, jnp.int32),
-            capacity=jnp.array(self.max_capacity, jnp.int32),
-            visited_mask=visited_mask,
-            trajectory=jnp.full(2 * self.num_nodes, DEPOT_IDX, jnp.int32),
-            num_total_visits=jnp.array(1, jnp.int32),
-            key=key,
-        )
+        state = self.generator(key)
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
