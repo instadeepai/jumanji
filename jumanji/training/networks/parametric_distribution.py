@@ -111,7 +111,10 @@ class ParametricDistribution(abc.ABC):
     ) -> chex.Array:
         """KL divergence is invariant with respect to transformation by the same bijector."""
         if not isinstance(self._postprocessor, IdentityBijector):
-            raise ValueError("KL is not implemented for non-identity bijectors.")
+            raise ValueError(
+                f"The current post_processor used ({self._postprocessor}) is a non-identity"
+                "bijector which does not implement kl_divergence."
+            )
         dist = self.create_dist(parameters)
         other_dist = self.create_dist(other_parameters)
         kl_divergence = dist.kl_divergence(other_dist)
