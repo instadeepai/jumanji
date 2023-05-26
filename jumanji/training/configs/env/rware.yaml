@@ -4,8 +4,8 @@ registered_version: Rware-v0
 network:
     agents_view_embed_dim: 512
     step_count_embed_dim: 4
-    policy_layers: [64]
-    value_layers: [128]
+    policy_layers: [64,64]
+    value_layers: [128,128]
 
 training:
     num_epochs: 500
