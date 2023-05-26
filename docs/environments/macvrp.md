@@ -45,4 +45,4 @@ The reward is 0 at every step but the last, where the reward is
 the negative of the length of the path chosen by all the agents combined. Time penalities are added if the agents arrived early or late to specific customers. If an illegal action was taken the episode ends with a large negative reward which is equal to the maximum negative distance reward that can be incurred.
 
 ## Registered Versions 📖
-- `MultiCVRP-v0`, MultiCVRP problem with 6 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 for two vehicles and 20 for three vehicles.
+- `MultiCVRP-v0`, MultiCVRP problem with 20 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 for two vehicles and 20 for three vehicles.

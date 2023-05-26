@@ -3,7 +3,7 @@ registered_version: MultiCVRP-v0
 
 network:
     num_vehicles: 2
-    num_customers: 6
+    num_customers: 20
     transformer_num_heads: 4 # 8
     transformer_key_size: 8 # 16
     transformer_mlp_units: [256] # [512]
