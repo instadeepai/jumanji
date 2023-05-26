@@ -16,6 +16,7 @@ from typing import Tuple
 
 import chex
 import jax
+import jax.numpy as jnp
 
 from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 
@@ -52,12 +53,12 @@ def compute_time_penalties(
     If the local time is inside the window, the early and late penalties are zero.
 
     """
-    early_penalty = jax.numpy.where(
+    early_penalty = jnp.where(
         local_times < window_start,
         (window_start - local_times) * early_coefs,
         0,
     )
-    late_penalty = jax.numpy.where(
+    late_penalty = jnp.where(
         local_times > window_end,
         (local_times - window_end) * late_coefs,
         0,
@@ -70,28 +71,26 @@ def compute_time_penalties(
 def max_single_vehicle_distance(
     map_max: chex.Array, num_customers: chex.Array
 ) -> chex.Array:
-    return 2 * map_max * jax.numpy.sqrt(2) * num_customers
+    return 2 * map_max * jnp.sqrt(2) * num_customers
 
 
 def compute_distance(
     start_node_coordinates: chex.Array, end_node_coordinates: chex.Array
-) -> jax.numpy.float32:
+) -> jnp.float32:
     """Calculate the distance traveled between two nodes"""
-    return jax.numpy.linalg.norm(
-        (start_node_coordinates - end_node_coordinates), axis=1
-    )
+    return jnp.linalg.norm((start_node_coordinates - end_node_coordinates), axis=1)
 
 
 def generate_uniform_random_problem(
     key: chex.PRNGKey,
-    num_customers: jax.numpy.int16,
-    total_capacity: jax.numpy.int16,
-    map_max: jax.numpy.float32,
-    customer_demand_max: jax.numpy.int16,
-    max_start_window: jax.numpy.float32,
-    window_length: jax.numpy.float32,
-    early_coef_rand: Tuple[jax.numpy.float32, jax.numpy.float32],
-    late_coef_rand: Tuple[jax.numpy.float32, jax.numpy.float32],
+    num_customers: jnp.int16,
+    total_capacity: jnp.int16,
+    map_max: jnp.float32,
+    customer_demand_max: jnp.int16,
+    max_start_window: jnp.float32,
+    window_length: jnp.float32,
+    early_coef_rand: Tuple[jnp.float32, jnp.float32],
+    late_coef_rand: Tuple[jnp.float32, jnp.float32],
 ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
 
     # Generate the node coordinates
@@ -107,13 +106,13 @@ def generate_uniform_random_problem(
     node_demands = node_demands.at[DEPOT_IDX].set(0)
 
     # vehicles to ensure a feasible solution.
-    node_demands = jax.numpy.asarray(
-        node_demands * (total_capacity / jax.numpy.sum(node_demands)),
-        dtype=jax.numpy.int16,
+    node_demands = jnp.asarray(
+        node_demands * (total_capacity / jnp.sum(node_demands)),
+        dtype=jnp.int16,
     )
 
     # Limit the node max values to be less than customer_demand_max
-    node_demands = jax.numpy.minimum(node_demands, customer_demand_max)
+    node_demands = jnp.minimum(node_demands, customer_demand_max)
 
     window_start_times = jax.random.uniform(
         window_key, (num_customers + 1,), minval=0, maxval=max_start_window

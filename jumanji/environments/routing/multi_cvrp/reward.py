@@ -16,6 +16,7 @@ import abc
 
 import chex
 import jax
+import jax.numpy as jnp
 
 from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.environments.routing.multi_cvrp.utils import max_single_vehicle_distance
@@ -56,7 +57,7 @@ class SparseReward(RewardFn):
     ) -> chex.Numeric:
         def compute_episode_reward(state: State) -> float:
             return jax.lax.cond(  # type: ignore
-                jax.numpy.any(state.step_count > self._num_customers * 2),
+                jnp.any(state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
                 lambda state: self._large_negate_reward,
@@ -69,7 +70,7 @@ class SparseReward(RewardFn):
         reward = jax.lax.select(
             is_done,
             compute_episode_reward(state),
-            jax.numpy.float32(0),
+            jnp.float32(0),
         )
 
         return reward

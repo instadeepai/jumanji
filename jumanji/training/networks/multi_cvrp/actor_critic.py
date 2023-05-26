@@ -15,7 +15,7 @@ from typing import Optional, Sequence
 
 import chex
 import haiku as hk
-import jax
+import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
@@ -91,9 +91,10 @@ class MultiCVRPTorso(hk.Module):
         batch_size = observation.nodes.coordinates.shape[0]
 
         concat_list = [
-            observation.main_vehicles.positions.reshape(
-                batch_size, self.num_vehicles, -1
-            ),
+            # TODO: Add this back.
+            # observation.main_vehicles.coordinates.reshape(
+            #     batch_size, self.num_vehicles, -1
+            # ),
             observation.main_vehicles.local_times.reshape(
                 batch_size, self.num_vehicles, -1
             ),
@@ -101,18 +102,18 @@ class MultiCVRPTorso(hk.Module):
                 batch_size, self.num_vehicles, -1
             ),
         ]
-        o_vehicles = jax.numpy.concatenate(concat_list, axis=-1)
+        o_vehicles = jnp.concatenate(concat_list, axis=-1)
 
         # Add vehicle ids to be able to break symmetry in
         # the initial observations
-        o_vehicle_ids = jax.numpy.identity(self.num_vehicles)
+        # o_vehicle_ids = jnp.identity(self.num_vehicles)
 
-        # Duplicate over the batch dimension
-        o_vehicle_ids = jax.numpy.tile(o_vehicle_ids, (batch_size, 1, 1))  # (B, V, V)
+        # # Duplicate over the batch dimension
+        # o_vehicle_ids = jnp.tile(o_vehicle_ids, (batch_size, 1, 1))  # (B, V, V)
 
-        o_vehicles = jax.numpy.concatenate(
-            [o_vehicles, o_vehicle_ids], axis=-1
-        )  # (B, V, D)
+        # o_vehicles = jnp.concatenate(
+        #     [o_vehicles, o_vehicle_ids], axis=-1
+        # )  # (B, V, D)
 
         vehicle_embeddings = self.self_attention_vehicles(o_vehicles)  # (B, V, D)
 
@@ -128,7 +129,7 @@ class MultiCVRPTorso(hk.Module):
             observation.coeffs.late[:, 0].reshape(batch_size, self.num_customers, -1),
         ]
 
-        o_customers = jax.numpy.concatenate(concat_list, axis=-1)
+        o_customers = jnp.concatenate(concat_list, axis=-1)
 
         # (B, C, D)
         customer_embeddings = self.customer_encoder(
@@ -137,7 +138,7 @@ class MultiCVRPTorso(hk.Module):
         )
 
         # Joint (vehicles & customers) self-attention
-        embeddings = jax.numpy.concatenate(
+        embeddings = jnp.concatenate(
             [vehicle_embeddings, customer_embeddings], axis=-2
         )  # (V+C+1, D)
 
@@ -247,7 +248,7 @@ def make_actor_network_multicvrp(
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
 
-        vehicle_embeddings, customer_embeddings = jax.numpy.split(
+        vehicle_embeddings, customer_embeddings = jnp.split(
             embeddings, (num_vehicles,), axis=-2
         )
 
@@ -259,12 +260,12 @@ def make_actor_network_multicvrp(
             customer_embeddings
         )
 
-        logits = jax.numpy.einsum(
+        logits = jnp.einsum(
             "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings
         )  # (B, V, C+1)
 
-        logits = jax.numpy.where(
-            observation.action_mask, logits, jax.numpy.finfo(jax.numpy.float32).min
+        logits = jnp.where(
+            observation.action_mask, logits, jnp.finfo(jnp.float32).min
         )
         return logits
 
@@ -290,9 +291,9 @@ def make_critic_network_multicvrp(
         )
         embeddings = torso(observation)  # (B, V+C+1, D)
         # Sum embeddings over the sequence length (vehicles + customers).
-        embedding = jax.numpy.mean(embeddings, axis=-2)
+        embedding = jnp.mean(embeddings, axis=-2)
         value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)
-        return jax.numpy.squeeze(value, axis=-1)
+        return jnp.squeeze(value, axis=-1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

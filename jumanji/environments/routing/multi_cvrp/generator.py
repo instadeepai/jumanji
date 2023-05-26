@@ -16,6 +16,7 @@ import abc
 
 import chex
 import jax
+import jax.numpy as jnp
 
 from jumanji.environments.routing.multi_cvrp.types import (
     Node,
@@ -120,30 +121,23 @@ class UniformRandomGenerator(Generator):
             self._early_coef_rand,
             self._late_coef_rand,
         )
-        capacities = (
-            jax.numpy.ones(self._num_vehicles, dtype=jax.numpy.int16)
-            * self._max_capacity
-        )
+        capacities = jnp.ones(self._num_vehicles, dtype=jnp.int16) * self._max_capacity
         state = State(
             nodes=Node(coordinates=node_coordinates, demands=node_demands),
             windows=TimeWindow(start=window_start_times, end=window_end_times),
             coeffs=PenalityCoeff(early=early_coefs, late=late_coefs),
             vehicles=StateVehicle(
-                positions=jax.numpy.int16([DEPOT_IDX] * self._num_vehicles),
-                local_times=jax.numpy.zeros(
-                    self._num_vehicles, dtype=jax.numpy.float32
-                ),
+                positions=jnp.int16([DEPOT_IDX] * self._num_vehicles),
+                local_times=jnp.zeros(self._num_vehicles, dtype=jnp.float32),
                 capacities=capacities,
-                distances=jax.numpy.zeros(self._num_vehicles, dtype=jax.numpy.float32),
-                time_penalties=jax.numpy.zeros(
-                    self._num_vehicles, dtype=jax.numpy.float32
-                ),
+                distances=jnp.zeros(self._num_vehicles, dtype=jnp.float32),
+                time_penalties=jnp.zeros(self._num_vehicles, dtype=jnp.float32),
             ),
-            order=jax.numpy.zeros(
-                (self._num_vehicles, 2 * self._num_customers), dtype=jax.numpy.int16
+            order=jnp.zeros(
+                (self._num_vehicles, 2 * self._num_customers), dtype=jnp.int16
             ),
             action_mask=create_action_mask(node_demands, capacities),
-            step_count=jax.numpy.ones((), dtype=jax.numpy.int16),
+            step_count=jnp.ones((), dtype=jnp.int16),
             key=jax.random.PRNGKey(0),
         )
 

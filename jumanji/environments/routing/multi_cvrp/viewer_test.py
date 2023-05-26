@@ -16,6 +16,7 @@ import os
 
 import chex
 import jax
+import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
@@ -39,8 +40,8 @@ def test_render(multicvrp_env: MultiCVRP) -> None:
     )
 
     # Starting position is depot, new action to visit first node
-    new_actions = jax.numpy.array(
-        jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
+    new_actions = jnp.array(
+        jnp.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
     )
 
     new_state, next_timestep = step_fn(state, new_actions)
@@ -60,10 +61,10 @@ def test_animation(multicvrp_env: MultiCVRP) -> None:
         def select_action(
             key: chex.PRNGKey, agent_action_mask: chex.Array
         ) -> chex.Array:
-            return jax.numpy.array(
+            return jnp.array(
                 jax.random.choice(
                     key,
-                    jax.numpy.arange(len(agent_action_mask)),
+                    jnp.arange(len(agent_action_mask)),
                     p=agent_action_mask.flatten(),
                 ),
                 dtype=np.int16,

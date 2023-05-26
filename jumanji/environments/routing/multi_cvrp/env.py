@@ -16,6 +16,7 @@ from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
+import jax.numpy as jnp
 import matplotlib
 from numpy.typing import NDArray
 
@@ -194,7 +195,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1, 2),
             minimum=0.0,
             maximum=self._map_max,
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="node_coordinates",
         )
 
@@ -205,7 +206,7 @@ class MultiCVRP(Environment[State]):
             ),
             minimum=0,
             maximum=self._max_capacity,
-            dtype=jax.numpy.int16,
+            dtype=jnp.int16,
             name="node_demands",
         )
 
@@ -213,7 +214,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
             maximum=self._max_end_window,
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="node_time_windows_start",
         )
 
@@ -221,7 +222,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
             maximum=self._max_end_window,
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="node_time_windows_end",
         )
 
@@ -229,7 +230,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
             maximum=self._late_coef_rand[-1],
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="node_penalty_coeffs_start",
         )
 
@@ -237,7 +238,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0.0,
             maximum=self._late_coef_rand[-1],
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="node_penalty_coeffs_end",
         )
 
@@ -245,7 +246,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_vehicles - 1),
             minimum=0,
             maximum=self._num_customers + 1,
-            dtype=jax.numpy.int16,
+            dtype=jnp.int16,
             name="other_vehicles_positions",
         )
 
@@ -256,7 +257,7 @@ class MultiCVRP(Environment[State]):
             ),
             minimum=0.0,
             maximum=self._max_local_time,
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="other_vehicles_local_times",
         )
 
@@ -267,7 +268,7 @@ class MultiCVRP(Environment[State]):
             ),
             minimum=0,
             maximum=self._max_capacity,
-            dtype=jax.numpy.int16,
+            dtype=jnp.int16,
             name="other_vehicles_capacities",
         )
 
@@ -275,7 +276,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles,),
             minimum=0,
             maximum=self._num_customers + 1,
-            dtype=jax.numpy.int16,
+            dtype=jnp.int16,
             name="vehicle_position",
         )
 
@@ -283,7 +284,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles,),
             minimum=0.0,
             maximum=self._max_local_time,
-            dtype=jax.numpy.float32,
+            dtype=jnp.float32,
             name="vehicle_local_time",
         )
 
@@ -291,7 +292,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles,),
             minimum=0,
             maximum=self._max_capacity,
-            dtype=jax.numpy.int16,
+            dtype=jnp.int16,
             name="vehicle_capacity",
         )
 
@@ -299,7 +300,7 @@ class MultiCVRP(Environment[State]):
             shape=(self._num_vehicles, self._num_customers + 1),
             minimum=0,
             maximum=self._num_customers + 1,
-            dtype=jax.numpy.bool_,
+            dtype=jnp.bool_,
             name="action_mask",
         )
 
@@ -363,7 +364,7 @@ class MultiCVRP(Environment[State]):
 
         return specs.BoundedArray(
             (self._num_vehicles,),
-            jax.numpy.int16,
+            jnp.int16,
             0,
             self._num_customers + 1,
             "actions",
@@ -413,7 +414,7 @@ class MultiCVRP(Environment[State]):
         """
 
         # Convert actions to int16.
-        next_nodes = jax.numpy.int16(actions)
+        next_nodes = jnp.int16(actions)
 
         # Zero any node selections if the node has zero demand or does not have enough
         # capacity left.
@@ -425,11 +426,11 @@ class MultiCVRP(Environment[State]):
 
         # Zero node selections where more than one vehicle selected a valid conditional
         # action to visit the same node.
-        values, unique_indices = jax.numpy.unique(
+        values, unique_indices = jnp.unique(
             next_nodes, return_index=True, size=self._num_vehicles
         )
 
-        next_nodes = jax.numpy.zeros(len(next_nodes), dtype=next_nodes.dtype)
+        next_nodes = jnp.zeros(len(next_nodes), dtype=next_nodes.dtype)
         next_nodes = next_nodes.at[unique_indices].set(values)
 
         # Update the vehicle distances and local times.
@@ -451,7 +452,7 @@ class MultiCVRP(Environment[State]):
         )
 
         # Calculate the new vehicle capacities. Restore vehicle capacities at depot.
-        vehicle_capacities = jax.numpy.where(
+        vehicle_capacities = jnp.where(
             next_nodes == DEPOT_IDX,
             self._max_capacity,
             state.vehicles.capacities - state.nodes.demands[next_nodes],
@@ -494,47 +495,47 @@ class MultiCVRP(Environment[State]):
             observation: Observation object containing the observation of the environment.
         """
 
-        other_vehicles_positions = jax.numpy.zeros(
-            (self._num_vehicles, self._num_vehicles - 1), dtype=jax.numpy.int16
+        other_vehicles_positions = jnp.zeros(
+            (self._num_vehicles, self._num_vehicles - 1), dtype=jnp.int16
         )
 
-        other_vehicles_local_times = jax.numpy.zeros(
+        other_vehicles_local_times = jnp.zeros(
             (self._num_vehicles, self._num_vehicles - 1)
         )
-        other_vehicles_capacities = jax.numpy.zeros(
-            (self._num_vehicles, self._num_vehicles - 1), dtype=jax.numpy.int16
+        other_vehicles_capacities = jnp.zeros(
+            (self._num_vehicles, self._num_vehicles - 1), dtype=jnp.int16
         )
 
         def mask_index(arr: chex.Array, ind: int) -> chex.Array:
             n = arr.shape[0]
-            indices = jax.numpy.arange(n - 1) + (jax.numpy.arange(n - 1) >= ind)
+            indices = jnp.arange(n - 1) + (jnp.arange(n - 1) >= ind)
             return arr[indices]
 
         mask_indices = jax.vmap(mask_index, in_axes=(None, 0))
         other_vehicles_positions = mask_indices(
-            state.vehicles.positions, jax.numpy.arange(self._num_vehicles)
+            state.vehicles.positions, jnp.arange(self._num_vehicles)
         )
         other_vehicles_capacities = mask_indices(
-            state.vehicles.capacities, jax.numpy.arange(self._num_vehicles)
+            state.vehicles.capacities, jnp.arange(self._num_vehicles)
         )
         other_vehicles_local_times = mask_indices(
-            state.vehicles.local_times, jax.numpy.arange(self._num_vehicles)
+            state.vehicles.local_times, jnp.arange(self._num_vehicles)
         )
 
         return Observation(
             nodes=Node(
-                coordinates=jax.numpy.tile(
+                coordinates=jnp.tile(
                     state.nodes.coordinates, (self._num_vehicles, 1, 1)
                 ),
-                demands=jax.numpy.tile(state.nodes.demands, (self._num_vehicles, 1)),
+                demands=jnp.tile(state.nodes.demands, (self._num_vehicles, 1)),
             ),
             windows=TimeWindow(
-                start=jax.numpy.tile(state.windows.start, (self._num_vehicles, 1)),
-                end=jax.numpy.tile(state.windows.end, (self._num_vehicles, 1)),
+                start=jnp.tile(state.windows.start, (self._num_vehicles, 1)),
+                end=jnp.tile(state.windows.end, (self._num_vehicles, 1)),
             ),
             coeffs=PenalityCoeff(
-                early=jax.numpy.tile(state.coeffs.early, (self._num_vehicles, 1)),
-                late=jax.numpy.tile(state.coeffs.late, (self._num_vehicles, 1)),
+                early=jnp.tile(state.coeffs.early, (self._num_vehicles, 1)),
+                late=jnp.tile(state.coeffs.late, (self._num_vehicles, 1)),
             ),
             other_vehicles=ObsVehicle(
                 positions=other_vehicles_positions,
@@ -563,7 +564,7 @@ class MultiCVRP(Environment[State]):
         observation = self._state_to_observation(state)
         is_done = (state.nodes.demands.sum() == 0) & (
             state.vehicles.positions == DEPOT_IDX
-        ).all() | jax.numpy.any(state.step_count > self._num_customers * 2)
+        ).all() | jnp.any(state.step_count > self._num_customers * 2)
         reward = self._reward_fn(state, is_done)
 
         timestep: TimeStep = jax.lax.cond(
