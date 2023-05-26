@@ -92,8 +92,8 @@ class Knapsack(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Default option is 'RandomGenerator' which defaults to a Knapsack instance with 50
-                items and a total budget of 12.5.
+                The default option is 'RandomGenerator' which samples Knapsack instances
+                with 50 items and a total budget of 12.5.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
