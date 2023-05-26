@@ -2,10 +2,12 @@ name: rware
 registered_version: Rware-v0
 
 network:
-    agents_view_embed_dim: 512
-    step_count_embed_dim: 4
     policy_layers: [64,64]
     value_layers: [128,128]
+    transformer_num_blocks: 4
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
 
 training:
     num_epochs: 500

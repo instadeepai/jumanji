@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence
+from typing import Optional, Sequence
 
 import chex
 import haiku as hk
@@ -29,14 +29,17 @@ from jumanji.training.networks.actor_critic import (
 from jumanji.training.networks.parametric_distribution import (
     MultiCategoricalParametricDistribution,
 )
+from jumanji.training.networks.transformer_block import TransformerBlock
 
 
 def make_actor_critic_networks_rware(
     rware: Rware,
-    agents_view_embed_dim: int,
-    step_count_embed_dim: int,
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
+    transformer_num_blocks: int,
+    transformer_num_heads: int,
+    transformer_key_size: int,
+    transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Rware` environment."""
     num_values = np.asarray(rware.action_spec().num_values)
@@ -44,16 +47,20 @@ def make_actor_critic_networks_rware(
         num_values=num_values
     )
     policy_network = make_actor_network(
-        agents_view_embed_dim=agents_view_embed_dim,
         mlp_units=policy_layers,
         time_limit=rware.time_limit,
-        step_count_embed_dim=step_count_embed_dim,
+        transformer_num_blocks=transformer_num_blocks,
+        transformer_num_heads=transformer_num_heads,
+        transformer_key_size=transformer_key_size,
+        transformer_mlp_units=transformer_mlp_units,
     )
     value_network = make_critic_network(
-        agents_view_embed_dim=agents_view_embed_dim,
         mlp_units=value_layers,
         time_limit=rware.time_limit,
-        step_count_embed_dim=step_count_embed_dim,
+        transformer_num_blocks=transformer_num_blocks,
+        transformer_num_heads=transformer_num_heads,
+        transformer_key_size=transformer_key_size,
+        transformer_mlp_units=transformer_mlp_units,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -62,30 +69,82 @@ def make_actor_critic_networks_rware(
     )
 
 
+class RwareTorso(hk.Module):
+    def __init__(
+        self,
+        transformer_num_blocks: int,
+        transformer_num_heads: int,
+        transformer_key_size: int,
+        transformer_mlp_units: Sequence[int],
+        env_time_limit: int,
+        name: Optional[str] = None,
+    ):
+        super().__init__(name=name)
+        self.transformer_num_blocks = transformer_num_blocks
+        self.transformer_num_heads = transformer_num_heads
+        self.transformer_key_size = transformer_key_size
+        self.transformer_mlp_units = transformer_mlp_units
+        self.model_size = transformer_num_heads * transformer_key_size
+        self.embedder = hk.Linear(self.model_size)
+        self.env_time_limit = env_time_limit
+
+    def __call__(self, observation: Observation) -> chex.Array:
+        # Shape names:
+        # B: batch size
+        # N: number of agents
+        # O: observation size
+        # H: hidden/embedding size
+        # (B, N, O)
+        _, N, _ = observation.agents_view.shape
+
+        percent_done = observation.step_count / self.env_time_limit
+        step = jnp.repeat(percent_done[:, None], N, axis=-1)[..., None]
+        agents_view = observation.agents_view
+
+        # join step count and agent view to embed both at the same time
+        # (B, N, O + 1)
+        obs = jnp.concatenate((agents_view, step), axis=-1)
+        # (B, N, O + 1) -> (B, N, H)
+        embeddings = self.embedder(obs)
+
+        # (B, N, H) -> (B, N, H)
+        for block_id in range(self.transformer_num_blocks):
+            transformer_block = TransformerBlock(
+                num_heads=self.transformer_num_heads,
+                key_size=self.transformer_key_size,
+                mlp_units=self.transformer_mlp_units,
+                w_init_scale=2 / self.transformer_num_blocks,
+                model_size=self.model_size,
+                name=f"self_attention_block_{block_id}",
+            )
+            embeddings = transformer_block(
+                query=embeddings, key=embeddings, value=embeddings
+            )
+        return embeddings  # (B, N, H)
+
+
 def make_critic_network(
-    agents_view_embed_dim: int,
     mlp_units: Sequence[int],
     time_limit: int,
-    step_count_embed_dim: int,
+    transformer_num_blocks: int,
+    transformer_num_heads: int,
+    transformer_key_size: int,
+    transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        # Shapes: B: batch size, N: number of agents, P: agents embed dim, S: step embed dim
-        # agents_view embedding
-        batch_size = observation.agents_view.shape[0]
-        agents_view_embedder = hk.Linear(agents_view_embed_dim)
-        agents_view_embedding = agents_view_embedder(
-            observation.agents_view.reshape(batch_size, -1).astype(jnp.float32)
-        )  # (B, P)
+        torso = RwareTorso(
+            transformer_num_blocks,
+            transformer_num_heads,
+            transformer_key_size,
+            transformer_mlp_units,
+            time_limit,
+        )
+        output = torso(observation)
 
-        # step count embedding
-        step_count_embedder = hk.Linear(step_count_embed_dim)
-        step_count_embedding = step_count_embedder(
-            observation.step_count[:, None] / time_limit
-        )  # (B, S)
-        output = jnp.concatenate(
-            [agents_view_embedding, step_count_embedding], axis=-1
-        )  # (B, P+S)
-        values = hk.nets.MLP((*mlp_units, 1), activate_final=False)(output)  # (B, 1)
+        head = hk.Sequential(
+            [hk.Flatten(), hk.nets.MLP((*mlp_units, 1), activate_final=False)]
+        )
+        values = head(output)  # (B, 1)
         return jnp.squeeze(values, axis=-1)  # (B,)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
@@ -93,32 +152,23 @@ def make_critic_network(
 
 
 def make_actor_network(
-    agents_view_embed_dim: int,
     mlp_units: Sequence[int],
     time_limit: int,
-    step_count_embed_dim: int,
+    transformer_num_blocks: int,
+    transformer_num_heads: int,
+    transformer_key_size: int,
+    transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        # Shapes: B: batch size, N: number of agents, P: agents embed dim, S: step embed dim
-        # agents_view embedding
-        per_agent_view_embedder = hk.Linear(agents_view_embed_dim)
-        per_agent_view_embedding = jax.vmap(per_agent_view_embedder)(
-            observation.agents_view.astype(jnp.float32)
-        )  # (B, N, P)
-        num_agents = per_agent_view_embedding.shape[1]
-        normalised_step_count = jnp.repeat(
-            jnp.expand_dims(observation.step_count, axis=(1, 2)) / time_limit,
-            num_agents,
-            axis=1,
-        )  # (B, N, 1)
-        # step count embedding
-        step_count_embedder = hk.Linear(step_count_embed_dim)
-        step_count_embedding = jax.vmap(step_count_embedder)(
-            normalised_step_count
-        )  # (B, N, S)
-        output = jnp.concatenate(
-            [per_agent_view_embedding, step_count_embedding], axis=-1
-        )  # (B, N, P+S)
+        torso = RwareTorso(
+            transformer_num_blocks,
+            transformer_num_heads,
+            transformer_key_size,
+            transformer_mlp_units,
+            time_limit,
+        )
+        output = torso(observation)
+
         head = hk.nets.MLP((*mlp_units, 5), activate_final=False)
         logits = head(output)  # (B, N, 5)
         return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)

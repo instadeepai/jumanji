@@ -254,8 +254,10 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, Rware)
         actor_critic_networks = networks.make_actor_critic_networks_rware(
             rware=env.unwrapped,
-            agents_view_embed_dim=cfg.env.network.agents_view_embed_dim,
-            step_count_embed_dim=cfg.env.network.step_count_embed_dim,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
