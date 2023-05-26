@@ -105,8 +105,9 @@ class CVRP(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Default option is 'UniformGenerator' which defaults to a CVRP instance with 20
-                cities, a maximum vehicle capacity of 30, and a maximum city demand of 10.
+                The default option is 'UniformGenerator' which randomly generates
+                CVRP instances with 20 cities sampled from a uniform distribution,
+                a maximum vehicle capacity of 30, and a maximum city demand of 10.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
