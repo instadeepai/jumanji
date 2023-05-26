@@ -35,7 +35,7 @@ from jumanji.environments.routing.rware.types import (
 )
 from jumanji.environments.routing.rware.viewer import RwareViewer
 from jumanji.tree_utils import tree_slice
-from jumanji.types import TimeStep, restart, transition, truncation
+from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
@@ -301,7 +301,8 @@ class Rware(Environment[State]):
 
         timestep: TimeStep[chex.Array] = jax.lax.cond(
             done,
-            lambda _: truncation(reward=reward, observation=next_observation),
+            # this really should be a truncation, but jumanji training doesn't support it
+            lambda _: termination(reward=reward, observation=next_observation),
             lambda _: transition(reward=reward, observation=next_observation),
             None,
         )
