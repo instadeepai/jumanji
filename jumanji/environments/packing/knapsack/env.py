@@ -22,6 +22,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.packing.knapsack.generator import Generator, RandomGenerator
 from jumanji.environments.packing.knapsack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.knapsack.types import Observation, State
 from jumanji.environments.packing.knapsack.viewer import KnapsackViewer
@@ -83,16 +84,16 @@ class Knapsack(Environment[State]):
 
     def __init__(
         self,
-        num_items: int = 50,
-        total_budget: float = 12.5,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Instantiates a `Knapsack` environment.
 
         Args:
-            num_items: the number of items in the environment. Defaults to 50.
-            total_budget: the capacity of the knapsack. Defaults to 12.5.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
+                The default option is 'RandomGenerator' which samples Knapsack instances
+                with 50 items and a total budget of 12.5.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action, the next state and whether the action is valid.
@@ -101,13 +102,17 @@ class Knapsack(Environment[State]):
                 mode.
         """
 
-        self.num_items = num_items
-        self.total_budget = total_budget
+        self.generator = generator or RandomGenerator(
+            num_items=20,
+            total_budget=12.5,
+        )
+        self.num_items = self.generator.num_items
+        self.total_budget = self.generator.total_budget
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or KnapsackViewer(
             name="Knapsack",
             render_mode="human",
-            total_budget=total_budget,
+            total_budget=self.total_budget,
         )
 
     def __repr__(self) -> str:
@@ -126,17 +131,7 @@ class Knapsack(Environment[State]):
             state: the new state of the environment.
             timestep: the first timestep returned by the environment.
         """
-        key, sample_key = jax.random.split(key)
-        weights, values = jax.random.uniform(
-            sample_key, (2, self.num_items), minval=0, maxval=1
-        )
-        state = State(
-            weights=weights,
-            values=values,
-            packed_items=jnp.zeros(self.num_items, dtype=bool),
-            remaining_budget=jnp.array(self.total_budget, float),
-            key=key,
-        )
+        state = self.generator(key)
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
