@@ -49,8 +49,11 @@ class ParametricDistribution(abc.ABC):
         """
         self._param_size = param_size
         self._postprocessor = postprocessor
+        if event_ndims not in [0, 1]:
+            raise ValueError(
+                f"Event ndims {event_ndims} is not supported, expected value in [0, 1]."
+            )
         self._event_ndims = event_ndims  # rank of events
-        assert event_ndims in [0, 1]
 
     @abc.abstractmethod
     def create_dist(self, parameters: chex.Array) -> Distribution:
@@ -91,8 +94,6 @@ class ParametricDistribution(abc.ABC):
         log_probs -= self._postprocessor.forward_log_det_jacobian(raw_actions)
         if self._event_ndims == 1:
             log_probs = jnp.sum(log_probs, axis=-1)  # sum over action dimension
-        else:
-            assert self._event_ndims == 0
         return log_probs
 
     def entropy(self, parameters: chex.Array, seed: chex.PRNGKey) -> chex.Array:
@@ -102,8 +103,6 @@ class ParametricDistribution(abc.ABC):
         entropy += self._postprocessor.forward_log_det_jacobian(dist.sample(seed=seed))
         if self._event_ndims == 1:
             entropy = jnp.sum(entropy, axis=-1)
-        else:
-            assert self._event_ndims == 0
         return entropy
 
     def kl_divergence(
@@ -120,8 +119,6 @@ class ParametricDistribution(abc.ABC):
         kl_divergence = dist.kl_divergence(other_dist)
         if self._event_ndims == 1:
             kl_divergence = jnp.sum(kl_divergence, axis=-1)
-        else:
-            assert self._event_ndims == 0
         return kl_divergence
 
 
