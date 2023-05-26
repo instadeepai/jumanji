@@ -1421,7 +1421,7 @@ selected is selected again or has a weight larger than the bag capacity.</li>
 
 
 <h3 id="jumanji.environments.packing.knapsack.env.Knapsack.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_items</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">total_budget</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.5</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">knapsack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1445,16 +1445,12 @@ selected is selected again or has a weight larger than the bag capacity.</li>
   </thead>
   <tbody>
       <tr>
-        <td><code>num_items</code></td>
-        <td><code>int</code></td>
-        <td><p>the number of items in the environment. Defaults to 50.</p></td>
-        <td><code>50</code></td>
-      </tr>
-      <tr>
-        <td><code>total_budget</code></td>
-        <td><code>float</code></td>
-        <td><p>the capacity of the knapsack. Defaults to 12.5.</p></td>
-        <td><code>12.5</code></td>
+        <td><code>generator</code></td>
+        <td><code>Optional[jumanji.environments.packing.knapsack.generator.Generator]</code></td>
+        <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment instance.
+The default option is 'RandomGenerator' which samples Knapsack instances
+with 50 items and a total budget of 12.5.</p></td>
+        <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>reward_fn</code></td>
