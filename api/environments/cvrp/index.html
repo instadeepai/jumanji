@@ -1434,7 +1434,7 @@ action is invalid, e.g. a previously selected node other than the depot is selec
 
 
 <h3 id="jumanji.environments.routing.cvrp.env.CVRP.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">max_capacity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">max_demand</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1458,22 +1458,13 @@ action is invalid, e.g. a previously selected node other than the depot is selec
   </thead>
   <tbody>
       <tr>
-        <td><code>num_nodes</code></td>
-        <td><code>int</code></td>
-        <td><p>number of city nodes in the environment. Defaults to 20.</p></td>
-        <td><code>20</code></td>
-      </tr>
-      <tr>
-        <td><code>max_capacity</code></td>
-        <td><code>int</code></td>
-        <td><p>maximum capacity of the vehicle. Defaults to 30.</p></td>
-        <td><code>30</code></td>
-      </tr>
-      <tr>
-        <td><code>max_demand</code></td>
-        <td><code>int</code></td>
-        <td><p>maximum demand of each node. Defaults to 10.</p></td>
-        <td><code>10</code></td>
+        <td><code>generator</code></td>
+        <td><code>Optional[jumanji.environments.routing.cvrp.generator.Generator]</code></td>
+        <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment instance.
+The default option is 'UniformGenerator' which randomly generates
+CVRP instances with 20 cities sampled from a uniform distribution,
+a maximum vehicle capacity of 30, and a maximum city demand of 10.</p></td>
+        <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>reward_fn</code></td>
