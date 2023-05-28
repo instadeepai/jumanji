@@ -73,9 +73,9 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = tetris_env.reset(key)
     action = (0, 4)
-    _ = step_fn(state, action)
-    _ = step_fn(state, action)
-    _ = step_fn(state, action)
+    step_fn(state, action)
+    step_fn(state, action)
+    step_fn(state, action)
     action = (0, 0)
     next_state, next_timestep = step_fn(state, action)
     # Check that the state has changed
