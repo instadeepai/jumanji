@@ -84,7 +84,7 @@ class TetrisViewer(Viewer):
         fig.suptitle(f"Tetris    Score: {int(state.score)}", size=20)
         ax.invert_yaxis()
         grid = self._create_rendering_grid(state)
-        self._add_grid_image(grid, ax)
+        self._add_grid_image(ax, grid)
         return self._display(fig)
 
     def _move_tetromino(
@@ -226,7 +226,7 @@ class TetrisViewer(Viewer):
             fig.suptitle(f"Tetris    Score: {int(scores[grid_index])}", size=20)
             grid = grids[grid_index]
 
-            self._add_grid_image(grid, ax)
+            self._add_grid_image(ax, grid)
 
         grids = []
         scores = []
@@ -273,7 +273,7 @@ class TetrisViewer(Viewer):
             ax = fig.get_axes()[0]
         return fig, ax
 
-    def _add_grid_image(self, grid: chex.Array, ax: plt.Axes) -> None:
+    def _add_grid_image(self, ax: plt.Axes, grid: chex.Array) -> None:
         self._draw_grid(grid, ax)
         ax.set_axis_off()
         ax.set_aspect(1)
