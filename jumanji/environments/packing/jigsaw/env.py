@@ -36,7 +36,65 @@ from jumanji.viewer import Viewer
 
 class Jigsaw(Environment[State]):
 
-    """A Jigsaw solving environment."""
+    """A Jigsaw solving environment with a configurable number of row and column pieces.
+    Here the goal of an agent is to solve a jigsaw puzzle by placing pieces
+    in their correct positions.
+
+    - observation: Observation
+        - current_board: jax array (float) of shape (num_rows, num_cols) with the
+            current state of board.
+        - pieces: jax array (float) of shape (num_pieces, 3, 3) with the pieces to
+            be placed on the board. Here each piece is a 2D array with shape (3, 3).
+        - action_mask: jax array (float) showing where which pieces can be placed on the board.
+            this mask include all possible rotations and possible placement locations
+            for each piece on the board.
+
+    - action: jax array (int32) of shape ()
+        multi discrete array containing the move to perform
+        (piece to place, number of rotations, row coordinate, column coordinate).
+
+    - reward: jax array (float) of shape (), could be either:
+        - dense: the number of cells in the placed piece the overlaps with the correctly
+            piece. this will be a value in the range [0, 9].
+        - sparse: 1 if the board is solved, otherwise 0 at each timestep.
+
+    - episode termination:
+        - if all pieces have been placed on the board.
+        - if the agent has taken `num_pieces` steps in the environment.
+
+    - state: `State`
+        - row_nibs_idxs: jax array (float) array containing row indices
+            for selecting piece nibs during board generation.
+        - col_nibs_idxs: jax array (float) array containing column indices
+            for selecting piece nibs during board generation.
+        - num_pieces: jax array (float) of shape () with the
+            number of pieces in the jigsaw puzzle.
+        - solved_board: jax array (float) of shape (num_rows, num_cols) with the
+            solved board state.
+        - pieces: jax array (float) of shape (num_pieces, 3, 3) with the pieces to
+            be placed on the board.
+        - action_mask: jax array (float) of shape (num_pieces, 4, num_rows, num_cols)
+            showing where which pieces can be placed where on the board.
+        - placed_pieces: jax array (bool) of shape (num_pieces,) showing which pieces
+            have been placed on the board.
+        - current_board: jax array (float) of shape (num_rows, num_cols) with the
+            current state of board.
+        - step_count: jax array (float) of shape () with the number of steps taken
+            in the environment.
+        - key: jax array (float) of shape (2,) with the random key used for board
+            generation.
+
+    ```python
+    from jumanji.environments import Jigsaw
+    env = Jigsaw()
+    key = jax.random.key(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
+    """
 
     def __init__(
         self,
