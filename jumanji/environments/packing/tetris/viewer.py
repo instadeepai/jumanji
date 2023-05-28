@@ -57,7 +57,7 @@ class TetrisViewer(Viewer):
             raise ValueError(f"Invalid render mode: {render_mode}")
 
         # Pick colors.
-        colormap_indecies = np.arange(0, 1, 1 / self.n_colors)
+        colormap_indecies = jnp.arange(0, 1, 1 / self.n_colors)
         colormap = matplotlib.cm.get_cmap("hsv", self.n_colors + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
@@ -112,7 +112,7 @@ class TetrisViewer(Viewer):
             # delete the cols dedicated for the right padding
             tetromino_zonne = tetromino_zonne[:, : self.num_cols]
             # Stack the tetromino with grid position
-            mixed_grid = np.vstack((tetromino_zonne, grid))
+            mixed_grid = jnp.vstack((tetromino_zonne, grid))
             grids.append(mixed_grid)
         return grids
 
@@ -136,9 +136,9 @@ class TetrisViewer(Viewer):
             full_lines = jnp.concatenate(
                 [jnp.full((4,), False), state.full_lines[: self.num_rows]]
             )
-            full_lines_reshaped = full_lines[:, np.newaxis]
+            full_lines_reshaped = full_lines[:, jnp.newaxis]
             animation_list.append(
-                np.where(~full_lines_reshaped, grid, jnp.zeros((1, grid.shape[1])))
+                jnp.where(~full_lines_reshaped, grid, jnp.zeros((1, grid.shape[1])))
             )
         return animation_list
 
@@ -152,12 +152,14 @@ class TetrisViewer(Viewer):
             rendering_grid: `chex.Array` (self.num_rows+4, self.num_cols)
         """
         grid = state.grid_padded[: self.num_rows, : self.num_cols]
-        tetromino = np.zeros((4, self.num_cols))
+        tetromino = jnp.zeros((4, self.num_cols))
         center_position = self.num_cols - 4
         tetromino_color_id = state.grid_padded.max() + 1
         colored_tetromino = state.new_tetromino * tetromino_color_id
-        tetromino[0:4, center_position : center_position + 4] = colored_tetromino
-        rendering_grid = np.vstack((tetromino, grid))
+        tetromino = tetromino.at[0:4, center_position : center_position + 4].set(
+            colored_tetromino
+        )
+        rendering_grid = jnp.vstack((tetromino, grid))
         return rendering_grid
 
     def _drop_tetromino(
@@ -178,7 +180,7 @@ class TetrisViewer(Viewer):
         y_position = state.y_position if state.y_position != -1 else self.num_rows - 1
         # Stack the tetromino's rows on top of the grid.
         rendering_grid = jnp.vstack(
-            (np.zeros((4, old_padded_grid.shape[1])), old_padded_grid)
+            (jnp.zeros((4, old_padded_grid.shape[1])), old_padded_grid)
         )
         # the animation grid contains 4 rows at the top dedicated to show the tetromino.
         for yi in range(y_position + 4 + 1):
