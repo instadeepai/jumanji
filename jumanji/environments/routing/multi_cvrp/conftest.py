@@ -16,6 +16,7 @@ import pytest
 
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
 from jumanji.environments.routing.multi_cvrp.generator import UniformRandomGenerator
+from jumanji.environments.routing.multi_cvrp.reward import SparseReward
 
 
 @pytest.fixture
@@ -25,4 +26,9 @@ def multicvrp_env() -> MultiCVRP:
     # Create the generator
     generator = UniformRandomGenerator(num_vehicles=2, num_customers=20)
 
-    return MultiCVRP(generator=generator)
+    # Create the reward function
+    reward_fn = SparseReward(
+        generator._num_vehicles, generator._num_customers, generator._map_max
+    )
+
+    return MultiCVRP(generator=generator, reward_fn=reward_fn)

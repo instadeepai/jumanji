@@ -34,6 +34,8 @@ def make_actor_critic_networks_multicvrp(
     MultiCVRP: MultiCVRP,  # noqa: N803
     num_vehicles: int,
     num_customers: int,
+    num_layers_vehicles: int,
+    num_layers_customers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
@@ -50,6 +52,8 @@ def make_actor_critic_networks_multicvrp(
     policy_network = make_actor_network_multicvrp(
         num_vehicles=num_vehicles,
         num_customers=num_customers,
+        num_layers_vehicles=num_layers_vehicles,
+        num_layers_customers=num_layers_customers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
@@ -57,6 +61,8 @@ def make_actor_critic_networks_multicvrp(
     value_network = make_critic_network_multicvrp(
         num_vehicles=num_vehicles,
         num_customers=num_customers,
+        num_layers_vehicles=num_layers_vehicles,
+        num_layers_customers=num_layers_customers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
@@ -73,6 +79,8 @@ class MultiCVRPTorso(hk.Module):
         self,
         num_vehicles: int,
         num_customers: int,
+        num_layers_vehicles: int,
+        num_layers_customers: int,
         transformer_num_heads: int,
         transformer_key_size: int,
         transformer_mlp_units: Sequence[int],
@@ -81,6 +89,8 @@ class MultiCVRPTorso(hk.Module):
         super().__init__(name=name)
         self.num_vehicles = num_vehicles
         self.num_customers = num_customers
+        self.num_layers_vehicles = num_layers_vehicles
+        self.num_layers_customers = num_layers_customers
         self.transformer_num_heads = transformer_num_heads
         self.transformer_key_size = transformer_key_size
         self.transformer_mlp_units = transformer_mlp_units
@@ -91,42 +101,22 @@ class MultiCVRPTorso(hk.Module):
         batch_size = observation.nodes.coordinates.shape[0]
 
         concat_list = [
-            # TODO: Add this back.
-            # observation.main_vehicles.coordinates.reshape(
-            #     batch_size, self.num_vehicles, -1
-            # ),
-            observation.main_vehicles.local_times.reshape(
-                batch_size, self.num_vehicles, -1
-            ),
-            observation.main_vehicles.capacities.reshape(
-                batch_size, self.num_vehicles, -1
-            ),
+            observation.vehicles.coordinates.reshape(batch_size, self.num_vehicles, -1),
+            observation.vehicles.local_times.reshape(batch_size, self.num_vehicles, -1),
+            observation.vehicles.capacities.reshape(batch_size, self.num_vehicles, -1),
         ]
         o_vehicles = jnp.concatenate(concat_list, axis=-1)
-
-        # Add vehicle ids to be able to break symmetry in
-        # the initial observations
-        # o_vehicle_ids = jnp.identity(self.num_vehicles)
-
-        # # Duplicate over the batch dimension
-        # o_vehicle_ids = jnp.tile(o_vehicle_ids, (batch_size, 1, 1))  # (B, V, V)
-
-        # o_vehicles = jnp.concatenate(
-        #     [o_vehicles, o_vehicle_ids], axis=-1
-        # )  # (B, V, D)
 
         vehicle_embeddings = self.self_attention_vehicles(o_vehicles)  # (B, V, D)
 
         # customer encoder
         concat_list = [
-            observation.nodes.coordinates[:, 0].reshape(
-                batch_size, self.num_customers, -1
-            ),
-            observation.nodes.demands[:, 0].reshape(batch_size, self.num_customers, -1),
-            observation.windows.start[:, 0].reshape(batch_size, self.num_customers, -1),
-            observation.windows.end[:, 0].reshape(batch_size, self.num_customers, -1),
-            observation.coeffs.early[:, 0].reshape(batch_size, self.num_customers, -1),
-            observation.coeffs.late[:, 0].reshape(batch_size, self.num_customers, -1),
+            observation.nodes.coordinates.reshape(batch_size, self.num_customers, -1),
+            observation.nodes.demands.reshape(batch_size, self.num_customers, -1),
+            observation.windows.start.reshape(batch_size, self.num_customers, -1),
+            observation.windows.end.reshape(batch_size, self.num_customers, -1),
+            observation.coeffs.early.reshape(batch_size, self.num_customers, -1),
+            observation.coeffs.late.reshape(batch_size, self.num_customers, -1),
         ]
 
         o_customers = jnp.concatenate(concat_list, axis=-1)
@@ -137,20 +127,20 @@ class MultiCVRPTorso(hk.Module):
             vehicle_embeddings,
         )
 
-        # Joint (vehicles & customers) self-attention
-        embeddings = jnp.concatenate(
-            [vehicle_embeddings, customer_embeddings], axis=-2
-        )  # (V+C+1, D)
+        vehicle_embeddings = self.vehicle_encoder(  # cross attention
+            vehicle_embeddings,
+            customer_embeddings,
+            # mask= #ij if at vehicle is at customer.  TODO: add mask
+        )
 
-        embeddings = self.self_attention_joint_vehicles_customers(embeddings)
-        return embeddings
+        return vehicle_embeddings, customer_embeddings
 
     def self_attention_vehicles(self, m_remaining_times: chex.Array) -> chex.Array:
         # Projection of vehicles' remaining times
         embeddings = hk.Linear(self.model_size, name="remaining_times_projection")(
             m_remaining_times
         )  # (B, V, D)
-        for block_id in range(self.num_vehicles):
+        for block_id in range(self.num_layers_vehicles):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
@@ -175,9 +165,9 @@ class MultiCVRPTorso(hk.Module):
         # Projection of the operations
         embeddings = hk.Linear(self.model_size, name="o_customer_projections")(
             o_customers
-        )  # (B, O, D)
+        )  # (B, C, D)
 
-        for block_id in range(self.num_customers):
+        for block_id in range(self.num_layers_customers):
             # Self attention between the operations in the given customer
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -210,29 +200,56 @@ class MultiCVRPTorso(hk.Module):
 
         return embeddings
 
-    def self_attention_joint_vehicles_customers(
-        self, embeddings: chex.Array
+    def vehicle_encoder(
+        self,
+        v_embedding: chex.Array,
+        c_embedding: chex.Array,
     ) -> chex.Array:
-        for block_id in range(self.num_customers):
+
+        # Projection of the operations
+        embeddings = hk.Linear(self.model_size, name="o_vehicle_projections")(
+            v_embedding
+        )  # (B, C, D)
+
+        for block_id in range(self.num_layers_vehicles):
+            # Self attention between the operations in the given vehicle
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
                 mlp_units=self.transformer_mlp_units,
-                w_init_scale=1 / self.num_customers,
+                w_init_scale=1 / self.num_vehicles,
                 model_size=self.model_size,
-                name=f"self_attention_joint_ops_vehicles_block_{block_id}",
+                name=f"self_attention_vehicle_block_{block_id}",
             )
             embeddings = transformer_block(
                 query=embeddings,
                 key=embeddings,
                 value=embeddings,
             )
+
+            # Cross attention between the vehicle's embedding and customer's embedding
+            transformer_block = TransformerBlock(
+                num_heads=self.transformer_num_heads,
+                key_size=self.transformer_key_size,
+                mlp_units=self.transformer_mlp_units,
+                w_init_scale=1 / self.num_vehicles,
+                model_size=self.model_size,
+                name=f"cross_attention_ops_vehicles_block_{block_id}",
+            )
+            embeddings = transformer_block(
+                query=embeddings,
+                key=c_embedding,
+                value=c_embedding,
+            )
+
         return embeddings
 
 
 def make_actor_network_multicvrp(
     num_vehicles: int,
     num_customers: int,
+    num_layers_vehicles: int,
+    num_layers_customers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
@@ -241,16 +258,14 @@ def make_actor_network_multicvrp(
         torso = MultiCVRPTorso(
             num_vehicles=num_vehicles,
             num_customers=num_customers,
+            num_layers_vehicles=num_layers_vehicles,
+            num_layers_customers=num_layers_customers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
             name="actor_torso",
         )
-        embeddings = torso(observation)  # (B, V+C+1, D)
-
-        vehicle_embeddings, customer_embeddings = jnp.split(
-            embeddings, (num_vehicles,), axis=-2
-        )
+        vehicle_embeddings, customer_embeddings = torso(observation)  # (B, V+C+1, D)
 
         vehicle_embeddings = hk.Linear(32, name="policy_head_vehicles")(
             vehicle_embeddings
@@ -264,9 +279,7 @@ def make_actor_network_multicvrp(
             "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings
         )  # (B, V, C+1)
 
-        logits = jnp.where(
-            observation.action_mask, logits, jnp.finfo(jnp.float32).min
-        )
+        logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
@@ -276,6 +289,8 @@ def make_actor_network_multicvrp(
 def make_critic_network_multicvrp(
     num_vehicles: int,
     num_customers: int,
+    num_layers_vehicles: int,
+    num_layers_customers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
@@ -284,12 +299,20 @@ def make_critic_network_multicvrp(
         torso = MultiCVRPTorso(
             num_vehicles=num_vehicles,
             num_customers=num_customers,
+            num_layers_vehicles=num_layers_vehicles,
+            num_layers_customers=num_layers_customers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
             name="critic_torso",
         )
-        embeddings = torso(observation)  # (B, V+C+1, D)
+        vehicle_embeddings, customer_embeddings = torso(observation)  # (B, V+C+1, D)
+
+        # Concatenate the embeddings of the vehicles and customers.
+        embeddings = jnp.concatenate(
+            [vehicle_embeddings, customer_embeddings], axis=-2
+        )  # (B, V+C+1, D)
+
         # Sum embeddings over the sequence length (vehicles + customers).
         embedding = jnp.mean(embeddings, axis=-2)
         value = hk.nets.MLP((*transformer_mlp_units, 1), name="value_head")(embedding)

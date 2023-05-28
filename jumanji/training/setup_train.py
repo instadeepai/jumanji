@@ -240,6 +240,8 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             MultiCVRP=env.unwrapped,
             num_vehicles=cfg.env.network.num_vehicles,
             num_customers=cfg.env.network.num_customers,
+            num_layers_vehicles=cfg.env.network.num_layers_vehicles,
+            num_layers_customers=cfg.env.network.num_layers_customers,
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,

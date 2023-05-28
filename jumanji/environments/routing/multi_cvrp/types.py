@@ -69,27 +69,40 @@ class PenalityCoeff:
 
 
 @dataclass
-class ObsVehicle:
+class Vehicle:
     """Vehicle tree structure.
     local_times: This array stores the current local times of
         each vehicle. This is necessary as each vehicle has traveled
         a different total distance and therefore has different
         local times for the same environment step.
-    positions: This array stores the positions (locations) of each of
-        the vehicles. Here 0 means that the vehicle is at the DEPOT and 1+ that
-        it is at a customer.
     capacities: This array stores the capacities of each vehicle. This
         represents the total number of packages/volume that the vehicle can still
         add before needing to return to the depot.
     """
 
     local_times: chex.Array  # Shape: (num_vehicles,)
-    positions: chex.Array  # Shape: (num_vehicles,)
     capacities: chex.Array  # Shape: (num_vehicles,)
 
 
 @dataclass
-class StateVehicle(ObsVehicle):
+class ObsVehicle(Vehicle):
+    """Vehicle tree structure.
+    local_times: This array stores the current local times of
+        each vehicle. This is necessary as each vehicle has traveled
+        a different total distance and therefore has different
+        local times for the same environment step.
+    coordinates: This array stores the positions (locations) of each of
+        the vehicles.
+    capacities: This array stores the capacities of each vehicle. This
+        represents the total number of packages/volume that the vehicle can still
+        add before needing to return to the depot.
+    """
+
+    coordinates: chex.Array  # Shape: (num_vehicles, 2)
+
+
+@dataclass
+class StateVehicle(Vehicle):
     """Vehicle tree structure.
     local_times: This array stores the current local times of
         each vehicle. This is necessary as each vehicle has traveled
@@ -107,6 +120,7 @@ class StateVehicle(ObsVehicle):
         has received thus far.
     """
 
+    positions: chex.Array  # Shape: (num_vehicles,)
     distances: chex.Array = None  # Shape: (num_vehicles,)
     time_penalties: chex.Array = None  # Shape: (num_vehicles,)
 
@@ -145,16 +159,12 @@ class Observation(NamedTuple):
     windows: time windows within which a customer should be visited.
     coeffs: coefficient values used to calculate penalties if the vehicles arrive
         outside their respective time windows.
-    other_vehicles: this array stores information about all other vehicles. E.g. the
-        agent at index 0 will see the information of all vehicles from index 1 onwards. The
-        agent at index 1 will see the information of vehicles 0 and 2 onwards etc.
-    main_vehicles: this array stores the information of the controllable vehicles.
+    vehicles: this array stores the information of the controllable vehicles.
     action_mask: an array containing the action masks for each vehicle.
     """
 
     nodes: Node  # Shape: (num_vehicles, num_customers + 1, ...)
     windows: TimeWindow  # Shape: (num_vehicles, num_customers, ...)
     coeffs: PenalityCoeff  # Shape: (num_vehicles, num_customers, ...)
-    other_vehicles: ObsVehicle  # Shape: (num_vehicles, num_vehicles - 1, ...)
-    main_vehicles: ObsVehicle  # Shape: (num_vehicles, ...)
+    vehicles: ObsVehicle  # Shape: (num_vehicles, ...)
     action_mask: chex.Array  # Shape: (num_vehicles, num_customers + 1)

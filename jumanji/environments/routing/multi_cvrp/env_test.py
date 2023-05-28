@@ -198,14 +198,18 @@ class TestEnvironmentSpec:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
-        _update_state_fn = jax.jit(
+        update_state_fn = jax.jit(
             chex.assert_max_traces(multicvrp_env._update_state, n=1)
         )
-        _state_to_observation_fn = jax.jit(
+        state_to_observation_fn = jax.jit(
             chex.assert_max_traces(multicvrp_env._state_to_observation, n=1)
         )
-        _state_to_timestep_fn = jax.jit(
+        state_to_timestep_fn = jax.jit(
             chex.assert_max_traces(multicvrp_env._state_to_timestep, n=1)
+        )
+
+        reward_fn = jax.jit(
+            chex.assert_max_traces(multicvrp_env._reward_fn.__call__, n=1)
         )
 
         key = jax.random.PRNGKey(0)
@@ -216,28 +220,33 @@ class TestEnvironmentSpec:
             jax.numpy.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16
         )
 
-        new_state = _update_state_fn(state, new_actions)
+        new_state = update_state_fn(state, new_actions)
 
-        obs = _state_to_observation_fn(new_state)
+        obs = state_to_observation_fn(new_state)
 
         # Check that the node coordinates are duplicated correctly
         assert np.array_equal(
-            obs.nodes.coordinates[0], obs.nodes.coordinates[1]
-        ) and np.array_equal(obs.nodes.coordinates[1], state.nodes.coordinates)
+            obs.nodes.coordinates[0], state.nodes.coordinates[0]
+        ) and np.array_equal(
+            obs.nodes.coordinates[1],
+            state.nodes.coordinates[1],
+        )
 
-        # Check that the other_vehicles_postions array is correct
+        # Check that the vehicles_positions array is correct
         assert np.array_equal(
-            obs.other_vehicles.positions,
-            jax.numpy.array([[2], [1]], dtype=jax.numpy.int16),
+            new_state.vehicles.positions,
+            jax.numpy.array([1, 2], dtype=jax.numpy.int16),
         )
 
         # Check that the node demands and action masks are correct.
-        assert np.array_equal(obs.nodes.demands[0], obs.nodes.demands[1])
-        assert np.array_equal(obs.nodes.demands[0], test_node_demand)
+        assert np.array_equal(obs.nodes.demands, test_node_demand)
         assert np.array_equal(obs.action_mask, test_action_mask)
 
         # Generate a timestep
-        timestep = _state_to_timestep_fn(new_state)
+        is_done = False
+
+        reward = reward_fn(state, new_state, is_done)
+        timestep = state_to_timestep_fn(new_state, reward, is_done)
 
         # Check that the timestep is mid
         assert timestep.mid()

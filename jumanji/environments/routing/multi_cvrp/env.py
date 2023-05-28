@@ -26,7 +26,7 @@ from jumanji.environments.routing.multi_cvrp.generator import (
     Generator,
     UniformRandomGenerator,
 )
-from jumanji.environments.routing.multi_cvrp.reward import RewardFn, SparseReward
+from jumanji.environments.routing.multi_cvrp.reward import DenseReward, RewardFn
 from jumanji.environments.routing.multi_cvrp.types import (
     Node,
     Observation,
@@ -91,7 +91,7 @@ class MultiCVRP(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
-                Defaults to `UniformRandomGenerator` with `num_customers=20` and `num_vehicles=2`.
+                Defaults to `UniformRandomGenerator` with `num_customers=6` and `num_vehicles=2`.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
@@ -102,7 +102,7 @@ class MultiCVRP(Environment[State]):
 
         # Create generator used for generating new environments
         self._generator = generator or UniformRandomGenerator(
-            num_customers=20,
+            num_customers=6,
             num_vehicles=2,
         )
 
@@ -118,7 +118,7 @@ class MultiCVRP(Environment[State]):
         self._num_vehicles = self._generator._num_vehicles
 
         # Create reward function used for computing rewards
-        self._reward_fn = reward_fn or SparseReward(
+        self._reward_fn = reward_fn or DenseReward(
             self._num_vehicles, self._num_customers, self._map_max
         )
 
@@ -177,10 +177,17 @@ class MultiCVRP(Environment[State]):
             state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
                 as well as the timestep to be observed.
         """
-        state = self._update_state(state, actions)
+        new_state = self._update_state(state, actions)
 
-        timestep = self._state_to_timestep(state)
-        return state, timestep
+        is_done = (new_state.nodes.demands.sum() == 0) & (
+            new_state.vehicles.positions == DEPOT_IDX
+        ).all() | jnp.any(new_state.step_count > self._num_customers * 2)
+
+        reward = self._reward_fn(state, new_state, is_done)
+
+        timestep = self._state_to_timestep(new_state, reward, is_done)
+
+        return new_state, timestep
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """
@@ -192,7 +199,7 @@ class MultiCVRP(Environment[State]):
         """
 
         node_coordinates = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_customers + 1, 2),
+            shape=(self._num_customers + 1, 2),
             minimum=0.0,
             maximum=self._map_max,
             dtype=jnp.float32,
@@ -200,10 +207,7 @@ class MultiCVRP(Environment[State]):
         )
 
         node_demands = specs.BoundedArray(
-            shape=(
-                self._num_vehicles,
-                self._num_customers + 1,
-            ),
+            shape=(self._num_customers + 1,),
             minimum=0,
             maximum=self._max_capacity,
             dtype=jnp.int16,
@@ -211,7 +215,7 @@ class MultiCVRP(Environment[State]):
         )
 
         node_time_windows_start = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_customers + 1),
+            shape=(self._num_customers + 1,),
             minimum=0.0,
             maximum=self._max_end_window,
             dtype=jnp.float32,
@@ -219,7 +223,7 @@ class MultiCVRP(Environment[State]):
         )
 
         node_time_windows_end = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_customers + 1),
+            shape=(self._num_customers + 1,),
             minimum=0.0,
             maximum=self._max_end_window,
             dtype=jnp.float32,
@@ -227,7 +231,7 @@ class MultiCVRP(Environment[State]):
         )
 
         node_penalty_coeffs_start = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_customers + 1),
+            shape=(self._num_customers + 1,),
             minimum=0.0,
             maximum=self._late_coef_rand[-1],
             dtype=jnp.float32,
@@ -235,49 +239,19 @@ class MultiCVRP(Environment[State]):
         )
 
         node_penalty_coeffs_end = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_customers + 1),
+            shape=(self._num_customers + 1,),
             minimum=0.0,
             maximum=self._late_coef_rand[-1],
             dtype=jnp.float32,
             name="node_penalty_coeffs_end",
         )
 
-        other_vehicles_positions = specs.BoundedArray(
-            shape=(self._num_vehicles, self._num_vehicles - 1),
-            minimum=0,
-            maximum=self._num_customers + 1,
-            dtype=jnp.int16,
-            name="other_vehicles_positions",
-        )
-
-        other_vehicles_local_times = specs.BoundedArray(
-            shape=(
-                self._num_vehicles,
-                self._num_vehicles - 1,
-            ),
+        vehicle_coordinates = specs.BoundedArray(
+            shape=(self._num_vehicles, 2),
             minimum=0.0,
-            maximum=self._max_local_time,
+            maximum=self._map_max,
             dtype=jnp.float32,
-            name="other_vehicles_local_times",
-        )
-
-        other_vehicles_capacities = specs.BoundedArray(
-            shape=(
-                self._num_vehicles,
-                self._num_vehicles - 1,
-            ),
-            minimum=0,
-            maximum=self._max_capacity,
-            dtype=jnp.int16,
-            name="other_vehicles_capacities",
-        )
-
-        vehicle_position = specs.BoundedArray(
-            shape=(self._num_vehicles,),
-            minimum=0,
-            maximum=self._num_customers + 1,
-            dtype=jnp.int16,
-            name="vehicle_position",
+            name="vehicle_coordinates",
         )
 
         vehicle_local_time = specs.BoundedArray(
@@ -325,20 +299,11 @@ class MultiCVRP(Environment[State]):
             late=node_penalty_coeffs_end,
         )
 
-        # Other vehicle spec
-        other_vehicle_spec = specs.Spec(
-            ObsVehicle,
-            "OtherVehicleSpec",
-            positions=other_vehicles_positions,
-            local_times=other_vehicles_local_times,
-            capacities=other_vehicles_capacities,
-        )
-
         # Main vehicle spec
-        main_vehicle_spec = specs.Spec(
+        vehicle_spec = specs.Spec(
             ObsVehicle,
             "MainVehicleSpec",
-            positions=vehicle_position,
+            coordinates=vehicle_coordinates,
             local_times=vehicle_local_time,
             capacities=vehicle_capacity,
         )
@@ -349,8 +314,7 @@ class MultiCVRP(Environment[State]):
             nodes=nodes_spec,
             windows=windows_spec,
             coeffs=penality_spec,
-            other_vehicles=other_vehicle_spec,
-            main_vehicles=main_vehicle_spec,
+            vehicles=vehicle_spec,
             action_mask=action_mask,
         )
 
@@ -417,10 +381,11 @@ class MultiCVRP(Environment[State]):
         next_nodes = jnp.int16(actions)
 
         # Zero any node selections if the node has zero demand or does not have enough
-        # capacity left.
+        # capacity left. If vehicles chose to go to the depot the demand criteria
+        # will not be met which sends them back to the depot.
         next_nodes = (
             next_nodes
-            * (state.vehicles.capacities > state.nodes.demands[next_nodes])
+            * (state.vehicles.capacities >= state.nodes.demands[next_nodes])
             * (state.nodes.demands[next_nodes] > 0)
         )
 
@@ -429,7 +394,6 @@ class MultiCVRP(Environment[State]):
         values, unique_indices = jnp.unique(
             next_nodes, return_index=True, size=self._num_vehicles
         )
-
         next_nodes = jnp.zeros(len(next_nodes), dtype=next_nodes.dtype)
         next_nodes = next_nodes.at[unique_indices].set(values)
 
@@ -495,62 +459,32 @@ class MultiCVRP(Environment[State]):
             observation: Observation object containing the observation of the environment.
         """
 
-        other_vehicles_positions = jnp.zeros(
-            (self._num_vehicles, self._num_vehicles - 1), dtype=jnp.int16
-        )
-
-        other_vehicles_local_times = jnp.zeros(
-            (self._num_vehicles, self._num_vehicles - 1)
-        )
-        other_vehicles_capacities = jnp.zeros(
-            (self._num_vehicles, self._num_vehicles - 1), dtype=jnp.int16
-        )
-
-        def mask_index(arr: chex.Array, ind: int) -> chex.Array:
-            n = arr.shape[0]
-            indices = jnp.arange(n - 1) + (jnp.arange(n - 1) >= ind)
-            return arr[indices]
-
-        mask_indices = jax.vmap(mask_index, in_axes=(None, 0))
-        other_vehicles_positions = mask_indices(
-            state.vehicles.positions, jnp.arange(self._num_vehicles)
-        )
-        other_vehicles_capacities = mask_indices(
-            state.vehicles.capacities, jnp.arange(self._num_vehicles)
-        )
-        other_vehicles_local_times = mask_indices(
-            state.vehicles.local_times, jnp.arange(self._num_vehicles)
-        )
+        vehicle_coordinates = state.nodes.coordinates[state.vehicles.positions]
 
         return Observation(
             nodes=Node(
-                coordinates=jnp.tile(
-                    state.nodes.coordinates, (self._num_vehicles, 1, 1)
-                ),
-                demands=jnp.tile(state.nodes.demands, (self._num_vehicles, 1)),
+                coordinates=state.nodes.coordinates,
+                demands=state.nodes.demands,
             ),
             windows=TimeWindow(
-                start=jnp.tile(state.windows.start, (self._num_vehicles, 1)),
-                end=jnp.tile(state.windows.end, (self._num_vehicles, 1)),
+                start=state.windows.start,
+                end=state.windows.end,
             ),
             coeffs=PenalityCoeff(
-                early=jnp.tile(state.coeffs.early, (self._num_vehicles, 1)),
-                late=jnp.tile(state.coeffs.late, (self._num_vehicles, 1)),
+                early=state.coeffs.early,
+                late=state.coeffs.late,
             ),
-            other_vehicles=ObsVehicle(
-                positions=other_vehicles_positions,
-                local_times=other_vehicles_local_times,
-                capacities=other_vehicles_capacities,
-            ),
-            main_vehicles=ObsVehicle(
-                positions=state.vehicles.positions,
+            vehicles=ObsVehicle(
+                coordinates=vehicle_coordinates,
                 local_times=state.vehicles.local_times,
                 capacities=state.vehicles.capacities,
             ),
             action_mask=state.action_mask,
         )
 
-    def _state_to_timestep(self, state: State) -> TimeStep:
+    def _state_to_timestep(
+        self, state: State, reward: chex.Numeric, is_done: bool
+    ) -> TimeStep:
         """
         Checks if the state is terminal and converts it into a timestep.
 
@@ -562,10 +496,6 @@ class MultiCVRP(Environment[State]):
         """
 
         observation = self._state_to_observation(state)
-        is_done = (state.nodes.demands.sum() == 0) & (
-            state.vehicles.positions == DEPOT_IDX
-        ).all() | jnp.any(state.step_count > self._num_customers * 2)
-        reward = self._reward_fn(state, is_done)
 
         timestep: TimeStep = jax.lax.cond(
             is_done,
