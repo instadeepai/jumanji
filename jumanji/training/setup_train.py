@@ -215,6 +215,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
+    elif cfg.env.name == "jigsaw":
+        assert isinstance(env.unwrapped, Jigsaw)
+        actor_critic_networks = networks.make_actor_critic_networks_jigsaw(
+            jigsaw=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+        )
     elif cfg.env.name == "job_shop":
         assert isinstance(env.unwrapped, JobShop)
         actor_critic_networks = networks.make_actor_critic_networks_job_shop(
