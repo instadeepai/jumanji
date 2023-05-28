@@ -438,16 +438,25 @@ class Jigsaw(Environment[State]):
         rows: chex.Array,
         cols: chex.Array,
     ) -> chex.Array:
-        # This function takes multiple pieces and their corresponding rotations and positions,
-        # and generates a grid for each piece. It then returns an array of these grids.
+        """Takes multiple pieces and their corresponding rotations and positions,
+            and generates a grid for each piece.
+
+        Args:
+            pieces: array of possible pieces.
+            piece_idxs: array of indices of the pieces to place.
+            rotations: array of all possible rotations for each piece.
+            rows: array of row coordinates.
+            cols: array of column coordinates.
+        """
 
         batch_expand_piece_to_board = jax.vmap(
             self._expand_piece_to_board, in_axes=(0, 0, 0)
         )
 
-        # TODO: Better naming here.
-        all_pieces = pieces[piece_idxs]
-        rotated_pieces = jax.vmap(rotate_piece, in_axes=(0, 0))(all_pieces, rotations)
+        all_possible_pieces = pieces[piece_idxs]
+        rotated_pieces = jax.vmap(rotate_piece, in_axes=(0, 0))(
+            all_possible_pieces, rotations
+        )
         grids = batch_expand_piece_to_board(rotated_pieces, rows, cols)
 
         batch_get_ones_like_expanded_piece = jax.vmap(
@@ -459,7 +468,13 @@ class Jigsaw(Environment[State]):
     def _make_full_action_mask(
         self, current_board: chex.Array, pieces: chex.Array, placed_pieces: chex.Array
     ) -> chex.Array:
-        """Create a mask of possible actions based on the current state."""
+        """Create a mask of possible actions based on the current state of the board.
+
+        Args:
+            current_board: current state of the board.
+            pieces: array of all pieces.
+            placed_pieces: array of pieces that have already been placed.
+        """
         num_pieces, num_rotations, num_rows, num_cols = (
             self.num_pieces,
             4,
