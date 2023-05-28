@@ -17,7 +17,7 @@
 NUM_ROTATIONS = 4
 # reward is calculated using the number of lines
 # REWARD_LIST[nbr_full_lines]
-REWARD_LIST = [0, 40, 100, 300, 1200]
+REWARD_LIST = (0, 40, 100, 300, 1200)
 
 # TETROMINOES_LIST is a collection of 7 distinct tetromino shapes,
 # with each shape represented as a 4x4 grid of cells.
