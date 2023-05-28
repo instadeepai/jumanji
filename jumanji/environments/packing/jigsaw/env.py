@@ -51,8 +51,8 @@ class Jigsaw(Environment[State]):
         """
 
         default_generator = RandomJigsawGenerator(
-            num_row_pieces=5,
-            num_col_pieces=5,
+            num_row_pieces=3,
+            num_col_pieces=3,
         )
 
         self.generator = generator or default_generator
