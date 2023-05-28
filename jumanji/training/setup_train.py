@@ -126,7 +126,7 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
 
 def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
-) -> RandomPolicy:  # noqa: CCR001
+) -> RandomPolicy:
     assert cfg.agent == "random"
     if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
