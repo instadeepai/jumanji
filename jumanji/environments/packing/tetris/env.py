@@ -210,16 +210,14 @@ class Tetris(Environment[State]):
         grid_padded = state.grid_padded
         action_mask = state.action_mask
         tetromino_index = state.tetromino_index
-        # Generate new PRNG key
         key, subkey = jax.random.split(state.key)
-        # Rotate tetromino.
         tetromino = self._rotate(rotation_degree, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(
             grid_padded, tetromino, x_position
         )
-        # a line is full when it doesn't contain any 0.
-        full_lines = jnp.all(grid_padded[:, : self.num_cols], axis=1)
+        # A line is full when it doesn't contain any 0.
+        full_lines = jnp.all(grid_padded[:, : self.num_cols] != 0, axis=1)
         nbr_full_lines = sum(full_lines)
         grid_padded = utils.clean_lines(grid_padded, full_lines)
         # Generate new tetromino
