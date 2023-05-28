@@ -1,4 +1,4 @@
-# Rubik's Cube Environment
+# Jigsaw Environment
 
 <p align="center">
         <img src="../env_anim/jigsaw.gif" width="500"/>
@@ -20,10 +20,10 @@ all pieces that can be placed.
 - `pieces`: jax array (float32) of shape `(num_pieces, 3, 3)` of all possible pieces in the
     current puzzle. These pieces are shuffled and rotated. Pieces will always have shape `(3, 3)`.
 
-- `action_mask`: jax array (bool) of shape `(num_pieces, 4, num_rows-3, num_cols-3)`, representing the
+- `action_mask`: jax array (bool) of shape `(num_pieces, 4, num_rows-3, num_cols-3)`, representing
     which actions are possible given the current state of the board. The first index indicates the
     number of pieces in a given puzzle. The second index indicates the number of times a piece may be rotated.
-    The third and fourth indices indicate the x and y coordinate of where a piece may be placed respectively.
+    The third and fourth indices indicate the row and column coordinate of where a piece may be placed respectively.
     These values will always be `num_rows-3` and `num_cols-3` respectively to make it impossible for an agent to
     place a piece outside the current board.
 
@@ -32,7 +32,7 @@ all pieces that can be placed.
 The action space is a `MultiDiscreteArray`, specifically a tuple of an index between 0 and `num_pieces`,
 an index between 0 and 4 (since there are 4 possible rotations), an index between 0 and `num_rows-3`
 (the possible row coordinates for placing a piece) and an index between 0 and `num_cols-3`
-(the possible column coordinates for placing a piece). An action thus consists of three pieces of
+(the possible column coordinates for placing a piece). An action thus consists of four pieces of
 information:
 
 - Piece to place,
