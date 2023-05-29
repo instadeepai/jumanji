@@ -20,7 +20,7 @@ all pieces that can be placed.
 - `pieces`: jax array (float32) of shape `(num_pieces, 3, 3)` of all possible pieces in the
     current puzzle. These pieces are shuffled and rotated. Pieces will always have shape `(3, 3)`.
 
-- `action_mask`: jax array (bool) of shape `(num_pieces, 4, num_rows-3, num_cols-3)`, representing
+- `action_mask`: jax array (bool) of shape `(num_pieces, 4, num_rows-2, num_cols-2)`, representing
     which actions are possible given the current state of the board. The first index indicates the
     number of pieces in a given puzzle. The second index indicates the number of times a piece may be rotated.
     The third and fourth indices indicate the row and column coordinate of where a piece may be placed respectively.
