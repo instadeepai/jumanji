@@ -14,6 +14,7 @@
 
 from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
+from jumanji.environments.packing.jigsaw import generator as jigsaw_generator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -51,9 +52,20 @@ register(
 # largest ones are given in the observation.
 register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
 
-# Jigsaw puzzle with 25 pieces and a random puzzle generator.
+# Jigsaw puzzle with 9 pieces, a 7x7 grid and a random puzzle generator.
 # The puzzle must be completed in `num_pieces` steps.
 register(id="Jigsaw-v0", entry_point="jumanji.environments:Jigsaw")
+
+# Simplified jigsaw puzzle with a 5x5 grid, 4 pieces and a deterministic
+# puzzle generator.
+deterministic_jigsaw_generator_with_rotation = (
+    jigsaw_generator.ToyJigsawGeneratorWithRotation()
+)
+register(
+    id="Jigsaw-deterministic-rotation-v0",
+    entry_point="jumanji.environments:Jigsaw",
+    kwargs={"generator": deterministic_jigsaw_generator_with_rotation},
+)
 
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
