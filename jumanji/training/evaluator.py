@@ -87,7 +87,7 @@ class Evaluator:
             )
             action = acting_policy(observation, action_key)
             state, timestep = self.eval_env.step(
-                acting_state.state, jnp.squeeze(action)
+                acting_state.state, jnp.squeeze(action, axis=0)
             )
             return_ += timestep.reward
             acting_state = ActingState(
