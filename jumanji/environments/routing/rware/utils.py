@@ -360,8 +360,7 @@ def is_collision(grid: chex.Array, agent: Agent, action: int) -> chex.Array:
 
         agent_id_at_target_pos = grid[_AGENTS, target.x, target.y]
         check_forward = ~jnp.array_equal(start, target)
-        collision = check_forward & (agent_id_at_target_pos > 0)
-        return collision
+        return check_forward & (agent_id_at_target_pos > 0)
 
     return jax.lax.cond(
         jnp.equal(action, Action.FORWARD), check_collision, lambda: False
