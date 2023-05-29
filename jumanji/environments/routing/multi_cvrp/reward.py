@@ -101,12 +101,11 @@ class DenseReward(RewardFn):
             )
 
             return jax.lax.cond(  # type: ignore
-                jnp.any(state.step_count > self._num_customers * 2),
+                jnp.any(new_state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
-                lambda state: self._large_negate_reward,
-                lambda state: step_vehicle_distance_penalty + step_time_penalty,
-                state,
+                lambda: self._large_negate_reward,
+                lambda: step_vehicle_distance_penalty + step_time_penalty,
             )
 
         # By default, returns the negative distance between the previous and new node.

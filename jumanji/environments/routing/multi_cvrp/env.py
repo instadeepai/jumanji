@@ -179,9 +179,10 @@ class MultiCVRP(Environment[State]):
         """
         new_state = self._update_state(state, actions)
 
-        is_done = (new_state.nodes.demands.sum() == 0) & (
-            new_state.vehicles.positions == DEPOT_IDX
-        ).all() | jnp.any(new_state.step_count > self._num_customers * 2)
+        is_done = (
+            (new_state.nodes.demands.sum() == 0)
+            & (new_state.vehicles.positions == DEPOT_IDX).all()
+        ) | jnp.any(new_state.step_count > self._num_customers * 2)
 
         reward = self._reward_fn(state, new_state, is_done)
 
