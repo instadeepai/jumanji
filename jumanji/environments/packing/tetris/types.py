@@ -67,7 +67,8 @@ class Observation(NamedTuple):
     """
     grid: the game grid, filled with zeros for the empty cells and with
         ones for the filled cells.
-    tetromino: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
+    tetromino: matrix of size (4x4) of zeros for the empty cells and with
+        ones for the filled cells.
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
         orientations and columns to select.
     step_count: current number of steps in the episode.
