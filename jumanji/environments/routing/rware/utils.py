@@ -48,13 +48,15 @@ def spawn_agent(
     agent_coordinates: chex.Array,
     direction: chex.Array,
 ) -> chex.Array:
-    """Spawn an agent (robot) at a random position and in a random direction.
+    """Spawn an agent (robot) at a given position and direction.
 
     Args:
-        key: pseudo random number key.
+        agent_coordinates: x, y coordinates of the agent.
+        direction: direction of the agent.
 
     Returns:
-        spawned agent."""
+        spawned agent.
+    """
     x, y = agent_coordinates
     agent_pos = Position(x=x, y=y)
     agent = Agent(position=agent_pos, direction=direction, is_carrying=0)
