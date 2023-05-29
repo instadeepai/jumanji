@@ -266,7 +266,7 @@ class Jigsaw(Environment[State]):
 
         Returns:
             Spec for each filed in the observation:
-            - current_board: BoundedArray (int) of shape (board_dim[0], board_dim[1]).
+            - current_board: BoundedArray (int) of shape (num_rows, num_cols).
             - pieces: BoundedArray (int) of shape (num_pieces, 3, 3).
             - action_mask: BoundedArray (bool) of shape (num_pieces,).
         """
