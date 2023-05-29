@@ -582,14 +582,8 @@ def make_agent_observation(
     def write_shelf(obs: chex.Array, idx: int, shelf_id: int) -> Tuple[chex.Array, int]:
         "Write information for cell containing a shelf."
         requested = tree_slice(shelves, shelf_id - 1).is_requested
-        obs, idx = write_to_observation(
-            obs,
-            idx,
-            jnp.array(
-                [1, requested],
-                dtype=jnp.int32,
-            ),
-        )
+        shelf = jnp.array([1, requested], dtype=jnp.int32)
+        obs, idx = write_to_observation(obs, idx, shelf)
         return obs, idx
 
     def agent_sensor_scan(
