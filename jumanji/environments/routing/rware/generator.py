@@ -51,9 +51,6 @@ class Generator(abc.ABC):
                 Defaults to 1.
             request_queue_size: the number of shelves requested at any
                 given time which remains fixed throughout environment steps. Defaults to 4.
-            time_limit: the maximum step limit allowed within the environment
-            renderer: an optional `RwareViewer` instance to render the environment, if left as
-                None a default viewer is created when render is called. Defaults to 500.
         """
         if shelf_columns % 2 != 1:
             raise ValueError(
