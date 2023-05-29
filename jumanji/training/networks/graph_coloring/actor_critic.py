@@ -150,7 +150,7 @@ class GraphColoringTorso(hk.Module):
             colors_array == color_indices
         )  # Shape (batch_size, num_colors, num_nodes)
 
-        # Expand and repeat along the transformer_num_heads axis
+        # Expand along the transformer_num_heads axis
         colors_cross_nodes_mask = jnp.expand_dims(
             colors_cross_nodes_mask, axis=1
         )  # Shape (batch_size, 1, num_colors, num_nodes)
