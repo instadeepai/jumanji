@@ -75,7 +75,9 @@ def test_graph_coloring_get_action_mask(graph_coloring: GraphColoring) -> None:
     state, _ = graph_coloring.reset(key)
     num_nodes = graph_coloring.generator.num_nodes
     get_valid_actions_fn = jax.jit(graph_coloring._get_valid_actions)
-    action_mask = get_valid_actions_fn(state)
+    action_mask = get_valid_actions_fn(
+        state.current_node_index, state.adj_matrix, state.colors
+    )
 
     # Check that the action mask is a boolean array with the correct shape.
     assert action_mask.dtype == jnp.bool_
