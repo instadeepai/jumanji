@@ -183,7 +183,7 @@ class Tetris(Environment[State]):
         grid_padded = state.grid_padded
         action_mask = state.action_mask
         tetromino_index = state.tetromino_index
-        key, subkey = jax.random.split(state.key)
+        key, sample_key = jax.random.split(state.key)
         tetromino = self._rotate(rotation_index, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(
@@ -195,7 +195,7 @@ class Tetris(Environment[State]):
         grid_padded = utils.clean_lines(grid_padded, full_lines)
         # Generate new tetromino
         new_tetromino, tetromino_index = utils.sample_tetromino_list(
-            key, self.TETROMINOES_LIST
+            sample_key, self.TETROMINOES_LIST
         )
         grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetromino_index)
