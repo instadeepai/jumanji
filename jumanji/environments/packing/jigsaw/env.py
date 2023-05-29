@@ -37,8 +37,8 @@ from jumanji.viewer import Viewer
 class Jigsaw(Environment[State]):
 
     """A Jigsaw solving environment with a configurable number of row and column pieces.
-    Here the goal of an agent is to solve a jigsaw puzzle by placing pieces
-    in their correct positions.
+        Here the goal of an agent is to solve a jigsaw puzzle by placing pieces
+        in their correct positions.
 
     - observation: Observation
         - current_board: jax array (float) of shape (num_rows, num_cols) with the
@@ -332,7 +332,7 @@ class Jigsaw(Environment[State]):
 
     def _check_done(self, state: State) -> bool:
         """Checks if the environment is done by checking whether the number of
-        steps is equal to the number of pieces in the puzzle.
+            steps is equal to the number of pieces in the puzzle.
 
         Args:
             state: current state of the environment.
@@ -353,9 +353,9 @@ class Jigsaw(Environment[State]):
         grid_mask_piece: chex.Array,
     ) -> bool:
         """Checks if the action is legal by considering the action mask and the
-           board mask. An action is legal if the action mask is True for that action
-           and the board mask indicates that there is no overlap with pieces
-           already placed.
+            board mask. An action is legal if the action mask is True for that action
+            and the board mask indicates that there is no overlap with pieces
+            already placed.
 
         Args:
             action: action taken.
