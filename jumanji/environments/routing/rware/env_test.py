@@ -196,7 +196,7 @@ def test_rware__truncation(
     assert not jnp.all(timestep.discount == 0)
 
 
-def test_rware__terminate_upon_collision(
+def test_rware__truncate_upon_collision(
     deterministic_rware_env: Tuple[Rware, State, TimeStep]
 ) -> None:
     """Validate episode terminates upon collision of agents."""
