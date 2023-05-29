@@ -139,12 +139,13 @@ def make_critic_network(
             transformer_mlp_units,
             time_limit,
         )
-        output = torso(observation)
+        embeddings = torso(observation)
+        embeddings = jnp.sum(embeddings, axis=-2)
 
         head = hk.Sequential(
-            [hk.Flatten(), hk.nets.MLP((*mlp_units, 1), activate_final=False)]
+            hk.nets.MLP((*transformer_mlp_units, 1), activate_final=False)
         )
-        values = head(output)  # (B, 1)
+        values = head(embeddings)  # (B, 1)
         return jnp.squeeze(values, axis=-1)  # (B,)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
@@ -169,7 +170,7 @@ def make_actor_network(
         )
         output = torso(observation)
 
-        head = hk.nets.MLP((*mlp_units, 5), activate_final=False)
+        head = hk.nets.MLP((*transformer_mlp_units, 5), activate_final=False)
         logits = head(output)  # (B, N, 5)
         return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
