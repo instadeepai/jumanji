@@ -89,8 +89,16 @@ class Tetris(Environment[State]):
             num_cols: number of columns of the 2D grid. Defaults to 10.
             time_limit: time_limit of an episode, i.e. number of environment steps before
                 the episode ends. Defaults to 4000.
-            #TODO viewer
+            viewer: `Viewer` used for rendering. Defaults to `TetrisViewer`.
         """
+        if num_rows < 4:
+            raise ValueError(
+                f"The `num_rows` must be >= 4, but got num_rows={num_rows}"
+            )
+        if num_cols < 4:
+            raise ValueError(
+                f"The `num_cols` must be >= 4, but got num_cols={num_cols}"
+            )
         self.num_rows = num_rows
         self.num_cols = num_cols
         self.padded_num_rows = num_rows + 3
