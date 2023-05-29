@@ -24,7 +24,7 @@ all pieces that can be placed.
     which actions are possible given the current state of the board. The first index indicates the
     number of pieces in a given puzzle. The second index indicates the number of times a piece may be rotated.
     The third and fourth indices indicate the row and column coordinate of where a piece may be placed respectively.
-    These values will always be `num_rows-3` and `num_cols-3` respectively to make it impossible for an agent to
+    These values will always be `num_rows-2` and `num_cols-2` respectively to make it impossible for an agent to
     place a piece outside the current board.
 
 
