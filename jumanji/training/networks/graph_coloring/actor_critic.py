@@ -135,7 +135,7 @@ class GraphColoringTorso(hk.Module):
 
         mask = self._make_self_attention_mask(
             observation.adj_matrix
-        )  # Shape (batch_size, transformer_num_heads, num_nodes, num_nodes)
+        )  # Shape (batch_size, 1, num_nodes, num_nodes)
 
         colors_array = jnp.expand_dims(
             observation.colors, axis=1
