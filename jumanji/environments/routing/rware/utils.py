@@ -266,8 +266,7 @@ def get_new_direction_after_turn(
         the direction the agent should be facing given the action it took.
     """
     change_in_direction = jnp.array([0, 0, -1, 1, 0])[action]
-    new_agent_direction = (agent_direction + change_in_direction) % 4
-    return new_agent_direction
+    return (agent_direction + change_in_direction) % 4
 
 
 def get_new_position_after_forward(
