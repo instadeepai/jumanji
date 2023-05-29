@@ -182,14 +182,17 @@ class GraphColoring(Environment[State]):
         # Update the current node index
         next_node_index = (state.current_node_index + 1) % self.num_nodes
 
+        next_action_mask = self._get_valid_actions(
+            next_node_index, state.adj_matrix, state.colors
+        )
+
         next_state = State(
             adj_matrix=state.adj_matrix,
             colors=colors,
             current_node_index=next_node_index,
-            action_mask=valid_actions,
+            action_mask=next_action_mask,
             key=state.key,
         )
-        next_state.action_mask = self._get_valid_actions(next_state)
         obs = Observation(
             adj_matrix=state.adj_matrix,
             colors=colors,
@@ -262,14 +265,16 @@ class GraphColoring(Environment[State]):
             num_values=self.num_nodes, name="action", dtype=jnp.int32
         )
 
-    def _get_valid_actions(self, state: State) -> chex.Array:
+    def _get_valid_actions(
+        self, current_node_index: int, adj_matrix: chex.Array, colors: chex.Array
+    ) -> chex.Array:
         """Returns a boolean array indicating the valid colors for the current node."""
         # Create a boolean array of size (num_nodes + 1) set to True.
         # The extra element is to accommodate for the -1 index
         # which represents nodes that have not been colored yet.
         valid_actions = jnp.ones(self.num_nodes + 1, dtype=bool)
-        row = state.adj_matrix[state.current_node_index, :]
-        action_mask = jnp.where(row, state.colors, -1)
+        row = adj_matrix[current_node_index, :]
+        action_mask = jnp.where(row, colors, -1)
         valid_actions = valid_actions.at[action_mask].set(False)
 
         # Exclude the last element (which corresponds to -1 index)
