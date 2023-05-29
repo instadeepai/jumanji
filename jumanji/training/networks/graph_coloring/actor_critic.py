@@ -141,10 +141,7 @@ class GraphColoringTorso(hk.Module):
             observation.colors, axis=1
         )  # Shape (batch_size, 1, num_nodes)
         color_indices = jnp.arange(observation.colors.shape[1])  # Shape (num_colors,)
-        color_indices = jnp.expand_dims(color_indices, axis=0)  # Shape (1, num_colors)
-        color_indices = jnp.expand_dims(
-            color_indices, axis=-1
-        )  # Shape (1, num_colors, 1)
+        color_indices = color_indices[None, :, None]  # Shape (1, num_colors, 1)
 
         colors_cross_nodes_mask = (
             colors_array == color_indices
