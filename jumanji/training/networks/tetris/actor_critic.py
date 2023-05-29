@@ -76,7 +76,7 @@ def make_network_cnn(
                 jax.nn.relu,
                 hk.Conv2D(conv_num_channels, (2, 2), 1, padding="VALID"),
                 jax.nn.relu,
-                hk.Conv2D(conv_num_channels, (2, 2), 1),
+                hk.Conv2D(conv_num_channels, (2, 2), 1, 2, padding="VALID"),
                 jax.nn.relu,
                 hk.Flatten(),
             ]
@@ -93,9 +93,7 @@ def make_network_cnn(
             ]
         )
 
-        tetromino_embeddings = mlp_layers(
-            observation.tetromino.astype(float)[..., None]
-        )
+        tetromino_embeddings = mlp_layers(observation.tetromino.astype(float))
         norm_step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
 
         output = jnp.concatenate(
@@ -103,10 +101,11 @@ def make_network_cnn(
         )
         final_layers = hk.nets.MLP(final_layer_dims)
         output = final_layers(output)
-        output = output.squeeze().reshape(-1, 4, 10)
+
         if critic:
-            return jnp.mean(output, axis=(-1, -2))
+            return jnp.mean(output, axis=-1)
         else:
+            output = output.reshape(-1, 4, 10)
             masked_logits = jnp.where(
                 observation.action_mask, output, jnp.finfo(jnp.float32).min
             ).reshape(observation.action_mask.shape[0], -1)
