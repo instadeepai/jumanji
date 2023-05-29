@@ -172,7 +172,7 @@ def test_rware__time_limit(rware_env: Rware) -> None:
     state_key = random.PRNGKey(10)
     state, timestep = rware_env.reset(state_key)
     assert timestep.first()
-    
+
     for _ in range(rware_env.time_limit - 1):
         state, timestep = step_fn(state, jnp.array([0, 0]))
 

@@ -16,7 +16,6 @@ from typing import Optional, Sequence
 
 import chex
 import haiku as hk
-import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -95,10 +94,10 @@ class RwareTorso(hk.Module):
         # O: observation size
         # H: hidden/embedding size
         # (B, N, O)
-        _, N, _ = observation.agents_view.shape
+        _, num_agents, _ = observation.agents_view.shape
 
         percent_done = observation.step_count / self.env_time_limit
-        step = jnp.repeat(percent_done[:, None], N, axis=-1)[..., None]
+        step = jnp.repeat(percent_done[:, None], num_agents, axis=-1)[..., None]
         agents_view = observation.agents_view
 
         # join step count and agent view to embed both at the same time
