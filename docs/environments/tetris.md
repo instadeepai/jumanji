@@ -60,4 +60,4 @@ Dense: the reward is based on the number of lines cleared and the reward_list `[
 
 
 ## Registered Versions 📖
-- `Tetris-v0`, the default settings for tetris with a grid of size 20x10.
+- `Tetris-v0`, the default settings for tetris with a grid of size 10x10.

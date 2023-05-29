@@ -45,12 +45,14 @@ def make_actor_critic_networks_tetris(
         conv_num_channels=conv_num_channels,
         tetromino_layers=tetromino_layers,
         final_layer_dims=final_layer_dims,
+        time_limit=tetris.time_limit,
         critic=False,
     )
     value_network = make_network_cnn(
         conv_num_channels=conv_num_channels,
         tetromino_layers=tetromino_layers,
         final_layer_dims=final_layer_dims,
+        time_limit=tetris.time_limit,
         critic=True,
     )
     return ActorCriticNetworks(
@@ -64,6 +66,7 @@ def make_network_cnn(
     conv_num_channels: int,
     tetromino_layers: int,
     final_layer_dims: Sequence[int],
+    time_limit: int,
     critic: bool,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
@@ -87,14 +90,17 @@ def make_network_cnn(
                 jax.nn.relu,
                 hk.Linear(tetromino_layers),
                 jax.nn.relu,
-                hk.Flatten(),
             ]
         )
 
         tetromino_embeddings = mlp_layers(
             observation.tetromino.astype(float)[..., None]
         )
-        output = jnp.concatenate([grid_embeddings, tetromino_embeddings], axis=-1)
+        norm_step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
+
+        output = jnp.concatenate(
+            [grid_embeddings, tetromino_embeddings, norm_step_count], axis=-1
+        )
         final_layers = hk.nets.MLP(final_layer_dims)
         output = final_layers(output)
         output = output.squeeze().reshape(-1, 4, 10)

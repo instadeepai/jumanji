@@ -79,6 +79,7 @@ class Tetris(Environment[State]):
         self,
         num_rows: int = 10,
         num_cols: int = 10,
+        time_limit: int = 4000,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Tetris` environment.
@@ -86,6 +87,9 @@ class Tetris(Environment[State]):
         Args:
             num_rows: number of rows of the 2D grid. Defaults to 10.
             num_cols: number of columns of the 2D grid. Defaults to 10.
+            time_limit: time_limit of an episode, i.e. number of environment steps before
+                the episode ends. Defaults to 4000.
+            #TODO viewer
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
@@ -93,7 +97,7 @@ class Tetris(Environment[State]):
         self.padded_num_cols = num_cols + 3
         self.TETROMINOES_LIST = jnp.array(TETROMINOES_LIST, jnp.int32)
         self.reward_list = jnp.array(REWARD_LIST, float)
-
+        self.time_limit = time_limit
         self._viewer = viewer or TetrisViewer(
             num_rows=self.num_rows,
             num_cols=self.num_cols,
@@ -105,6 +109,7 @@ class Tetris(Environment[State]):
                 "Tetris environment:",
                 f" - number rows: {self.num_rows}",
                 f" - number columns: {self.num_cols}",
+                f" - time_limit: {self.time_limit}",
             ]
         )
 
@@ -183,12 +188,14 @@ class Tetris(Environment[State]):
             reward=jnp.array(0, float),
             key=key,
             is_reset=True,
+            step_count=jnp.array(0, jnp.int32),
         )
 
         observation = Observation(
             grid=grid_padded[: self.num_rows, : self.num_cols],
             tetromino=tetromino,
             action_mask=action_mask,
+            step_count=jnp.array(0, jnp.int32),
         )
         timestep = restart(observation=observation)
         return state, timestep
@@ -231,6 +238,7 @@ class Tetris(Environment[State]):
         color = jnp.array([1, grid_padded.max()])
         colored_tetromino = tetromino * jnp.max(color)
         reward = self.reward_list[nbr_full_lines]
+        step_count = state.step_count + 1
         next_state = State(
             grid_padded=grid_padded,
             grid_padded_old=state.grid_padded,
@@ -245,14 +253,21 @@ class Tetris(Environment[State]):
             reward=reward,
             key=key,
             is_reset=False,
+            step_count=step_count,
         )
         next_observation = Observation(
             grid=grid_padded_cliped[: self.num_rows, : self.num_cols],
             tetromino=new_tetromino,
             action_mask=action_mask,
+            step_count=jnp.array(0, jnp.int32),
         )
+
+        is_valid = state.action_mask[tuple(action)]
+        tetris_completed = ~jnp.any(action_mask)
+        done = tetris_completed | ~is_valid | step_count >= self.time_limit
+
         next_timestep = jax.lax.cond(
-            ~jnp.any(action_mask) | ~state.action_mask[tuple(action)],
+            done,
             termination,
             transition,
             self.reward_list[nbr_full_lines],
@@ -275,6 +290,7 @@ class Tetris(Environment[State]):
              - grid: BoundedArray (jnp.int32) of shape (num_rows, num_cols).
              - tetromino: BoundedArray (bool) of shape (4, 4).
              - action_mask: BoundedArray (bool) of shape (NUM_ROTATIONS, num_cols).
+             - step_count: DiscreteArray (num_values = time_limit) of shape ().
         """
         return specs.Spec(
             Observation,
@@ -299,6 +315,9 @@ class Tetris(Environment[State]):
                 minimum=False,
                 maximum=True,
                 name="action_mask",
+            ),
+            step_count=specs.DiscreteArray(
+                self.time_limit, dtype=jnp.int32, name="step_count"
             ),
         )
 

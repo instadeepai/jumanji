@@ -44,6 +44,7 @@ class State:
     reward: instant reward
     key: random key used to generate random numbers at each step and for auto-reset.
     is_reset: True if the state is generated from a reset.
+    step_count: current number of steps in the episode.
     """
 
     grid_padded: chex.Array  # (num_rows+3, num_cols+3)
@@ -59,6 +60,7 @@ class State:
     reward: chex.Array  # ()
     key: chex.PRNGKey  # (2,)
     is_reset: chex.Array  # ()
+    step_count: chex.Numeric  # ()
 
 
 class Observation(NamedTuple):
@@ -68,8 +70,10 @@ class Observation(NamedTuple):
     tetromino: matrix of size (4x4) of booleans (True for filled cells and False for empty cells).
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
         orientations and columns to select.
+    step_count: current number of steps in the episode.
     """
 
     grid: chex.Array  # (num_rows, num_cols)
     tetromino: chex.Array  # (4, 4)
     action_mask: chex.Array  # (4, num_cols)
+    step_count: chex.Numeric  # ()
