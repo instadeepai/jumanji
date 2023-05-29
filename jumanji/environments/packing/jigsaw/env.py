@@ -291,8 +291,8 @@ class Jigsaw(Environment[State]):
             shape=(
                 self.num_pieces,
                 4,
-                self.num_rows - 3,
-                self.num_cols - 3,
+                self.num_rows - 2,
+                self.num_cols - 2,
             ),
             minimum=False,
             maximum=True,
@@ -320,8 +320,8 @@ class Jigsaw(Environment[State]):
             - max_col_position: int between 0 and max_col_position - 1 (included).
         """
 
-        max_row_position = self.num_rows - 3
-        max_col_position = self.num_cols - 3
+        max_row_position = self.num_rows - 2
+        max_col_position = self.num_cols - 2
 
         return specs.MultiDiscreteArray(
             num_values=jnp.array(
@@ -478,8 +478,8 @@ class Jigsaw(Environment[State]):
         num_pieces, num_rotations, num_rows, num_cols = (
             self.num_pieces,
             4,
-            self.num_rows - 3,
-            self.num_cols - 3,
+            self.num_rows - 2,
+            self.num_cols - 2,
         )
 
         pieces_grid, rotations_grid, rows_grid, cols_grid = jnp.meshgrid(

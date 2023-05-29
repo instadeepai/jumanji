@@ -83,7 +83,7 @@ class UNet(hk.Module):
 
         # Crop the upconvolved output
         # to be the same size as the action mask.
-        up_2 = up_2[:, 1:-2, 1:-2]
+        up_2 = up_2[:, 1:-1, 1:-1]
         # Remove the channel dimension
         output = jnp.squeeze(up_2, axis=-1)
 
@@ -126,7 +126,7 @@ class JigsawTorso(hk.Module):
 
         unet = UNet()
         board_conv_encoding, board_encoding = unet(observation.current_board)
-        # board_encoding has shape (B, num_rows-3, num_cols-3)
+        # board_encoding has shape (B, num_rows-2, num_cols-2)
 
         # Flatten the board_conv_encoding so it is of shape (B, num_maps, ...)
         board_conv_encoding = jnp.reshape(
@@ -155,7 +155,7 @@ class JigsawTorso(hk.Module):
         pieces_embedding = jax.vmap(pieces_head)(pieces_embedding)
 
         # pieces_embedding has shape (B, num_pieces, num_rotations)
-        # board_encoding has shape (B, num_rows-3, num_cols-3) to match
+        # board_encoding has shape (B, num_rows-2, num_cols-2) to match
         # the shape of the action mask.
         return pieces_embedding, board_encoding
 
@@ -177,7 +177,6 @@ def make_actor_network_jigsaw(
             name="policy_torso",
         )
         pieces_embedding, board_embedding = torso(observation)
-
         # Outer-product
         outer_product = jnp.einsum(
             "...ij,...kl->...ijkl", pieces_embedding, board_embedding
