@@ -18,6 +18,7 @@ import haiku as hk
 import jax.numpy as jnp
 import numpy as np
 
+from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
 from jumanji.environments.routing.multi_cvrp.types import Observation
 from jumanji.training.networks.actor_critic import (
@@ -130,7 +131,6 @@ class MultiCVRPTorso(hk.Module):
         vehicle_embeddings = self.vehicle_encoder(  # cross attention
             vehicle_embeddings,
             customer_embeddings,
-            # mask= #ij if at vehicle is at customer.  TODO: add mask
         )
 
         return vehicle_embeddings, customer_embeddings
@@ -162,10 +162,16 @@ class MultiCVRPTorso(hk.Module):
         v_embedding: chex.Array,
     ) -> chex.Array:
 
-        # Projection of the operations
-        embeddings = hk.Linear(self.model_size, name="o_customer_projections")(
-            o_customers
-        )  # (B, C, D)
+        # Embed the depot differently
+        # (B, C, D)
+        depot_projection = hk.Linear(self.model_size, name="depot_projection")
+        nodes_projection = hk.Linear(self.model_size, name="nodes_projection")
+        all_nodes_indices = jnp.arange(o_customers.shape[-2])[None, :, None]
+        embeddings = jnp.where(
+            all_nodes_indices == DEPOT_IDX,
+            depot_projection(o_customers),
+            nodes_projection(o_customers),
+        )
 
         for block_id in range(self.num_layers_customers):
             # Self attention between the operations in the given customer
