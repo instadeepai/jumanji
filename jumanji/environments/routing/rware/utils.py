@@ -163,8 +163,7 @@ def place_entity_on_grid(
     """
     entity = tree_slice(entities, entity_id)
     x, y = entity.position.x, entity.position.y
-    grid = grid.at[channel, x, y].set(entity_id + 1)
-    return grid
+    return grid.at[channel, x, y].set(entity_id + 1)
 
 
 def place_entities_on_grid(
