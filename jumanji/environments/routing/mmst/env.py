@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -260,7 +260,8 @@ class MMST(Environment[State]):
             key=key,
         )
 
-        timestep = restart(observation=self._state_to_observation(state))
+        extras = self._get_extras(state)
+        timestep = restart(observation=self._state_to_observation(state), extras=extras)
         return state, timestep
 
     def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
@@ -399,23 +400,27 @@ class MMST(Environment[State]):
         # update the state now
         state.finished_agents = finished_agents
         state.step_count = state.step_count + 1
+        extras = self._get_extras(state)
 
         def make_termination_timestep(state: State) -> TimeStep:
             return termination(
                 reward=reward,
                 observation=observation,
+                extras=extras,
             )
 
         def make_truncation_timestep(state: State) -> TimeStep:
             return truncation(
                 reward=reward,
                 observation=observation,
+                extras=extras,
             )
 
         def make_transition_timestep(state: State) -> TimeStep:
             return transition(
                 reward=reward,
                 observation=observation,
+                extras=extras,
             )
 
         is_done = finished_agents.all()
@@ -696,6 +701,33 @@ class MMST(Environment[State]):
             finished_agents = finished_agents.at[agent].set(finished)
 
         return finished_agents
+
+    def _get_extras(self, state: State) -> Dict:
+        """Computes extras metrics to be return within the timestep."""
+
+        def num_connections(
+            nodes: chex.Array, connected_nodes: chex.Array, n_comps: int
+        ) -> chex.Array:
+            connects = jnp.isin(nodes, connected_nodes)
+            total_connections = jnp.sum(connects) - 1.0
+            ratio_connections = total_connections / (n_comps - 1.0)
+            return jnp.array([total_connections, ratio_connections])
+
+        connections = jnp.zeros((self.num_agents, 2))
+        for agent in range(self.num_agents):
+            total_ratio = num_connections(
+                state.nodes_to_connect[agent],
+                state.connected_nodes[agent],
+                self.num_nodes_per_agent,
+            )
+            connections = connections.at[agent].set(total_ratio)
+
+        extras = {
+            "num_connections": jnp.sum(connections[:, 0]),
+            "ratio_connections": jnp.mean(connections[:, 1]),
+        }
+
+        return extras
 
     def render(self, state: State) -> chex.Array:
         """Render the environment for a given state.
