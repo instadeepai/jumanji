@@ -142,9 +142,7 @@ def make_critic_network(
         embeddings = torso(observation)
         embeddings = jnp.sum(embeddings, axis=-2)
 
-        head = hk.Sequential(
-            hk.nets.MLP((*transformer_mlp_units, 1), activate_final=False)
-        )
+        head = hk.nets.MLP((*transformer_mlp_units, 1), activate_final=False)
         values = head(embeddings)  # (B, 1)
         return jnp.squeeze(values, axis=-1)  # (B,)
 
