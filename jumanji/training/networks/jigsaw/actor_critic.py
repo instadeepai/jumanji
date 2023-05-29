@@ -85,7 +85,7 @@ class SimpleNet(hk.Module):
         # Assuming x is of shape (batch_size, num_rows, num_cols, 1)
         x = hk.Conv2D(self.num_maps, kernel_shape=3, stride=1, padding="SAME")(x)
 
-        # Flatten the tensor
+        # Flatten
         flat = x.reshape(x.shape[0], -1)
 
         # Use a linear layer to project to (num_maps, F)
@@ -114,7 +114,7 @@ class UpConvNet(hk.Module):
     def __call__(self, x: chex.Array) -> chex.Array:
         # Assuming x is of shape (batch_size, num_maps, F)
 
-        # Flatten the tensor along last two dimensions
+        # Flatten along last two dimensions
         flat = x.reshape(x.shape[0], -1)
 
         # Use a linear layer to project to (batch_size, action_mask_num_rows * action_mask_num_cols)
