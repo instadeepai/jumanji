@@ -53,8 +53,7 @@ def make_actor_critic_networks_jigsaw(
         num_pieces=num_pieces,
         num_rows=num_rows,
         num_cols=num_cols,
-        h=10,
-        f=5,
+        board_encoding_dim=10,
     )
     value_network = make_critic_network_jigsaw(
         num_transformer_layers=num_transformer_layers,
@@ -64,8 +63,7 @@ def make_actor_critic_networks_jigsaw(
         num_pieces=num_pieces,
         num_rows=num_rows,
         num_cols=num_cols,
-        h=10,
-        f=10,
+        board_encoding_dim=10,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -76,10 +74,12 @@ def make_actor_critic_networks_jigsaw(
 
 # Net for down convolution of the board
 class SimpleNet(hk.Module):
-    def __init__(self, num_maps: int, f: int, name: Optional[str] = None) -> None:
+    def __init__(
+        self, num_maps: int, board_encoding_dim: int, name: Optional[str] = None
+    ) -> None:
         super().__init__(name=name)
         self.num_maps = num_maps
-        self.f = f
+        self.board_encoding_dim = board_encoding_dim
 
     def __call__(self, x: chex.Array) -> chex.Array:
         # Assuming x is of shape (batch_size, num_rows, num_cols, 1)
@@ -89,10 +89,12 @@ class SimpleNet(hk.Module):
         flat = x.reshape(x.shape[0], -1)
 
         # Use a linear layer to project to (num_maps, F)
-        projection = hk.Linear(self.num_maps * self.F)(flat)
+        projection = hk.Linear(self.num_maps * self.board_encoding_dim)(flat)
 
         # Reshape to desired output shape
-        projection = projection.reshape(x.shape[0], self.num_maps, self.F)
+        projection = projection.reshape(
+            x.shape[0], self.num_maps, self.board_encoding_dim
+        )
 
         return projection
 
@@ -100,11 +102,14 @@ class SimpleNet(hk.Module):
 # TODO: Fix this to use convs.
 class UpConvNet(hk.Module):
     def __init__(
-        self, num_rows: int, num_cols: int, name: Optional[str] = None
+        self,
+        action_mask_num_rows: int,
+        action_mask_num_cols: int,
+        name: Optional[str] = None,
     ) -> None:
         super().__init__(name=name)
-        self.num_rows = num_rows
-        self.num_cols = num_cols
+        self.action_mask_num_rows = action_mask_num_rows
+        self.action_mask_num_cols = action_mask_num_cols
 
     def __call__(self, x: chex.Array) -> chex.Array:
         # Assuming x is of shape (batch_size, num_maps, F)
@@ -112,11 +117,15 @@ class UpConvNet(hk.Module):
         # Flatten the tensor along last two dimensions
         flat = x.reshape(x.shape[0], -1)
 
-        # Use a linear layer to project to (batch_size, num_rows * num_cols)
-        projection = hk.Linear(self.num_rows * self.num_cols)(flat)
+        # Use a linear layer to project to (batch_size, action_mask_num_rows * action_mask_num_cols)
+        projection = hk.Linear(self.action_mask_num_rows * self.action_mask_num_cols)(
+            flat
+        )
 
         # Reshape to desired output shape
-        projection = projection.reshape(x.shape[0], self.num_rows, self.num_cols)
+        projection = projection.reshape(
+            x.shape[0], self.action_mask_num_rows, self.action_mask_num_cols
+        )
 
         return projection
 
@@ -129,8 +138,7 @@ class JigsawTorso(hk.Module):
         transformer_key_size: int,
         transformer_mlp_units: Sequence[int],
         num_pieces: int,
-        h: int,
-        f: int,
+        board_encoding_dim: int,
         num_rows: int,
         num_cols: int,
         name: Optional[str] = None,
@@ -142,10 +150,9 @@ class JigsawTorso(hk.Module):
         self.transformer_mlp_units = transformer_mlp_units
         self.model_size = transformer_num_heads * transformer_key_size
         self.num_pieces = num_pieces
-        self.h = h
-        self.f = f
-        self.num_rows = num_rows - 3
-        self.num_cols = num_cols - 3
+        self.board_encoding_dim = board_encoding_dim
+        self.action_mask_num_rows = num_rows - 3
+        self.action_mask_num_cols = num_cols - 3
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
         # Observation.pieces (B, num_pieces, 3, 3)
@@ -154,27 +161,29 @@ class JigsawTorso(hk.Module):
         # Flatten the pieces
         flattened_pieces = jnp.reshape(observation.pieces, (-1, self.num_pieces, 9))
         # Flatten_pieces is of shape (B, num_pieces, 9)
-        jax.debug.print("{x}", x=flattened_pieces.shape)
 
-        # MLP on the pieces
-        mlp = hk.nets.MLP(output_sizes=[self.h])
-        pieces_embedding = jax.vmap(mlp)(flattened_pieces)
-        # Pieces_embedding is of shape (B, num_pieces, H)
-        jax.debug.print("{x}", x=pieces_embedding.shape)
+        # Encode the pieces with an MLP
+        piece_encoder = hk.nets.MLP(output_sizes=[self.model_size])
+        pieces_embedding = jax.vmap(piece_encoder)(flattened_pieces)
+        # Pieces_embedding is of shape (B, num_pieces, model_size)
 
-        # Down-convolution on the board, F must be a multiple of num_maps
-        down_conv_net = SimpleNet(num_maps=self.f // 2, f=self.f)
-        middle_embedding = down_conv_net(observation.current_board)
-        # Middle_embedding is of shape (B, num_maps, F)
-        jax.debug.print("{x}", x=middle_embedding.shape)
+        # Down-convolution on the board, board_encoding_dim must be a multiple of num_maps
+        down_conv_net = SimpleNet(
+            num_maps=self.board_encoding_dim // 2,
+            board_encoding_dim=self.board_encoding_dim,
+        )
+        board_conv_encoding = down_conv_net(observation.current_board)
+        # board_conv_encoding is of shape (B, num_maps, board_encoding_dim)
 
         # Up convolution on the board
-        up_conv_net = UpConvNet(num_rows=self.num_rows, num_cols=self.num_cols)
-        final_embedding = up_conv_net(middle_embedding)
+        up_conv_net = UpConvNet(
+            action_mask_num_rows=self.action_mask_num_rows,
+            action_mask_num_cols=self.action_mask_num_cols,
+        )
+        board_encoding = up_conv_net(board_conv_encoding)
         # Final_embedding is of shape (B, num_rows, num_cols)
-        jax.debug.print("{x}", x=final_embedding.shape)
 
-        # Cross-attention between pieces_embedding and middle_embedding
+        # Cross-attention between pieces_embedding and board_conv_encoding
         for block_id in range(self.num_transformer_layers):
             cross_attention = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -185,17 +194,18 @@ class JigsawTorso(hk.Module):
                 name=f"cross_attention_block_{block_id}",
             )
             pieces_embedding = cross_attention(
-                query=pieces_embedding, key=middle_embedding, value=middle_embedding
+                query=pieces_embedding,
+                key=board_conv_encoding,
+                value=board_conv_encoding,
             )
 
-        # Map pieces embedding from (num_pieces, 128) to (num_pieces, 4) via mlp
-        mlp = hk.nets.MLP(output_sizes=[4])
-        pieces_embedding = jax.vmap(mlp)(pieces_embedding)
-        jax.debug.print("{x}", x=pieces_embedding.shape)
+        # Map pieces embedding from (num_pieces, 128) to (num_pieces, num_rotations) via mlp
+        pieces_head = hk.nets.MLP(output_sizes=[4])
+        pieces_embedding = jax.vmap(pieces_head)(pieces_embedding)
 
-        # Flatten and return
-        # return jnp.reshape(outer_product, (-1,))
-        return pieces_embedding, final_embedding
+        # pieces_embedding has shape (B, num_pieces, num_rotations)
+        # board_encoding has shape (B, action_mask_num_rows, action_mask_num_cols)
+        return pieces_embedding, board_encoding
 
 
 def make_actor_network_jigsaw(
@@ -204,8 +214,7 @@ def make_actor_network_jigsaw(
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
     num_pieces: int,
-    h: int,
-    f: int,
+    board_encoding_dim: int,
     num_rows: int,
     num_cols: int,
 ) -> FeedForwardNetwork:
@@ -216,21 +225,17 @@ def make_actor_network_jigsaw(
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
             num_pieces=num_pieces,
-            h=h,
-            f=f,
+            board_encoding_dim=board_encoding_dim,
             num_rows=num_rows,
             num_cols=num_cols,
             name="policy_torso",
         )
-        pieces_embedding, final_embedding = torso(observation)
+        pieces_embedding, board_embedding = torso(observation)
 
         # Outer-product
-        jax.debug.print("PIECES EMBEDDING {x}", x=pieces_embedding.shape)
-        jax.debug.print("FINAL EMBEDDING {x}", x=final_embedding.shape)
         outer_product = jnp.einsum(
-            "...j,...kl->...jkl", pieces_embedding, final_embedding
+            "...ij,...kl->...ijkl", pieces_embedding, board_embedding
         )
-        jax.debug.print("{x}", x=outer_product.shape)
 
         logits = jnp.where(
             observation.action_mask, outer_product, jnp.finfo(jnp.float32).min
@@ -249,8 +254,7 @@ def make_critic_network_jigsaw(
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
     num_pieces: int,
-    h: int,
-    f: int,
+    board_encoding_dim: int,
     num_rows: int,
     num_cols: int,
 ) -> FeedForwardNetwork:
@@ -261,17 +265,20 @@ def make_critic_network_jigsaw(
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
             num_pieces=num_pieces,
-            h=h,
-            f=f,
+            board_encoding_dim=board_encoding_dim,
             num_rows=num_rows,
             num_cols=num_cols,
             name="critic_torso",
         )
         pieces_embedding, final_embedding = torso(observation)
-        jax.debug.print("{x}", x=pieces_embedding.shape)
-        jax.debug.print("{x}", x=final_embedding.shape)
-        # Concatenate the pieces embedding and the final embedding
-        torso_output = jnp.concatenate([pieces_embedding, final_embedding], axis=1)
+        # Flatten and concatenate the pieces embedding and the final embedding
+        pieces_embedding_flat = pieces_embedding.reshape(pieces_embedding.shape[0], -1)
+        final_embedding_flat = final_embedding.reshape(final_embedding.shape[0], -1)
+
+        # Concatenate along the second dimension (axis=1)
+        torso_output = jnp.concatenate(
+            [pieces_embedding_flat, final_embedding_flat], axis=-1
+        )
 
         value = hk.nets.MLP((torso.model_size, 1), name="critic_head")(torso_output)
         return jnp.squeeze(value, axis=-1)
