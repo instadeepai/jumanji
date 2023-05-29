@@ -71,11 +71,12 @@ def spawn_shelf(
     as requested or not.
 
     Args:
-        shelf_id: id of the shelf being spawned.
+        shelf_coordinates: x, y coordinates of the shelf.
         requested: whether the shelf has been requested or not.
 
     Returns:
-        spawned shelf."""
+        spawned shelf.
+    """
     x, y = shelf_coordinates
     shelf_pos = Position(x=x, y=y)
     shelf = Shelf(position=shelf_pos, is_requested=requested)
