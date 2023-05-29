@@ -190,6 +190,7 @@ class RandomGenerator(Generator):
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates an `Rware` state that contains the grid and the agents/shelves layout.
+
         Returns:
             An `Rware` state.
         """
