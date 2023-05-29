@@ -99,7 +99,7 @@ def make_network_cnn(
         output = jnp.concatenate(
             [grid_embeddings, tetromino_embeddings, norm_step_count], axis=-1
         )
-        final_layers = hk.nets.MLP(final_layer_dims)
+        final_layers = hk.nets.MLP((*final_layer_dims, observation.action_mask[0].size))
         output = final_layers(output)
 
         if critic:
