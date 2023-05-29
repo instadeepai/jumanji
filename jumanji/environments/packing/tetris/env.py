@@ -121,48 +121,6 @@ class Tetris(Environment[State]):
             ]
         )
 
-    def _calculate_action_mask(
-        self, grid_padded: chex.Array, tetromino_index: int
-    ) -> chex.Array:
-        """Calculate the mask for legal actions in the game.
-
-        Args:
-            grid_padded: the container where the game takes place.
-            tetromino: the block that will be placed within the grid_padded.
-
-        Return:
-            action_mask: jnp boolean array of size=(4 x 'self.num_cols').
-            Each row of the matrix corresponds to a different possible
-            rotation of the tetromino block,
-            with the first row corresponding to a rotation of 0 degrees,
-            the second row corresponding to a rotation of 90 degrees,
-            the third row corresponding to a rotation of 180 degrees,
-            and the fourth row corresponding to a rotation of 270 degrees.
-        """
-        all_rotations = self.TETROMINOES_LIST[tetromino_index]
-        action_mask = jax.vmap(utils.tetromino_action_mask, in_axes=(None, 0))(
-            grid_padded, all_rotations
-        )
-        return action_mask
-
-    def _rotate(self, rotation_index: int, tetromino_index: int) -> chex.Array:
-        """Calculate the rotated tetromino matrix.
-        This function calculates a matrix representation of a rotated "tetromino" block,
-        given the desired rotation index and the tetromino index to retrieve the block
-        from a list of tetrominoes.
-
-        Args:
-            rotation_index: the desired rotation index, which maps to 0, 90, 180, or 270 degrees.
-            tetromino_index: an index used to retrieve a specific tetromino
-                from the 'self.TETROMINOES_LIST'.
-
-        Return:
-            rotated_tetromino: array representation of the rotated tetromino block.
-        """
-        rotated_tetromino = self.TETROMINOES_LIST[tetromino_index, rotation_index]
-        rotated_tetromino = jnp.squeeze(rotated_tetromino)
-        return rotated_tetromino
-
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
@@ -221,12 +179,12 @@ class Tetris(Environment[State]):
             next_state: `State` corresponding to the next state of the environment,
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
-        rotation_degree, x_position = action
+        rotation_index, x_position = action
         grid_padded = state.grid_padded
         action_mask = state.action_mask
         tetromino_index = state.tetromino_index
         key, subkey = jax.random.split(state.key)
-        tetromino = self._rotate(rotation_degree, tetromino_index)
+        tetromino = self._rotate(rotation_index, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(
             grid_padded, tetromino, x_position
@@ -360,3 +318,45 @@ class Tetris(Environment[State]):
         """
 
         return self._viewer.animate(states, interval, save_path)
+
+    def _calculate_action_mask(
+        self, grid_padded: chex.Array, tetromino_index: int
+    ) -> chex.Array:
+        """Calculate the mask for legal actions in the game.
+
+        Args:
+            grid_padded: the container where the game takes place.
+            tetromino: the block that will be placed within the grid_padded.
+
+        Return:
+            action_mask: jnp boolean array of size=(4 x 'self.num_cols').
+            Each row of the matrix corresponds to a different possible
+            rotation of the tetromino block,
+            with the first row corresponding to a rotation of 0 degrees,
+            the second row corresponding to a rotation of 90 degrees,
+            the third row corresponding to a rotation of 180 degrees,
+            and the fourth row corresponding to a rotation of 270 degrees.
+        """
+        all_rotations = self.TETROMINOES_LIST[tetromino_index]
+        action_mask = jax.vmap(utils.tetromino_action_mask, in_axes=(None, 0))(
+            grid_padded, all_rotations
+        )
+        return action_mask
+
+    def _rotate(self, rotation_index: int, tetromino_index: int) -> chex.Array:
+        """Calculate the rotated tetromino matrix.
+        This function calculates a matrix representation of a rotated "tetromino" block,
+        given the desired rotation index and the tetromino index to retrieve the block
+        from a list of tetrominoes.
+
+        Args:
+            rotation_index: the desired rotation index, which maps to 0, 90, 180, or 270 degrees.
+            tetromino_index: an index used to retrieve a specific tetromino
+                from the 'self.TETROMINOES_LIST'.
+
+        Return:
+            rotated_tetromino: array representation of the rotated tetromino block.
+        """
+        rotated_tetromino = self.TETROMINOES_LIST[tetromino_index, rotation_index]
+        rotated_tetromino = jnp.squeeze(rotated_tetromino)
+        return rotated_tetromino
