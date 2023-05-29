@@ -28,7 +28,7 @@ The **observation** seen by the agent is a `NamedTuple` containing the following
 ## Action
 
 The action space is a `MultiDiscreteArray` containing an integer value in `[0, 1, 2, 3, 4]` for each
-agent. Each agent can take one of five actions: noop (`0`), forward (`1`), left (`2`), right (`3`), or toggle_load (`4`).
+agent. Each agent can take one of five actions: noop (`0`), forward (`1`), turn left (`2`), turn right (`3`), or toggle_load (`4`).
 
 The episode terminates under the following conditions:
 
