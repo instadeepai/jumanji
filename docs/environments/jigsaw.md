@@ -13,7 +13,7 @@ The observation given to the agent gives a view of the current state of the puzz
 all pieces that can be placed.
 
 - `current_board`: jax array (float32) of shape `(num_rows, num_cols)` with values in the range
-    `[1, num_pieces]` (corresponding to the number of each piece). This board will have zeros
+    `[0, num_pieces]` (corresponding to the number of each piece). This board will have zeros
     where no pieces have been placed and numbers corresponding to each piece where that particular
     pieces has been paced.
 
