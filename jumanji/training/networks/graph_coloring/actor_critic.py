@@ -84,16 +84,6 @@ class GraphColoringTorso(hk.Module):
         mask = jnp.expand_dims(adj_matrix, axis=-3)
         return mask
 
-    def embed_nodes(self, nodes_colored: chex.Array) -> chex.Array:
-        node_embeddings = hk.Linear(self.model_size)(
-            nodes_colored[..., None].astype(float)
-        )
-        return node_embeddings
-
-    def embed_colors(self, colors_used: chex.Array) -> chex.Array:
-        embeddings = hk.Linear(self.model_size)(colors_used[..., None].astype(float))
-        return embeddings
-
     def __call__(self, observation: Observation) -> chex.Array:
         """
         Transforms the observation using a series of transformations.
@@ -126,11 +116,12 @@ class GraphColoringTorso(hk.Module):
 
         nodes_colored = observation.colors >= 0
 
-        color_embeddings = self.embed_colors(
-            colors_used
+        color_embeddings = hk.Linear(self.model_size)(
+            colors_used[..., None].astype(float)
         )  # Shape (batch_size, num_colors, 128)
-        node_embeddings = self.embed_nodes(
-            nodes_colored
+
+        node_embeddings = hk.Linear(self.model_size)(
+            nodes_colored[..., None].astype(float)
         )  # Shape (batch_size, num_colors, 128)
 
         mask = self._make_self_attention_mask(
