@@ -24,7 +24,7 @@ from jumanji.version import __version__
 ###
 
 # Game2048 - the game of 2048 with the default board size of 4x4.
-register(id="Game2048-v0", entry_point="jumanji.environments:Game2048")
+register(id="Game2048-v1", entry_point="jumanji.environments:Game2048")
 
 # Minesweeper on a board of size 10x10 with 10 mines.
 register(id="Minesweeper-v0", entry_point="jumanji.environments:Minesweeper")
