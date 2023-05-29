@@ -3,7 +3,7 @@ registered_version: MultiCVRP-v0
 
 network:
     num_vehicles: 2
-    num_customers: 6
+    num_customers: 20
     num_layers_vehicles: 1
     num_layers_customers: 1
     transformer_num_heads: 4 # 8
@@ -11,7 +11,7 @@ network:
     transformer_mlp_units: [256] # [512]
 
 training:
-    num_epochs: 500
+    num_epochs: 10
     num_learner_steps_per_epoch: 200
     n_steps: 15
     total_batch_size: 32 # 128

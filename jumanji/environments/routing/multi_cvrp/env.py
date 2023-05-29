@@ -91,7 +91,7 @@ class MultiCVRP(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`].
-                Defaults to `UniformRandomGenerator` with `num_customers=6` and `num_vehicles=2`.
+                Defaults to `UniformRandomGenerator` with `num_customers=20` and `num_vehicles=2`.
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
@@ -102,7 +102,7 @@ class MultiCVRP(Environment[State]):
 
         # Create generator used for generating new environments
         self._generator = generator or UniformRandomGenerator(
-            num_customers=6,
+            num_customers=20,
             num_vehicles=2,
         )
 
