@@ -120,10 +120,11 @@ class GraphColoring(Environment[State]):
         adj_matrix = self.generator(subkey)
 
         action_mask = jnp.ones(self.num_nodes, dtype=bool)
+        current_node_index=jnp.array(0, jnp.int32)
         state = State(
             adj_matrix=adj_matrix,
             colors=colors,
-            current_node_index=jnp.array(0),
+            current_node_index=current_node_index,
             action_mask=action_mask,
             key=key,
         )
@@ -131,7 +132,7 @@ class GraphColoring(Environment[State]):
             adj_matrix=adj_matrix,
             colors=colors,
             action_mask=action_mask,
-            current_node_index=jnp.array(0),
+            current_node_index=current_node_index,
         )
         timestep = restart(observation=obs)
 
