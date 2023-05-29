@@ -141,6 +141,7 @@ class Rware(Environment[State]):
                 `request_queue_size = 4`.
             time_limit: the maximum step limit allowed within the environment.
                 Defaults to 500.
+            viewer: viewer to render the environment. Defaults to `RwareViewer`.
         """
 
         self._generator = generator or RandomGenerator(
