@@ -116,7 +116,7 @@ class MMST(Environment[State]):
         self,
         generator_fn: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
-        step_limit: int = 100,
+        step_limit: int = 70,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Create the `MMST` environment.
@@ -128,8 +128,8 @@ class MMST(Environment[State]):
                 num_agents=3, num_nodes_per_agent=4, max_step=step_limit)`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`].
-                Defaults to `DenseRewardFn(reward_values=(1.0, -0.03, -0.03))`.
-            step_limit: the number of steps allowed before an episode terminates. Defaults to 50.
+                Defaults to `DenseRewardFn(reward_values=(10.0, -1.0, -1.0))`.
+            step_limit: the number of steps allowed before an episode terminates. Defaults to 70.
             viewer: `Viewer` used for rendering. Defaults to `MMSTViewer`
         """
 
@@ -146,7 +146,7 @@ class MMST(Environment[State]):
         self.num_nodes = self._generator_fn.num_nodes
         self.num_nodes_per_agent = self._generator_fn.num_nodes_per_agent
 
-        self._reward_fn = reward_fn or DenseRewardFn(reward_values=(1.0, -0.03, -0.03))
+        self._reward_fn = reward_fn or DenseRewardFn(reward_values=(10.0, -1.0, -1.0))
 
         self._env_viewer = viewer
         self._step_limit = step_limit

@@ -32,7 +32,7 @@ def test__mmst_dense_rewards(
 ) -> None:
     """Test that the defautl dense reward function works correctly."""
 
-    # Default reward values are (1.0, -0.03, -0.03)
+    # Default reward values are (10.0, -1.0, -1.0)
     # for (connection, no connection, invalid action)
     env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
@@ -47,7 +47,7 @@ def test__mmst_dense_rewards(
     assert next_nodes[1] == INVALID_NODE
 
     state, timestep = step_fn(state, action)
-    expected = jnp.sum(jnp.array([-0.03, -0.06]))
+    expected = jnp.sum(jnp.array([-1.0, -2.0]))
 
     assert jnp.array_equal(timestep.reward, expected)
 
@@ -58,10 +58,10 @@ def test__mmst_dense_rewards(
     state, timestep = step_fn(state, action)
 
     assert new_action[0] == INVALID_ALREADY_TRAVERSED
-    expected = jnp.sum(jnp.array([-0.03, -0.03]))
+    expected = jnp.sum(jnp.array([-1.0, -1.0]))
     assert jnp.array_equal(timestep.reward, expected)
 
     action = jnp.array([0, 8])
     state, timestep = step_fn(state, action)
-    expected = jnp.sum(jnp.array([1.0, 1.0]))
+    expected = jnp.sum(jnp.array([10.0, 10.0]))
     assert jnp.array_equal(timestep.reward, expected)

@@ -7,7 +7,7 @@
 The cooperative minimum spanning tree (mmst) environment consists of a random connected graph
 with groups of nodes (same node types) that needs to be connected.
 The goal of the environment is to connect all nodes of the same type together
-without using the same utility nodes (nodes that do not belong to any group of nodes).
+without using the same utility nodes (nodes that do not belong to any group of nodes) in the shortest time possible.
 
 An episode ends when all group of nodes are connected or the maximum number of steps is reached.
 
@@ -66,11 +66,11 @@ been used by another agent.
 
 
 ## Reward
-An agent recieves a reward of 1.0 every step it gets a valid connection, a reward of -0.03 if it does not
-connect and an extra penalty of -0.03 if choses an invalid action.
+An agent recieves a reward of 10.0 every step it gets a valid connection, a reward of -1.0 if it does not
+connect and an extra penalty of -1.0 if choses an invalid action.
 
 The total step reward is the sum of rewards per agent.
 
 
 ## Registered Versions 📖
-- `MMST-v0`, 3 agents, 36 nodes, 27 edges and 4 nodes to connect per agent.
+- `MMST-v0`, 3 agents, 36 nodes, 72 edges, 4 nodes to connect per agent and step limit of 70.
