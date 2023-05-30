@@ -487,6 +487,7 @@ class Jigsaw(Environment[State]):
             jnp.arange(num_rotations),
             jnp.arange(num_rows),
             jnp.arange(num_cols),
+            indexing="ij",
         )
 
         grid_mask_pieces = self._expand_all_pieces_to_boards(
@@ -500,10 +501,13 @@ class Jigsaw(Environment[State]):
         batch_check_action_is_legal = jax.vmap(
             self._check_action_is_legal, in_axes=(0, None, None, 0)
         )
+
+        all_actions = jnp.stack(
+            (pieces_grid, rotations_grid, rows_grid, cols_grid), axis=-1
+        ).reshape(-1, 4)
+
         legal_actions = batch_check_action_is_legal(
-            jnp.stack(
-                (pieces_grid, rotations_grid, rows_grid, cols_grid), axis=-1
-            ).reshape(-1, 4),
+            all_actions,
             current_board,
             placed_pieces,
             grid_mask_pieces,
