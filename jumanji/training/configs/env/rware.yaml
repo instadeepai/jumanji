@@ -1,5 +1,5 @@
-name: rware
-registered_version: Rware-v0
+name: robot_warehouse
+registered_version: RobotWarehouse-v0
 
 network:
     transformer_num_blocks: 4

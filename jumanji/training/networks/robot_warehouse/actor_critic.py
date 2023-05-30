@@ -19,8 +19,8 @@ import haiku as hk
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments import Rware
-from jumanji.environments.routing.rware.types import Observation
+from jumanji.environments import RobotWarehouse
+from jumanji.environments.routing.robot_warehouse.types import Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -31,27 +31,27 @@ from jumanji.training.networks.parametric_distribution import (
 from jumanji.training.networks.transformer_block import TransformerBlock
 
 
-def make_actor_critic_networks_rware(
-    rware: Rware,
+def make_actor_critic_networks_robot_warehouse(
+    robot_warehouse: RobotWarehouse,
     transformer_num_blocks: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `Rware` environment."""
-    num_values = np.asarray(rware.action_spec().num_values)
+    """Make actor-critic networks for the `RobotWarehouse` environment."""
+    num_values = np.asarray(robot_warehouse.action_spec().num_values)
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
     policy_network = make_actor_network(
-        time_limit=rware.time_limit,
+        time_limit=robot_warehouse.time_limit,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
     )
     value_network = make_critic_network(
-        time_limit=rware.time_limit,
+        time_limit=robot_warehouse.time_limit,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -64,7 +64,7 @@ def make_actor_critic_networks_rware(
     )
 
 
-class RwareTorso(hk.Module):
+class RobotWarehouseTorso(hk.Module):
     def __init__(
         self,
         transformer_num_blocks: int,
@@ -126,7 +126,7 @@ def make_critic_network(
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = RwareTorso(
+        torso = RobotWarehouseTorso(
             transformer_num_blocks,
             transformer_num_heads,
             transformer_key_size,
@@ -152,7 +152,7 @@ def make_actor_network(
     transformer_mlp_units: Sequence[int],
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = RwareTorso(
+        torso = RobotWarehouseTorso(
             transformer_num_blocks,
             transformer_num_heads,
             transformer_key_size,

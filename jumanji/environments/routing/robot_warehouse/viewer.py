@@ -24,7 +24,7 @@ from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
 import jumanji
-from jumanji.environments.routing.rware.types import Direction, State
+from jumanji.environments.routing.robot_warehouse.types import Direction, State
 from jumanji.tree_utils import tree_slice
 from jumanji.viewer import Viewer
 
@@ -51,21 +51,21 @@ _GOAL_COLOR = (60 / 255.0, 60 / 255.0, 60 / 255.0)
 _SHELF_PADDING = 2
 
 
-class RwareViewer(Viewer):
+class RobotWarehouseViewer(Viewer):
     def __init__(
         self,
         grid_size: Tuple[int, int],
         goals: chex.Array,
-        name: str = "Rware",
+        name: str = "RobotWarehouse",
         render_mode: str = "human",
     ) -> None:
-        """Viewer for the Rware environment.
+        """Viewer for the RobotWarehouse environment.
 
         Args:
             grid_size: the size of the warehouse floor grid (width, height)
             goals: x,y coordinates of goal locations (where shelves
                 should be delivered)
-            name: custom name for the Viewer. Defaults to `Rware`.
+            name: custom name for the Viewer. Defaults to `RobotWarehouse`.
         """
         self._name = name
         self.goals = goals
@@ -89,7 +89,7 @@ class RwareViewer(Viewer):
         self._animation: Optional[animation.Animation] = None
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `Rware` environment.
+        """Render the given state of the `RobotWarehouse` environment.
 
         Args:
             state: the environment state to render.

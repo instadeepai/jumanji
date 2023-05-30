@@ -17,14 +17,14 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.rware.types import (
+from jumanji.environments.routing.robot_warehouse.types import (
     Action,
     Agent,
     Position,
     Shelf,
     State,
 )
-from jumanji.environments.routing.rware.utils import (
+from jumanji.environments.routing.robot_warehouse.utils import (
     calculate_num_observation_features,
     compute_action_mask,
     get_agent_view,
@@ -43,8 +43,8 @@ from jumanji.tree_utils import tree_slice
 
 
 @pytest.fixture
-def fake_rware_env_state() -> State:
-    """Create a fake rware environment state."""
+def fake_robot_warehouse_env_state() -> State:
+    """Create a fake robot_warehouse environment state."""
 
     # create agents, shelves and grid
     def make_agent(
@@ -100,9 +100,11 @@ def fake_rware_env_state() -> State:
     return state
 
 
-def test_rware_utils__entity_placement(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__entity_placement(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test entity placement on the warehouse grid floor."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     agents, shelves = state.agents, state.shelves
     empty_grid = jnp.zeros(state.grid.shape, dtype=jnp.int32)
     grid_with_agents_and_shelves = place_entities_on_grid(empty_grid, agents, shelves)
@@ -111,9 +113,11 @@ def test_rware_utils__entity_placement(fake_rware_env_state: State) -> None:
     assert jnp.all(grid_with_agents_and_shelves == state.grid)
 
 
-def test_rware_utils__entity_update(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__entity_update(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test entity attribute (e.g. position, direction etc.) updating."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     agents = state.agents
     shelves = state.shelves
 
@@ -156,9 +160,11 @@ def test_rware_utils__entity_update(fake_rware_env_state: State) -> None:
     assert shelf_0.is_requested == new_is_requested
 
 
-def test_rware_utils__get_new_direction(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__get_new_direction(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test the calculation of the new direction for an agent after turning."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     agents = state.agents
     agent = tree_slice(agents, 0)
     direction = agent.direction  # 2 (facing down)
@@ -179,10 +185,12 @@ def test_rware_utils__get_new_direction(fake_rware_env_state: State) -> None:
         direction = new_direction
 
 
-def test_rware_utils__get_new_position(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__get_new_position(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test the calculation of the new position for an agent after moving
     forward in a specific direction."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     grid = state.grid
     agents = state.agents
     agent = tree_slice(agents, 0)
@@ -202,10 +210,12 @@ def test_rware_utils__get_new_position(fake_rware_env_state: State) -> None:
         assert new_position == expected_position
 
 
-def test_rware_utils__is_collision(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__is_collision(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test the calculation of collisions between agents and other agents as well as
     agents carrying shelves and other shelves."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     grid = state.grid
     agents = state.agents
 
@@ -245,10 +255,12 @@ def test_rware_utils__is_collision(fake_rware_env_state: State) -> None:
     assert bool(collision) is True
 
 
-def test_rware_utils__is_valid_action(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__is_valid_action(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test the calculation of collisions between agents and other agents as well as
     agents carrying shelves and other shelves."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     grid = state.grid
     agents = state.agents
 
@@ -269,10 +281,12 @@ def test_rware_utils__is_valid_action(fake_rware_env_state: State) -> None:
     assert action == Action.NOOP.value
 
 
-def test_rware_utils__get_agent_view(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__get_agent_view(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test extracting the agent's view of other agents and shelves within
     its receptive field as set via a given sensor range."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     grid = jnp.array(
         [
             [
@@ -326,7 +340,7 @@ def test_rware_utils__get_agent_view(fake_rware_env_state: State) -> None:
     assert jnp.array_equal(agent_view_of_shelves, flat_shelves)
 
 
-def test_rware_utils__calculate_num_observation_features() -> None:
+def test_robot_warehouse_utils__calculate_num_observation_features() -> None:
     """Test the calculation of the size of the agent's observation
     vector based on sensor range."""
     sensor_range = 1
@@ -338,12 +352,14 @@ def test_rware_utils__calculate_num_observation_features() -> None:
     assert num_obs_features == 178
 
 
-def test_rware_utils__observation_writer(fake_rware_env_state: State) -> None:
+def test_robot_warehouse_utils__observation_writer(
+    fake_robot_warehouse_env_state: State,
+) -> None:
     """Test observation writer to write data to 1-d observation vector.
     Note that this test does not construct a full observation vector. It
     only tests basic functionality by writing the agent's view of itself
     and does not include writing agent view data from other agents/shelves."""
-    state = fake_rware_env_state
+    state = fake_robot_warehouse_env_state
     agents = state.agents
     agent = tree_slice(agents, 0)
 
@@ -372,8 +388,10 @@ def test_rware_utils__observation_writer(fake_rware_env_state: State) -> None:
     assert idx == 8
 
 
-def test_rware_utils__compute_action_mask(fake_rware_env_state: State) -> None:
-    state = fake_rware_env_state
+def test_robot_warehouse_utils__compute_action_mask(
+    fake_robot_warehouse_env_state: State,
+) -> None:
+    state = fake_robot_warehouse_env_state
     grid = state.grid
     agents = state.agents
 
@@ -390,8 +408,10 @@ def test_rware_utils__compute_action_mask(fake_rware_env_state: State) -> None:
     assert jnp.array_equal(action_mask[1], jnp.array([1, 0, 1, 1, 1]))
 
 
-def test_rware_utils__get_valid_action(fake_rware_env_state: State) -> None:
-    state = fake_rware_env_state
+def test_robot_warehouse_utils__get_valid_action(
+    fake_robot_warehouse_env_state: State,
+) -> None:
+    state = fake_robot_warehouse_env_state
     grid = state.grid
     agents = state.agents
     actions = jnp.array([1, 1])  # forward

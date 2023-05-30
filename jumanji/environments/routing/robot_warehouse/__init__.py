@@ -12,12 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.training.networks.masked_categorical_random import (
-    masked_categorical_random,
-)
-from jumanji.training.networks.protocols import RandomPolicy
-
-
-def make_random_policy_rware() -> RandomPolicy:
-    """Make random policy for Rware."""
-    return masked_categorical_random
+from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
+from jumanji.environments.routing.robot_warehouse.types import Observation, State

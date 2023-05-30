@@ -27,7 +27,7 @@ from jumanji.environments.routing import (
     connector,
     cvrp,
     maze,
-    rware,
+    robot_warehouse,
     snake,
     tsp,
 )
@@ -35,7 +35,7 @@ from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
-from jumanji.environments.routing.rware.env import Rware
+from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
 

@@ -22,9 +22,12 @@ import matplotlib
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.rware import utils
-from jumanji.environments.routing.rware.generator import Generator, RandomGenerator
-from jumanji.environments.routing.rware.types import (
+from jumanji.environments.routing.robot_warehouse import utils
+from jumanji.environments.routing.robot_warehouse.generator import (
+    Generator,
+    RandomGenerator,
+)
+from jumanji.environments.routing.robot_warehouse.types import (
     _SHELVES,
     Action,
     Agent,
@@ -33,13 +36,13 @@ from jumanji.environments.routing.rware.types import (
     Shelf,
     State,
 )
-from jumanji.environments.routing.rware.viewer import RwareViewer
+from jumanji.environments.routing.robot_warehouse.viewer import RobotWarehouseViewer
 from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Rware(Environment[State]):
+class RobotWarehouse(Environment[State]):
     """A JAX implementation of the 'Robotic warehouse' environment:
     https://github.com/semitable/robotic-warehouse
     which is described in the paper [1].
@@ -105,14 +108,15 @@ class Rware(Environment[State]):
         - shelves: a pytree of Shelf type with per shelf leaves: [position, is_requested]
         - request_queue: the queue of requested shelves (by ID).
         - step_count: an integer representing the current step of the episode.
+        - action_mask: an array of shape (num_agents, 5) containing the valid actions for each agent.
         - key: a pseudorandom number generator key.
 
     [1] Papoudakis et al., Benchmarking Multi-Agent Deep Reinforcement Learning Algorithms
         in Cooperative Tasks (2021)
 
     ```python
-    from jumanji.environments import Rware
-    env = Rware()
+    from jumanji.environments import RobotWarehouse
+    env = RobotWarehouse()
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
@@ -128,7 +132,7 @@ class Rware(Environment[State]):
         time_limit: int = 500,
         viewer: Optional[Viewer[State]] = None,
     ):
-        """Instantiates an `Rware` environment.
+        """Instantiates an `RobotWarehouse` environment.
 
         Args:
             generator: callable to instantiate environment instances.
@@ -141,10 +145,10 @@ class Rware(Environment[State]):
                 `request_queue_size = 4`.
             time_limit: the maximum step limit allowed within the environment.
                 Defaults to 500.
-            viewer: viewer to render the environment. Defaults to `RwareViewer`.
+            viewer: viewer to render the environment. Defaults to `RobotWarehouseViewer`.
         """
 
-        # default generator is: rware-tiny-4ag-easy (in original implementation)
+        # default generator is: robot_warehouse-tiny-4ag-easy (in original implementation)
         self._generator = generator or RandomGenerator(
             column_height=8,
             shelf_rows=2,
@@ -173,11 +177,13 @@ class Rware(Environment[State]):
         self.time_limit = time_limit
 
         # create viewer for rendering environment
-        self._viewer = viewer or RwareViewer(self.grid_size, self.goals, "Rware")
+        self._viewer = viewer or RobotWarehouseViewer(
+            self.grid_size, self.goals, "RobotWarehouse"
+        )
 
     def __repr__(self) -> str:
         return (
-            f"Rware(\n"
+            f"RobotWarehouse(\n"
             f"\tgrid_width={self.grid_size[1]!r},\n"
             f"\tgrid_height={self.grid_size[0]!r},\n"
             f"\tnum_agents={self.num_agents!r}, \n"
@@ -321,7 +327,7 @@ class Rware(Environment[State]):
         return next_state, timestep
 
     def observation_spec(self) -> specs.Spec[Observation]:
-        """Specification of the observation of the `Rware` environment.
+        """Specification of the observation of the `RobotWarehouse` environment.
         Returns:
             Spec for the `Observation`, consisting of the fields:
                 - agents_view: Array (int32) of shape (num_agents, num_obs_features).
@@ -492,7 +498,7 @@ class Rware(Environment[State]):
         return key, reward, request_queue, shelves
 
     def render(self, state: State) -> Optional[chex.Array]:
-        """Renders the current state of the Rware environment.
+        """Renders the current state of the RobotWarehouse environment.
 
         Args:
             state: is the current environment state to be rendered.
@@ -507,7 +513,7 @@ class Rware(Environment[State]):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
-        """Creates an animation from a sequence of Rware states.
+        """Creates an animation from a sequence of RobotWarehouse states.
 
         Args:
             states: sequence of `State` corresponding to subsequent timesteps.

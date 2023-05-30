@@ -19,28 +19,28 @@ import jax
 import jax.numpy as jnp
 from jax import random
 
-from jumanji.environments.routing.rware.env import Rware
-from jumanji.environments.routing.rware.types import State
+from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
+from jumanji.environments.routing.robot_warehouse.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep
 
 
-def test_rware__specs(rware_env: Rware) -> None:
+def test_robot_warehouse__specs(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate environment specs conform to the expected shapes and values"""
-    action_spec = rware_env.action_spec()
-    observation_spec = rware_env.observation_spec()
+    action_spec = robot_warehouse_env.action_spec()
+    observation_spec = robot_warehouse_env.observation_spec()
 
     assert observation_spec.agents_view.shape == (2, 66)  # type: ignore
-    assert action_spec.num_values.shape[0] == rware_env.num_agents
+    assert action_spec.num_values.shape[0] == robot_warehouse_env.num_agents
     assert action_spec.num_values[0] == 5
 
 
-def test_rware__reset(rware_env: Rware) -> None:
+def test_robot_warehouse__reset(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate the jitted reset of the environment."""
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(rware_env.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(robot_warehouse_env.reset, n=1))
 
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
     state1, timestep1 = reset_fn(key1)
@@ -49,7 +49,7 @@ def test_rware__reset(rware_env: Rware) -> None:
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step_count == 0
-    assert state1.grid.shape == (2, *rware_env.grid_size)
+    assert state1.grid.shape == (2, *robot_warehouse_env.grid_size)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # reset function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(state1)
@@ -59,11 +59,11 @@ def test_rware__reset(rware_env: Rware) -> None:
     assert state1.step_count == state2.step_count
 
 
-def test_rware__agent_observation(
-    deterministic_rware_env: Tuple[Rware, State, TimeStep]
+def test_robot_warehouse__agent_observation(
+    deterministic_robot_warehouse_env: Tuple[RobotWarehouse, State, TimeStep]
 ) -> None:
     """Validate the agent observation function."""
-    env, state, timestep = deterministic_rware_env
+    env, state, timestep = deterministic_robot_warehouse_env
     state, timestep = env.step(state, jnp.array([0, 0]))
 
     # agent 1 obs
@@ -88,15 +88,15 @@ def test_rware__agent_observation(
     assert jnp.all(timestep.observation.agents_view[1] == agent2_obs)
 
 
-def test_rware__step(rware_env: Rware) -> None:
+def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate the jitted step function of the environment."""
     chex.clear_trace_counter()
 
-    step_fn = chex.assert_max_traces(rware_env.step, n=1)
+    step_fn = chex.assert_max_traces(robot_warehouse_env.step, n=1)
     step_fn = jax.jit(step_fn)
 
     state_key, action_key1, action_key2 = random.split(random.PRNGKey(10), 3)
-    state, timestep = rware_env.reset(state_key)
+    state, timestep = robot_warehouse_env.reset(state_key)
 
     # Sample two different actions
     action1, action2 = random.choice(
@@ -106,8 +106,8 @@ def test_rware__step(rware_env: Rware) -> None:
         replace=False,
     )
 
-    action1 = jnp.zeros((rware_env.num_agents,), int).at[0].set(action1)
-    action2 = jnp.zeros((rware_env.num_agents,), int).at[0].set(action2)
+    action1 = jnp.zeros((robot_warehouse_env.num_agents,), int).at[0].set(action1)
+    action2 = jnp.zeros((robot_warehouse_env.num_agents,), int).at[0].set(action2)
 
     new_state1, timestep1 = step_fn(state, action1)
 
@@ -161,19 +161,19 @@ def test_rware__step(rware_env: Rware) -> None:
         assert agent1_loc == new_loc
 
 
-def test_rware__does_not_smoke(rware_env: Rware) -> None:
+def test_robot_warehouse__does_not_smoke(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate that we can run an episode without any errors."""
-    check_env_does_not_smoke(rware_env)
+    check_env_does_not_smoke(robot_warehouse_env)
 
 
-def test_rware__time_limit(rware_env: Rware) -> None:
+def test_robot_warehouse__time_limit(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate the terminal reward."""
-    step_fn = jax.jit(rware_env.step)
+    step_fn = jax.jit(robot_warehouse_env.step)
     state_key = random.PRNGKey(10)
-    state, timestep = rware_env.reset(state_key)
+    state, timestep = robot_warehouse_env.reset(state_key)
     assert timestep.first()
 
-    for _ in range(rware_env.time_limit - 1):
+    for _ in range(robot_warehouse_env.time_limit - 1):
         state, timestep = step_fn(state, jnp.array([0, 0]))
 
     assert timestep.mid()
@@ -181,15 +181,15 @@ def test_rware__time_limit(rware_env: Rware) -> None:
     assert timestep.last()
 
 
-def test_rware__truncation(
-    deterministic_rware_env: Tuple[Rware, State, TimeStep]
+def test_robot_warehouse__truncation(
+    deterministic_robot_warehouse_env: Tuple[RobotWarehouse, State, TimeStep]
 ) -> None:
     """Validate episode truncation based on set time limit."""
-    rware_env, state, timestep = deterministic_rware_env
-    step_fn = jax.jit(rware_env.step)
+    robot_warehouse_env, state, timestep = deterministic_robot_warehouse_env
+    step_fn = jax.jit(robot_warehouse_env.step)
 
     # truncation
-    for _ in range(rware_env.time_limit):
+    for _ in range(robot_warehouse_env.time_limit):
         state, timestep = step_fn(state, jnp.array([0, 0]))
 
     assert timestep.last()
@@ -199,12 +199,12 @@ def test_rware__truncation(
     # assert not jnp.all(timestep.discount == 0)
 
 
-def test_rware__truncate_upon_collision(
-    deterministic_rware_env: Tuple[Rware, State, TimeStep]
+def test_robot_warehouse__truncate_upon_collision(
+    deterministic_robot_warehouse_env: Tuple[RobotWarehouse, State, TimeStep]
 ) -> None:
     """Validate episode terminates upon collision of agents."""
-    rware_env, state, timestep = deterministic_rware_env
-    step_fn = jax.jit(rware_env.step)
+    robot_warehouse_env, state, timestep = deterministic_robot_warehouse_env
+    step_fn = jax.jit(robot_warehouse_env.step)
 
     # actions for agent 1 to collide with agent 2
     actions = [3, 1, 1, 3, 1, 1, 1]

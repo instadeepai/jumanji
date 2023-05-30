@@ -19,12 +19,12 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.rware import utils
-from jumanji.environments.routing.rware.types import State
+from jumanji.environments.routing.robot_warehouse import utils
+from jumanji.environments.routing.robot_warehouse.types import State
 
 
 class Generator(abc.ABC):
-    """Base class for generators for the Rware environment."""
+    """Base class for generators for the RobotWarehouse environment."""
 
     def __init__(
         self,
@@ -35,7 +35,8 @@ class Generator(abc.ABC):
         sensor_range: int,
         request_queue_size: int,
     ) -> None:
-        """Initialises an rware generator, used to generate grids for the Rware environment.
+        """Initialises an robot_warehouse generator, used to generate grids for
+        the RobotWarehouse environment.
 
         Args:
             shelf_rows: the number of shelf cluster rows, each of height = column_height.
@@ -158,14 +159,14 @@ class Generator(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates an `Rware` state.
+        """Generates an `RobotWarehouse` state.
         Returns:
-            An `Rware` state.
+            An `RobotWarehouse` state.
         """
 
 
 class RandomGenerator(Generator):
-    """Randomly generates `Rware` environment state. This generator places agents at
+    """Randomly generates `RobotWarehouse` environment state. This generator places agents at
     starting positions on the grid and selects the requested shelves uniformly at random.
     """
 
@@ -178,7 +179,7 @@ class RandomGenerator(Generator):
         sensor_range: int,
         request_queue_size: int,
     ) -> None:
-        """Initialises an rware generator, used to generate grids for the Rware environment."""
+        """Initialises an robot_warehouse generator, used to generate grids for the RobotWarehouse environment."""
         super().__init__(
             shelf_rows,
             shelf_columns,
@@ -189,10 +190,10 @@ class RandomGenerator(Generator):
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates an `Rware` state that contains the grid and the agents/shelves layout.
+        """Generates an `RobotWarehouse` state that contains the grid and the agents/shelves layout.
 
         Returns:
-            An `Rware` state.
+            An `RobotWarehouse` state.
         """
         # empty grid array
         grid = jnp.zeros((2, *self._grid_size), dtype=jnp.int32)

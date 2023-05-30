@@ -1,7 +1,7 @@
-# Rware Environment
+# RobotWarehouse Environment
 
 <p align="center">
-        <img src="../env_anim/rware.gif" width="600"/>
+        <img src="../env_anim/robot_warehouse.gif" width="600"/>
 </p>
 
 We provide a JAX jit-able implementation of the [Robotic Warehouse](https://github.com/semitable/robotic-warehouse/tree/master)
@@ -43,4 +43,4 @@ delivered successfully during the time step (i.e., +1 for each shelf).
 
 ## Registered Versions 📖
 
-- `Rware-v0`, a warehouse with 2 agents each with a sensor range of 1, a warehouse floor with 1 shelf row, 3 shelf columns, a column height of 8 and a shelf request queue of 4.
+- `RobotWarehouse-v0`, a warehouse with 2 agents each with a sensor range of 1, a warehouse floor with 1 shelf row, 3 shelf columns, a column height of 8 and a shelf request queue of 4.

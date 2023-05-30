@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.rware.env.Rware
+::: jumanji.environments.routing.robot_warehouse.env.RobotWarehouse
     selection:
       members:
         - __init__

@@ -19,7 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.rware.types import (
+from jumanji.environments.routing.robot_warehouse.types import (
     _AGENTS,
     _SHELVES,
     Action,

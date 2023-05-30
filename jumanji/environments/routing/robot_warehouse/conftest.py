@@ -18,15 +18,20 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.rware import Rware
-from jumanji.environments.routing.rware.generator import RandomGenerator
-from jumanji.environments.routing.rware.types import Agent, Position, Shelf, State
+from jumanji.environments.routing.robot_warehouse import RobotWarehouse
+from jumanji.environments.routing.robot_warehouse.generator import RandomGenerator
+from jumanji.environments.routing.robot_warehouse.types import (
+    Agent,
+    Position,
+    Shelf,
+    State,
+)
 from jumanji.types import TimeStep
 
 
 @pytest.fixture(scope="module")
-def rware_env() -> Rware:
-    """Instantiates a default Rware environment with 2 agents, 1 shelf row, 3 shelf columns,
+def robot_warehouse_env() -> RobotWarehouse:
+    """Instantiates a default RobotWarehouse environment with 2 agents, 1 shelf row, 3 shelf columns,
     a column height of 2, sensor range of 1 and a request queue size of 4."""
     generator = RandomGenerator(
         shelf_rows=1,
@@ -37,7 +42,7 @@ def rware_env() -> Rware:
         request_queue_size=4,
     )
 
-    env = Rware(
+    env = RobotWarehouse(
         generator=generator,
         time_limit=5,
     )
@@ -45,9 +50,12 @@ def rware_env() -> Rware:
 
 
 @pytest.fixture
-def deterministic_rware_env(rware_env: Rware) -> Tuple[Rware, State, TimeStep]:
-    """Instantiates a Rware environment with 2 agents and 8 shelves with a step limit of 5."""
-    state, timestep = rware_env.reset(jax.random.PRNGKey(42))
+def deterministic_robot_warehouse_env(
+    robot_warehouse_env: RobotWarehouse,
+) -> Tuple[RobotWarehouse, State, TimeStep]:
+    """Instantiates a RobotWarehouse environment with 2 agents and 8 shelves
+    with a step limit of 5."""
+    state, timestep = robot_warehouse_env.reset(jax.random.PRNGKey(42))
 
     # create agents, shelves and grid
     def make_agent(x: int, y: int, direction: int, is_carrying: int) -> Agent:
@@ -88,4 +96,4 @@ def deterministic_rware_env(rware_env: Rware) -> Tuple[Rware, State, TimeStep]:
             ],
         ]
     )
-    return rware_env, state, timestep
+    return robot_warehouse_env, state, timestep

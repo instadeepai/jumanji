@@ -48,14 +48,16 @@ from jumanji.training.networks.minesweeper.actor_critic import (
     make_actor_critic_networks_minesweeper,
 )
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
+from jumanji.training.networks.robot_warehouse.actor_critic import (
+    make_actor_critic_networks_robot_warehouse,
+)
+from jumanji.training.networks.robot_warehouse.random import (
+    make_random_policy_robot_warehouse,
+)
 from jumanji.training.networks.rubiks_cube.actor_critic import (
     make_actor_critic_networks_rubiks_cube,
 )
 from jumanji.training.networks.rubiks_cube.random import make_random_policy_rubiks_cube
-from jumanji.training.networks.rware.actor_critic import (
-    make_actor_critic_networks_rware,
-)
-from jumanji.training.networks.rware.random import make_random_policy_rware
 from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,
 )

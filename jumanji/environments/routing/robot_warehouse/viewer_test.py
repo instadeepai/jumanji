@@ -20,61 +20,63 @@ import numpy as jnp
 import py
 import pytest
 
-from jumanji.environments.routing.rware import Rware
-from jumanji.environments.routing.rware.viewer import RwareViewer
+from jumanji.environments.routing.robot_warehouse import RobotWarehouse
+from jumanji.environments.routing.robot_warehouse.viewer import RobotWarehouseViewer
 
 
-def test_rware_viewer__render(
-    rware_env: Rware, monkeypatch: pytest.MonkeyPatch
+def test_robot_warehouse_viewer__render(
+    robot_warehouse_env: RobotWarehouse, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(plt, "show", lambda fig: None)
     key = random.PRNGKey(0)
-    state, _ = rware_env.reset(key)
-    grid_size = rware_env._generator.grid_size
-    goals = rware_env._generator.goals
+    state, _ = robot_warehouse_env.reset(key)
+    grid_size = robot_warehouse_env._generator.grid_size
+    goals = robot_warehouse_env._generator.goals
 
-    viewer = RwareViewer(grid_size, goals)
+    viewer = RobotWarehouseViewer(grid_size, goals)
     viewer.render(state)
     viewer.close()
 
 
-def test_rware_viewer__animate(rware_env: Rware) -> None:
+def test_robot_warehouse_viewer__animate(robot_warehouse_env: RobotWarehouse) -> None:
     key = random.PRNGKey(0)
-    state, _ = jax.jit(rware_env.reset)(key)
-    grid_size = rware_env._generator.grid_size
-    goals = rware_env._generator.goals
+    state, _ = jax.jit(robot_warehouse_env.reset)(key)
+    grid_size = robot_warehouse_env._generator.grid_size
+    goals = robot_warehouse_env._generator.goals
 
     num_steps = 5
     states = [state]
     for _ in range(num_steps - 1):
         key, subkey = jax.random.split(key)
         action = jax.random.choice(subkey, jnp.arange(5), shape=(2,))
-        state, _ = jax.jit(rware_env.step)(state, action)
+        state, _ = jax.jit(robot_warehouse_env.step)(state, action)
         states.append(state)
 
-    viewer = RwareViewer(grid_size, goals)
+    viewer = RobotWarehouseViewer(grid_size, goals)
     viewer.animate(states)
     viewer.close()
 
 
-def test_rware_viewer__save_animation(rware_env: Rware, tmpdir: py.path.local) -> None:
+def test_robot_warehouse_viewer__save_animation(
+    robot_warehouse_env: RobotWarehouse, tmpdir: py.path.local
+) -> None:
     key = random.PRNGKey(0)
-    state, _ = jax.jit(rware_env.reset)(key)
-    grid_size = rware_env._generator.grid_size
-    goals = rware_env._generator.goals
+    state, _ = jax.jit(robot_warehouse_env.reset)(key)
+    grid_size = robot_warehouse_env._generator.grid_size
+    goals = robot_warehouse_env._generator.goals
 
     num_steps = 5
     states = [state]
     for _ in range(num_steps - 1):
         key, subkey = jax.random.split(key)
         action = jax.random.choice(subkey, jnp.arange(5), shape=(2,))
-        state, _ = jax.jit(rware_env.step)(state, action)
+        state, _ = jax.jit(robot_warehouse_env.step)(state, action)
         states.append(state)
 
-    viewer = RwareViewer(grid_size, goals)
+    viewer = RobotWarehouseViewer(grid_size, goals)
     animation = viewer.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)
 
-    save_path = str(tmpdir.join("/rware_animation_test.gif"))
+    save_path = str(tmpdir.join("/robot_warehouse_animation_test.gif"))
     animation.save(save_path)
     viewer.close()
