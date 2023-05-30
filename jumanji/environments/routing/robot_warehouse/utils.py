@@ -13,25 +13,19 @@
 # limitations under the License.
 
 import functools
-from typing import Tuple, Union
+from typing import Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.robot_warehouse.constants import (
-    _AGENTS,
-    _POSSIBLE_DIRECTIONS,
-    _SHELVES,
+from jumanji.environments.routing.robot_warehouse.constants import _AGENTS, _SHELVES
+from jumanji.environments.routing.robot_warehouse.types import Action, Agent, Entity
+from jumanji.environments.routing.robot_warehouse.utils_agent import (
+    get_agent_view,
+    get_new_position_after_forward,
 )
-from jumanji.environments.routing.robot_warehouse.types import (
-    Action,
-    Agent,
-    Entity,
-    Position,
-    Shelf,
-)
-from jumanji.tree_utils import tree_add_element, tree_slice
+from jumanji.tree_utils import tree_slice
 
 
 def get_entity_ids(entities: Entity) -> chex.Array:
@@ -44,259 +38,6 @@ def get_entity_ids(entities: Entity) -> chex.Array:
         an array of ids.
     """
     return jnp.arange(entities[1].shape[0])
-
-
-def spawn_agent(
-    agent_coordinates: chex.Array,
-    direction: chex.Array,
-) -> chex.Array:
-    """Spawn an agent (robot) at a given position and direction.
-
-    Args:
-        agent_coordinates: x, y coordinates of the agent.
-        direction: direction of the agent.
-
-    Returns:
-        spawned agent.
-    """
-    x, y = agent_coordinates
-    agent_pos = Position(x=x, y=y)
-    agent = Agent(position=agent_pos, direction=direction, is_carrying=0)
-    return agent
-
-
-def spawn_shelf(
-    shelf_coordinates: chex.Array,
-    requested: chex.Array,
-) -> chex.Array:
-    """Spawn a shelf at a specific shelf position and label the shelf
-    as requested or not.
-
-    Args:
-        shelf_coordinates: x, y coordinates of the shelf.
-        requested: whether the shelf has been requested or not.
-
-    Returns:
-        spawned shelf.
-    """
-    x, y = shelf_coordinates
-    shelf_pos = Position(x=x, y=y)
-    shelf = Shelf(position=shelf_pos, is_requested=requested)
-    return shelf
-
-
-def spawn_random_entities(
-    key: chex.PRNGKey,
-    grid_size: chex.Array,
-    agent_ids: chex.Array,
-    shelf_ids: chex.Array,
-    shelf_coordinates: chex.Array,
-    request_queue_size: chex.Array,
-) -> Tuple[chex.PRNGKey, Agent, Shelf, chex.Array]:
-    """Spawn agents and shelves on the warehouse floor grid.
-
-    Args:
-        key: pseudo random number key.
-        grid_size: the size of the warehouse floor grid.
-        agent_ids: array of agent ids.
-        shelf_ids: array of shelf ids.
-        shelf_coordinates: x,y coordinates of shelf positions.
-        request_queue_size: the number of shelves to be delivered.
-
-    Returns:
-        new key, spawned agents, shelves and the request queue.
-    """
-
-    # random agent positions
-    num_agents = len(agent_ids)
-    key, position_key = jax.random.split(key)
-    grid_cells = jnp.array(jnp.arange(grid_size[0] * grid_size[1]))
-    agent_coords = jax.random.choice(
-        position_key,
-        grid_cells,
-        shape=(num_agents,),
-        replace=False,
-    )
-    agent_coords = jnp.transpose(
-        jnp.asarray(jnp.unravel_index(agent_coords, grid_size))
-    )
-
-    # random agent directions
-    key, direction_key = jax.random.split(key)
-
-    agent_dirs = jax.random.choice(
-        direction_key, _POSSIBLE_DIRECTIONS, shape=(num_agents,)
-    )
-
-    # sample request queue
-    key, queue_key = jax.random.split(key)
-    shelf_request_queue = jax.random.choice(
-        queue_key,
-        shelf_ids,
-        shape=(request_queue_size,),
-        replace=False,
-    )
-    requested_ids = jnp.zeros(shelf_ids.shape)
-    requested_ids = requested_ids.at[shelf_request_queue].set(1)
-
-    # spawn agents and shelves
-    agents = jax.vmap(spawn_agent)(agent_coords, agent_dirs)
-    shelves = jax.vmap(spawn_shelf)(shelf_coordinates, requested_ids)
-    return key, agents, shelves, shelf_request_queue
-
-
-def place_entity_on_grid(
-    grid: chex.Array,
-    channel: chex.Array,
-    entities: Entity,
-    entity_id: chex.Array,
-) -> chex.Array:
-    """Places an entity (Agent/Shelf) on the grid based on its
-    (x, y) position defined once spawned.
-
-    Args:
-        grid: the warehouse floor grid array.
-        channel: the grid channel index, either agents or shelves.
-        entities: a pytree of Agent or Shelf type containing entity information.
-        entity_id: unique ID identifying a specific entity.
-
-    Returns:
-        the warehouse grid with the specific entity in its position.
-    """
-    entity = tree_slice(entities, entity_id)
-    x, y = entity.position.x, entity.position.y
-    return grid.at[channel, x, y].set(entity_id + 1)
-
-
-def place_entities_on_grid(
-    grid: chex.Array, agents: Agent, shelves: Shelf
-) -> chex.Array:
-    """Place agents and shelves on the grid.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of Agent type containing agent information.
-        shelves: a pytree of Shelf type containing shelf information.
-
-    Returns:
-        the warehouse grid with all agents and shelves placed in their
-        positions.
-    """
-    agent_ids = get_entity_ids(agents)
-    shelf_ids = get_entity_ids(shelves)
-
-    # place agents and shelves on warehouse grid
-    def place_agents_scan(
-        grid_and_agents: Tuple[chex.Array, chex.Array], agent_id: chex.Array
-    ) -> Tuple[Tuple[chex.Array, chex.Array], None]:
-        grid, agents = grid_and_agents
-        grid = place_entity_on_grid(grid, _AGENTS, agents, agent_id)
-        return (grid, agents), None
-
-    def place_shelves_scan(
-        grid_and_shelves: Tuple[chex.Array, chex.Array], shelf_id: chex.Array
-    ) -> Tuple[Tuple[chex.Array, chex.Array], None]:
-        grid, shelves = grid_and_shelves
-        grid = place_entity_on_grid(grid, _SHELVES, shelves, shelf_id)
-        return (grid, shelves), None
-
-    (grid, _), _ = jax.lax.scan(place_agents_scan, (grid, agents), agent_ids)
-    (grid, _), _ = jax.lax.scan(place_shelves_scan, (grid, shelves), shelf_ids)
-    return grid
-
-
-def update_agent(
-    agents: Agent,
-    agent_id: chex.Array,
-    attr: str,
-    value: Union[chex.Array, Position],
-) -> Agent:
-    """Update the attribute information of a specific agent.
-
-    Args:
-        agents: a pytree of either Agent type containing agent information.
-        agent_id: unique ID identifying a specific agent.
-        attr: the attribute to update, e.g. `direction`, or `is_requested`.
-        value: the new value to which the attribute is to be set.
-
-    Returns:
-        the agent with the specified attribute updated to the given value.
-    """
-    params = {attr: value}
-    agent = tree_slice(agents, agent_id)
-    agent = agent._replace(**params)
-    agents: Agent = tree_add_element(agents, agent_id, agent)
-    return agents
-
-
-def update_shelf(
-    shelves: Shelf,
-    shelf_id: chex.Array,
-    attr: str,
-    value: Union[chex.Array, Position],
-) -> Shelf:
-    """Update the attribute information of a specific shelf.
-
-    Args:
-        shelves: a pytree of Shelf type containing shelf information.
-        shelf_id: unique ID identifying a specific shelf.
-        attr: the attribute to update, e.g. `direction`, or `is_requested`.
-        value: the new value to which the attribute is to be set.
-
-    Returns:
-        the shelf with the specified attribute updated to the given value.
-    """
-    params = {attr: value}
-    shelf = tree_slice(shelves, shelf_id)
-    shelf = shelf._replace(**params)
-    shelves: Shelf = tree_add_element(shelves, shelf_id, shelf)
-    return shelves
-
-
-def get_new_direction_after_turn(
-    action: chex.Array, agent_direction: chex.Array
-) -> chex.Array:
-    """Get the correct direction the agent should face given
-    the turn action it took. E.g. if the agent is facing LEFT
-    and turns RIGHT it should now be facing UP, etc.
-
-    Args:
-        action: the agent's action.
-        agent_direction: the agent's current direction.
-
-    Returns:
-        the direction the agent should be facing given the action it took.
-    """
-    change_in_direction = jnp.array([0, 0, -1, 1, 0])[action]
-    return (agent_direction + change_in_direction) % 4
-
-
-def get_new_position_after_forward(
-    grid: chex.Array, agent_position: chex.Array, agent_direction: chex.Array
-) -> Position:
-    """Get the correct position the agent will be in after moving forward
-    in its current direction. E.g. if the agent is facing LEFT and turns
-    RIGHT it should stay in the same position. If instead it moves FORWARD
-    it should move left by one cell.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agent_position: the agent's current position.
-        agent_direction: the agent's current direction.
-
-    Returns:
-        the position the agent should be in given the action it took.
-    """
-    _, grid_width, grid_height = grid.shape
-    x, y = agent_position.x, agent_position.y
-    move_up = lambda x, y: Position(jnp.max(jnp.array([0, x - 1])), y)
-    move_right = lambda x, y: Position(x, jnp.min(jnp.array([grid_height - 1, y + 1])))
-    move_down = lambda x, y: Position(jnp.min(jnp.array([grid_width - 1, x + 1])), y)
-    move_left = lambda x, y: Position(x, jnp.max(jnp.array([0, y - 1])))
-    new_position: Position = jax.lax.switch(
-        agent_direction, [move_up, move_right, move_down, move_left], x, y
-    )
-    return new_position
 
 
 def is_valid_action(grid: chex.Array, agent: Agent, action: chex.Array) -> chex.Array:
@@ -446,60 +187,6 @@ def move_writer_index(idx: chex.Array, bits: chex.Array) -> chex.Array:
     return idx + bits
 
 
-def get_agent_view(
-    grid: chex.Array, agent: chex.Array, sensor_range: chex.Array
-) -> Tuple[chex.Array, chex.Array]:
-    """Get an agent's view of other agents and shelves within its
-    sensor range.
-
-    Below is an example of the agent's view of other agents from
-    the perspective of agent 1 with a sensor range of 1:
-
-                            0, 0, 0
-                            0, 1, 2
-                            0, 0, 0
-
-    It sees agent 2 to its right. Separately, the view of shelves
-    is shown below:
-
-                            0, 0, 0
-                            0, 3, 4
-                            0, 7, 8
-
-    Agent 1 is on top of shelf 3 and has 4, 7 and 8 around it in
-    the bottom right corner of its view. Before returning these
-    views they are flattened into a 1-d arrays, i.e.
-
-    View of agents: [0, 0, 0, 0, 1, 2, 0, 0, 0]
-    View of shelves: [0, 0, 0, 0, 3, 4, 0, 7, 8]
-
-
-    Args:
-        grid: the warehouse floor grid array.
-        agent: the agent for which the view of their receptive field
-            is to be calculated.
-        sensor_range: the range of the agent's sensors.
-
-    Returns:
-        a view of the agents receptive field separated into two arrays:
-        one for other agents and one for shelves.
-    """
-    receptive_field = sensor_range * 2 + 1
-    padded_agents_layer = jnp.pad(grid[_AGENTS], sensor_range, mode="constant")
-    padded_shelves_layer = jnp.pad(grid[_SHELVES], sensor_range, mode="constant")
-    agent_view_of_agents = jax.lax.dynamic_slice(
-        padded_agents_layer,
-        (agent.position.x, agent.position.y),
-        (receptive_field, receptive_field),
-    ).reshape(-1)
-    agent_view_of_shelves = jax.lax.dynamic_slice(
-        padded_shelves_layer,
-        (agent.position.x, agent.position.y),
-        (receptive_field, receptive_field),
-    ).reshape(-1)
-    return agent_view_of_agents, agent_view_of_shelves
-
-
 def make_agent_observation(
     grid: chex.Array,
     agents: chex.Array,
@@ -596,19 +283,19 @@ def make_agent_observation(
         of other agents.
         """
         obs, idx, agent_id = obs_idx_and_agent_id
-        cond1 = jnp.equal(agent_sensor, agent_id + 1)
-        cond2 = jnp.logical_or(
+        sensor_check_for_self = jnp.equal(agent_sensor, agent_id + 1)
+        sensor_check_for_self_or_no_other = jnp.logical_or(
             jnp.equal(agent_sensor, 0),
-            cond1,
+            sensor_check_for_self,
         )
         obs, idx = jax.lax.cond(
-            cond2,
+            sensor_check_for_self_or_no_other,
             write_no_agent,
             write_agent,
             obs,
             idx,
             agent_sensor,
-            cond1,
+            sensor_check_for_self,
         )
         return (obs, idx, agent_id), None
 
@@ -634,213 +321,6 @@ def make_agent_observation(
     )
     (obs, _), _ = jax.lax.scan(shelf_sensor_scan, (obs, idx), shelves_grid)
     return obs
-
-
-def set_agent_carrying_if_at_shelf_position(
-    grid: chex.Array, agents: chex.Array, agent_id: int, is_highway: chex.Array
-) -> chex.Array:
-    """Set the agent as carrying a shelf if it is at a shelf position.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated agents pytree.
-    """
-    agent = tree_slice(agents, agent_id)
-    shelf_id = grid[_SHELVES, agent.position.x, agent.position.y]
-
-    return jax.lax.cond(
-        shelf_id > 0,
-        lambda: update_agent(agents, agent_id, "is_carrying", 1),
-        lambda: agents,
-    )
-
-
-def offload_shelf_if_position_is_open(
-    grid: chex.Array, agents: chex.Array, agent_id: int, is_highway: chex.Array
-) -> chex.Array:
-    """Set the agent as not carrying a shelf if it is at a shelf position.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated agents pytree.
-    """
-    return jax.lax.cond(
-        jnp.logical_not(is_highway),
-        lambda: update_agent(agents, agent_id, "is_carrying", 0),
-        lambda: agents,
-    )
-
-
-def set_carrying_shelf_if_load_toggled_and_not_carrying(
-    grid: chex.Array,
-    agents: chex.Array,
-    action: int,
-    agent_id: int,
-    is_highway: chex.Array,
-) -> chex.Array:
-    """Set the agent as carrying a shelf if the load toggle action is
-    performed and the agent is not carrying a shelf.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        action: the agent's action.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated agents pytree.
-    """
-    agent = tree_slice(agents, agent_id)
-
-    agents = jax.lax.cond(
-        (action == Action.TOGGLE_LOAD.value) & ~agent.is_carrying,
-        set_agent_carrying_if_at_shelf_position,
-        offload_shelf_if_position_is_open,
-        grid,
-        agents,
-        agent_id,
-        is_highway,
-    )
-    return agents
-
-
-def rotate_agent(
-    grid: chex.Array,
-    agents: chex.Array,
-    action: int,
-    agent_id: int,
-    is_highway: chex.Array,
-) -> chex.Array:
-    """Rotate the agent in the direction of the action.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        action: the agent's action.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated agents pytree.
-    """
-    agent = tree_slice(agents, agent_id)
-    new_direction = get_new_direction_after_turn(action, agent.direction)
-    return update_agent(agents, agent_id, "direction", new_direction)
-
-
-def set_new_shelf_position_if_carrying(
-    grid: chex.Array,
-    shelves: chex.Array,
-    cur_pos: chex.Array,
-    new_pos: chex.Array,
-) -> Tuple[chex.Array, chex.Array]:
-    """Set the new position of the shelf if the agent is carrying one.
-
-    Args:
-        grid: the warehouse floor grid array.
-        shelves: a pytree of Shelf type containing shelf information.
-        cur_pos: the current position of the shelf.
-        new_pos: the new position of the shelf.
-
-    Returns:
-        updated grid array and shelves pytree.
-    """
-    # update shelf position
-    shelf_id = grid[_SHELVES, cur_pos.x, cur_pos.y]
-    shelves = update_shelf(shelves, shelf_id - 1, "position", new_pos)
-
-    # update shelf grid placement
-    grid = grid.at[_SHELVES, cur_pos.x, cur_pos.y].set(0)
-    grid = grid.at[_SHELVES, new_pos.x, new_pos.y].set(shelf_id)
-    return grid, shelves
-
-
-def set_new_position_after_forward(
-    grid: chex.Array,
-    agents: chex.Array,
-    shelves: chex.Array,
-    action: int,
-    agent_id: int,
-    is_highway: chex.Array,
-) -> Tuple[chex.Array, chex.Array, chex.Array]:
-    """Set the new position of the agent after a forward action.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        shelves: a pytree of Shelf type containing shelf information.
-        action: the agent's action.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated grid array, agents and shelves pytrees.
-    """
-    # update agent position
-    agent = tree_slice(agents, agent_id)
-    current_position = agent.position
-    new_position = get_new_position_after_forward(grid, agent.position, agent.direction)
-    agents = update_agent(agents, agent_id, "position", new_position)
-
-    # update agent grid placement
-    grid = grid.at[_AGENTS, current_position.x, current_position.y].set(0)
-    grid = grid.at[_AGENTS, new_position.x, new_position.y].set(agent_id + 1)
-
-    grid, shelves = jax.lax.cond(
-        agent.is_carrying,
-        set_new_shelf_position_if_carrying,
-        lambda g, s, p, np: (g, s),
-        grid,
-        shelves,
-        current_position,
-        new_position,
-    )
-    return grid, agents, shelves
-
-
-def set_new_direction_after_turn(
-    grid: chex.Array,
-    agents: chex.Array,
-    shelves: chex.Array,
-    action: int,
-    agent_id: int,
-    is_highway: chex.Array,
-) -> Tuple[chex.Array, chex.Array, chex.Array]:
-    """Set the new direction of the agent after a turning action.
-
-    Args:
-        grid: the warehouse floor grid array.
-        agents: a pytree of either Agent type containing agent information.
-        shelves: a pytree of Shelf type containing shelf information.
-        action: the agent's action.
-        agent_id: unique ID identifying a specific agent.
-        is_highway: binary value indicating highway position.
-
-    Returns:
-        updated grid array, agents and shelves pytrees.
-    """
-    agents = jax.lax.cond(
-        jnp.isin(action, jnp.array([Action.LEFT.value, Action.RIGHT.value])),
-        rotate_agent,
-        set_carrying_shelf_if_load_toggled_and_not_carrying,
-        grid,
-        agents,
-        action,
-        agent_id,
-        is_highway,
-    )
-    return grid, agents, shelves
 
 
 def compute_action_mask(grid: chex.Array, agents: Agent) -> chex.Array:

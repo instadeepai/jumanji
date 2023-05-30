@@ -36,6 +36,11 @@ from jumanji.environments.routing.robot_warehouse.types import (
     Shelf,
     State,
 )
+from jumanji.environments.routing.robot_warehouse.utils_agent import (
+    set_new_direction_after_turn,
+    set_new_position_after_forward,
+)
+from jumanji.environments.routing.robot_warehouse.utils_shelf import update_shelf
 from jumanji.environments.routing.robot_warehouse.viewer import RobotWarehouseViewer
 from jumanji.tree_utils import tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
@@ -413,8 +418,8 @@ class RobotWarehouse(Environment[State]):
         is_highway = self.highways[agent.position.x, agent.position.y]
         grid, agents, shelves = jax.lax.cond(
             jnp.equal(action, Action.FORWARD.value),
-            utils.set_new_position_after_forward,
-            utils.set_new_direction_after_turn,
+            set_new_position_after_forward,
+            set_new_direction_after_turn,
             grid,
             agents,
             shelves,
@@ -480,8 +485,8 @@ class RobotWarehouse(Environment[State]):
             reward += 1.0
 
             # update requested shelf
-            shelves = utils.update_shelf(shelves, shelf_id - 1, "is_requested", 0)
-            shelves = utils.update_shelf(shelves, new_request_id, "is_requested", 1)
+            shelves = update_shelf(shelves, shelf_id - 1, "is_requested", 0)
+            shelves = update_shelf(shelves, new_request_id, "is_requested", 1)
             return key, reward, request_queue, shelves
 
         # check if shelf is at goal position and in request queue

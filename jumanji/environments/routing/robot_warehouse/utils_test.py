@@ -27,17 +27,21 @@ from jumanji.environments.routing.robot_warehouse.types import (
 from jumanji.environments.routing.robot_warehouse.utils import (
     calculate_num_observation_features,
     compute_action_mask,
-    get_agent_view,
-    get_new_direction_after_turn,
-    get_new_position_after_forward,
     get_valid_actions,
     is_collision,
     is_valid_action,
     move_writer_index,
-    place_entities_on_grid,
-    update_agent,
-    update_shelf,
     write_to_observation,
+)
+from jumanji.environments.routing.robot_warehouse.utils_agent import (
+    get_agent_view,
+    get_new_direction_after_turn,
+    get_new_position_after_forward,
+    update_agent,
+)
+from jumanji.environments.routing.robot_warehouse.utils_shelf import update_shelf
+from jumanji.environments.routing.robot_warehouse.utils_spawn import (
+    place_entities_on_grid,
 )
 from jumanji.tree_utils import tree_slice
 

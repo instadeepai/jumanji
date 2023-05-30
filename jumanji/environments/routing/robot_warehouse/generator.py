@@ -19,8 +19,12 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.robot_warehouse import utils
 from jumanji.environments.routing.robot_warehouse.types import State
+from jumanji.environments.routing.robot_warehouse.utils import compute_action_mask
+from jumanji.environments.routing.robot_warehouse.utils_spawn import (
+    place_entities_on_grid,
+    spawn_random_entities,
+)
 
 
 class Generator(abc.ABC):
@@ -223,7 +227,7 @@ class RandomGenerator(GeneratorBase):
         grid = jnp.zeros((2, *self._grid_size), dtype=jnp.int32)
 
         # spawn random agents with random request queue
-        key, agents, shelves, shelf_request_queue = utils.spawn_random_entities(
+        key, agents, shelves, shelf_request_queue = spawn_random_entities(
             key,
             self._grid_size,
             self._agent_ids,
@@ -231,10 +235,10 @@ class RandomGenerator(GeneratorBase):
             self._shelf_positions,
             self._request_queue_size,
         )
-        grid = utils.place_entities_on_grid(grid, agents, shelves)
+        grid = place_entities_on_grid(grid, agents, shelves)
 
         # compute action mask
-        action_mask = utils.compute_action_mask(grid, agents)
+        action_mask = compute_action_mask(grid, agents)
 
         # create environment state
         state = State(
