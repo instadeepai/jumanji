@@ -18,50 +18,26 @@ import chex
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
+from jumanji.environments.logic.sudoku.constants import (
+    BOARD_WIDTH,
+    INITIAL_BOARD_SAMPLE,
+    SOLVED_BOARD_SAMPLE,
+)
 from jumanji.environments.logic.sudoku.utils import (
     get_action_mask,
     puzzle_completed,
     validate_board,
 )
 
-initial_board_sample = jnp.array(
-    [
-        [0, 0, 0, 8, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 4, 3],
-        [5, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 7, 0, 8, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 2, 0, 0, 3, 0, 0, 0, 0],
-        [6, 0, 0, 0, 0, 0, 0, 7, 5],
-        [0, 0, 3, 4, 0, 0, 0, 0, 0],
-        [0, 0, 0, 2, 0, 0, 6, 0, 0],
-    ]
-)
-
-solved_board_sample = jnp.array(
-    [
-        [2, 3, 7, 8, 4, 1, 5, 6, 9],
-        [1, 8, 6, 7, 9, 5, 2, 4, 3],
-        [5, 9, 4, 3, 2, 6, 7, 1, 8],
-        [3, 1, 5, 6, 7, 4, 8, 9, 2],
-        [4, 6, 9, 5, 8, 2, 1, 3, 7],
-        [7, 2, 8, 1, 3, 9, 4, 5, 6],
-        [6, 4, 2, 9, 1, 8, 3, 7, 5],
-        [8, 5, 3, 4, 6, 7, 9, 2, 1],
-        [9, 7, 1, 2, 5, 3, 6, 8, 4],
-    ]
-)
-
-empty_board = jnp.zeros((BOARD_WIDTH, BOARD_WIDTH), int)
+EMPTY_BOARD = jnp.zeros((BOARD_WIDTH, BOARD_WIDTH), int)
 
 
 @pytest.mark.parametrize(
     "board,expected_validation",
     [
-        (solved_board_sample, True),
-        (solved_board_sample.at[1, 2].set(0), False),
-        (solved_board_sample.at[4, 7].set(4), False),
+        (SOLVED_BOARD_SAMPLE, True),
+        (jnp.array(SOLVED_BOARD_SAMPLE).at[1, 2].set(0), False),
+        (jnp.array(SOLVED_BOARD_SAMPLE).at[4, 7].set(4), False),
     ],
 )
 def test_puzzle_completed(board: chex.Array, expected_validation: chex.Array) -> None:
@@ -74,22 +50,22 @@ def test_puzzle_completed(board: chex.Array, expected_validation: chex.Array) ->
 @pytest.mark.parametrize(
     "board,expected_validation",
     [
-        (solved_board_sample, True),
-        (empty_board, True),
+        (SOLVED_BOARD_SAMPLE, True),
+        (EMPTY_BOARD, True),
         (
-            empty_board.at[0, 0].set(1).at[0, 4].set(1),
+            EMPTY_BOARD.at[0, 0].set(1).at[0, 4].set(1),
             False,
         ),
         (
-            empty_board.at[0, 0].set(1).at[2, 2].set(1),
+            EMPTY_BOARD.at[0, 0].set(1).at[2, 2].set(1),
             False,
         ),
         (
-            empty_board.at[0, 0].set(1).at[4, 0].set(1),
+            EMPTY_BOARD.at[0, 0].set(1).at[4, 0].set(1),
             False,
         ),
         (
-            empty_board.at[0, 0].set(1).at[4, 0].set(2),
+            EMPTY_BOARD.at[0, 0].set(1).at[4, 0].set(2),
             True,
         ),
     ],
@@ -101,7 +77,7 @@ def test_validate_board(board: chex.Array, expected_validation: chex.Array) -> N
     assert validate_board(board) == expected_validation
 
 
-@pytest.mark.parametrize("board", (initial_board_sample,))
+@pytest.mark.parametrize("board", (INITIAL_BOARD_SAMPLE,))
 def test_get_action_mask(board: chex.Array) -> None:
     """Tests that the get_action_mask function returns the correct action mask"""
 

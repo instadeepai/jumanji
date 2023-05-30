@@ -49,7 +49,7 @@ def test_sudoku__step(sudoku_env: Sudoku) -> None:
     step_fn = jax.jit(step_fn)
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(sudoku_env.reset)(key)
-    # For this board, this action will be a non-mined square
+
     action = sudoku_env.action_spec().generate_value()
     next_state, next_timestep = step_fn(state, action)
 

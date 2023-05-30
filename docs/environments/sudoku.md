@@ -21,14 +21,17 @@ The observation given to the agent consists of:
 
 ## Action
 The action space is a `MultiDiscreteArray` of integer values representing coordinates of the square
-to explore and the digits to write in the cell, e.g. `[3, 6, 8]` for writing the digit `9`
-the cell located on the third row and sixth column.
+to explore and the digits to write in the cell, e.g. `[3, 6, 8]` for writing the digit `9` in
+the cell located on the fourth row and seventh column.
 
 
 ## Reward
 The reward is `1` at the end of the episode if the board is correctly solved, and `0` in every
 other case.
 
+## Termination
+An episode terminates where there is no more legal actions available, this could happen if the
+board is solved or if the agent finds himself in a dead-end.
 
 ## Registered Versions 📖
 - `Sudoku-v0`, the classic [game](https://en.wikipedia.org/wiki/Sudoku) on
