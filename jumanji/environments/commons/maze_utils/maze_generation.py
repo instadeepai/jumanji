@@ -203,8 +203,8 @@ def generate_maze(width: int, height: int, key: chex.PRNGKey) -> chex.Array:
     """Randomly generate a maze.
 
     Args:
-        width: the number of rows of the maze to create.
-        height: the number of columns of the maze to create.
+        width: the number of columns of the maze to create.
+        height: the number of rows of the maze to create.
         key: the Jax random number generation key.
 
     Returns:
