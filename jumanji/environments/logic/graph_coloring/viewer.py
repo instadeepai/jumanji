@@ -28,24 +28,9 @@ from jumanji.viewer import Viewer
 class GraphColoringViewer(Viewer):
     def __init__(
         self,
-        num_nodes: int,
         name: str = "GraphColoring",
     ) -> None:
         self._name = name
-        self._num_nodes = num_nodes
-
-        # Set the scale of the graph based on the number of nodes,
-        # so the graph grows (at a decelerating rate) with more nodes.
-        self.node_scale = 5 + int(np.sqrt(self._num_nodes))
-
-        colormap_indecies = np.arange(0, 1, 1 / num_nodes)
-        colormap = cm.get_cmap("hsv", num_nodes + 1)
-        self._color_mapping = []
-        for colormap_idx in colormap_indecies:
-            self._color_mapping.append(colormap(colormap_idx))
-        self._color_mapping.append(
-            (0.0, 0.0, 0.0, 1.0)
-        )  # Uncolored node must be black.
         self._animation: Optional[animation.Animation] = None
 
     def render(
@@ -54,11 +39,15 @@ class GraphColoringViewer(Viewer):
         save_path: Optional[str] = None,
         ax: Optional[plt.Axes] = None,
     ) -> None:
+        num_nodes = state.adj_matrix.shape[0]
+        self.node_scale = self._calculate_node_scale(num_nodes)
+        self._color_mapping = self._create_color_mapping(num_nodes)
+
         self._clear_display()
         fig, ax = self._get_fig_ax(ax)
-        pos = self._spring_layout(state.adj_matrix)
-        self._render_nodes(ax, pos, state)
-        self._render_edges(ax, pos, state)
+        pos = self._spring_layout(state.adj_matrix, num_nodes)
+        self._render_nodes(ax, pos, state.colors)
+        self._render_edges(ax, pos, state.adj_matrix, num_nodes)
 
         ax.set_xlim(-0.5, 0.50)
         ax.set_ylim(-0.50, 0.50)
@@ -76,6 +65,20 @@ class GraphColoringViewer(Viewer):
         interval: int = 500,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
+        num_nodes = states[0].adj_matrix.shape[0]
+        # Set the scale of the graph based on the number of nodes,
+        # so the graph grows (at a decelerating rate) with more nodes.
+        self.node_scale = 5 + int(np.sqrt(num_nodes))
+
+        colormap_indecies = np.arange(0, 1, 1 / num_nodes)
+        colormap = cm.get_cmap("hsv", num_nodes + 1)
+        self._color_mapping = []
+        for colormap_idx in colormap_indecies:
+            self._color_mapping.append(colormap(colormap_idx))
+        self._color_mapping.append(
+            (0.0, 0.0, 0.0, 1.0)
+        )  # Uncolored node must be black.
+
         fig, ax = self._get_fig_ax(ax=None)
         plt.title(f"{self._name}")
 
@@ -113,10 +116,10 @@ class GraphColoringViewer(Viewer):
             IPython.display.clear_output(True)
 
     def _compute_repulsive_forces(
-        self, repulsive_forces: np.ndarray, pos: np.ndarray, k: float
+        self, repulsive_forces: np.ndarray, pos: np.ndarray, k: float, num_nodes: int
     ) -> np.ndarray:
-        for i in range(self._num_nodes):
-            for j in range(i + 1, self._num_nodes):
+        for i in range(num_nodes):
+            for j in range(i + 1, num_nodes):
                 delta = pos[i] - pos[j]
                 distance = np.linalg.norm(delta)
                 direction = delta / (distance + 1e-6)
@@ -132,9 +135,10 @@ class GraphColoringViewer(Viewer):
         attractive_forces: np.ndarray,
         pos: np.ndarray,
         k: float,
+        num_nodes: int,
     ) -> np.ndarray:
-        for i in range(self._num_nodes):
-            for j in range(self._num_nodes):
+        for i in range(num_nodes):
+            for j in range(num_nodes):
                 if graph[i, j]:
                     delta = pos[i] - pos[j]
                     distance = np.linalg.norm(delta)
@@ -146,7 +150,7 @@ class GraphColoringViewer(Viewer):
         return attractive_forces
 
     def _spring_layout(
-        self, graph: chex.Array, seed: int = 42
+        self, graph: chex.Array, num_nodes: int, seed: int = 42
     ) -> List[Tuple[float, float]]:
         """
         Compute a 2D spring layout for the given graph using
@@ -164,18 +168,18 @@ class GraphColoringViewer(Viewer):
             A list of tuples representing the 2D positions of nodes in the graph.
         """
         rng = np.random.default_rng(seed)
-        pos = rng.random((self._num_nodes, 2)) * 2 - 1
+        pos = rng.random((num_nodes, 2)) * 2 - 1
 
         iterations = 100
-        k = np.sqrt(1 / self._num_nodes)
+        k = np.sqrt(1 / num_nodes)
         temperature = 2.0  # Added a temperature variable
 
         for _ in range(iterations):
             repulsive_forces = self._compute_repulsive_forces(
-                np.zeros((self._num_nodes, 2)), pos, k
+                np.zeros((num_nodes, 2)), pos, k, num_nodes
             )
             attractive_forces = self._compute_attractive_forces(
-                graph, np.zeros((self._num_nodes, 2)), pos, k
+                graph, np.zeros((num_nodes, 2)), pos, k, num_nodes
             )
 
             pos += (repulsive_forces + attractive_forces) * temperature
@@ -196,7 +200,7 @@ class GraphColoringViewer(Viewer):
         return fig, ax
 
     def _render_nodes(
-        self, ax: plt.Axes, pos: List[Tuple[float, float]], state: State
+        self, ax: plt.Axes, pos: List[Tuple[float, float]], colors: chex.Array
     ) -> None:
         # Set the radius of the nodes as a fraction of the scale,
         # so nodes appear smaller when there are more of them.
@@ -204,23 +208,42 @@ class GraphColoringViewer(Viewer):
 
         for i, (x, y) in enumerate(pos):
             ax.add_artist(
-                plt.Circle(
-                    (x, y), node_radius, color=self._color_mapping[state.colors[i]]
-                )
+                plt.Circle((x, y), node_radius, color=self._color_mapping[colors[i]])
             )
             ax.text(
                 x, y, str(i), color="white", ha="center", va="center", weight="bold"
             )
 
     def _render_edges(
-        self, ax: plt.Axes, pos: List[Tuple[float, float]], state: State
+        self,
+        ax: plt.Axes,
+        pos: List[Tuple[float, float]],
+        adj_matrix: chex.Array,
+        num_nodes: int,
     ) -> None:
-        for i in range(self._num_nodes):
-            for j in range(i + 1, self._num_nodes):
-                if state.adj_matrix[i, j]:
+        for i in range(num_nodes):
+            for j in range(i + 1, num_nodes):
+                if adj_matrix[i, j]:
                     ax.plot(
                         [pos[i][0], pos[j][0]],
                         [pos[i][1], pos[j][1]],
                         color=self._color_mapping[i],
                         linewidth=0.5,
                     )
+
+    def _calculate_node_scale(self, num_nodes: int) -> int:
+        # Set the scale of the graph based on the number of nodes,
+        # so the graph grows (at a decelerating rate) with more nodes.
+        return 5 + int(np.sqrt(num_nodes))
+
+    def _create_color_mapping(
+        self,
+        num_nodes: int,
+    ) -> List[Tuple[float, float, float, float]]:
+        colormap_indices = np.arange(0, 1, 1 / num_nodes)
+        colormap = cm.get_cmap("hsv", num_nodes + 1)
+        color_mapping = []
+        for colormap_idx in colormap_indices:
+            color_mapping.append(colormap(colormap_idx))
+        color_mapping.append((0.0, 0.0, 0.0, 1.0))  # Uncolored node must be black.
+        return color_mapping

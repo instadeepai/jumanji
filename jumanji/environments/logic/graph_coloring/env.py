@@ -102,9 +102,7 @@ class GraphColoring(Environment[State]):
         self.num_nodes = self.generator.num_nodes
 
         # Create viewer used for rendering
-        self._env_viewer = viewer or GraphColoringViewer(
-            num_nodes=self.num_nodes, name="GraphColoring"
-        )
+        self._env_viewer = viewer or GraphColoringViewer(name="GraphColoring")
 
     def __repr__(self) -> str:
         return repr(self.generator)
