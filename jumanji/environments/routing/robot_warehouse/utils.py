@@ -19,12 +19,14 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.robot_warehouse.types import (
+from jumanji.environments.routing.robot_warehouse.constants import (
     _AGENTS,
+    _POSSIBLE_DIRECTIONS,
     _SHELVES,
+)
+from jumanji.environments.routing.robot_warehouse.types import (
     Action,
     Agent,
-    Direction,
     Entity,
     Position,
     Shelf,
@@ -121,9 +123,9 @@ def spawn_random_entities(
 
     # random agent directions
     key, direction_key = jax.random.split(key)
-    possible_directions = jnp.array([d.value for d in Direction])
+
     agent_dirs = jax.random.choice(
-        direction_key, possible_directions, shape=(num_agents,)
+        direction_key, _POSSIBLE_DIRECTIONS, shape=(num_agents,)
     )
 
     # sample request queue

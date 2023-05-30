@@ -23,12 +23,12 @@ import matplotlib
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.robot_warehouse import utils
+from jumanji.environments.routing.robot_warehouse.constants import _SHELVES
 from jumanji.environments.routing.robot_warehouse.generator import (
     GeneratorBase as Generator,
 )
 from jumanji.environments.routing.robot_warehouse.generator import RandomGenerator
 from jumanji.environments.routing.robot_warehouse.types import (
-    _SHELVES,
     Action,
     Agent,
     Direction,

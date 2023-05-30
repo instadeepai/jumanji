@@ -24,28 +24,10 @@ from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
 import jumanji
+import jumanji.environments.routing.robot_warehouse.constants as constants
 from jumanji.environments.routing.robot_warehouse.types import Direction, State
 from jumanji.tree_utils import tree_slice
 from jumanji.viewer import Viewer
-
-FIGURE_SIZE = (5, 5)
-
-# Define some colors
-_BLACK = (0, 0, 0)
-_RED = (1, 0, 0)
-_DARKORANGE = (1, 140 / 255.0, 0)
-_DARKSLATEBLUE = (72 / 255.0, 61 / 255.0, 139 / 255.0)
-_TEAL = (0, 128 / 255.0, 128 / 255.0)
-
-_GRID_COLOR = _BLACK
-_SHELF_COLOR = _DARKSLATEBLUE
-_SHELF_REQ_COLOR = _TEAL
-_AGENT_COLOR = _DARKORANGE
-_AGENT_LOADED_COLOR = _RED
-_AGENT_DIR_COLOR = _BLACK
-_GOAL_COLOR = (60 / 255.0, 60 / 255.0, 60 / 255.0)
-
-_SHELF_PADDING = 2
 
 
 class RobotWarehouseViewer(Viewer):
@@ -115,7 +97,7 @@ class RobotWarehouseViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Animation", figsize=constants._FIGURE_SIZE)
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         ax = fig.add_subplot(111)
         plt.close(fig)
@@ -151,7 +133,7 @@ class RobotWarehouseViewer(Viewer):
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=FIGURE_SIZE)
+        fig = plt.figure(self._name, figsize=constants._FIGURE_SIZE)
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
         if recreate:
@@ -203,7 +185,7 @@ class RobotWarehouseViewer(Viewer):
                 ]
             )
 
-        lc = LineCollection(lines, colors=(_GRID_COLOR,))
+        lc = LineCollection(lines, colors=(constants._GRID_COLOR,))
         ax.add_collection(lc)
 
     def _draw_goals(self, ax: plt.Axes) -> None:
@@ -224,7 +206,7 @@ class RobotWarehouseViewer(Viewer):
                     (y + 1) * (self.grid_size + 1),
                     (y + 1) * (self.grid_size + 1),
                 ],
-                color=_GOAL_COLOR,
+                color=constants._GOAL_COLOR,
                 alpha=1,
             )
 
@@ -238,20 +220,25 @@ class RobotWarehouseViewer(Viewer):
             shelf = tree_slice(shelves, shelf_id)
             y, x = shelf.position.x, shelf.position.y
             y = self.rows - y - 1  # pyglet rendering is reversed
-            shelf_color = _SHELF_REQ_COLOR if shelf.is_requested else _SHELF_COLOR
+            shelf_color = (
+                constants._SHELF_REQ_COLOR
+                if shelf.is_requested
+                else constants._SHELF_COLOR
+            )
+            shelf_padding = constants._SHELF_PADDING
 
             x_points = [
-                (self.grid_size + 1) * x + _SHELF_PADDING + 1,
-                (self.grid_size + 1) * (x + 1) - _SHELF_PADDING,
-                (self.grid_size + 1) * (x + 1) - _SHELF_PADDING,
-                (self.grid_size + 1) * x + _SHELF_PADDING + 1,
+                (self.grid_size + 1) * x + shelf_padding + 1,
+                (self.grid_size + 1) * (x + 1) - shelf_padding,
+                (self.grid_size + 1) * (x + 1) - shelf_padding,
+                (self.grid_size + 1) * x + shelf_padding + 1,
             ]
 
             y_points = [
-                (self.grid_size + 1) * y + _SHELF_PADDING + 1,
-                (self.grid_size + 1) * y + _SHELF_PADDING + 1,
-                (self.grid_size + 1) * (y + 1) - _SHELF_PADDING,
-                (self.grid_size + 1) * (y + 1) - _SHELF_PADDING,
+                (self.grid_size + 1) * y + shelf_padding + 1,
+                (self.grid_size + 1) * y + shelf_padding + 1,
+                (self.grid_size + 1) * (y + 1) - shelf_padding,
+                (self.grid_size + 1) * (y + 1) - shelf_padding,
             ]
 
             ax.fill(x_points, y_points, color=shelf_color)
@@ -284,7 +271,11 @@ class RobotWarehouseViewer(Viewer):
                 y_radius = radius * np.sin(angle) + 1
                 y = y_radius + y_center
                 verts += [[x, y]]
-                facecolor = _AGENT_LOADED_COLOR if agent.is_carrying else _AGENT_COLOR
+                facecolor = (
+                    constants._AGENT_LOADED_COLOR
+                    if agent.is_carrying
+                    else constants._AGENT_COLOR
+                )
                 circle = plt.Polygon(
                     verts,
                     edgecolor="none",
@@ -309,7 +300,7 @@ class RobotWarehouseViewer(Viewer):
             ax.plot(
                 [x_center, x_dir],
                 [y_center, y_dir],
-                color=_AGENT_DIR_COLOR,
+                color=constants._AGENT_DIR_COLOR,
                 linewidth=2,
             )
 
