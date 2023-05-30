@@ -2,8 +2,6 @@ name: rware
 registered_version: Rware-v0
 
 network:
-    policy_layers: [64,64]
-    value_layers: [128,128]
     transformer_num_blocks: 4
     transformer_num_heads: 8
     transformer_key_size: 16

@@ -33,8 +33,6 @@ from jumanji.training.networks.transformer_block import TransformerBlock
 
 def make_actor_critic_networks_rware(
     rware: Rware,
-    policy_layers: Sequence[int],
-    value_layers: Sequence[int],
     transformer_num_blocks: int,
     transformer_num_heads: int,
     transformer_key_size: int,
@@ -46,7 +44,6 @@ def make_actor_critic_networks_rware(
         num_values=num_values
     )
     policy_network = make_actor_network(
-        mlp_units=policy_layers,
         time_limit=rware.time_limit,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
@@ -54,7 +51,6 @@ def make_actor_critic_networks_rware(
         transformer_mlp_units=transformer_mlp_units,
     )
     value_network = make_critic_network(
-        mlp_units=value_layers,
         time_limit=rware.time_limit,
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
@@ -123,7 +119,6 @@ class RwareTorso(hk.Module):
 
 
 def make_critic_network(
-    mlp_units: Sequence[int],
     time_limit: int,
     transformer_num_blocks: int,
     transformer_num_heads: int,
@@ -150,7 +145,6 @@ def make_critic_network(
 
 
 def make_actor_network(
-    mlp_units: Sequence[int],
     time_limit: int,
     transformer_num_blocks: int,
     transformer_num_heads: int,
