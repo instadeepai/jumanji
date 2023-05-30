@@ -55,10 +55,14 @@ class DenseReward(RewardFn):
         """
         del is_done
         del next_state
+        del state
+
+        action_ones = action != 0.0
+        num_rows, num_cols = action_ones.shape
 
         reward = jax.lax.cond(
             is_valid,
-            lambda: jnp.sum(jnp.equal(state.solved_board, action), dtype=jnp.float32),
+            lambda: jnp.sum(action_ones, dtype=jnp.float32) / (num_rows * num_cols),
             lambda: jnp.float32(0.0),
         )
 
@@ -84,11 +88,10 @@ class SparseReward(RewardFn):
         """
 
         del action
+        del state
 
         completed_correctly = (
-            is_done
-            & jnp.all(jnp.equal(state.solved_board, next_state.current_board))
-            & is_valid
+            is_done & jnp.all(next_state.current_board != 0.0) & is_valid
         )
 
         reward = jax.lax.cond(
