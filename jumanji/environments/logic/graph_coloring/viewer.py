@@ -240,5 +240,5 @@ class GraphColoringViewer(Viewer):
         color_mapping = []
         for colormap_idx in colormap_indices:
             color_mapping.append(colormap(colormap_idx))
-        color_mapping.append((0.0, 0.0, 0.0, 1.0))  # Uncolored node must be black.
+        color_mapping.append((0.0, 0.0, 0.0, 1.0))  # Adding black to the color mapping
         return color_mapping
