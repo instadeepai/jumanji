@@ -144,14 +144,16 @@ class Rware(Environment[State]):
             viewer: viewer to render the environment. Defaults to `RwareViewer`.
         """
 
+        # default generator is: rware-tiny-4ag-easy (in original implementation)
         self._generator = generator or RandomGenerator(
-            shelf_rows=1,
-            shelf_columns=3,
             column_height=8,
-            num_agents=2,
+            shelf_rows=2,
+            shelf_columns=3,
+            num_agents=4,
             sensor_range=1,
-            request_queue_size=4,
+            request_queue_size=8,
         )
+
         self.goals: List[Tuple[int, int]] = []
         self.grid_size = self._generator.grid_size
         self.request_queue_size = self._generator.request_queue_size
