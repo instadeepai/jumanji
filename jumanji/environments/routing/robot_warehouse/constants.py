@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import jax.numpy as jnp
+
 from jumanji.environments.routing.robot_warehouse.types import Direction
 
 # grid channels

@@ -23,10 +23,6 @@ from enum import IntEnum
 
 import chex
 
-# Grid channels
-_SHELVES = 0
-_AGENTS = 1
-
 
 class Action(IntEnum):
     """An enumeration of possible actions
