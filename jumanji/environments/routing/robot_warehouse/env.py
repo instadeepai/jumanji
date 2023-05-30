@@ -235,7 +235,8 @@ class RobotWarehouse(Environment[State]):
             timestep: TimeStep object corresponding the timestep returned by the environment.
         """
 
-        _, key = jax.random.split(state.key)
+        # unpack state
+        key = state.key
         grid = state.grid
         agents = state.agents
         shelves = state.shelves
