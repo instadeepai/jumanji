@@ -24,4 +24,4 @@ a2c:
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 3e-4
+    learning_rate: 1e-4
