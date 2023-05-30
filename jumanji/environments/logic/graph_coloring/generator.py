@@ -49,7 +49,7 @@ class RandomGenerator(Generator):
     which is used as a proxy for the edge probability in the Erdős-Rényi model.
     """
 
-    def __init__(self, num_nodes: int, percent_connected: float):
+    def __init__(self, num_nodes: int, edge_probability: float):
         """
         Initialize the RandomGraphColoringGenerator.
 
@@ -57,15 +57,15 @@ class RandomGenerator(Generator):
             num_nodes: The number of nodes in the graph. The number of colors available for
                 coloring is equal to the number of nodes. This means that the graph is always
                 colorable with the given colors.
-            percent_connected: A float between 0 and 1 representing the percentage of connections
+            edge_probability: A float between 0 and 1 representing the percentage of connections
                 in the graph compared to a fully connected graph.
         """
 
         self._num_nodes = num_nodes
-        self.percent_connected = percent_connected
+        self.edge_probability = edge_probability
         assert (
-            0 < self.percent_connected < 1
-        ), f"percent_connected={self.percent_connected} must be between 0 and 1."
+            0 < self.edge_probability < 1
+        ), f"edge_probability={self.edge_probability} must be between 0 and 1."
 
     @property
     def num_nodes(self) -> int:
@@ -74,7 +74,7 @@ class RandomGenerator(Generator):
     def __repr__(self) -> str:
         return (
             f"GraphColoring(number of nodes={self.num_nodes}, "
-            f"percent connected={self.percent_connected * 100}%)"
+            f"percent connected={self.edge_probability * 100}%)"
         )
 
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
@@ -95,7 +95,7 @@ class RandomGenerator(Generator):
         )
 
         # Threshold the probabilities to create a boolean adjacency matrix.
-        adj_matrix = p_matrix < self.percent_connected
+        adj_matrix = p_matrix < self.edge_probability
 
         # Make sure the graph is undirected (symmetric) and without self-loops.
         adj_matrix = jnp.tril(adj_matrix, k=-1)  # Keep only the lower triangular part.
