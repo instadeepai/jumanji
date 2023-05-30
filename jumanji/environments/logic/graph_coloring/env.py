@@ -92,12 +92,12 @@ class GraphColoring(Environment[State]):
         Args:
             generator: callable to instantiate environment instances.
                 Defaults to `RandomGenerator` which generates graphs with
-                100 `num_nodes` and `percent_connected` equal to 0.8.
+                20 `num_nodes` and `percent_connected` equal to 0.8.
             viewer: environment viewer for rendering.
                 Defaults to `GraphColoringViewer`.
         """
         self.generator = generator or RandomGenerator(
-            num_nodes=100, percent_connected=0.8
+            num_nodes=20, percent_connected=0.8
         )
         self.num_nodes = self.generator.num_nodes
 
