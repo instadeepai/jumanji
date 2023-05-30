@@ -66,18 +66,8 @@ class GraphColoringViewer(Viewer):
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
         num_nodes = states[0].adj_matrix.shape[0]
-        # Set the scale of the graph based on the number of nodes,
-        # so the graph grows (at a decelerating rate) with more nodes.
-        self.node_scale = 5 + int(np.sqrt(num_nodes))
-
-        colormap_indecies = np.arange(0, 1, 1 / num_nodes)
-        colormap = cm.get_cmap("hsv", num_nodes + 1)
-        self._color_mapping = []
-        for colormap_idx in colormap_indecies:
-            self._color_mapping.append(colormap(colormap_idx))
-        self._color_mapping.append(
-            (0.0, 0.0, 0.0, 1.0)
-        )  # Uncolored node must be black.
+        self.node_scale = self._calculate_node_scale(num_nodes)
+        self._color_mapping = self._create_color_mapping(num_nodes)
 
         fig, ax = self._get_fig_ax(ax=None)
         plt.title(f"{self._name}")
@@ -171,7 +161,7 @@ class GraphColoringViewer(Viewer):
         pos = rng.random((num_nodes, 2)) * 2 - 1
 
         iterations = 100
-        k = np.sqrt(1 / num_nodes)
+        k = np.sqrt(5 / num_nodes)
         temperature = 2.0  # Added a temperature variable
 
         for _ in range(iterations):
@@ -208,7 +198,12 @@ class GraphColoringViewer(Viewer):
 
         for i, (x, y) in enumerate(pos):
             ax.add_artist(
-                plt.Circle((x, y), node_radius, color=self._color_mapping[colors[i]])
+                plt.Circle(
+                    (x, y),
+                    node_radius,
+                    color=self._color_mapping[colors[i]],
+                    fill=(colors[i] != -1),
+                )
             )
             ax.text(
                 x, y, str(i), color="white", ha="center", va="center", weight="bold"
@@ -227,7 +222,7 @@ class GraphColoringViewer(Viewer):
                     ax.plot(
                         [pos[i][0], pos[j][0]],
                         [pos[i][1], pos[j][1]],
-                        color=self._color_mapping[i],
+                        color=self._color_mapping[-1],
                         linewidth=0.5,
                     )
 
