@@ -41,6 +41,28 @@ def sample_tetromino_list(
     return tetromino, tetromino_index
 
 
+def check_valid_tetromino_placement(
+    grid: chex.Array, tetromino: chex.Array, y_position: int, x_position: int
+) -> chex.Array:
+    """determines whether a tetromino can be positioned within the grid at the specified
+    x_position and y_position coordinates without overlapping any filled cells.
+
+    Args:
+        grid: the container of the game.
+        tetromino: the tetromino that that that will be placed in the grid.
+        x_position: the position x of the tetromino in the grid.
+        y_position: the position y of the tetromino in the grid.
+
+    Returns:
+        chex.array of shape ().
+    """
+    crop = jax.lax.dynamic_slice(
+        grid, start_indices=(y_position, x_position), slice_sizes=(4, 4)
+    )
+    crop = crop + tetromino
+    return ~jnp.any(crop >= 2)
+
+
 def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> chex.Array:
     """check all possible positions for one side of a tetromino.
     Steps:
@@ -65,40 +87,24 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
     )
     tetromino_mask = jnp.clip(tetromino_mask, a_max=1)
     num_cols = grid_padded.shape[1] - 3
-    num_rows = grid_padded.shape[0] - 3
+    # check if tetromino can be placed at the top of the grid, if so it means
+    # that the tetromino is placeble in this x_position.
+    # the top of the grid may be an overhang where the grid is filled
+    # from the top and empty in the middle.
+    # to overcome this, use the tetromino mask instead of the tetromino, wich fills
+    # the possible top cells to overcome any overhang position.
+    list_action_mask = jax.vmap(
+        check_valid_tetromino_placement,
+        in_axes=(None, None, None, 0),
+    )(grid_padded, tetromino_mask, 0, jnp.arange(num_cols))
 
-    list_action_mask = ~jax.vmap(
-        lambda x, i: jnp.any(
-            jax.lax.dynamic_slice(
-                x
-                + jax.lax.dynamic_update_slice(
-                    jnp.zeros_like(x), tetromino_mask, (0, i)
-                ),
-                start_indices=(0, i),
-                slice_sizes=(4, 4),
-            )
-            >= 2
-        ),
-        in_axes=(None, 0),
-    )(grid_padded[:4, :], jnp.arange(num_cols))
-
-    right_cells = ~jax.vmap(
-        lambda x, i: jnp.any(
-            jax.lax.dynamic_slice(
-                x
-                + jax.lax.dynamic_update_slice(
-                    jnp.zeros_like(x), tetromino_mask, (0, i)
-                ),
-                start_indices=(0, num_cols),
-                slice_sizes=(num_rows, 3),
-            )
-            >= 1
-        ),
-        in_axes=(None, 0),
-    )(grid_padded, jnp.arange(num_cols))
-
-    action_mask = jnp.logical_and(list_action_mask, right_cells)
-    return action_mask
+    tetromino_padd = tetromino.sum(axis=0) > 0
+    # calculate the number of rows padding if needed at the begining.
+    # true for possible padding and false for non possible padding.
+    tetromino_padd = jnp.logical_not(jnp.flip(tetromino_padd[1:]))
+    possible_padding = jnp.logical_and(list_action_mask[-3:], tetromino_padd)
+    list_action_mask = list_action_mask.at[-3:].set(possible_padding)
+    return list_action_mask
 
 
 def place_tetromino(
@@ -125,21 +131,13 @@ def place_tetromino(
     # of a filled cell.
     num_rows = grid_padded.shape[0] - 3
     grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
-
+    # check all possible "y" postions relative to the selected x_position
+    # possible positions is a chex.array of shape (num_rows), contains True if a tetromino
+    # can be placed in y_position without overlaping any filled cell.
     possible_positions = jax.vmap(
-        lambda x, i: ~jnp.any(
-            jax.lax.dynamic_slice(
-                x
-                + jax.lax.dynamic_update_slice(
-                    jnp.zeros_like(x), tetromino, (i, x_position)
-                ),
-                start_indices=(i, x_position),
-                slice_sizes=(4, 4),
-            )
-            >= 2
-        ),
-        in_axes=(None, 0),
-    )(grid_padded_cliped, jnp.arange(num_rows))
+        check_valid_tetromino_placement,
+        in_axes=(None, None, 0, None),
+    )(grid_padded_cliped, tetromino, jnp.arange(num_rows), x_position)
     tetromino_padd = tetromino.sum(axis=1) > 0
     # calculate the number of rows padding if needed at the begining.
     # true for possible padding and false for non possible padding.
