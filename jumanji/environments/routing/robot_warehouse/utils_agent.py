@@ -18,15 +18,8 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.robot_warehouse.constants import (
-    _AGENTS,
-    _SHELVES,
-)
-from jumanji.environments.routing.robot_warehouse.types import (
-    Action,
-    Agent,
-    Position,
-)
+from jumanji.environments.routing.robot_warehouse.constants import _AGENTS, _SHELVES
+from jumanji.environments.routing.robot_warehouse.types import Action, Agent, Position
 from jumanji.environments.routing.robot_warehouse.utils_shelf import (
     set_new_shelf_position_if_carrying,
 )

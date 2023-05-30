@@ -16,13 +16,8 @@ from typing import Tuple, Union
 
 import chex
 
-from jumanji.environments.routing.robot_warehouse.constants import (
-    _SHELVES,
-)
-from jumanji.environments.routing.robot_warehouse.types import (
-    Position,
-    Shelf,
-)
+from jumanji.environments.routing.robot_warehouse.constants import _SHELVES
+from jumanji.environments.routing.robot_warehouse.types import Position, Shelf
 from jumanji.tree_utils import tree_add_element, tree_slice
 
 
