@@ -14,7 +14,7 @@
 
 # flake8: noqa: CCR001
 
-from typing import Any, Callable, Optional, Sequence, Tuple
+from typing import Callable, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation as animation
@@ -28,18 +28,15 @@ from jumanji.environments.routing.robot_warehouse.types import Direction, State
 from jumanji.tree_utils import tree_slice
 from jumanji.viewer import Viewer
 
-RAD2DEG = 57.29577951308232
 FIGURE_SIZE = (5, 5)
 
 # Define some colors
 _BLACK = (0, 0, 0)
-_WHITE = (1, 1, 1)
 _RED = (1, 0, 0)
 _DARKORANGE = (1, 140 / 255.0, 0)
 _DARKSLATEBLUE = (72 / 255.0, 61 / 255.0, 139 / 255.0)
 _TEAL = (0, 128 / 255.0, 128 / 255.0)
 
-_BACKGROUND_COLOR = _WHITE
 _GRID_COLOR = _BLACK
 _SHELF_COLOR = _DARKSLATEBLUE
 _SHELF_REQ_COLOR = _TEAL

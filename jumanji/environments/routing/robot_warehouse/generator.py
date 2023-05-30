@@ -70,6 +70,36 @@ class Generator(abc.ABC):
             (2 + 1) * shelf_columns + 1,
         )
         self._agent_ids = jnp.arange(num_agents)
+
+    @abc.abstractmethod
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Generates an `RobotWarehouse` state.
+        Returns:
+            An `RobotWarehouse` state.
+        """
+
+
+class GeneratorBase(Generator):
+    """Base class for `RobotWarehouse` environment state generator."""
+
+    def __init__(
+        self,
+        shelf_rows: int,
+        shelf_columns: int,
+        column_height: int,
+        num_agents: int,
+        sensor_range: int,
+        request_queue_size: int,
+    ) -> None:
+        """Initialises a robot_warehouse generator."""
+        super().__init__(
+            shelf_rows,
+            shelf_columns,
+            column_height,
+            num_agents,
+            sensor_range,
+            request_queue_size,
+        )
         self._make_warehouse()
 
     def _make_warehouse(self) -> None:
@@ -157,15 +187,8 @@ class Generator(abc.ABC):
     def goals(self) -> chex.Array:
         return self._goals
 
-    @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates an `RobotWarehouse` state.
-        Returns:
-            An `RobotWarehouse` state.
-        """
 
-
-class RandomGenerator(Generator):
+class RandomGenerator(GeneratorBase):
     """Randomly generates `RobotWarehouse` environment state. This generator places agents at
     starting positions on the grid and selects the requested shelves uniformly at random.
     """
@@ -179,7 +202,8 @@ class RandomGenerator(Generator):
         sensor_range: int,
         request_queue_size: int,
     ) -> None:
-        """Initialises an robot_warehouse generator, used to generate grids for the RobotWarehouse environment."""
+        """Initialises an robot_warehouse generator, used to generate grids for
+        the RobotWarehouse environment."""
         super().__init__(
             shelf_rows,
             shelf_columns,

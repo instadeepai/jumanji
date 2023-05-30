@@ -24,9 +24,9 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.robot_warehouse import utils
 from jumanji.environments.routing.robot_warehouse.generator import (
-    Generator,
-    RandomGenerator,
+    GeneratorBase as Generator,
 )
+from jumanji.environments.routing.robot_warehouse.generator import RandomGenerator
 from jumanji.environments.routing.robot_warehouse.types import (
     _SHELVES,
     Action,
@@ -108,7 +108,8 @@ class RobotWarehouse(Environment[State]):
         - shelves: a pytree of Shelf type with per shelf leaves: [position, is_requested]
         - request_queue: the queue of requested shelves (by ID).
         - step_count: an integer representing the current step of the episode.
-        - action_mask: an array of shape (num_agents, 5) containing the valid actions for each agent.
+        - action_mask: an array of shape (num_agents, 5) containing the valid actions
+            for each agent.
         - key: a pseudorandom number generator key.
 
     [1] Papoudakis et al., Benchmarking Multi-Agent Deep Reinforcement Learning Algorithms
