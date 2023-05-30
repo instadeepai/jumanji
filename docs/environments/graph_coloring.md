@@ -53,4 +53,4 @@ The goal of the agent is to find a valid coloring using as few colors as possibl
 
 ## Registered Versions 📖
 
-- `GraphColoring-v0`: The default settings for the `GraphColoring` problem with a configurable number of nodes and connectivity.
+- `GraphColoring-v0`: The default settings for the `GraphColoring` problem with a configurable number of nodes and edge_probability. The default number of nodes is 20, and the default edge probability is 0.8.
