@@ -42,7 +42,7 @@ class Generator(abc.ABC):
 
 
 class RandomGenerator(Generator):
-    """A generator for random graphs in the context of GraphColoring problems,
+    """A generator for random graphs in the context of graph coloring problems,
     based on the Erdős-Rényi model (G(n, p)).
 
     The adjacency matrix is generated such that the graph is undirected and loop-less.
