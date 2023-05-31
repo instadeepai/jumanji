@@ -28,6 +28,7 @@
   <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
   <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="30%" />
   <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
+  <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="30%" />
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
   <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
 </p>
