@@ -24,6 +24,7 @@ class Generator(abc.ABC):
     @abc.abstractmethod
     def num_nodes(self) -> int:
         """Number of nodes of the problem instances generated.
+        
         Returns:
             `num_nodes` of the generated instances.
         """
