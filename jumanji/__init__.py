@@ -57,7 +57,8 @@ register(id="Sudoku-v0", entry_point="jumanji.environments:Sudoku")
 # difficulty (>46 clues) are set for reset.
 
 
-sudoku_path = os.path.join("jumanji", "environments", "logic", "sudoku", "data")
+current_path = os.path.dirname(os.path.abspath(__file__))
+sudoku_path = os.path.join(current_path, "environments", "logic", "sudoku", "data")
 database_file = sudoku_data.DATABASES["very-easy"]
 database = np.load(os.path.join(sudoku_path, database_file))
 
