@@ -80,10 +80,12 @@ class RandomGenerator(Generator):
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
         """Generate a random graph adjacency matrix representing
         the edges of an undirected graph using the Erdős-Rényi model G(n, p).
+        
         Args:
-            key: A Chex PRNGKey used for random number generation.
+            key: PRNGKey used for stochasticity in the generation process.
+            
         Returns:
-            adj_matrix: A boolean array of shape (num_nodes, num_nodes) representing
+            adj_matrix: a boolean array of shape (num_nodes, num_nodes) representing
                 the adjacency matrix of the graph, where adj_matrix[i, j] is True if
                 there is an edge between nodes i and j, and False otherwise.
         """
