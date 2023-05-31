@@ -412,11 +412,10 @@ class MMST(Environment[State]):
         """
 
         observation = self._state_to_observation(state)
-        finished_agents = self.get_finished_agents(state)
         reward = self._reward_fn(state, action, state.nodes_to_connect)
 
         # Update the state now.
-        state.finished_agents = finished_agents
+        state.finished_agents = self.get_finished_agents(state)
         state.step_count = state.step_count + 1
         extras = self._get_extras(state)
 
@@ -441,7 +440,7 @@ class MMST(Environment[State]):
                 extras=extras,
             )
 
-        is_done = finished_agents.all()
+        is_done = state.finished_agents.all()
         horizon_reached = state.step_count >= self._step_limit
 
         # false + false = 0 = transition.
