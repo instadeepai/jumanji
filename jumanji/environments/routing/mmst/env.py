@@ -413,13 +413,10 @@ class MMST(Environment[State]):
 
         observation = self._state_to_observation(state)
         finished_agents = self.get_finished_agents(state)
-        rewards = (
+        reward = (
             self._reward_fn(state, action, state.nodes_to_connect)
             * ~state.finished_agents
         )
-
-        # Sum the rewards to make the environment is single agent.
-        reward = jnp.sum(rewards)
 
         # Update the state now.
         state.finished_agents = finished_agents
