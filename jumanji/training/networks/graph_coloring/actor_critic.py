@@ -85,8 +85,7 @@ class GraphColoringTorso(hk.Module):
         return mask
 
     def __call__(self, observation: Observation) -> chex.Array:
-        """
-        Transforms the observation using a series of transformations.
+        """Transforms the observation using a series of transformations.
 
         The observation is composed of the following components:
         - observation.action_mask: Represents the colors that are available for the current node.
