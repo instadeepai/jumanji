@@ -187,24 +187,21 @@ class Game2048(Environment[State]):
             state.board,
         )
 
-        # Generate action mask to keep in the state for the next step and
-        # to provide to the agent in the observation.
-        action_mask = self._get_action_mask(board=updated_board)
-
-        # Check if the episode terminates (i.e. there are no legal actions).
-        done = ~jnp.any(action_mask)
-
         # Generate new key.
         random_cell_key, new_state_key = jax.random.split(state.key)
 
         # Update the state of the board by adding a new random cell.
         updated_board = jax.lax.cond(
-            done,
-            lambda board, key: board,
+            state.action_mask[action],
             self._add_random_cell,
+            lambda board, key: board,
             updated_board,
             random_cell_key,
         )
+
+        # Generate action mask to keep in the state for the next step and
+        # to provide to the agent in the observation.
+        action_mask = self._get_action_mask(board=updated_board)
 
         # Build the state.
         state = State(
@@ -220,6 +217,9 @@ class Game2048(Environment[State]):
             board=updated_board,
             action_mask=action_mask,
         )
+
+        # Check if the episode terminates (i.e. there are no legal actions).
+        done = ~jnp.any(action_mask)
 
         # Return either a MID or a LAST timestep depending on done.
         highest_tile = 2 ** jnp.max(updated_board)

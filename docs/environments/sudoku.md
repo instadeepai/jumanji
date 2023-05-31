@@ -30,8 +30,8 @@ The reward is `1` at the end of the episode if the board is correctly solved, an
 other case.
 
 ## Termination
-An episode terminates where there is no more legal actions available, this could happen if the
-board is solved or if the agent finds himself in a dead-end.
+An episode terminates when there are no more legal actions available, this could happen if the
+board is solved or if the agent finds itself in a dead-end.
 
 ## Registered Versions 📖
 - `Sudoku-v0`, the classic [game](https://en.wikipedia.org/wiki/Sudoku) on

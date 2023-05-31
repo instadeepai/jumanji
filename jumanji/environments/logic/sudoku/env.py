@@ -94,7 +94,7 @@ class Sudoku(Environment[State]):
     def __repr__(self) -> str:
         return f"Sudoku(grid_size={BOARD_WIDTH}x{BOARD_WIDTH})"
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         state = self._generator(key)
         obs = Observation(board=state.board, action_mask=state.action_mask)
         timestep = restart(observation=obs)
