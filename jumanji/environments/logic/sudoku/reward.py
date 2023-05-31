@@ -18,7 +18,7 @@ import chex
 import jax.numpy as jnp
 
 from jumanji.environments.logic.sudoku.types import State
-from jumanji.environments.logic.sudoku.utils import puzzle_completed
+from jumanji.environments.logic.sudoku.utils import is_puzzle_solved
 
 
 class RewardFn(abc.ABC):
@@ -35,5 +35,5 @@ class SparseRewardFn(RewardFn):
     def __call__(
         self, state: State, action: chex.Array, new_state: State, done: jnp.ndarray
     ) -> chex.Array:
-        solved = puzzle_completed(new_state.board)
+        solved = is_puzzle_solved(new_state.board)
         return jnp.array(solved, float)

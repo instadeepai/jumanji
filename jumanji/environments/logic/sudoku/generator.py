@@ -109,8 +109,8 @@ class DatabaseGenerator(Generator):
     def __call__(self, key: chex.PRNGKey) -> State:
         key, idx_key = jax.random.split(key)
         idx = jax.random.randint(
-            idx_key, shape=(1,), minval=0, maxval=self._boards.shape[0]
-        )[0]
+            idx_key, shape=(), minval=0, maxval=self._boards.shape[0]
+        )
         board = self._boards.take(idx, axis=0)
         board = jnp.asarray(board, dtype=jnp.int32) - 1
         action_mask = get_action_mask(board)

@@ -25,7 +25,7 @@ from jumanji.environments.logic.sudoku.constants import (
 )
 from jumanji.environments.logic.sudoku.utils import (
     get_action_mask,
-    puzzle_completed,
+    is_puzzle_solved,
     validate_board,
 )
 
@@ -40,11 +40,11 @@ EMPTY_BOARD = jnp.zeros((BOARD_WIDTH, BOARD_WIDTH), int)
         (jnp.array(SOLVED_BOARD_SAMPLE).at[4, 7].set(4), False),
     ],
 )
-def test_puzzle_completed(board: chex.Array, expected_validation: chex.Array) -> None:
-    """Tests that the puzzle_completed function returns the True for a solved
+def test_is_puzzle_solved(board: chex.Array, expected_validation: chex.Array) -> None:
+    """Tests that the is_puzzle_solved function returns the True for a solved
     board."""
     board = board - 1
-    assert puzzle_completed(board) == expected_validation
+    assert is_puzzle_solved(board) == expected_validation
 
 
 @pytest.mark.parametrize(

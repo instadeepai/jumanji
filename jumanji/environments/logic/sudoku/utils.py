@@ -23,7 +23,7 @@ def apply_action(action: chex.Array, board: chex.Array) -> chex.Array:
     return board.at[action[0], action[1]].set(action[2])
 
 
-def puzzle_completed(board: chex.Array) -> chex.Array:
+def is_puzzle_solved(board: chex.Array) -> chex.Array:
     """Checks that every row, column and 3x3 boxes includes all figures.
 
     Args:

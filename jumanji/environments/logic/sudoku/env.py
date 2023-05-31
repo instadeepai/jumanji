@@ -29,7 +29,7 @@ from jumanji.environments.logic.sudoku.types import Observation, State
 from jumanji.environments.logic.sudoku.utils import (
     apply_action,
     get_action_mask,
-    puzzle_completed,
+    is_puzzle_solved,
 )
 from jumanji.environments.logic.sudoku.viewer import SudokuViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -104,18 +104,18 @@ class Sudoku(Environment[State]):
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
         # check if action is valid
-        invalid = state.action_mask[action[0], action[1], action[2]] == 0
+        invalid = ~state.action_mask[tuple(action)]
         updated_board = apply_action(action=action, board=state.board)
         updated_action_mask = get_action_mask(board=updated_board)
 
-        winning = puzzle_completed(updated_board)
+        winning = is_puzzle_solved(updated_board)
 
         # creating next state
         next_state = State(
             board=updated_board, action_mask=updated_action_mask, key=state.key
         )
 
-        no_actions_avalaible = updated_action_mask.sum() == 0
+        no_actions_avalaible = ~jnp.any(updated_action_mask)
 
         # computing terminal condition
         done = invalid | winning | no_actions_avalaible
@@ -155,8 +155,8 @@ class Sudoku(Environment[State]):
         action_mask = specs.BoundedArray(
             shape=(BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH),
             dtype=bool,
-            minimum=0,
-            maximum=1,
+            minimum=False,
+            maximum=True,
             name="action_mask",
         )
 

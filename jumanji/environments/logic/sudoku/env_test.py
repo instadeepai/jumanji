@@ -30,9 +30,12 @@ from jumanji.types import TimeStep
 
 def test_sudoku__reset(sudoku_env: Sudoku) -> None:
     """Validates the jitted reset of the environment."""
-    reset_fn = jax.jit(sudoku_env.reset)
+    reset_fn = chex.assert_max_traces(sudoku_env.reset, n=1)
+    reset_fn = jax.jit(reset_fn)
+
     key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
+
     assert isinstance(timestep, TimeStep)
     assert isinstance(state, State)
 
@@ -45,7 +48,7 @@ def test_sudoku__reset(sudoku_env: Sudoku) -> None:
 def test_sudoku__step(sudoku_env: Sudoku) -> None:
     """Validates the jitted step of the environment."""
     chex.clear_trace_counter()
-    step_fn = chex.assert_max_traces(sudoku_env.step, n=2)
+    step_fn = chex.assert_max_traces(sudoku_env.step, n=1)
     step_fn = jax.jit(step_fn)
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(sudoku_env.reset)(key)
