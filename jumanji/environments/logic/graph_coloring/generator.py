@@ -24,7 +24,7 @@ class Generator(abc.ABC):
     @abc.abstractmethod
     def num_nodes(self) -> int:
         """Number of nodes of the problem instances generated.
-        
+
         Returns:
             `num_nodes` of the generated instances.
         """
@@ -34,7 +34,7 @@ class Generator(abc.ABC):
         """Generate a problem instance.
 
         Args:
-            key: random key.
+            key: jax random key for any stochasticity used in the instance generation process.
 
         Returns:
             An `adj_matrix` representing a problem instance.
@@ -80,10 +80,10 @@ class RandomGenerator(Generator):
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
         """Generate a random graph adjacency matrix representing
         the edges of an undirected graph using the Erdős-Rényi model G(n, p).
-        
+
         Args:
             key: PRNGKey used for stochasticity in the generation process.
-            
+
         Returns:
             adj_matrix: a boolean array of shape (num_nodes, num_nodes) representing
                 the adjacency matrix of the graph, where adj_matrix[i, j] is True if
@@ -101,7 +101,7 @@ class RandomGenerator(Generator):
 
         # Make sure the graph is undirected (symmetric) and without self-loops.
         adj_matrix = jnp.tril(adj_matrix, k=-1)  # Keep only the lower triangular part.
-         
+
         # Copy the lower triangular part to the upper triangular part.
         adj_matrix += adj_matrix.T
 
