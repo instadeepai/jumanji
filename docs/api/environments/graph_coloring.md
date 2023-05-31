@@ -1,4 +1,4 @@
-::: jumanji.environments.logic.graph_coloring.GraphColoring
+::: jumanji.environments.logic.graph_coloring.env.GraphColoring
     selection:
       members:
         - __init__
