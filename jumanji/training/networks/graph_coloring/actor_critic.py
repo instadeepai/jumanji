@@ -101,10 +101,10 @@ class GraphColoringTorso(hk.Module):
         Finally, it extracts the embedding for the current node and computes a new embedding.
 
         Args:
-            observation: The observation to be transformed.
+            observation: the observation to be transformed.
 
         Returns:
-            new_embedding: The transformed observation.
+            new_embedding: the transformed observation.
         """
 
         batch_size, num_nodes = observation.colors.shape
