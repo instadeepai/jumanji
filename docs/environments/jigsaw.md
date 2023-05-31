@@ -1,7 +1,7 @@
-# Jigsaw Environment
+# FlatPack Environment
 
 <p align="center">
-        <img src="../env_anim/jigsaw.gif" width="500"/>
+        <img src="../env_anim/flat_pack.gif" width="500"/>
 </p>
 
 We provide here a Jax JIT-able implementation of a simple _jigsaw_ puzzle. The goal of the agent is to place
@@ -51,5 +51,5 @@ terminates if either the puzzle is solved or `num_pieces` steps have been taken 
 
 
 ## Registered Versions 📖
-- `Jigsaw-v0`, a jigsaw puzzle with 7 rows and 7 columns containing 3 row pieces and 3 column pieces
+- `FlatPack-v0`, a jigsaw puzzle with 7 rows and 7 columns containing 3 row pieces and 3 column pieces
     for a total of 9 pieces in the puzzle. This version has a dense reward.

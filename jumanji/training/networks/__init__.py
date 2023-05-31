@@ -30,14 +30,14 @@ from jumanji.training.networks.connector.actor_critic import (
 from jumanji.training.networks.connector.random import make_random_policy_connector
 from jumanji.training.networks.cvrp.actor_critic import make_actor_critic_networks_cvrp
 from jumanji.training.networks.cvrp.random import make_random_policy_cvrp
+from jumanji.training.networks.flat_pack.actor_critic import (
+    make_actor_critic_networks_flat_pack,
+)
+from jumanji.training.networks.flat_pack.random import make_random_policy_flat_pack
 from jumanji.training.networks.game_2048.actor_critic import (
     make_actor_critic_networks_game_2048,
 )
 from jumanji.training.networks.game_2048.random import make_random_policy_game_2048
-from jumanji.training.networks.jigsaw.actor_critic import (
-    make_actor_critic_networks_jigsaw,
-)
-from jumanji.training.networks.jigsaw.random import make_random_policy_jigsaw
 from jumanji.training.networks.job_shop.actor_critic import (
     make_actor_critic_networks_job_shop,
 )

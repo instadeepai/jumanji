@@ -19,8 +19,8 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.packing.jigsaw.types import State
-from jumanji.environments.packing.jigsaw.utils import (
+from jumanji.environments.packing.flat_pack.types import State
+from jumanji.environments.packing.flat_pack.utils import (
     compute_grid_dim,
     get_significant_idxs,
     rotate_piece,
@@ -28,7 +28,7 @@ from jumanji.environments.packing.jigsaw.utils import (
 
 
 class InstanceGenerator(abc.ABC):
-    """Base class for generators for the jigsaw environment. An `InstanceGenerator` is responsible
+    """Base class for generators for the flat_pack environment. An `InstanceGenerator` is responsible
     for generating a problem instance when the environment is reset.
     """
 
@@ -37,10 +37,10 @@ class InstanceGenerator(abc.ABC):
         num_row_pieces: int,
         num_col_pieces: int,
     ) -> None:
-        """Initialises a jigsaw generator, used to generate puzzles for the Jigsaw environment.
+        """Initialises a flat_pack generator, used to generate puzzles for the FlatPack environment.
         Args:
-            num_row_pieces: Number of row pieces in jigsaw puzzle.
-            num_col_pieces: Number of column pieces in jigsaw puzzle.
+            num_row_pieces: Number of row pieces in flat_pack puzzle.
+            num_col_pieces: Number of column pieces in flat_pack puzzle.
         """
 
         self.num_row_pieces = num_row_pieces
@@ -60,18 +60,18 @@ class InstanceGenerator(abc.ABC):
         raise NotImplementedError
 
 
-class RandomJigsawGenerator(InstanceGenerator):
-    """Random jigsaw generator. This generator will generate a random jigsaw puzzle."""
+class RandomFlatPackGenerator(InstanceGenerator):
+    """Random flat_pack generator. This generator will generate a random flat_pack puzzle."""
 
     def __init__(
         self,
         num_row_pieces: int,
         num_col_pieces: int,
     ):
-        """Initialises a random jigsaw generator.
+        """Initialises a random flat_pack generator.
         Args:
-            num_row_pieces: Number of row pieces in jigsaw puzzle.
-            num_col_pieces: Number of column pieces in jigsaw puzzle.
+            num_row_pieces: Number of row pieces in flat_pack puzzle.
+            num_col_pieces: Number of column pieces in flat_pack puzzle.
         """
         super().__init__(num_row_pieces, num_col_pieces)
 
@@ -227,7 +227,7 @@ class RandomJigsawGenerator(InstanceGenerator):
         return (grid, key), rotated_piece
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a random jigsaw puzzle.
+        """Generates a random flat_pack puzzle.
 
         Args:
             key: jax random key in case stochasticity is used in the instance generation process.
@@ -306,8 +306,8 @@ class RandomJigsawGenerator(InstanceGenerator):
         )
 
 
-class ToyJigsawGeneratorWithRotation(InstanceGenerator):
-    """Generates a deterministic toy Jigsaw puzzle with 4 pieces. The pieces are
+class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
+    """Generates a deterministic toy FlatPack puzzle with 4 pieces. The pieces are
     rotated by a random amount of degrees {0, 90, 180, 270} but not shuffled."""
 
     def __init__(self) -> None:
@@ -352,8 +352,8 @@ class ToyJigsawGeneratorWithRotation(InstanceGenerator):
         )
 
 
-class ToyJigsawGeneratorNoRotation(InstanceGenerator):
-    """Generates a deterministic toy Jigsaw puzzle with 4 pieces. The pieces
+class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
+    """Generates a deterministic toy FlatPack puzzle with 4 pieces. The pieces
     are not rotated and not shuffled."""
 
     def __init__(self) -> None:

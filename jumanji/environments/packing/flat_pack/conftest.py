@@ -25,7 +25,7 @@ def key() -> chex.PRNGKey:
 
 
 @pytest.fixture
-def piece() -> chex.Array:
+def block() -> chex.Array:
     return jnp.array(
         [
             [0.0, 1.0, 1.0],
@@ -37,7 +37,7 @@ def piece() -> chex.Array:
 
 @pytest.fixture
 def solved_board() -> chex.Array:
-    """A mock solved puzzle board for testing."""
+    """A mock solved grid for testing."""
 
     return jnp.array(
         [

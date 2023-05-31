@@ -17,8 +17,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.packing.jigsaw.reward import DenseReward, SparseReward
-from jumanji.environments.packing.jigsaw.types import State
+from jumanji.environments.packing.flat_pack.reward import DenseReward, SparseReward
+from jumanji.environments.packing.flat_pack.types import State
 
 
 @pytest.fixture

@@ -17,24 +17,24 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.packing.jigsaw.env import Jigsaw
-from jumanji.environments.packing.jigsaw.generator import (
-    RandomJigsawGenerator,
-    ToyJigsawGeneratorNoRotation,
-    ToyJigsawGeneratorWithRotation,
+from jumanji.environments.packing.flat_pack.env import FlatPack
+from jumanji.environments.packing.flat_pack.generator import (
+    RandomFlatPackGenerator,
+    ToyFlatPackGeneratorNoRotation,
+    ToyFlatPackGeneratorWithRotation,
 )
-from jumanji.environments.packing.jigsaw.reward import SparseReward
-from jumanji.environments.packing.jigsaw.types import State
+from jumanji.environments.packing.flat_pack.reward import SparseReward
+from jumanji.environments.packing.flat_pack.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
 
 
 @pytest.fixture(scope="module")
-def jigsaw() -> Jigsaw:
-    """Creates a simple Jigsaw environment for testing."""
-    return Jigsaw(
-        generator=RandomJigsawGenerator(
+def flat_pack() -> FlatPack:
+    """Creates a simple FlatPack environment for testing."""
+    return FlatPack(
+        generator=RandomFlatPackGenerator(
             num_col_pieces=3,
             num_row_pieces=3,
         ),
@@ -123,10 +123,10 @@ def simple_env_placed_pieces_3() -> chex.Array:
     return jnp.array([True, True, True, False])
 
 
-def test_jigsaw__reset_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
+def test_flat_pack__reset_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the environment reset only compiles once."""
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(jigsaw.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(flat_pack.reset, n=1))
     state, timestep = reset_fn(key)
 
     # Check the types of the outputs
@@ -143,13 +143,13 @@ def test_jigsaw__reset_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
     assert isinstance(timestep, TimeStep)
 
 
-def test_jigsaw__step_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
+def test_flat_a__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the step function is only compiled once."""
-    state_0, timestep_0 = jigsaw.reset(key)
+    state_0, timestep_0 = flat_pack.reset(key)
     action_0 = jnp.array([0, 0, 0, 0])
 
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(jigsaw.step, n=1))
+    step_fn = jax.jit(chex.assert_max_traces(flat_pack.step, n=1))
 
     state_1, timestep_1 = step_fn(state_0, action_0)
 
@@ -174,28 +174,28 @@ def test_jigsaw__step_jit(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
     assert isinstance(timestep_2, TimeStep)
 
 
-def test_jigsaw__does_not_smoke(jigsaw: Jigsaw) -> None:
+def test_flat_pack__does_not_smoke(flat_pack: FlatPack) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(jigsaw)
+    check_env_does_not_smoke(flat_pack)
 
 
-def test_jigsaw___check_done(jigsaw: Jigsaw, key: chex.PRNGKey) -> None:
+def test_flat_pack___check_done(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the check_done method works as expected."""
 
-    state, _ = jigsaw.reset(key)
-    assert not jigsaw._check_done(state)
+    state, _ = flat_pack.reset(key)
+    assert not flat_pack._check_done(state)
 
     # Manually set step count equal to the number of pieces.
     state.step_count = 9
-    assert jigsaw._check_done(state)
+    assert flat_pack._check_done(state)
 
 
-def test_jigsaw___expand_piece_to_board(
-    jigsaw: Jigsaw, key: chex.PRNGKey, piece: chex.Array
+def test_flat_pack___expand_piece_to_board(
+    flat_pack: FlatPack, key: chex.PRNGKey, piece: chex.Array
 ) -> None:
     """Test that a piece is correctly set on a grid of zeros."""
-    _, _ = jigsaw.reset(key)
-    expanded_grid_with_piece = jigsaw._expand_piece_to_board(piece, 2, 1)
+    _, _ = flat_pack.reset(key)
+    expanded_grid_with_piece = flat_pack._expand_piece_to_board(piece, 2, 1)
     # fmt: off
     expected_expanded_grid = jnp.array(
         [
@@ -212,7 +212,7 @@ def test_jigsaw___expand_piece_to_board(
     assert jnp.array_equal(expanded_grid_with_piece, expected_expanded_grid)
 
 
-def test_jigsaw__completed_episode_with_dense_reward(
+def test_flat_pack__completed_episode_with_dense_reward(
     key: chex.PRNGKey,
     simple_env_board_state_1: chex.Array,
     simple_env_board_state_2: chex.Array,
@@ -222,13 +222,13 @@ def test_jigsaw__completed_episode_with_dense_reward(
     simple_env_action_mask_2: chex.Array,
     simple_env_placed_pieces_3: chex.Array,
 ) -> None:
-    """This test will step a simplified version of the Jigsaw environment
+    """This test will step a simplified version of the FlatPack environment
     with a dense reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
     done."""
 
-    simple_env = Jigsaw(
-        generator=ToyJigsawGeneratorNoRotation(),
+    simple_env = FlatPack(
+        generator=ToyFlatPackGeneratorNoRotation(),
     )
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(simple_env.step, n=1))
@@ -272,7 +272,7 @@ def test_jigsaw__completed_episode_with_dense_reward(
     assert not jnp.all(state.action_mask)
 
 
-def test_jigsaw__completed_episode_with_sparse_reward(
+def test_flat_pack__completed_episode_with_sparse_reward(
     key: chex.PRNGKey,
     simple_env_board_state_1: chex.Array,
     simple_env_board_state_2: chex.Array,
@@ -282,13 +282,13 @@ def test_jigsaw__completed_episode_with_sparse_reward(
     simple_env_action_mask_2: chex.Array,
     simple_env_placed_pieces_3: chex.Array,
 ) -> None:
-    """This test will step a simplified version of the Jigsaw environment
+    """This test will step a simplified version of the FlatPack environment
     with a sparse reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
     done."""
 
-    simple_env = Jigsaw(
-        generator=ToyJigsawGeneratorWithRotation(),
+    simple_env = FlatPack(
+        generator=ToyFlatPackGeneratorWithRotation(),
         reward_fn=SparseReward(),
     )
     chex.clear_trace_counter()

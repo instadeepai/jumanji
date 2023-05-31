@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments.packing.jigsaw import Jigsaw, Observation
+from jumanji.environments.packing.flat_pack import FlatPack, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -31,27 +31,27 @@ from jumanji.training.networks.parametric_distribution import (
 from jumanji.training.networks.transformer_block import TransformerBlock
 
 
-def make_actor_critic_networks_jigsaw(
-    jigsaw: Jigsaw,
+def make_actor_critic_networks_flat_pack(
+    flat_pack: FlatPack,
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `Jigsaw` environment."""
-    num_values = np.asarray(jigsaw.action_spec().num_values)
+    """Make actor-critic networks for the `FlatPack` environment."""
+    num_values = np.asarray(flat_pack.action_spec().num_values)
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=num_values
     )
-    num_pieces = jigsaw.num_pieces
-    policy_network = make_actor_network_jigsaw(
+    num_pieces = flat_pack.num_pieces
+    policy_network = make_actor_network_flat_pack(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
         num_pieces=num_pieces,
     )
-    value_network = make_critic_network_jigsaw(
+    value_network = make_critic_network_flat_pack(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
@@ -93,7 +93,7 @@ class UNet(hk.Module):
         return down_2, output
 
 
-class JigsawTorso(hk.Module):
+class FlatPackTorso(hk.Module):
     def __init__(
         self,
         num_transformer_layers: int,
@@ -160,7 +160,7 @@ class JigsawTorso(hk.Module):
         return pieces_embedding, board_encoding
 
 
-def make_actor_network_jigsaw(
+def make_actor_network_flat_pack(
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
@@ -168,7 +168,7 @@ def make_actor_network_jigsaw(
     num_pieces: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = JigsawTorso(
+        torso = FlatPackTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
@@ -193,7 +193,7 @@ def make_actor_network_jigsaw(
     return FeedForwardNetwork(init=init, apply=apply)
 
 
-def make_critic_network_jigsaw(
+def make_critic_network_flat_pack(
     num_transformer_layers: int,
     transformer_num_heads: int,
     transformer_key_size: int,
@@ -201,7 +201,7 @@ def make_critic_network_jigsaw(
     num_pieces: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = JigsawTorso(
+        torso = FlatPackTorso(
             num_transformer_layers=num_transformer_layers,
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,

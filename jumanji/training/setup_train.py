@@ -28,8 +28,8 @@ from jumanji.environments import (
     BinPack,
     Cleaner,
     Connector,
+    FlatPack,
     Game2048,
-    Jigsaw,
     JobShop,
     Knapsack,
     Maze,
@@ -165,10 +165,10 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
-    elif cfg.env.name == "jigsaw":
-        assert isinstance(env.unwrapped, Jigsaw)
-        random_policy = networks.make_random_policy_jigsaw(
-            jigsaw=env.unwrapped,
+    elif cfg.env.name == "flat_pack":
+        assert isinstance(env.unwrapped, FlatPack)
+        random_policy = networks.make_random_policy_flat_pack(
+            flat_pack=env.unwrapped,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
@@ -215,10 +215,10 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
-    elif cfg.env.name == "jigsaw":
-        assert isinstance(env.unwrapped, Jigsaw)
-        actor_critic_networks = networks.make_actor_critic_networks_jigsaw(
-            jigsaw=env.unwrapped,
+    elif cfg.env.name == "flat_pack":
+        assert isinstance(env.unwrapped, FlatPack)
+        actor_critic_networks = networks.make_actor_critic_networks_flat_pack(
+            flat_pack=env.unwrapped,
             num_transformer_layers=cfg.env.network.num_transformer_layers,
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,

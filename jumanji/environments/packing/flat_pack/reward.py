@@ -18,7 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.packing.jigsaw.types import State
+from jumanji.environments.packing.flat_pack.types import State
 
 
 class RewardFn(abc.ABC):

@@ -16,7 +16,7 @@ import chex
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.packing.jigsaw.utils import (
+from jumanji.environments.packing.flat_pack.utils import (
     compute_grid_dim,
     get_significant_idxs,
     rotate_piece,

@@ -22,15 +22,15 @@ import numpy as np
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.packing.jigsaw.types import State
+from jumanji.environments.packing.flat_pack.types import State
 from jumanji.viewer import Viewer
 
 
-class JigsawViewer(Viewer):
+class FlatPackViewer(Viewer):
     FIGURE_SIZE = (10, 10)
 
     def __init__(self, name: str, num_pieces: int, render_mode: str = "human") -> None:
-        """Viewer for a `Jigsaw` environment.
+        """Viewer for a `FlatPack` environment.
 
         Args:
             name: the window name to be used when initialising the window.
@@ -63,10 +63,10 @@ class JigsawViewer(Viewer):
         self._animation: Optional[matplotlib.animation.Animation] = None
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Render a Jigsaw environment state.
+        """Render a FlatPack environment state.
 
         Args:
-            state: the jigsaw environment state to be rendered.
+            state: the flat_pack environment state to be rendered.
 
         Returns:
             RGB array if the render_mode is RenderMode.RGB_ARRAY.
@@ -83,10 +83,10 @@ class JigsawViewer(Viewer):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
-        """Create an animation from a sequence of Jigsaw states.
+        """Create an animation from a sequence of FlatPack states.
 
         Args:
-            states: sequence of Jigsaw states corresponding to consecutive timesteps.
+            states: sequence of FlatPack states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
@@ -95,7 +95,7 @@ class JigsawViewer(Viewer):
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
         fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=JigsawViewer.FIGURE_SIZE
+            num=f"{self._name}Animation", figsize=FlatPackViewer.FIGURE_SIZE
         )
         plt.close(fig)
 
@@ -144,7 +144,7 @@ class JigsawViewer(Viewer):
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, JigsawViewer.FIGURE_SIZE)
+        fig = plt.figure(self._name, FlatPackViewer.FIGURE_SIZE)
         if recreate:
             if not plt.isinteractive():
                 fig.show()

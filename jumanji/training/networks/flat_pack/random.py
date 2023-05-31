@@ -12,5 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.packing.jigsaw.env import Jigsaw
-from jumanji.environments.packing.jigsaw.types import Observation, State
+from jumanji.environments.packing.flat_pack.env import FlatPack
+from jumanji.training.networks.masked_categorical_random import (
+    make_masked_categorical_random_ndim,
+)
+from jumanji.training.networks.protocols import RandomPolicy
+
+
+def make_random_policy_flat_pack(flat_pack: FlatPack) -> RandomPolicy:
+    """Make random policy for Minesweeper."""
+    action_spec_num_values = flat_pack.action_spec().num_values
+
+    return make_masked_categorical_random_ndim(
+        action_spec_num_values=action_spec_num_values
+    )

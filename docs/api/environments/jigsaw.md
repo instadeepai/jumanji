@@ -1,4 +1,4 @@
-::: jumanji.environments.packing.jigsaw.env.Jigsaw
+::: jumanji.environments.packing.flat_pack.env.FlatPack
     selection:
       members:
         - __init__

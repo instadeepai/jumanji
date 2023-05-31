@@ -22,21 +22,21 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.jigsaw.generator import (
+from jumanji.environments.packing.flat_pack.generator import (
     InstanceGenerator,
-    RandomJigsawGenerator,
+    RandomFlatPackGenerator,
 )
-from jumanji.environments.packing.jigsaw.reward import DenseReward, RewardFn
-from jumanji.environments.packing.jigsaw.types import Observation, State
-from jumanji.environments.packing.jigsaw.utils import compute_grid_dim, rotate_piece
-from jumanji.environments.packing.jigsaw.viewer import JigsawViewer
+from jumanji.environments.packing.flat_pack.reward import DenseReward, RewardFn
+from jumanji.environments.packing.flat_pack.types import Observation, State
+from jumanji.environments.packing.flat_pack.utils import compute_grid_dim, rotate_piece
+from jumanji.environments.packing.flat_pack.viewer import FlatPackViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Jigsaw(Environment[State]):
+class FlatPack(Environment[State]):
 
-    """A Jigsaw solving environment with a configurable number of row and column pieces.
+    """A FlatPack solving environment with a configurable number of row and column pieces.
         Here the goal of an agent is to solve a jigsaw puzzle by placing pieces
         in their correct positions.
 
@@ -85,8 +85,8 @@ class Jigsaw(Environment[State]):
             generation.
 
     ```python
-    from jumanji.environments import Jigsaw
-    env = Jigsaw()
+    from jumanji.environments import FlatPack
+    env = FlatPack()
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
@@ -108,9 +108,9 @@ class Jigsaw(Environment[State]):
             generator: Instance generator for the environment.
         """
 
-        default_generator = RandomJigsawGenerator(
-            num_row_pieces=3,
-            num_col_pieces=3,
+        default_generator = RandomFlatPackGenerator(
+            num_row_pieces=5,
+            num_col_pieces=5,
         )
 
         self.generator = generator or default_generator
@@ -122,13 +122,13 @@ class Jigsaw(Environment[State]):
             compute_grid_dim(self.num_col_pieces),
         )
         self.reward_fn = reward_fn or DenseReward()
-        self.viewer = viewer or JigsawViewer(
-            "Jigsaw", self.num_pieces, render_mode="human"
+        self.viewer = viewer or FlatPackViewer(
+            "FlatPack", self.num_pieces, render_mode="human"
         )
 
     def __repr__(self) -> str:
         return (
-            f"Jigsaw environment with a puzzle size of ({self.num_rows}x{self.num_cols}) "
+            f"FlatPack environment with a puzzle size of ({self.num_rows}x{self.num_cols}) "
             f"with {self.num_row_pieces} row pieces, {self.num_col_pieces} column "
             f"pieces. Each piece has dimension (3x3)."
         )
