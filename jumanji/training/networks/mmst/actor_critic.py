@@ -95,15 +95,10 @@ class MMSTTorso(hk.Module):
 
     def embed_agents(self, agents: chex.Array) -> chex.Array:
 
-        # agent_leaves = jnp.stack(jtree.tree_leaves(agents), axis=-1)
         embeddings = hk.Linear(self.model_size, name="agent_projection")(agents)
         return embeddings
 
     def __call__(self, observation: Observation) -> chex.Array:
-        # observation.action_mask => colors available
-        # observation.colors => nodes that are colored
-        # node embedding check if it's colored or not
-        # cross attention => for each color true if the node is colored with it
 
         batch_size, num_nodes = observation.node_types.shape
         num_agents = observation.positions.shape[1]
@@ -156,7 +151,7 @@ class MMSTTorso(hk.Module):
                 name=f"self_attention_nodes_block_{block_id}",
             )(node_embeddings, node_embeddings, node_embeddings, mask)
 
-            # Self-attention on colors.
+            # Self-attention on agents.
             agents_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
@@ -166,7 +161,7 @@ class MMSTTorso(hk.Module):
                 name=f"self_attention_agent_block_{block_id}",
             )(agents_embeddings, agents_embeddings, agents_embeddings)
 
-            # Cross-attention between nodes and colors.
+            # Cross-attention between nodes and agents.
             new_node_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,
@@ -181,7 +176,7 @@ class MMSTTorso(hk.Module):
                 nodes_cross_agents_mask,
             )
 
-            # Cross-attention between colors and nodes.
+            # Cross-attention between agents and nodes.
             agents_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
                 key_size=self.transformer_key_size,

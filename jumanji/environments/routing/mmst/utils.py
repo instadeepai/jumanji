@@ -38,12 +38,12 @@ def check_num_edges(nodes: List[int], num_edges: jnp.int32) -> None:
 
     num_nodes = len(nodes)
 
-    # Check min edges
+    # Check mininum number of edges is satisfied.
     min_edges = num_nodes - 1
     if num_edges < min_edges:
         raise ValueError("num_edges less than minimum (%i)" % min_edges)
 
-    # Check max edges
+    # Check maximum number of edges is satisfied.
     max_edges = num_nodes * (num_nodes - 1) / 2
     if num_edges > max_edges:
         raise ValueError("num_edges greater than maximum (%i)" % max_edges)
@@ -146,7 +146,7 @@ def init_graph_merge(
     edge_codes = edge_codes.at[0:num_edges_a].set(graph_a.edge_codes)
     edge_codes = edge_codes.at[num_edges_a:num_edges_ab].set(graph_b.edge_codes)
 
-    # nodes handling
+    # Nodes handling.
     nodes = jnp.append(graph_a.nodes, graph_b.nodes)
     total_nodes = len(nodes)
     nodes_a = len(graph_a.nodes)
@@ -439,12 +439,12 @@ def merge_graphs(
 
     base_key1, base_key2 = jax.random.split(base_key, 2)
 
-    # add one edge between both subgraphs to guarentee the new graph is connected
+    # Add one edge between both subgraphs to guarentee the new graph is connected.
     graph, _ = add_edge(
         graph, make_random_edge_from_nodes(graph_a.nodes, graph_b.nodes, base_key1)
     )
 
-    # add remaining edges until the desired number of edges is reached
+    # Add remaining edges until the desired number of edges is reached.
     graph = add_random_edges(graph, num_edges, base_key2)
 
     return graph
@@ -519,7 +519,7 @@ def multi_random_walk(
         for i in range(num_agents)
     ]
 
-    # get the total number of edges we need to add when merging the graphs.
+    # Get the total number of edges we need to add when merging the graphs.
     sum_ratio: int = np.sum(np.arange(1, num_agents))
     frac = np.cumsum(
         [total_edges_merge_graph * (i) / sum_ratio for i in range(1, num_agents - 1)]
@@ -527,7 +527,7 @@ def multi_random_walk(
     edges_per_merge_graph = jnp.split(jnp.arange(total_edges_merge_graph), frac)
     num_edges_per_merge_graph = [len(edges) for edges in edges_per_merge_graph]
 
-    # merge the graphs
+    # Merge the graphs.
     graph, *graphs = graphs
     total_edges = num_edges_per_sub_graph[0]
     merge_graph_keys = jax.random.split(base_key, num_agents - 1)

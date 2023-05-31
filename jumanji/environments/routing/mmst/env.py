@@ -347,7 +347,7 @@ class MMST(Environment[State]):
             action_mask=self._make_action_mask(
                 active_node_edges, agents_pos, state.finished_agents
             ),
-            finished_agents=state.finished_agents,  # not updated yet
+            finished_agents=state.finished_agents,  # Not updated yet.
             step_count=state.step_count,
             key=key,
         )
@@ -366,24 +366,24 @@ class MMST(Environment[State]):
         """
 
         # Each agent should see its note_types labelled with id 1
-        # and all its already connected nodes labeled with id 0
+        # and all its already connected nodes labeled with id 0.
 
-        # to presever the negative ones
+        # Presever the negative ones.
         zero_mask = state.node_types != UTILITY_NODE
         ones_inds = state.node_types == UTILITY_NODE
 
-        # set the agent_id to 0 since the environment is now single agent.
+        # Set the agent_id to 0 since the environment is now single agent.
         agent_id = 0
 
         node_types = state.node_types - agent_id
         node_types %= self.num_agents
         node_types *= 2
-        node_types += 1  # add one so that current agent nodes are labelled 1
+        node_types += 1  # Add one so that current agent nodes are labelled 1.
 
-        node_types *= zero_mask  # masking the position with negative ones
-        node_types -= ones_inds  # adding negative ones back
+        node_types *= zero_mask  # Mask the position with negative ones.
+        node_types -= ones_inds  # Add the negative ones back.
 
-        # set already connected nodes by agent to 0 #
+        # Set already connected nodes by agent to 0.
         for agent in range(self.num_agents):
             connected_mask = state.connected_nodes_index[agent] == UTILITY_NODE
             connected_ones = state.connected_nodes_index[agent] != UTILITY_NODE
@@ -418,10 +418,10 @@ class MMST(Environment[State]):
             * ~state.finished_agents
         )
 
-        # sum the rewards to make the environment is single agent
+        # Sum the rewards to make the environment is single agent.
         reward = jnp.sum(rewards)
 
-        # update the state now
+        # Update the state now.
         state.finished_agents = finished_agents
         state.step_count = state.step_count + 1
         extras = self._get_extras(state)
@@ -450,10 +450,10 @@ class MMST(Environment[State]):
         is_done = finished_agents.all()
         horizon_reached = state.step_count >= self._step_limit
 
-        # false + false = 0 = transition
-        # true + false = 1  = truncation
-        # false + true * 2 = 2 = termination
-        # true + true * 2 = 3 -> gets clamped to 2 = termination
+        # false + false = 0 = transition.
+        # true + false = 1  = truncation.
+        # false + true * 2 = 2 = termination.
+        # true + true * 2 = 3 -> gets clamped to 2 = termination.
         timestep: TimeStep[chex.Array] = jax.lax.switch(
             horizon_reached + is_done * 2,
             [
@@ -572,10 +572,10 @@ class MMST(Environment[State]):
             is_invalid_node = nodes[agent_i] == EMPTY_NODE
             node_is_not_selected = jnp.sum(jnp.sum(added_nodes == nodes[agent_i]) == 0)
 
-            # false + false = 0 = tie break
-            # true + false = 1  = invalid choice (with tie break) do nothing
-            # false + true * 2 = 2 = valid choice and valid node
-            # true + true * 2 = 3 -> invalid choice (without tie break)
+            # false + false = 0 = tie break.
+            # true + false = 1  = invalid choice (with tie break) do nothing.
+            # false + true * 2 = 2 = valid choice and valid node.
+            # true + true * 2 = 3 -> invalid choice (without tie break).
 
             new_actions, added_nodes = jax.lax.switch(
                 is_invalid_node + node_is_not_selected * 2,
@@ -623,13 +623,13 @@ class MMST(Environment[State]):
             return new_action
 
         final_actions = jnp.zeros_like(new_actions)
-        # set the action to 0 if the agent is moving to an already connected node
+        # Set the action to 0 if the agent is moving to an already connected node.
         for agent in range(self.num_agents):
             node_visited = state.connected_nodes_index[agent, nodes[agent]]
             new_action = mask_visited_nodes(node_visited, new_actions[agent])
             final_actions = final_actions.at[agent].set(new_action)
 
-        # masked agents with finished states
+        # Mask agents with finished states.
         final_actions = final_actions * ~state.finished_agents - state.finished_agents
 
         return final_actions, nodes

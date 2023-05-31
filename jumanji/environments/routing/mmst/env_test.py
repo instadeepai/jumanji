@@ -36,9 +36,9 @@ def test__mmst_agent_observation(
 
     _, _, timestep = deterministic_mmst_env
 
-    # nodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11
-    # node_types = jnp.array([0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1], dtype=jnp.int32)
-    # conn_nodes = jnp.array([[1, -1, -1], [3, -1, -1]], dtype=jnp.int32)
+    # nodes =  0, 1, 2, 3,  4, 5, 6, 7, 8, 9 10  11.
+    # node_types = jnp.array([0, 0, -1, 1, -1, 1, 0, -1, 1, 0, -1, -1], dtype=jnp.int32).
+    # conn_nodes = jnp.array([[1, -1, -1], [3, -1, -1]], dtype=jnp.int32).
 
     obs_node_types = jnp.array(
         [1, 0, -1, 2, -1, 3, 1, -1, 3, 1, -1, -1],
@@ -84,9 +84,9 @@ def test__mmst_split_gn_reset(
     assert isinstance(state, State)
     assert state.step_count == 0
 
-    # Initial position is equal to current node
+    # Assert initial position is equal to current node.
     assert jnp.all(state.connected_nodes[:, 0] == state.positions)
-    # Assert no agent is done
+    # Assert no agent is done.
     assert jnp.all(~state.finished_agents)
 
 
@@ -110,7 +110,7 @@ def test__mmst_step(mmst_split_gn_env: MMST) -> None:
     action = jax.random.categorical(action_key, logits)
     new_state, next_timestep = step_fn(state, action)
 
-    # Check that the state has changed
+    # Check that the state has changed.
     assert not jnp.array_equal(new_state.connected_nodes, state.connected_nodes)
     assert not jnp.array_equal(new_state.position_index, state.position_index)
     assert not jnp.array_equal(new_state.positions, state.positions)
@@ -119,7 +119,7 @@ def test__mmst_step(mmst_split_gn_env: MMST) -> None:
     assert not jnp.array_equal(new_state.step_count, state.step_count)
     assert not jnp.array_equal(next_timestep.reward, timestep.reward)
 
-    # Check that the state is made of DeviceArrays, this is false for the non-jitted
+    # Check that the state is made of DeviceArrays, this is false for the non-jitted.
     # step function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(new_state)
 
@@ -164,7 +164,7 @@ def test__mmst_termination(
 
     assert jnp.all(state.finished_agents)
 
-    # termination
+    # Termination.
     assert timestep.last()
     assert jnp.all(timestep.discount == 0)
 
@@ -174,7 +174,7 @@ def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) 
     env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
-    # truncation
+    # Truncation.
     for _ in range(env._step_limit + 1):
         state, timestep = step_fn(state, jnp.array([3, 3]))
 
@@ -194,6 +194,6 @@ def test__mmst_action_masking(
     action = jnp.array([4, 3])
     new_state, _ = step_fn(state, action)
 
-    # agent 1 shouldn't be able to acess node 4 any more
+    # Agent 1 shouldn't be able to acess node 4 any more.
     assert jnp.array_equal(state.positions[1], new_state.positions[1])
     assert not jnp.array_equal(state.action_mask[1], new_state.action_mask[1])

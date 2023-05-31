@@ -50,7 +50,7 @@ class MMSTViewer(Viewer):
         self._name = name
         self.num_agents = num_agents
 
-        # Pick display method. Only one mode avaliable
+        # Pick display method. Only one mode avaliable.
         self._display: Callable[[plt.Figure], Optional[NDArray]]
         self._display = self._display_human
 
@@ -104,7 +104,7 @@ class MMSTViewer(Viewer):
         node_radius = 0.05 * 5 / node_scale
 
         edges = self.build_edges(state.adj_matrix, state.connected_nodes)
-        # draw edges
+        # Draw edges.
         for e in edges.values():
             (n1, n2), color = e
             n1, n2 = int(n1), int(n2)
@@ -112,7 +112,7 @@ class MMSTViewer(Viewer):
             y_values = [positions[n1][1], positions[n2][1]]
             ax.plot(x_values, y_values, c=color, linewidth=2)
 
-        # draw nodes
+        # Draw nodes.
         for node in range(num_nodes):
             pos = np.where(state.nodes_to_connect == node)[0]
             if len(pos) == 1:
@@ -153,14 +153,14 @@ class MMSTViewer(Viewer):
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
     ) -> Dict[Tuple[int, ...], List[Tuple[float, ...]]]:
 
-        # normalize id for either order
+        # Normalize id for either order.
         def edge_id(n1: int, n2: int) -> Tuple[int, ...]:
             return tuple(sorted((n1, n2)))
 
-        # might be slow but for now we will always build all the edges
+        # Might be slow but for now we will always build all the edges.
         edges: Dict[Tuple[int, ...], List[Tuple[float, ...]]] = {}
 
-        # convert to numpy
+        # Convert to numpy
         connected_nodes = np.asarray(connected_nodes)
         row_indices, col_indices = jnp.nonzero(adj_matrix)
         # Create the edge list as a list of tuples (source, target)
@@ -178,7 +178,7 @@ class MMSTViewer(Viewer):
             conn_group = connected_nodes[agent]
             len_conn = np.where(conn_group != -1)[0][
                 -1
-            ]  # get last index where node is not -1
+            ]  # Get last index where node is not -1.
             for i in range(len_conn):
                 eid = edge_id(conn_group[i], conn_group[i + 1])
                 edges[eid] = [(conn_group[i], conn_group[i + 1]), self.palette[agent]]
