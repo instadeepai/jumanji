@@ -128,7 +128,7 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
         position_index=jnp.zeros((num_agents), dtype=jnp.int32),
         positions=positions,
         node_edges=active_node_edges,
-        action_mask=env._update_action_mask(
+        action_mask=env._make_action_mask(
             active_node_edges, positions, finished_agents
         ),
         finished_agents=finished_agents,

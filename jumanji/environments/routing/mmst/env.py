@@ -252,7 +252,7 @@ class MMST(Environment[State]):
             position_index=jnp.zeros((self.num_agents), dtype=jnp.int32),
             positions=agents_pos,
             node_edges=active_node_edges,
-            action_mask=self._update_action_mask(
+            action_mask=self._make_action_mask(
                 active_node_edges, agents_pos, finished_agents
             ),
             finished_agents=finished_agents,
@@ -344,7 +344,7 @@ class MMST(Environment[State]):
             position_index=position_index,
             positions=agents_pos,
             node_edges=active_node_edges,
-            action_mask=self._update_action_mask(
+            action_mask=self._make_action_mask(
                 active_node_edges, agents_pos, state.finished_agents
             ),
             finished_agents=state.finished_agents,  # not updated yet
@@ -365,7 +365,31 @@ class MMST(Environment[State]):
             observation: Observation object containing the observation of the environment.
         """
 
-        node_types = self._get_obsv(state.node_types, state.connected_nodes_index)
+        # Each agent should see its note_types labelled with id 1
+        # and all its already connected nodes labeled with id 0
+
+        # to presever the negative ones
+        zero_mask = state.node_types != UTILITY_NODE
+        ones_inds = state.node_types == UTILITY_NODE
+
+        # set the agent_id to 0 since the environment is now single agent.
+        agent_id = 0
+
+        node_types = state.node_types - agent_id
+        node_types %= self.num_agents
+        node_types *= 2
+        node_types += 1  # add one so that current agent nodes are labelled 1
+
+        node_types *= zero_mask  # masking the position with negative ones
+        node_types -= ones_inds  # adding negative ones back
+
+        # set already connected nodes by agent to 0 #
+        for agent in range(self.num_agents):
+            connected_mask = state.connected_nodes_index[agent] == UTILITY_NODE
+            connected_ones = state.connected_nodes_index[agent] != UTILITY_NODE
+            node_types *= connected_mask
+            agent_skip = (agent - agent_id) % self.num_agents
+            node_types += (2 * agent_skip) * connected_ones
 
         return Observation(
             node_types=node_types,
@@ -442,49 +466,7 @@ class MMST(Environment[State]):
 
         return state, timestep
 
-    def _get_obsv(
-        self,
-        node_types: chex.Array,
-        connected_nodes_index: chex.Array,
-    ) -> chex.Array:
-        """Encodes the node_types with respect.
-
-        Args:
-            node_types: the environment state node_types.
-            connected_nodes_index: nodes already connected to this component (index view)
-        Returns:
-            Array: the state in the perspective of the agent.
-        """
-
-        # Each agent should see its note_types labelled with id 1
-        # and all its already connected nodes labeled with id 0
-
-        # to presever the negative ones
-        zero_mask = node_types != UTILITY_NODE
-        ones_inds = node_types == UTILITY_NODE
-
-        # set the agent_id to 0 since the environment is now single agent.
-        agent_id = 0
-
-        node_types -= agent_id
-        node_types %= self.num_agents
-        node_types *= 2
-        node_types += 1  # add one so that current agent nodes are labelled 1
-
-        node_types *= zero_mask  # masking the position with negative ones
-        node_types -= ones_inds  # adding negative ones back
-
-        # set already connected nodes by agent to 0 #
-        for agent in range(self.num_agents):
-            connected_mask = connected_nodes_index[agent] == UTILITY_NODE
-            connected_ones = connected_nodes_index[agent] != UTILITY_NODE
-            node_types *= connected_mask
-            agent_skip = (agent - agent_id) % self.num_agents
-            node_types += (2 * agent_skip) * connected_ones
-
-        return node_types
-
-    def _update_action_mask(
+    def _make_action_mask(
         self, node_edges: chex.Array, position: chex.Array, finished_agents: chex.Array
     ) -> chex.Array:
         """Intialise and action mask for every node based on all its edges
@@ -630,12 +612,12 @@ class MMST(Environment[State]):
         )
 
         def mask_visited_nodes(
-            node_visited: jnp.int32, oldaction: jnp.int32
+            node_visited: jnp.int32, old_action: jnp.int32
         ) -> jnp.int32:
             new_action = jax.lax.cond(  # type:ignore
                 node_visited != EMPTY_NODE,
                 lambda *_: INVALID_ALREADY_TRAVERSED,
-                lambda *_: oldaction,
+                lambda *_: old_action,
             )
 
             return new_action
