@@ -51,8 +51,7 @@ class RandomGenerator(Generator):
     """
 
     def __init__(self, num_nodes: int, edge_probability: float):
-        """
-        Initialize the RandomGraphColoringGenerator.
+        """Initialize the RandomGraphColoringGenerator.
 
         Args:
             num_nodes: The number of nodes in the graph. The number of colors available for
