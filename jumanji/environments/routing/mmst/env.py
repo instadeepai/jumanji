@@ -368,7 +368,7 @@ class MMST(Environment[State]):
         # Each agent should see its note_types labelled with id 1
         # and all its already connected nodes labeled with id 0.
 
-        # Presever the negative ones.
+        # Preserve the negative ones.
         zero_mask = state.node_types != UTILITY_NODE
         ones_inds = state.node_types == UTILITY_NODE
 
