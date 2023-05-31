@@ -101,6 +101,7 @@ class RandomGenerator(Generator):
 
         # Make sure the graph is undirected (symmetric) and without self-loops.
         adj_matrix = jnp.tril(adj_matrix, k=-1)  # Keep only the lower triangular part.
+         
         # Copy the lower triangular part to the upper triangular part.
         adj_matrix += adj_matrix.T
 
