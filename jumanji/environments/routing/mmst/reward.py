@@ -91,5 +91,5 @@ class DenseRewardFn(RewardFn):
             )
             rewards = rewards.at[agent].set(reward_i)
 
-        # Sum the rewards to make the environment single agent.
+        rewards *= ~state.finished_agents
         return jnp.sum(rewards)

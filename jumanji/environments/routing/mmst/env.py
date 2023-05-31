@@ -413,10 +413,7 @@ class MMST(Environment[State]):
 
         observation = self._state_to_observation(state)
         finished_agents = self.get_finished_agents(state)
-        reward = (
-            self._reward_fn(state, action, state.nodes_to_connect)
-            * ~state.finished_agents
-        )
+        reward = self._reward_fn(state, action, state.nodes_to_connect)
 
         # Update the state now.
         state.finished_agents = finished_agents
