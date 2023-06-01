@@ -164,20 +164,20 @@ class MultiCVRP(Environment[State]):
         return state, timestep
 
     def step(
-        self, state: State, actions: chex.Array
+        self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
-            actions: Array containing the index of the next nodes to visit.
+            action: Array containing the index of the next nodes to visit.
 
         Returns:
             state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
                 as well as the timestep to be observed.
         """
-        new_state = self._update_state(state, actions)
+        new_state = self._update_state(state, action)
 
         is_done = (
             (new_state.nodes.demands.sum() == 0)
