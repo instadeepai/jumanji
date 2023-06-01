@@ -33,6 +33,7 @@ from jumanji.environments import (
     Knapsack,
     Maze,
     Minesweeper,
+    RobotWarehouse,
     RubiksCube,
     Snake,
 )
@@ -164,6 +165,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "robot_warehouse":
+        assert isinstance(env.unwrapped, RobotWarehouse)
+        random_policy = networks.make_random_policy_robot_warehouse()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -245,6 +249,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             cube_embed_dim=cfg.env.network.cube_embed_dim,
             step_count_embed_dim=cfg.env.network.step_count_embed_dim,
             dense_layer_dims=cfg.env.network.dense_layer_dims,
+        )
+    elif cfg.env.name == "robot_warehouse":
+        assert isinstance(env.unwrapped, RobotWarehouse)
+        actor_critic_networks = networks.make_actor_critic_networks_robot_warehouse(
+            robot_warehouse=env.unwrapped,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
