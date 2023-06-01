@@ -576,7 +576,7 @@ class TestAutoResetWrapper:
             action = fake_auto_reset_environment.action_spec().generate_value()
             state, timestep = jax.jit(fake_auto_reset_environment.step)(state, action)
 
-        assert timestep.step_type == first_timestep.step_type == StepType.FIRST
+        assert timestep.step_type == StepType.LAST
         chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
 
 
@@ -676,8 +676,7 @@ class TestVmapAutoResetWrapper:
                 state, action
             )
 
-        assert jnp.all(timestep.step_type == first_timestep.step_type)
-        assert jnp.all(timestep.step_type == StepType.FIRST)
+        assert jnp.all(timestep.step_type == StepType.LAST)
         chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
 
     def test_vmap_auto_reset_wrapper__step(

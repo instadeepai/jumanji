@@ -19,7 +19,6 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.connector.constants import (
-    AGENT_INITIAL_VALUE,
     EMPTY,
     PATH,
     POSITION,
@@ -147,38 +146,6 @@ def get_agent_grid(agent_id: jnp.int32, grid: chex.Array) -> chex.Array:
     agent_target = (grid == target) * target
     agent_path = (grid == path) * path
     return agent_head + agent_target + agent_path
-
-
-def switch_perspective(grid: chex.Array, agent_id: int, num_agents: int) -> chex.Array:
-    """Encodes the observation with respect to the current agent defined by `agent_id`.
-
-    `agent_id`'s observations will always take the values 1,2,3 and ordering of observations
-    will be preserved (agent 0's observations always come before agent 1's).
-
-    For example, in a 3-agent game, if we wanted to switch to
-    agent 1's perspective, then:
-    agent 1s values will change from 4,5,6 -> 1,2,3
-    agent 2s values will change from 7,8,9 -> 4,5,6
-    agent 0s values will change from 1,2,3 -> 7,8,9
-
-    Agent 0 will be passed observations where it is represented by the values 1,2,3. Agent 1
-    will be passed observations where it is represented by the values 1,2,3. However in the
-    state agent 0 will always be 1,2,3 and agent 1 will always be 4,5,6.
-
-    Args:
-        grid: the environment state grid.
-        agent_id: the id of the agent whose observation is being requested.
-        num_agents: the number of agents on the grid.
-
-    Returns:
-        Array: the grid in the perspective of the given agent id.
-    """
-    new_grid = grid - AGENT_INITIAL_VALUE  # Center agent values around 0
-    new_grid -= 3 * agent_id  # Move the obs
-    new_grid %= 3 * num_agents  # Keep obs in bounds
-    new_grid += AGENT_INITIAL_VALUE  # 'Un-center' agent obs around 0
-    # Take agent values from rotated grid and empty values from old grid
-    return jnp.where((grid >= AGENT_INITIAL_VALUE), new_grid, grid)
 
 
 def get_correction_mask(
