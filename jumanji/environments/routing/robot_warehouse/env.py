@@ -316,12 +316,12 @@ class RobotWarehouse(Environment[State]):
             step_count=steps,
         )
 
-        timestep: TimeStep[chex.Array] = jax.lax.cond(
+        timestep: = jax.lax.cond(
             done,
-            # this really should be a truncation, but jumanji training doesn't support it
-            lambda _: termination(reward=reward, observation=next_observation),
-            lambda _: transition(reward=reward, observation=next_observation),
-            None,
+            termination,
+            transition,
+            reward,
+            next_observation,
         )
         next_state = State(
             grid=grid,
