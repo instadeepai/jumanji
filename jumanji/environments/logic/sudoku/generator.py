@@ -32,6 +32,10 @@ import chex
 import jax
 import jax.numpy as jnp
 
+from jumanji.environments.logic.sudoku.constants import (
+    INITIAL_BOARD_SAMPLE,
+    SOLVED_BOARD_SAMPLE,
+)
 from jumanji.environments.logic.sudoku.types import State
 from jumanji.environments.logic.sudoku.utils import get_action_mask
 
@@ -57,32 +61,8 @@ class DummyGenerator(Generator):
     def __init__(
         self,
     ) -> None:
-        board = jnp.array(
-            [
-                [0, 0, 0, 8, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 4, 3],
-                [5, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 7, 0, 8, 0, 0],
-                [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                [0, 2, 0, 0, 3, 0, 0, 0, 0],
-                [6, 0, 0, 0, 0, 0, 0, 7, 5],
-                [0, 0, 3, 4, 0, 0, 0, 0, 0],
-                [0, 0, 0, 2, 0, 0, 6, 0, 0],
-            ]
-        )
-        solved_board = jnp.array(
-            [
-                [2, 3, 7, 8, 4, 1, 5, 6, 9],
-                [1, 8, 6, 7, 9, 5, 2, 4, 3],
-                [5, 9, 4, 3, 2, 6, 7, 1, 8],
-                [3, 1, 5, 6, 7, 4, 8, 9, 2],
-                [4, 6, 9, 5, 8, 2, 1, 3, 7],
-                [7, 2, 8, 1, 3, 9, 4, 5, 6],
-                [6, 4, 2, 9, 1, 8, 3, 7, 5],
-                [8, 5, 3, 4, 6, 7, 9, 2, 1],
-                [9, 7, 1, 2, 5, 3, 6, 8, 4],
-            ]
-        )
+        board = jnp.asarray(INITIAL_BOARD_SAMPLE, dtype=jnp.int32)
+        solved_board = jnp.asarray(SOLVED_BOARD_SAMPLE, dtype=jnp.int32)
 
         board = jnp.asarray(board, dtype=jnp.int32) - 1
         action_mask = get_action_mask(board)

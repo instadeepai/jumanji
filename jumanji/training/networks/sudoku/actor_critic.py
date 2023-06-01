@@ -153,12 +153,12 @@ def make_sudoku_equivariant(
         )(board, board, board)
 
         if is_critic:
-            logits = hk.nets.MLP((1,), activate_final=False)(embedding)
+            logits = hk.Linear(1)(embedding)
             logits = logits.squeeze(axis=-1)
             value = jnp.mean(logits, axis=-1)
             return value
         else:
-            logits = hk.nets.MLP((BOARD_WIDTH**2,), activate_final=False)(embedding)
+            logits = hk.Linear(BOARD_WIDTH**2)(embedding)
 
             logits = jnp.transpose(logits, (0, 2, 1))
 

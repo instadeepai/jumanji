@@ -26,11 +26,7 @@ from jumanji.environments.logic.sudoku.data import DATABASES
 from jumanji.environments.logic.sudoku.generator import DatabaseGenerator, Generator
 from jumanji.environments.logic.sudoku.reward import RewardFn, SparseRewardFn
 from jumanji.environments.logic.sudoku.types import Observation, State
-from jumanji.environments.logic.sudoku.utils import (
-    apply_action,
-    get_action_mask,
-    is_puzzle_solved,
-)
+from jumanji.environments.logic.sudoku.utils import apply_action, get_action_mask
 from jumanji.environments.logic.sudoku.viewer import SudokuViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
@@ -108,8 +104,6 @@ class Sudoku(Environment[State]):
         updated_board = apply_action(action=action, board=state.board)
         updated_action_mask = get_action_mask(board=updated_board)
 
-        winning = is_puzzle_solved(updated_board)
-
         # creating next state
         next_state = State(
             board=updated_board, action_mask=updated_action_mask, key=state.key
@@ -118,7 +112,7 @@ class Sudoku(Environment[State]):
         no_actions_avalaible = ~jnp.any(updated_action_mask)
 
         # computing terminal condition
-        done = invalid | winning | no_actions_avalaible
+        done = invalid | no_actions_avalaible
         reward = self._reward_fn(
             state=state, new_state=next_state, action=action, done=done
         )
@@ -172,7 +166,7 @@ class Sudoku(Environment[State]):
             action_spec: `MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH], int),
+            num_values=jnp.array([BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH]),
             name="action",
             dtype=jnp.int32,
         )
