@@ -43,4 +43,4 @@ delivered successfully during the time step (i.e., +1 for each shelf).
 
 ## Registered Versions 📖
 
-- `RobotWarehouse-v0`, a warehouse with 2 agents each with a sensor range of 1, a warehouse floor with 1 shelf row, 3 shelf columns, a column height of 8 and a shelf request queue of 4.
+- `RobotWarehouse-v0`, a warehouse with 4 agents each with a sensor range of 1, a warehouse floor with 2 shelf rows, 3 shelf columns, a column height of 8, and a shelf request queue of 8.
