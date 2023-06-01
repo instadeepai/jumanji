@@ -71,6 +71,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://instadeep.github.io/jumanji/api/environments/rware/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/snake/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
@@ -122,6 +127,11 @@
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/minesweeper/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/robot_warehouse/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
