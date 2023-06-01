@@ -95,7 +95,7 @@ class GeneratorBase(Generator):
         sensor_range: int,
         request_queue_size: int,
     ) -> None:
-        """Initialises a robot_warehouse generator."""
+        """Initializes a robot_warehouse generator."""
         super().__init__(
             shelf_rows,
             shelf_columns,
