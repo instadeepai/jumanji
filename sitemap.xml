@@ -46,6 +46,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://instadeep.github.io/jumanji/api/environments/graph_coloring/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/job_shop/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
@@ -107,6 +112,11 @@
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/game_2048/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/graph_coloring/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
