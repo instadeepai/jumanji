@@ -138,7 +138,7 @@ class UniformRandomGenerator(Generator):
             ),
             action_mask=create_action_mask(node_demands, capacities),
             step_count=jnp.ones((), dtype=jnp.int16),
-            key=jax.random.PRNGKey(0),
+            key=key,
         )
 
         return state
