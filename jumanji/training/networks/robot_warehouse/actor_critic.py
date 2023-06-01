@@ -99,7 +99,7 @@ class RobotWarehouseTorso(hk.Module):
         # (B, N, O + 1)
         obs = jnp.concatenate((agents_view, step), axis=-1)
         # (B, N, O + 1) -> (B, N, H)
-        embeddings = self.embedder(obs)
+        embeddings = hk.Linear(self.model_size)(obs)
 
         # (B, N, H) -> (B, N, H)
         for block_id in range(self.transformer_num_blocks):
