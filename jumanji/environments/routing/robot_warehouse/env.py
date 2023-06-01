@@ -197,7 +197,7 @@ class RobotWarehouse(Environment[State]):
             ")"
         )
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[chex.Array]]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
