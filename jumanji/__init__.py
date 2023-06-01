@@ -77,8 +77,8 @@ register(id="CVRP-v1", entry_point="jumanji.environments:CVRP")
 # Maze with 10 rows and 10 columns, a time limit of 100 and a random maze generator.
 register(id="Maze-v0", entry_point="jumanji.environments:Maze")
 
-# RobotWarehouse with 1 shelf row, 3 shelf columns, 8 column height, 2 agents, 1 sensor range,
-# 4 request and a random robot_warehouse generator.
+# RobotWarehouse with a random generator with 2 shelf rows, 3 shelf columns, a column height of 8,
+# 4 agents, a sensor range of 1, and a request queue of size 8.
 register(id="RobotWarehouse-v0", entry_point="jumanji.environments:RobotWarehouse")
 
 # Snake game on a board of size 12x12 with a time limit of 4000.
