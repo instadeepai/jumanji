@@ -34,6 +34,12 @@ from jumanji.training.networks.game_2048.actor_critic import (
     make_actor_critic_networks_game_2048,
 )
 from jumanji.training.networks.game_2048.random import make_random_policy_game_2048
+from jumanji.training.networks.graph_coloring.actor_critic import (
+    make_actor_critic_networks_graph_coloring,
+)
+from jumanji.training.networks.graph_coloring.random import (
+    make_random_policy_graph_coloring,
+)
 from jumanji.training.networks.job_shop.actor_critic import (
     make_actor_critic_networks_job_shop,
 )
@@ -48,6 +54,12 @@ from jumanji.training.networks.minesweeper.actor_critic import (
     make_actor_critic_networks_minesweeper,
 )
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
+from jumanji.training.networks.robot_warehouse.actor_critic import (
+    make_actor_critic_networks_robot_warehouse,
+)
+from jumanji.training.networks.robot_warehouse.random import (
+    make_random_policy_robot_warehouse,
+)
 from jumanji.training.networks.rubiks_cube.actor_critic import (
     make_actor_critic_networks_rubiks_cube,
 )

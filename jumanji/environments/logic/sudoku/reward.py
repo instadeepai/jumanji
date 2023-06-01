@@ -36,4 +36,4 @@ class SparseRewardFn(RewardFn):
         self, state: State, action: chex.Array, new_state: State, done: jnp.ndarray
     ) -> chex.Array:
         solved = is_puzzle_solved(new_state.board)
-        return jnp.array(solved, float)
+        return jnp.array(solved, jnp.float32)
