@@ -16,6 +16,7 @@ import sys
 
 from jumanji.environments.logic import game_2048, minesweeper, rubiks_cube
 from jumanji.environments.logic.game_2048.env import Game2048
+from jumanji.environments.logic.graph_coloring.env import GraphColoring
 from jumanji.environments.logic.minesweeper import Minesweeper
 from jumanji.environments.logic.rubiks_cube import RubiksCube
 from jumanji.environments.packing import bin_pack, job_shop, knapsack
@@ -28,6 +29,7 @@ from jumanji.environments.routing import (
     cvrp,
     maze,
     multi_cvrp,
+    robot_warehouse,
     snake,
     tsp,
 )
@@ -36,6 +38,7 @@ from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
+from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
 
