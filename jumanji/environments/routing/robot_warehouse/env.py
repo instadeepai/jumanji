@@ -505,7 +505,7 @@ class RobotWarehouse(Environment[State]):
         )
         return key, reward, request_queue, shelves
 
-    def render(self, state: State) -> Optional[chex.Array]:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the RobotWarehouse environment.
 
         Args:
