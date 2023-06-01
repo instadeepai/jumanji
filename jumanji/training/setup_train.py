@@ -266,6 +266,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             key_size=cfg.env.network.key_size,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
+        )
     elif cfg.env.name == "robot_warehouse":
         assert isinstance(env.unwrapped, RobotWarehouse)
         actor_critic_networks = networks.make_actor_critic_networks_robot_warehouse(
