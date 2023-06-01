@@ -221,7 +221,7 @@ class RandomGenerator(GeneratorBase):
         """Generates a `RobotWarehouse` state that contains the grid and the agents/shelves layout.
 
         Returns:
-            An `RobotWarehouse` state.
+            A `RobotWarehouse` state.
         """
         # empty grid array
         grid = jnp.zeros((2, *self._grid_size), dtype=jnp.int32)
