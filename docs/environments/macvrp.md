@@ -1,4 +1,4 @@
-# Multi Agent - Capacitated Vehicle Routing Problem (MA-CVRP) Environment
+# Multi Agent Capacitated Vehicle Routing Problem - `MultiCVRP` Environment
 
 <p align="center">
         <img src="../img/MultiCVRP.png" width="500"/>
