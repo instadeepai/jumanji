@@ -60,7 +60,7 @@ class MultiCVRP(Environment[State]):
 
     - observation and state:
         the observation and state variable types are defined in:
-        jumanji/environments/routing/MultiCVRP/types.py
+        jumanji/environments/routing/multi_cvrp/types.py
 
     [1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
     Multi-Agent Reinforcement Learning Approach".
