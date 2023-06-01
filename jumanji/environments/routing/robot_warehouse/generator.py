@@ -75,9 +75,62 @@ class Generator(abc.ABC):
         )
         self._agent_ids = jnp.arange(num_agents)
 
+    @property
+    def shelf_rows(self) -> int:
+        return self._shelf_rows
+
+    @property
+    def shelf_columns(self) -> int:
+        return self._shelf_columns
+
+    @property
+    def column_height(self) -> int:
+        return self._column_height
+
+    @property
+    def grid_size(self) -> chex.Array:
+        return self._grid_size
+
+    @property
+    def num_agents(self) -> int:
+        return self._num_agents
+
+    @property
+    def sensor_range(self) -> int:
+        return self._sensor_range
+
+    @property
+    def request_queue_size(self) -> int:
+        return self._request_queue_size
+
+    @property
+    def agent_ids(self) -> chex.Array:
+        return self._agent_ids
+
+    @property
+    @abc.abstractmethod
+    def shelf_ids(self) -> chex.Array:
+        """shelf ids"""
+
+    @property
+    @abc.abstractmethod
+    def not_in_queue_size(self) -> chex.Array:
+        """number of shelves not in queue"""
+
+    @property
+    @abc.abstractmethod
+    def highways(self) -> chex.Array:
+        """highways positions"""
+
+    @property
+    @abc.abstractmethod
+    def goals(self) -> chex.Array:
+        """goals positions"""
+
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates an `RobotWarehouse` state.
+
         Returns:
             An `RobotWarehouse` state.
         """
@@ -142,38 +195,6 @@ class GeneratorBase(Generator):
         self._shelf_positions = jnp.argwhere(non_highways)
         self._shelf_ids = jnp.arange(n_shelves)
         self._not_in_queue_size = n_shelves - self.request_queue_size
-
-    @property
-    def shelf_rows(self) -> int:
-        return self._shelf_rows
-
-    @property
-    def shelf_columns(self) -> int:
-        return self._shelf_columns
-
-    @property
-    def column_height(self) -> int:
-        return self._column_height
-
-    @property
-    def grid_size(self) -> chex.Array:
-        return self._grid_size
-
-    @property
-    def num_agents(self) -> int:
-        return self._num_agents
-
-    @property
-    def sensor_range(self) -> int:
-        return self._sensor_range
-
-    @property
-    def request_queue_size(self) -> int:
-        return self._request_queue_size
-
-    @property
-    def agent_ids(self) -> chex.Array:
-        return self._agent_ids
 
     @property
     def shelf_ids(self) -> chex.Array:

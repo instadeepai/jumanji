@@ -26,9 +26,9 @@ from jumanji.env import Environment
 from jumanji.environments.routing.robot_warehouse import utils
 from jumanji.environments.routing.robot_warehouse.constants import _SHELVES
 from jumanji.environments.routing.robot_warehouse.generator import (
-    GeneratorBase as Generator,
+    Generator,
+    RandomGenerator,
 )
-from jumanji.environments.routing.robot_warehouse.generator import RandomGenerator
 from jumanji.environments.routing.robot_warehouse.types import (
     Action,
     Agent,
