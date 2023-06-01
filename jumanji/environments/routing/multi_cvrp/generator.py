@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import abc
+from typing import Tuple
 
 import chex
 import jax
@@ -36,29 +37,57 @@ from jumanji.environments.routing.multi_cvrp.utils import (
 class Generator(abc.ABC):
     """Base class for generators for the MACVPR environment."""
 
-    def __init__(self, num_customers: int, num_vehicles: int) -> None:
+    def __init__(
+        self,
+        num_customers: int,
+        num_vehicles: int,
+        manual_settings: bool = False,
+        map_max: int = 10,
+        max_capacity: int = 60,
+        max_start_window: float = 10.0,
+        early_coef_rand: Tuple[float, float] = (0.0, 0.2),
+        late_coef_rand: Tuple[float, float] = (0.0, 1.0),
+        customer_demand_max: int = 10,
+    ) -> None:
         """Initialises a MultiCVRP generator, used to generate the problem.
 
         Args:
             num_customers: number of customer nodes in the environment.
             num_vehicles: number of vehicles in the environment.
+            manual_settings: whether to use the manual settings or the predefine settings
+                from the paper.
+            map_max: maximum value for the map size.
+            max_capacity: maximum value for the vehicle capacity.
+            max_start_window: maximum value for the start window.
+            early_coef_rand: range for the early coefficient.
+            late_coef_rand: range for the late coefficient.
+            customer_demand_max: maximum value for the customer demand.
         """
         self._num_customers = num_customers
         self._num_vehicles = num_vehicles
-        # Scenario are taken from the paper
-        # Note: The time window detail could not be found in the paper for
-        # the 20, 50 and 150 customer scenarios. We use the 150 customer scenario's
-        # time window of 20 for them.
-        self._time_window_length = 20
 
-        (
-            self._map_max,
-            self._max_capacity,
-            self._max_start_window,
-            self._early_coef_rand,
-            self._late_coef_rand,
-            self._customer_demand_max,
-        ) = get_init_settings(self.num_customers, self.num_vehicles)
+        if not manual_settings:
+            # Scenario are taken from the paper
+            # Note: The time window detail could not be found in the paper for
+            # the 20, 50 and 150 customer scenarios. We use the 150 customer scenario's
+            # time window of 20 for them.
+            self._time_window_length = 20
+            (
+                self._map_max,
+                self._max_capacity,
+                self._max_start_window,
+                self._early_coef_rand,
+                self._late_coef_rand,
+                self._customer_demand_max,
+            ) = get_init_settings(self.num_customers, self.num_vehicles)
+
+        else:
+            self._map_max = map_max
+            self._max_capacity = max_capacity
+            self._max_start_window = max_start_window
+            self._early_coef_rand = early_coef_rand
+            self._late_coef_rand = late_coef_rand
+            self._customer_demand_max = customer_demand_max
 
         self._max_end_window = self._max_start_window + self._time_window_length
 
