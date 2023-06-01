@@ -4,12 +4,12 @@ registered_version: Tetris-v0
 network:
     conv_num_channels: 32
     tetromino_layers: 16
-    final_layer_dims: [64]
+    final_layer_dims: [128,128]
 
 training:
-    num_epochs: 1000
+    num_epochs: 1001
     num_learner_steps_per_epoch: 100
-    n_steps: 20
+    n_steps: 40
     total_batch_size: 64
 
 evaluation:
@@ -18,7 +18,7 @@ evaluation:
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.99
+    discount_factor: 0.9
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0

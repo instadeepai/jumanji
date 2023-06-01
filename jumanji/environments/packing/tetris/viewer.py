@@ -90,7 +90,7 @@ class TetrisViewer(Viewer):
     def _move_tetromino(
         self, state: State, old_padded_grid: chex.Array
     ) -> List[chex.Array]:
-        """shifts the tetromino from center to the selected position
+        """Shifts the tetromino from center to the selected position.
 
         Args:
             state: `State` object containing the current environment state.
@@ -109,7 +109,7 @@ class TetrisViewer(Viewer):
             tetromino_zonne = tetromino_zonne.at[0:4, xi : xi + 4].add(
                 state.old_tetromino_rotated
             )
-            # delete the cols dedicated for the right padding
+            # Delete the cols dedicated for the right padding
             tetromino_zonne = tetromino_zonne[:, : self.num_cols]
             # Stack the tetromino with grid position
             mixed_grid = jnp.vstack((tetromino_zonne, grid))
@@ -119,7 +119,7 @@ class TetrisViewer(Viewer):
     def _crush_lines(
         self, state: State, grid: chex.Array, n: int = 2
     ) -> List[chex.Array]:
-        """Creates annimation when a line is crushed by togling its value.
+        """Creates animation when a line is crushed by toggling its value.
 
         Args:
             state: `State` object containing the current environment state.
@@ -236,15 +236,15 @@ class TetrisViewer(Viewer):
                 old_grid = state.grid_padded_old
                 x_shift_grids = self._move_tetromino(state, old_grid)
                 y_shift_grids = self._drop_tetromino(state, old_grid)
-                grids += x_shift_grids
-                grids += y_shift_grids
+                grids.extend(x_shift_grids)
+                grids.extend(y_shift_grids)
                 score = state.score - state.reward
-                scores += [
-                    score for i in range(len(x_shift_grids) + len(y_shift_grids))
-                ]
+                scores.extend(
+                    [score for i in range(len(x_shift_grids) + len(y_shift_grids))]
+                )
                 if state.full_lines.sum() > 0:
                     grids += self._crush_lines(state, grids[-1])
-                    scores += [score for i in range(len(grids) - len(scores))]
+                    scores.extend([score for i in range(len(grids) - len(scores))])
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
