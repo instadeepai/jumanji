@@ -66,19 +66,6 @@ class MultiCVRP(Environment[State]):
     Multi-Agent Reinforcement Learning Approach".
     """
 
-    """Instantiates a `MultiCVRP` environment.
-
-        Args:
-            num_nodes: number of city nodes in the environment. Defaults to 20.
-            max_capacity: maximum capacity of the vehicle. Defaults to 30.
-            max_demand: maximum demand of each node. Defaults to 10.
-            reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
-                transition. The function must compute the reward based on the current state,
-                the chosen action, the next state and whether the action is valid.
-                Implemented options are [`SparseReward`]. Defaults to `DenseReward`.
-            viewer: `Viewer` used for rendering. Defaults to `CVRPViewer` with "human" render mode.
-        """
-
     def __init__(
         self,
         generator: Optional[Generator] = None,
