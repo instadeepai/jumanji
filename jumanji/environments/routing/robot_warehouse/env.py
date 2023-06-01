@@ -255,7 +255,7 @@ class RobotWarehouse(Environment[State]):
         collisions = jax.vmap(functools.partial(utils.is_collision, grid))(
             agents, actions
         )
-        collision = jnp.sum(collisions) > 0
+        collision = jnp.any(collisions)
 
         # update agents, shelves and grid
         def update_state_scan(
