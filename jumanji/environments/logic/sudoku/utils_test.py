@@ -29,7 +29,7 @@ from jumanji.environments.logic.sudoku.utils import (
     validate_board,
 )
 
-EMPTY_BOARD = jnp.zeros((BOARD_WIDTH, BOARD_WIDTH), int)
+EMPTY_BOARD = jnp.zeros((BOARD_WIDTH, BOARD_WIDTH), dtype=jnp.int32)
 
 
 @pytest.mark.parametrize(
