@@ -109,10 +109,10 @@ class Sudoku(Environment[State]):
             board=updated_board, action_mask=updated_action_mask, key=state.key
         )
 
-        no_actions_avalaible = ~jnp.any(updated_action_mask)
+        no_actions_available = ~jnp.any(updated_action_mask)
 
         # computing terminal condition
-        done = invalid | no_actions_avalaible
+        done = invalid | no_actions_available
         reward = self._reward_fn(
             state=state, new_state=next_state, action=action, done=done
         )
