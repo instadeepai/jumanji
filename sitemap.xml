@@ -86,6 +86,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://instadeep.github.io/jumanji/api/environments/sudoku/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/tsp/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
@@ -152,6 +157,11 @@
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/snake/</loc>
+         <lastmod>2023-06-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/sudoku/</loc>
          <lastmod>2023-06-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
