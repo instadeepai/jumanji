@@ -323,6 +323,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             conv_num_channels=cfg.env.network.conv_num_channels,
             tetromino_layers=cfg.env.network.tetromino_layers,
             final_layer_dims=cfg.env.network.final_layer_dims,
+        )
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
         actor_critic_networks = networks.make_actor_critic_networks_graph_coloring(

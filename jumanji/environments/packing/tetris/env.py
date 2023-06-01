@@ -304,13 +304,13 @@ class Tetris(Environment[State]):
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 200,
+        interval: int = 100,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
         Args:
             states: sequence of `State` corresponding to subsequent timesteps.
-            interval: delay between frames in milliseconds, default to 200.
+            interval: delay between frames in milliseconds, default to 100.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
         Returns:
