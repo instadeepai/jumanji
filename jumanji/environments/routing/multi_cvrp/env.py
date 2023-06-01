@@ -366,20 +366,20 @@ class MultiCVRP(Environment[State]):
         """
         return self._viewer.animate(states, interval, save_path)
 
-    def _update_state(self, state: State, actions: chex.Array) -> State:
+    def _update_state(self, state: State, action: chex.Array) -> State:
         """
         Updates the state of the environment.
 
         Args:
             state: State object containing the dynamics of the environment.
-            next_node: int, index of the next node to visit.
+            action: int, index of the next node to visit.
 
         Returns:
             state: State object corresponding to the new state of the environment.
         """
 
-        # Convert actions to int16.
-        next_nodes = jnp.int16(actions)
+        # Convert the action to int16.
+        next_nodes = jnp.int16(action)
 
         # Zero any node selections if the node has zero demand or does not have enough
         # capacity left. If vehicles chose to go to the depot the demand criteria
