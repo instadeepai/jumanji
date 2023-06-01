@@ -229,7 +229,7 @@ class RobotWarehouse(Environment[State]):
 
         Args:
             state: State object containing the dynamics of the environment.
-            action: Array containing the actions to take.
+            action: Array containing the action to take.
                 - 0 no op
                 - 1 move forward
                 - 2 turn left
@@ -248,8 +248,8 @@ class RobotWarehouse(Environment[State]):
         shelves = state.shelves
         request_queue = state.request_queue
 
-        # check for invalid actions -> turn into noops
-        actions = utils.get_valid_actions(actions, state.action_mask)
+        # check for invalid action -> turn into noops
+        actions = utils.get_valid_actions(action, state.action_mask)
 
         # check for agent collisions
         collisions = jax.vmap(functools.partial(utils.is_collision, grid))(
@@ -316,7 +316,7 @@ class RobotWarehouse(Environment[State]):
             step_count=steps,
         )
 
-        timestep: = jax.lax.cond(
+        timestep = jax.lax.cond(
             done,
             termination,
             transition,
