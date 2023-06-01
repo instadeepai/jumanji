@@ -30,7 +30,7 @@ from jumanji.types import TimeStep
 def test__mmst_dense_rewards(
     deterministic_mmst_env: Tuple[MMST, State, TimeStep]
 ) -> None:
-    """Test that the defautl dense reward function works correctly."""
+    """Test that the default dense reward function works correctly."""
 
     # Default reward values are (10.0, -1.0, -1.0)
     # for (connection, no connection, invalid action) repestitively.

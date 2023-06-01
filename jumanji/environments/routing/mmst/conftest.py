@@ -32,6 +32,7 @@ from jumanji.types import TimeStep, restart
 @pytest.fixture(scope="module")
 def mmst_split_gn_env() -> MMST:
     """Instantiates a default `MMST` environment."""
+    
     return MMST(
         generator=None,
         reward_fn=None,

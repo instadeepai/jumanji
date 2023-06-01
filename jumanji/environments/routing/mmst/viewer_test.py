@@ -25,7 +25,7 @@ from jumanji.types import TimeStep
 
 
 def test__render(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
-    """Test that viewer works and the frame is saved."""
+    """Test that the viewer works and the frame is saved."""
 
     env, state, _ = deterministic_mmst_env
     viewer = MMSTViewer(
