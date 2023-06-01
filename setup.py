@@ -53,7 +53,7 @@ setup(
         "dev": _parse_requirements("requirements/requirements-dev.txt"),
         "train": _parse_requirements("requirements/requirements-train.txt"),
     },
-    package_data={"jumanji": ["py.typed"]},
+    package_data={"jumanji": ["*"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
