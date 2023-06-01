@@ -42,7 +42,7 @@ class State:
 
     node_types: chex.Array  # (num_nodes,)
     adj_matrix: chex.Array  # (num_nodes, num_nodes)
-    connected_nodes: chex.Array  # (num_agents, step_limit)
+    connected_nodes: chex.Array  # (num_agents, time_limit)
     connected_nodes_index: chex.Array  # (num_agents, num_nodes)
     nodes_to_connect: chex.Array  # (num_agents, num_nodes_to_connect_per_agent)
     node_edges: chex.Array  # (num_agents, num_nodes, num_nodes)
@@ -87,7 +87,7 @@ class Observation(NamedTuple):
     positions: Current node positions of the agents.
         In our current problem, this will be represented as jnp.array([1, 3]).
 
-    action_masks: Binary mask indicating the validity of each action.
+    action_mask: Binary mask indicating the validity of each action.
         Given the current node on which the agent is located,
         this mask determines if there is a valid edge to every other node.
     """

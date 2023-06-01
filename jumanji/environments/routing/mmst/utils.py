@@ -19,7 +19,11 @@ import jax
 import numpy as np
 from jax import numpy as jnp
 
-from jumanji.environments.routing.mmst.constants import EMPTY_EDGE, EMPTY_NODE
+from jumanji.environments.routing.mmst.constants import (
+    EMPTY_EDGE,
+    EMPTY_NODE,
+    UTILITY_NODE,
+)
 from jumanji.environments.routing.mmst.types import Graph
 
 
@@ -31,6 +35,80 @@ def build_adjecency_matrix(num_nodes: int, edges: jnp.ndarray) -> jnp.ndarray:
     adj_matrix = adj_matrix.at[edges[:, 1], edges[:, 0]].set(1)
 
     return adj_matrix
+
+
+def update_active_edges(
+    num_agents: int,
+    node_edges: chex.Array,
+    position: chex.Array,
+    node_types: chex.Array,
+) -> chex.Array:
+    """Update the active agent nodes available to each agent
+
+    Args:
+        num_agents: (int) number of agents
+        node_edges: (array) with node edges
+        position: (array) for current agent position
+        node_types: array
+    Returns:
+        active_node_edges: (array)
+    """
+
+    def update_edges(node_edges: chex.Array, node: jnp.int32) -> chex.Array:
+        zero_mask = node_edges != node
+        ones_inds = node_edges == node
+        upd_edges = node_edges * zero_mask - ones_inds
+        return upd_edges
+
+    active_node_edges = jnp.copy(node_edges)
+
+    for agent in range(num_agents):
+        node = position[agent]
+        cond = node_types[node] == UTILITY_NODE
+
+        for agent2 in range(num_agents):
+            if agent != agent2:
+                upd_edges = jax.lax.cond(
+                    cond,
+                    update_edges,
+                    lambda _edgs, _node: _edgs,
+                    active_node_edges[agent2],
+                    node,
+                )
+                active_node_edges = active_node_edges.at[agent2].set(upd_edges)
+
+    return active_node_edges
+
+
+def make_action_mask(
+    num_agents: int,
+    num_nodes: int,
+    node_edges: chex.Array,
+    position: chex.Array,
+    finished_agents: chex.Array,
+) -> chex.Array:
+    """Intialise and action mask for every node based on all its edges
+
+    Args:
+        num_agents (int): number of agents
+        num_nodes (int): number of nodes
+        node_edges (Array): Array with the respective edges for
+            every node (-1 for invalid edge)
+        position: current node of each agent
+        finished_agents: (Array): used to mask finished agents
+    Returns:
+        action_mask (Array): action mask for each agent at it current node position
+    """
+
+    full_action_mask = node_edges != EMPTY_NODE
+    action_mask = jnp.zeros((num_agents, num_nodes), dtype=bool)
+    for agent in range(num_agents):
+        node = position[agent]
+        action_mask = action_mask.at[agent].set(
+            full_action_mask[agent, node] * ~finished_agents[agent]
+        )
+
+    return action_mask
 
 
 def check_num_edges(nodes: List[int], num_edges: jnp.int32) -> None:

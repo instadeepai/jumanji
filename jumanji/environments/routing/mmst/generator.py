@@ -15,14 +15,17 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
+import chex
 import jax
-from chex import Array, PRNGKey
 from jax import numpy as jnp
 
 from jumanji.environments.routing.mmst.constants import EMPTY_NODE
+from jumanji.environments.routing.mmst.types import State
 from jumanji.environments.routing.mmst.utils import (
     build_adjecency_matrix,
+    make_action_mask,
     multi_random_walk,
+    update_active_edges,
 )
 
 
@@ -76,12 +79,11 @@ class Generator(ABC):
         return self._num_nodes_per_agent
 
     @abstractmethod
-    def __call__(self, key: PRNGKey) -> Tuple[Array, ...]:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a random graph and different nodes to connect per agents.
 
         Returns:
-            a tuple containing the node_types, edges, agent_positions, connected_nodes,
-            connected_nodes_index, node_edges, nodes_to_connect.
+            a `MMST` environment state
         """
 
 
@@ -104,7 +106,7 @@ class SplitRandomGenerator(Generator):
             num_nodes, num_edges, max_degree, num_agents, num_nodes_per_agent, max_step
         )
 
-    def __call__(self, key: PRNGKey) -> Tuple[Array, ...]:
+    def __call__(self, key: chex.PRNGKey) -> State:
         graph_key, key = jax.random.split(key)
 
         # Generate a random graph.
@@ -138,17 +140,38 @@ class SplitRandomGenerator(Generator):
                 agent_components
             )
 
-        return (
-            node_types,
-            adj_matrix,
-            agents_pos,
-            conn_nodes,
-            conn_nodes_index,
-            node_edges,
-            state_nodes_to_connect,
+        active_node_edges = jnp.repeat(node_edges[None, ...], self.num_agents, axis=0)
+        active_node_edges = update_active_edges(
+            self.num_agents, active_node_edges, agents_pos, node_types
+        )
+        finished_agents = jnp.zeros((self.num_agents), dtype=bool)
+
+        state = State(
+            node_types=node_types,
+            adj_matrix=adj_matrix,
+            nodes_to_connect=state_nodes_to_connect,
+            connected_nodes=conn_nodes,
+            connected_nodes_index=conn_nodes_index,
+            position_index=jnp.zeros((self.num_agents), dtype=jnp.int32),
+            positions=agents_pos,
+            node_edges=active_node_edges,
+            action_mask=make_action_mask(
+                self.num_agents,
+                self.num_nodes,
+                active_node_edges,
+                agents_pos,
+                finished_agents,
+            ),
+            finished_agents=finished_agents,
+            step_count=jnp.array(0, int),
+            key=key,
         )
 
-    def _generate_graph(self, key: PRNGKey) -> Tuple[Array, Array, Array]:
+        return state
+
+    def _generate_graph(
+        self, key: chex.PRNGKey
+    ) -> Tuple[chex.Array, chex.Array, chex.Array]:
 
         nodes = jnp.arange(self._num_nodes, dtype=jnp.int32)
         graph, nodes_per_sub_graph = multi_random_walk(
@@ -160,7 +183,9 @@ class SplitRandomGenerator(Generator):
 
         return adj_matrix, node_edges, nodes_per_sub_graph
 
-    def _initialise_states(self) -> Tuple[Array, Array, Array, Array, Array]:
+    def _initialise_states(
+        self,
+    ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
         """Initialises arrays to hold environment states"""
 
         state_nodes_to_connect = EMPTY_NODE * (

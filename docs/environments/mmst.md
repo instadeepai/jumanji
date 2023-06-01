@@ -4,7 +4,7 @@
         <img src="../env_anim/mmst.gif" width="600"/>
 </p>
 
-The cooperative minimum spanning tree (mmst) environment consists of a random connected graph
+The multi minimum spanning tree (mmst) environment consists of a random connected graph
 with groups of nodes (same node types) that needs to be connected.
 The goal of the environment is to connect all nodes of the same type together
 without using the same utility nodes (nodes that do not belong to any group of nodes) in the shortest time possible.
@@ -53,7 +53,7 @@ an action mask for each group of nodes (agent) and current node positon of each 
  - `positions`: Current node positions of the agents.
         In our current problem, this will be represented as jnp.array([1, 3]).
 
--  `action_masks`: Binary mask indicating the validity of each action.
+-  `action_mask`: Binary mask indicating the validity of each action.
         Given the current node on which the agent is located,
         this mask determines if there is a valid edge to every other node.
 

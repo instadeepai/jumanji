@@ -32,8 +32,12 @@ from jumanji.environments.routing.mmst.constants import (
 from jumanji.environments.routing.mmst.generator import Generator, SplitRandomGenerator
 from jumanji.environments.routing.mmst.reward import DenseRewardFn, RewardFn
 from jumanji.environments.routing.mmst.types import Observation, State
+from jumanji.environments.routing.mmst.utils import (
+    make_action_mask,
+    update_active_edges,
+)
 from jumanji.environments.routing.mmst.viewer import MMSTViewer
-from jumanji.types import TimeStep, restart, termination, transition, truncation
+from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
@@ -72,7 +76,7 @@ class MMST(Environment[State]):
             the component type of each node (-1 represents utility nodes).
         - adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
             adjacency matrix of the graph.
-        - connected_nodes: jax array (int) of shape (num_agents, step_limit).
+        - connected_nodes: jax array (int) of shape (num_agents, time_limit).
             we only count each node visit once.
         - connected_nodes_index: jax array (int) of shape (num_agents, num_nodes).
         - position_index: jax array (int) of shape (num_agents,).
@@ -84,7 +88,7 @@ class MMST(Environment[State]):
         - finished_agents: jax array (bool) of shape (num_agent,).
         - nodes_to_connect: jax array (int) of shape (num_agents, num_nodes_per_agent).
         - step_count: step counter.
-        - step_limit: the number of steps allowed before an episode terminates.
+        - time_limit: the number of steps allowed before an episode terminates.
         - key: PRNG key for random sample.
 
     - constants definitions:
@@ -114,42 +118,42 @@ class MMST(Environment[State]):
 
     def __init__(
         self,
-        generator_fn: Optional[Generator] = None,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
-        step_limit: int = 70,
+        time_limit: int = 70,
         viewer: Optional[Viewer[State]] = None,
     ):
         """Create the `MMST` environment.
 
         Args:
-            generator_fn: `Generator` whose `__call__` instantiates an environment instance.
+            generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`SplitRandomGenerator`].
                 Defaults to `SplitRandomGenerator(num_nodes=36, num_edges=72, max_degree=5,
-                num_agents=3, num_nodes_per_agent=4, max_step=step_limit)`.
+                num_agents=3, num_nodes_per_agent=4, max_step=time_limit)`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`].
                 Defaults to `DenseRewardFn(reward_values=(10.0, -1.0, -1.0))`.
-            step_limit: the number of steps allowed before an episode terminates. Defaults to 70.
+            time_limit: the number of steps allowed before an episode terminates. Defaults to 70.
             viewer: `Viewer` used for rendering. Defaults to `MMSTViewer`
         """
 
-        self._generator_fn = generator_fn or SplitRandomGenerator(
+        self._generator = generator or SplitRandomGenerator(
             num_nodes=36,
             num_edges=72,
             max_degree=5,
             num_agents=3,
             num_nodes_per_agent=4,
-            max_step=step_limit,
+            max_step=time_limit,
         )
 
-        self.num_agents = self._generator_fn.num_agents
-        self.num_nodes = self._generator_fn.num_nodes
-        self.num_nodes_per_agent = self._generator_fn.num_nodes_per_agent
+        self.num_agents = self._generator.num_agents
+        self.num_nodes = self._generator.num_nodes
+        self.num_nodes_per_agent = self._generator.num_nodes_per_agent
 
         self._reward_fn = reward_fn or DenseRewardFn(reward_values=(10.0, -1.0, -1.0))
 
         self._env_viewer = viewer
-        self._step_limit = step_limit
+        self.time_limit = time_limit
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec.
@@ -213,7 +217,7 @@ class MMST(Environment[State]):
             action_mask=action_mask,
         )
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
 
         Args:
@@ -222,49 +226,18 @@ class MMST(Environment[State]):
         Returns:
              state: State object corresponding to the new state of the environment.
              timestep: TimeStep object corresponding to the first timestep returned by the
-             environment.
+                environment.
         """
 
         key, problem_key = jax.random.split(key)
-
-        (
-            node_types,
-            adj_matrix,
-            agents_pos,
-            conn_nodes,
-            conn_nodes_index,
-            node_edges,
-            nodes_to_connect,
-        ) = self._generator_fn(problem_key)
-
-        active_node_edges = jnp.repeat(node_edges[None, ...], self.num_agents, axis=0)
-        active_node_edges = self._update_active_edges(
-            active_node_edges, agents_pos, node_types
-        )
-        finished_agents = jnp.zeros((self.num_agents), dtype=bool)
-
-        state = State(
-            node_types=node_types,
-            adj_matrix=adj_matrix,
-            nodes_to_connect=nodes_to_connect,
-            connected_nodes=conn_nodes,
-            connected_nodes_index=conn_nodes_index,
-            position_index=jnp.zeros((self.num_agents), dtype=jnp.int32),
-            positions=agents_pos,
-            node_edges=active_node_edges,
-            action_mask=self._make_action_mask(
-                active_node_edges, agents_pos, finished_agents
-            ),
-            finished_agents=finished_agents,
-            step_count=jnp.array(0, int),
-            key=key,
-        )
-
+        state = self._generator(problem_key)
         extras = self._get_extras(state)
         timestep = restart(observation=self._state_to_observation(state), extras=extras)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -272,8 +245,8 @@ class MMST(Environment[State]):
             action: Array containing the index of the next node to visit.
 
         Returns:
-            state, timestep: Tuple[State, TimeStep] containing the next state of the environment,
-            as well as the timestep to be observed.
+            state, timestep: Tuple[State, TimeStep] containing the next state of the
+               environment, as well as the timestep to be observed.
         """
 
         def step_agent_fn(
@@ -285,10 +258,10 @@ class MMST(Environment[State]):
             agent_id: int,
         ) -> Tuple[chex.Array, ...]:
 
-            is_invalid_choice = jnp.sum(action == INVALID_CHOICE) | jnp.sum(
+            is_invalid_choice = jnp.any(action == INVALID_CHOICE) | jnp.any(
                 action == INVALID_TIE_BREAK
             )
-            is_valid = (is_invalid_choice == 0) & (node != INVALID_NODE)
+            is_valid = (~is_invalid_choice) & (node != INVALID_NODE)
             connected_nodes, conn_index, new_node, indices = jax.lax.cond(
                 is_valid,
                 self._update_conected_nodes,
@@ -331,8 +304,8 @@ class MMST(Environment[State]):
             agents_pos = agents_pos.at[agent].set(pos_i)
             position_index = position_index.at[agent].set(pos_ind)
 
-        active_node_edges = self._update_active_edges(
-            state.node_edges, agents_pos, state.node_types
+        active_node_edges = update_active_edges(
+            self.num_agents, state.node_edges, agents_pos, state.node_types
         )
 
         state = State(
@@ -344,8 +317,12 @@ class MMST(Environment[State]):
             position_index=position_index,
             positions=agents_pos,
             node_edges=active_node_edges,
-            action_mask=self._make_action_mask(
-                active_node_edges, agents_pos, state.finished_agents
+            action_mask=make_action_mask(
+                self.num_agents,
+                self.num_nodes,
+                active_node_edges,
+                agents_pos,
+                state.finished_agents,
             ),
             finished_agents=state.finished_agents,  # Not updated yet.
             step_count=state.step_count,
@@ -400,7 +377,7 @@ class MMST(Environment[State]):
 
     def _state_to_timestep(
         self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep]:
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Checks if the state is terminal and converts it into a timestep.
 
         Args:
@@ -426,13 +403,6 @@ class MMST(Environment[State]):
                 extras=extras,
             )
 
-        def make_truncation_timestep(state: State) -> TimeStep:
-            return truncation(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-            )
-
         def make_transition_timestep(state: State) -> TimeStep:
             return transition(
                 reward=reward,
@@ -441,85 +411,23 @@ class MMST(Environment[State]):
             )
 
         is_done = state.finished_agents.all()
-        horizon_reached = state.step_count >= self._step_limit
+        horizon_reached = state.step_count >= self.time_limit
 
         # false + false = 0 = transition.
-        # true + false = 1  = truncation.
+        # true + false = 1  = truncation (use termination)
         # false + true * 2 = 2 = termination.
         # true + true * 2 = 3 -> gets clamped to 2 = termination.
         timestep: TimeStep[chex.Array] = jax.lax.switch(
             horizon_reached + is_done * 2,
             [
                 make_transition_timestep,
-                make_truncation_timestep,
+                make_termination_timestep,
                 make_termination_timestep,
             ],
             state,
         )
 
         return state, timestep
-
-    def _make_action_mask(
-        self, node_edges: chex.Array, position: chex.Array, finished_agents: chex.Array
-    ) -> chex.Array:
-        """Intialise and action mask for every node based on all its edges
-
-        Args:
-            node_edges (Array): Array with the respective edges for
-                every node (-1 for invalid edge)
-            position: current node of each agent
-            finished_agents: (Array): used to mask finished agents
-        Returns:
-            action_mask (Array): action mask for each agent at it current node position
-        """
-
-        full_action_mask = node_edges != EMPTY_NODE
-        action_mask = jnp.zeros((self.num_agents, self.num_nodes), dtype=bool)
-        for agent in range(self.num_agents):
-            node = position[agent]
-            action_mask = action_mask.at[agent].set(
-                full_action_mask[agent, node] * ~finished_agents[agent]
-            )
-
-        return action_mask
-
-    def _update_active_edges(
-        self, node_edges: chex.Array, position: chex.Array, node_types: chex.Array
-    ) -> chex.Array:
-        """Update the active agent nodes available to each agent
-
-        Args:
-            node_edges: (array) with node edges
-            position: (array) for current agent position
-            node_types: array
-        Returns:
-            active_node_edges: (array)
-        """
-
-        def update_edges(node_edges: chex.Array, node: jnp.int32) -> chex.Array:
-            zero_mask = node_edges != node
-            ones_inds = node_edges == node
-            upd_edges = node_edges * zero_mask - ones_inds
-            return upd_edges
-
-        active_node_edges = jnp.copy(node_edges)
-
-        for agent in range(self.num_agents):
-            node = position[agent]
-            cond = node_types[node] == UTILITY_NODE
-
-            for agent2 in range(self.num_agents):
-                if agent != agent2:
-                    upd_edges = jax.lax.cond(
-                        cond,
-                        update_edges,
-                        lambda _edgs, _node: _edgs,
-                        active_node_edges[agent2],
-                        node,
-                    )
-                    active_node_edges = active_node_edges.at[agent2].set(upd_edges)
-
-        return active_node_edges
 
     def _trim_duplicated_invalid_actions(
         self, state: State, action: chex.Array, step_key: chex.PRNGKey

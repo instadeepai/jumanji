@@ -21,7 +21,11 @@ import pytest
 from jumanji.environments.routing.mmst.env import MMST
 from jumanji.environments.routing.mmst.generator import SplitRandomGenerator
 from jumanji.environments.routing.mmst.types import State
-from jumanji.environments.routing.mmst.utils import build_adjecency_matrix
+from jumanji.environments.routing.mmst.utils import (
+    build_adjecency_matrix,
+    make_action_mask,
+    update_active_edges,
+)
 from jumanji.types import TimeStep, restart
 
 
@@ -29,7 +33,7 @@ from jumanji.types import TimeStep, restart
 def mmst_split_gn_env() -> MMST:
     """Instantiates a default `MMST` environment."""
     return MMST(
-        generator_fn=None,
+        generator=None,
         reward_fn=None,
     )
 
@@ -41,7 +45,7 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
     num_nodes_per_agent = 3
 
     env = MMST(
-        generator_fn=SplitRandomGenerator(
+        generator=SplitRandomGenerator(
             num_nodes=12,
             num_edges=18,
             max_degree=5,
@@ -50,7 +54,7 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
             max_step=12,
         ),
         reward_fn=None,
-        step_limit=12,
+        time_limit=12,
     )
 
     state, timestep = env.reset(jax.random.PRNGKey(10))
@@ -58,6 +62,7 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
     key = jax.random.PRNGKey(0)
 
     num_agents = 2
+    num_nodes = 12
     nodes_to_connect = jnp.array([[0, 1, 6], [3, 5, 8]], dtype=jnp.int32)
 
     edges = jnp.array(
@@ -114,8 +119,8 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
     positions = jnp.array([1, 3], dtype=jnp.int32)
 
     active_node_edges = jnp.repeat(node_edges[None, ...], num_agents, axis=0)
-    active_node_edges = env._update_active_edges(
-        active_node_edges, positions, node_types
+    active_node_edges = update_active_edges(
+        num_agents, active_node_edges, positions, node_types
     )
     finished_agents = jnp.zeros((num_agents), dtype=bool)
 
@@ -128,8 +133,8 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
         position_index=jnp.zeros((num_agents), dtype=jnp.int32),
         positions=positions,
         node_edges=active_node_edges,
-        action_mask=env._make_action_mask(
-            active_node_edges, positions, finished_agents
+        action_mask=make_action_mask(
+            num_agents, num_nodes, active_node_edges, positions, finished_agents
         ),
         finished_agents=finished_agents,
         step_count=jnp.array(0, int),

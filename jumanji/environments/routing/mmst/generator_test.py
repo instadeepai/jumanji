@@ -19,9 +19,10 @@ import jax.numpy as jnp
 
 from jumanji.environments.routing.mmst.constants import UTILITY_NODE
 from jumanji.environments.routing.mmst.generator import SplitRandomGenerator
+from jumanji.environments.routing.mmst.types import State
 
 
-def check_generator(params: Tuple, data: Tuple) -> None:
+def check_generator(params: Tuple, state: State) -> None:
     """Check it the graph data have been generated correctly."""
 
     (
@@ -32,23 +33,14 @@ def check_generator(params: Tuple, data: Tuple) -> None:
         num_nodes_per_agent,
         max_step,
     ) = params
-    (
-        node_types,
-        _,
-        agents_pos,
-        conn_nodes,
-        conn_nodes_index,
-        node_edges,
-        nodes_to_connect,
-    ) = data
 
-    assert jnp.min(node_types) == UTILITY_NODE
-    assert jnp.max(node_types) == num_agents - 1
-    assert agents_pos.shape == (num_agents,)
-    assert conn_nodes.shape == (num_agents, max_step)
-    assert conn_nodes_index.shape == (num_agents, num_nodes)
-    assert node_edges.shape == (num_nodes, num_nodes)
-    assert nodes_to_connect.shape == (num_agents, num_nodes_per_agent)
+    assert jnp.min(state.node_types) == UTILITY_NODE
+    assert jnp.max(state.node_types) == num_agents - 1
+    assert state.positions.shape == (num_agents,)
+    assert state.connected_nodes.shape == (num_agents, max_step)
+    assert state.connected_nodes_index.shape == (num_agents, num_nodes)
+    assert state.node_edges.shape == (num_agents, num_nodes, num_nodes)
+    assert state.nodes_to_connect.shape == (num_agents, num_nodes_per_agent)
 
 
 def test__generator() -> None:
@@ -72,5 +64,5 @@ def test__generator() -> None:
     )
 
     generator_fn = SplitRandomGenerator(*params)
-    data = generator_fn(problem_key)
-    check_generator(params, data)
+    state = generator_fn(problem_key)
+    check_generator(params, state)

@@ -175,11 +175,10 @@ def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) 
     step_fn = jax.jit(env.step)
 
     # Truncation.
-    for _ in range(env._step_limit + 1):
+    for _ in range(env.time_limit + 1):
         state, timestep = step_fn(state, jnp.array([3, 3]))
 
     assert timestep.last()
-    assert not jnp.all(timestep.discount == 0)
 
 
 def test__mmst_action_masking(
