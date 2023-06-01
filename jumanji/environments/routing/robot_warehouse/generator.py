@@ -39,7 +39,7 @@ class Generator(abc.ABC):
         sensor_range: int,
         request_queue_size: int,
     ) -> None:
-        """Initialises an robot_warehouse generator, used to generate grids for
+        """Initializes a robot_warehouse generator, used to generate grids for
         the RobotWarehouse environment.
 
         Args:
