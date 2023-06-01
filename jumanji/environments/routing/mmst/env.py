@@ -414,7 +414,7 @@ class MMST(Environment[State]):
         horizon_reached = state.step_count >= self.time_limit
 
         # false + false = 0 = transition.
-        # true + false = 1  = truncation (use termination)
+        # true + false = 1  = truncation (use termination).
         # false + true * 2 = 2 = termination.
         # true + true * 2 = 3 -> gets clamped to 2 = termination.
         timestep: TimeStep[chex.Array] = jax.lax.switch(
