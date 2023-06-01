@@ -144,12 +144,12 @@ class RobotWarehouse(Environment[State]):
         Args:
             generator: callable to instantiate environment instances.
                 Defaults to `RandomGenerator` with parameters:
-                `shelf_rows = 1`,
+                `shelf_rows = 2`,
                 `shelf_columns = 3`,
                 `column_height = 8`,
-                `num_agents = 2`,
+                `num_agents = 4`,
                 `sensor_range = 1`,
-                `request_queue_size = 4`.
+                `request_queue_size = 8`.
             time_limit: the maximum step limit allowed within the environment.
                 Defaults to 500.
             viewer: viewer to render the environment. Defaults to `RobotWarehouseViewer`.
