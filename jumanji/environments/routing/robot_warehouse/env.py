@@ -363,7 +363,7 @@ class RobotWarehouse(Environment[State]):
         This array is of shape (num_agents,).
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([len(Action)] * self.num_agents),
+            num_values=jnp.array([len(Action)] * self.num_agents, jnp.int32),
             name="action",
         )
 
