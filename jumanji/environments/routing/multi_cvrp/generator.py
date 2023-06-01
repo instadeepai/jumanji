@@ -99,7 +99,7 @@ class UniformRandomGenerator(Generator):
         """
 
         # This split is uncessary, but it makes the code more readable.
-        problem_key, _ = jax.random.split(key)
+        problem_key, key = jax.random.split(key)
 
         total_capacity = self._max_capacity * self._num_vehicles
 
