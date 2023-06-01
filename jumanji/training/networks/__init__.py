@@ -70,5 +70,10 @@ from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,
 )
 from jumanji.training.networks.snake.random import make_random_policy_snake
+from jumanji.training.networks.sudoku.actor_critic import (
+    make_cnn_actor_critic_networks_sudoku,
+    make_equivariant_actor_critic_networks_sudoku,
+)
+from jumanji.training.networks.sudoku.random import make_random_policy_sudoku
 from jumanji.training.networks.tsp.actor_critic import make_actor_critic_networks_tsp
 from jumanji.training.networks.tsp.random import make_random_policy_tsp
