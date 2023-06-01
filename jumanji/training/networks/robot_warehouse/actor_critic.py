@@ -80,7 +80,6 @@ class RobotWarehouseTorso(hk.Module):
         self.transformer_key_size = transformer_key_size
         self.transformer_mlp_units = transformer_mlp_units
         self.model_size = transformer_num_heads * transformer_key_size
-        self.embedder = hk.Linear(self.model_size)
         self.env_time_limit = env_time_limit
 
     def __call__(self, observation: Observation) -> chex.Array:
