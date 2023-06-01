@@ -30,7 +30,7 @@
   <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
   <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="30%" />
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
-  <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
+  <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" />
 </p>
 
 ## Welcome to the Jungle! 🌴
@@ -80,6 +80,7 @@ problems.
 | 🔵🔗🟡🔗🔴 GraphColoring                              | Logic  | `GraphColoring-v0`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/graph_coloring/)   | [doc](https://instadeepai.github.io/jumanji/environments/graph_coloring/)   |
 | 💣 Minesweeper                           | Logic    | `Minesweeper-v0`                                     | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper/) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
 | 🎲 RubiksCube                            | Logic    | `RubiksCube-v0`<br/>`RubiksCube-partly-scrambled-v0` | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube/) | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
+| ✏️ Sudoku                       | Logic    | `Sudoku-v0` <br/>`Sudoku-very-easy-v0`| [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/sudoku/) | [doc](https://instadeepai.github.io/jumanji/environments/sudoku/) |
 | 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v1`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
 | 🏭 JobShop (Job Shop Scheduling Problem) | Packing  | `JobShop-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop/)  | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
 | 🎒 Knapsack                              | Packing  | `Knapsack-v1`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack/)  | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |

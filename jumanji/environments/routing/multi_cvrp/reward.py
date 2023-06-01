@@ -19,7 +19,7 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.multi_cvrp.types import State
-from jumanji.environments.routing.multi_cvrp.utils import max_single_vehicle_distance
+from jumanji.environments.routing.multi_cvrp.utils import worst_case_remaining_reward
 
 
 class RewardFn(abc.ABC):
@@ -27,11 +27,6 @@ class RewardFn(abc.ABC):
         self._num_vehicles = num_vechicles
         self._num_customers = num_customers
         self._map_max = map_max
-        # This is the maximum negative reward that can be given to an agent.
-        self._large_negate_reward = (
-            -max_single_vehicle_distance(self._map_max, self._num_customers)
-            * self._num_vehicles
-        )
 
     @abc.abstractmethod
     def __call__(
@@ -58,11 +53,12 @@ class SparseReward(RewardFn):
         is_done: bool,
     ) -> chex.Numeric:
         def compute_episode_reward(new_state: State) -> float:
+
             return jax.lax.cond(  # type: ignore
                 jnp.any(new_state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
-                lambda new_state: self._large_negate_reward,
+                lambda new_state: worst_case_remaining_reward(new_state),
                 lambda new_state: -new_state.vehicles.distances.sum()
                 - new_state.vehicles.time_penalties.sum(),
                 new_state,
@@ -104,7 +100,7 @@ class DenseReward(RewardFn):
                 jnp.any(new_state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
-                lambda: self._large_negate_reward,
+                lambda: worst_case_remaining_reward(new_state),
                 lambda: step_vehicle_distance_penalty + step_time_penalty,
             )
 

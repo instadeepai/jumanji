@@ -1,6 +1,6 @@
 defaults:
     - _self_
-    - env: snake  # [bin_pack, cleaner, connector, cvrp, game_2048, job_shop, knapsack, maze, minesweeper, multi_cvrp, rubiks_cube, robot_warehouse, snake, tsp]
+    - env: multi_cvrp  # [bin_pack, cleaner, connector, cvrp, multi_cvrp, game_2048, job_shop, knapsack, maze, minesweeper, rubiks_cube, robot_warehouse, snake, sudoku, tsp]
 
 agent: a2c  # [random, a2c]
 

@@ -19,6 +19,7 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
+from jumanji.environments.routing.multi_cvrp.types import State
 
 
 def create_action_mask(
@@ -72,6 +73,35 @@ def max_single_vehicle_distance(
     map_max: chex.Array, num_customers: chex.Array
 ) -> chex.Array:
     return 2 * map_max * jnp.sqrt(2) * num_customers
+
+
+def worst_case_remaining_reward(state: State) -> chex.Array:
+    has_demand = state.nodes.demands > 0
+    distance_penalty = (
+        2
+        * (
+            compute_distance(state.nodes.coordinates[0], state.nodes.coordinates)
+            * has_demand
+        ).sum()
+    )
+
+    # Assuming the speed is 1.0.
+    speed = 1.0
+    # Use the vehicles' average local times to calculate the time penalty.
+    current_time = jnp.mean(state.vehicles.local_times) + distance_penalty / speed
+
+    time_penalty = (
+        compute_time_penalties(
+            current_time,
+            state.windows.start,
+            state.windows.end,
+            state.coeffs.early,
+            state.coeffs.late,
+        )
+        * has_demand
+    ).sum()
+
+    return -distance_penalty - time_penalty
 
 
 def compute_distance(
