@@ -223,8 +223,8 @@ class RobotWarehouse(Environment[State]):
     def step(
         self,
         state: State,
-        actions: chex.Array,
-    ) -> Tuple[State, TimeStep[chex.Array]]:
+        action: chex.Array,
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
         Args:
