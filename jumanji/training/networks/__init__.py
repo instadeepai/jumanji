@@ -34,6 +34,12 @@ from jumanji.training.networks.game_2048.actor_critic import (
     make_actor_critic_networks_game_2048,
 )
 from jumanji.training.networks.game_2048.random import make_random_policy_game_2048
+from jumanji.training.networks.graph_coloring.actor_critic import (
+    make_actor_critic_networks_graph_coloring,
+)
+from jumanji.training.networks.graph_coloring.random import (
+    make_random_policy_graph_coloring,
+)
 from jumanji.training.networks.job_shop.actor_critic import (
     make_actor_critic_networks_job_shop,
 )

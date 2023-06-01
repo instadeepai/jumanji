@@ -29,6 +29,7 @@ from jumanji.environments import (
     Cleaner,
     Connector,
     Game2048,
+    GraphColoring,
     JobShop,
     Knapsack,
     Maze,
@@ -168,6 +169,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "robot_warehouse":
         assert isinstance(env.unwrapped, RobotWarehouse)
         random_policy = networks.make_random_policy_robot_warehouse()
+    elif cfg.env.name == "graph_coloring":
+        assert isinstance(env.unwrapped, GraphColoring)
+        random_policy = networks.make_random_policy_graph_coloring()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -294,6 +298,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "graph_coloring":
+        assert isinstance(env.unwrapped, GraphColoring)
+        actor_critic_networks = networks.make_actor_critic_networks_graph_coloring(
+            graph_coloring=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
