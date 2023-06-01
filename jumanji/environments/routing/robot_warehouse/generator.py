@@ -218,7 +218,7 @@ class RandomGenerator(GeneratorBase):
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates an `RobotWarehouse` state that contains the grid and the agents/shelves layout.
+        """Generates a `RobotWarehouse` state that contains the grid and the agents/shelves layout.
 
         Returns:
             An `RobotWarehouse` state.
