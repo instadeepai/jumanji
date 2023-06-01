@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pathlib
 
 import jax.numpy as jnp
 import jax.random as random
@@ -50,8 +50,7 @@ def test_animate(graph_coloring: GraphColoring) -> None:
     assert isinstance(animation, matplotlib.animation.Animation)
 
 
-def test_save_animation(graph_coloring: GraphColoring) -> None:
-
+def test_save_animation(tmp_path: pathlib.Path, graph_coloring: GraphColoring) -> None:
     key = random.PRNGKey(0)
     state, _ = graph_coloring.reset(key)
 
@@ -63,8 +62,7 @@ def test_save_animation(graph_coloring: GraphColoring) -> None:
         states.append(new_state)
         state = new_state
 
-    save_path = "animation_test.gif"
-    graph_coloring.animate(states, interval=500, save_path=save_path)
+    save_path = tmp_path / "animation_test.gif"
+    graph_coloring.animate(states, interval=500, save_path=str(save_path))
 
-    assert os.path.exists(save_path)
-    os.remove(save_path)
+    assert save_path.exists()
