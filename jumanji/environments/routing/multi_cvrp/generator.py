@@ -92,10 +92,10 @@ class UniformRandomGenerator(Generator):
         super().__init__(num_customers, num_vehicles)
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a `MACVPR` state.
+        """Generates a `MultiCVRP` state.
 
         Returns:
-            A `MACVPR` state.
+            A `MultiCVRP` state.
         """
 
         # This split is uncessary, but it makes the code more readable.
