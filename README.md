@@ -19,7 +19,6 @@
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
-
 <p float="left" align="center">
   <img src="docs/env_anim/connector.gif" alt="Connector" width="30%" />
   <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
@@ -32,8 +31,6 @@
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
   <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
 </p>
-
-
 
 ## Welcome to the Jungle! 🌴
 
@@ -71,7 +68,6 @@ JAX-based environments.
 - 🏎️ **Training:** example agents that can be used as inspiration for the agents one may implement
 in their research.
 
-
 ## Environments 🌍
 
 Jumanji provides a diverse range of environments ranging from simple games to NP-hard combinatorial
@@ -90,20 +86,24 @@ problems.
 | :link: Connector                         | Routing  | `Connector-v1`                                       | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
 | :mag: Maze   | Routing  | `Maze-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)      | [doc](https://instadeepai.github.io/jumanji/environments/maze/)        |
+| :robot: RobotWarehouse  | Routing  | `RobotWarehouse-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/robot_warehouse/)      | [doc](https://instadeepai.github.io/jumanji/environments/robot_warehouse/)        |
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
-
 
 ## Installation 🎬
 
 You can install the latest release of Jumanji from PyPI:
+
 ```bash
 pip install jumanji
 ```
+
 Alternatively, you can install the latest development version directly from GitHub:
+
 ```bash
 pip install git+https://github.com/instadeepai/jumanji.git
 ```
+
 Jumanji has been tested on Python 3.8 and 3.9.
 Note that because the installation of JAX differs depending on your hardware accelerator,
 we advise users to explicitly install the correct JAX version (see the
@@ -114,7 +114,6 @@ you will need a GUI backend. For example, on Linux, you can install Tk via:
 `apt-get install python3-tk`, or using conda: `conda install tk`. Check out
 [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of
 backends you can use.
-
 
 ## Quickstart ⚡
 
@@ -172,7 +171,6 @@ the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out
 [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
-
 ## Training 🏎️
 
 To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
@@ -193,7 +191,6 @@ actor-critic networks in
 For more information on how to use the example agents, see the
 [training guide](https://instadeepai.github.io/jumanji/guides/training/).
 
-
 ## Contributing 🤝
 
 Contributions are welcome! See our issue tracker for
@@ -201,10 +198,10 @@ Contributions are welcome! See our issue tracker for
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
 details on how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
-
 ## Citing Jumanji ✏️
 
 If you use Jumanji in your work, please cite the library using:
+
 ```
 @software{jumanji2023github,
   author = {Clément Bonnet and Daniel Luo and Donal Byrne and Sasha Abramowitz
@@ -217,7 +214,6 @@ If you use Jumanji in your work, please cite the library using:
   year = {2023},
 }
 ```
-
 
 ## See Also 🔎
 
