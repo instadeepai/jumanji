@@ -84,10 +84,10 @@ class MultiCVRPViewer(Viewer):
         fig, ax = self._get_fig_ax()
         fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
+        self._prepare_figure(ax)
         self._add_tour(ax, state)
         if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
-
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.0)
         return self._display(fig)
 
     def animate(

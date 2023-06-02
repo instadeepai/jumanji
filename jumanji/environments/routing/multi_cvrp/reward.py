@@ -79,8 +79,8 @@ class SparseReward(RewardFn):
 class DenseReward(RewardFn):
     """
     The negative distance between the current city and the chosen next city to go to.
-        An time penalty is also added when arriving early or late at a customer. 
-        If the maximum step limit is reached, the reward is set to an esitated of 
+        An time penalty is also added when arriving early or late at a customer.
+        If the maximum step limit is reached, the reward is set to an esitated of
         the worst case reward that can still be achieved.
     """
 

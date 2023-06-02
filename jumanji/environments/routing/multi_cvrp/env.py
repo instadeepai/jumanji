@@ -322,12 +322,16 @@ class MultiCVRP(Environment[State]):
             "actions",
         )
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(
+        self,
+        state: State,
+    ) -> Optional[NDArray]:
         """Render the given state of the environment. This rendering shows the layout of the tour so
             far with the cities as circles, and the depot as a square.
 
         Args:
             state: environment state to render.
+            save_path: the optional path where the image should be saved.
 
         Returns:
             rgb_array: the RGB image of the state as an array.
