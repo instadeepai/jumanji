@@ -12,14 +12,14 @@
         <meta name="author" content="InstaDeep Research">
       
       
-        <link rel="canonical" href="https://instadeep.github.io/jumanji/api/environments/rware/">
+        <link rel="canonical" href="https://instadeep.github.io/jumanji/api/environments/macvrp/">
       
       <link rel="icon" href="../../../img/instadeep_logo.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
     
     
       
-        <title>Rware - Jumanji</title>
+        <title>Macvrp - Jumanji</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse" class="md-skip">
+        <a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rware
+              Macvrp
             
           </span>
         </div>
@@ -1225,124 +1225,46 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/api/environments/rware.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/api/environments/macvrp.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-  <h1>Rware</h1>
+  <h1>Macvrp</h1>
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse" class="doc doc-heading">
+<h2 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP" class="doc doc-heading">
         <code>
-RobotWarehouse            (<a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../../env/#jumanji.env.Environment">Environment</a>)
+MultiCVRP            (<a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../../env/#jumanji.env.Environment">Environment</a>)
         </code>
 
 
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse" class="headerlink" title="Permanent link">#</a></h2>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP" class="headerlink" title="Permanent link">#</a></h2>
 
     <div class="doc doc-contents first">
 
-      <p>A JAX implementation of the 'Robotic warehouse' environment:
-https://github.com/semitable/robotic-warehouse
-which is described in the paper [1].</p>
-<p>Creates a grid world where multiple agents (robots)
-are supposed to collect shelves, bring them to a goal
-and then return them.</p>
-<p>Below is an example warehouse floor grid:
-the grid layout is instantiated using three arguments</p>
-<ul>
-<li>shelf_rows: number of vertical shelf clusters</li>
-<li>shelf_columns: odd number of horizontal shelf clusters</li>
-<li>column_height: height of each cluster</li>
-</ul>
-<p>A cluster is a set of grouped shelves (two cells wide) represented
-below as</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>                XX
-</code></pre></div></td></tr></table></div>
-<p>Shelf cluster -&gt;    XX    (this cluster is of height 3)
-                    XX</p>
-<p>Grid Layout:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>           shelf columns (here set to 3, i.e.
-             v  v  v      shelf_columns=3, must be an odd number)
-            ----------
-         &gt;  -XX-XX-XX-        ^
-</code></pre></div></td></tr></table></div>
-<p>Shelf Row 1 -&gt;  -XX-XX-XX-  Column Height (here set to 3, i.e.
-             &gt;  -XX-XX-XX-        v        column_height=3)
-                ----------
-                -XX----XX-   &lt;
-                -XX----XX-   &lt;- Shelf Row 2 (here set to 2, i.e.
-                -XX----XX-   &lt;              shelf_rows=2)
-                ----------
-                ----GG----</p>
-<ul>
-<li>G: is the goal positions where agents are rewarded if
-they successfully deliver a requested shelf (i.e toggle the load action
-inside the goal position while carrying a requested shelf).</li>
-</ul>
-<p>The final grid size will be
-- height: (column_height + 1) * shelf_rows + 2
-- width: (2 + 1) * shelf_columns + 1</p>
-<p>The bottom-middle column is removed to allow for
-agents to queue in front of the goal positions</p>
+      <p>Multi-Vehicle Routing Problems with Soft Time Windows (MVRPSTW) environment as described in [1].
+We simplfy the naming to multi-agent capacitated vehicle routing problem (MultiCVRP).</p>
 <ul>
 <li>
-<p>action: jax array (int) of shape (num_agents,) containing the action for each agent.
-    (0: noop, 1: forward, 2: left, 3: right, 4: toggle_load)</p>
+<p>reward: jax array (float32)
+    this global reward is provided to each agent. The reward is equal to the negative sum of the
+    distances between consecutive nodes at the end of the episode over all agents. All time
+    penalties are also added to the reward.</p>
 </li>
 <li>
-<p>reward: jax array (int) of shape (), global reward shared by all agents, +1
-    for every successful delivery of a requested shelf to the goal position.</p>
-</li>
-<li>
-<p>episode termination:</p>
-<ul>
-<li>The number of steps is greater than the limit.</li>
-<li>Any agent selects an action which causes two agents to collide.</li>
-</ul>
-</li>
-<li>
-<p>state: State</p>
-<ul>
-<li>grid: an array representing the warehouse floor as a 2D grid with two separate channels
-    one for the agents, and one for the shelves</li>
-<li>agents: a pytree of Agent type with per agent leaves: [position, direction, is_carrying]</li>
-<li>shelves: a pytree of Shelf type with per shelf leaves: [position, is_requested]</li>
-<li>request_queue: the queue of requested shelves (by ID).</li>
-<li>step_count: an integer representing the current step of the episode.</li>
-<li>action_mask: an array of shape (num_agents, 5) containing the valid actions
-    for each agent.</li>
-<li>key: a pseudorandom number generator key.</li>
-</ul>
+<p>observation and state:
+    the observation and state variable types are defined in:
+    jumanji/environments/routing/multi_cvrp/types.py</p>
 </li>
 </ul>
-<p>[1] Papoudakis et al., Benchmarking Multi-Agent Deep Reinforcement Learning Algorithms
-    in Cooperative Tasks (2021)</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">jumanji.environments</span> <span class="kn">import</span> <span class="n">RobotWarehouse</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">RobotWarehouse</span><span class="p">()</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
-<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
-<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+<p>[1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
+Multi-Agent Reinforcement Learning Approach".</p>
 
 
 
@@ -1361,18 +1283,18 @@ agents to queue in front of the goal positions</p>
 
 
 
-<h3 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<h3 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
   </span>
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.__init__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Instantiates an <code>RobotWarehouse</code> environment.</p>
+      <p>Instantiates a <code>MultiCVRP</code> environment.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -1387,28 +1309,26 @@ agents to queue in front of the goal positions</p>
   <tbody>
       <tr>
         <td><code>generator</code></td>
-        <td><code>Optional[jumanji.environments.routing.robot_warehouse.generator.Generator]</code></td>
-        <td><p>callable to instantiate environment instances.
-Defaults to <code>RandomGenerator</code> with parameters:
-<code>shelf_rows = 2</code>,
-<code>shelf_columns = 3</code>,
-<code>column_height = 8</code>,
-<code>num_agents = 4</code>,
-<code>sensor_range = 1</code>,
-<code>request_queue_size = 8</code>.</p></td>
+        <td><code>Optional[jumanji.environments.routing.multi_cvrp.generator.Generator]</code></td>
+        <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment instance.
+Implemented options are [<code>UniformRandomGenerator</code>].
+Defaults to <code>UniformRandomGenerator</code> with <code>num_customers=20</code> and <code>num_vehicles=2</code>.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>time_limit</code></td>
-        <td><code>int</code></td>
-        <td><p>the maximum step limit allowed within the environment.
-Defaults to 500.</p></td>
-        <td><code>500</code></td>
+        <td><code>reward_fn</code></td>
+        <td><code>Optional[jumanji.environments.routing.multi_cvrp.reward.RewardFn]</code></td>
+        <td><p><code>RewardFn</code> whose <code>__call__</code> method computes the reward of an environment
+transition. The function must compute the reward based on the current state
+and whether the environment is done.
+Implemented options are [<code>DenseReward</code>, <code>SparseReward</code>]. Defaults to <code>DenseReward</code>.</p></td>
+        <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>viewer</code></td>
-        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.routing.robot_warehouse.types.State]]</code></td>
-        <td><p>viewer to render the environment. Defaults to <code>RobotWarehouseViewer</code>.</p></td>
+        <td><code>Optional[jumanji.viewer.Viewer]</code></td>
+        <td><p><code>Viewer</code> used for rendering. Defaults to <code>MultiCVRPViewer</code> with "human" render
+mode.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -1423,11 +1343,11 @@ Defaults to 500.</p></td>
 
 
 
-<h3 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<h3 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP.reset" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.reset" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP.reset" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
 
@@ -1447,7 +1367,7 @@ Defaults to 500.</p></td>
       <tr>
         <td><code>key</code></td>
         <td><code>PRNGKeyArray</code></td>
-        <td><p>random key used to reset the environment since it is stochastic.</p></td>
+        <td><p>used to randomly generate the problem and the start node.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -1464,7 +1384,8 @@ Defaults to 500.</p></td>
     <tr>
       <td><code>state</code></td>
       <td><p>State object corresponding to the new state of the environment.
-timestep: TimeStep object corresponding the first timestep returned by the environment.</p></td>
+timestep: TimeStep object corresponding to the first timestep returned by the
+   environment.</p></td>
     </tr>
   </tbody>
 </table>
@@ -1478,15 +1399,15 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 
-<h3 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<h3 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP.step" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.step" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP.step" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Perform an environment step.</p>
+      <p>Run one timestep of the environment's dynamics.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -1508,12 +1429,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       <tr>
         <td><code>action</code></td>
         <td><code>Array</code></td>
-        <td><p>Array containing the action to take.
-- 0 no op
-- 1 move forward
-- 2 turn left
-- 3 turn right
-- 4 toggle load</p></td>
+        <td><p>Array containing the index of the next nodes to visit.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -1528,9 +1444,9 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
   </thead>
   <tbody>
     <tr>
-      <td><code>state</code></td>
-      <td><p>State object corresponding to the next state of the environment.
-timestep: TimeStep object corresponding the timestep returned by the environment.</p></td>
+      <td><code>state, timestep</code></td>
+      <td><p>Tuple[State, TimeStep] containing the next state of the environment,
+    as well as the timestep to be observed.</p></td>
     </tr>
   </tbody>
 </table>
@@ -1544,15 +1460,15 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 
-<h3 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">robot_warehouse</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+<h3 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">multi_cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
 
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Specification of the observation of the <code>RobotWarehouse</code> environment.</p>
+      <p>Returns the observation spec.</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -1564,14 +1480,9 @@ timestep: TimeStep object corresponding the timestep returned by the environment
   </thead>
   <tbody>
     <tr>
-      <td><code>Spec for the `Observation`, consisting of the fields</code></td>
-      <td><ul>
-<li>agents_view: Array (int32) of shape (num_agents, num_obs_features).<ul>
-<li>action_mask: BoundedArray (bool) of shape (num_agent, 5).</li>
-<li>step_count: BoundedArray (int32) of shape ().</li>
-</ul>
-</li>
-</ul></td>
+      <td><code>observation_spec</code></td>
+      <td><p>a Tuple containing the spec for each of the constituent fields of an
+    observation.</p></td>
     </tr>
   </tbody>
 </table>
@@ -1585,18 +1496,31 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 
-<h3 id="jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
+<h3 id="jumanji.environments.routing.multi_cvrp.env.MultiCVRP.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoundedArray</span></code>
 
 
-<a href="#jumanji.environments.routing.robot_warehouse.env.RobotWarehouse.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#jumanji.environments.routing.multi_cvrp.env.MultiCVRP.action_spec" class="headerlink" title="Permanent link">#</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Returns the action spec. 5 actions: [0,1,2,3,4] -&gt; [No Op, Forward, Left, Right, Toggle_load].
-Since this is a multi-agent environment, the environment expects an array of actions.
-This array is of shape (num_agents,).</p>
+      <p>Returns the action spec.</p>
 
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action_spec</code></td>
+      <td><p>a <code>specs.BoundedArray</code> spec.</p></td>
+    </tr>
+  </tbody>
+</table>
     </div>
 
   </div>
