@@ -25,11 +25,17 @@ from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.environments.packing.job_shop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.routing import (
+    HEAD,
+    <<<<<<<,
+    =======,
+    >>>>>>>,
     cleaner,
     connector,
     cvrp,
     maze,
+    mmst,
     multi_cvrp,
+    origin/main,
     robot_warehouse,
     snake,
     tsp,
@@ -38,7 +44,14 @@ from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
+
+<<<<<<< HEAD
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP
+
+=======
+from jumanji.environments.routing.mmst.env import MMST
+
+>>>>>>> origin/main
 from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
