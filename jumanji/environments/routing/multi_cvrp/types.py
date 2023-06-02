@@ -121,8 +121,8 @@ class StateVehicle(Vehicle):
     """
 
     positions: chex.Array  # Shape: (num_vehicles,)
-    distances: chex.Array = None  # Shape: (num_vehicles,)
-    time_penalties: chex.Array = None  # Shape: (num_vehicles,)
+    distances: chex.Array  # Shape: (num_vehicles,)
+    time_penalties: chex.Array  # Shape: (num_vehicles,)
 
 
 @dataclass
