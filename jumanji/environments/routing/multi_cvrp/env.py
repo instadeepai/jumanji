@@ -82,7 +82,7 @@ class MultiCVRP(Environment[State]):
             reward_fn: `RewardFn` whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state
                 and whether the environment is done.
-                Implemented options are [`DenseReward`]. Defaults to `DenseReward`.
+                Implemented options are [`DenseReward`, `SparseReward`]. Defaults to `DenseReward`.
             viewer: `Viewer` used for rendering. Defaults to `MultiCVRPViewer` with "human" render
                 mode.
         """
