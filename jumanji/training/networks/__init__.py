@@ -56,6 +56,10 @@ from jumanji.training.networks.minesweeper.actor_critic import (
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
 from jumanji.training.networks.mmst.actor_critic import make_actor_critic_networks_mmst
 from jumanji.training.networks.mmst.random import make_random_policy_mmst
+from jumanji.training.networks.multi_cvrp.actor_critic import (
+    make_actor_critic_networks_multicvrp,
+)
+from jumanji.training.networks.multi_cvrp.random import make_random_policy_multicvrp
 from jumanji.training.networks.robot_warehouse.actor_critic import (
     make_actor_critic_networks_robot_warehouse,
 )
