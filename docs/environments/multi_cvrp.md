@@ -1,7 +1,7 @@
 # Multi Agent Capacitated Vehicle Routing Problem - `MultiCVRP` Environment
 
 <p align="center">
-        <img src="../img/multi_cvrp.png" width="500"/>
+        <img src="../env_anim/multi_cvrp.gif" width="500"/>
 </p>
 
 We provide here a Jax JIT-able implementation of the multi-agent capacitated vehicle routing problem
