@@ -51,5 +51,5 @@ The reward could be either:
 
 
 ## Registered Versions 📖
-- `BinPack-v1`, 3D bin-packing problem with a solvable random generator that generates up to 30
-items maximum, that can handle 100 EMSs and that shows the 70 largest EMSs to the agent.
+- `BinPack-v1`, 3D bin-packing problem with a solvable random generator that generates up to 20
+items maximum, that can handle 40 EMSs maximum that are given in the observation.

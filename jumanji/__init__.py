@@ -78,9 +78,9 @@ register(
 # Packing Environments
 ###
 
-# 3D bin-packing problem with 30 randomly generated items maximum, 100 EMSs maximum and the 70
-# largest ones are given in the observation.
-register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
+# 3D bin-packing problem with 20 randomly generated items maximum, 40 EMSs maximum that are
+# given in the observation.
+register(id="BinPack-v2", entry_point="jumanji.environments:BinPack")
 
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
