@@ -71,6 +71,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://instadeep.github.io/jumanji/api/environments/mmst/</loc>
+         <lastmod>2023-06-02</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/rubiks_cube/</loc>
          <lastmod>2023-06-02</lastmod>
          <changefreq>daily</changefreq>
@@ -142,6 +147,11 @@
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/minesweeper/</loc>
+         <lastmod>2023-06-02</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/mmst/</loc>
          <lastmod>2023-06-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
