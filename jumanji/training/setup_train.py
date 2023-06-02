@@ -24,6 +24,7 @@ import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
+    MMST,
     TSP,
     BinPack,
     Cleaner,
@@ -170,6 +171,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        random_policy = networks.make_random_policy_mmst()
     elif cfg.env.name == "robot_warehouse":
         assert isinstance(env.unwrapped, RobotWarehouse)
         random_policy = networks.make_random_policy_robot_warehouse()
@@ -311,6 +315,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        actor_critic_networks = networks.make_actor_critic_networks_mmst(
+            mmst=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
