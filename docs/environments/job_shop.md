@@ -1,7 +1,7 @@
 # JobShop Environment
 
 <p align="center">
-        <img src="../env_anim/job_shop_annotated.gif" width="600"/>
+        <img src="../img/job_shop_annotated.gif" width="600"/>
 </p>
 
 We provide here a JAX jit-able implementation of the

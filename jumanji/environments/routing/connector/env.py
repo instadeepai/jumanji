@@ -105,7 +105,7 @@ class Connector(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
-                Implemented options are [`UniformRandomGenerator`].
+                Implemented options are [`UniformRandomGenerator`, `RandomWalkGenerator`].
                 Defaults to `UniformRandomGenerator` with `grid_size=10` and `num_agents=5`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
