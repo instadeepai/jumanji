@@ -88,7 +88,7 @@ register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 
 # Knapsack problem with 50 randomly generated items, a total budget
 # of 12.5, and a dense reward function.
-register(id="Knapsack-v2", entry_point="jumanji.environments:Knapsack")
+register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
 
 ###

@@ -55,5 +55,5 @@ selected is selected again or has a weight larger than the bag capacity.
 
 
 ## Registered Versions 📖
-- `Knapsack-v2`: Knapsack problem with 50 randomly generated items, a total budget of 12.5 and a
+- `Knapsack-v1`: Knapsack problem with 50 randomly generated items, a total budget of 12.5 and a
 dense reward function.
