@@ -31,6 +31,7 @@
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
   <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
   <img src="docs/env_anim/tetris.gif" alt="Tetris" width="30%" />
+  <img src="docs/env_anim/mmst.gif" alt="MMST" width="30%" />
   <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" />
 </p>
 
@@ -93,6 +94,7 @@ problems.
 | :robot: RobotWarehouse  | Routing  | `RobotWarehouse-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/robot_warehouse/)      | [doc](https://instadeepai.github.io/jumanji/environments/robot_warehouse/)        |
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
+| Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 
 ## Installation 🎬
 

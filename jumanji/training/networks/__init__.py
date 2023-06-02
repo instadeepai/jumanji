@@ -54,6 +54,8 @@ from jumanji.training.networks.minesweeper.actor_critic import (
     make_actor_critic_networks_minesweeper,
 )
 from jumanji.training.networks.minesweeper.random import make_random_policy_minesweeper
+from jumanji.training.networks.mmst.actor_critic import make_actor_critic_networks_mmst
+from jumanji.training.networks.mmst.random import make_random_policy_mmst
 from jumanji.training.networks.robot_warehouse.actor_critic import (
     make_actor_critic_networks_robot_warehouse,
 )
