@@ -40,6 +40,7 @@ from jumanji.environments import (
     RubiksCube,
     Snake,
     Sudoku,
+    Tetris,
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
@@ -175,6 +176,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "tetris":
+        assert isinstance(env.unwrapped, Tetris)
+        random_policy = networks.make_random_policy_tetris(tetris=env.unwrapped)
     elif cfg.env.name == "mmst":
         assert isinstance(env.unwrapped, MMST)
         random_policy = networks.make_random_policy_mmst()
@@ -331,6 +335,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "tetris":
+        assert isinstance(env.unwrapped, Tetris)
+        actor_critic_networks = networks.make_actor_critic_networks_tetris(
+            tetris=env.unwrapped,
+            conv_num_channels=cfg.env.network.conv_num_channels,
+            tetromino_layers=cfg.env.network.tetromino_layers,
+            final_layer_dims=cfg.env.network.final_layer_dims,
         )
     elif cfg.env.name == "mmst":
         assert isinstance(env.unwrapped, MMST)

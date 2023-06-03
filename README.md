@@ -31,6 +31,7 @@
   <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="30%" />
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
   <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
+  <img src="docs/env_anim/tetris.gif" alt="Tetris" width="30%" />
   <img src="docs/env_anim/mmst.gif" alt="MMST" width="30%" />
   <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" />
 </p>
@@ -86,6 +87,7 @@ problems.
 | 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v2`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
 | 🏭 JobShop (Job Shop Scheduling Problem) | Packing  | `JobShop-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop/)  | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
 | 🎒 Knapsack                              | Packing  | `Knapsack-v1`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack/)  | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
+| ▒ Tetris                              | Packing  | `Tetris-v0`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/tetris/)  | [doc](https://instadeepai.github.io/jumanji/environments/tetris/)    |
 | 🧹 Cleaner                               | Routing  | `Cleaner-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cleaner/)   | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
 | :link: Connector                         | Routing  | `Connector-v2`                                       | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
