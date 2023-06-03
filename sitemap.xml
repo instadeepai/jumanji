@@ -2,212 +2,217 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://instadeep.github.io/jumanji/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/env/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/types/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/wrappers/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/bin_pack/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/cleaner/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/connector/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/cvrp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/game_2048/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/graph_coloring/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/job_shop/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/knapsack/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/macvrp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/maze/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/minesweeper/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/mmst/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/rubiks_cube/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/rware/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/snake/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/sudoku/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/api/environments/tsp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/bin_pack/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/cleaner/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/connector/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/cvrp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/game_2048/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/graph_coloring/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/job_shop/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/knapsack/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/maze/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/minesweeper/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/mmst/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/multi_cvrp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/robot_warehouse/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/rubiks_cube/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/snake/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/sudoku/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://instadeep.github.io/jumanji/environments/tetris/</loc>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/environments/tsp/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/advanced_usage/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/registration/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/training/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://instadeep.github.io/jumanji/guides/wrappers/</loc>
-         <lastmod>2023-06-02</lastmod>
+         <lastmod>2023-06-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
