@@ -31,6 +31,7 @@ from jumanji.environments.routing import (
     cvrp,
     maze,
     mmst,
+    multi_cvrp,
     robot_warehouse,
     snake,
     tsp,
@@ -40,6 +41,7 @@ from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.mmst.env import MMST
+from jumanji.environments.routing.multi_cvrp import MultiCVRP
 from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
