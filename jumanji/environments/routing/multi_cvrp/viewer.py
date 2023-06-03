@@ -15,18 +15,18 @@
 from itertools import groupby
 from typing import Callable, Optional, Sequence, Tuple
 
+import chex
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-from chex import Array
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.routing.cvrp.types import State
+from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.viewer import Viewer
 
 
-class CVRPViewer(Viewer):
+class MultiCVRPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"
@@ -34,8 +34,15 @@ class CVRPViewer(Viewer):
     DEPOT_SIZE = 250
     ARROW_WIDTH = 0.004
 
-    def __init__(self, name: str, num_cities: int, render_mode: str = "human") -> None:
-        """Viewer for the `CVRP` environment.
+    def __init__(
+        self,
+        name: str,
+        num_vehicles: int,
+        num_customers: int,
+        map_max: int,
+        render_mode: str = "human",
+    ) -> None:
+        """Viewer for the MultiCVRP environment.
 
         Args:
             name: the window name to be used when initialising the window.
@@ -44,10 +51,12 @@ class CVRPViewer(Viewer):
                 - "rgb_array": return a numpy array frame representing the environment.
         """
         self._name = name
-        self._num_cities = num_cities
+        self._num_vehicles = num_vehicles
+        self._num_customers = num_customers
+        self._map_max = map_max
 
-        # Each route to and from depot has a different color
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_cities)
+        # Each vehicle has a different colour
+        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
@@ -61,21 +70,24 @@ class CVRPViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(
-        self, state: State, save_path: Optional[str] = None
-    ) -> Optional[NDArray]:
-        """Render the given state of the `CVRP` environment.
+    def render(self, state: State, save_path: Optional[str] = None) -> chex.Array:
+        """Render the state of the environment.
 
         Args:
-            state: the environment state to render.
+            state: the current state of the environment to render.
+            save_path: optional name to save frame as.
+
+        Return:
+            pixel RGB array
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
+        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
         self._prepare_figure(ax)
         self._add_tour(ax, state)
         if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.0)
         return self._display(fig)
 
     def animate(
@@ -149,7 +161,7 @@ class CVRPViewer(Viewer):
         map_img = plt.imread("docs/img/city_map.jpeg")
         ax.imshow(map_img, extent=[0, 1, 0, 1])
 
-    def _group_tour(self, tour: Array) -> list:
+    def _group_tour(self, tour: chex.Array) -> list:
         """Group the tour into routes that either (1) start and end at the depot, or, (2) start at
         the depot and end at the current city.
 
@@ -170,9 +182,9 @@ class CVRPViewer(Viewer):
             tour_grouped[-1] = tour_grouped[-1][:-1]
         return tour_grouped
 
-    def _draw_route(self, ax: plt.Axes, coords: Array, col_id: int) -> None:
+    def _draw_route(self, ax: plt.Axes, coords: chex.Array, col_id: int) -> None:
         """Draw the arrows and nodes for each route in the given colour."""
-        x, y = coords.T
+        x, y = coords[:, 0], coords[:, 1]
 
         # Compute the difference in the x- and y-coordinates to determine the distance between
         # consecutive cities.
@@ -193,25 +205,34 @@ class CVRPViewer(Viewer):
         ax.scatter(x, y, s=self.NODE_SIZE, color=self._cmap(col_id))
 
     def _add_tour(self, ax: plt.Axes, state: State) -> None:
-        """Add the cities and the depot to the plot, and draw each route in the tour in a different
-        colour. The tour is the entire trajectory between the visited cities and a route is a
+        """Add the customers and the depot to the plot, and draw each route in the tour in a different
+        colour. The tour is the entire trajectory between the visited customers and a route is a
         trajectory either starting and ending at the depot or starting at the depot and ending at
         the current city."""
-        x_coords, y_coords = state.coordinates.T
+        x_coords, y_coords = (
+            state.nodes.coordinates[:, 0] / self._map_max,
+            state.nodes.coordinates[:, 1] / self._map_max,
+        )
 
-        # Draw the cities
+        # Draw the customers
         ax.scatter(x_coords[1:], y_coords[1:], s=self.NODE_SIZE, color=self.NODE_COLOUR)
 
-        # Draw the arrows between cities
-        if state.num_total_visits > 1:
-            coords = state.coordinates[state.trajectory[: state.num_total_visits]]
-            coords_grouped = self._group_tour(coords)
+        # Draw the arrows between customers
+        if state.step_count > 0:
+            # TODO (dries): Can we do this without a for loop?
+            for i in range(len(state.order)):
+                coords = (
+                    state.nodes.coordinates[state.order[i, : state.step_count]]
+                    / self._map_max
+                )
 
-            # Draw each route in different colour
-            for coords_route, col_id in zip(
-                coords_grouped, np.arange(0, len(coords_grouped))
-            ):
-                self._draw_route(ax, coords_route, col_id)
+                coords_grouped = self._group_tour(coords)
+
+                # Draw each route in different colour
+                for coords_route, _ in zip(
+                    coords_grouped, np.arange(0, len(coords_grouped))
+                ):
+                    self._draw_route(ax, coords_route, i)
 
         # Draw the depot node
         ax.scatter(
@@ -231,7 +252,8 @@ class CVRPViewer(Viewer):
         else:
             # Required to update render when not using Jupyter Notebook.
             fig.canvas.draw_idle()
-            fig.canvas.flush_events()
+            # Block for 2 seconds.
+            fig.canvas.start_event_loop(2.0)
 
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()

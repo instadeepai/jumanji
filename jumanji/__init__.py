@@ -101,9 +101,16 @@ register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 # Connector with grid size of 10 and 10 agents.
 register(id="Connector-v2", entry_point="jumanji.environments:Connector")
 
+# MMST with 3 agents, 36 nodes, 72 edges, 4 nodes to connect per agent, and a time limit of 70.
+register(id="MMST-v0", entry_point="jumanji.environments:MMST")
+
 # CVRP with 20 randomly generated nodes, a maximum capacity of 30,
 # a maximum demand for each node of 10, and a dense reward function.
 register(id="CVRP-v1", entry_point="jumanji.environments:CVRP")
+
+# MultiCVRP with 20 randomly generated nodes, a maximum capacity of 60, 2 vehicles,
+# a maximum demand for each node of 10, and a dense reward function.
+register(id="MultiCVRP-v0", entry_point="jumanji.environments:MultiCVRP")
 
 # Maze with 10 rows and 10 columns, a time limit of 100 and a random maze generator.
 register(id="Maze-v0", entry_point="jumanji.environments:Maze")

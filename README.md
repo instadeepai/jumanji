@@ -26,9 +26,12 @@
   <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="30%" />
   <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
   <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="30%" />
+  <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="30%" />
   <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
   <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="30%" />
   <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
+  <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
+  <img src="docs/env_anim/mmst.gif" alt="MMST" width="30%" />
   <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" />
 </p>
 
@@ -86,10 +89,12 @@ problems.
 | 🧹 Cleaner                               | Routing  | `Cleaner-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cleaner/)   | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
 | :link: Connector                         | Routing  | `Connector-v2`                                       | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
+| 🚚 MultiCVRP (Multi-Agent Capacitated Vehicle Routing Problem)  | Routing  | `MultiCVRP-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/multi_cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/multi_cvrp/)        |
 | :mag: Maze   | Routing  | `Maze-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)      | [doc](https://instadeepai.github.io/jumanji/environments/maze/)        |
 | :robot: RobotWarehouse  | Routing  | `RobotWarehouse-v0`                                  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/robot_warehouse/)      | [doc](https://instadeepai.github.io/jumanji/environments/robot_warehouse/)        |
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
+| Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 
 ## Installation 🎬
 

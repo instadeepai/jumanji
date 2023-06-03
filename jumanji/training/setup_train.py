@@ -24,6 +24,7 @@ import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
+    MMST,
     TSP,
     BinPack,
     Cleaner,
@@ -34,6 +35,7 @@ from jumanji.environments import (
     Knapsack,
     Maze,
     Minesweeper,
+    MultiCVRP,
     RobotWarehouse,
     RubiksCube,
     Snake,
@@ -145,6 +147,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
+    elif cfg.env.name == "multi_cvrp":
+        assert isinstance(env.unwrapped, MultiCVRP)
+        random_policy = networks.make_random_policy_multicvrp()
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         random_policy = networks.make_random_policy_rubiks_cube(
@@ -170,6 +175,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        random_policy = networks.make_random_policy_mmst()
     elif cfg.env.name == "robot_warehouse":
         assert isinstance(env.unwrapped, RobotWarehouse)
         random_policy = networks.make_random_policy_robot_warehouse()
@@ -242,6 +250,18 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
         )
+    elif cfg.env.name == "multi_cvrp":
+        assert isinstance(env.unwrapped, MultiCVRP)
+        actor_critic_networks = networks.make_actor_critic_networks_multicvrp(
+            MultiCVRP=env.unwrapped,
+            num_vehicles=cfg.env.network.num_vehicles,
+            num_customers=cfg.env.network.num_customers,
+            num_layers_vehicles=cfg.env.network.num_layers_vehicles,
+            num_layers_customers=cfg.env.network.num_layers_customers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+        )
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
         actor_critic_networks = networks.make_actor_critic_networks_game_2048(
@@ -311,6 +331,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        actor_critic_networks = networks.make_actor_critic_networks_mmst(
+            mmst=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
