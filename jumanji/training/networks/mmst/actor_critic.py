@@ -233,8 +233,15 @@ def make_actor_network_mmst(
 
         num_agents, num_actions = observation.action_mask.shape[-2:]
         embeddings = torso(observation)  # (B, A, H)
-        step_count = jnp.tile(observation.step_count / time_limit, (1, num_agents, 1))
-        embeddings = jnp.concatenate([embeddings, step_count], axis=-1)
+        step_count = observation.step_count[:, None] / time_limit
+        step_counts = jnp.tile(
+            step_count,
+            (
+                1,
+                num_agents,
+            ),
+        )[..., None]
+        embeddings = jnp.concatenate([embeddings, step_counts], axis=-1)
         logits = hk.nets.MLP((torso.model_size, num_actions), name="policy_head")(
             embeddings
         )  # (B, A, N)
