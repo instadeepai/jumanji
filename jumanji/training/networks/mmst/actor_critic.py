@@ -47,12 +47,14 @@ def make_actor_critic_networks_mmst(
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
+        time_limit=mmst.time_limit,
     )
     value_network = make_critic_network_mmst(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
+        time_limit=mmst.time_limit,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -218,6 +220,7 @@ def make_actor_network_mmst(
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
+    time_limit: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = MMSTTorso(
@@ -228,9 +231,13 @@ def make_actor_network_mmst(
             name="policy_torso",
         )
 
-        num_actions = observation.action_mask.shape[-1]
+        num_agents, num_actions = observation.action_mask.shape[-2:]
         embeddings = torso(observation)  # (B, A, H)
-        logits = hk.Linear(num_actions, name="policy_head")(embeddings)  # (B, A, N)
+        step_count = jnp.tile(observation.step_count / time_limit, (1, num_agents, 1))
+        embeddings = jnp.concatenate([embeddings, step_count], axis=-1)
+        logits = hk.nets.MLP((torso.model_size, num_actions), name="policy_head")(
+            embeddings
+        )  # (B, A, N)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 
@@ -243,6 +250,7 @@ def make_critic_network_mmst(
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
+    time_limit: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = MMSTTorso(
@@ -253,8 +261,9 @@ def make_critic_network_mmst(
             name="critic_torso",
         )
         embeddings = torso(observation)
-
         embedding = jnp.mean(embeddings, axis=-2)
+        step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
+        embedding = jnp.concatenate([embedding, step_count], axis=-1)
         value = hk.nets.MLP((torso.model_size, 1), name="critic_head")(embedding)
         return jnp.squeeze(value, axis=-1)
 

@@ -15,9 +15,6 @@
 import os
 from typing import Tuple
 
-import jax
-import jax.numpy as jnp
-
 from jumanji.environments.routing.mmst.env import MMST
 from jumanji.environments.routing.mmst.types import State
 from jumanji.environments.routing.mmst.viewer import MMSTViewer
@@ -42,23 +39,9 @@ def test__animation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> Non
     viewer = MMSTViewer(
         env.num_agents,
     )
-    step_fn = jax.jit(env.step)
     save_path = "render_test_gif.gif"
 
-    states = [state]
-    actions = [
-        jnp.array([0, 4]),
-        jnp.array([3, 5]),
-        jnp.array([7, 4]),
-        jnp.array([6, 8]),
-        jnp.array([10, 10]),
-        jnp.array([9, 4]),
-    ]
-
-    for action in actions:
-        state, _ = step_fn(state, action)
-        states.append(state)
-
+    states = 2 * [state]
     viewer.animate(states, save_path=save_path)
 
     assert os.path.exists(save_path)
