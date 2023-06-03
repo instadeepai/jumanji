@@ -1,0 +1,30 @@
+name: multi_cvrp
+registered_version: MultiCVRP-v0
+
+network:
+    num_vehicles: 2
+    num_customers: 20
+    num_layers_vehicles: 1
+    num_layers_customers: 1
+    transformer_num_heads: 4
+    transformer_key_size: 8
+    transformer_mlp_units: [256]
+
+training:
+    num_epochs: 500
+    num_learner_steps_per_epoch: 200
+    n_steps: 15
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 1.0
+    bootstrapping_factor: 1.00
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 1e-4

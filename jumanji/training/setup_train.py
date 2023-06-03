@@ -24,17 +24,22 @@ import jumanji
 from jumanji.env import Environment
 from jumanji.environments import (
     CVRP,
+    MMST,
     TSP,
     BinPack,
     Cleaner,
     Connector,
     Game2048,
+    GraphColoring,
     JobShop,
     Knapsack,
     Maze,
     Minesweeper,
+    MultiCVRP,
+    RobotWarehouse,
     RubiksCube,
     Snake,
+    Sudoku,
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
@@ -50,7 +55,7 @@ from jumanji.training.loggers import (
 from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
-from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
+from jumanji.wrappers import VmapAutoResetWrapper
 
 
 def setup_logger(cfg: DictConfig) -> Logger:
@@ -78,10 +83,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    env: Environment = jumanji.make(cfg.env.registered_version)
-    if isinstance(env, Connector):
-        env = MultiToSingleWrapper(env)
-    return env
+    return jumanji.make(cfg.env.registered_version)
 
 
 def setup_env(cfg: DictConfig) -> Environment:
@@ -145,6 +147,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "cvrp":
         assert isinstance(env.unwrapped, CVRP)
         random_policy = networks.make_random_policy_cvrp()
+    elif cfg.env.name == "multi_cvrp":
+        assert isinstance(env.unwrapped, MultiCVRP)
+        random_policy = networks.make_random_policy_multicvrp()
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
         random_policy = networks.make_random_policy_rubiks_cube(
@@ -158,6 +163,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
         random_policy = networks.make_random_policy_game_2048()
+    elif cfg.env.name == "sudoku":
+        assert isinstance(env.unwrapped, Sudoku)
+        random_policy = networks.make_random_policy_sudoku(sudoku=env.unwrapped)
     elif cfg.env.name == "cleaner":
         assert isinstance(env.unwrapped, Cleaner)
         random_policy = networks.make_random_policy_cleaner()
@@ -167,6 +175,15 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        random_policy = networks.make_random_policy_mmst()
+    elif cfg.env.name == "robot_warehouse":
+        assert isinstance(env.unwrapped, RobotWarehouse)
+        random_policy = networks.make_random_policy_robot_warehouse()
+    elif cfg.env.name == "graph_coloring":
+        assert isinstance(env.unwrapped, GraphColoring)
+        random_policy = networks.make_random_policy_graph_coloring()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -233,6 +250,18 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             mean_nodes_in_query=cfg.env.network.mean_nodes_in_query,
         )
+    elif cfg.env.name == "multi_cvrp":
+        assert isinstance(env.unwrapped, MultiCVRP)
+        actor_critic_networks = networks.make_actor_critic_networks_multicvrp(
+            MultiCVRP=env.unwrapped,
+            num_vehicles=cfg.env.network.num_vehicles,
+            num_customers=cfg.env.network.num_customers,
+            num_layers_vehicles=cfg.env.network.num_layers_vehicles,
+            num_layers_customers=cfg.env.network.num_layers_customers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+        )
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
         actor_critic_networks = networks.make_actor_critic_networks_game_2048(
@@ -248,6 +277,24 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             cube_embed_dim=cfg.env.network.cube_embed_dim,
             step_count_embed_dim=cfg.env.network.step_count_embed_dim,
             dense_layer_dims=cfg.env.network.dense_layer_dims,
+        )
+    elif cfg.env.name == "sudoku":
+        assert isinstance(env.unwrapped, Sudoku)
+        actor_critic_networks = networks.make_equivariant_actor_critic_networks_sudoku(
+            sudoku=env.unwrapped,
+            num_heads=cfg.env.network.num_heads,
+            key_size=cfg.env.network.key_size,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "robot_warehouse":
+        assert isinstance(env.unwrapped, RobotWarehouse)
+        actor_critic_networks = networks.make_actor_critic_networks_robot_warehouse(
+            robot_warehouse=env.unwrapped,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
@@ -284,6 +331,24 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
             conv_n_channels=cfg.env.network.conv_n_channels,
+        )
+    elif cfg.env.name == "mmst":
+        assert isinstance(env.unwrapped, MMST)
+        actor_critic_networks = networks.make_actor_critic_networks_mmst(
+            mmst=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+        )
+    elif cfg.env.name == "graph_coloring":
+        assert isinstance(env.unwrapped, GraphColoring)
+        actor_critic_networks = networks.make_actor_critic_networks_graph_coloring(
+            graph_coloring=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
