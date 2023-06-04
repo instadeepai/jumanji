@@ -35,15 +35,15 @@ def flat_pack() -> FlatPack:
     """Creates a simple FlatPack environment for testing."""
     return FlatPack(
         generator=RandomFlatPackGenerator(
-            num_col_pieces=3,
-            num_row_pieces=3,
+            num_col_blocks=3,
+            num_row_blocks=3,
         ),
     )
 
 
 @pytest.fixture
-def simple_env_board_state_1() -> chex.Array:
-    """The state of the board in the simplified example after 1 correct action."""
+def simple_env_grid_state_1() -> chex.Array:
+    """The state of the grid in the simplified example after 1 correct action."""
     # fmt: off
     return jnp.array(
         [
@@ -58,8 +58,8 @@ def simple_env_board_state_1() -> chex.Array:
 
 
 @pytest.fixture
-def simple_env_board_state_2() -> chex.Array:
-    """The state of the board in the simplified example after 2 correct actions."""
+def simple_env_grid_state_2() -> chex.Array:
+    """The state of the grid in the simplified example after 2 correct actions."""
     # fmt: off
     return jnp.array(
         [
@@ -74,8 +74,8 @@ def simple_env_board_state_2() -> chex.Array:
 
 
 @pytest.fixture
-def simple_env_board_state_3() -> chex.Array:
-    """The state of the board in the simplified example after 3 correct actions."""
+def simple_env_grid_state_3() -> chex.Array:
+    """The state of the grid in the simplified example after 3 correct actions."""
     # fmt: off
     return jnp.array(
         [
@@ -90,8 +90,8 @@ def simple_env_board_state_3() -> chex.Array:
 
 
 @pytest.fixture
-def simple_env_board_state_4() -> chex.Array:
-    """The state of the board in the simplified example after 4 correct actions."""
+def simple_env_grid_state_4() -> chex.Array:
+    """The state of the grdi in the simplified example after 4 correct actions."""
     # fmt: off
     return jnp.array(
         [
@@ -106,20 +106,20 @@ def simple_env_board_state_4() -> chex.Array:
 
 
 @pytest.fixture
-def simple_env_placed_pieces_1() -> chex.Array:
-    """Placed pieces array in the simplified env after 1 piece has been placed."""
+def simple_env_placed_blocks_1() -> chex.Array:
+    """Placed blocks array in the simplified env after 1 block has been placed."""
     return jnp.array([True, False, False, False])
 
 
 @pytest.fixture
-def simple_env_action_mask_2() -> chex.Array:
-    """Placed pieces array in the simplified env after 2 pieces have been placed."""
+def simple_env_placed_blocks_2() -> chex.Array:
+    """Placed blocks array in the simplified env after 2 blocks have been placed."""
     return jnp.array([True, True, False, False])
 
 
 @pytest.fixture
-def simple_env_placed_pieces_3() -> chex.Array:
-    """Placed pieces array in the simplified env after 3 pieces have been placed."""
+def simple_env_placed_blocks_3() -> chex.Array:
+    """Placed blocks array in the simplified env after 3 blocks have been placed."""
     return jnp.array([True, True, True, False])
 
 
@@ -143,7 +143,7 @@ def test_flat_pack__reset_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     assert isinstance(timestep, TimeStep)
 
 
-def test_flat_a__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
+def test_flat_pack__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the step function is only compiled once."""
     state_0, timestep_0 = flat_pack.reset(key)
     action_0 = jnp.array([0, 0, 0, 0])
@@ -154,7 +154,7 @@ def test_flat_a__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     state_1, timestep_1 = step_fn(state_0, action_0)
 
     # Check that the state has changed and that the step has incremented.
-    assert not jnp.array_equal(state_1.current_board, state_0.current_board)
+    assert not jnp.array_equal(state_1.current_grid, state_0.current_grid)
     assert state_1.step_count == state_0.step_count + 1
     assert isinstance(timestep_1, TimeStep)
 
@@ -169,7 +169,7 @@ def test_flat_a__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     assert_is_jax_array_tree(state_2)
 
     # Check that the state has changed and that the step has incremented.
-    assert not jnp.array_equal(state_2.current_board, state_1.current_board)
+    assert not jnp.array_equal(state_2.current_grid, state_1.current_grid)
     assert state_2.step_count == state_1.step_count + 1
     assert isinstance(timestep_2, TimeStep)
 
@@ -179,23 +179,23 @@ def test_flat_pack__does_not_smoke(flat_pack: FlatPack) -> None:
     check_env_does_not_smoke(flat_pack)
 
 
-def test_flat_pack___check_done(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
+def test_flat_pack__check_done(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the check_done method works as expected."""
 
     state, _ = flat_pack.reset(key)
     assert not flat_pack._check_done(state)
 
-    # Manually set step count equal to the number of pieces.
+    # Manually set step count equal to the number of blocks.
     state.step_count = 9
     assert flat_pack._check_done(state)
 
 
-def test_flat_pack___expand_piece_to_board(
-    flat_pack: FlatPack, key: chex.PRNGKey, piece: chex.Array
+def test_flat_pack__expand_block_to_grid(
+    flat_pack: FlatPack, key: chex.PRNGKey, block: chex.Array
 ) -> None:
-    """Test that a piece is correctly set on a grid of zeros."""
+    """Test that a block is correctly set on a grid of zeros."""
     _, _ = flat_pack.reset(key)
-    expanded_grid_with_piece = flat_pack._expand_piece_to_board(piece, 2, 1)
+    expanded_grid_with_block = flat_pack._expand_block_to_grid(block, 2, 1)
     # fmt: off
     expected_expanded_grid = jnp.array(
         [
@@ -209,18 +209,18 @@ def test_flat_pack___expand_piece_to_board(
         ]
     )
     # fmt: on
-    assert jnp.array_equal(expanded_grid_with_piece, expected_expanded_grid)
+    assert jnp.array_equal(expanded_grid_with_block, expected_expanded_grid)
 
 
 def test_flat_pack__completed_episode_with_dense_reward(
     key: chex.PRNGKey,
-    simple_env_board_state_1: chex.Array,
-    simple_env_board_state_2: chex.Array,
-    simple_env_board_state_3: chex.Array,
-    simple_env_board_state_4: chex.Array,
-    simple_env_placed_pieces_1: chex.Array,
-    simple_env_action_mask_2: chex.Array,
-    simple_env_placed_pieces_3: chex.Array,
+    simple_env_grid_state_1: chex.Array,
+    simple_env_grid_state_2: chex.Array,
+    simple_env_grid_state_3: chex.Array,
+    simple_env_grid_state_4: chex.Array,
+    simple_env_placed_blocks_1: chex.Array,
+    simple_env_placed_blocks_2: chex.Array,
+    simple_env_placed_blocks_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the FlatPack environment
     with a dense reward until completion. It will check that the reward is
@@ -240,47 +240,47 @@ def test_flat_pack__completed_episode_with_dense_reward(
     assert timestep.step_type == StepType.FIRST
 
     # Check that the reset board contains only zeros
-    assert jnp.all(state.current_board == 0)
+    assert jnp.all(state.current_grid == 0)
     assert jnp.all(state.action_mask)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([0, 0, 0, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_board == simple_env_board_state_1)
-    assert timestep.reward == 6.0
-    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_1)
+    assert jnp.all(state.current_grid == simple_env_grid_state_1)
+    assert timestep.reward == 6.0 / 25.0
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 0, 0, 2]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_board == simple_env_board_state_2)
-    assert timestep.reward == 6.0
-    assert jnp.all(state.placed_pieces == simple_env_action_mask_2)
+    assert jnp.all(state.current_grid == simple_env_grid_state_2)
+    assert timestep.reward == 6.0 / 25.0
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 0, 2, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_board == simple_env_board_state_3)
-    assert timestep.reward == 6.0
-    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_3)
+    assert jnp.all(state.current_grid == simple_env_grid_state_3)
+    assert timestep.reward == 6.0 / 25.0
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
-    assert jnp.all(state.current_board == simple_env_board_state_4)
-    assert timestep.reward == 7.0
+    assert jnp.all(state.current_grid == simple_env_grid_state_4)
+    assert timestep.reward == 7.0 / 25.0
     assert not jnp.all(state.action_mask)
 
 
 def test_flat_pack__completed_episode_with_sparse_reward(
     key: chex.PRNGKey,
-    simple_env_board_state_1: chex.Array,
-    simple_env_board_state_2: chex.Array,
-    simple_env_board_state_3: chex.Array,
-    simple_env_board_state_4: chex.Array,
-    simple_env_placed_pieces_1: chex.Array,
-    simple_env_action_mask_2: chex.Array,
-    simple_env_placed_pieces_3: chex.Array,
+    simple_env_grid_state_1: chex.Array,
+    simple_env_grid_state_2: chex.Array,
+    simple_env_grid_state_3: chex.Array,
+    simple_env_grid_state_4: chex.Array,
+    simple_env_placed_blocks_1: chex.Array,
+    simple_env_placed_blocks_2: chex.Array,
+    simple_env_placed_blocks_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the FlatPack environment
     with a sparse reward until completion. It will check that the reward is
@@ -301,34 +301,34 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     assert timestep.step_type == StepType.FIRST
 
     # Check that the reset board contains only zeros
-    assert jnp.all(state.current_board == 0)
+    assert jnp.all(state.current_grid == 0)
     assert jnp.all(state.action_mask)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([0, 2, 0, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_board == simple_env_board_state_1)
+    assert jnp.all(state.current_grid == simple_env_grid_state_1)
     assert timestep.reward == 0.0
-    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_1)
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 2, 0, 2]))
     assert timestep.step_type == StepType.MID
 
-    assert jnp.all(state.current_board == simple_env_board_state_2)
+    assert jnp.all(state.current_grid == simple_env_grid_state_2)
     assert timestep.reward == 0.0
-    assert jnp.all(state.placed_pieces == simple_env_action_mask_2)
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 1, 2, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_board == simple_env_board_state_3)
+    assert jnp.all(state.current_grid == simple_env_grid_state_3)
     assert timestep.reward == 0.0
-    assert jnp.all(state.placed_pieces == simple_env_placed_pieces_3)
+    assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
-    assert jnp.all(state.current_board == simple_env_board_state_4)
+    assert jnp.all(state.current_grid == simple_env_grid_state_4)
     assert timestep.reward == 1.0
     assert not jnp.all(state.action_mask)

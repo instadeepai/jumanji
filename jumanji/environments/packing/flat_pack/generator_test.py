@@ -22,10 +22,10 @@ from jumanji.environments.packing.flat_pack.generator import RandomFlatPackGener
 
 @pytest.fixture
 def random_flat_pack_generator() -> RandomFlatPackGenerator:
-    """Creates a generator with two row pieces and two column pieces."""
+    """Creates a generator with two row blocks and two column blocks."""
     return RandomFlatPackGenerator(
-        num_col_pieces=2,
-        num_row_pieces=2,
+        num_col_blocks=2,
+        num_row_blocks=2,
     )
 
 
@@ -72,12 +72,9 @@ def test_random_flat_pack_generator__call(
 ) -> None:
     """Test that generator generates a valid state."""
     state = random_flat_pack_generator(key)
-    assert state.solved_board.shape == (5, 5)
-    assert state.num_pieces == 4
-    assert state.pieces.shape == (4, 3, 3)
-    assert all(state.pieces[i].shape == (3, 3) for i in range(4))
-    assert state.col_nibs_idxs == jnp.array([2])
-    assert state.row_nibs_idxs == jnp.array([2])
+    assert state.num_blocks == 4
+    assert state.blocks.shape == (4, 3, 3)
+    assert all(state.blocks[i].shape == (3, 3) for i in range(4))
     assert state.action_mask.shape == (4, 4, 3, 3)
     assert state.step_count == 0
 
@@ -124,7 +121,7 @@ def test_random_flat_pack_generator__fill_grid_rows(
     (
         grid,
         sum_value,
-        num_col_pieces,
+        num_col_blocks,
     ), arr_value = random_flat_pack_generator._fill_grid_rows(
         (grid_columns_partially_filled, 2, 2), 2
     )
@@ -132,7 +129,7 @@ def test_random_flat_pack_generator__fill_grid_rows(
     assert grid.shape == (5, 5)
     assert jnp.array_equal(grid, grid_rows_partially_filled)
     assert sum_value == 4
-    assert num_col_pieces == 2
+    assert num_col_blocks == 2
     assert arr_value == 2
 
 
@@ -152,66 +149,66 @@ def test_random_flat_pack_generator__select_sides(
     assert jnp.not_equal(jnp.array([1.0, 2.0, 3.0]), side_chosen_array).any()
 
 
-def test_random_flat_pack_generator__select_col_nibs(
+def test_random_flat_pack_generator__select_col_interlocks(
     random_flat_pack_generator: RandomFlatPackGenerator,
     grid_rows_partially_filled: chex.Array,
     key: chex.PRNGKey,
 ) -> None:
-    """Checks that nibs are created along a given column of the puzzle grid."""
+    """Checks that interlocks are created along a given column of the grid."""
 
     (
-        grid_with_nibs_selected,
+        grid_with_interlocks_selected,
         new_key,
-    ), column = random_flat_pack_generator._select_col_nibs(
+    ), column = random_flat_pack_generator._select_col_interlocks(
         (grid_rows_partially_filled, key), 2
     )
 
-    assert grid_with_nibs_selected.shape == (5, 5)
+    assert grid_with_interlocks_selected.shape == (5, 5)
     assert jnp.not_equal(key, new_key).all()
     assert column == 2
 
-    selected_col_nibs = grid_with_nibs_selected[:, 2]
-    before_selected_nibs_col = grid_rows_partially_filled[:, 2]
+    selected_col_interlocks = grid_with_interlocks_selected[:, 2]
+    before_selected_interlocks_col = grid_rows_partially_filled[:, 2]
 
-    # check that the nibs are different from the column before
-    assert jnp.not_equal(selected_col_nibs, before_selected_nibs_col).any()
+    # check that the interlocks are different from the column before
+    assert jnp.not_equal(selected_col_interlocks, before_selected_interlocks_col).any()
 
 
-def test_random_flat_pack_generator__select_row_nibs(
+def test_random_flat_pack_generator__select_row_interlocks(
     random_flat_pack_generator: RandomFlatPackGenerator,
     grid_rows_partially_filled: chex.Array,
     key: chex.PRNGKey,
 ) -> None:
-    """Checks that nibs are created along a given row of the puzzle grid."""
+    """Checks that interlocks are created along a given row of the grid."""
 
     (
-        grid_with_nibs_selected,
+        grid_with_interlocks_selected,
         new_key,
-    ), row = random_flat_pack_generator._select_row_nibs(
+    ), row = random_flat_pack_generator._select_row_interlocks(
         (grid_rows_partially_filled, key), 2
     )
 
-    assert grid_with_nibs_selected.shape == (5, 5)
+    assert grid_with_interlocks_selected.shape == (5, 5)
     assert jnp.not_equal(key, new_key).all()
     assert row == 2
 
-    selected_row_nibs = grid_with_nibs_selected[2, :]
-    before_selected_nibs_row = grid_rows_partially_filled[2, :]
+    selected_row_interlocks = grid_with_interlocks_selected[2, :]
+    before_selected_interlocks_row = grid_rows_partially_filled[2, :]
 
-    # check that the nibs are different from the row before
-    assert jnp.not_equal(selected_row_nibs, before_selected_nibs_row).any()
+    # check that the interlocks are different from the row before
+    assert jnp.not_equal(selected_row_interlocks, before_selected_interlocks_row).any()
 
 
 def test_random_flat_pack_generator__first_nonzero(
     random_flat_pack_generator: RandomFlatPackGenerator,
-    piece_one_partially_placed: chex.Array,
+    block_one_partially_placed: chex.Array,
 ) -> None:
     """Checks that the indices of the first non-zero value in a grid is found correctly."""
     first_nonzero_row = random_flat_pack_generator._first_nonzero(
-        piece_one_partially_placed, 0
+        block_one_partially_placed, 0
     )
     first_nonzero_col = random_flat_pack_generator._first_nonzero(
-        piece_one_partially_placed, 1
+        block_one_partially_placed, 1
     )
 
     assert first_nonzero_row == 1
@@ -220,30 +217,30 @@ def test_random_flat_pack_generator__first_nonzero(
 
 def test_random_flat_pack_generator__crop_nonzero(
     random_flat_pack_generator: RandomFlatPackGenerator,
-    piece_one_partially_placed: chex.Array,
+    block_one_partially_placed: chex.Array,
 ) -> None:
-    """Checks a piece is correctly extracted from a grid of zeros."""
-    cropped_piece = random_flat_pack_generator._crop_nonzero(piece_one_partially_placed)
+    """Checks a block is correctly extracted from a grid of zeros."""
+    cropped_block = random_flat_pack_generator._crop_nonzero(block_one_partially_placed)
 
-    assert cropped_piece.shape == (3, 3)
+    assert cropped_block.shape == (3, 3)
     assert jnp.array_equal(
-        cropped_piece, jnp.array([[1.0, 1.0, 1.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]])
+        cropped_block, jnp.array([[1.0, 1.0, 1.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]])
     )
 
 
-def test_random_flat_pack_generator__extract_piece(
+def test_random_flat_pack_generator__extract_block(
     random_flat_pack_generator: RandomFlatPackGenerator,
-    solved_board: chex.Array,
+    solved_grid: chex.Array,
     key: chex.PRNGKey,
 ) -> None:
-    """Checks that a piece is correctly extracted from a solved puzzle grid."""
+    """Checks that a block is correctly extracted from a solved grid."""
 
-    # extract piece number 3
-    (_, new_key), piece = random_flat_pack_generator._extract_piece(
-        (solved_board, key), 3
+    # extract block number 3
+    (_, new_key), block = random_flat_pack_generator._extract_block(
+        (solved_grid, key), 3
     )
 
-    assert piece.shape == (3, 3)
+    assert block.shape == (3, 3)
     assert jnp.not_equal(key, new_key).all()
-    # check that the piece only contains 3s or 0s
-    assert jnp.isin(piece, jnp.array([0.0, 3.0])).all()
+    # check that the block only contains 3s or 0s
+    assert jnp.isin(block, jnp.array([0.0, 3.0])).all()

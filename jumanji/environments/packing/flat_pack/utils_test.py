@@ -19,12 +19,12 @@ import pytest
 from jumanji.environments.packing.flat_pack.utils import (
     compute_grid_dim,
     get_significant_idxs,
-    rotate_piece,
+    rotate_block,
 )
 
 
 @pytest.mark.parametrize(
-    "num_pieces, expected_grid_dim",
+    "num_blocks, expected_grid_dim",
     [
         (1, 3),
         (2, 5),
@@ -33,9 +33,9 @@ from jumanji.environments.packing.flat_pack.utils import (
         (5, 11),
     ],
 )
-def test_compute_grid_dim(num_pieces: int, expected_grid_dim: int) -> None:
-    """Test that grid dimension are correctly computed given a number of pieces."""
-    assert compute_grid_dim(num_pieces) == expected_grid_dim
+def test_compute_grid_dim(num_blocks: int, expected_grid_dim: int) -> None:
+    """Test that grid dimension is correctly computed given a number of blocks."""
+    assert compute_grid_dim(num_blocks) == expected_grid_dim
 
 
 @pytest.mark.parametrize(
@@ -52,41 +52,41 @@ def test_get_significant_idxs(grid_dim: int, expected_idxs: chex.Array) -> None:
     assert jnp.all(get_significant_idxs(grid_dim) == expected_idxs)
 
 
-def test_rotate_piece(piece: chex.Array) -> None:
+def test_rotate_block(block: chex.Array) -> None:
 
     # Test with no rotation.
-    rotated_piece = rotate_piece(piece, 0)
-    assert jnp.array_equal(rotated_piece, piece)
+    rotated_block = rotate_block(block, 0)
+    assert jnp.array_equal(rotated_block, block)
 
     # Test 90 degree rotation.
-    expected_rotated_piece = jnp.array(
+    expected_rotated_block = jnp.array(
         [
             [0.0, 0.0, 0.0],
             [0.0, 1.0, 1.0],
             [1.0, 1.0, 1.0],
         ]
     )
-    rotated_piece = rotate_piece(piece, 1)
-    assert jnp.array_equal(rotated_piece, expected_rotated_piece)
+    rotated_block = rotate_block(block, 1)
+    assert jnp.array_equal(rotated_block, expected_rotated_block)
 
     # Test 180 degree rotation.
-    expected_rotated_piece = jnp.array(
+    expected_rotated_block = jnp.array(
         [
             [1.0, 0.0, 0.0],
             [1.0, 1.0, 0.0],
             [1.0, 1.0, 0.0],
         ]
     )
-    rotated_piece = rotate_piece(piece, 2)
-    assert jnp.array_equal(rotated_piece, expected_rotated_piece)
+    rotated_block = rotate_block(block, 2)
+    assert jnp.array_equal(rotated_block, expected_rotated_block)
 
     # Test 270 degree rotation.
-    expected_rotated_piece = jnp.array(
+    expected_rotated_block = jnp.array(
         [
             [1.0, 1.0, 1.0],
             [1.0, 1.0, 0.0],
             [0.0, 0.0, 0.0],
         ]
     )
-    rotated_piece = rotate_piece(piece, 3)
-    assert jnp.array_equal(rotated_piece, expected_rotated_piece)
+    rotated_block = rotate_block(block, 3)
+    assert jnp.array_equal(rotated_block, expected_rotated_block)

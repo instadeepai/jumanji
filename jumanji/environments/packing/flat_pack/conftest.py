@@ -36,7 +36,7 @@ def block() -> chex.Array:
 
 
 @pytest.fixture
-def solved_board() -> chex.Array:
+def solved_grid() -> chex.Array:
     """A mock solved grid for testing."""
 
     return jnp.array(
@@ -51,8 +51,8 @@ def solved_board() -> chex.Array:
 
 
 @pytest.fixture
-def board_with_piece_one_placed() -> chex.Array:
-    """A board with only piece one placed."""
+def grid_with_block_one_placed() -> chex.Array:
+    """A grid with only block one placed."""
 
     return jnp.array(
         [
@@ -66,20 +66,20 @@ def board_with_piece_one_placed() -> chex.Array:
 
 
 @pytest.fixture()
-def piece_one_correctly_placed(board_with_piece_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where piece one has been placed correctly."""
+def block_one_correctly_placed(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed correctly."""
 
-    return board_with_piece_one_placed
+    return grid_with_block_one_placed
 
 
 @pytest.fixture()
-def piece_one_partially_placed(board_with_piece_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where piece one has been placed partially correctly.
-    That is to say that there is overlap between where the piece has been placed and
-    where it should be placed to solve the puzzle."""
+def block_one_partially_placed(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed partially correctly.
+    That is to say that there is overlap between where the block has been placed and
+    where it should be placed to solve the grid."""
 
     # Shift all elements in the array one down and one to the right
-    partially_placed_piece = jnp.roll(board_with_piece_one_placed, shift=1, axis=0)
-    partially_placed_piece = jnp.roll(partially_placed_piece, shift=1, axis=1)
+    partially_placed_block = jnp.roll(grid_with_block_one_placed, shift=1, axis=0)
+    partially_placed_block = jnp.roll(partially_placed_block, shift=1, axis=1)
 
-    return partially_placed_piece
+    return partially_placed_block

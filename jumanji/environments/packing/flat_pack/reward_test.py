@@ -22,8 +22,8 @@ from jumanji.environments.packing.flat_pack.types import State
 
 
 @pytest.fixture
-def pieces() -> chex.Array:
-    """An array containing 4 pieces."""
+def blocks() -> chex.Array:
+    """An array containing 4 blocks."""
 
     return jnp.array(
         [
@@ -37,40 +37,34 @@ def pieces() -> chex.Array:
 
 
 @pytest.fixture()
-def state_with_no_pieces_placed(
-    solved_board: chex.Array, key: chex.PRNGKey, pieces: chex.Array
+def state_with_no_blocks_placed(
+    solved_grid: chex.Array, key: chex.PRNGKey, blocks: chex.Array
 ) -> State:
-    """A board state with no pieces placed."""
+    """A grid state with no blocks placed."""
 
     return State(
-        row_nibs_idxs=jnp.array([2]),
-        col_nibs_idxs=jnp.array([2]),
-        num_pieces=4,
-        pieces=pieces,
-        solved_board=solved_board,
+        num_blocks=4,
+        blocks=blocks,
         action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
-        placed_pieces=jnp.zeros(4, dtype=bool),
-        current_board=jnp.zeros_like(solved_board),
+        placed_blocks=jnp.zeros(4, dtype=bool),
+        current_grid=jnp.zeros_like(solved_grid),
         step_count=0,
         key=key,
     )
 
 
 @pytest.fixture()
-def state_with_piece_one_placed(
-    solved_board: chex.Array,
-    board_with_piece_one_placed: chex.Array,
-    pieces: chex.Array,
+def state_with_block_one_placed(
+    solved_grid: chex.Array,
+    grid_with_block_one_placed: chex.Array,
+    blocks: chex.Array,
     key: chex.PRNGKey,
 ) -> State:
-    """A board state with piece one placed."""
+    """A grid state with block one placed."""
 
     key, new_key = jax.random.split(key)
     return State(
-        row_nibs_idxs=jnp.array([2]),
-        col_nibs_idxs=jnp.array([2]),
-        num_pieces=4,
-        solved_board=solved_board,
+        num_blocks=4,
         # TODO: Add the correct full action mask here.
         action_mask=jnp.array(
             [
@@ -80,7 +74,7 @@ def state_with_piece_one_placed(
                 True,
             ]
         ),
-        placed_pieces=jnp.array(
+        placed_blocks=jnp.array(
             [
                 True,
                 False,
@@ -88,31 +82,28 @@ def state_with_piece_one_placed(
                 False,
             ]
         ),
-        current_board=board_with_piece_one_placed,
+        current_grid=grid_with_block_one_placed,
         step_count=0,
         key=new_key,
-        pieces=pieces,
+        blocks=blocks,
     )
 
 
 @pytest.fixture()
-def state_needing_only_piece_one(
-    solved_board: chex.Array,
-    board_with_piece_one_placed: chex.Array,
-    pieces: chex.Array,
+def state_needing_only_block_one(
+    solved_grid: chex.Array,
+    grid_with_block_one_placed: chex.Array,
+    blocks: chex.Array,
     key: chex.PRNGKey,
 ) -> State:
-    """A board state that one needs piece one to be fully completed."""
+    """A grid state that one needs block one to be fully completed."""
 
     key, new_key = jax.random.split(key)
 
-    current_board = solved_board - board_with_piece_one_placed
+    current_grid = solved_grid - grid_with_block_one_placed
 
     return State(
-        row_nibs_idxs=jnp.array([2]),
-        col_nibs_idxs=jnp.array([2]),
-        num_pieces=4,
-        solved_board=solved_board,
+        num_blocks=4,
         # TODO: Add the correct full action mask here.
         action_mask=jnp.array(
             [
@@ -122,7 +113,7 @@ def state_needing_only_piece_one(
                 True,
             ]
         ),
-        placed_pieces=jnp.array(
+        placed_blocks=jnp.array(
             [
                 True,
                 False,
@@ -130,30 +121,27 @@ def state_needing_only_piece_one(
                 False,
             ]
         ),
-        current_board=current_board,
+        current_grid=current_grid,
         step_count=3,
-        pieces=pieces,
+        blocks=blocks,
         key=new_key,
     )
 
 
 @pytest.fixture()
 def solved_state(
-    solved_board: chex.Array,
-    pieces: chex.Array,
+    solved_grid: chex.Array,
+    blocks: chex.Array,
     key: chex.PRNGKey,
 ) -> State:
-    """A solved board state."""
+    """A solved grid state."""
 
     key, new_key = jax.random.split(key)
 
     return State(
-        row_nibs_idxs=jnp.array([2]),
-        col_nibs_idxs=jnp.array([2]),
-        num_pieces=4,
-        solved_board=solved_board,
+        num_blocks=4,
         action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
-        placed_pieces=jnp.array(
+        placed_blocks=jnp.array(
             [
                 True,
                 True,
@@ -161,92 +149,92 @@ def solved_state(
                 True,
             ]
         ),
-        current_board=solved_board,
+        current_grid=solved_grid,
         step_count=4,
-        pieces=pieces,
+        blocks=blocks,
         key=new_key,
     )
 
 
 @pytest.fixture()
-def piece_one_misplaced(board_with_piece_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where piece one has been placed completely incorrectly.
-    That is to say that there is no overlap between where the piece has been placed and
-    where it should be placed to solve the puzzle."""
+def block_one_misplaced(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed completely incorrectly.
+    That is to say that there is no overlap between where the block has been placed and
+    where it should be placed to solve the grid."""
 
     # Shift all elements in the array two down and two to the right
-    misplaced_piece = jnp.roll(board_with_piece_one_placed, shift=2, axis=0)
-    misplaced_piece = jnp.roll(misplaced_piece, shift=2, axis=1)
+    misplaced_block = jnp.roll(grid_with_block_one_placed, shift=2, axis=0)
+    misplaced_block = jnp.roll(misplaced_block, shift=2, axis=1)
 
-    return misplaced_piece
+    return misplaced_block
 
 
 def test_dense_reward(
-    state_with_no_pieces_placed: State,
-    state_with_piece_one_placed: State,
-    piece_one_correctly_placed: chex.Array,
-    piece_one_partially_placed: chex.Array,
-    piece_one_misplaced: chex.Array,
+    state_with_no_blocks_placed: State,
+    state_with_block_one_placed: State,
+    block_one_correctly_placed: chex.Array,
+    block_one_partially_placed: chex.Array,
+    block_one_misplaced: chex.Array,
 ) -> None:
 
     dense_reward = jax.jit(DenseReward())
 
-    # Test placing piece one completely correctly
+    # Test placing block one completely correctly
     reward = dense_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_correctly_placed,
+        state=state_with_no_blocks_placed,
+        action=block_one_correctly_placed,
         is_valid=True,
         is_done=False,
-        next_state=state_with_piece_one_placed,
+        next_state=state_with_block_one_placed,
     )
-    assert reward == 6.0
+    assert reward == 6.0 / 25.0
 
-    # Test placing piece one partially correct
+    # Test placing block one partially correct
     reward = dense_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_partially_placed,
+        state=state_with_no_blocks_placed,
+        action=block_one_partially_placed,
         is_valid=True,
         is_done=False,
-        next_state=state_with_piece_one_placed,
+        next_state=state_with_block_one_placed,
     )
-    assert reward == 2.0
+    assert reward == 6.0 / 25.0
 
-    # Test placing a completely incorrect piece
+    # Test placing a completely incorrect block
     reward = dense_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_misplaced,
+        state=state_with_no_blocks_placed,
+        action=block_one_misplaced,
         is_valid=True,
         is_done=False,
-        next_state=state_with_piece_one_placed,
+        next_state=state_with_block_one_placed,
     )
-    assert reward == 0.0
+    assert reward == 6.0 / 25.0
 
     # Test invalid action returns 0 reward.
     reward = dense_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_correctly_placed,
+        state=state_with_no_blocks_placed,
+        action=block_one_correctly_placed,
         is_valid=False,
         is_done=False,
-        next_state=state_with_piece_one_placed,
+        next_state=state_with_block_one_placed,
     )
     assert reward == 0.0
 
 
 def test_sparse_reward(
-    state_with_no_pieces_placed: State,
-    state_with_piece_one_placed: State,
+    state_with_no_blocks_placed: State,
+    state_with_block_one_placed: State,
     solved_state: State,
-    state_needing_only_piece_one: State,
-    piece_one_correctly_placed: chex.Array,
+    state_needing_only_block_one: State,
+    block_one_correctly_placed: chex.Array,
 ) -> None:
 
     sparse_reward = jax.jit(SparseReward())
 
     # Test that a intermediate step returns 0 reward
     reward = sparse_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_correctly_placed,
-        next_state=state_with_piece_one_placed,
+        state=state_with_no_blocks_placed,
+        action=block_one_correctly_placed,
+        next_state=state_with_block_one_placed,
         is_valid=True,
         is_done=False,
     )
@@ -255,18 +243,18 @@ def test_sparse_reward(
     # Test that having `is_done` set to true does not automatically
     # give a reward of 1.
     reward = sparse_reward(
-        state=state_with_no_pieces_placed,
-        action=piece_one_correctly_placed,
-        next_state=state_with_piece_one_placed,
+        state=state_with_no_blocks_placed,
+        action=block_one_correctly_placed,
+        next_state=state_with_block_one_placed,
         is_valid=True,
         is_done=True,
     )
     assert reward == 0.0
 
-    # Test that a final correctly placed piece gives 1 reward.
+    # Test that a final correctly placed block gives 1 reward.
     reward = sparse_reward(
-        state=state_needing_only_piece_one,
-        action=piece_one_correctly_placed,
+        state=state_needing_only_block_one,
+        action=block_one_correctly_placed,
         next_state=solved_state,
         is_valid=True,
         is_done=True,

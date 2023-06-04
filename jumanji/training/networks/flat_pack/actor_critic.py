@@ -43,20 +43,20 @@ def make_actor_critic_networks_flat_pack(
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=num_values
     )
-    num_pieces = flat_pack.num_pieces
+    num_blocks = flat_pack.num_blocks
     policy_network = make_actor_network_flat_pack(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
-        num_pieces=num_pieces,
+        num_blocks=num_blocks,
     )
     value_network = make_critic_network_flat_pack(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,
         transformer_key_size=transformer_key_size,
         transformer_mlp_units=transformer_mlp_units,
-        num_pieces=num_pieces,
+        num_blocks=num_blocks,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -100,7 +100,7 @@ class FlatPackTorso(hk.Module):
         transformer_num_heads: int,
         transformer_key_size: int,
         transformer_mlp_units: Sequence[int],
-        num_pieces: int,
+        num_blocks: int,
         name: Optional[str] = None,
     ) -> None:
         super().__init__(name=name)
@@ -109,32 +109,32 @@ class FlatPackTorso(hk.Module):
         self.transformer_key_size = transformer_key_size
         self.transformer_mlp_units = transformer_mlp_units
         self.model_size = transformer_num_heads * transformer_key_size
-        self.num_pieces = num_pieces
+        self.num_blocks = num_blocks
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
-        # Observation.pieces (B, num_pieces, 3, 3)
-        # Observation.current_board (B, num_rows, num_cols, 1)
+        # Observation.blocks (B, num_blocks, 3, 3)
+        # Observation.current_grid (B, num_rows, num_cols, 1)
 
-        # Flatten the pieces
-        flattened_pieces = jnp.reshape(observation.pieces, (-1, self.num_pieces, 9))
-        # Flatten_pieces is of shape (B, num_pieces, 9)
+        # Flatten the blocks
+        flattened_blocks = jnp.reshape(observation.blocks, (-1, self.num_blocks, 9))
+        # Flatten_blocks is of shape (B, num_blocks, 9)
 
-        # Encode the pieces with an MLP
-        piece_encoder = hk.nets.MLP(output_sizes=[self.model_size])
-        pieces_embedding = jax.vmap(piece_encoder)(flattened_pieces)
-        # Pieces_embedding is of shape (B, num_pieces, model_size)
+        # Encode the blocks with an MLP
+        block_encoder = hk.nets.MLP(output_sizes=[self.model_size])
+        blocks_embedding = jax.vmap(block_encoder)(flattened_blocks)
+        # blocks_embedding is of shape (B, num_blocks, model_size)
 
         unet = UNet()
-        board_conv_encoding, board_encoding = unet(observation.current_board)
-        # board_encoding has shape (B, num_rows-2, num_cols-2)
+        grid_conv_encoding, grid_encoding = unet(observation.current_grid)
+        # grid_encoding has shape (B, num_rows-2, num_cols-2)
 
-        # Flatten the board_conv_encoding so it is of shape (B, num_maps, ...)
-        board_conv_encoding = jnp.reshape(
-            board_conv_encoding,
-            (board_conv_encoding.shape[0], board_conv_encoding.shape[1], -1),
+        # Flatten the grid_conv_encoding so it is of shape (B, num_maps, ...)
+        grid_conv_encoding = jnp.reshape(
+            grid_conv_encoding,
+            (grid_conv_encoding.shape[0], grid_conv_encoding.shape[1], -1),
         )
 
-        # Cross-attention between pieces_embedding and board_conv_encoding
+        # Cross-attention between blocks_embedding and grid_conv_encoding
         for block_id in range(self.num_transformer_layers):
             cross_attention = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -144,20 +144,20 @@ class FlatPackTorso(hk.Module):
                 w_init_scale=2 / self.num_transformer_layers,
                 name=f"cross_attention_block_{block_id}",
             )
-            pieces_embedding = cross_attention(
-                query=pieces_embedding,
-                key=board_conv_encoding,
-                value=board_conv_encoding,
+            blocks_embedding = cross_attention(
+                query=blocks_embedding,
+                key=grid_conv_encoding,
+                value=grid_conv_encoding,
             )
 
-        # Map pieces embedding from (num_pieces, 128) to (num_pieces, num_rotations)
-        pieces_head = hk.nets.MLP(output_sizes=[4])
-        pieces_embedding = jax.vmap(pieces_head)(pieces_embedding)
+        # Map blocks embedding from (num_blocks, 128) to (num_blocks, num_rotations)
+        blocks_head = hk.nets.MLP(output_sizes=[4])
+        blocks_embedding = jax.vmap(blocks_head)(blocks_embedding)
 
-        # pieces_embedding has shape (B, num_pieces, num_rotations)
-        # board_encoding has shape (B, num_rows-2, num_cols-2) to match
+        # blocks_embedding has shape (B, num_blocks, num_rotations)
+        # grid_encoding has shape (B, num_rows-2, num_cols-2) to match
         # the shape of the action mask.
-        return pieces_embedding, board_encoding
+        return blocks_embedding, grid_encoding
 
 
 def make_actor_network_flat_pack(
@@ -165,7 +165,7 @@ def make_actor_network_flat_pack(
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
-    num_pieces: int,
+    num_blocks: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = FlatPackTorso(
@@ -173,13 +173,13 @@ def make_actor_network_flat_pack(
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
-            num_pieces=num_pieces,
+            num_blocks=num_blocks,
             name="policy_torso",
         )
-        pieces_embedding, board_embedding = torso(observation)
+        blocks_embedding, grid_embedding = torso(observation)
         # Outer-product
         outer_product = jnp.einsum(
-            "...ij,...kl->...ijkl", pieces_embedding, board_embedding
+            "...ij,...kl->...ijkl", blocks_embedding, grid_embedding
         )
 
         logits = jnp.where(
@@ -198,7 +198,7 @@ def make_critic_network_flat_pack(
     transformer_num_heads: int,
     transformer_key_size: int,
     transformer_mlp_units: Sequence[int],
-    num_pieces: int,
+    num_blocks: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
         torso = FlatPackTorso(
@@ -206,17 +206,17 @@ def make_critic_network_flat_pack(
             transformer_num_heads=transformer_num_heads,
             transformer_key_size=transformer_key_size,
             transformer_mlp_units=transformer_mlp_units,
-            num_pieces=num_pieces,
+            num_blocks=num_blocks,
             name="critic_torso",
         )
-        pieces_embedding, final_embedding = torso(observation)
-        # Flatten and concatenate the pieces embedding and the final embedding
-        pieces_embedding_flat = pieces_embedding.reshape(pieces_embedding.shape[0], -1)
+        blocks_embedding, final_embedding = torso(observation)
+        # Flatten and concatenate the blocks embedding and the final embedding
+        blocks_embedding_flat = blocks_embedding.reshape(blocks_embedding.shape[0], -1)
         final_embedding_flat = final_embedding.reshape(final_embedding.shape[0], -1)
 
         # Concatenate along the second dimension (axis=1)
         torso_output = jnp.concatenate(
-            [pieces_embedding_flat, final_embedding_flat], axis=-1
+            [blocks_embedding_flat, final_embedding_flat], axis=-1
         )
 
         value = hk.nets.MLP((torso.model_size, 1), name="critic_head")(torso_output)

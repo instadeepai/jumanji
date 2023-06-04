@@ -18,18 +18,18 @@ import jax
 import jax.numpy as jnp
 
 
-def compute_grid_dim(num_pieces: int) -> int:
-    """Computes the grid dimension given the piece dimension and number of pieces.
+def compute_grid_dim(num_blocks: int) -> int:
+    """Computes the grid dimension given the number of blocks.
 
     Args:
-        num_pieces: The number of puzzle pieces.
+        num_blocks: The number of blocks.
     """
-    return 3 * num_pieces - (num_pieces - 1)
+    return 3 * num_blocks - (num_blocks - 1)
 
 
 def get_significant_idxs(grid_dim: int) -> chex.Array:
     """Returns the indices of the grid that are significant. These will be used
-    to create puzzle piece nibs.
+    to create interlocks between adjacent blocks.
 
     Args:
         grid_dim: The dimension of the grid.
@@ -37,14 +37,14 @@ def get_significant_idxs(grid_dim: int) -> chex.Array:
     return jnp.arange(grid_dim)[:: 3 - 1][1:-1]
 
 
-def rotate_piece(piece: chex.Array, rotation_value: int) -> chex.Array:
-    """Rotates a piece by {0, 90, 180, 270} degrees.
+def rotate_block(block: chex.Array, rotation_value: int) -> chex.Array:
+    """Rotates a block by {0, 90, 180, 270} degrees.
 
     Args:
-        piece: The piece to rotate.
+        block: The block to rotate.
         rotation: The angle to rotate the piece by.
     """
-    rotated_piece = jax.lax.switch(
+    rotated_block = jax.lax.switch(
         index=rotation_value,
         branches=(
             lambda arr: arr,
@@ -52,7 +52,7 @@ def rotate_piece(piece: chex.Array, rotation_value: int) -> chex.Array:
             lambda arr: jnp.flip(jnp.flip(arr, axis=0), axis=1),
             lambda arr: jnp.flip(jnp.transpose(arr), axis=0),
         ),
-        operand=piece,
+        operand=block,
     )
 
-    return rotated_piece
+    return rotated_block

@@ -51,7 +51,7 @@ class DenseReward(RewardFn):
         whether the action is valid and whether the episode is terminated.
 
         Note here, that the action taken is not the raw action received from the
-        agent, but the piece the agent opted to place on the board.
+        agent, but the block the agent opted to place on the grid.
         """
         del is_done
         del next_state
@@ -84,14 +84,14 @@ class SparseReward(RewardFn):
         the next state, whether the action is valid and whether the episode is terminated.
 
         Note here, that the action taken is not the raw action received from the
-        agent, but the piece the agent opted to place on the board.
+        agent, but the block the agent opted to place on the grid.
         """
 
         del action
         del state
 
         completed_correctly = (
-            is_done & jnp.all(next_state.current_board != 0.0) & is_valid
+            is_done & jnp.all(next_state.current_grid != 0.0) & is_valid
         )
 
         reward = jax.lax.cond(

@@ -20,7 +20,7 @@ from jumanji.training.networks.protocols import RandomPolicy
 
 
 def make_random_policy_flat_pack(flat_pack: FlatPack) -> RandomPolicy:
-    """Make random policy for Minesweeper."""
+    """Make random policy for FlatPack."""
     action_spec_num_values = flat_pack.action_spec().num_values
 
     return make_masked_categorical_random_ndim(

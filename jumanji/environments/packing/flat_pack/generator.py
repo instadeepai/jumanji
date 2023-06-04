@@ -23,7 +23,7 @@ from jumanji.environments.packing.flat_pack.types import State
 from jumanji.environments.packing.flat_pack.utils import (
     compute_grid_dim,
     get_significant_idxs,
-    rotate_piece,
+    rotate_block,
 )
 
 
@@ -34,17 +34,17 @@ class InstanceGenerator(abc.ABC):
 
     def __init__(
         self,
-        num_row_pieces: int,
-        num_col_pieces: int,
+        num_row_blocks: int,
+        num_col_blocks: int,
     ) -> None:
-        """Initialises a flat_pack generator, used to generate puzzles for the FlatPack environment.
+        """Initialises a flat_pack generator, used to generate grids for the FlatPack environment.
         Args:
-            num_row_pieces: Number of row pieces in flat_pack puzzle.
-            num_col_pieces: Number of column pieces in flat_pack puzzle.
+            num_row_blocks: Number of row blocks in flat_pack environment.
+            num_col_blocks: Number of column blocks in flat_pack environment.
         """
 
-        self.num_row_pieces = num_row_pieces
-        self.num_col_pieces = num_col_pieces
+        self.num_row_blocks = num_row_blocks
+        self.num_col_blocks = num_col_blocks
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> State:
@@ -57,23 +57,21 @@ class InstanceGenerator(abc.ABC):
             A `JigSaw` environment state.
         """
 
-        raise NotImplementedError
-
 
 class RandomFlatPackGenerator(InstanceGenerator):
-    """Random flat_pack generator. This generator will generate a random flat_pack puzzle."""
+    """Random flat_pack generator. This generator will generate a random flat_pack grid."""
 
     def __init__(
         self,
-        num_row_pieces: int,
-        num_col_pieces: int,
+        num_row_blocks: int,
+        num_col_blocks: int,
     ):
         """Initialises a random flat_pack generator.
         Args:
-            num_row_pieces: Number of row pieces in flat_pack puzzle.
-            num_col_pieces: Number of column pieces in flat_pack puzzle.
+            num_row_blocks: Number of row blocks in flat_pack grid.
+            num_col_blocks: Number of column blocks in flat_pack grid.
         """
-        super().__init__(num_row_pieces, num_col_pieces)
+        super().__init__(num_row_blocks, num_col_blocks)
 
     def _fill_grid_columns(
         self, carry: Tuple[chex.Array, int], arr_value: int
@@ -101,21 +99,21 @@ class RandomFlatPackGenerator(InstanceGenerator):
     ) -> Tuple[Tuple[chex.Array, int, int], int]:
         """Fills the grid rows with a value.
         This function will fill the grid rows with a value that
-        is incremented by `num_col_pieces` each time it is called.
+        is incremented by `num_col_blocks` each time it is called.
         """
         grid = carry[0]
         _, grid_y = grid.shape
         sum_value = carry[1]
-        num_col_pieces = carry[2]
+        num_col_blocks = carry[2]
 
         edit_grid = jax.lax.dynamic_slice(grid, (arr_value, 0), (3, grid_y))
         edit_grid += sum_value
 
-        sum_value += num_col_pieces
+        sum_value += num_col_blocks
 
         grid = jax.lax.dynamic_update_slice(grid, edit_grid, (arr_value, 0))
 
-        return (grid, sum_value, num_col_pieces), arr_value
+        return (grid, sum_value, num_col_blocks), arr_value
 
     def _select_sides(self, array: chex.Array, key: chex.PRNGKey) -> chex.Array:
         """Randomly selects a value to replace the center value of an array
@@ -133,11 +131,11 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
         return array
 
-    def _select_col_nibs(
+    def _select_col_interlocks(
         self, carry: Tuple[chex.Array, chex.PRNGKey], col: int
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], int]:
-        """Creates the nibs for puzzle pieces along columns by randomly selecting
-        a value from the left and right side of the column."""
+        """Creates interlocks in adjacent blocks along columns by randomly
+        selecting a value from the left and right side of the column."""
 
         grid = carry[0]
         key = carry[1]
@@ -153,11 +151,12 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
         return (grid, key), col
 
-    def _select_row_nibs(
+    def _select_row_interlocks(
         self, carry: Tuple[chex.Array, chex.PRNGKey], row: int
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], int]:
-        """Creates the nibs for puzzle pieces along rows by randomly selecting
-        a value from the piece above and below the current piece."""
+        """Creates interlocks in adjacent blocks along rows by randomly
+        selecting a value from the block above and below the current
+        block."""
 
         grid = carry[0]
         key = carry[1]
@@ -188,7 +187,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         )
 
     def _crop_nonzero(self, arr_: chex.Array) -> chex.Array:
-        """Crops a piece to the size of the piece size."""
+        """Crops a block to be of shape (3, 3)."""
 
         row_roll, col_roll = self._first_nonzero(arr_, axis=0), self._first_nonzero(
             arr_, axis=1
@@ -203,115 +202,112 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
         return cropped_arr
 
-    def _extract_piece(
-        self, carry: Tuple[chex.Array, chex.PRNGKey], piece_num: int
+    def _extract_block(
+        self, carry: Tuple[chex.Array, chex.PRNGKey], block_num: int
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], chex.Array]:
-        """Extracts a puzzle piece from a solved board according to its piece number
+        """Extracts a block from a solved grid according to its block number
         and rotates it by a random amount of degrees."""
 
         grid, key = carry
 
-        # create a boolean mask for the current piece number
-        mask = grid == piece_num
-        # use the mask to extract the piece from the grid
-        piece = jnp.where(mask, grid, 0)
+        # create a boolean mask for the current block number
+        mask = grid == block_num
+        # use the mask to extract the block from the grid
+        block = jnp.where(mask, grid, 0)
 
-        # Crop piece
-        piece = self._crop_nonzero(piece)
+        # Crop block
+        block = self._crop_nonzero(block)
 
-        # Rotate piece by random amount of degrees {0, 90, 180, 270}
+        # Rotate block by random amount of degrees {0, 90, 180, 270}
         key, rot_key = jax.random.split(key)
         rotation_value = jax.random.randint(key=rot_key, shape=(), minval=0, maxval=4)
-        rotated_piece = rotate_piece(piece, rotation_value)
+        rotated_block = rotate_block(block, rotation_value)
 
-        return (grid, key), rotated_piece
+        return (grid, key), rotated_block
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a random flat_pack puzzle.
+        """Generates a random flat_pack grid.
 
         Args:
             key: jax random key in case stochasticity is used in the instance generation process.
 
         Returns:
-            A `JigSaw` environment state.
+            A `FlatPack` environment state.
         """
 
-        num_pieces = self.num_row_pieces * self.num_col_pieces
+        num_blocks = self.num_row_blocks * self.num_col_blocks
 
-        # Compute the size of the puzzle board.
-        grid_row_dim = compute_grid_dim(self.num_row_pieces)
-        grid_col_dim = compute_grid_dim(self.num_col_pieces)
+        # Compute the size of the gri.
+        grid_row_dim = compute_grid_dim(self.num_row_blocks)
+        grid_col_dim = compute_grid_dim(self.num_col_blocks)
 
-        # Get indices of puzzle where nibs will be placed.
+        # Get indices of grid where interlocks will be.
         row_nibs_idxs = get_significant_idxs(grid_row_dim)
         col_nibs_idxs = get_significant_idxs(grid_col_dim)
 
-        # Create an empty puzzle grid.
+        # Create an empty grid.
         grid = jnp.ones((grid_row_dim, grid_col_dim))
 
-        # Fill grid columns with piece numbers
+        # Fill grid columns with block numbers
         (grid, _), _ = jax.lax.scan(
             f=self._fill_grid_columns,
             init=(grid, 1),
             xs=col_nibs_idxs,
         )
 
-        # Fill grid rows with piece numbers
+        # Fill grid rows with block numbers
         (grid, _, _), _ = jax.lax.scan(
             f=self._fill_grid_rows,
             init=(
                 grid,
-                self.num_col_pieces,
-                self.num_col_pieces,
+                self.num_col_blocks,
+                self.num_col_blocks,
             ),
             xs=row_nibs_idxs,
         )
 
-        # Create puzzle nibs at relevant rows and columns.
+        # Create block interlocks at relevant rows and columns.
         (grid, key), _ = jax.lax.scan(
-            f=self._select_col_nibs, init=(grid, key), xs=col_nibs_idxs
+            f=self._select_col_interlocks, init=(grid, key), xs=col_nibs_idxs
         )
 
-        (solved_board, key), _ = jax.lax.scan(
-            f=self._select_row_nibs, init=(grid, key), xs=row_nibs_idxs
+        (solved_grid, key), _ = jax.lax.scan(
+            f=self._select_row_interlocks, init=(grid, key), xs=row_nibs_idxs
         )
 
-        # Extract pieces from the solved board
-        _, pieces = jax.lax.scan(
-            f=self._extract_piece,
-            init=(solved_board, key),
-            xs=jnp.arange(1, num_pieces + 1),
+        # Extract blocks from the filled grid
+        _, blocks = jax.lax.scan(
+            f=self._extract_block,
+            init=(solved_grid, key),
+            xs=jnp.arange(1, num_blocks + 1),
         )
 
-        # Finally shuffle the pieces along the leading dimension to
-        # untangle a pieces number from its position in the pieces array.
-        key, shuffle_pieces_key = jax.random.split(key)
-        pieces = jax.random.permutation(
-            key=shuffle_pieces_key, x=pieces, axis=0, independent=False
+        # Finally shuffle the blocks along the leading dimension to
+        # untangle a blocks number from its position in the blocks array.
+        key, shuffle_blocks_key = jax.random.split(key)
+        blocks = jax.random.permutation(
+            key=shuffle_blocks_key, x=blocks, axis=0, independent=False
         )
 
         return State(
-            solved_board=solved_board,
-            pieces=pieces,
-            num_pieces=num_pieces,
-            col_nibs_idxs=col_nibs_idxs,
-            row_nibs_idxs=row_nibs_idxs,
+            blocks=blocks,
+            num_blocks=num_blocks,
             action_mask=jnp.ones(
-                (num_pieces, 4, grid_row_dim - 2, grid_col_dim - 2), dtype=bool
+                (num_blocks, 4, grid_row_dim - 2, grid_col_dim - 2), dtype=bool
             ),
-            current_board=jnp.zeros_like(solved_board),
+            current_grid=jnp.zeros_like(solved_grid),
             step_count=0,
             key=key,
-            placed_pieces=jnp.zeros((num_pieces), dtype=bool),
+            placed_blocks=jnp.zeros(num_blocks, dtype=bool),
         )
 
 
 class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
-    """Generates a deterministic toy FlatPack puzzle with 4 pieces. The pieces are
-    rotated by a random amount of degrees {0, 90, 180, 270} but not shuffled."""
+    """Generates a deterministic toy FlatPack environment with 4 blocks. The blocks
+    are rotated by a random amount of degrees {0, 90, 180, 270} but not shuffled."""
 
     def __init__(self) -> None:
-        super().__init__(num_row_pieces=2, num_col_pieces=2)
+        super().__init__(num_row_blocks=2, num_col_blocks=2)
 
     def __call__(self, key: chex.PRNGKey) -> State:
 
@@ -328,7 +324,7 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
             dtype=jnp.float32,
         )
 
-        mock_pieces = jnp.array(
+        mock_blocks = jnp.array(
             [
                 [[0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
                 [[2.0, 0.0, 0.0], [2.0, 2.0, 2.0], [2.0, 2.0, 0.0]],
@@ -339,27 +335,24 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
         )
 
         return State(
-            solved_board=mock_solved_grid,
-            pieces=mock_pieces,
-            current_board=jnp.zeros_like(mock_solved_grid),
+            blocks=mock_blocks,
+            current_grid=jnp.zeros_like(mock_solved_grid),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
-            col_nibs_idxs=jnp.array([2], dtype=jnp.int32),
-            row_nibs_idxs=jnp.array([2], dtype=jnp.int32),
-            num_pieces=jnp.int32(4),
+            num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
             step_count=0,
-            placed_pieces=jnp.zeros(4, dtype=bool),
+            placed_blocks=jnp.zeros(4, dtype=bool),
         )
 
 
 class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
-    """Generates a deterministic toy FlatPack puzzle with 4 pieces. The pieces
-    are not rotated and not shuffled."""
+    """Generates a deterministic toy FlatPack environment with 4 blocks. The
+    blocks are not rotated and not shuffled."""
 
     def __init__(self) -> None:
         super().__init__(
-            num_row_pieces=2,
-            num_col_pieces=2,
+            num_row_blocks=2,
+            num_col_blocks=2,
         )
 
     def __call__(self, key: chex.PRNGKey) -> State:
@@ -377,7 +370,7 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
             dtype=jnp.float32,
         )
 
-        mock_pieces = jnp.array(
+        mock_blocks = jnp.array(
             [
                 [[1.0, 1.0, 1.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
                 [[0.0, 2.0, 2.0], [2.0, 2.0, 2.0], [0.0, 0.0, 2.0]],
@@ -388,14 +381,11 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
         )
 
         return State(
-            solved_board=mock_solved_grid,
-            pieces=mock_pieces,
-            col_nibs_idxs=jnp.array([2], dtype=jnp.int32),
-            row_nibs_idxs=jnp.array([2], dtype=jnp.int32),
-            num_pieces=jnp.int32(4),
+            blocks=mock_blocks,
+            num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
-            current_board=jnp.zeros_like(mock_solved_grid),
+            current_grid=jnp.zeros_like(mock_solved_grid),
             step_count=0,
-            placed_pieces=jnp.zeros(4, dtype=bool),
+            placed_blocks=jnp.zeros(4, dtype=bool),
         )
