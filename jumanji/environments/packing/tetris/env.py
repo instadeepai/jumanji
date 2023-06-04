@@ -180,14 +180,12 @@ class Tetris(Environment[State]):
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
         rotation_index, x_position = action
-        grid_padded = state.grid_padded
-        action_mask = state.action_mask
         tetromino_index = state.tetromino_index
         key, sample_key = jax.random.split(state.key)
         tetromino = self._rotate(rotation_index, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(
-            grid_padded, tetromino, x_position
+            state.grid_padded, tetromino, x_position
         )
         # A line is full when it doesn't contain any 0.
         full_lines = jnp.all(grid_padded[:, : self.num_cols] != 0, axis=1)
@@ -203,7 +201,8 @@ class Tetris(Environment[State]):
         # In case the grid is empty the color should be set 0.
         color = jnp.array([1, grid_padded.max()])
         colored_tetromino = tetromino * jnp.max(color)
-        reward = self.reward_list[nbr_full_lines]
+        is_valid = state.action_mask[tuple(action)]
+        reward = self.reward_list[nbr_full_lines] * is_valid
         step_count = state.step_count + 1
         next_state = State(
             grid_padded=grid_padded,
@@ -228,15 +227,14 @@ class Tetris(Environment[State]):
             step_count=jnp.array(0, jnp.int32),
         )
 
-        is_valid = state.action_mask[tuple(action)]
         tetris_completed = ~jnp.any(action_mask)
-        done = tetris_completed | ~is_valid | step_count >= self.time_limit
+        done = tetris_completed | ~is_valid | (step_count >= self.time_limit)
 
         next_timestep = jax.lax.cond(
             done,
             termination,
             transition,
-            self.reward_list[nbr_full_lines],
+            reward,
             next_observation,
         )
         return next_state, next_timestep
