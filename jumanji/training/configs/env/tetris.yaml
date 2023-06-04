@@ -2,25 +2,25 @@ name: tetris
 registered_version: Tetris-v0
 
 network:
-    conv_num_channels: 32
-    tetromino_layers: [16,16]
-    head_layers: [128,128]
+    conv_num_channels: 64
+    tetromino_layers: [16, 16]
+    head_layers: [128]
 
 training:
-    num_epochs: 1001
-    num_learner_steps_per_epoch: 100
-    n_steps: 40
-    total_batch_size: 64
+    num_epochs: 500
+    num_learner_steps_per_epoch: 200
+    n_steps: 20
+    total_batch_size: 128
 
 evaluation:
-    eval_total_batch_size: 1000
-    greedy_eval_total_batch_size: 1000
+    eval_total_batch_size: 5000
+    greedy_eval_total_batch_size: 5000
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.9
+    discount_factor: 0.98
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0
     l_en: 0.01
-    learning_rate: 4e-4
+    learning_rate: 3e-4
