@@ -76,7 +76,7 @@ class DenseReward(RewardFn):
 
 
 class SparseReward(RewardFn):
-    """Reward function for the dense reward setting.
+    """Reward function for the sparse reward setting.
 
     This reward will return 0 at each timestep except for when all possible blocks have been
         placed on the grid in which case it will return 1.
