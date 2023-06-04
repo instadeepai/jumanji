@@ -104,8 +104,8 @@ class FlatPack(Environment[State]):
         """
 
         default_generator = RandomFlatPackGenerator(
-            num_row_blocks=2,
-            num_col_blocks=2,
+            num_row_blocks=3,
+            num_col_blocks=3,
         )
 
         self.generator = generator or default_generator
