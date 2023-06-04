@@ -61,7 +61,9 @@ class CVRPViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(
+        self, state: State, save_path: Optional[str] = None
+    ) -> Optional[NDArray]:
         """Render the given state of the `CVRP` environment.
 
         Args:
@@ -72,6 +74,8 @@ class CVRPViewer(Viewer):
         ax.clear()
         self._prepare_figure(ax)
         self._add_tour(ax, state)
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
         return self._display(fig)
 
     def animate(
