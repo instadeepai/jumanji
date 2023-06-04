@@ -90,7 +90,7 @@ register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 # of 12.5, and a dense reward function.
 register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
-# Tetris - the game of tetris with the default grid size of 10x10.
+# Tetris - the game of tetris with a grid size of 10x10 and a time limit of 400.
 register(id="Tetris-v0", entry_point="jumanji.environments:Tetris")
 
 

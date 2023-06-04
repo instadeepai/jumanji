@@ -79,7 +79,7 @@ class Tetris(Environment[State]):
         self,
         num_rows: int = 10,
         num_cols: int = 10,
-        time_limit: int = 4000,
+        time_limit: int = 400,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiates a `Tetris` environment.
@@ -88,7 +88,7 @@ class Tetris(Environment[State]):
             num_rows: number of rows of the 2D grid. Defaults to 10.
             num_cols: number of columns of the 2D grid. Defaults to 10.
             time_limit: time_limit of an episode, i.e. number of environment steps before
-                the episode ends. Defaults to 4000.
+                the episode ends. Defaults to 400.
             viewer: `Viewer` used for rendering. Defaults to `TetrisViewer`.
         """
         if num_rows < 4:
