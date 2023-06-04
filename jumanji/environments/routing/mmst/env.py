@@ -597,14 +597,6 @@ class MMST(Environment[State]):
             ratio_connections = total_connections / (n_comps - 1.0)
             return jnp.array([total_connections, ratio_connections])
 
-        # connections = jnp.zeros((self.num_agents, 2))
-        # for agent in range(self.num_agents):
-        #     total_ratio = num_connections(
-        #         state.nodes_to_connect[agent],
-        #         state.connected_nodes[agent],
-        #         self.num_nodes_per_agent,
-        #     )
-        #     connections = connections.at[agent].set(total_ratio)
         connections = jax.vmap(num_connections, in_axes=(0, 0, None))(
             state.nodes_to_connect,
             state.connected_nodes,
