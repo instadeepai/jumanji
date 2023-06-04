@@ -29,12 +29,12 @@ from jumanji.viewer import Viewer
 class FlatPackViewer(Viewer):
     FIGURE_SIZE = (10, 10)
 
-    def __init__(self, name: str, num_pieces: int, render_mode: str = "human") -> None:
+    def __init__(self, name: str, num_blocks: int, render_mode: str = "human") -> None:
         """Viewer for a `FlatPack` environment.
 
         Args:
             name: the window name to be used when initialising the window.
-            num_pieces: render the environment on screen.
+            num_blocks: number of blocks in the environment.
             render_mode: return a numpy array frame representing the environment.
         """
         self._name = name
@@ -49,12 +49,12 @@ class FlatPackViewer(Viewer):
             raise ValueError(f"Invalid render mode: {render_mode}")
 
         # Create a color for each piece.
-        colormap_indices = np.arange(0, 1, 1 / num_pieces)
-        colormap = matplotlib.cm.get_cmap("hsv", num_pieces + 1)
+        colormap_indices = np.arange(0, 1, 1 / num_blocks)
+        colormap = matplotlib.cm.get_cmap("hsv", num_blocks + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Empty grid colour should be white.
         for colormap_idx in colormap_indices:
-            # Give the pieces an alpha of 0.7.
+            # Give the blocks an alpha of 0.7.
             r, g, b, _ = colormap(colormap_idx)
             self.colors.append((r, g, b, 0.7))
 
