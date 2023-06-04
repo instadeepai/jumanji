@@ -56,7 +56,7 @@ register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
 # The grid must be filled in `num_blocks` steps.
 register(id="FlatPack-v0", entry_point="jumanji.environments:FlatPack")
 
-# Simplified 2D grid filling problem with a 5x5 grid, 4 pieces and a deterministic
+# Simplified 2D grid filling problem with a 5x5 grid, 4 blocks and a deterministic
 # grid generator.
 deterministic_flat_pack_generator_with_rotation = (
     flat_pack_generator.ToyFlatPackGeneratorWithRotation()

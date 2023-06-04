@@ -48,7 +48,7 @@ class FlatPackViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-        # Create a color for each piece.
+        # Create a color for each block.
         colormap_indices = np.arange(0, 1, 1 / num_blocks)
         colormap = matplotlib.cm.get_cmap("hsv", num_blocks + 1)
 

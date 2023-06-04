@@ -53,9 +53,9 @@ class State:
     """
 
     num_blocks: chex.Numeric  # ()
-    blocks: chex.Array  # (num_pieces, 3, 3)
-    action_mask: chex.Array  # (num_pieces, num_rotations, num_rows-3, num_cols-3)
-    placed_blocks: chex.Array  # (num_pieces,)
+    blocks: chex.Array  # (num_blocks, 3, 3)
+    action_mask: chex.Array  # (num_blocks, num_rotations, num_rows-3, num_cols-3)
+    placed_blocks: chex.Array  # (num_blocks,)
     current_grid: chex.Array  # (num_rows, num_cols)
     step_count: chex.Numeric  # ()
     key: chex.PRNGKey  # (2,)

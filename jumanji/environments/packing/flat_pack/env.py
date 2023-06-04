@@ -37,47 +37,43 @@ from jumanji.viewer import Viewer
 class FlatPack(Environment[State]):
 
     """A FlatPack solving environment with a configurable number of row and column blocks.
-        Here the goal of an agent is to completely fill an empty grid by placing blocks.
+        Here the goal of an agent is to completely fill an empty grid by all available
+        placing blocks.
 
     - observation: Observation
-        - current_board: jax array (float) of shape (num_rows, num_cols) with the
-            current state of board.
-        - pieces: jax array (float) of shape (num_blocks, 3, 3) with the pieces to
-            be placed on the board. Here each piece is a 2D array with shape (3, 3).
-        - action_mask: jax array (float) showing where which pieces can be placed on the board.
-            this mask include all possible rotations and possible placement locations
-            for each piece on the board.
+        - current_grid: jax array (float) of shape (num_rows, num_cols) with the
+            current state of the grid.
+        - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
+            be placed on the grid. Here each block is a 2D array with shape (3, 3).
+        - action_mask: jax array (float) showing where which blocks can be placed on the grid.
+            this mask includes all possible rotations and possible placement locations
+            for each block on the grid.
 
     - action: jax array (int32) of shape ()
         multi discrete array containing the move to perform
-        (piece to place, number of rotations, row coordinate, column coordinate).
+        (block to place, number of rotations, row coordinate, column coordinate).
 
     - reward: jax array (float) of shape (), could be either:
-        - dense: the number of cells in the placed piece the overlaps with the correctly
-            piece. this will be a value in the range [0, 9].
-        - sparse: 1 if the board is solved, otherwise 0 at each timestep.
+        - dense: the number of non-zero cells in a block normalised by the total number of
+            cells in a grid. this will be a value in the range [0, 1].
+        - sparse: 1 if the grid is completely filled, otherwise 0 at each timestep.
 
     - episode termination:
-        - if all pieces have been placed on the board.
+        - if all blocks have been placed on the board.
         - if the agent has taken `num_blocks` steps in the environment.
 
     - state: `State`
-        - row_nibs_idxs: jax array (float) array containing row indices
-            for selecting piece nibs during board generation.
-        - col_nibs_idxs: jax array (float) array containing column indices
-            for selecting piece nibs during board generation.
         - num_blocks: jax array (float) of shape () with the
-            number of pieces in the jigsaw puzzle.
-        - solved_board: jax array (float) of shape (num_rows, num_cols) with the
-            solved board state.
-        - pieces: jax array (float) of shape (num_blocks, 3, 3) with the pieces to
-            be placed on the board.
-        - action_mask: jax array (float) of shape (num_blocks, 4, num_rows, num_cols)
-            showing where which pieces can be placed where on the board.
-        - placed_pieces: jax array (bool) of shape (num_blocks,) showing which pieces
-            have been placed on the board.
-        - current_board: jax array (float) of shape (num_rows, num_cols) with the
-            current state of board.
+            number of blocks in the environment.
+        - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
+            be placed on the grid. Here each block is a 2D array with shape (3, 3).
+        - action_mask: jax array (float) showing where which blocks can be placed on the grid.
+            this mask includes all possible rotations and possible placement locations
+            for each block on the grid.
+        - placed_blocks: jax array (bool) of shape (num_blocks,) showing which blocks
+            have been placed on the grid.
+        - current_grid: jax array (float) of shape (num_rows, num_cols) with the
+            current state of the grid.
         - step_count: jax array (float) of shape () with the number of steps taken
             in the environment.
         - key: jax array (float) of shape (2,) with the random key used for board
@@ -396,7 +392,7 @@ class FlatPack(Environment[State]):
                 of the block will be placed.
 
         Returns:
-            Grid of zeroes with values where the piece is placed.
+            Grid of zeroes with values where the block is placed.
         """
 
         grid_with_block = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.float32)
