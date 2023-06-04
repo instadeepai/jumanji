@@ -72,16 +72,23 @@ def make_network_cnn(
     def network_fn(observation: Observation) -> chex.Array:
         grid_net = hk.Sequential(
             [
-                hk.Conv2D(conv_num_channels, (2, 2), 1, padding="VALID"),
+                hk.Conv2D(conv_num_channels, (3, 5), (1, 1)),
                 jax.nn.relu,
-                hk.Conv2D(conv_num_channels, (2, 2), 2, padding="VALID"),
+                hk.Conv2D(conv_num_channels, (3, 5), (2, 1)),
                 jax.nn.relu,
-                hk.Conv2D(conv_num_channels, (2, 2), 2, padding="VALID"),
+                hk.Conv2D(conv_num_channels, (3, 5), (2, 1)),
                 jax.nn.relu,
-                hk.Flatten(),
+                hk.Conv2D(conv_num_channels, (3, 3), (2, 1)),
+                jax.nn.relu,
             ]
         )
-        grid_embeddings = grid_net(observation.grid.astype(float)[..., None])
+        grid_embeddings = grid_net(
+            observation.grid.astype(float)[..., None]
+        )  # [B, 2, 10, 64]
+        grid_embeddings = jnp.transpose(grid_embeddings, [0, 2, 1, 3])  # [B, 10, 2, 64]
+        grid_embeddings = jnp.reshape(
+            grid_embeddings, [*grid_embeddings.shape[:2], -1]
+        )  # [B, 10, 128]
 
         tetromino_net = hk.Sequential(
             [
@@ -90,23 +97,30 @@ def make_network_cnn(
             ]
         )
         tetromino_embeddings = tetromino_net(observation.tetromino.astype(float))
-        norm_step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
+        tetromino_embeddings = jnp.tile(
+            tetromino_embeddings[:, None], (grid_embeddings.shape[1], 1)
+        )
+        norm_step_count = observation.step_count / time_limit
+        norm_step_count = jnp.tile(
+            norm_step_count[:, None, None], (grid_embeddings.shape[1], 1)
+        )
 
         embedding = jnp.concatenate(
             [grid_embeddings, tetromino_embeddings, norm_step_count], axis=-1
-        )
+        )  # [B, 10, 145]
 
         if critic:
-            value = hk.nets.MLP((*head_layers, 1))(embedding)
-            return jnp.squeeze(value, axis=-1)
+            embedding = jnp.sum(embedding, axis=-2)  # [B, 145]
+            value = hk.nets.MLP((*head_layers, 1))(embedding)  # [B, 1]
+            return jnp.squeeze(value, axis=-1)  # [B]
         else:
-            action_shape = observation.action_mask.shape[-2:]
-            policy_head = hk.nets.MLP((*head_layers, action_shape[0] * action_shape[1]))
-            logits = policy_head(embedding).reshape(-1, *action_shape)
+            num_rotations = observation.action_mask.shape[-2]
+            logits = hk.nets.MLP((*head_layers, num_rotations))(embedding)  # [B, 10, 4]
+            logits = jnp.transpose(logits, [0, 2, 1])  # [B, 4, 10]
             masked_logits = jnp.where(
                 observation.action_mask, logits, jnp.finfo(jnp.float32).min
             ).reshape(observation.action_mask.shape[0], -1)
-            return masked_logits
+            return masked_logits  # [B, 40]
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)
