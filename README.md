@@ -19,22 +19,24 @@
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
-<p float="left" align="center">
-  <img src="docs/env_anim/connector.gif" alt="Connector" width="30%" />
-  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
-  <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="30%" />
-  <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="30%" />
-  <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="30%" />
-  <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="30%" />
-  <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
-  <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="30%" />
-  <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
-  <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
-  <img src="docs/env_anim/tetris.gif" alt="Tetris" width="30%" />
-  <img src="docs/env_anim/mmst.gif" alt="MMST" width="30%" />
-  <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" />
-</p>
+<div align="center">
+  <img src="docs/env_anim/connector.gif" alt="Connector" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="30%" style="margin: 5px;">
+</div>
+
+<div align="center">
+  <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/tetris.gif" alt="Tetris" width="18%" style="margin: 5px 6.5%;">
+</div>
+
+<div align="center">
+  <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" style="margin: 5px;">
+  <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="30%" style="margin: 5px;">
+</div>
+
 
 ## Welcome to the Jungle! 🌴
 
