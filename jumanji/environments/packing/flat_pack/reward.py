@@ -37,7 +37,12 @@ class RewardFn(abc.ABC):
 
 
 class DenseReward(RewardFn):
-    """Reward function for the dense reward setting."""
+    """Reward function for the dense reward setting.
+
+    This reward returns the number of non-zero cells in a placed block divided
+        by the total number of cells in the grid. This means that the maximum possible
+        episode return is 1.
+    """
 
     def __call__(
         self,
@@ -71,7 +76,11 @@ class DenseReward(RewardFn):
 
 
 class SparseReward(RewardFn):
-    """Reward function for the dense reward setting."""
+    """Reward function for the dense reward setting.
+
+    This reward will return 0 at each timestep except for when all possible blocks have been
+        placed on the grid in which case it will return 1.
+    """
 
     def __call__(
         self,
