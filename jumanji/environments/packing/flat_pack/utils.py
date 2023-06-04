@@ -29,7 +29,7 @@ def compute_grid_dim(num_blocks: int) -> int:
 
 def get_significant_idxs(grid_dim: int) -> chex.Array:
     """Returns the indices of the grid that are significant. These will be used
-    to create interlocks between adjacent blocks.
+        to create interlocks between adjacent blocks.
 
     Args:
         grid_dim: The dimension of the grid.

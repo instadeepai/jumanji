@@ -225,7 +225,8 @@ def test_flat_pack__completed_episode_with_dense_reward(
     """This test will step a simplified version of the FlatPack environment
     with a dense reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
-    done."""
+    done.
+    """
 
     simple_env = FlatPack(
         generator=ToyFlatPackGeneratorNoRotation(),
@@ -285,7 +286,8 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     """This test will step a simplified version of the FlatPack environment
     with a sparse reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
-    done."""
+    done.
+    """
 
     simple_env = FlatPack(
         generator=ToyFlatPackGeneratorWithRotation(),

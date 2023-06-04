@@ -161,6 +161,7 @@ class FlatPack(Environment[State]):
         Returns:
             a tuple of the next state and a time step.
         """
+
         # Unpack and use actions
         block_idx, rotation, row_idx, col_idx = action
 
@@ -222,6 +223,7 @@ class FlatPack(Environment[State]):
         Args:
             state: `State` object containing the current environment state.
         """
+
         return self.viewer.render(state)
 
     def animate(
@@ -241,6 +243,7 @@ class FlatPack(Environment[State]):
         Returns:
             animation that can export to gif, mp4, or render with HTML.
         """
+
         return self.viewer.animate(states, interval, save_path)
 
     def close(self) -> None:
@@ -249,6 +252,7 @@ class FlatPack(Environment[State]):
         Environments will automatically `close()` themselves when
         garbage collected or when the program exits.
         """
+
         self.viewer.close()
 
     def observation_spec(self) -> specs.Spec[Observation]:
@@ -465,6 +469,7 @@ class FlatPack(Environment[State]):
             blocks: array of all blocks.
             placed_blocks: array of blocks that have already been placed.
         """
+
         num_blocks, num_rotations, num_rows, num_cols = (
             self.num_blocks,
             4,

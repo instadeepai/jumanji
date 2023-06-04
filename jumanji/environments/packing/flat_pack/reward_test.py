@@ -160,7 +160,8 @@ def solved_state(
 def block_one_misplaced(grid_with_block_one_placed: chex.Array) -> chex.Array:
     """A 2D array of zeros where block one has been placed completely incorrectly.
     That is to say that there is no overlap between where the block has been placed and
-    where it should be placed to solve the grid."""
+    where it should be placed to solve the grid.
+    """
 
     # Shift all elements in the array two down and two to the right
     misplaced_block = jnp.roll(grid_with_block_one_placed, shift=2, axis=0)

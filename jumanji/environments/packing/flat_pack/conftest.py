@@ -21,11 +21,14 @@ import pytest
 @pytest.fixture
 def key() -> chex.PRNGKey:
     """A determinstic key."""
+
     return jax.random.PRNGKey(0)
 
 
 @pytest.fixture
 def block() -> chex.Array:
+    """A mock block for testing."""
+
     return jnp.array(
         [
             [0.0, 1.0, 1.0],
@@ -76,7 +79,8 @@ def block_one_correctly_placed(grid_with_block_one_placed: chex.Array) -> chex.A
 def block_one_partially_placed(grid_with_block_one_placed: chex.Array) -> chex.Array:
     """A 2D array of zeros where block one has been placed partially correctly.
     That is to say that there is overlap between where the block has been placed and
-    where it should be placed to solve the grid."""
+    where it should be placed to solve the grid.
+    """
 
     # Shift all elements in the array one down and one to the right
     partially_placed_block = jnp.roll(grid_with_block_one_placed, shift=1, axis=0)

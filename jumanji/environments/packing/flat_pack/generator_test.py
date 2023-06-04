@@ -98,7 +98,8 @@ def test_random_flat_pack_generator__fill_grid_columns(
     grid_columns_partially_filled: chex.Array,
 ) -> None:
     """Checks that _fill_grid_columns method does a single
-    step correctly."""
+    step correctly.
+    """
 
     (grid, fill_value), arr_value = random_flat_pack_generator._fill_grid_columns(
         (grid_only_ones, 1), 2
@@ -116,7 +117,8 @@ def test_random_flat_pack_generator__fill_grid_rows(
     grid_rows_partially_filled: chex.Array,
 ) -> None:
     """Checks that _fill_grid_columns method does a single
-    step correctly."""
+    step correctly.
+    """
 
     (
         grid,
@@ -138,7 +140,8 @@ def test_random_flat_pack_generator__select_sides(
 ) -> None:
     """Checks that _select_sides method correctly assigns the
     middle value in an array with shape (3,) to either the value
-    at index 0 or 2."""
+    at index 0 or 2.
+    """
 
     side_chosen_array = random_flat_pack_generator._select_sides(
         jnp.array([1.0, 2.0, 3.0]), key
@@ -204,6 +207,7 @@ def test_random_flat_pack_generator__first_nonzero(
     block_one_partially_placed: chex.Array,
 ) -> None:
     """Checks that the indices of the first non-zero value in a grid is found correctly."""
+
     first_nonzero_row = random_flat_pack_generator._first_nonzero(
         block_one_partially_placed, 0
     )
@@ -220,6 +224,7 @@ def test_random_flat_pack_generator__crop_nonzero(
     block_one_partially_placed: chex.Array,
 ) -> None:
     """Checks a block is correctly extracted from a grid of zeros."""
+
     cropped_block = random_flat_pack_generator._crop_nonzero(block_one_partially_placed)
 
     assert cropped_block.shape == (3, 3)

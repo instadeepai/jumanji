@@ -53,6 +53,7 @@ class DenseReward(RewardFn):
         Note here, that the action taken is not the raw action received from the
         agent, but the block the agent opted to place on the grid.
         """
+
         del is_done
         del next_state
         del state

@@ -38,6 +38,7 @@ class InstanceGenerator(abc.ABC):
         num_col_blocks: int,
     ) -> None:
         """Initialises a flat_pack generator, used to generate grids for the FlatPack environment.
+
         Args:
             num_row_blocks: Number of row blocks in flat_pack environment.
             num_col_blocks: Number of column blocks in flat_pack environment.
@@ -81,6 +82,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         This function will fill the grid columns with a value that
         is incremented by 1 each time it is called.
         """
+
         grid = carry[0]
         grid_x, _ = grid.shape
         fill_value = carry[1]
@@ -102,6 +104,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         This function will fill the grid rows with a value that
         is incremented by `num_col_blocks` each time it is called.
         """
+
         grid = carry[0]
         _, grid_y = grid.shape
         sum_value = carry[1]
@@ -118,7 +121,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
     def _select_sides(self, array: chex.Array, key: chex.PRNGKey) -> chex.Array:
         """Randomly selects a value to replace the center value of an array
-        containing three values."""
+        containing three values.
+        """
 
         selector = jax.random.uniform(key, shape=())
 
@@ -136,7 +140,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
         self, carry: Tuple[chex.Array, chex.PRNGKey], col: int
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], int]:
         """Creates interlocks in adjacent blocks along columns by randomly
-        selecting a value from the left and right side of the column."""
+        selecting a value from the left and right side of the column.
+        """
 
         grid = carry[0]
         key = carry[1]
@@ -157,7 +162,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], int]:
         """Creates interlocks in adjacent blocks along rows by randomly
         selecting a value from the block above and below the current
-        block."""
+        block.
+        """
 
         grid = carry[0]
         key = carry[1]
@@ -182,6 +188,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         self, arr: chex.Array, axis: int, invalid_val: int = 1000
     ) -> chex.Numeric:
         """Returns the index of the first non-zero value in an array."""
+
         mask = arr != 0
         return jnp.min(
             jnp.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
@@ -207,7 +214,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
         self, carry: Tuple[chex.Array, chex.PRNGKey], block_num: int
     ) -> Tuple[Tuple[chex.Array, chex.PRNGKey], chex.Array]:
         """Extracts a block from a solved grid according to its block number
-        and rotates it by a random amount of degrees."""
+        and rotates it by a random amount of degrees.
+        """
 
         grid, key = carry
 
@@ -305,7 +313,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
 class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
     """Generates a deterministic toy FlatPack environment with 4 blocks. The blocks
-    are rotated by a random amount of degrees {0, 90, 180, 270} but not shuffled."""
+    are rotated by a random amount of degrees {0, 90, 180, 270} but not shuffled.
+    """
 
     def __init__(self) -> None:
         super().__init__(num_row_blocks=2, num_col_blocks=2)
@@ -348,7 +357,8 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
 
 class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
     """Generates a deterministic toy FlatPack environment with 4 blocks. The
-    blocks are not rotated and not shuffled."""
+    blocks are not rotated and not shuffled.
+    """
 
     def __init__(self) -> None:
         super().__init__(
