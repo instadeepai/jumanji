@@ -179,15 +179,15 @@ def test_flat_pack__does_not_smoke(flat_pack: FlatPack) -> None:
     check_env_does_not_smoke(flat_pack)
 
 
-def test_flat_pack__check_done(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
-    """Test that the check_done method works as expected."""
+def test_flat_pack__is_done(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
+    """Test that the is_done method works as expected."""
 
     state, _ = flat_pack.reset(key)
-    assert not flat_pack._check_done(state)
+    assert not flat_pack._is_done(state)
 
     # Manually set step count equal to the number of blocks.
     state.step_count = 9
-    assert flat_pack._check_done(state)
+    assert flat_pack._is_done(state)
 
 
 def test_flat_pack__expand_block_to_grid(

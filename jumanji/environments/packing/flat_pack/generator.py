@@ -68,6 +68,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
     ):
         """Initialises a random flat_pack generator.
         Args:
+
             num_row_blocks: Number of row blocks in flat_pack grid.
             num_col_blocks: Number of column blocks in flat_pack grid.
         """

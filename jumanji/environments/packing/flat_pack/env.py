@@ -172,7 +172,7 @@ class FlatPack(Environment[State]):
         grid_block = self._expand_block_to_grid(chosen_block, row_idx, col_idx)
         grid_mask_block = self._get_ones_like_expanded_block(grid_block=grid_block)
 
-        action_is_legal = self._check_action_is_legal(
+        action_is_legal = self._is_legal_action(
             action, state.current_grid, state.placed_blocks, grid_mask_block
         )
 
@@ -200,7 +200,7 @@ class FlatPack(Environment[State]):
             placed_blocks=placed_blocks,
         )
 
-        done = self._check_done(next_state)
+        done = self._is_done(next_state)
 
         next_obs = self._observation_from_state(next_state)
 
@@ -320,7 +320,7 @@ class FlatPack(Environment[State]):
             name="action",
         )
 
-    def _check_done(self, state: State) -> bool:
+    def _is_done(self, state: State) -> bool:
         """Checks if the environment is done by checking whether the number of
             steps is equal to the number of blocks.
 
@@ -335,7 +335,7 @@ class FlatPack(Environment[State]):
 
         return done
 
-    def _check_action_is_legal(
+    def _is_legal_action(
         self,
         action: chex.Numeric,
         current_grid: chex.Array,
@@ -488,15 +488,15 @@ class FlatPack(Environment[State]):
             cols_grid.flatten(),
         )
 
-        batch_check_action_is_legal = jax.vmap(
-            self._check_action_is_legal, in_axes=(0, None, None, 0)
+        batch_is_legal_action = jax.vmap(
+            self._is_legal_action, in_axes=(0, None, None, 0)
         )
 
         all_actions = jnp.stack(
             (blocks_grid, rotations_grid, rows_grid, cols_grid), axis=-1
         ).reshape(-1, 4)
 
-        legal_actions = batch_check_action_is_legal(
+        legal_actions = batch_is_legal_action(
             all_actions,
             current_grid,
             placed_blocks,

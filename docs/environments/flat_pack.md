@@ -39,7 +39,7 @@ information:
 
 - Block to place,
 
-- Number of rotations to make to a chosen block ({0, 90, 180, 270} degrees),
+- Number of 90 degree rotations to make to a chosen block ({0, 90, 180, 270} degrees),
 
 - Row coordinate for placing the rotated block's top left corner,
 
