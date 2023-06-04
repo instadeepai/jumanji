@@ -33,8 +33,8 @@ from jumanji.training.networks.parametric_distribution import (
 def make_actor_critic_networks_tetris(
     tetris: Tetris,
     conv_num_channels: int,
-    tetromino_layers: int,
-    final_layer_dims: Sequence[int],
+    tetromino_layers: Sequence[int],
+    head_layers: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Tetris` environment."""
 
@@ -44,14 +44,14 @@ def make_actor_critic_networks_tetris(
     policy_network = make_network_cnn(
         conv_num_channels=conv_num_channels,
         tetromino_layers=tetromino_layers,
-        final_layer_dims=final_layer_dims,
+        head_layers=head_layers,
         time_limit=tetris.time_limit,
         critic=False,
     )
     value_network = make_network_cnn(
         conv_num_channels=conv_num_channels,
         tetromino_layers=tetromino_layers,
-        final_layer_dims=final_layer_dims,
+        head_layers=head_layers,
         time_limit=tetris.time_limit,
         critic=True,
     )
@@ -64,50 +64,47 @@ def make_actor_critic_networks_tetris(
 
 def make_network_cnn(
     conv_num_channels: int,
-    tetromino_layers: int,
-    final_layer_dims: Sequence[int],
+    tetromino_layers: Sequence[int],
+    head_layers: Sequence[int],
     time_limit: int,
     critic: bool,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        conv_layers = hk.Sequential(
+        grid_net = hk.Sequential(
             [
                 hk.Conv2D(conv_num_channels, (2, 2), 1, padding="VALID"),
                 jax.nn.relu,
-                hk.Conv2D(conv_num_channels, (2, 2), 1, padding="VALID"),
+                hk.Conv2D(conv_num_channels, (2, 2), 2, padding="VALID"),
                 jax.nn.relu,
-                hk.Conv2D(conv_num_channels, (2, 2), 1, 2, padding="VALID"),
+                hk.Conv2D(conv_num_channels, (2, 2), 2, padding="VALID"),
                 jax.nn.relu,
                 hk.Flatten(),
             ]
         )
-        grid_embeddings = conv_layers(observation.grid.astype(float)[..., None])
+        grid_embeddings = grid_net(observation.grid.astype(float)[..., None])
 
-        mlp_layers = hk.Sequential(
+        tetromino_net = hk.Sequential(
             [
                 hk.Flatten(),
-                hk.Linear(tetromino_layers),
-                jax.nn.relu,
-                hk.Linear(tetromino_layers),
-                jax.nn.relu,
+                hk.nets.MLP(tetromino_layers, activate_final=True),
             ]
         )
-
-        tetromino_embeddings = mlp_layers(observation.tetromino.astype(float))
+        tetromino_embeddings = tetromino_net(observation.tetromino.astype(float))
         norm_step_count = jnp.expand_dims(observation.step_count / time_limit, axis=-1)
 
-        output = jnp.concatenate(
+        embedding = jnp.concatenate(
             [grid_embeddings, tetromino_embeddings, norm_step_count], axis=-1
         )
-        final_layers = hk.nets.MLP((*final_layer_dims, observation.action_mask[0].size))
-        output = final_layers(output)
 
         if critic:
-            return jnp.mean(output, axis=-1)
+            value = hk.nets.MLP((*head_layers, 1))(embedding)
+            return jnp.squeeze(value, axis=-1)
         else:
-            output = output.reshape(-1, 4, 10)
+            action_shape = observation.action_mask.shape[-2:]
+            policy_head = hk.nets.MLP((*head_layers, action_shape[0] * action_shape[1]))
+            logits = policy_head(embedding).reshape(-1, *action_shape)
             masked_logits = jnp.where(
-                observation.action_mask, output, jnp.finfo(jnp.float32).min
+                observation.action_mask, logits, jnp.finfo(jnp.float32).min
             ).reshape(observation.action_mask.shape[0], -1)
             return masked_logits
 

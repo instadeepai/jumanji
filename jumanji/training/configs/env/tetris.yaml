@@ -3,8 +3,8 @@ registered_version: Tetris-v0
 
 network:
     conv_num_channels: 32
-    tetromino_layers: 16
-    final_layer_dims: [128,128]
+    tetromino_layers: [16,16]
+    head_layers: [128,128]
 
 training:
     num_epochs: 1001
