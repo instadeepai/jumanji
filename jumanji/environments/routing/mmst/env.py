@@ -578,14 +578,6 @@ class MMST(Environment[State]):
             connects = jnp.isin(nodes, connected_nodes)
             return jnp.sum(connects) == n_comps
 
-        # finished_agents = jnp.zeros_like(state.finished_agents)
-        # for agent in range(self.num_agents):
-        #     finished = done_fun(
-        #         state.nodes_to_connect[agent],
-        #         state.connected_nodes[agent],
-        #         self.num_nodes_per_agent,
-        #     )
-        #     finished_agents = finished_agents.at[agent].set(finished)
         finished_agents = jax.vmap(done_fun, in_axes=(0, 0, None))(
             state.nodes_to_connect,
             state.connected_nodes,
