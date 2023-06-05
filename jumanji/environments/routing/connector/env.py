@@ -29,7 +29,7 @@ from jumanji.environments.routing.connector.constants import (
 )
 from jumanji.environments.routing.connector.generator import (
     Generator,
-    UniformRandomGenerator,
+    RandomWalkGenerator,
 )
 from jumanji.environments.routing.connector.reward import DenseRewardFn, RewardFn
 from jumanji.environments.routing.connector.types import Agent, Observation, State
@@ -106,16 +106,14 @@ class Connector(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`UniformRandomGenerator`, `RandomWalkGenerator`].
-                Defaults to `UniformRandomGenerator` with `grid_size=10` and `num_agents=5`.
+                Defaults to `RandomWalkGenerator` with `grid_size=10` and `num_agents=10`.
             reward_fn: class of type `RewardFn`, whose `__call__` is used as a reward function.
                 Implemented options are [`DenseRewardFn`]. Defaults to `DenseRewardFn`.
             time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
             viewer: `Viewer` used for rendering. Defaults to `ConnectorViewer` with "human" render
                 mode.
         """
-        self._generator = generator or UniformRandomGenerator(
-            grid_size=10, num_agents=5
-        )
+        self._generator = generator or RandomWalkGenerator(grid_size=10, num_agents=10)
         self._reward_fn = reward_fn or DenseRewardFn()
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents

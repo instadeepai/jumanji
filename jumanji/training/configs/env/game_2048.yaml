@@ -1,5 +1,5 @@
 name: game_2048
-registered_version: Game2048-v0
+registered_version: Game2048-v1
 
 network:
     num_channels: 32
