@@ -115,7 +115,7 @@ class BinPack(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
-        obs_num_ems: int = 70,
+        obs_num_ems: int = 40,
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
@@ -126,13 +126,13 @@ class BinPack(Environment[State]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment
                 instance. Implemented options are [`RandomGenerator`, `ToyGenerator`,
-                `CSVGenerator`]. Defaults to `RandomGenerator` that generates up to 30 items maximum
-                and that can handle 100 EMSs.
+                `CSVGenerator`]. Defaults to `RandomGenerator` that generates up to 20 items maximum
+                and that can handle 40 EMSs.
             obs_num_ems: number of EMSs (possible spaces in which to place an item) to show to the
                 agent. If `obs_num_ems` is smaller than `generator.max_num_ems`, the first
                 `obs_num_ems` largest EMSs (in terms of volume) will be returned in the observation.
                 The good number heavily depends on the number of items (given by the instance
-                generator). Default to 70 EMSs observable.
+                generator). Default to 40 EMSs observable.
             reward_fn: compute the reward based on the current state, the chosen action, the next
                 state, whether the transition is valid and if it is terminal. Implemented options
                 are [`DenseReward`, `SparseReward`]. In each case, the total return at the end of
@@ -146,7 +146,11 @@ class BinPack(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `BinPackViewer` with "human" render
                 mode.
         """
-        self.generator = generator or RandomGenerator(max_num_items=30, max_num_ems=100)
+        self.generator = generator or RandomGenerator(
+            max_num_items=20,
+            max_num_ems=40,
+            split_num_same_items=2,
+        )
         self.obs_num_ems = obs_num_ems
         self.reward_fn = reward_fn or DenseReward()
         self.normalize_dimensions = normalize_dimensions

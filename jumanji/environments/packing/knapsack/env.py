@@ -103,7 +103,7 @@ class Knapsack(Environment[State]):
         """
 
         self.generator = generator or RandomGenerator(
-            num_items=20,
+            num_items=50,
             total_budget=12.5,
         )
         self.num_items = self.generator.num_items

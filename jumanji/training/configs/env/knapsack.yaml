@@ -8,7 +8,7 @@ network:
     transformer_mlp_units: [512]
 
 training:
-    num_epochs: 1000
+    num_epochs: 100
     num_learner_steps_per_epoch: 50
     n_steps: 20
     total_batch_size: 64

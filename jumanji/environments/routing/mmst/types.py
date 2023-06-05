@@ -87,6 +87,8 @@ class Observation(NamedTuple):
     positions: Current node positions of the agents.
         In our current problem, this will be represented as jnp.array([1, 3]).
 
+    step_count: integer to keep track of the number of steps.
+
     action_mask: Binary mask indicating the validity of each action.
         Given the current node on which the agent is located,
         this mask determines if there is a valid edge to every other node.
@@ -95,6 +97,7 @@ class Observation(NamedTuple):
     node_types: chex.Array  # (num_nodes)
     adj_matrix: chex.Array  # (num_nodes, num_nodes)
     positions: chex.Array  # (num_agents,)
+    step_count: jnp.int32  # ()
     action_mask: chex.Array  # (num_agents, num_nodes)
 
 
