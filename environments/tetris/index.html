@@ -1245,11 +1245,12 @@
 <p>The observation in Tetris includes information about the grid, the Tetromino and the action mask.</p>
 <ul>
 <li>
-<p><code>grid</code>: Jax array (int32) of shape <code>(num_rows, num_cols)</code>, representing the current grid
-    state. The grid is filled with zeros for the empty cells and with ones for the filled cells.</p>
-<ul>
-<li>Here is an example of a random observation of the grid:
-    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p><code>grid</code>: jax array (int32) of shape <code>(num_rows, num_cols)</code>, representing the current grid
+   state. The grid is filled with zeros for the empty cells and with ones for the filled cells.</p>
+</li>
+<li>
+<p>Here is an example of a random observation of the grid:
+       <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1266,11 +1267,10 @@
     [0, 1, 0, 1, 1, 1],
     [1, 1, 0, 1, 1, 1],
 ]
-</code></pre></div></td></tr></table></div></li>
-</ul>
+</code></pre></div></td></tr></table></div></p>
 </li>
 <li>
-<p><code>tetromino</code>: Jax array (int32) of shape <code>(4, 4)</code>, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.</p>
+<p><code>tetromino</code>: jax array (int32) of shape <code>(4, 4)</code>, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.</p>
 <ul>
 <li>Here is an example of an <strong>I</strong> tetromino:
     <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1288,7 +1288,7 @@
 <li><code>action_mask</code>: jax array (bool) of shape <code>(4, num_cols)</code>, indicating which actions are valid in the current state of the environment. Each row in the action mask corresponds to a Tetromino for a certain rotation (example: the first row for 0 degrees rotation, the second row for 90 degrees rotation, and so on).</li>
 <li>
 <p>Here is an example of an action mask that corresponds to the same grid and the tetromino examples:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1300,11 +1300,12 @@
     [ True,  True, False,  False,  False, False],
 ]
 </code></pre></div></td></tr></table></div>
+- <code>step_count</code>: jax array (int32) of shape <code>()</code>, integer to keep track of the number of steps.</p>
+</li>
+</ul>
+</li>
+</ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-</li>
-</ul>
-</li>
-</ul>
 <p>The action space in Tetris is represented as a <code>MultiDiscreteArray</code> of two integer values. The first integer value corresponds to the selected X-position where the Tetromino will be placed, and the second integer value represents the index for the rotation degree. The rotation degree index can take four possible values: 0 for "0 degrees", 1 for "90 degrees", 2 for "180 degrees", and 3 for "270 degrees". For example, an action of [7, 2] means placing the Tetromino in the seventh column with a rotation of 180 degrees.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
 <p>Dense: the reward is based on the number of lines cleared and the reward_list <code>[0, 40, 100, 300, 1200]</code>. If no lines are cleared, the reward is 0. As the number of cleared lines increases, so does the reward, with the maximum reward of 1200 being awarded for clearing four lines at once.</p>
@@ -1318,7 +1319,7 @@
   <small>
     
       Last update:
-      2023-06-04
+      2023-06-05
     
   </small>
 </div>

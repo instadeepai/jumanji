@@ -1269,6 +1269,8 @@ than (0.8 x num_agents x num_nodes_per_agent).</p>
     adjacency matrix of the graph.</li>
 <li>positions: jax array (int) of shape (num_agents,):
     the index of the last visited node.</li>
+<li>step_count: jax array (int) of shape ():
+    integer to keep track of the number of steps.</li>
 <li>action_mask: jax array (bool) of shape (num_agent, num_nodes):
     binary mask (False/True &lt;--&gt; invalid/valid action).</li>
 </ul>
@@ -1424,84 +1426,6 @@ Defaults to <code>DenseRewardFn(reward_values=(10.0, -1.0, -1.0))</code>.</p></t
 
 
 
-<h3 id="jumanji.environments.routing.mmst.env.MMST.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p>a <code>specs.MultiDiscreteArray</code> spec.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the observation spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Spec for the `Observation` whose fields are</code></td>
-      <td><ul>
-<li>node_types: BoundedArray (int32) of shape (num_nodes,).</li>
-<li>adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
-    Represents the adjacency matrix of the graph.</li>
-<li>positions: BoundedArray (int32) of shape (num_agents).
-    Current node position of agent.</li>
-<li>action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
-    Represents the valid actions in the current state.</li>
-</ul></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
 <h3 id="jumanji.environments.routing.mmst.env.MMST.reset" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
@@ -1619,6 +1543,84 @@ timestep: TimeStep object corresponding to the first timestep returned by the
 
 
 
+<h3 id="jumanji.environments.routing.mmst.env.MMST.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
+
+
+<a href="#jumanji.environments.routing.mmst.env.MMST.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the action spec.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action_spec</code></td>
+      <td><p>a <code>specs.MultiDiscreteArray</code> spec.</p></td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="jumanji.environments.routing.mmst.env.MMST.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+
+
+<a href="#jumanji.environments.routing.mmst.env.MMST.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the observation spec.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Spec for the `Observation` whose fields are</code></td>
+      <td><ul>
+<li>node_types: BoundedArray (int32) of shape (num_nodes,).</li>
+<li>adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
+    Represents the adjacency matrix of the graph.</li>
+<li>positions: BoundedArray (int32) of shape (num_agents).
+    Current node position of agent.</li>
+<li>action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
+    Represents the valid actions in the current state.</li>
+</ul></td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
 <h3 id="jumanji.environments.routing.mmst.env.MMST.render" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
 
@@ -1663,7 +1665,7 @@ timestep: TimeStep object corresponding to the first timestep returned by the
   <small>
     
       Last update:
-      2023-06-04
+      2023-06-05
     
   </small>
 </div>

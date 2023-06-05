@@ -1459,7 +1459,7 @@ top-right corner.</li>
 
 
 <h3 id="jumanji.environments.packing.bin_pack.env.BinPack.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">obs_num_ems</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">normalize_dimensions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">obs_num_ems</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">normalize_dimensions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">packing</span><span class="o">.</span><span class="n">bin_pack</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1487,8 +1487,8 @@ top-right corner.</li>
         <td><code>Optional[jumanji.environments.packing.bin_pack.generator.Generator]</code></td>
         <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment
 instance. Implemented options are [<code>RandomGenerator</code>, <code>ToyGenerator</code>,
-<code>CSVGenerator</code>]. Defaults to <code>RandomGenerator</code> that generates up to 30 items maximum
-and that can handle 100 EMSs.</p></td>
+<code>CSVGenerator</code>]. Defaults to <code>RandomGenerator</code> that generates up to 20 items maximum
+and that can handle 40 EMSs.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -1498,8 +1498,8 @@ and that can handle 100 EMSs.</p></td>
 agent. If <code>obs_num_ems</code> is smaller than <code>generator.max_num_ems</code>, the first
 <code>obs_num_ems</code> largest EMSs (in terms of volume) will be returned in the observation.
 The good number heavily depends on the number of items (given by the instance
-generator). Default to 70 EMSs observable.</p></td>
-        <td><code>70</code></td>
+generator). Default to 40 EMSs observable.</p></td>
+        <td><code>40</code></td>
       </tr>
       <tr>
         <td><code>reward_fn</code></td>
@@ -1842,7 +1842,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2023-06-04
+      2023-06-05
     
   </small>
 </div>
