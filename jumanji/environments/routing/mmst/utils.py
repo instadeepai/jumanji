@@ -101,12 +101,10 @@ def make_action_mask(
     """
 
     full_action_mask = node_edges != EMPTY_NODE
-    action_mask = jnp.zeros((num_agents, num_nodes), dtype=bool)
-    for agent in range(num_agents):
-        node = position[agent]
-        action_mask = action_mask.at[agent].set(
-            full_action_mask[agent, node] * ~finished_agents[agent]
-        )
+    action_mask = (
+        full_action_mask[jnp.arange(num_agents), position]
+        & ~finished_agents[:, jnp.newaxis]
+    )
 
     return action_mask
 
