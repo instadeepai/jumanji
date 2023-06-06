@@ -50,6 +50,7 @@ from jumanji.training.evaluator import Evaluator
 from jumanji.training.loggers import (
     Logger,
     NeptuneLogger,
+    NoOpLogger,
     TensorboardLogger,
     TerminalLogger,
 )
@@ -61,6 +62,9 @@ from jumanji.wrappers import VmapAutoResetWrapper
 
 def setup_logger(cfg: DictConfig) -> Logger:
     logger: Logger
+    # Log only once if there are multiple hosts on the pod.
+    if jax.process_index() != 0:
+        return NoOpLogger()
     if cfg.logger.type == "tensorboard":
         logger = TensorboardLogger(
             name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
@@ -393,20 +397,33 @@ def setup_training_state(
     params_state = agent.init_params(params_key)
 
     # Initialize environment states.
-    num_devices = jax.local_device_count()
+    num_local_devices = jax.local_device_count()
+    num_global_devices = jax.device_count()
+    num_workers = num_global_devices // num_local_devices
     reset_keys = jax.random.split(reset_key, agent.total_batch_size).reshape(
-        (num_devices, agent.batch_size_per_device, -1)
+        (
+            num_workers,
+            num_local_devices,
+            agent.total_batch_size // num_global_devices,
+            -1,
+        )
     )
-    env_state, timestep = jax.pmap(env.reset, axis_name="devices")(reset_keys)
+    reset_keys_per_worker = reset_keys[jax.process_index()]
+    env_state, timestep = jax.pmap(env.reset, axis_name="devices")(
+        reset_keys_per_worker
+    )
 
     # Initialize acting states.
-    acting_key_per_device = jax.random.split(acting_key, num_devices)
+    acting_key_per_device = jax.random.split(acting_key, num_global_devices).reshape(
+        num_workers, num_local_devices, -1
+    )
+    acting_key_per_device_worker = acting_key_per_device[jax.process_index()]
     acting_state = ActingState(
         state=env_state,
         timestep=timestep,
-        key=acting_key_per_device,
-        episode_count=jnp.zeros(num_devices, float),
-        env_step_count=jnp.zeros(num_devices, float),
+        key=acting_key_per_device_worker,
+        episode_count=jnp.zeros(num_local_devices, float),
+        env_step_count=jnp.zeros(num_local_devices, float),
     )
 
     # Build the training state.
