@@ -83,6 +83,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
                 metrics = stochastic_eval.run_evaluation(
                     training_state.params_state, stochastic_eval_key
                 )
+                jax.block_until_ready(metrics)
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="eval_stochastic",
@@ -94,6 +95,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
                     metrics = greedy_eval.run_evaluation(
                         training_state.params_state, greedy_eval_key
                     )
+                    jax.block_until_ready(metrics)
                 logger.write(
                     data=utils.first_from_device(metrics),
                     label="eval_greedy",
@@ -103,6 +105,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
             # Training
             with train_timer:
                 training_state, metrics = epoch_fn(training_state)
+                jax.block_until_ready((training_state, metrics))
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="train",
