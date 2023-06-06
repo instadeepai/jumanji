@@ -400,11 +400,12 @@ def setup_training_state(
     num_local_devices = jax.local_device_count()
     num_global_devices = jax.device_count()
     num_workers = num_global_devices // num_local_devices
+    local_batch_size = agent.total_batch_size // num_global_devices
     reset_keys = jax.random.split(reset_key, agent.total_batch_size).reshape(
         (
             num_workers,
             num_local_devices,
-            agent.total_batch_size // num_global_devices,
+            local_batch_size,
             -1,
         )
     )
