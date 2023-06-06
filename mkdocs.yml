@@ -1,7 +1,7 @@
 site_name: Jumanji
 site_description: Documentation
 site_author: InstaDeep Research
-site_url: https://instadeep.github.io/jumanji/
+site_url: https://instadeepai.github.io/jumanji/
 site_dir: public
 strict: false # TODO: Don't allow warning during the build process.
 
@@ -18,18 +18,24 @@ nav:
   - Home: index.md
   - Environments:
       - Logic:
-          - RubiksCube: environments/rubiks_cube.md
-          - Minesweeper: environments/minesweeper.md
           - Game2048: environments/game_2048.md
+          - GraphColoring: environments/graph_coloring.md
+          - Minesweeper: environments/minesweeper.md
+          - RubiksCube: environments/rubiks_cube.md
+          - Sudoku: environments/sudoku.md
       - Packing:
           - BinPack: environments/bin_pack.md
-          - Knapsack: environments/knapsack.md
           - JobShop: environments/job_shop.md
+          - Knapsack: environments/knapsack.md
+          - Tetris: environments/tetris.md
       - Routing:
           - Cleaner: environments/cleaner.md
           - Connector: environments/connector.md
           - CVRP: environments/cvrp.md
           - Maze: environments/maze.md
+          - MMST: environments/mmst.md
+          - MultiCVRP: environments/multi_cvrp.md
+          - RobotWarehouse: environments/robot_warehouse.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
   - User Guides:
@@ -41,18 +47,24 @@ nav:
       - Environments:
           - Base: api/env.md
           - Logic:
-              - RubiksCube: api/environments/rubiks_cube.md
-              - Minesweeper: api/environments/minesweeper.md
               - Game2048: api/environments/game_2048.md
+              - GraphColoring: api/environments/graph_coloring.md
+              - Minesweeper: api/environments/minesweeper.md
+              - RubiksCube: api/environments/rubiks_cube.md
+              - Sudoku: api/environments/sudoku.md
           - Packing:
               - BinPack: api/environments/bin_pack.md
-              - Knapsack: api/environments/knapsack.md
               - JobShop: api/environments/job_shop.md
+              - Knapsack: api/environments/knapsack.md
+              - Tetris: api/environments/tetris.md
           - Routing:
               - Cleaner: api/environments/cleaner.md
               - Connector: api/environments/connector.md
               - CVRP: api/environments/cvrp.md
               - Maze: api/environments/maze.md
+              - MMST: api/environments/mmst.md
+              - MultiCVRP: api/environments/multi_cvrp.md
+              - RobotWarehouse: api/environments/robot_warehouse.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
           - Wrappers: api/wrappers.md
