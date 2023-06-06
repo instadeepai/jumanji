@@ -418,11 +418,11 @@ def setup_training_state(
     acting_key_per_device = jax.random.split(acting_key, num_global_devices).reshape(
         num_workers, num_local_devices, -1
     )
-    acting_key_per_device_worker = acting_key_per_device[jax.process_index()]
+    acting_key_per_worker_device = acting_key_per_device[jax.process_index()]
     acting_state = ActingState(
         state=env_state,
         timestep=timestep,
-        key=acting_key_per_device_worker,
+        key=acting_key_per_worker_device,
         episode_count=jnp.zeros(num_local_devices, float),
         env_step_count=jnp.zeros(num_local_devices, float),
     )
