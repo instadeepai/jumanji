@@ -39,15 +39,16 @@ class Evaluator:
     ):
         self.eval_env = eval_env
         self.agent = agent
-        num_devices = jax.local_device_count()
-        self.num_devices = num_devices
-        if total_batch_size % num_devices != 0:
+        self.num_local_devices = jax.local_device_count()
+        self.num_global_devices = jax.device_count()
+        self.num_workers = self.num_global_devices // self.num_local_devices
+        if total_batch_size % self.num_global_devices != 0:
             raise ValueError(
                 "Expected eval total_batch_size to be a multiple of num_devices, "
-                f"got {total_batch_size} and {num_devices}."
+                f"got {total_batch_size} and {self.num_global_devices}."
             )
         self.total_batch_size = total_batch_size
-        self.batch_size_per_device = total_batch_size // num_devices
+        self.batch_size_per_device = total_batch_size // self.num_global_devices
         self.generate_evaluations = jax.pmap(
             functools.partial(
                 self._generate_evaluations, eval_batch_size=self.batch_size_per_device
@@ -151,9 +152,12 @@ class Evaluator:
         self, params_state: Optional[ParamsState], eval_key: chex.PRNGKey
     ) -> Dict:
         """Run one batch of evaluations."""
-        eval_keys = jax.random.split(eval_key, self.num_devices)
+        eval_keys = jax.random.split(eval_key, self.num_global_devices).reshape(
+            self.num_workers, self.num_local_devices, -1
+        )
+        eval_keys_per_worker = eval_keys[jax.process_index()]
         eval_metrics: Dict = self.generate_evaluations(
             params_state,
-            eval_keys,
+            eval_keys_per_worker,
         )
         return eval_metrics
