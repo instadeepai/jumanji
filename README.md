@@ -19,19 +19,32 @@
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
-
-<p float="left" align="center">
-  <img src="docs/env_anim/connector.gif" alt="Connector" width="30%" />
-  <img src="docs/env_anim/snake.gif" alt="Snake" width="30%" />
-  <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="30%" />
-  <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="30%" />
-  <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="30%" />
-  <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="30%" />
-  <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="30%" />
-  <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="30%" />
-  <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="30%" />
-</p>
-
+<div class="collage">
+  <div class="row" align="center">
+    <img src="docs/env_anim/bin_pack.gif" alt="BinPack" width="16%">
+    <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="16%">
+    <img src="docs/env_anim/connector.gif" alt="Connector" width="16%">
+    <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="16%">
+    <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="16%">
+    <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="16%">
+  </div>
+  <div class="row" align="center">
+    <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="16%">
+    <img src="docs/env_anim/knapsack.gif" alt="Knapsack" width="16%">
+    <img src="docs/env_anim/maze.gif" alt="Maze" width="16%">
+    <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="16%">
+    <img src="docs/env_anim/mmst.gif" alt="MMST" width="16%">
+    <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
+  </div>
+  <div class="row" align="center">
+    <img src="docs/env_anim/robot_warehouse.gif" alt="RobotWarehouse" width="16%">
+    <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="16%">
+    <img src="docs/env_anim/snake.gif" alt="Snake" width="16%">
+    <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="16%">
+    <img src="docs/env_anim/tetris.gif" alt="Tetris" width="16%">
+    <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
+  </div>
+</div>
 
 
 ## Welcome to the Jungle! 🌴
@@ -70,7 +83,6 @@ JAX-based environments.
 - 🏎️ **Training:** example agents that can be used as inspiration for the agents one may implement
 in their research.
 
-
 ## Environments 🌍
 
 Jumanji provides a diverse range of environments ranging from simple games to NP-hard combinatorial
@@ -79,29 +91,38 @@ problems.
 | Environment                              | Category | Registered Version(s)                                | Source                                                                                           | Description                                                            |
 |------------------------------------------|----------|------------------------------------------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | 🔢 Game2048                              | Logic  | `Game2048-v1`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/game_2048/)   | [doc](https://instadeepai.github.io/jumanji/environments/game_2048/)   |
+| 🎨 GraphColoring                              | Logic  | `GraphColoring-v0`                                   | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/graph_coloring/)   | [doc](https://instadeepai.github.io/jumanji/environments/graph_coloring/)   |
 | 💣 Minesweeper                           | Logic    | `Minesweeper-v0`                                     | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper/) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
 | 🎲 RubiksCube                            | Logic    | `RubiksCube-v0`<br/>`RubiksCube-partly-scrambled-v0` | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube/) | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
-| 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v1`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
+| ✏️ Sudoku                       | Logic    | `Sudoku-v0` <br/>`Sudoku-very-easy-v0`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/sudoku/) | [doc](https://instadeepai.github.io/jumanji/environments/sudoku/) |
+| 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v2`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
 | 🏭 JobShop (Job Shop Scheduling Problem) | Packing  | `JobShop-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop/)  | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
 | 🎒 Knapsack                              | Packing  | `Knapsack-v1`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack/)  | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
+| ▒ Tetris                              | Packing  | `Tetris-v0`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/tetris/)  | [doc](https://instadeepai.github.io/jumanji/environments/tetris/)    |
 | 🧹 Cleaner                               | Routing  | `Cleaner-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cleaner/)   | [doc](https://instadeepai.github.io/jumanji/environments/cleaner/)     |
-| :link: Connector                         | Routing  | `Connector-v1`                                       | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
+| :link: Connector                         | Routing  | `Connector-v2`                                       | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/connector/) | [doc](https://instadeepai.github.io/jumanji/environments/connector/)   |
 | 🚚 CVRP (Capacitated Vehicle Routing Problem)  | Routing  | `CVRP-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/cvrp/)        |
+| 🚚 MultiCVRP (Multi-Agent Capacitated Vehicle Routing Problem)  | Routing  | `MultiCVRP-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/multi_cvrp/)      | [doc](https://instadeepai.github.io/jumanji/environments/multi_cvrp/)        |
 | :mag: Maze   | Routing  | `Maze-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/maze/)      | [doc](https://instadeepai.github.io/jumanji/environments/maze/)        |
+| :robot: RobotWarehouse  | Routing  | `RobotWarehouse-v0`                                  | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/robot_warehouse/)      | [doc](https://instadeepai.github.io/jumanji/environments/robot_warehouse/)        |
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
-
+| Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 
 ## Installation 🎬
 
 You can install the latest release of Jumanji from PyPI:
+
 ```bash
 pip install jumanji
 ```
+
 Alternatively, you can install the latest development version directly from GitHub:
+
 ```bash
 pip install git+https://github.com/instadeepai/jumanji.git
 ```
+
 Jumanji has been tested on Python 3.8 and 3.9.
 Note that because the installation of JAX differs depending on your hardware accelerator,
 we advise users to explicitly install the correct JAX version (see the
@@ -112,7 +133,6 @@ you will need a GUI backend. For example, on Linux, you can install Tk via:
 `apt-get install python3-tk`, or using conda: `conda install tk`. Check out
 [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of
 backends you can use.
-
 
 ## Quickstart ⚡
 
@@ -170,7 +190,6 @@ the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out
 [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
-
 ## Training 🏎️
 
 To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
@@ -191,7 +210,6 @@ actor-critic networks in
 For more information on how to use the example agents, see the
 [training guide](https://instadeepai.github.io/jumanji/guides/training/).
 
-
 ## Contributing 🤝
 
 Contributions are welcome! See our issue tracker for
@@ -199,10 +217,10 @@ Contributions are welcome! See our issue tracker for
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
 details on how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
-
 ## Citing Jumanji ✏️
 
 If you use Jumanji in your work, please cite the library using:
+
 ```
 @software{jumanji2023github,
   author = {Clément Bonnet and Daniel Luo and Donal Byrne and Sasha Abramowitz
@@ -215,7 +233,6 @@ If you use Jumanji in your work, please cite the library using:
   year = {2023},
 }
 ```
-
 
 ## See Also 🔎
 
