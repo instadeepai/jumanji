@@ -50,8 +50,7 @@
 
 ## Welcome to the Jungle! 🌴
 
-Jumanji is a suite of diverse and challenging reinforcement learning (RL) environments written in
-JAX.
+Jumanji is a diverse suite of scalable reinforcement learning environments written in JAX.
 
 Jumanji is helping pioneer a new wave of hardware-accelerated research and development in the
 field of RL. Jumanji's high-speed environments enable faster iteration and large-scale
