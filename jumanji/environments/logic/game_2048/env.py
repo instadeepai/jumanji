@@ -24,6 +24,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.game_2048.types import Board, Observation, State
 from jumanji.environments.logic.game_2048.utils import (
+    move,
     move_down,
     move_left,
     move_right,
@@ -181,11 +182,7 @@ class Game2048(Environment[State]):
             timestep: the next timestep.
         """
         # Take the action in the environment: Up, Right, Down, Left.
-        updated_board, additional_reward = jax.lax.switch(
-            action,
-            [move_up, move_right, move_down, move_left],
-            state.board,
-        )
+        updated_board, additional_reward = move(state.board, action)
 
         # Generate new key.
         random_cell_key, new_state_key = jax.random.split(state.key)
@@ -209,7 +206,7 @@ class Game2048(Environment[State]):
             action_mask=action_mask,
             step_count=state.step_count + 1,
             key=new_state_key,
-            score=state.score + additional_reward.astype(float),
+            score=state.score + additional_reward,
         )
 
         # Generate the observation from the environment state.

@@ -216,25 +216,38 @@ def move_up(board: Board, final_shift: bool = True) -> Tuple[Board, float]:
     return board, additional_reward
 
 
+def transform_board(board: Board, action: int) -> Board:
+    """Transform board."""
+    return jax.lax.switch(
+        action,
+        [
+            jnp.asarray,
+            lambda board: jnp.flip(jnp.transpose(board)),
+            jnp.flip,
+            jnp.transpose,
+        ],
+        board,
+    )
+
+
+def move(board: Board, action: int, final_shift: bool = True) -> Tuple[Board, float]:
+    """Move."""
+    board = transform_board(board, action)
+    board, additional_reward = move_up(board, final_shift)
+    board = transform_board(board, action)
+    return board, additional_reward
+
+
 def move_down(board: Board, final_shift: bool = True) -> Tuple[Board, float]:
     """Move down."""
-    board, additional_reward = move_up(
-        board=jnp.flip(board, 0), final_shift=final_shift
-    )
-    return jnp.flip(board, 0), additional_reward
+    return move(board=board, action=2, final_shift=final_shift)
 
 
 def move_left(board: Board, final_shift: bool = True) -> Tuple[Board, float]:
     """Move left."""
-    board, additional_reward = move_up(
-        board=jnp.rot90(board, k=-1), final_shift=final_shift
-    )
-    return jnp.rot90(board, k=1), additional_reward
+    return move(board=board, action=3, final_shift=final_shift)
 
 
 def move_right(board: Board, final_shift: bool = True) -> Tuple[Board, float]:
     """Move right."""
-    board, additional_reward = move_up(
-        board=jnp.rot90(board, k=1), final_shift=final_shift
-    )
-    return jnp.rot90(board, k=-1), additional_reward
+    return move(board=board, action=1, final_shift=final_shift)
