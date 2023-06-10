@@ -22,28 +22,6 @@ from jax.numpy import DeviceArray
 from jumanji.environments.logic.game_2048.types import Board
 
 
-def shift_nonzero_element(carry: Tuple) -> Tuple[DeviceArray, int]:
-    """Shift nonzero element from index i to index j and increment j.
-    For example, in the case of this column [2, 0, 2, 0], this method will be invoked
-    when `i` equals 0 and 2, and it will return successively ([2, 0, 2, 0], `j` = 1)
-    and ([2, 2, 2, 0], `j` = 2).
-
-    Args:
-        carry:
-            col: a column of the board.
-            i: the current index.
-            j: the index of the nonzero element. It also represents the number of nonzero
-            elements that have been shifted so far.
-
-    Returns:
-        A tuple containing the updated array (col) and the incremented target index (j).
-    """
-    col, j, i = carry
-    col = col.at[j].set(col[i])
-    j += 1
-    return col, j
-
-
 def shift_column_elements_up(carry: Tuple, i: int) -> Tuple[DeviceArray, None]:
     """This method calls `shift_nonzero_element` to shift non-zero elements in the column,
     and conducts the identity operation if the element is zero.
@@ -59,13 +37,16 @@ def shift_column_elements_up(carry: Tuple, i: int) -> Tuple[DeviceArray, None]:
         A tuple containing the updated column and None.
     """
     col, j = carry
-    col, j = jax.lax.cond(
+    new_col_j, new_j = jax.lax.cond(
         col[i] != 0,
-        shift_nonzero_element,
-        lambda col_j_i: col_j_i[:2],
-        (col, j, i),
+        lambda col, j, i: (col[i], j + 1),
+        lambda col, j, i: (col[j], j),
+        col,
+        j,
+        i,
     )
-    return (col, j), None
+    col = col.at[j].set(new_col_j)
+    return (col, new_j), None
 
 
 def fill_with_zero(carry: Tuple[DeviceArray, int]) -> Tuple[DeviceArray, int]:
@@ -110,25 +91,6 @@ def shift_up(col: DeviceArray) -> DeviceArray:
     return col
 
 
-def merge_elements(carry: Tuple) -> Tuple[DeviceArray, float]:
-    """Merge two adjacent elements in a column.
-    For example: col = [1, 1, 2, 2] and i = 2 -> [1, 1, 3, 0], with a reward equal to 2³.
-
-    Args:
-        carry: a tuple containing the current state of the column, the current index,
-        and the current reward.
-
-    Returns:
-        A tuple containing the modified column, and the updated reward.
-    """
-    col, reward, i = carry
-    new_col_i = col[i] + 1
-    col = col.at[i].set(new_col_i)
-    col = col.at[i + 1].set(0)
-    reward += 2**new_col_i
-    return col, reward
-
-
 def merge_equal_elements(
     carry: Tuple[DeviceArray, float], i: int
 ) -> Tuple[Tuple[DeviceArray, float], None]:
@@ -146,12 +108,16 @@ def merge_equal_elements(
         Tuple containing the updated column and the reward.
     """
     col, reward = carry
-    col, reward = jax.lax.cond(
-        ((col[i] != 0) & (col[i] == col[i + 1])),
-        merge_elements,
-        lambda col_reward_i: col_reward_i[:2],
-        (col, reward, i),
+    new_col_i, new_col_i_plus_1, additional_reward = jax.lax.cond(
+        (col[i] != 0) & (col[i] == col[i + 1]),
+        lambda col, i: (col[i] + 1, 0, 2 ** (col[i] + 1)),
+        lambda col, i: (col[i], col[i + 1], 0),
+        col,
+        i,
     )
+    col = col.at[i].set(new_col_i)
+    col = col.at[i + 1].set(new_col_i_plus_1)
+    reward += additional_reward
     return (col, reward), None
 
 
