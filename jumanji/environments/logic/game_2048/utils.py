@@ -22,51 +22,47 @@ from jax.numpy import DeviceArray
 from jumanji.environments.logic.game_2048.types import Board
 
 
-def shift_row_elements_left(carry: Tuple, i: int) -> Tuple[DeviceArray, None]:
+def shift_row_elements_left(origin: int, carry: Tuple) -> Tuple[DeviceArray, int]:
     """This method shifts non-zero elements in the row, and conducts the identity operation if the
     element is zero.
 
     Agrs:
+        origin: the index to shift from.
         carry:
             row: a one-dimensional array representing a row of the board.
-            j: the index of the non zero element. It also represents the number of non-zero
-            elements that have been shifted so far.
-        i: the current index.
+            target: the index to shift from. It also represents the number of non-zero elements
+            that have been shifted so far.
 
     Returns:
-        A tuple containing the updated row and None.
+        A tuple containing the updated row and the new target.
     """
-    row, j = carry
-    new_row_j, new_j = jax.lax.cond(
-        row[i] != 0,
-        lambda row, j, i: (row[i], j + 1),
-        lambda row, j, i: (row[j], j),
+    row, target = carry
+    new_row_target, new_target = jax.lax.cond(
+        row[origin] != 0,
+        lambda row, target, origin: (row[origin], target + 1),
+        lambda row, target, origin: (row[target], target),
         row,
-        j,
-        i,
+        target,
+        origin,
     )
-    row = row.at[j].set(new_row_j)
-    return (row, new_j), None
+    row = row.at[target].set(new_row_target)
+    return row, new_target
 
 
-def fill_with_zero(carry: Tuple[DeviceArray, int]) -> Tuple[DeviceArray, int]:
+def fill_with_zero(target: int, row: chex.Array) -> chex.Array:
     """Fill the remaining elements of the row with zeros after shifting non-zero elements to the left.
-    For example: if the initial row is [2, 0, 2, 0] then this method will be invoked when `j`
+    For example: if the initial row is [2, 0, 2, 0] then this method will be invoked when `target`
     equals to 2 and 3.
 
     Args:
-        carry:
-            row:  a row of the board.
-            j: the index of the nonzero element. It also represents the number of nonzero
-            elements that have been shifted so far.
+        target: index to fill with 0.
+        row: a one-dimensional array representing a row of the board.
 
     Returns:
-        A tuple containing the updated row and incremented index.
+        The updated row.
     """
-    row, j = carry
-    row = row.at[j].set(0)
-    j += 1
-    return row, j
+    row = row.at[target].set(0)
+    return row
 
 
 def shift_left(row: DeviceArray) -> DeviceArray:
@@ -74,51 +70,47 @@ def shift_left(row: DeviceArray) -> DeviceArray:
     For example: [2, 0, 2, 0] -> [2, 2, 0, 0]
 
     Args:
-        row: a row of the board.
+        row: a one-dimensional array representing a row of the board.
 
     Returns:
         The modified row with all the elements shifted left.
     """
-    j = 0
-    (row, j), _ = jax.lax.scan(  # In example: [2, 0, 2, 0] -> [2, 2, 2, 0]
-        f=shift_row_elements_left, init=(row, j), xs=jnp.arange(len(row))
+    target = 0
+    row, target = jax.lax.fori_loop(
+        0, row.shape[0], shift_row_elements_left, (row, target)
     )
-    row, j = jax.lax.while_loop(  # In example: [2, 2, 2, 0] -> [2, 2, 0, 0]
-        lambda row_j: row_j[1] < len(row_j[0]),
-        fill_with_zero,
-        (row, j),
-    )
+    row = jax.lax.fori_loop(target, row.shape[0], fill_with_zero, row)
     return row
 
 
 def merge_equal_elements(
-    carry: Tuple[DeviceArray, float], i: int
-) -> Tuple[Tuple[DeviceArray, float], None]:
+    target: int, carry: Tuple[DeviceArray, float]
+) -> Tuple[DeviceArray, float]:
     """This function merges adjacent non-zero elements in the row of the board, if the
     two adjacent elements are equal.
     This function will examine each element individually to locate two adjacent equal elements.
-    For example in the case of [1, 1, 2, 2], this method will merge elements for `i` equals
+    For example in the case of [1, 1, 2, 2], this method will merge elements for `target` equals
     to 0 and 2.
 
     Args:
-        carry: a tuple containing the current state of the row, and the current reward.
-        i: the current index.
+        target: index to merge into.
+        carry: a tuple containing the current state of the row and the current reward.
 
     Returns:
         Tuple containing the updated row and the reward.
     """
     row, reward = carry
-    new_row_i, new_row_i_plus_1, additional_reward = jax.lax.cond(
-        (row[i] != 0) & (row[i] == row[i + 1]),
-        lambda row, i: (row[i] + 1, 0, 2 ** (row[i] + 1)),
-        lambda row, i: (row[i], row[i + 1], 0),
+    new_row_target, new_row_target_plus_1, additional_reward = jax.lax.cond(
+        (row[target] != 0) & (row[target] == row[target + 1]),
+        lambda row, target: (row[target] + 1, 0, 2 ** (row[target] + 1)),
+        lambda row, target: (row[target], row[target + 1], 0),
         row,
-        i,
+        target,
     )
-    row = row.at[i].set(new_row_i)
-    row = row.at[i + 1].set(new_row_i_plus_1)
+    row = row.at[target].set(new_row_target)
+    row = row.at[target + 1].set(new_row_target_plus_1)
     reward += additional_reward
-    return (row, reward), None
+    return row, reward
 
 
 def merge_row(row: DeviceArray) -> Tuple[DeviceArray, float]:
@@ -126,16 +118,15 @@ def merge_row(row: DeviceArray) -> Tuple[DeviceArray, float]:
     For example: [0, 0, 2, 2] -> [0, 0, 3, 0] with a reward equal to 2³.
 
     Args:
-        row: a row of the board.
+        row: a one-dimensional array representing a row of the board.
 
     Returns:
         A tuple containing the modified row and the total reward obtained by
         merging the elements.
     """
     reward = 0.0
-    elements_indices = jnp.arange(len(row) - 1)
-    (row, reward), _ = jax.lax.scan(
-        f=merge_equal_elements, init=(row, reward), xs=elements_indices
+    row, reward = jax.lax.fori_loop(
+        0, row.shape[0] - 1, merge_equal_elements, (row, reward)
     )
     return row, reward
 
@@ -151,7 +142,7 @@ def move_left_row(
     For example: [2, 2, 1, 1] -> [3, 2, 0, 0].
 
     Args:
-         row: a row of the board.
+         row: a one-dimensional array representing a row of the board.
          final_shift: is a flag to determine if the row should be shifted left once or
          twice. In the "get_action_mask" method, it is set to False, as the purpose is
          to check if the action is allowed and one shift is enough for this determination.
