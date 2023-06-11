@@ -182,7 +182,7 @@ class Game2048(Environment[State]):
             timestep: the next timestep.
         """
         # Take the action in the environment: Up, Right, Down, Left.
-        updated_board, additional_reward = move(state.board, action)
+        updated_board, reward = move(state.board, action)
 
         # Generate new key.
         random_cell_key, new_state_key = jax.random.split(state.key)
@@ -206,7 +206,7 @@ class Game2048(Environment[State]):
             action_mask=action_mask,
             step_count=state.step_count + 1,
             key=new_state_key,
-            score=state.score + additional_reward,
+            score=state.score + reward,
         )
 
         # Generate the observation from the environment state.
@@ -224,12 +224,12 @@ class Game2048(Environment[State]):
         timestep = jax.lax.cond(
             done,
             lambda: termination(
-                reward=additional_reward,
+                reward=reward,
                 observation=observation,
                 extras=extras,
             ),
             lambda: transition(
-                reward=additional_reward,
+                reward=reward,
                 observation=observation,
                 extras=extras,
             ),
@@ -302,10 +302,10 @@ class Game2048(Environment[State]):
         """
         action_mask = jnp.array(
             [
-                jnp.any(move_up(board, final_shift=False)[0] != board),
-                jnp.any(move_right(board, final_shift=False)[0] != board),
-                jnp.any(move_down(board, final_shift=False)[0] != board),
-                jnp.any(move_left(board, final_shift=False)[0] != board),
+                jnp.any(move_up(board)[0] != board),
+                jnp.any(move_right(board)[0] != board),
+                jnp.any(move_down(board)[0] != board),
+                jnp.any(move_left(board)[0] != board),
             ],
         )
         return action_mask
