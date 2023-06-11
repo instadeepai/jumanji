@@ -23,13 +23,7 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.game_2048.types import Board, Observation, State
-from jumanji.environments.logic.game_2048.utils import (
-    move,
-    move_down,
-    move_left,
-    move_right,
-    move_up,
-)
+from jumanji.environments.logic.game_2048.utils import can_move, move
 from jumanji.environments.logic.game_2048.viewer import Game2048Viewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
@@ -300,14 +294,7 @@ class Game2048(Environment[State]):
         Returns:
             action_mask: action mask for the current state of the environment.
         """
-        action_mask = jnp.array(
-            [
-                jnp.any(move_up(board)[0] != board),
-                jnp.any(move_right(board)[0] != board),
-                jnp.any(move_down(board)[0] != board),
-                jnp.any(move_left(board)[0] != board),
-            ],
-        )
+        action_mask = jnp.array([can_move(board, action) for action in range(4)])
         return action_mask
 
     def render(self, state: State) -> Optional[NDArray]:

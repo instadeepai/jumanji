@@ -21,6 +21,99 @@ import jax.numpy as jnp
 from jumanji.environments.logic.game_2048.types import Board
 
 
+def transform_board(board: Board, action: int) -> Board:
+    """Transform board."""
+    return jax.lax.switch(
+        action,
+        [
+            lambda board: jnp.transpose(board),
+            lambda board: jnp.flip(board, 1),
+            lambda board: jnp.flip(jnp.transpose(board)),
+            lambda board: board,
+        ],
+        board,
+    )
+
+
+class CanMoveCarry(NamedTuple):
+    """Carry value for while loop in can_move_left_row."""
+
+    can_move: bool
+    row: chex.Array
+    target_idx: int
+    origin_idx: int
+
+    @property
+    def target(self) -> chex.Numeric:
+        """Tile at target index of row."""
+        return self.row[self.target_idx]
+
+    @property
+    def origin(self) -> chex.Numeric:
+        """Tile at origin index of row."""
+        return self.row[self.origin_idx]
+
+
+def can_move_left_row_cond(carry: CanMoveCarry) -> chex.Numeric:
+    """Terminates loop when valid move is found or origin reaches end of row."""
+    return ~carry.can_move & (carry.origin_idx < carry.row.shape[0])
+
+
+def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
+    """Returns new carry after checking if move is valid."""
+    can_move = (carry.origin != 0) & (
+        (carry.target == 0) | (carry.target == carry.origin)
+    )
+    target_idx = jax.lax.cond(
+        carry.origin == 0,
+        lambda: carry.target_idx,
+        lambda: carry.target_idx + 1,
+    )
+    origin_idx = jax.lax.cond(
+        (carry.origin == 0) | (target_idx == carry.origin_idx),
+        lambda: carry.origin_idx + 1,
+        lambda: carry.origin_idx,
+    )
+    return carry._replace(
+        can_move=can_move, target_idx=target_idx, origin_idx=origin_idx
+    )
+
+
+def can_move_left_row(row: chex.Array) -> bool:
+    """Check if row can move left."""
+    carry = CanMoveCarry(can_move=False, row=row, target_idx=0, origin_idx=1)
+    can_move: bool = jax.lax.while_loop(
+        can_move_left_row_cond, can_move_left_row_body, carry
+    )[0]
+    return can_move
+
+
+def can_move_left(board: Board) -> bool:
+    """Check if board can move left."""
+    can_move: bool = jax.vmap(can_move_left_row)(board).any()
+    return can_move
+
+
+def can_move(board: Board, action: int) -> bool:
+    """Check if board can move with action."""
+    return can_move_left(transform_board(board, action))
+
+
+def can_move_up(board: Board) -> bool:
+    """Check if board can move up."""
+    return can_move(board, 0)
+
+
+def can_move_right(board: Board) -> bool:
+    """Check if board can move right."""
+    return can_move(board, 1)
+
+
+def can_move_down(board: Board) -> bool:
+    """Check if board can move down."""
+    return can_move(board, 2)
+
+
 class MoveUpdate(NamedTuple):
     """Update to move carry."""
 
@@ -135,20 +228,6 @@ def move_left(board: Board) -> Tuple[Board, float]:
     """Move left."""
     board, reward = jax.vmap(move_left_row)(board)
     return board, reward.sum()
-
-
-def transform_board(board: Board, action: int) -> Board:
-    """Transform board."""
-    return jax.lax.switch(
-        action,
-        [
-            lambda board: jnp.transpose(board),
-            lambda board: jnp.flip(board, 1),
-            lambda board: jnp.flip(jnp.transpose(board)),
-            lambda board: board,
-        ],
-        board,
-    )
 
 
 def move(board: Board, action: int) -> Tuple[Board, float]:
