@@ -294,8 +294,7 @@ class Game2048(Environment[State]):
         Returns:
             action_mask: action mask for the current state of the environment.
         """
-        action_mask = jnp.array([can_move(board, action) for action in range(4)])
-        return action_mask
+        return jnp.array([can_move(board, action) for action in range(4)])
 
     def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the game board.

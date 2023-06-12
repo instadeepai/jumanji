@@ -22,7 +22,7 @@ from jumanji.environments.logic.game_2048.types import Board
 
 
 def transform_board(board: Board, action: int) -> Board:
-    """Transform board."""
+    """Transform board so that move_left is analagous to move_action. Also, transform back."""
     return jax.lax.switch(
         action,
         [
@@ -55,15 +55,19 @@ class CanMoveCarry(NamedTuple):
 
 
 def can_move_left_row_cond(carry: CanMoveCarry) -> chex.Numeric:
-    """Terminates loop when valid move is found or origin reaches end of row."""
+    """Terminate loop when valid move is found or origin reaches end of row."""
     return ~carry.can_move & (carry.origin_idx < carry.row.shape[0])
 
 
 def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
-    """Returns new carry after checking if move is valid."""
+    """Check if the current tiles can move and increment the indices."""
+    # Check if tiles can move
     can_move = (carry.origin != 0) & (
         (carry.target == 0) | (carry.target == carry.origin)
     )
+
+    # Increment indices as if performed a no op
+    # If not performing no op, loop will be terminated anyways
     target_idx = jax.lax.cond(
         carry.origin == 0,
         lambda: carry.target_idx,
@@ -74,6 +78,8 @@ def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
         lambda: carry.origin_idx + 1,
         lambda: carry.origin_idx,
     )
+
+    # Return updated carry
     return carry._replace(
         can_move=can_move, target_idx=target_idx, origin_idx=origin_idx
     )
@@ -143,10 +149,15 @@ class MoveCarry(NamedTuple):
         return self.row[self.origin_idx]
 
     def update(self, update: MoveUpdate) -> "MoveCarry":
-        """Return new updated carry. This method should not be called from within a jax.lax.cond."""
+        """Return new updated carry. This method will cause row to be copied when called within a
+        jax conditional primative such as `jax.lax.cond` or `jax.lax.switch`.
+        """
+        # Update row
         row = self.row
         row = row.at[self.target_idx].set(update.target)
         row = row.at[self.origin_idx].set(update.origin)
+
+        # Return updated carry
         return self._replace(
             row=row,
             reward=self.reward + update.additional_reward,
@@ -156,7 +167,7 @@ class MoveCarry(NamedTuple):
 
 
 def no_op(carry: MoveCarry) -> MoveUpdate:
-    """Returns a move update equivalent to performing a no op."""
+    """Return a move update equivalent to performing a no op."""
     target_idx = jax.lax.cond(
         carry.origin == 0,
         lambda: carry.target_idx,
@@ -177,7 +188,7 @@ def no_op(carry: MoveCarry) -> MoveUpdate:
 
 
 def shift(carry: MoveCarry) -> MoveUpdate:
-    """Returns a move update equivalent to shifting origin to target."""
+    """Return a move update equivalent to shifting origin to target."""
     return MoveUpdate(
         target=carry.origin,
         origin=0,
@@ -188,7 +199,7 @@ def shift(carry: MoveCarry) -> MoveUpdate:
 
 
 def merge(carry: MoveCarry) -> MoveUpdate:
-    """Returns a move update equivalent to merging origin with target."""
+    """Return a move update equivalent to merging origin with target."""
     return MoveUpdate(
         target=carry.target + 1,
         origin=0,
@@ -199,39 +210,39 @@ def merge(carry: MoveCarry) -> MoveUpdate:
 
 
 def move_left_row_cond(carry: MoveCarry) -> chex.Numeric:
-    """Terminates loop when origin reaches end of row."""
+    """Terminate loop when origin reaches end of row."""
     return carry.origin_idx < carry.row.shape[0]
 
 
 def move_left_row_body(carry: MoveCarry) -> MoveCarry:
-    """Returns new carry after performing appropiate op."""
+    """Move the current tiles and increment the indices."""
+    # Determine move type
     can_shift = (carry.origin != 0) & (carry.target == 0)
     can_merge = (carry.origin != 0) & (carry.target == carry.origin)
     move_type = can_shift.astype(int) + 2 * can_merge.astype(int)
+
+    # Get update based on move type
     update = jax.lax.switch(move_type, [no_op, shift, merge], carry)
+
+    # Return updated carry
     return carry.update(update)
 
 
 def move_left_row(row: chex.Array) -> Tuple[chex.Array, float]:
-    """Move the elements in the row left."""
-    carry = MoveCarry(
-        row=row,
-        reward=0.0,
-        target_idx=0,
-        origin_idx=1,
-    )
+    """Move the row left."""
+    carry = MoveCarry(row=row, reward=0.0, target_idx=0, origin_idx=1)
     row, reward = jax.lax.while_loop(move_left_row_cond, move_left_row_body, carry)[:2]
     return row, reward
 
 
 def move_left(board: Board) -> Tuple[Board, float]:
-    """Move left."""
+    """Move the board left."""
     board, reward = jax.vmap(move_left_row)(board)
     return board, reward.sum()
 
 
 def move(board: Board, action: int) -> Tuple[Board, float]:
-    """Move."""
+    """Move the board with action."""
     board = transform_board(board, action)
     board, reward = move_left(board)
     board = transform_board(board, action)
@@ -239,15 +250,15 @@ def move(board: Board, action: int) -> Tuple[Board, float]:
 
 
 def move_up(board: Board) -> Tuple[Board, float]:
-    """Move up."""
-    return move(board=board, action=0)
+    """Move the board up."""
+    return move(board, 0)
 
 
 def move_right(board: Board) -> Tuple[Board, float]:
-    """Move right."""
-    return move(board=board, action=1)
+    """Move the board right."""
+    return move(board, 1)
 
 
 def move_down(board: Board) -> Tuple[Board, float]:
-    """Move down."""
-    return move(board=board, action=2)
+    """Move the board down."""
+    return move(board, 2)
