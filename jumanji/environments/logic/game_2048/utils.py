@@ -26,12 +26,11 @@ def transform_board(board: Board, action: int) -> Board:
     return jax.lax.switch(
         action,
         [
-            lambda board: jnp.transpose(board),
-            lambda board: jnp.flip(board, 1),
-            lambda board: jnp.flip(jnp.transpose(board)),
-            lambda board: board,
+            lambda: jnp.transpose(board),
+            lambda: jnp.flip(board, 1),
+            lambda: jnp.flip(jnp.transpose(board)),
+            lambda: board,
         ],
-        board,
     )
 
 
