@@ -202,9 +202,9 @@ def merge(carry: MoveCarry) -> MoveUpdate:
     return MoveUpdate(
         target=carry.target + 1,
         origin=0,
+        additional_reward=2.0 ** (carry.target + 1),
         target_idx=carry.target_idx + 1,
         origin_idx=carry.origin_idx + 1,
-        additional_reward=2.0 ** (carry.target + 1),
     )
 
 
