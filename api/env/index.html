@@ -1666,7 +1666,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.env.Environment.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.env.Environment.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1694,7 +1694,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Array</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1981,7 +1981,7 @@ single float between 0 and 1.</p>
   <small>
     
       Last update:
-      2023-06-15
+      2023-06-18
     
   </small>
 </div>

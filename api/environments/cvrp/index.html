@@ -1742,7 +1742,7 @@ timestep: <code>TimeStep</code> object corresponding to the first timestep retur
 
 
 <h3 id="jumanji.environments.routing.cvrp.env.CVRP.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cvrp</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.environments.routing.cvrp.env.CVRP.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1770,7 +1770,7 @@ timestep: <code>TimeStep</code> object corresponding to the first timestep retur
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, float, int]</code></td>
+        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number, float, int]</code></td>
         <td><p>jax array (int32) of shape () containing the index of the next node to visit.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1888,7 +1888,7 @@ timestep: <code>TimeStep</code> object corresponding to the first timestep retur
   <small>
     
       Last update:
-      2023-06-15
+      2023-06-18
     
   </small>
 </div>
