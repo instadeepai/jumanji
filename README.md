@@ -224,16 +224,17 @@ If you use Jumanji in your work, please cite the library using:
 ```
 @misc{bonnet2023jumanji,
     title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX},
-    author={Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Vincent Coyette
-        and Paul Duckworth and Laurence I. Midgley and Tristan Kalloniatis and Sasha Abramowitz
-        and Cemlyn N. Waters and Andries P. Smit and Nathan Grinsztajn and Ulrich A. Mbou Sob
-        and Omayma Mahjoub and Elshadai Tegegn and Mohamed A. Mimouni and Raphael Boige
-        and Ruan de Kock and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius
-        and Alexandre Laterre},
-    url = {https://github.com/instadeepai/jumanji},
-    version = {0.3.0},
+    author={
+        Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Vincent Coyette and
+        Paul Duckworth and Laurence I. Midgley and Tristan Kalloniatis and Sasha Abramowitz and
+        Cemlyn N. Waters and Andries P. Smit and Nathan Grinsztajn and Ulrich A. Mbou Sob and
+        Omayma Mahjoub and Elshadai Tegegn and Mohamed A. Mimouni and Raphael Boige and
+        Ruan de Kock and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and
+        Alexandre Laterre
+    },
     year={2023},
     eprint={2306.09884},
+    url={https://arxiv.org/abs/2306.09884},
     archivePrefix={arXiv},
     primaryClass={cs.LG}
 }
