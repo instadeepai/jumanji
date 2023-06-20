@@ -83,9 +83,9 @@ def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
 def can_move_left_row(row: chex.Array) -> bool:
     """Check if row can move left."""
     carry = CanMoveCarry(can_move=False, row=row, target_idx=0, origin_idx=1)
-    can_move, *_ = jax.lax.while_loop(
+    can_move: bool = jax.lax.while_loop(
         can_move_left_row_cond, can_move_left_row_body, carry
-    )
+    )[0]
     return can_move
 
 
