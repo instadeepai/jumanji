@@ -67,15 +67,11 @@ def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
 
     # Increment indices as if performed a no op
     # If not performing no op, loop will be terminated anyways
-    target_idx = jax.lax.cond(
-        carry.origin == 0,
-        lambda: carry.target_idx,
-        lambda: carry.target_idx + 1,
-    )
-    origin_idx = jax.lax.cond(
+    target_idx = carry.target_idx + (carry.origin != 0)
+    origin_idx = jax.lax.select(
         (carry.origin == 0) | (target_idx == carry.origin_idx),
-        lambda: carry.origin_idx + 1,
-        lambda: carry.origin_idx,
+        carry.origin_idx + 1,
+        carry.origin_idx,
     )
 
     # Return updated carry
@@ -87,9 +83,9 @@ def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
 def can_move_left_row(row: chex.Array) -> bool:
     """Check if row can move left."""
     carry = CanMoveCarry(can_move=False, row=row, target_idx=0, origin_idx=1)
-    can_move: bool = jax.lax.while_loop(
+    can_move, *_ = jax.lax.while_loop(
         can_move_left_row_cond, can_move_left_row_body, carry
-    )[0]
+    )
     return can_move
 
 
@@ -167,15 +163,11 @@ class MoveCarry(NamedTuple):
 
 def no_op(carry: MoveCarry) -> MoveUpdate:
     """Return a move update equivalent to performing a no op."""
-    target_idx = jax.lax.cond(
-        carry.origin == 0,
-        lambda: carry.target_idx,
-        lambda: carry.target_idx + 1,
-    )
-    origin_idx = jax.lax.cond(
+    target_idx = carry.target_idx + (carry.origin != 0)
+    origin_idx = jax.lax.select(
         (carry.origin == 0) | (target_idx == carry.origin_idx),
-        lambda: carry.origin_idx + 1,
-        lambda: carry.origin_idx,
+        carry.origin_idx + 1,
+        carry.origin_idx,
     )
     return MoveUpdate(
         target=carry.target,
@@ -230,7 +222,7 @@ def move_left_row_body(carry: MoveCarry) -> MoveCarry:
 def move_left_row(row: chex.Array) -> Tuple[chex.Array, float]:
     """Move the row left."""
     carry = MoveCarry(row=row, reward=0.0, target_idx=0, origin_idx=1)
-    row, reward = jax.lax.while_loop(move_left_row_cond, move_left_row_body, carry)[:2]
+    row, reward, *_ = jax.lax.while_loop(move_left_row_cond, move_left_row_body, carry)
     return row, reward
 
 
