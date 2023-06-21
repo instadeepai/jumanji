@@ -1560,8 +1560,8 @@ of <code>[0, num_nodes-1]</code>. During every step, an agent picks the next nod
 An action is invalid if the agent picks a node it has no edge to or the node is a utility node already
 been used by another agent.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>An agent recieves a reward of 10.0 every step it gets a valid connection, a reward of -1.0 if it does not
-connect and an extra penalty of -1.0 if choses an invalid action.</p>
+<p>At every step, an agent receives a reward of 10.0 if it gets a valid connection, a reward of -1.0 if it does not
+connect and an extra penalty of -1.0 if it chooses an invalid action.</p>
 <p>The total step reward is the sum of rewards per agent.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
@@ -1573,7 +1573,7 @@ connect and an extra penalty of -1.0 if choses an invalid action.</p>
   <small>
     
       Last update:
-      2023-06-20
+      2023-06-22
     
   </small>
 </div>
