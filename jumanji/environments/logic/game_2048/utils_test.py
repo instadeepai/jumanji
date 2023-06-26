@@ -17,6 +17,10 @@ import pytest
 
 from jumanji.environments.logic.game_2048.types import Board
 from jumanji.environments.logic.game_2048.utils import (
+    can_move_down,
+    can_move_left,
+    can_move_right,
+    can_move_up,
     move_down,
     move_left,
     move_right,
@@ -70,6 +74,38 @@ def board8x8() -> Board:
         ]
     )
     return board
+
+
+def test_can_move_down(board: Board, another_board: Board) -> None:
+    """Test checking if the board can move down."""
+    assert can_move_down(board)
+    assert can_move_down(another_board)
+    board = jnp.array([[0, 0, 0, 0], [1, 0, 0, 0], [2, 1, 0, 0], [3, 2, 1, 0]])
+    assert ~can_move_down(board)
+
+
+def test_can_move_up(board: Board, another_board: Board) -> None:
+    """Test checking if the board can move up."""
+    assert can_move_up(board)
+    assert can_move_up(another_board)
+    board = jnp.array([[4, 2, 1, 0], [3, 1, 0, 0], [2, 0, 0, 0], [1, 0, 0, 0]])
+    assert ~can_move_up(board)
+
+
+def test_can_move_right(board: Board, another_board: Board) -> None:
+    """Test checking if the board can move right."""
+    assert can_move_right(board)
+    assert can_move_right(another_board)
+    board = jnp.array([[0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 2], [0, 1, 2, 3]])
+    assert ~can_move_right(board)
+
+
+def test_can_move_left(board: Board, another_board: Board) -> None:
+    """Test checking if the board can move left."""
+    assert can_move_left(board)
+    assert can_move_left(another_board)
+    board = jnp.array([[1, 2, 3, 4], [1, 2, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]])
+    assert ~can_move_left(board)
 
 
 def test_move_down(board: Board, another_board: Board) -> None:
