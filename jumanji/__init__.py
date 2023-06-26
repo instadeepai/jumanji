@@ -79,9 +79,9 @@ register(
 # Packing Environments
 ###
 
-# 3D bin-packing problem with 30 randomly generated items maximum, 100 EMSs maximum and the 70
-# largest ones are given in the observation.
-register(id="BinPack-v1", entry_point="jumanji.environments:BinPack")
+# 3D bin-packing problem with 20 randomly generated items maximum, 40 EMSs maximum that are
+# given in the observation.
+register(id="BinPack-v2", entry_point="jumanji.environments:BinPack")
 
 # 2D grid filling problem with 9 blocks, a 7x7 grid and a random grid generator.
 # The grid must be filled in `num_blocks` steps.
@@ -106,7 +106,7 @@ register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
 # of 12.5, and a dense reward function.
 register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
-# Tetris - the game of tetris with the default grid size of 10x10.
+# Tetris - the game of tetris with a grid size of 10x10 and a time limit of 400.
 register(id="Tetris-v0", entry_point="jumanji.environments:Tetris")
 
 
@@ -117,8 +117,8 @@ register(id="Tetris-v0", entry_point="jumanji.environments:Tetris")
 # Cleaner with 10 rows, 10 colums, 3 agents, a time limit of 100, and a random maze generator.
 register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 
-# Connector with grid size of 10 and 5 agents.
-register(id="Connector-v1", entry_point="jumanji.environments:Connector")
+# Connector with grid size of 10 and 10 agents.
+register(id="Connector-v2", entry_point="jumanji.environments:Connector")
 
 # MMST with 3 agents, 36 nodes, 72 edges, 4 nodes to connect per agent, and a time limit of 70.
 register(id="MMST-v0", entry_point="jumanji.environments:MMST")

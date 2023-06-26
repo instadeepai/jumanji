@@ -17,6 +17,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -63,6 +64,8 @@ class MMST(Environment[State]):
             adjacency matrix of the graph.
         - positions: jax array (int) of shape (num_agents,):
             the index of the last visited node.
+        - step_count: jax array (int) of shape ():
+            integer to keep track of the number of steps.
         - action_mask: jax array (bool) of shape (num_agent, num_nodes):
             binary mask (False/True <--> invalid/valid action).
 
@@ -152,70 +155,8 @@ class MMST(Environment[State]):
 
         self._reward_fn = reward_fn or DenseRewardFn(reward_values=(10.0, -1.0, -1.0))
 
-        self._env_viewer = viewer
+        self._env_viewer = viewer or MMSTViewer(num_agents=self.num_agents)
         self.time_limit = time_limit
-
-    def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec.
-
-        Returns:
-            action_spec: a `specs.MultiDiscreteArray` spec.
-        """
-        return specs.MultiDiscreteArray(
-            num_values=jnp.full((self.num_agents,), self.num_nodes, jnp.int32),
-            name="action",
-        )
-
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec.
-
-        Returns:
-            Spec for the `Observation` whose fields are:
-            - node_types: BoundedArray (int32) of shape (num_nodes,).
-            - adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
-                Represents the adjacency matrix of the graph.
-            - positions: BoundedArray (int32) of shape (num_agents).
-                Current node position of agent.
-            - action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
-                Represents the valid actions in the current state.
-        """
-        node_types = specs.BoundedArray(
-            shape=(self.num_nodes,),
-            minimum=-1,
-            maximum=self.num_agents * 2 - 1,
-            dtype=jnp.int32,
-            name="node_types",
-        )
-        adj_matrix = specs.BoundedArray(
-            shape=(self.num_nodes, self.num_nodes),
-            minimum=0,
-            maximum=1,
-            dtype=jnp.int32,
-            name="adj_matrix",
-        )
-        positions = specs.BoundedArray(
-            shape=(self.num_agents,),
-            minimum=-1,
-            maximum=self.num_nodes - 1,
-            dtype=jnp.int32,
-            name="positions",
-        )
-        action_mask = specs.BoundedArray(
-            shape=(self.num_agents, self.num_nodes),
-            dtype=bool,
-            minimum=False,
-            maximum=True,
-            name="action_mask",
-        )
-
-        return specs.Spec(
-            Observation,
-            "ObservationSpec",
-            node_types=node_types,
-            adj_matrix=adj_matrix,
-            positions=positions,
-            action_mask=action_mask,
-        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -332,6 +273,76 @@ class MMST(Environment[State]):
         state, timestep = self._state_to_timestep(state, action)
         return state, timestep
 
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec.
+
+        Returns:
+            action_spec: a `specs.MultiDiscreteArray` spec.
+        """
+        return specs.MultiDiscreteArray(
+            num_values=jnp.full((self.num_agents,), self.num_nodes, jnp.int32),
+            name="action",
+        )
+
+    def observation_spec(self) -> specs.Spec[Observation]:
+        """Returns the observation spec.
+
+        Returns:
+            Spec for the `Observation` whose fields are:
+            - node_types: BoundedArray (int32) of shape (num_nodes,).
+            - adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
+                Represents the adjacency matrix of the graph.
+            - positions: BoundedArray (int32) of shape (num_agents).
+                Current node position of agent.
+            - action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
+                Represents the valid actions in the current state.
+        """
+        node_types = specs.BoundedArray(
+            shape=(self.num_nodes,),
+            minimum=-1,
+            maximum=self.num_agents * 2 - 1,
+            dtype=jnp.int32,
+            name="node_types",
+        )
+        adj_matrix = specs.BoundedArray(
+            shape=(self.num_nodes, self.num_nodes),
+            minimum=0,
+            maximum=1,
+            dtype=jnp.int32,
+            name="adj_matrix",
+        )
+        positions = specs.BoundedArray(
+            shape=(self.num_agents,),
+            minimum=-1,
+            maximum=self.num_nodes - 1,
+            dtype=jnp.int32,
+            name="positions",
+        )
+        step_count = specs.BoundedArray(
+            shape=(),
+            minimum=0,
+            maximum=self.time_limit,
+            dtype=jnp.int32,
+            name="step_count",
+        )
+        action_mask = specs.BoundedArray(
+            shape=(self.num_agents, self.num_nodes),
+            dtype=bool,
+            minimum=False,
+            maximum=True,
+            name="action_mask",
+        )
+
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            node_types=node_types,
+            adj_matrix=adj_matrix,
+            positions=positions,
+            step_count=step_count,
+            action_mask=action_mask,
+        )
+
     def _state_to_observation(self, state: State) -> Observation:
         """Converts a state into an observation.
 
@@ -349,7 +360,7 @@ class MMST(Environment[State]):
         zero_mask = state.node_types != UTILITY_NODE
         ones_inds = state.node_types == UTILITY_NODE
 
-        # Set the agent_id to 0 since the environment is now single agent.
+        # Set the agent_id to 0 since the environment is single agent.
         agent_id = 0
 
         node_types = state.node_types - agent_id
@@ -372,6 +383,7 @@ class MMST(Environment[State]):
             node_types=node_types,
             adj_matrix=state.adj_matrix,
             positions=state.positions,
+            step_count=state.step_count,
             action_mask=state.action_mask,
         )
 
@@ -388,43 +400,35 @@ class MMST(Environment[State]):
             timestep: TimeStep object containing the timestep of the environment.
         """
 
-        observation = self._state_to_observation(state)
         reward = self._reward_fn(state, action, state.nodes_to_connect)
 
         # Update the state now.
         state.finished_agents = self.get_finished_agents(state)
         state.step_count = state.step_count + 1
         extras = self._get_extras(state)
+        observation = self._state_to_observation(state)
 
-        def make_termination_timestep(state: State) -> TimeStep:
+        def make_termination_timestep() -> TimeStep[Observation]:
             return termination(
                 reward=reward,
                 observation=observation,
                 extras=extras,
             )
 
-        def make_transition_timestep(state: State) -> TimeStep:
+        def make_transition_timestep() -> TimeStep[Observation]:
             return transition(
                 reward=reward,
                 observation=observation,
                 extras=extras,
             )
 
-        is_done = state.finished_agents.all()
+        agents_are_done = state.finished_agents.all()
         horizon_reached = state.step_count >= self.time_limit
 
-        # false + false = 0 = transition.
-        # true + false = 1  = truncation (use termination).
-        # false + true * 2 = 2 = termination.
-        # true + true * 2 = 3 -> gets clamped to 2 = termination.
-        timestep: TimeStep[chex.Array] = jax.lax.switch(
-            horizon_reached + is_done * 2,
-            [
-                make_transition_timestep,
-                make_termination_timestep,
-                make_termination_timestep,
-            ],
-            state,
+        timestep = jax.lax.cond(
+            agents_are_done | horizon_reached,
+            make_termination_timestep,
+            make_transition_timestep,
         )
 
         return state, timestep
@@ -574,14 +578,11 @@ class MMST(Environment[State]):
             connects = jnp.isin(nodes, connected_nodes)
             return jnp.sum(connects) == n_comps
 
-        finished_agents = jnp.zeros_like(state.finished_agents)
-        for agent in range(self.num_agents):
-            finished = done_fun(
-                state.nodes_to_connect[agent],
-                state.connected_nodes[agent],
-                self.num_nodes_per_agent,
-            )
-            finished_agents = finished_agents.at[agent].set(finished)
+        finished_agents = jax.vmap(done_fun, in_axes=(0, 0, None))(
+            state.nodes_to_connect,
+            state.connected_nodes,
+            self.num_nodes_per_agent,
+        )
 
         return finished_agents
 
@@ -596,14 +597,11 @@ class MMST(Environment[State]):
             ratio_connections = total_connections / (n_comps - 1.0)
             return jnp.array([total_connections, ratio_connections])
 
-        connections = jnp.zeros((self.num_agents, 2))
-        for agent in range(self.num_agents):
-            total_ratio = num_connections(
-                state.nodes_to_connect[agent],
-                state.connected_nodes[agent],
-                self.num_nodes_per_agent,
-            )
-            connections = connections.at[agent].set(total_ratio)
+        connections = jax.vmap(num_connections, in_axes=(0, 0, None))(
+            state.nodes_to_connect,
+            state.connected_nodes,
+            self.num_nodes_per_agent,
+        )
 
         extras = {
             "num_connections": jnp.sum(connections[:, 0]),
@@ -618,11 +616,6 @@ class MMST(Environment[State]):
         Returns:
             Array of rgb pixel values in the shape (width, height, rgb).
         """
-        if self._env_viewer is None:
-            self._env_viewer = MMSTViewer(
-                self.num_agents,
-            )
-
         return self._env_viewer.render(state)
 
     def animate(
@@ -630,16 +623,12 @@ class MMST(Environment[State]):
         states: Sequence[State],
         interval: int = 200,
         save_path: Optional[str] = None,
-    ) -> None:
+    ) -> matplotlib.animation.FuncAnimation:
         """Calls the environment renderer to animate a sequence of states.
 
         Args:
             states: List of states to animate.
-            interval: Time between frames in milliseconds.
+            interval: Time between frames in milliseconds, defaults to 200.
             save_path: Optional path to save the animation.
         """
-        if self._env_viewer is None:
-            self._env_viewer = MMSTViewer(
-                self.num_agents,
-            )
-        self._env_viewer.animate(states, interval, save_path)
+        return self._env_viewer.animate(states, interval, save_path)

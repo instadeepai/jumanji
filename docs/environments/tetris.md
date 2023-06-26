@@ -12,23 +12,23 @@ We provide here a Jax JIT-able implementation of the game Tetris. Tetris is a po
 ## Observation
 The observation in Tetris includes information about the grid, the Tetromino and the action mask.
 
-- `grid`: Jax array (int32) of shape `(num_rows, num_cols)`, representing the current grid
-    state. The grid is filled with zeros for the empty cells and with ones for the filled cells.
+- `grid`: jax array (int32) of shape `(num_rows, num_cols)`, representing the current grid
+   state. The grid is filled with zeros for the empty cells and with ones for the filled cells.
 
-    + Here is an example of a random observation of the grid:
-        ```
-        [
-            [0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 1, 1],
-            [0, 0, 0, 0, 1, 1],
-            [0, 1, 0, 0, 1, 1],
-            [0, 1, 1, 1, 0, 1],
-            [0, 1, 0, 1, 1, 1],
-            [1, 1, 0, 1, 1, 1],
-        ]
-        ```
+   + Here is an example of a random observation of the grid:
+       ```
+       [
+           [0, 0, 0, 0, 0, 1],
+           [0, 0, 0, 0, 1, 1],
+           [0, 0, 0, 0, 1, 1],
+           [0, 1, 0, 0, 1, 1],
+           [0, 1, 1, 1, 0, 1],
+           [0, 1, 0, 1, 1, 1],
+           [1, 1, 0, 1, 1, 1],
+       ]
+       ```
 
-- `tetromino`: Jax array (int32) of shape `(4, 4)`, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.
+- `tetromino`: jax array (int32) of shape `(4, 4)`, where a value of 1 indicates a filled cell and a value of 0 indicates an empty cell.
 
     + Here is an example of an **I** tetromino:
         ```
@@ -50,6 +50,8 @@ The observation in Tetris includes information about the grid, the Tetromino and
             [ True,  True, False,  False,  False, False],
         ]
         ```
+- `step_count`: jax array (int32) of shape `()`, integer to keep track of the number of steps.
+
 ## Action
 
 The action space in Tetris is represented as a `MultiDiscreteArray` of two integer values. The first integer value corresponds to the selected X-position where the Tetromino will be placed, and the second integer value represents the index for the rotation degree. The rotation degree index can take four possible values: 0 for "0 degrees", 1 for "90 degrees", 2 for "180 degrees", and 3 for "270 degrees". For example, an action of [7, 2] means placing the Tetromino in the seventh column with a rotation of 180 degrees.

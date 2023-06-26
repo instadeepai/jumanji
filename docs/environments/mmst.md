@@ -53,6 +53,8 @@ an action mask for each group of nodes (agent) and current node positon of each 
  - `positions`: Current node positions of the agents.
         In our current problem, this will be represented as jnp.array([1, 3]).
 
+ - `step_count`: integer to keep track of the number of steps.
+
 -  `action_mask`: Binary mask indicating the validity of each action.
         Given the current node on which the agent is located,
         this mask determines if there is a valid edge to every other node.
@@ -66,8 +68,8 @@ been used by another agent.
 
 
 ## Reward
-An agent recieves a reward of 10.0 every step it gets a valid connection, a reward of -1.0 if it does not
-connect and an extra penalty of -1.0 if choses an invalid action.
+At every step, an agent receives a reward of 10.0 if it gets a valid connection, a reward of -1.0 if it does not
+connect and an extra penalty of -1.0 if it chooses an invalid action.
 
 The total step reward is the sum of rewards per agent.
 

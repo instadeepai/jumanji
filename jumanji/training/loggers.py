@@ -103,6 +103,23 @@ class Logger(AbstractContextManager):
         return {(k, id(v)): v for k, v in inspect.stack()[2].frame.f_locals.items()}
 
 
+class NoOpLogger(Logger):
+    """Does nothing. This logger is useful in the case of multi-node training where only the
+    master node should log.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(save_checkpoint=False)
+
+    def write(
+        self,
+        data: Dict[str, Any],
+        label: Optional[str] = None,
+        env_steps: Optional[int] = None,
+    ) -> None:
+        pass
+
+
 class TerminalLogger(Logger):
     """Logs to terminal."""
 

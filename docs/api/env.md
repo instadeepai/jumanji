@@ -9,6 +9,7 @@
         - discount_spec
         - unwrapped
         - render
+        - animate
         - close
         - __enter__
         - __exit__
