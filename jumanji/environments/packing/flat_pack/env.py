@@ -26,7 +26,7 @@ from jumanji.environments.packing.flat_pack.generator import (
     InstanceGenerator,
     RandomFlatPackGenerator,
 )
-from jumanji.environments.packing.flat_pack.reward import DenseReward, RewardFn
+from jumanji.environments.packing.flat_pack.reward import BlockDenseReward, RewardFn
 from jumanji.environments.packing.flat_pack.types import Observation, State
 from jumanji.environments.packing.flat_pack.utils import compute_grid_dim, rotate_block
 from jumanji.environments.packing.flat_pack.viewer import FlatPackViewer
@@ -116,7 +116,7 @@ class FlatPack(Environment[State]):
             compute_grid_dim(self.num_row_blocks),
             compute_grid_dim(self.num_col_blocks),
         )
-        self.reward_fn = reward_fn or DenseReward()
+        self.reward_fn = reward_fn or BlockDenseReward()
         self.viewer = viewer or FlatPackViewer(
             "FlatPack", self.num_blocks, render_mode="human"
         )

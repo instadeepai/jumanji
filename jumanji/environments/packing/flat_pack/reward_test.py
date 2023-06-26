@@ -17,7 +17,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.packing.flat_pack.reward import DenseReward, SparseReward
+from jumanji.environments.packing.flat_pack.reward import CellDenseReward, SparseReward
 from jumanji.environments.packing.flat_pack.types import State
 
 
@@ -178,7 +178,7 @@ def test_dense_reward(
     block_one_misplaced: chex.Array,
 ) -> None:
 
-    dense_reward = jax.jit(DenseReward())
+    dense_reward = jax.jit(CellDenseReward())
 
     # Test placing block one completely correctly
     reward = dense_reward(

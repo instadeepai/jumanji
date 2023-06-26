@@ -36,7 +36,7 @@ class RewardFn(abc.ABC):
         """
 
 
-class DenseReward(RewardFn):
+class CellDenseReward(RewardFn):
     """Reward function for the dense reward setting.
 
     This reward returns the number of non-zero cells in a placed block divided
@@ -69,6 +69,46 @@ class DenseReward(RewardFn):
         reward = jax.lax.cond(
             is_valid,
             lambda: jnp.sum(action_ones, dtype=jnp.float32) / (num_rows * num_cols),
+            lambda: jnp.float32(0.0),
+        )
+
+        return reward
+
+
+class BlockDenseReward(RewardFn):
+    """Reward function for the dense reward setting.
+
+    This reward will give a normalised reward for each block placed on the grid
+        with each block being equally weighted. This implies that each placed block
+        will have a reward of `1 / num_blocks` and the maximum possible episode return
+        is 1.
+    """
+
+    def __call__(
+        self,
+        state: State,
+        action: chex.Numeric,
+        next_state: State,
+        is_valid: bool,
+        is_done: bool,
+    ) -> chex.Numeric:
+        """Compute the reward based on the current state, the chosen action,
+        whether the action is valid and whether the episode is terminated.
+
+        Note here, that the action taken is not the raw action received from the
+        agent, but the block the agent opted to place on the grid.
+        """
+
+        del is_done
+        del next_state
+        del action
+
+        num_blocks = state.num_blocks
+        del state
+
+        reward = jax.lax.cond(
+            is_valid,
+            lambda: jnp.float32(1.0 / num_blocks),
             lambda: jnp.float32(0.0),
         )
 

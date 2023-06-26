@@ -23,7 +23,7 @@ from jumanji.environments.packing.flat_pack.generator import (
     ToyFlatPackGeneratorNoRotation,
     ToyFlatPackGeneratorWithRotation,
 )
-from jumanji.environments.packing.flat_pack.reward import SparseReward
+from jumanji.environments.packing.flat_pack.reward import CellDenseReward, SparseReward
 from jumanji.environments.packing.flat_pack.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -230,6 +230,7 @@ def test_flat_pack__completed_episode_with_dense_reward(
 
     simple_env = FlatPack(
         generator=ToyFlatPackGeneratorNoRotation(),
+        reward_fn=CellDenseReward(),
     )
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(simple_env.step, n=1))
