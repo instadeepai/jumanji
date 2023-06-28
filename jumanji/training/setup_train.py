@@ -251,6 +251,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+            hidden_size=cfg.env.network.hidden_size,
         )
     elif cfg.env.name == "job_shop":
         assert isinstance(env.unwrapped, JobShop)

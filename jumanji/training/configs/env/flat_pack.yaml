@@ -6,6 +6,7 @@ network:
     transformer_num_heads: 8
     transformer_key_size: 16
     transformer_mlp_units: [512]
+    hidden_size: 8
 
 training:
     num_epochs: 1000
