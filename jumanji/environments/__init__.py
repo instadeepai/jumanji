@@ -35,7 +35,9 @@ from jumanji.environments.routing import (
     robot_warehouse,
     snake,
     tsp,
+    pacman
 )
+
 from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP
@@ -45,6 +47,7 @@ from jumanji.environments.routing.multi_cvrp import MultiCVRP
 from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP
+from jumanji.environments.routing.pacman.env import PacMan
 
 
 def is_colab() -> bool:

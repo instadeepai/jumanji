@@ -127,3 +127,6 @@ register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 
 # TSP with 20 randomly generated cities and a dense reward function.
 register(id="TSP-v1", entry_point="jumanji.environments:TSP")
+
+# Pacman - minimal version of Atarti Pacman game
+register(id="Pacman-v0", entry_point="jumanji.environments:PacMan")
