@@ -129,4 +129,4 @@ register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 
 # Pacman - minimal version of Atarti Pacman game
-register(id="Pacman-v0", entry_point="jumanji.environments:PacMan")
+register(id="PacMan-v0", entry_point="jumanji.environments:PacMan")
