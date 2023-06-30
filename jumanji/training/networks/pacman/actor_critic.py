@@ -29,6 +29,7 @@ from jumanji.training.networks.parametric_distribution import (
     CategoricalParametricDistribution,
 )
 
+from jumanji.environments.routing.pacman.utils import create_grid_image
 
 def make_actor_critic_networks_pacman(
     pacman: PacMan,
@@ -94,7 +95,8 @@ def make_network_pacman(
             ]
         )
 
-        obs = jax.vmap(process_observation)(observation)  # (B, G, G, 1)
+        rgb_observation = create_grid_image(observation)
+        obs = rgb_observation.astype(float)
         embedding = torso(obs)  # (B, H)
         output = embedding
 

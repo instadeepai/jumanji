@@ -24,9 +24,9 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
-from jumanji.environments.pacman.types import Observation, Position, State
-from jumanji.environments.pacman.utils import convert_maze_to_numpy, create_grid_image
-from jumanji.environments.pacman.viewer import PacManViewer
+from jumanji.environments.routing.pacman.types import Observation, Position, State
+from jumanji.environments.routing.pacman.utils import convert_maze_to_numpy, create_grid_image
+from jumanji.environments.routing.pacman.viewer import PacManViewer
 
 
 class PacMan(Environment[State]):
@@ -67,15 +67,71 @@ class PacMan(Environment[State]):
             Spec for the `Observation` whose fields are:
             - grid: BoundedArray (float) of shape (num_rows, num_cols, 3).
         """
-
-        return specs.BoundedArray(
-            shape=(31, 28, 3),
-            dtype=float,
-            name="observation",
-            minimum=0,
-            maximum=1,
+        player_locations = specs.Spec(
+            Position,
+            "PositionSpec",
+            y=specs.BoundedArray(
+                (), jnp.int32, 0, 30, "y_coordinate"
+            ),
+            x=specs.BoundedArray(
+                (), jnp.int32, 0, 27, "x_coordinate"
+            ),
         )
-        return
+
+        grid=specs.BoundedArray(
+                shape=(31, 28),
+                dtype=jnp.int32,
+                name="grid",
+                minimum=0,
+                maximum=1,
+            )
+
+        ghost_locations=specs.BoundedArray(
+                shape=(4, 2),
+                dtype=jnp.int32,
+                name="ghost_locations",
+                minimum=0,
+                maximum=1,
+            )
+
+        power_up_locations=specs.BoundedArray(
+                shape=(4, 2),
+                dtype=jnp.int32,
+                name="power_up_locations",
+                minimum=0,
+                maximum=1,
+            )
+
+        fruit_locations=specs.BoundedArray(
+                shape=(316, 4),
+                dtype=jnp.int32,
+                name="fruit_locations",
+                minimum=0,
+                maximum=1,
+            )
+    
+        action_mask=specs.BoundedArray(
+                    shape=(5,),
+                    dtype=bool,
+                    minimum=False,
+                    maximum=True,
+                    name="action_mask",
+                )
+        
+        frightened_state_time = specs.Array((), jnp.int32, "frightened_state_time")
+    
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            grid=grid,
+            player_locations = player_locations,
+            ghost_locations = ghost_locations,
+            power_up_locations=power_up_locations,
+            frightened_state_time = frightened_state_time,
+            fruit_locations = fruit_locations,
+            action_mask = action_mask
+        )
+    
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. 5 actions: [0,1,2,3,4] -> [Up, Right, Down, Left, No-op].
@@ -144,11 +200,21 @@ class PacMan(Environment[State]):
         )
 
         # Generate the observation and initial timestep
-        observation = self.generate_obs(state)
-        timestep = restart(observation=observation)
+        #observation = self.generate_obs(state)
+        action_mask = jnp.array([True,True,True,True,True])
+        obs = Observation(grid=state.grid,
+                          player_locations=state.player_locations,
+                          ghost_locations= state.ghost_locations,
+                          power_up_locations= state.power_up_locations,
+                          frightened_state_time= state.frightened_state_time,
+                          fruit_locations= state.fruit_locations,
+                        action_mask=action_mask)
+        
+        timestep = restart(observation=obs)
 
         return state, timestep
 
+    
     def step(
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
@@ -189,10 +255,33 @@ class PacMan(Environment[State]):
         dead = state.dead
         done = (num_pellets == 0) | (dead == 1)
         reward = jnp.asarray(collision_rewards)
-        observation = self.generate_obs(state)
+        #observation = self.generate_obs(state)
+        
+        
+        action_mask = jnp.array([True,True,True,True,True])
+        observation = Observation(grid=state.grid,
+                          player_locations=state.player_locations,
+                          ghost_locations= state.ghost_locations,
+                          power_up_locations= state.power_up_locations,
+                          frightened_state_time= state.frightened_state_time,
+                          fruit_locations= state.fruit_locations,
+                        action_mask=action_mask)
+        #observation = Observation(grid=observation, action_mask=action_mask)
 
-        timestep = jax.lax.cond(done, termination, transition, reward, observation)
-        jax.debug.print("timestep: {y}", y=timestep.last())
+        #timestep = jax.lax.cond(done, termination, transition, reward, observation)
+        #jax.debug.print("timestep: {y}", y=timestep.last())
+
+        timestep = jax.lax.cond(
+            done,
+            lambda: termination(
+                reward=reward,
+                observation=observation,
+            ),
+            lambda: transition(
+                reward=reward,
+                observation=observation,
+            ),
+        )
 
         return next_state, timestep
 
@@ -228,7 +317,7 @@ class PacMan(Environment[State]):
         # Check for collisions with ghosts
         state, done = self.check_ghost_collisions(ghost_paths, next_player_pos, state)
         state.dead = done
-        power_up_locations, eat = self.check_power_up(state)
+        power_up_locations, eat, power_up_rewards = self.check_power_up(state)
         # jax.debug.print("eat: {y}",y=eat)
         collision_rewards, cookie_list, num_cookies = self.check_rewards(state)
         #
@@ -256,7 +345,8 @@ class PacMan(Environment[State]):
         state.ghost_actions = ghost_actions
 
         state.ghost_starts = state.ghost_starts - 1
-        return state, collision_rewards
+        reward = collision_rewards + power_up_rewards
+        return state, reward
 
     def random_move(self, state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
         """
@@ -412,7 +502,7 @@ class PacMan(Environment[State]):
         valid = jnp.any(jnp.all(ps == cookie_spaces, axis=-1))
 
         num_cookies -= valid * 1
-        rewards = valid * 10
+        rewards = valid * 10.
         mask = jnp.logical_not(jnp.all(ps == cookie_spaces, axis=-1))
         cookie_spaces = cookie_spaces * mask[..., None]
 
@@ -496,7 +586,8 @@ class PacMan(Environment[State]):
         invert_mask = mask != True  # type: ignore # noqa: E712
         invert_mask = invert_mask.reshape(4, 1)
         power_up_locations = power_up_locations * invert_mask
-        return power_up_locations, eat
+        reward = eat*20.
+        return power_up_locations, eat, reward
 
     def check_wall_collisions(self, state: State, new_player_pos: Position) -> Any:
 
@@ -752,7 +843,7 @@ class PacMan(Environment[State]):
         )(ghost_pos, new_player_pos, jnp.array(og_pos), state)
         # jax.debug.print("ew_player_pos: {y}",y=new_player_pos)
         done = jnp.any(dones)
-        jax.debug.print("done: {y}", y=done)
+        #jax.debug.print("done: {y}", y=done)
         state.ghost_locations = ghost_positions
         state.ghost_init_steps = jnp.array(ghost_init, int)
 

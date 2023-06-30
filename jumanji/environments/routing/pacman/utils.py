@@ -18,8 +18,8 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.pacman.types import State
-
+from jumanji.environments.routing.pacman.types import State
+from jumanji.environments.routing.pacman.types import Observation
 
 # flake8: noqa: C901
 def convert_maze_to_numpy() -> Any:
@@ -102,7 +102,7 @@ def convert_maze_to_numpy() -> Any:
     )
 
 
-def create_grid_image(state: State) -> chex.Array:
+def create_grid_image(observation: Observation) -> chex.Array:
     """
     Generate the observation of the current state.
 
@@ -113,14 +113,14 @@ def create_grid_image(state: State) -> chex.Array:
         rgb: A 3-dimensional array representing the RGB observation of the current state.
     """
 
-    layer_1 = jnp.array(state.grid) * 0.66
-    layer_2 = jnp.array(state.grid) * 0.0
-    layer_3 = jnp.array(state.grid) * 0.33
-    player_loc = state.player_locations
-    ghost_pos = state.ghost_locations
-    pellets_loc = state.power_up_locations
-    is_scared = state.frightened_state_time
-    idx = state.fruit_locations
+    layer_1 = jnp.array(observation.grid) * 0.66
+    layer_2 = jnp.array(observation.grid) * 0.0
+    layer_3 = jnp.array(observation.grid) * 0.33
+    player_loc = observation.player_locations
+    ghost_pos = observation.ghost_locations
+    pellets_loc = observation.power_up_locations
+    is_scared = observation.frightened_state_time[0]
+    idx = observation.fruit_locations
 
     # Pellets are light orange
     for i in range(len(idx)):
@@ -178,8 +178,6 @@ def create_grid_image(state: State) -> chex.Array:
         is_scared > 0, set_ghost_colours_scared, set_ghost_colours, layers
     )
     layer_1, layer_2, layer_3 = layers
-
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
-
     return rgb

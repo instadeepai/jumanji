@@ -27,10 +27,10 @@ class Position(NamedTuple):
     x: int
     y: int
 
-
-class GhostPositions(NamedTuple):
-    x: chex.Array
-    y: chex.Array
+    def __eq__(self, other: object) -> chex.Array:
+        if not isinstance(other, Position):
+            return NotImplemented
+        return (self.x == other.x) & (self.y == other.y)
 
 
 @dataclass
@@ -81,3 +81,10 @@ class Observation(NamedTuple):
     """
 
     grid: chex.Array  # (31, 28, 3)
+    player_locations: Position
+    ghost_locations: chex.Array
+    power_up_locations: chex.Array
+    frightened_state_time: int
+    fruit_locations: chex.Array
+    action_mask: chex.Array
+

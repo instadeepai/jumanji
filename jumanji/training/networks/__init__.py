@@ -85,3 +85,6 @@ from jumanji.training.networks.tetris.actor_critic import (
 from jumanji.training.networks.tetris.random import make_random_policy_tetris
 from jumanji.training.networks.tsp.actor_critic import make_actor_critic_networks_tsp
 from jumanji.training.networks.tsp.random import make_random_policy_tsp
+
+from jumanji.training.networks.pacman.random import make_random_policy_pacman
+from jumanji.training.networks.pacman.actor_critic import make_actor_critic_networks_pacman

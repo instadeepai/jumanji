@@ -24,8 +24,8 @@ from matplotlib import image
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-from jumanji.environments.pacman.types import State
-from jumanji.environments.pacman.utils import create_grid_image
+from jumanji.environments.routing.pacman.types import State
+from jumanji.environments.routing.pacman.utils import create_grid_image
 
 
 class PacManViewer(MazeViewer):
