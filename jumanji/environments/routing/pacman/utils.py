@@ -27,7 +27,7 @@ def convert_maze_to_numpy() -> Any:
     ascii_maze = [
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "X  S         XX         S  X",
-        "X XXXXPXXXXX XX XXXXX XXXX X",
+        "X XXXX XXXXX XX XXXXX XXXX X",
         "X XXXXOXXXXX XX XXXXXOXXXX X",
         "X XXXX XXXXX XX XXXXX XXXX X",
         "X                          X",
@@ -48,7 +48,7 @@ def convert_maze_to_numpy() -> Any:
         "X            XX            X",
         "X XXXX XXXXX XX XXXXX XXXX X",
         "X XXXX XXXXX XX XXXXX XXXX X",
-        "X   XX S           S  XX   X",
+        "X   XX S      P    S  XX   X",
         "XXX XX XX XXXXXXXX XX XX XXX",
         "XXX XX XX XXXXXXXX XX XX XXX",
         "X      XX    XX    XX      X",

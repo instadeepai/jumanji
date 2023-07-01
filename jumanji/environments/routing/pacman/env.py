@@ -361,7 +361,7 @@ class PacMan(Environment[State]):
         key, _ = jax.random.split(key)
 
         # Move player
-        next_player_pos = self.player_step(state, action)
+        next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
         state.player_locations = next_player_pos
 
@@ -573,7 +573,7 @@ class PacMan(Environment[State]):
 
         return rewards, cookie_spaces, num_cookies
 
-    def player_step(self, state: State, action: int) -> Position:
+    def player_step(self, state: State, action: int, steps: int = 1) -> Position:
         """
         Compute the new position of the player based on the given state and action.
 
@@ -587,10 +587,10 @@ class PacMan(Environment[State]):
 
         position = state.player_locations
 
-        move_left = lambda position: (position.y, position.x - 1)
-        move_up = lambda position: (position.y - 1, position.x)
-        move_right = lambda position: (position.y, position.x + 1)
-        move_down = lambda position: (position.y + 1, position.x)
+        move_left = lambda position: (position.y, position.x - steps)
+        move_up = lambda position: (position.y - steps, position.x)
+        move_right = lambda position: (position.y, position.x + steps)
+        move_down = lambda position: (position.y + steps, position.x)
         no_op = lambda position: (position.y, position.x)
 
         new_pos_row, new_pos_col = jax.lax.switch(
@@ -598,32 +598,6 @@ class PacMan(Environment[State]):
         )
 
         new_pos = Position(x=new_pos_col % 31, y=new_pos_row % 28)
-        return new_pos
-
-    def player_step_look(self, state: State, action: int, steps: int) -> Position:
-        """
-        Compute the new position of the player based on the given state and action.
-
-        Args:
-            state: 'atate` object corresponding to the new state of the environment
-            action: an integer between 0 and 4 representing the player's chosen action
-
-        Returns:
-            new_pos: a `Position` object representing the new position of the player.
-        """
-
-        position = state.player_locations
-
-        move_left = lambda position: (position.y, position.x - steps)
-        move_up = lambda position: (position.y - steps, position.x)
-        move_right = lambda position: (position.y, position.x + steps)
-        move_down = lambda position: (position.y + steps, position.x)
-
-        new_pos_row, new_pos_col = jax.lax.switch(
-            action - 1, [move_left, move_up, move_right, move_down], position
-        )
-
-        new_pos = Position(x=new_pos_col, y=new_pos_row)
         return new_pos
 
     def check_power_up(self, state: State) -> Tuple[chex.Array, int]:
@@ -744,7 +718,7 @@ class PacMan(Environment[State]):
         def block_ghost(
             pacman_pos: Position, steps: int = 4
         ) -> Tuple[chex.Array, chex.Array]:
-            pac_pos = self.player_step_look(state, pac_dir, steps)
+            pac_pos = self.player_step(state, pac_dir, steps = steps)
             distance_list = get_directions(pac_pos, ghost_p)
             ghost_dist = get_distances(distance_list)
 
