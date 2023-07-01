@@ -27,7 +27,7 @@ def convert_maze_to_numpy() -> Any:
     ascii_maze = [
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "X  S         XX         S  X",
-        "X XXXX XXXXX XX XXXXX XXXX X",
+        "X XXXXPXXXXX XX XXXXX XXXX X",
         "X XXXXOXXXXX XX XXXXXOXXXX X",
         "X XXXX XXXXX XX XXXXX XXXX X",
         "X                          X",
@@ -48,7 +48,7 @@ def convert_maze_to_numpy() -> Any:
         "X            XX            X",
         "X XXXX XXXXX XX XXXXX XXXX X",
         "X XXXX XXXXX XX XXXXX XXXX X",
-        "X   XX S      P    S  XX   X",
+        "X   XX S           S  XX   X",
         "XXX XX XX XXXXXXXX XX XX XXX",
         "XXX XX XX XXXXXXXX XX XX XXX",
         "X      XX    XX    XX      X",
@@ -119,7 +119,7 @@ def create_grid_image(observation: Observation) -> chex.Array:
     player_loc = observation.player_locations
     ghost_pos = observation.ghost_locations
     pellets_loc = observation.power_up_locations
-    is_scared = observation.frightened_state_time[0]
+    is_scared = observation.frightened_state_time#[0]
     idx = observation.fruit_locations
 
     # Pellets are light orange

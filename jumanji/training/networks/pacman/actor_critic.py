@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import chex
 import haiku as hk
@@ -63,14 +63,71 @@ def make_actor_critic_networks_pacman(
     )
 
 
-def process_observation(observation: Observation) -> chex.Array:
-    """Add the agent and the target to the walls array."""
-    agent = 2
-    target = 3
-    obs = observation.walls.astype(float)
-    obs = obs.at[tuple(observation.agent_position)].set(agent)
-    obs = obs.at[tuple(observation.target_position)].set(target)
-    return jnp.expand_dims(obs, axis=-1)  # Adding a channels axis.
+def process_image(observation: Observation) -> chex.Array:
+    """
+    Generate the observation of the current state.
+
+    Args:
+        state: 'State` object corresponding to the new state of the environment.
+
+    Returns:
+        rgb: A 3-dimensional array representing the RGB observation of the current state.
+    """
+
+    layer_1 = jnp.array(observation.grid) * 0.66
+    layer_2 = jnp.array(observation.grid) * 0.0
+    layer_3 = jnp.array(observation.grid) * 0.33
+    player_loc = observation.player_locations
+    ghost_pos = observation.ghost_locations
+    pellets_loc = observation.power_up_locations
+    is_scared = observation.frightened_state_time[0]
+    idx = observation.fruit_locations
+
+    # Pellets are light orange
+    for i in range(len(idx)):
+        if jnp.array(idx[i]).sum != 0:
+            loc = idx[i]
+            layer_3 = layer_3.at[loc[1], loc[0]].set(1)
+            layer_2 = layer_2.at[loc[1], loc[0]].set(0.8)
+            layer_1 = layer_1.at[loc[1], loc[0]].set(0.6)
+
+    # Power pellet is purple
+    for i in range(len(pellets_loc)):
+        p = pellets_loc[i]
+        layer_1 = layer_1.at[p[1], p[0]].set(0.5)
+        layer_2 = layer_2.at[p[1], p[0]].set(0)
+        layer_3 = layer_3.at[p[1], p[0]].set(0.5)
+
+    # Set player is yellow
+    layer_1 = layer_1.at[player_loc.x, player_loc.y].set(1)
+    layer_2 = layer_2.at[player_loc.x, player_loc.y].set(1)
+    layer_3 = layer_3.at[player_loc.x, player_loc.y].set(0)
+
+    cr = jnp.array([1, 1, 0, 1])
+    cg = jnp.array([0, 0.7, 1, 0.7])
+    cb = jnp.array([0, 1, 1, 0.35])
+    # Set ghost locations
+
+    layers = (layer_1, layer_2, layer_3)
+    scared = 1 * (is_scared/60)
+    
+    def set_ghost_colours(
+        layers: chex.Array,
+    ) -> Tuple[chex.Array, chex.Array, chex.Array]:
+        layer_1, layer_2, layer_3 = layers
+        for i in range(4):
+            y = ghost_pos[i][0]
+            x = ghost_pos[i][1]
+            layer_1 = layer_1.at[x, y].set(cr[0])
+            layer_2 = layer_2.at[x, y].set(cg[0] + scared)
+            layer_3 = layer_3.at[x, y].set(cb[0] + scared)
+        return layer_1, layer_2, layer_3
+
+    layers = set_ghost_colours(layers)
+    layer_1, layer_2, layer_3 = layers
+    obs = [layer_1, layer_2, layer_3]
+    rgb = jnp.stack(obs, axis=-1)
+    return rgb
 
 
 def make_network_pacman(
@@ -95,7 +152,7 @@ def make_network_pacman(
             ]
         )
 
-        rgb_observation = create_grid_image(observation)
+        rgb_observation = process_image(observation)
         obs = rgb_observation.astype(float)
         embedding = torso(obs)  # (B, H)
         output = embedding

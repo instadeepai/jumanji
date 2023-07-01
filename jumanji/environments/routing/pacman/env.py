@@ -31,22 +31,77 @@ from jumanji.environments.routing.pacman.viewer import PacManViewer
 
 class PacMan(Environment[State]):
     """A JAX implementation of the 'Pac-Man' game where a single agent must navigate a
-    maze to collect pellets and avoid 4 heuristic agents
+    maze to collect pellets and avoid 4 heuristic agents. The game takes place on a 31x28
+    grid where the player can move in 4 directions (left, right, up, down) and collect 
+    pellets to gain points. The goal is to collect all of the pellets on the board without
+    colliding with one of the heuristic agents.
+
+    - observation: `Observation`
+        - player_locations: current 2D position of agent.
+        - grid: jax array (int)) of the ingame maze with walls.
+        - ghost_locations: jax array (int) of ghost positions.
+        - power_up_locations: jax array (int) of power-pellet locations
+        - pellet_locations: jax array (int) of pellets.
+        - action_mask: jax array (bool) defining current actions.
+
+    - action: jax array (int) of shape () specifiying which action to take [0,1,2,3,4] 
+        corresponding to [up, right, down, left, no-op. If there is an invalid action
+        taken, i.e. there is a wall blocking the action, then no action (no-op) is taken.
+
+    - reward: jax array (float32) of shape (): 10 per pellet collected, 20 for a power pellet.
+
+    - episode termination (if any):
+        - agent has collected all pellets.
+        - agent killed by ghost.
+
+    - state: State:
+        - key: jax array (uint32) of shape(2,).
+        - grid: jax array (int)) of shape (300,2) of the ingame maze with walls.
+        - pellets: int tracking the number of pellets.
+        - frightened_state_time: jax array (int) of shape ()
+            tracks number of steps for the scatter state.
+        - pellet_locations: jax array (int) of pellets of shape (316,2).
+        - power_up_locations: jax array (int) of power-pellet locations of shape (4,2).
+        - player_locations: current 2D position of agent.
+        - ghost_locations: jax array (int) of ghost positions of shape (4,2).
+        - initial_player_locations: starting 2D position of agent.
+        - initial_ghost_positions: jax array (int) of ghost positions of shape (4,2).
+        - ghost_init_targets: jax array (int) of ghost positions.
+            used to direct ghosts on respawn.
+        - old_ghost_locations: jax array (int) of shape (4,2) of ghost positions from last step.
+            used to prevent ghost backtracking.
+        - ghost_init_steps: jax array (int) of shape (4,2) number of initial ghost steps.
+            used to determine per ghost initialisation.
+        - ghost_actions: jax array (int) of shape (4,).
+        - last_direction: int tracking the last direction of the player.
+        - dead: bool used to track player death.
+        - visited_index: jax array (int) of visited locations of shape (320,2).
+            used to prevent repeated pellet points.
+        - ghost_starts: jax array (int) of shape (4,2)
+            used to reset ghost positions if eaten
+        - scatter_targets: jax array (int) of shape (4,2)
+            target locations for ghosts when scatter behavior is active.
+        
+        
 
     ```python
     from jumanji.environments import pac_man
     env = PacMan()
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
-    env.render(state) #TODO
+    env.render(state) 
     action = env.action_spec().generate_value()
     state, timestep = jax.jit(env.step)(state, action)
-    env.render(state) #TODO
+    env.render(state)
     ```
     """
 
     def __init__(self, viewer: Optional[Viewer[State]] = None) -> None:
-        """Instantiates a `Pac-Man` environment."""
+        """Instantiates a `Pac-Man` environment.
+        
+        Args:
+            viewer: `Viewer` used for rendering. Defaults to `PacManViewer`.
+        """
 
         self.map_data = convert_maze_to_numpy()
         self.numpy_maze = jnp.array(self.map_data[0])
@@ -62,10 +117,16 @@ class PacMan(Environment[State]):
         self.generate_obs = create_grid_image
 
     def observation_spec(self) -> specs.BoundedArray:
-        """Returns the observation spec.
+        """Specifications of the observation of the `PacMan` environment.
+
         Returns:
-            Spec for the `Observation` whose fields are:
-            - grid: BoundedArray (float) of shape (num_rows, num_cols, 3).
+            Spec containing all the specifications for all the `Observation` fields:
+            - player_locations: current 2D position of agent.
+            - grid: jax array (int)) of the ingame maze with walls.
+            - ghost_locations: jax array (int) of ghost positions.
+            - power_up_locations: jax array (int) of power-pellet locations
+            - pellet_locations: jax array (int) of pellets.
+            - action_mask: jax array (bool) defining current actions.
         """
         player_locations = specs.Spec(
             Position,
@@ -77,7 +138,6 @@ class PacMan(Environment[State]):
                 (), jnp.int32, 0, 27, "x_coordinate"
             ),
         )
-
         grid=specs.BoundedArray(
                 shape=(31, 28),
                 dtype=jnp.int32,
@@ -85,7 +145,6 @@ class PacMan(Environment[State]):
                 minimum=0,
                 maximum=1,
             )
-
         ghost_locations=specs.BoundedArray(
                 shape=(4, 2),
                 dtype=jnp.int32,
@@ -93,7 +152,6 @@ class PacMan(Environment[State]):
                 minimum=0,
                 maximum=1,
             )
-
         power_up_locations=specs.BoundedArray(
                 shape=(4, 2),
                 dtype=jnp.int32,
@@ -101,7 +159,6 @@ class PacMan(Environment[State]):
                 minimum=0,
                 maximum=1,
             )
-
         fruit_locations=specs.BoundedArray(
                 shape=(316, 4),
                 dtype=jnp.int32,
@@ -109,7 +166,6 @@ class PacMan(Environment[State]):
                 minimum=0,
                 maximum=1,
             )
-    
         action_mask=specs.BoundedArray(
                     shape=(5,),
                     dtype=bool,
@@ -134,9 +190,12 @@ class PacMan(Environment[State]):
     
 
     def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec. 5 actions: [0,1,2,3,4] -> [Up, Right, Down, Left, No-op].
+        """Returns the action spec. 
+        
+        5 actions: [0,1,2,3,4] -> [Up, Right, Down, Left, No-op].
+
         Returns:
-            action_spec: a `specs.DiscreteArray` spec.
+            action_spec: a `specs.DiscreteArray` spec object.
         """
         return specs.DiscreteArray(
             5,
@@ -156,15 +215,15 @@ class PacMan(Environment[State]):
             key: A PRNGKey to use for random number generation.
 
         Returns:
-            A tuple containing the updated game state and the initial timestep information:
-            (state, timestep).
+            state: the new state of the environment.
+            timestep: the first timestep returned by the environment.
         """
 
         # Initialize game state variables
         grid = self.numpy_maze
-        pellets = 320
+        pellets = 316
         frightened_state = 0
-        frightened_state_time = 0
+        frightened_state_time = jnp.array([0])
         fruit_locations = self.cookie_spaces
         power_up_locations = self.powerup_spaces
         player_locations = self.player_coords
@@ -200,7 +259,6 @@ class PacMan(Environment[State]):
         )
 
         # Generate the observation and initial timestep
-        #observation = self.generate_obs(state)
         action_mask = jnp.array([True,True,True,True,True])
         obs = Observation(grid=state.grid,
                           player_locations=state.player_locations,
@@ -218,16 +276,17 @@ class PacMan(Environment[State]):
     def step(
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
-        """
-        Run one timestep of the game.
+        """Updates the environment state after the agent takes an action.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment.
-            action: An integer representing the player action.
+            state: the current state of the environment.
+            action: the action taken by the agent.
 
         Returns:
-            state, timestep: next state of the environment and timestep to be observed.
+            state: the new state of the environment.
+            timestep: the next timestep.
         """
+
         updated_state, collision_rewards = self._update_state(state, action)
         next_state = State(
             key=updated_state.key,
@@ -253,12 +312,15 @@ class PacMan(Environment[State]):
         )
         num_pellets = state.pellets
         dead = state.dead
+
+        #Check if episode terminates
         done = (num_pellets == 0) | (dead == 1)
+
         reward = jnp.asarray(collision_rewards)
-        #observation = self.generate_obs(state)
-        
-        
+ 
         action_mask = jnp.array([True,True,True,True,True])
+
+        #Generate observation from the state
         observation = Observation(grid=state.grid,
                           player_locations=state.player_locations,
                           ghost_locations= state.ghost_locations,
@@ -266,11 +328,8 @@ class PacMan(Environment[State]):
                           frightened_state_time= state.frightened_state_time,
                           fruit_locations= state.fruit_locations,
                         action_mask=action_mask)
-        #observation = Observation(grid=observation, action_mask=action_mask)
 
-        #timestep = jax.lax.cond(done, termination, transition, reward, observation)
-        #jax.debug.print("timestep: {y}", y=timestep.last())
-
+        # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
             done,
             lambda: termination(
@@ -287,7 +346,7 @@ class PacMan(Environment[State]):
 
     def _update_state(self, state: State, action: chex.Array) -> Tuple[State, int]:
         """
-        Update the state of the game based on the player action and ghost movements.
+        Updates the state of the environment.
 
         Args:
             state: 'State` object corresponding to the new state of the environment.
@@ -299,7 +358,7 @@ class PacMan(Environment[State]):
         """
 
         key = state.key
-        key, subkey = jax.random.split(key)
+        key, _ = jax.random.split(key)
 
         # Move player
         next_player_pos = self.player_step(state, action)
@@ -307,20 +366,22 @@ class PacMan(Environment[State]):
         state.player_locations = next_player_pos
 
         ## Move ghosts
-        def call_random_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
-            ghost_paths, ghost_actions, key = self.random_move(state)
+        def call_ghost_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
+            ghost_paths, ghost_actions, key = self.ghost_move(state)
             return ghost_paths, ghost_actions, key
 
         old_ghost_locations = state.ghost_locations
-        ghost_paths, ghost_actions, key = call_random_step(state)
+        ghost_paths, ghost_actions, key = call_ghost_step(state)
 
         # Check for collisions with ghosts
         state, done = self.check_ghost_collisions(ghost_paths, next_player_pos, state)
         state.dead = done
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
-        # jax.debug.print("eat: {y}",y=eat)
+        
+        #Check for collected pellets
         collision_rewards, cookie_list, num_cookies = self.check_rewards(state)
-        #
+        
+        #Update old ghost locations
         state.ghost_init_steps = state.ghost_init_steps - 1
         state.old_ghost_locations = old_ghost_locations
 
@@ -330,17 +391,19 @@ class PacMan(Environment[State]):
         state.frightened_state = eat
 
         def f_time() -> Any:
-            state.frightened_state_time = 60 * eat + state.frightened_state_time - 1
+            state.frightened_state_time = jnp.array([60 * eat + state.frightened_state_time[0] - 1])
             return state.frightened_state_time
 
         def ff_time() -> Any:
-            state.frightened_state_time = 0
+            state.frightened_state_time = jnp.array([0])
             return state.frightened_state_time
 
+        #Check if frightened state is active and decrement timer
         state.frightened_state_time = jax.lax.cond(
-            state.frightened_state_time >= 0, f_time, ff_time
+            state.frightened_state_time[0] > 0, f_time, ff_time
         )
 
+        #Update power up locations
         state.power_up_locations = power_up_locations
         state.ghost_actions = ghost_actions
 
@@ -348,7 +411,7 @@ class PacMan(Environment[State]):
         reward = collision_rewards + power_up_rewards
         return state, reward
 
-    def random_move(self, state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
+    def ghost_move(self, state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
         """
         Generate a random move for each ghost and update their positions accordingly.
 
@@ -381,6 +444,7 @@ class PacMan(Environment[State]):
             ghost_start: chex.Array,
             scatter_target: chex.Array,
         ) -> Tuple[chex.Array, int]:
+            """Move a single ghost"""
             act = jnp.array([0, 1, 2, 3])
 
             subkey, subsubkey = jax.random.split(subkey)
@@ -395,22 +459,24 @@ class PacMan(Environment[State]):
             )
             vert_col = jnp.array([1, 0, 1, 0])
             hor_col = jnp.array([0, 1, 0, 1])
-            # Check valid
+            
             # If valids is  [1,0,1,0] or [0,1,0,1] then use old action
+            # this is the case where the ghosts are in a tunnel as ghosts
+            # are not allowed to backtrack.
             condition = jnp.logical_or(
                 jnp.array_equal(valids, vert_col), jnp.array_equal(valids, hor_col)
             )
             condition = jnp.all(condition)
 
-            # True cond
             def is_tunnel(inputs: Tuple[chex.Array, chex.Array, int]) -> int:
+                """Repeat old action if in tunnel"""
                 _, _, ghost_action = inputs
                 return ghost_action
 
-            # False cond
             def no_tunnel(
                 inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
             ) -> Any:
+                """Chose new action when at intersection"""
                 valids, act, _, key0, _ = inputs
                 key0, subkey0 = jax.random.split(key0)
                 logits = valids
@@ -421,29 +487,28 @@ class PacMan(Environment[State]):
                 new_action = jax.random.choice(subkey0, a2, p=softmax_dist).astype(int)
                 return new_action
 
-            inputs_true = (valid_actions, act, ghost_action)
-            inputs_false = (valid_actions, act, ghost_action, subsubkey, ghost_num)
+            inputs_tunnel= (valid_actions, act, ghost_action)
+            inputs_no_tunnel = (valid_actions, act, ghost_action, subsubkey, ghost_num)
 
-            result_true = is_tunnel(inputs_true)
-            result_false = no_tunnel(inputs_false)
+            result_true = is_tunnel(inputs_tunnel)
+            result_false = no_tunnel(inputs_no_tunnel)
 
             def start_over() -> Any:
+                """If not in waiting mode then pick new action"""
                 chosen_action = jnp.where(
                     condition[..., None], result_true, result_false
                 )
-                # chosen_action = no_tunnel(inputs_false)
                 chosen_action = jnp.squeeze(chosen_action)
                 return chosen_action
 
             def no_start() -> int:
+                """If in waiting mode then use no-op"""
                 chosen_action = 4
                 return chosen_action
 
-            # chosen_action = is_tunnel(inputs_true)
             position = ghost_pos
-
             chosen_action = jax.lax.cond(ghost_start < 0, start_over, no_start)
-            #jax.debug.print("chosen_action: {y}", y=chosen_action)
+
             # Use chosen action
             move_left = lambda position: (position[1], position[0] - 1)
             move_up = lambda position: (position[1] - 1, position[0])
@@ -457,8 +522,8 @@ class PacMan(Environment[State]):
                 position,
             )
 
+            # If using the teleporter shift o the other side of the map
             path = jnp.array([new_pos_col % 31, new_pos_row % 28])
-
             path = jax.lax.cond(ghost_start <= 0, lambda: path, lambda: position)
 
             return path, chosen_action
@@ -482,16 +547,16 @@ class PacMan(Environment[State]):
         return ghost_paths, ghost_acts, key
 
     def check_rewards(self, state: State) -> Tuple[int, chex.Array, int]:
-        """Process the state of the game to compute rewards, updated cookie spaces, and remaining number of
-        cookies.
+        """Process the state of the game to compute rewards, updated pellet spaces, and remaining number of
+        pellets.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment
+            state: 'state` object corresponding to the current state of the environment
 
         Returns:
-            rewards: A integer representing the reward earned by the player in the current state
-            cookie_spaces: A 2D array showing the location of all remaining cookies
-            num_cookies: An integer counting the remaining cookies on the map.
+            rewards: a integer representing the reward earned by the player in the current state
+            cookie_spaces: a 2D jax array showing the location of all remaining cookies
+            num_cookies: an integer counting the remaining cookies on the map.
 
         """
         cookie_spaces = jnp.array(state.fruit_locations)
@@ -513,11 +578,11 @@ class PacMan(Environment[State]):
         Compute the new position of the player based on the given state and action.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment
-            action: An integer between 0 and 4 representing the player's chosen action
+            state: 'state` object corresponding to the new state of the environment
+            action: an integer between 0 and 4 representing the player's chosen action
 
         Returns:
-            new_pos: A `Position` object representing the new position of the player.
+            new_pos: a `Position` object representing the new position of the player.
         """
 
         position = state.player_locations
@@ -540,11 +605,11 @@ class PacMan(Environment[State]):
         Compute the new position of the player based on the given state and action.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment
-            action: An integer between 0 and 4 representing the player's chosen action
+            state: 'atate` object corresponding to the new state of the environment
+            action: an integer between 0 and 4 representing the player's chosen action
 
         Returns:
-            new_pos: A `Position` object representing the new position of the player.
+            new_pos: a `Position` object representing the new position of the player.
         """
 
         position = state.player_locations
@@ -567,11 +632,11 @@ class PacMan(Environment[State]):
         locations array accordingly.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment
+            state: 'state` object corresponding to the new state of the environment
 
         Returns:
-            power_up_locations: Locations of the remaining power-ups
-            eat: A bool indicating if the player can eat the ghosts
+            power_up_locations: locations of the remaining power-ups
+            eat: a bool indicating if the player can eat the ghosts
         """
 
         power_up_locations = jnp.array(state.power_up_locations)
@@ -595,11 +660,11 @@ class PacMan(Environment[State]):
         Check if the new player position collides with a wall.
 
         Args:
-            state: 'State` object corresponding to the new state of the environment.
-            new_player_pos: The position of the player after the last action.
+            state: 'state` object corresponding to the new state of the environment.
+            new_player_pos: the position of the player after the last action.
 
         Returns:
-            collision: A boolean indicating if the player has moved into a wall.
+            collision: a boolean indicating if the player has moved into a wall.
         """
 
         grid = state.grid
@@ -623,12 +688,11 @@ class PacMan(Environment[State]):
         old_ghost_locations: chex.Array,
         scatter_target: chex.Array,
     ) -> Tuple[bool, chex.Array, chex.Array]:
-        # new_plyaer_pos is just ghost_pos***
 
         grid = jnp.array(state.grid)
         pacman_pos = Position(x=pacman_pos.y, y=pacman_pos.x)
         pac_dir = state.last_direction
-        is_scared = state.frightened_state_time
+        is_scared = state.frightened_state_time[0]
         ghost_init_steps = state.ghost_init_steps
 
         # Get all possible positions
@@ -642,7 +706,6 @@ class PacMan(Environment[State]):
 
         # Block old paths so ghosts don't backtrack
         ghost_mask = jnp.any(ghost_p != old_ghost_location, axis=1)
-        #jax.debug.print("ghost_mask: {y}", y=ghost_mask)
 
         def get_directions(
             pacman_position: Position, ghost_position: chex.Array
@@ -747,40 +810,26 @@ class PacMan(Environment[State]):
 
         valids = jax.vmap(get_valid_positions, in_axes=(0,))(ghost_p)
         valid_locs = valids
-        # jax.debug.print("ghost_p: {y}",y=ghost_p)
-        # jax.debug.print("valids: {y}",y=valids)
 
-        # invert_mask = mask != True  # type: ignore # noqa: E712
-        # invert_mask = invert_mask.reshape(4, 1)
         # Set all invalid areas to an infinite cost
         # remove back tracking
         valid_no_back = valids * ghost_mask
-        # jax.debug.print("valid_no_back: {y}",y=valid_no_back)
         # Get distances of valid locations
         valid_no_back_d = valid_no_back * ghost_dist
-        # jax.debug.print("valid_no_back_d: {y}",y=valid_no_back_d)
         invert_mask = valid_no_back != True  # type: ignore # noqa: E712
-        # jax.debug.print("invert_mask: {y}",y=invert_mask)
-        # invert_mask = invert_mask.reshape(4, 1) * jnp.inf
         invert_mask = invert_mask * jnp.inf
         # Set distance of all invalid areas to infinity
         valid_no_back_d = valid_no_back_d + invert_mask
-        # jax.debug.print("valid_no_back_d2: {y}",y=valid_no_back_d)
-        masked_dist = valid_no_back_d  # ghost_dist * valids * ghost_mask
+        masked_dist = valid_no_back_d 
         minimum_distance = jnp.min(masked_dist)
         # set all other values aside from the minimum to  0 and the minimum to 1
         masked_dist = jnp.where(masked_dist == minimum_distance, 1, 0)
-        # jax.debug.print("masked_dist: {y}",y=masked_dist)
-        # zero_mask = masked_dist != 0
 
         location_value = grid[new_player_pos[1]][new_player_pos[0]]
         # Check if colliding with walls
         false_cond = lambda x: False
         true_cond = lambda x: True
         collision = jax.lax.cond(location_value == 1, false_cond, true_cond, 0)
-        # jax.debug.print("collision: {y}",y=collision)
-        #jax.debug.print("valid_locs: {y}", y=valid_locs)
-        #jax.debug.print("masked_dist: {y}", y=masked_dist)
         return collision, valid_locs, masked_dist
 
     def check_ghost_collisions(
@@ -812,11 +861,9 @@ class PacMan(Environment[State]):
             no_eat = lambda: False
             frightened_time = state.frightened_state_time
 
-            is_eat = jax.lax.cond(frightened_time > 0, eat, no_eat)
+            is_eat = jax.lax.cond(frightened_time[0] > 0, eat, no_eat)
 
             ghost_p = Position(y=ghost_pos[0], x=ghost_pos[1])
-            # jax.debug.print("ghost_p: {y}",y=ghost_p)
-
             cond_x = ghost_p.x == new_player_pos.x
             cond_y = ghost_p.y == new_player_pos.y
             cond = cond_x * cond_y
@@ -841,9 +888,7 @@ class PacMan(Environment[State]):
         ghost_positions, ghost_init, dones = jax.vmap(
             check_collisions, in_axes=(0, None, 0, None)
         )(ghost_pos, new_player_pos, jnp.array(og_pos), state)
-        # jax.debug.print("ew_player_pos: {y}",y=new_player_pos)
         done = jnp.any(dones)
-        #jax.debug.print("done: {y}", y=done)
         state.ghost_locations = ghost_positions
         state.ghost_init_steps = jnp.array(ghost_init, int)
 
@@ -853,7 +898,7 @@ class PacMan(Environment[State]):
         """Render the given state of the environment.
 
         Args:
-            state: `State` object containing the current environment state.
+            state: `state` object containing the current environment state.
         """
         return self._viewer.render(state)
 

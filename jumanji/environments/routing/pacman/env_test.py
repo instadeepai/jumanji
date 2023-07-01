@@ -20,13 +20,13 @@ from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
-from jumanji.environments.pacman.env import PacMan
-from jumanji.environments.pacman.types import Position, State
+from jumanji.environments.routing.pacman.env import PacMan
+from jumanji.environments.routing.pacman.types import Position, State
 
 
 @pytest.fixture
 def pac_man() -> PacMan:
-    """Instantiates a default Game2048 environment."""
+    """Instantiates a default pacman environment."""
     return PacMan()
 
 
