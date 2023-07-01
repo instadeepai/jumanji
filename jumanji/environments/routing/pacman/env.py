@@ -254,12 +254,12 @@ class PacMan(Environment[State]):
             ghost_init_targets=ghost_init_targets,
             ghost_actions=ghost_actions,
             visited_index=player_locations,
-            ghost_starts=jnp.array([0, 10, 20, 30]),
+            ghost_starts=jnp.array([5, 20, 40, 80]),
             scatter_targets=self.scatter_targets,
         )
 
         # Generate the observation and initial timestep
-        action_mask = jnp.array([True,True,True,True,True])
+        action_mask = jnp.array([True,True,True,True,False])
         obs = Observation(grid=state.grid,
                           player_locations=state.player_locations,
                           ghost_locations= state.ghost_locations,
@@ -318,7 +318,7 @@ class PacMan(Environment[State]):
 
         reward = jnp.asarray(collision_rewards)
  
-        action_mask = jnp.array([True,True,True,True,True])
+        action_mask = jnp.array([True,True,True,True,False])
 
         #Generate observation from the state
         observation = Observation(grid=state.grid,
@@ -374,7 +374,7 @@ class PacMan(Environment[State]):
         ghost_paths, ghost_actions, key = call_ghost_step(state)
 
         # Check for collisions with ghosts
-        state, done = self.check_ghost_collisions(ghost_paths, next_player_pos, state)
+        state, done, ghost_col_rewards = self.check_ghost_collisions(ghost_paths, next_player_pos, state)
         state.dead = done
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
         
@@ -397,7 +397,7 @@ class PacMan(Environment[State]):
         def ff_time() -> Any:
             state.frightened_state_time = jnp.array([0])
             return state.frightened_state_time
-
+        
         #Check if frightened state is active and decrement timer
         state.frightened_state_time = jax.lax.cond(
             state.frightened_state_time[0] > 0, f_time, ff_time
@@ -408,7 +408,7 @@ class PacMan(Environment[State]):
         state.ghost_actions = ghost_actions
 
         state.ghost_starts = state.ghost_starts - 1
-        reward = collision_rewards + power_up_rewards
+        reward = collision_rewards + power_up_rewards + ghost_col_rewards
         return state, reward
 
     def ghost_move(self, state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
@@ -625,7 +625,7 @@ class PacMan(Environment[State]):
         invert_mask = mask != True  # type: ignore # noqa: E712
         invert_mask = invert_mask.reshape(4, 1)
         power_up_locations = power_up_locations * invert_mask
-        reward = eat*20.
+        reward = eat*50.
         return power_up_locations, eat, reward
 
     def check_wall_collisions(self, state: State, new_player_pos: Position) -> Any:
@@ -671,7 +671,6 @@ class PacMan(Environment[State]):
 
         # Get all possible positions
         old_ghost_location = jnp.array([old_ghost_locations[1], old_ghost_locations[0]])
-        # print(old_ghost_location)
         a0 = new_player_pos[1], new_player_pos[0] - 1
         a1 = new_player_pos[1] - 1, new_player_pos[0]
         a2 = new_player_pos[1], new_player_pos[0] + 1
@@ -846,27 +845,28 @@ class PacMan(Environment[State]):
             ghost_init_steps = ghost_reset * 6
 
             def no_col_fn() -> Tuple[chex.Array, bool]:
-                return ghost_pos, False
+                return ghost_pos, False, 0.
 
             def col_fn() -> Tuple[chex.Array, bool]:
-                reset_true = lambda: (jnp.array(og_pos), False)
-                reset_false = lambda: (ghost_pos, True)
-                path, done = jax.lax.cond(ghost_reset, reset_true, reset_false)
-                return path, done
+                reset_true = lambda: (jnp.array(og_pos), False, 200.)
+                reset_false = lambda: (ghost_pos, True, 0.)
+                path, done, col_reward = jax.lax.cond(ghost_reset, reset_true, reset_false)
+                return path, done, col_reward
 
             # First check for collision
-            path, done = jax.lax.cond(cond, col_fn, no_col_fn)
+            path, done, col_reward = jax.lax.cond(cond, col_fn, no_col_fn)
             # jax.debug.print("dones: {y}",y=done)
-            return path, ghost_init_steps, done
+            return path, ghost_init_steps, done, col_reward
 
-        ghost_positions, ghost_init, dones = jax.vmap(
+        ghost_positions, ghost_init, dones, col_rewards = jax.vmap(
             check_collisions, in_axes=(0, None, 0, None)
         )(ghost_pos, new_player_pos, jnp.array(og_pos), state)
         done = jnp.any(dones)
+        col_rewards = col_rewards.sum()
         state.ghost_locations = ghost_positions
         state.ghost_init_steps = jnp.array(ghost_init, int)
 
-        return state, done
+        return state, done, col_rewards
 
     def render(self, state: State) -> Any:
         """Render the given state of the environment.

@@ -152,10 +152,16 @@ def make_network_pacman(
             ]
         )
 
-        rgb_observation = process_image(observation)
+        rgb_observation = process_image(observation) # (B, G, G, 3)
         obs = rgb_observation.astype(float)
+        player_pos = jnp.array([observation.player_locations.x, observation.player_locations.y])
+        player_pos = jnp.stack(player_pos, axis=-1)
+
+        ghost_locations_x = observation.ghost_locations[:,:,0]
+        ghost_locations_y = observation.ghost_locations[:,:,1]
+
         embedding = torso(obs)  # (B, H)
-        output = embedding
+        output = output = jnp.concatenate([embedding,player_pos,ghost_locations_x,ghost_locations_y],axis = -1)# (B, H+1)
 
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)
