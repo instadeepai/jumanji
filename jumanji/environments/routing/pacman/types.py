@@ -21,11 +21,11 @@ else:
     from chex import dataclass
 
 import chex
-
+import jax.numpy as jnp
 
 class Position(NamedTuple):
-    x: int
-    y: int
+    x: jnp.int32
+    y: jnp.int32
 
     def __eq__(self, other: object) -> chex.Array:
         if not isinstance(other, Position):
@@ -55,9 +55,9 @@ class State:
 
     key: chex.PRNGKey
     grid: chex.Array  # maze
-    pellets: int  # remaining pellets in level
-    frightened_state: int  # is frightened state triggered
-    frightened_state_time: int  # number of steps left for frightened state
+    pellets: jnp.int32  # remaining pellets in level
+    frightened_state: jnp.int32  # is frightened state triggered
+    frightened_state_time: jnp.int32  # number of steps left for frightened state
     fruit_locations: chex.Array
     power_up_locations: chex.Array
     player_locations: Position
@@ -68,11 +68,12 @@ class State:
     old_ghost_locations: chex.Array
     ghost_init_steps: chex.Array
     ghost_actions: chex.Array
-    last_direction: int
-    dead: bool
+    last_direction: jnp.int32
+    dead: jnp.bool_
     visited_index: chex.Array
     ghost_starts: chex.Array
     scatter_targets: chex.Array
+    step_count: jnp.int32  # () 
 
 
 class Observation(NamedTuple):
@@ -84,7 +85,7 @@ class Observation(NamedTuple):
     player_locations: Position
     ghost_locations: chex.Array
     power_up_locations: chex.Array
-    frightened_state_time: int
+    frightened_state_time: jnp.int32
     fruit_locations: chex.Array
     action_mask: chex.Array
 

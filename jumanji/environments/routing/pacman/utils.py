@@ -102,6 +102,53 @@ def convert_maze_to_numpy() -> Any:
     )
 
 
+def generate_maze_from_ascii(maze) -> Any:
+    """Generates a numpy maze from ascii"""
+    ascii_maze = maze
+    numpy_maze = []
+    cookie_spaces = []
+    powerup_spaces = []
+    reachable_spaces = []
+    ghost_spawns = []
+    init_targets = []
+    scatter_targets = []
+    player_coords = None
+
+    for x, row in enumerate(ascii_maze):
+        size = (len(row), x + 1)
+        binary_row = []
+        for y, column in enumerate(row):
+            if column == "G":
+                ghost_spawns.append((y, x))
+            if column == "P":
+                player_coords = (y, x)
+            if column == "X":
+                binary_row.append(0)
+            else:
+                binary_row.append(1)
+                cookie_spaces.append((y, x))
+                reachable_spaces.append((y, x))
+                if column == "O":
+                    powerup_spaces.append((y, x))
+                if column == "T":
+                    init_targets.append((y, x))
+                if column == "S":
+                    scatter_targets.append((y, x))
+
+        numpy_maze.append(binary_row)
+
+    return (
+        numpy_maze,
+        cookie_spaces,
+        powerup_spaces,
+        reachable_spaces,
+        ghost_spawns,
+        player_coords,
+        init_targets,
+        scatter_targets,
+    )
+
+
 def create_grid_image(observation: Observation) -> chex.Array:
     """
     Generate the observation of the current state.

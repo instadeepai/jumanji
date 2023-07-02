@@ -14,23 +14,34 @@
 import abc
 
 import chex
-import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.pacman.utils import maze_generation
-from jumanji.environments.routing.maze.types import Position, State
+from jumanji.environments.routing.pacman.utils import generate_maze_from_ascii
+from jumanji.environments.routing.pacman.constants import DEFAULT_MAZE
+from jumanji.environments.routing.pacman.types import Position, State
 
 
 class Generator(abc.ABC):
-    def __init__(self, num_rows: int, num_cols: int):
-        """Interface for maze generator.
+    def __init__(self, maze: list):
+        """Interface for pacman generator.
 
         Args:
-            num_rows: the width of the maze to create.
-            num_cols: the length of the maze to create.
+            maze: ascii version of maze to create.
         """
-        self.num_rows = num_rows
-        self.num_cols = num_cols
+        self.maze = maze
+        self.map_data = generate_maze_from_ascii(self.maze)
+        self.numpy_maze = jnp.array(self.map_data[0])
+
+        self.cookie_spaces = jnp.array(self.map_data[1])
+        self.powerup_spaces = jnp.array(self.map_data[2])
+        self.reachable_spaces = self.map_data[3]
+
+        self.ghost_spawns = jnp.array(self.map_data[4])
+        self.player_coords = Position(y=self.map_data[5][0], x=self.map_data[5][1])
+        self.init_targets = self.map_data[6]
+        self.scatter_targets = jnp.array(self.map_data[7])
+        self.x_size = self.numpy_maze.shape[0]
+        self.y_size = self.numpy_maze.shape[1]
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
@@ -44,77 +55,55 @@ class Generator(abc.ABC):
         """
 
 
-class ToyGenerator(Generator):
-    """Generate a hardcoded 5x5 toy maze."""
+class AsciiGenerator(Generator):
+    """Generate maze from an ascii diagram."""
 
-    def __init__(self) -> None:
-        super(ToyGenerator, self).__init__(num_rows=5, num_cols=5)
-
-    def __call__(self, key: chex.PRNGKey) -> State:
-        walls = jnp.ones((self.num_rows, self.num_cols), bool)
-        walls = walls.at[0, :].set((False, True, False, False, False))
-        walls = walls.at[1, :].set((False, True, False, True, True))
-        walls = walls.at[2, :].set((False, True, False, False, False))
-        walls = walls.at[3, :].set((False, False, False, True, True))
-        walls = walls.at[4, :].set((False, False, False, False, False))
-
-        agent_position = Position(row=0, col=0)
-        target_position = Position(row=0, col=4)
-
-        # Build the state.
-        return State(
-            agent_position=agent_position,
-            target_position=target_position,
-            walls=walls,
-            action_mask=None,
-            key=key,
-            step_count=jnp.array(0, jnp.int32),
-        )
-
-
-class RandomGenerator(Generator):
-    def __init__(self, num_rows: int, num_cols: int) -> None:
-        super(RandomGenerator, self).__init__(num_rows=num_rows, num_cols=num_cols)
-
-    def __call__(self, key: chex.PRNGKey) -> State:
-        """Generate a random maze.
-
-        This method relies on the `generate_maze` method from the `maze_generation` module to
-        generate a maze.
+    def __init__(self, maze: list) -> None:
+        """Instantiates a `DefaultGenerator`.
 
         Args:
-            key: the Jax random number generation key.
-
-        Returns:
-            state: the generated state.
+            grid_size: size of the square grid to generate.
+            num_agents: number of agents/paths on the grid.
         """
-        key, maze_key, agent_key = jax.random.split(key, 3)
+        super().__init__(maze)
 
-        walls = maze_generation.generate_maze(
-            self.num_cols, self.num_rows, maze_key
-        ).astype(bool)
+    def __call__(self, key: chex.PRNGKey) -> State:
 
-        # Randomise agent start and target positions.
-        start_and_target_indices = jax.random.choice(
-            agent_key,
-            jnp.arange(self.num_rows * self.num_cols),
-            (2,),
-            replace=False,
-            p=~walls.flatten(),
-        )
-        (agent_row, target_row), (agent_col, target_col) = jnp.divmod(
-            start_and_target_indices, self.num_cols
-        )
-
-        agent_position = Position(row=agent_row, col=agent_col)
-        target_position = Position(row=target_row, col=target_col)
+        grid = self.numpy_maze
+        pellets = self.cookie_spaces.shape[0]
+        frightened_state = 0
+        frightened_state_time = jnp.array([0])
+        fruit_locations = self.cookie_spaces
+        power_up_locations = self.powerup_spaces
+        player_locations = self.player_coords
+        ghost_locations = self.ghost_spawns
+        last_direction = 0
+        ghost_init_steps = jnp.array([0, 0, 0, 0])
+        ghost_init_targets = self.init_targets
+        ghost_actions = jnp.array([1, 1, 1, 1])
+        old_ghost_locations = ghost_locations
 
         # Build the state.
         return State(
-            agent_position=agent_position,
-            target_position=target_position,
-            walls=walls,
-            action_mask=None,
             key=key,
-            step_count=jnp.array(0, jnp.int32),
+            grid=grid,
+            pellets=pellets,
+            frightened_state=frightened_state,
+            frightened_state_time=frightened_state_time,
+            fruit_locations=fruit_locations,
+            power_up_locations=power_up_locations,
+            player_locations=player_locations,
+            ghost_locations=ghost_locations,
+            old_ghost_locations=old_ghost_locations,
+            initial_player_locations=player_locations,
+            initial_ghost_positions=ghost_locations,
+            last_direction=last_direction,
+            dead=False,
+            ghost_init_steps=ghost_init_steps,
+            ghost_init_targets=ghost_init_targets,
+            ghost_actions=ghost_actions,
+            visited_index=player_locations,
+            ghost_starts=jnp.array([3, 20, 30, 40]),
+            scatter_targets=self.scatter_targets,
+            step_count=jnp.array(0, jnp.int32)
         )
