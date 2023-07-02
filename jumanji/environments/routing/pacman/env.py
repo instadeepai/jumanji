@@ -105,6 +105,7 @@ class PacMan(Environment[State]):
 
         self.map_data = convert_maze_to_numpy()
         self.numpy_maze = jnp.array(self.map_data[0])
+
         self.cookie_spaces = jnp.array(self.map_data[1])
         self.powerup_spaces = jnp.array(self.map_data[2])
         self.reachable_spaces = self.map_data[3]
@@ -115,7 +116,9 @@ class PacMan(Environment[State]):
         self.scatter_targets = jnp.array(self.map_data[7])
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
         self.generate_obs = create_grid_image
-
+        self.x_size = self.numpy_maze.shape[0]
+        self.y_size = self.numpy_maze.shape[1]
+        
     def observation_spec(self) -> specs.BoundedArray:
         """Specifications of the observation of the `PacMan` environment.
 
@@ -132,14 +135,14 @@ class PacMan(Environment[State]):
             Position,
             "PositionSpec",
             y=specs.BoundedArray(
-                (), jnp.int32, 0, 30, "y_coordinate"
+                (), jnp.int32, 0, self.x_size -1, "y_coordinate"
             ),
             x=specs.BoundedArray(
-                (), jnp.int32, 0, 27, "x_coordinate"
+                (), jnp.int32, 0, self.y_size -1, "x_coordinate"
             ),
         )
         grid=specs.BoundedArray(
-                shape=(31, 28),
+                shape=(self.x_size, self.y_size),
                 dtype=jnp.int32,
                 name="grid",
                 minimum=0,
@@ -160,7 +163,7 @@ class PacMan(Environment[State]):
                 maximum=1,
             )
         fruit_locations=specs.BoundedArray(
-                shape=(316, 4),
+                shape=(self.cookie_spaces.shape[0],self.cookie_spaces.shape[1]),
                 dtype=jnp.int32,
                 name="fruit_locations",
                 minimum=0,
@@ -254,7 +257,7 @@ class PacMan(Environment[State]):
             ghost_init_targets=ghost_init_targets,
             ghost_actions=ghost_actions,
             visited_index=player_locations,
-            ghost_starts=jnp.array([5, 20, 40, 80]),
+            ghost_starts=jnp.array([3, 20, 30, 40]),
             scatter_targets=self.scatter_targets,
         )
 
@@ -523,7 +526,7 @@ class PacMan(Environment[State]):
             )
 
             # If using the teleporter shift o the other side of the map
-            path = jnp.array([new_pos_col % 31, new_pos_row % 28])
+            path = jnp.array([new_pos_col % self.x_size, new_pos_row % self.y_size])
             path = jax.lax.cond(ghost_start <= 0, lambda: path, lambda: position)
 
             return path, chosen_action
@@ -597,7 +600,7 @@ class PacMan(Environment[State]):
             action, [move_left, move_up, move_right, move_down, no_op], position
         )
 
-        new_pos = Position(x=new_pos_col % 31, y=new_pos_row % 28)
+        new_pos = Position(x=new_pos_col % self.x_size, y=new_pos_row % self.y_size)
         return new_pos
 
     def check_power_up(self, state: State) -> Tuple[chex.Array, int]:
@@ -683,20 +686,10 @@ class PacMan(Environment[State]):
         def get_directions(
             pacman_position: Position, ghost_position: chex.Array
         ) -> chex.Array:
+            
+            distance = jnp.array([ghost_position[0] - pacman_position.y, ghost_position[1] - pacman_position.x])
 
-            a0 = ghost_position[0]
-            a1 = ghost_position[1]
-            a2 = ghost_position[2]
-            a3 = ghost_position[3]
-
-            l0 = jnp.array([a0[0] - pacman_position.y, a0[1] - pacman_position.x])
-            l1 = jnp.array([a1[0] - pacman_position.y, a1[1] - pacman_position.x])
-            l2 = jnp.array([a2[0] - pacman_position.y, a2[1] - pacman_position.x])
-            l3 = jnp.array([a3[0] - pacman_position.y, a3[1] - pacman_position.x])
-
-            distance_list = jnp.array([l0, l1, l2, l3])
-
-            return distance_list
+            return distance#_list
 
         def get_distances(distance_list: chex.Array) -> chex.Array:
 
@@ -709,7 +702,8 @@ class PacMan(Environment[State]):
 
         # For ghost 0: Move to closest tile to pacman
         def chase_ghost(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
-            distance_list = get_directions(pacman_pos, ghost_p)
+            #valids = jax.vmap(get_valid_positions, in_axes=(0,))(ghost_p)
+            distance_list = jax.vmap(get_directions,in_axes=(None,0))(pacman_pos, ghost_p)
             ghost_dist = get_distances(distance_list)
             return distance_list, ghost_dist
 
@@ -718,7 +712,7 @@ class PacMan(Environment[State]):
             pacman_pos: Position, steps: int = 4
         ) -> Tuple[chex.Array, chex.Array]:
             pac_pos = self.player_step(state, pac_dir, steps = steps)
-            distance_list = get_directions(pac_pos, ghost_p)
+            distance_list = jax.vmap(get_directions,in_axes=(None,0))(pac_pos, ghost_p)
             ghost_dist = get_distances(distance_list)
 
             return distance_list, ghost_dist
@@ -738,7 +732,7 @@ class PacMan(Environment[State]):
             )
             distance_pacman = jnp.linalg.norm(distance_pacman)
 
-            distance_list = get_directions(pacman_pos, ghost_p)
+            distance_list = jax.vmap(get_directions,in_axes=(None,0))(pacman_pos, ghost_p)
 
             _, ghost_dist = jax.lax.cond(
                 distance_pacman > 8, chase_ghost, scared_behaviors, pacman_pos

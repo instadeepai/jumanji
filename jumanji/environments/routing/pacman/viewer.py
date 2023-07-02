@@ -33,7 +33,7 @@ class PacManViewer(MazeViewer):
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """
-        Viewer for the `Cleaner` environment.
+        Viewer for the `Pacman` environment.
         Args:
             name: the window name to be used when initialising the window.
             render_mode: the mode used to render the environment. Must be one of:
