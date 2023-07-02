@@ -72,12 +72,12 @@ class AsciiGenerator(Generator):
         grid = self.numpy_maze
         pellets = self.cookie_spaces.shape[0]
         frightened_state = 0
-        frightened_state_time = jnp.array([0])
+        frightened_state_time = jnp.array(0, jnp.int32)
         fruit_locations = self.cookie_spaces
         power_up_locations = self.powerup_spaces
         player_locations = self.player_coords
         ghost_locations = self.ghost_spawns
-        last_direction = 0
+        last_direction = jnp.array(0, jnp.int32)
         ghost_init_steps = jnp.array([0, 0, 0, 0])
         ghost_init_targets = self.init_targets
         ghost_actions = jnp.array([1, 1, 1, 1])

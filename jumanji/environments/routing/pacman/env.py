@@ -117,7 +117,7 @@ class PacMan(Environment[State]):
         self.y_size = self.generator.y_size
         self.cookie_spaces = self.generator.cookie_spaces
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
-        self.time_limit = 2000
+        self.time_limit = 500
 
         self.generate_obs = create_grid_image
 
@@ -363,16 +363,18 @@ class PacMan(Environment[State]):
         state.frightened_state = eat
 
         def f_time() -> Any:
-            state.frightened_state_time = jnp.array([60 * eat + state.frightened_state_time[0] - 1])
+            """If in scatter mode then decrement timer or add to time if eaten a pellet"""
+            state.frightened_state_time = jnp.array(60 * eat + state.frightened_state_time - 1, jnp.int32)
             return state.frightened_state_time
 
         def ff_time() -> Any:
-            state.frightened_state_time = jnp.array([0])
+            """If not in scatter mode then leave unchanged"""
+            state.frightened_state_time =jnp.array(0, jnp.int32)
             return state.frightened_state_time
         
         #Check if frightened state is active and decrement timer
         state.frightened_state_time = jax.lax.cond(
-            state.frightened_state_time[0] > 0, f_time, ff_time
+            state.frightened_state_time > 0, f_time, ff_time
         )
 
         #Update power up locations
@@ -638,7 +640,7 @@ class PacMan(Environment[State]):
         grid = jnp.array(state.grid)
         pacman_pos = Position(x=pacman_pos.y, y=pacman_pos.x)
         pac_dir = state.last_direction
-        is_scared = state.frightened_state_time[0]
+        is_scared = state.frightened_state_time#[0]
         ghost_init_steps = state.ghost_init_steps
 
         # Get all possible positions
@@ -658,7 +660,7 @@ class PacMan(Environment[State]):
             
             distance = jnp.array([ghost_position[0] - pacman_position.y, ghost_position[1] - pacman_position.x])
 
-            return distance#_list
+            return distance
 
         def get_distances(distance_list: chex.Array) -> chex.Array:
 
@@ -797,7 +799,7 @@ class PacMan(Environment[State]):
             no_eat = lambda: False
             frightened_time = state.frightened_state_time
 
-            is_eat = jax.lax.cond(frightened_time[0] > 0, eat, no_eat)
+            is_eat = jax.lax.cond(frightened_time > 0, eat, no_eat)
 
             ghost_p = Position(y=ghost_pos[0], x=ghost_pos[1])
             cond_x = ghost_p.x == new_player_pos.x
