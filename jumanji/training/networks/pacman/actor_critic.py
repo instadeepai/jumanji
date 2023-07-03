@@ -161,6 +161,7 @@ def make_network_pacman(
         )
         player_pos = jnp.stack(player_pos, axis=-1)
         scatter_time = observation.frightened_state_time / 30
+        scatter_time = jnp.expand_dims(scatter_time, axis=-1)
         ghost_locations_x = observation.ghost_locations[:, :, 0]
         ghost_locations_y = observation.ghost_locations[:, :, 1]
 
