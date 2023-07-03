@@ -117,7 +117,7 @@ class PacMan(Environment[State]):
         self.y_size = self.generator.y_size
         self.cookie_spaces = self.generator.cookie_spaces
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
-        self.time_limit = 500
+        self.time_limit = 2000
 
         self.generate_obs = create_grid_image
 
