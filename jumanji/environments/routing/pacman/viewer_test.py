@@ -25,7 +25,7 @@ from jumanji.environments.routing.pacman.viewer import PacManViewer
 
 @pytest.fixture
 def pac_man() -> PacMan:
-    """Instantiates a default Game2048 environment."""
+    """Instantiates a default pacman environment."""
     return PacMan()
 
 

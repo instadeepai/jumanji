@@ -149,26 +149,20 @@ class PacMan(Environment[State]):
             minimum=0,
             maximum=1,
         )
-        ghost_locations = specs.BoundedArray(
+        ghost_locations = specs.Array(
             shape=(4, 2),
             dtype=jnp.int32,
             name="ghost_locations",
-            minimum=0,
-            maximum=1,
         )
-        power_up_locations = specs.BoundedArray(
+        power_up_locations = specs.Array(
             shape=(4, 2),
             dtype=jnp.int32,
             name="power_up_locations",
-            minimum=0,
-            maximum=1,
         )
-        fruit_locations = specs.BoundedArray(
+        fruit_locations = specs.Array(
             shape=(self.cookie_spaces.shape[0], self.cookie_spaces.shape[1]),
             dtype=jnp.int32,
             name="fruit_locations",
-            minimum=0,
-            maximum=1,
         )
         action_mask = specs.BoundedArray(
             shape=(5,),
