@@ -12,97 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Tuple
+from typing import Any, List, Tuple, Union
 
 import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.pacman.types import State
-from jumanji.environments.routing.pacman.types import Observation
+from jumanji.environments.routing.pacman.types import Observation, State
+
 
 # flake8: noqa: C901
-def convert_maze_to_numpy() -> Any:
-    """Generates a numpy maze from ascii"""
-    ascii_maze = [
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "X  S         XX         S  X",
-        "X XXXX XXXXX XX XXXXX XXXX X",
-        "X XXXXOXXXXX XX XXXXXOXXXX X",
-        "X XXXX XXXXX XX XXXXX XXXX X",
-        "X                          X",
-        "X XXXX XX XXXXXXXX XX XXXX X",
-        "X XXXX XX XXXXXXXX XX XXXX X",
-        "X      XX   TXXT   XX      X",
-        "XXXXXX XXXXX XX XXXXX XXXXXX",
-        "XXXXXX XXXXX XX XXXXX XXXXXX",
-        "XXXXXX XXT        TXX XXXXXX",
-        "XXXXXX XX XXX XXXX XX XXXXXX",
-        "XXXXXX XX X  G   X XX XXXXXX",
-        "           GXXXXG           ",
-        "XXXXXX XX X  G   X XX XXXXXX",
-        "XXXXXX XX XXX XXXX XX XXXXXX",
-        "XXXXXX XX          XX XXXXXX",
-        "XXXXXX XX XXXXXXXX XX XXXXXX",
-        "XXXXXX XX XXXXXXXX XX XXXXXX",
-        "X            XX            X",
-        "X XXXX XXXXX XX XXXXX XXXX X",
-        "X XXXX XXXXX XX XXXXX XXXX X",
-        "X   XX S     P     S  XX   X",
-        "XXX XX XX XXXXXXXX XX XX XXX",
-        "XXX XX XX XXXXXXXX XX XX XXX",
-        "X      XX    XX    XX      X",
-        "X XXXXXXXXXX XX XXXXXXXXXX X",
-        "X XXXXXXXXXX XX XXXXXXXXXX X",
-        "X   O                  O   X",
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    ]
-
-    numpy_maze = []
-    cookie_spaces = []
-    powerup_spaces = []
-    reachable_spaces = []
-    ghost_spawns = []
-    init_targets = []
-    scatter_targets = []
-    player_coords = None
-
-    for x, row in enumerate(ascii_maze):
-        size = (len(row), x + 1)
-        binary_row = []
-        for y, column in enumerate(row):
-            if column == "G":
-                ghost_spawns.append((y, x))
-            if column == "P":
-                player_coords = (y, x)
-            if column == "X":
-                binary_row.append(0)
-            else:
-                binary_row.append(1)
-                cookie_spaces.append((y, x))
-                reachable_spaces.append((y, x))
-                if column == "O":
-                    powerup_spaces.append((y, x))
-                if column == "T":
-                    init_targets.append((y, x))
-                if column == "S":
-                    scatter_targets.append((y, x))
-
-        numpy_maze.append(binary_row)
-
-    return (
-        numpy_maze,
-        cookie_spaces,
-        powerup_spaces,
-        reachable_spaces,
-        ghost_spawns,
-        player_coords,
-        init_targets,
-        scatter_targets,
-    )
-
-
-def generate_maze_from_ascii(maze) -> Any:
+def generate_maze_from_ascii(maze: List) -> Any:
     """Generates a numpy maze from ascii"""
     ascii_maze = maze
     numpy_maze = []
@@ -115,7 +35,6 @@ def generate_maze_from_ascii(maze) -> Any:
     player_coords = None
 
     for x, row in enumerate(ascii_maze):
-        size = (len(row), x + 1)
         binary_row = []
         for y, column in enumerate(row):
             if column == "G":
@@ -149,7 +68,7 @@ def generate_maze_from_ascii(maze) -> Any:
     )
 
 
-def create_grid_image(observation: Observation) -> chex.Array:
+def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     """
     Generate the observation of the current state.
 
@@ -166,7 +85,7 @@ def create_grid_image(observation: Observation) -> chex.Array:
     player_loc = observation.player_locations
     ghost_pos = observation.ghost_locations
     pellets_loc = observation.power_up_locations
-    is_scared = observation.frightened_state_time#[0]
+    is_scared = observation.frightened_state_time  # [0]
     idx = observation.fruit_locations
 
     # Pellets are light orange
@@ -178,7 +97,6 @@ def create_grid_image(observation: Observation) -> chex.Array:
             layer_1 = layer_1.at[loc[1], loc[0]].set(0.6)
 
     # Power pellet is purple
-    # print(pellets_loc)
     for i in range(len(pellets_loc)):
         p = pellets_loc[i]
         layer_1 = layer_1.at[p[1], p[0]].set(0.5)
@@ -225,6 +143,11 @@ def create_grid_image(observation: Observation) -> chex.Array:
         is_scared > 0, set_ghost_colours_scared, set_ghost_colours, layers
     )
     layer_1, layer_2, layer_3 = layers
+
+    layer_1 = layer_1.at[0, 0].set(0)
+    layer_2 = layer_2.at[0, 0].set(0)
+    layer_3 = layer_3.at[0, 0].set(0)
+
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
     return rgb

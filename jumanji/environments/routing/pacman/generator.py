@@ -16,9 +16,8 @@ import abc
 import chex
 import jax.numpy as jnp
 
-from jumanji.environments.routing.pacman.utils import generate_maze_from_ascii
-from jumanji.environments.routing.pacman.constants import DEFAULT_MAZE
 from jumanji.environments.routing.pacman.types import Position, State
+from jumanji.environments.routing.pacman.utils import generate_maze_from_ascii
 
 
 class Generator(abc.ABC):
@@ -103,7 +102,7 @@ class AsciiGenerator(Generator):
             ghost_init_targets=ghost_init_targets,
             ghost_actions=ghost_actions,
             visited_index=player_locations,
-            ghost_starts=jnp.array([3, 20, 30, 40]),
+            ghost_starts=jnp.array([0, 20, 30, 40]),
             scatter_targets=self.scatter_targets,
-            step_count=jnp.array(0, jnp.int32)
+            step_count=jnp.array(0, jnp.int32),
         )

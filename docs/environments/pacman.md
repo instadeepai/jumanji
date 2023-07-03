@@ -7,7 +7,7 @@
 We provide here a minimal Jax JIT-able implementation of the game pacman. The game is played in a 2D matrix where a cell is a free space (light blue), a wall (black), pacman (yellow) or a ghost.
 
 
-The goal is for the agent (yellow) collect all of the pellets (teal) on the map without touching any of the ghosts. The agent only recieves a reward of +10 when collecting a pellet for the first time. Pellets are removed from the map after being collected. 
+The goal is for the agent (yellow) collect all of the pellets (teal) on the map without touching any of the ghosts. The agent only recieves a reward of +10 when collecting a pellet for the first time. Pellets are removed from the map after being collected.
 
 The power-ups (purple) change the colour of the ghosts to dark blue for 60 ingame steps. When the ghosts are in this state, the player can touch them which causes them to return to the center of the map and become dormant for a fixed number of steps.
 

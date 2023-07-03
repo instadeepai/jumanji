@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 import py
 import pytest
 
-from jumanji.environments.pacman.env import PacMan
-from jumanji.environments.pacman.viewer import PacManViewer
+from jumanji.environments.routing.pacman.env import PacMan
+from jumanji.environments.routing.pacman.viewer import PacManViewer
 
 
 @pytest.fixture

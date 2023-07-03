@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence
+from typing import Callable, Optional, Sequence, Union
 
-import jumanji.environments
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
-from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from matplotlib import image
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-from jumanji.environments.routing.pacman.types import State
+import jumanji.environments
+from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
+from jumanji.environments.routing.pacman.types import Observation, State
 from jumanji.environments.routing.pacman.utils import create_grid_image
 
 
@@ -52,8 +52,8 @@ class PacManViewer(MazeViewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `Cleaner` environment.
+    def render(self, state: Union[Observation, State]) -> Optional[NDArray]:
+        """Render the given state of the `Pacman` environment.
         Args:
             state: the environment state to render.
         Returns:
@@ -70,7 +70,7 @@ class PacManViewer(MazeViewer):
 
     def animate(
         self,
-        states: Sequence[State],
+        states: Sequence[Union[Observation, State]],
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
@@ -105,7 +105,9 @@ class PacManViewer(MazeViewer):
 
         return self._animation
 
-    def _add_grid_image(self, state: State, ax: Axes) -> image.AxesImage:
+    def _add_grid_image(
+        self, state: Union[Observation, State], ax: Axes
+    ) -> image.AxesImage:
         img = create_grid_image(state)
         ax.set_axis_off()
         return ax.imshow(img)

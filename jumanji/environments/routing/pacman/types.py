@@ -23,6 +23,7 @@ else:
 import chex
 import jax.numpy as jnp
 
+
 class Position(NamedTuple):
     x: jnp.int32
     y: jnp.int32
@@ -73,7 +74,7 @@ class State:
     visited_index: chex.Array
     ghost_starts: chex.Array
     scatter_targets: chex.Array
-    step_count: jnp.int32  # () 
+    step_count: jnp.int32  # ()
 
 
 class Observation(NamedTuple):
@@ -88,4 +89,3 @@ class Observation(NamedTuple):
     frightened_state_time: jnp.int32
     fruit_locations: chex.Array
     action_mask: chex.Array
-

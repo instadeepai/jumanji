@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments.routing.pacman import PacMan, Observation
+from jumanji.environments.routing.pacman import Observation, PacMan
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -29,7 +29,6 @@ from jumanji.training.networks.parametric_distribution import (
     CategoricalParametricDistribution,
 )
 
-from jumanji.environments.routing.pacman.utils import create_grid_image
 
 def make_actor_critic_networks_pacman(
     pacman: PacMan,
@@ -109,8 +108,8 @@ def process_image(observation: Observation) -> chex.Array:
     # Set ghost locations
 
     layers = (layer_1, layer_2, layer_3)
-    scared = 1 * (is_scared/60)
-    
+    scared = 1 * (is_scared / 60)
+
     def set_ghost_colours(
         layers: chex.Array,
     ) -> Tuple[chex.Array, chex.Array, chex.Array]:
@@ -125,6 +124,9 @@ def process_image(observation: Observation) -> chex.Array:
 
     layers = set_ghost_colours(layers)
     layer_1, layer_2, layer_3 = layers
+    layer_1 = layer_1.at[0, 0].set(0)
+    layer_2 = layer_2.at[0, 0].set(0)
+    layer_3 = layer_3.at[0, 0].set(0)
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
     return rgb
@@ -152,16 +154,21 @@ def make_network_pacman(
             ]
         )
 
-        rgb_observation = process_image(observation) # (B, G, G, 3)
+        rgb_observation = process_image(observation)  # (B, G, G, 3)
         obs = rgb_observation.astype(float)
-        player_pos = jnp.array([observation.player_locations.x, observation.player_locations.y])
+        player_pos = jnp.array(
+            [observation.player_locations.x, observation.player_locations.y]
+        )
         player_pos = jnp.stack(player_pos, axis=-1)
-
-        ghost_locations_x = observation.ghost_locations[:,:,0]
-        ghost_locations_y = observation.ghost_locations[:,:,1]
+        scatter_time = observation.frightened_state_time / 30
+        ghost_locations_x = observation.ghost_locations[:, :, 0]
+        ghost_locations_y = observation.ghost_locations[:, :, 1]
 
         embedding = torso(obs)  # (B, H)
-        output = output = jnp.concatenate([embedding,player_pos,ghost_locations_x,ghost_locations_y],axis = -1)# (B, H+1)
+        output = output = jnp.concatenate(
+            [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
+            axis=-1,
+        )  # (B, H+1)
 
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)

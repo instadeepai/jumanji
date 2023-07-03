@@ -16,12 +16,12 @@ import chex
 import jax
 import jax.numpy as jnp
 import pytest
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
-from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import TimeStep
 
 from jumanji.environments.routing.pacman.env import PacMan
 from jumanji.environments.routing.pacman.types import Position, State
+from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.pytrees import assert_is_jax_array_tree
+from jumanji.types import TimeStep
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_pac_man__step_jit(pac_man: PacMan) -> None:
     # Check that the state has changed
     assert new_state.player_locations.x == state.player_locations.x
     assert new_state.player_locations.y != state.player_locations.y
-    #assert not jnp.array_equal(new_state.ghost_locations, state.ghost_locations)
+    # assert not jnp.array_equal(new_state.ghost_locations, state.ghost_locations)
     assert new_state.pellets != state.pellets
     assert not jnp.array_equal(new_state.ghost_starts, state.ghost_starts)
 
