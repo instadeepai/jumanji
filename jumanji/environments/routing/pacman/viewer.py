@@ -34,6 +34,7 @@ class PacManViewer(MazeViewer):
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """
         Viewer for the `Pacman` environment.
+
         Args:
             name: the window name to be used when initialising the window.
             render_mode: the mode used to render the environment. Must be one of:
@@ -54,8 +55,10 @@ class PacManViewer(MazeViewer):
 
     def render(self, state: Union[Observation, State]) -> Optional[NDArray]:
         """Render the given state of the `Pacman` environment.
+
         Args:
-            state: the environment state to render.
+            state: the environment state or observation from the environment to render.
+
         Returns:
             RGB array if the render_mode is RenderMode.RGB_ARRAY.
         """
@@ -74,12 +77,15 @@ class PacManViewer(MazeViewer):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
-        """Create an animation from a sequence of environment states.
+        """Create an animation from a sequence of environment states or observations.
+
         Args:
-            states: sequence of environment states corresponding to consecutive timesteps.
+            states: sequence of environment states or observations corresponding to
+                consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
+
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """

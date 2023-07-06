@@ -86,7 +86,7 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     ghost_pos = observation.ghost_locations
     pellets_loc = observation.power_up_locations
     is_scared = observation.frightened_state_time  # [0]
-    idx = observation.fruit_locations
+    idx = observation.pellet_locations
 
     # Pellets are light orange
     for i in range(len(idx)):

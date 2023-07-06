@@ -36,56 +36,75 @@ class Position(NamedTuple):
 
 @dataclass
 class State:
-    """
-    key: random key used to set random actions.
-    grid: a 2D array for the pacman maze.
-    pellets: the number of remaining pellets in the game.
-    frightened_state: a boolean indicating whether the frightened state has been triggered.
-    frightened_state_time: the number of steps left for the frightened state.
-    fruit_locations: the locations of the fruits in the game.
-    power_up_locations: the locations of the power-ups in the game.
-    player_locations: the location of the player.
-    ghost_locations: the locations of the ghosts.
-    initial_player_locations: the initial location of the player.
-    initial_ghost_positions: the initial locations of the ghosts.
-    last_direction: the last direction the player moved in.
-    dead: a boolean indicating whether the player has collided with a ghost.
-    lives: the number of lives the player has remaining.
-    visited_index: a numpy array representing the indices visited by the player.
+    """The state of the environment.
+
+    key: random key used for auto-reset.
+    grid: jax array (int) of the ingame maze with walls.
+    pellets: int tracking the number of pellets.
+    frightened_state_time: jax array (int) of shape ()
+        tracks number of steps for the scatter state.
+    pellet_locations: jax array (int) of pellet locations.
+    power_up_locations: jax array (int) of power-up locations
+    player_locations: current 2D position of agent.
+    ghost_locations: jax array (int) of current ghost positions.
+    initial_player_locations: starting 2D position of agent.
+    initial_ghost_positions: jax array (int) of initial ghost positions.
+    ghost_init_targets: jax array (int) of initial ghost targets.
+        used to direct ghosts on respawn.
+    old_ghost_locations: jax array (int) of shape ghost positions from last step.
+        used to prevent ghost backtracking.
+    ghost_init_steps: jax array (int) of number of initial ghost steps.
+        used to determine per ghost initialisation.
+    ghost_actions: jax array (int) of ghost action at current step.
+    last_direction: (int) tracking the last direction of the player.
+    dead: (bool) used to track player death.
+    visited_index: jax array (int) of visited locations.
+        used to prevent repeated pellet points.
+    ghost_starts: jax array (int) of reset positions for ghosts
+        used to reset ghost positions if eaten
+    scatter_targets: jax array (int) of scatter targets.
+            target locations for ghosts when scatter behavior is active.
     """
 
-    key: chex.PRNGKey
-    grid: chex.Array  # maze
-    pellets: jnp.int32  # remaining pellets in level
-    frightened_state: jnp.int32  # is frightened state triggered
-    frightened_state_time: jnp.int32  # number of steps left for frightened state
-    fruit_locations: chex.Array
-    power_up_locations: chex.Array
-    player_locations: Position
-    ghost_locations: chex.Array
-    initial_player_locations: Position
-    initial_ghost_positions: chex.Array
-    ghost_init_targets: chex.Array
-    old_ghost_locations: chex.Array
-    ghost_init_steps: chex.Array
-    ghost_actions: chex.Array
-    last_direction: jnp.int32
-    dead: jnp.bool_
-    visited_index: chex.Array
-    ghost_starts: chex.Array
-    scatter_targets: chex.Array
+    key: chex.PRNGKey  # (2,)
+    grid: chex.Array  # (31,28)
+    pellets: jnp.int32  # ()
+    frightened_state_time: jnp.int32  # ()
+    pellet_locations: chex.Array  # (316,2)
+    power_up_locations: chex.Array  # (4,2)
+    player_locations: Position  # Position(row, col) each of shape ()
+    ghost_locations: chex.Array  # (4,2)
+    initial_player_locations: Position  # Position(row, col) each of shape ()
+    initial_ghost_positions: chex.Array  # (4,2)
+    ghost_init_targets: chex.Array  # (4,2)
+    old_ghost_locations: chex.Array  # (4,2)
+    ghost_init_steps: chex.Array  # (4,)
+    ghost_actions: chex.Array  # (4,)
+    last_direction: jnp.int32  # ()
+    dead: jnp.bool_  # ()
+    visited_index: chex.Array  # (320,2)
+    ghost_starts: chex.Array  # (4,2)
+    scatter_targets: chex.Array  # (4,2)
     step_count: jnp.int32  # ()
 
 
 class Observation(NamedTuple):
-    """
-    grid: a 3D array that includes locations of the player, ghosts and items.
+    """The observation that the agent sees.
+
+    grid: 2D matrix of the wall and movable areas on the map.
+    player_locations: the current 2D position of the agent.
+    ghost_locations: a 2D matrix of the current ghost locations.
+    power_up_locations: a 2D matrix of the current power-up locations.
+    frightened_state_time: (int32) number of steps left of scatter mode.
+    pellet_locations: a 2D matrix of all pellet locations.
+    action_mask: array specifying which directions the agent can move in from its current position.
+
     """
 
-    grid: chex.Array  # (31, 28, 3)
+    grid: chex.Array  # (31, 28)
     player_locations: Position
     ghost_locations: chex.Array
     power_up_locations: chex.Array
     frightened_state_time: jnp.int32
-    fruit_locations: chex.Array
+    pellet_locations: chex.Array
     action_mask: chex.Array

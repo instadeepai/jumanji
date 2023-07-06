@@ -59,7 +59,7 @@ class PacMan(Environment[State]):
 
     - state: State:
         - key: jax array (uint32) of shape(2,).
-        - grid: jax array (int)) of shape (300,2) of the ingame maze with walls.
+        - grid: jax array (int)) of shape (31,28) of the ingame maze with walls.
         - pellets: int tracking the number of pellets.
         - frightened_state_time: jax array (int) of shape ()
             tracks number of steps for the scatter state.
@@ -159,10 +159,10 @@ class PacMan(Environment[State]):
             dtype=jnp.int32,
             name="power_up_locations",
         )
-        fruit_locations = specs.Array(
+        pellet_locations = specs.Array(
             shape=(self.cookie_spaces.shape[0], self.cookie_spaces.shape[1]),
             dtype=jnp.int32,
-            name="fruit_locations",
+            name="pellet_locations",
         )
         action_mask = specs.BoundedArray(
             shape=(5,),
@@ -182,7 +182,7 @@ class PacMan(Environment[State]):
             ghost_locations=ghost_locations,
             power_up_locations=power_up_locations,
             frightened_state_time=frightened_state_time,
-            fruit_locations=fruit_locations,
+            pellet_locations=pellet_locations,
             action_mask=action_mask,
         )
 
@@ -232,7 +232,7 @@ class PacMan(Environment[State]):
             ghost_locations=state.ghost_locations,
             power_up_locations=state.power_up_locations,
             frightened_state_time=state.frightened_state_time,
-            fruit_locations=state.fruit_locations,
+            pellet_locations=state.pellet_locations,
             action_mask=action_mask,
         )
 
@@ -259,9 +259,8 @@ class PacMan(Environment[State]):
             key=updated_state.key,
             grid=updated_state.grid,
             pellets=updated_state.pellets,
-            frightened_state=updated_state.frightened_state,
             frightened_state_time=updated_state.frightened_state_time,
-            fruit_locations=updated_state.fruit_locations,
+            pellet_locations=updated_state.pellet_locations,
             power_up_locations=updated_state.power_up_locations,
             player_locations=updated_state.player_locations,
             ghost_locations=updated_state.ghost_locations,
@@ -298,7 +297,7 @@ class PacMan(Environment[State]):
             ghost_locations=state.ghost_locations,
             power_up_locations=state.power_up_locations,
             frightened_state_time=state.frightened_state_time,
-            fruit_locations=state.fruit_locations,
+            pellet_locations=state.pellet_locations,
             action_mask=action_mask,
         )
 
@@ -360,10 +359,9 @@ class PacMan(Environment[State]):
         state.ghost_init_steps = state.ghost_init_steps - 1
         state.old_ghost_locations = old_ghost_locations
 
-        state.fruit_locations = cookie_list
+        state.pellet_locations = cookie_list
         state.pellets = num_cookies
         state.key = key
-        # state.frightened_state = eat
 
         def f_time() -> Any:
             """If in scatter mode then decrement timer or add to time if eaten a pellet"""
@@ -536,7 +534,7 @@ class PacMan(Environment[State]):
             num_cookies: an integer counting the remaining cookies on the map.
 
         """
-        cookie_spaces = jnp.array(state.fruit_locations)
+        cookie_spaces = jnp.array(state.pellet_locations)
         player_space = state.player_locations
         ps = jnp.array([player_space.y, player_space.x])
 

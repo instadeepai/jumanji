@@ -23,6 +23,7 @@ class Actions(IntEnum):
     NOOP: int = 4
 
 
+# Default Maze design
 DEFAULT_MAZE = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "X  S         XX         S  X",

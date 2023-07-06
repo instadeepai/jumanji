@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import abc
+from typing import List
 
 import chex
 import jax.numpy as jnp
@@ -21,11 +22,11 @@ from jumanji.environments.routing.pacman.utils import generate_maze_from_ascii
 
 
 class Generator(abc.ABC):
-    def __init__(self, maze: list):
+    def __init__(self, maze: List):
         """Interface for pacman generator.
 
         Args:
-            maze: ascii version of maze to create.
+            maze: ascii repsesentation of maze to create.
         """
         self.maze = maze
         self.map_data = generate_maze_from_ascii(self.maze)
@@ -57,12 +58,18 @@ class Generator(abc.ABC):
 class AsciiGenerator(Generator):
     """Generate maze from an ascii diagram."""
 
-    def __init__(self, maze: list) -> None:
+    def __init__(self, maze: List) -> None:
         """Instantiates a `DefaultGenerator`.
 
+        This method takes in an ascii maze where each entry is one row of the maze.
+        This maze is used to generate the initial state and has specific values to
+        represent pellets, power_ups, the ghosts, the player and walls.
+
         Args:
-            grid_size: size of the square grid to generate.
-            num_agents: number of agents/paths on the grid.
+            maze: ascii repsesentation of maze to create.
+
+        Returns:
+            state: the generated state.
         """
         super().__init__(maze)
 
@@ -70,9 +77,8 @@ class AsciiGenerator(Generator):
 
         grid = self.numpy_maze
         pellets = self.cookie_spaces.shape[0]
-        frightened_state = 0
         frightened_state_time = jnp.array(0, jnp.int32)
-        fruit_locations = self.cookie_spaces
+        pellet_locations = self.cookie_spaces
         power_up_locations = self.powerup_spaces
         player_locations = self.player_coords
         ghost_locations = self.ghost_spawns
@@ -87,9 +93,8 @@ class AsciiGenerator(Generator):
             key=key,
             grid=grid,
             pellets=pellets,
-            frightened_state=frightened_state,
             frightened_state_time=frightened_state_time,
-            fruit_locations=fruit_locations,
+            pellet_locations=pellet_locations,
             power_up_locations=power_up_locations,
             player_locations=player_locations,
             ghost_locations=ghost_locations,
