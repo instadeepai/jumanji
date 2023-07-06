@@ -32,7 +32,7 @@ class Generator(abc.ABC):
         self.map_data = generate_maze_from_ascii(self.maze)
         self.numpy_maze = jnp.array(self.map_data[0])
 
-        self.cookie_spaces = jnp.array(self.map_data[1])
+        self.pellet_spaces = jnp.array(self.map_data[1])
         self.powerup_spaces = jnp.array(self.map_data[2])
         self.reachable_spaces = self.map_data[3]
 
@@ -76,9 +76,9 @@ class AsciiGenerator(Generator):
     def __call__(self, key: chex.PRNGKey) -> State:
 
         grid = self.numpy_maze
-        pellets = self.cookie_spaces.shape[0]
+        pellets = self.pellet_spaces.shape[0]
         frightened_state_time = jnp.array(0, jnp.int32)
-        pellet_locations = self.cookie_spaces
+        pellet_locations = self.pellet_spaces
         power_up_locations = self.powerup_spaces
         player_locations = self.player_coords
         ghost_locations = self.ghost_spawns
