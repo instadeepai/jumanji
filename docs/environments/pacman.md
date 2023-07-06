@@ -1,4 +1,4 @@
-# Maze Environment
+# PacMan Environment
 
 <p align="center">
         <img src="../env_anim/pacman.gif" width="600"/>
