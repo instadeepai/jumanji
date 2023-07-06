@@ -45,6 +45,9 @@
     <img src="docs/env_anim/tetris.gif" alt="Tetris" width="16%">
     <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
   </div>
+    <div class="row" align="center">
+    <img src="docs/env_anim/pacman.gif" alt="RobotWarehouse" width="16%">
+  </div>
 </div>
 
 
@@ -108,6 +111,7 @@ problems.
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
+| :mag: PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
 
 ## Installation 🎬
 
