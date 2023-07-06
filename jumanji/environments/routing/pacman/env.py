@@ -820,9 +820,16 @@ class PacMan(Environment[State]):
             is_eat = jax.lax.cond(frightened_time > 0, eat, no_eat)
 
             ghost_p = Position(y=ghost_pos[0], x=ghost_pos[1])
-            cond_x = ghost_p.x == new_player_pos.x
-            cond_y = ghost_p.y == new_player_pos.y
-            cond = cond_x * cond_y
+            # Check for collision if moving to the same space
+            cond_x1 = ghost_p.x == new_player_pos.x
+            cond_y1 = ghost_p.y == new_player_pos.y
+            cond1 = cond_x1 * cond_y1
+
+            # Check for collision if ghost moves to space when player and ghost are adjacent
+            cond_x2 = ghost_p.x == state.player_locations.x
+            cond_y2 = ghost_p.y == state.player_locations.y
+            cond2 = cond_x2 * cond_y2
+            cond = cond1 * cond2
 
             ghost_reset = is_eat * cond
             ghost_init_steps = ghost_reset * 6
