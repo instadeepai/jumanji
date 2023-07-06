@@ -710,12 +710,7 @@ class PacMan(Environment[State]):
 
         def get_distances(distance_list: chex.Array) -> chex.Array:
             """Get the scalar distance between thr ghost and the target position"""
-            d0 = jnp.linalg.norm(distance_list[0])
-            d1 = jnp.linalg.norm(distance_list[1])
-            d2 = jnp.linalg.norm(distance_list[2])
-            d3 = jnp.linalg.norm(distance_list[3])
-            ghost_dist = jnp.array([d0, d1, d2, d3])
-            return ghost_dist
+            return jnp.linalg.norm(distance_list)
 
         # For ghost 0: Move to closest tile to pacman
         def chase_ghost(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
@@ -723,7 +718,7 @@ class PacMan(Environment[State]):
             distance_list = jax.vmap(get_directions, in_axes=(None, 0))(
                 pacman_pos, ghost_p
             )
-            ghost_dist = get_distances(distance_list)
+            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
             return distance_list, ghost_dist
 
         # For ghost 1: move 4 steps ahead of pacman
@@ -734,7 +729,7 @@ class PacMan(Environment[State]):
             distance_list = jax.vmap(get_directions, in_axes=(None, 0))(
                 pac_pos, ghost_p
             )
-            ghost_dist = get_distances(distance_list)
+            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
 
             return distance_list, ghost_dist
 
@@ -743,7 +738,7 @@ class PacMan(Environment[State]):
             ghost_0_target, _ = chase_ghost(pacman_pos)
             ghost_1_target, _ = block_ghost(pacman_pos=pacman_pos, steps=4)
             distance_list = ghost_0_target + ghost_1_target
-            ghost_dist = get_distances(distance_list)
+            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
             return distance_list, ghost_dist
 
         def random_ghost(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
