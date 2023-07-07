@@ -129,7 +129,9 @@ def process_image(observation: Observation) -> chex.Array:
     layer_3 = layer_3.at[0, 0].set(0)
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
-    return rgb
+    n = 3
+    expand_rgb = jax.numpy.kron(rgb, jnp.ones((n, n)))
+    return expand_rgb
 
 
 def make_network_pacman(
