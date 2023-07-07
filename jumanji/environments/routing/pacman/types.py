@@ -86,6 +86,7 @@ class State:
     ghost_starts: chex.Array  # (4,2)
     scatter_targets: chex.Array  # (4,2)
     step_count: jnp.int32  # ()
+    ghost_eaten: chex.Array  # (4,)
 
 
 class Observation(NamedTuple):

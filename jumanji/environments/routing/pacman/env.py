@@ -287,6 +287,7 @@ class PacMan(Environment[State]):
             ghost_starts=updated_state.ghost_starts,
             scatter_targets=updated_state.scatter_targets,
             step_count=state.step_count + 1,
+            ghost_eaten=updated_state.ghost_eaten,
         )
 
         # Check if episode terminates
@@ -835,13 +836,15 @@ class PacMan(Environment[State]):
         """
 
         og_pos = state.initial_ghost_positions
+        ghost_eaten = state.ghost_eaten
 
         def check_collisions(
             ghost_pos: chex.Array,
             new_player_pos: chex.Array,
             og_pos: chex.Array,
             state: State,
-        ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric]:
+            ghost_eaten: chex.Numeric,
+        ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric, chex.Numeric]:
             """Check if ghost has collided with player"""
             eat = lambda: True
             no_eat = lambda: False
@@ -864,28 +867,32 @@ class PacMan(Environment[State]):
             ghost_reset = is_eat * cond
             ghost_init_steps = ghost_reset * 6
 
-            def no_col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
-                return ghost_pos, False, 0.0
+            def no_col_fn() -> Tuple[
+                chex.Array, chex.Numeric, chex.Numeric, chex.Numeric
+            ]:
+                return ghost_pos, False, 0.0, ghost_eaten
 
-            def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
-                reset_true = lambda: (jnp.array(og_pos), False, 200.0)
-                reset_false = lambda: (ghost_pos, True, 0.0)
-                path, done, col_reward = jax.lax.cond(
+            def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric]:
+                reset_true = lambda: (jnp.array(og_pos), False, 200.0, True)
+                reset_false = lambda: (ghost_pos, True, 0.0, False)
+                path, done, col_reward, ghost_eaten = jax.lax.cond(
                     ghost_reset, reset_true, reset_false
                 )
-                return path, done, col_reward
+                return path, done, col_reward, ghost_eaten
 
             # First check for collision
-            path, done, col_reward = jax.lax.cond(cond, col_fn, no_col_fn)
-            return path, ghost_init_steps, done, col_reward
+            path, done, col_reward, ghost_eaten = jax.lax.cond(cond, col_fn, no_col_fn)
+            col_reward = col_reward * ghost_eaten
+            return path, ghost_init_steps, done, col_reward, ghost_eaten
 
-        ghost_positions, ghost_init, dones, col_rewards = jax.vmap(
-            check_collisions, in_axes=(0, None, 0, None)
-        )(ghost_pos, new_player_pos, jnp.array(og_pos), state)
+        ghost_positions, ghost_init, dones, col_rewards, ghost_eaten = jax.vmap(
+            check_collisions, in_axes=(0, None, 0, None, 0)
+        )(ghost_pos, new_player_pos, jnp.array(og_pos), state, ghost_eaten)
         done = jnp.any(dones)
         col_rewards = col_rewards.sum()
         state.ghost_locations = ghost_positions
-        state.ghost_init_steps = jnp.array(ghost_init, int)
+        state.ghost_starts = jnp.array(ghost_init, int)
+        state.ghost_eaten = ghost_eaten
 
         return state, done, col_rewards
 
