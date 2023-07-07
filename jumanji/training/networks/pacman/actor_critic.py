@@ -130,7 +130,7 @@ def process_image(observation: Observation) -> chex.Array:
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
     n = 3
-    expand_rgb = jax.numpy.kron(rgb, jnp.ones((n, n)))
+    expand_rgb = jax.numpy.kron(rgb, jnp.ones((n, n, 1)))
     return expand_rgb
 
 
