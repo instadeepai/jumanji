@@ -345,7 +345,6 @@ class PacMan(Environment[State]):
         # Move player
         next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-        state.player_locations = next_player_pos
 
         ## Move ghosts
         def call_ghost_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
@@ -359,6 +358,8 @@ class PacMan(Environment[State]):
         state, done, ghost_col_rewards = self.check_ghost_collisions(
             ghost_paths, next_player_pos, state
         )
+
+        state.player_locations = next_player_pos
         state.dead = done
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
 
@@ -844,7 +845,8 @@ class PacMan(Environment[State]):
             og_pos: chex.Array,
             state: State,
             ghost_eaten: chex.Numeric,
-        ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric, chex.Numeric]:
+            old_ghost_pos: chex.Array,
+        ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric]:
             """Check if ghost has collided with player"""
             eat = lambda: True
             no_eat = lambda: False
@@ -853,26 +855,38 @@ class PacMan(Environment[State]):
             is_eat = jax.lax.cond(frightened_time > 0, eat, no_eat)
 
             ghost_p = Position(y=ghost_pos[0], x=ghost_pos[1])
-            # Check for collision if moving to the same space
+            old_ghost_p = Position(y=old_ghost_pos[0], x=old_ghost_pos[1])
+
+            # Check if new player pos is the same as the old ghost pos
             cond_x1 = ghost_p.x == new_player_pos.x
+            # jax.debug.print("ghost_p.x={y}, new_player_pos.x = {x} ", y=ghost_p.x, x=new_player_pos.x)
             cond_y1 = ghost_p.y == new_player_pos.y
+            # jax.debug.print("ghost_p.y={y}, new_player_pos.y = {x} ", y=ghost_p.y, x=new_player_pos.y)
             cond1 = cond_x1 * cond_y1
 
-            # Check for collision if ghost moves to space when player and ghost are adjacent
+            # Check if new ghost position is the old player pos
             cond_x2 = ghost_p.x == state.player_locations.x
+            # jax.debug.print("ghost_p.x={y}, state.player_locations.x = {x} ", y=ghost_p.x, x=state.player_locations.x)
             cond_y2 = ghost_p.y == state.player_locations.y
+            # jax.debug.print("ghost_p.y={y}, state.player_locations.y = {x} ", y=ghost_p.y, x=state.player_locations.y)
             cond2 = cond_x2 * cond_y2
-            cond = cond1 * cond2
+
+            # Check if new player pos is the same as old ghost pos
+            cond_x3 = old_ghost_p.x == new_player_pos.x
+            # jax.debug.print("old_ghost_p.x={y}, new_player_pos.x = {x} ", y=old_ghost_p.x, x=new_player_pos.x)
+            cond_y3 = old_ghost_p.y == new_player_pos.y
+            # jax.debug.print("old_ghost_p.y={y}, new_player_pos.y = {x} ", y=old_ghost_p.y, x=new_player_pos.y)
+
+            cond3 = cond_x3 * cond_y3
+            cond = cond1 | cond3  # cond2 | cond3
 
             ghost_reset = is_eat * cond
             ghost_init_steps = ghost_reset * 6
 
-            def no_col_fn() -> Tuple[
-                chex.Array, chex.Numeric, chex.Numeric, chex.Numeric
-            ]:
+            def no_col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
                 return ghost_pos, False, 0.0, ghost_eaten
 
-            def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric]:
+            def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
                 reset_true = lambda: (jnp.array(og_pos), False, 200.0, True)
                 reset_false = lambda: (ghost_pos, True, 0.0, False)
                 path, done, col_reward, ghost_eaten = jax.lax.cond(
@@ -885,9 +899,17 @@ class PacMan(Environment[State]):
             col_reward = col_reward * ghost_eaten
             return path, ghost_init_steps, done, col_reward, ghost_eaten
 
+        old_ghost_positions = state.old_ghost_locations
         ghost_positions, ghost_init, dones, col_rewards, ghost_eaten = jax.vmap(
-            check_collisions, in_axes=(0, None, 0, None, 0)
-        )(ghost_pos, new_player_pos, jnp.array(og_pos), state, ghost_eaten)
+            check_collisions, in_axes=(0, None, 0, None, 0, 0)
+        )(
+            ghost_pos,
+            new_player_pos,
+            jnp.array(og_pos),
+            state,
+            ghost_eaten,
+            old_ghost_positions,
+        )
         done = jnp.any(dones)
         col_rewards = col_rewards.sum()
         state.ghost_locations = ghost_positions

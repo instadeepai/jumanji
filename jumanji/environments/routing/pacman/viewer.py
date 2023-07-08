@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import matplotlib.animation
 import matplotlib.cm
@@ -29,7 +29,7 @@ from jumanji.environments.routing.pacman.utils import create_grid_image
 
 
 class PacManViewer(MazeViewer):
-    FIGURE_SIZE = (10.0, 10.0)
+    FIGURE_SIZE = (4.0, 4.0)
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """
@@ -70,6 +70,17 @@ class PacManViewer(MazeViewer):
         ax.clear()
         self._add_grid_image(state, ax)
         return self._display(fig)
+
+    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
+        recreate = not plt.fignum_exists(self._name)
+        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
+        if recreate:
+            if not plt.isinteractive():
+                fig.show()
+            ax = fig.add_subplot()
+        else:
+            ax = fig.get_axes()[0]
+        return fig, ax
 
     def animate(
         self,
