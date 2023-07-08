@@ -89,7 +89,7 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     idx = observation.pellet_locations
 
     n = 3
-
+    
     # Power pellet is purple
     for i in range(len(pellets_loc)):
         p = pellets_loc[i]
@@ -117,10 +117,10 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
             y = ghost_pos[i][0]
             x = ghost_pos[i][1]
 
-            layer_1 = layer_1.at[x, y].set(cr[i])
-            layer_2 = layer_2.at[x, y].set(cg[i])
-            layer_3 = layer_3.at[x, y].set(cb[i])
-        return layer_1, layer_2, layer_3
+            layer_1 = layer_1.at[x,y].set(cr[i])
+            layer_2 = layer_2.at[x,y].set(cg[i])
+            layer_3 = layer_3.at[x,y].set(cb[i])
+        return layer_1,layer_2,layer_3
 
     def set_ghost_colours_scared(
         layers: chex.Array,
@@ -134,6 +134,7 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
             layer_3 = layer_3.at[x, y].set(1)
         return layer_1, layer_2, layer_3
 
+
     layers = jax.lax.cond(
         is_scared > 0, set_ghost_colours_scared, set_ghost_colours, layers
     )
@@ -146,23 +147,24 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
 
-    expand_rgb = jax.numpy.kron(rgb, jnp.ones((n, n, 1)))
-    layer_1 = expand_rgb[:, :, 0]
-    layer_2 = expand_rgb[:, :, 1]
-    layer_3 = expand_rgb[:, :, 2]
+    expand_rgb = jax.numpy.kron(rgb, jnp.ones((n,n,1)))
+    layer_1 = expand_rgb[:,:,0]
+    layer_2 = expand_rgb[:,:,1]
+    layer_3 = expand_rgb[:,:,2]
 
     for i in range(len(idx)):
         if jnp.array(idx[i]).sum != 0:
             loc = idx[i]
-            c = loc[1] * n + 1
-            r = loc[0] * n + 1
+            c = loc[1]*n+1
+            r = loc[0]*n+1
             layer_3 = layer_3.at[c, r].set(1)
             layer_2 = layer_2.at[c, r].set(0.8)
             layer_1 = layer_1.at[c, r].set(0.6)
 
     layers = (layer_1, layer_2, layer_3)
 
-    # recover patches
+
+    #recover patches
     def set_ghost_colours2(
         layers: chex.Array,
     ) -> Tuple[chex.Array, chex.Array, chex.Array]:
@@ -170,13 +172,13 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
         for i in range(4):
             y = ghost_pos[i][0]
             x = ghost_pos[i][1]
-            c = x * n + 1
-            r = y * n + 1
+            c = x*n+1
+            r = y*n+1
 
-            layer_1 = layer_1.at[c, r].set(cr[i])
-            layer_2 = layer_2.at[c, r].set(cg[i])
-            layer_3 = layer_3.at[c, r].set(cb[i])
-        return layer_1, layer_2, layer_3
+            layer_1 = layer_1.at[c,r].set(cr[i])
+            layer_2 = layer_2.at[c,r].set(cg[i])
+            layer_3 = layer_3.at[c,r].set(cb[i])
+        return layer_1,layer_2,layer_3
 
     def set_ghost_colours_scared2(
         layers: chex.Array,
@@ -185,31 +187,32 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
         for i in range(4):
             y = ghost_pos[i][0]
             x = ghost_pos[i][1]
-            layer_1 = layer_1.at[x * n + 1, y * n + 1].set(0)
-            layer_2 = layer_2.at[x * n + 1, y * n + 1].set(0)
-            layer_3 = layer_3.at[x * n + 1, y * n + 1].set(1)
+            layer_1 = layer_1.at[x*n+1, y*n+1].set(0)
+            layer_2 = layer_2.at[x*n+1, y*n+1].set(0)
+            layer_3 = layer_3.at[x*n+1, y*n+1].set(1)
         return layer_1, layer_2, layer_3
-
+    
     layers = jax.lax.cond(
         is_scared > 0, set_ghost_colours_scared2, set_ghost_colours2, layers
     )
-
+    
     layer_1, layer_2, layer_3 = layers
 
-    # Power pellet is purple
+        # Power pellet is purple
     for i in range(len(pellets_loc)):
         p = pellets_loc[i]
-        layer_1 = layer_1.at[p[1] * n + 1, p[0] * n + 1].set(0.5)
-        layer_2 = layer_2.at[p[1] * n + 1, p[0] * n + 1].set(0)
-        layer_3 = layer_3.at[p[1] * n + 1, p[0] * n + 1].set(0.5)
+        layer_1 = layer_1.at[p[1]*n+1, p[0]*n+1].set(0.5)
+        layer_2 = layer_2.at[p[1]*n+1, p[0]*n+1].set(0)
+        layer_3 = layer_3.at[p[1]*n+1, p[0]*n+1].set(0.5)
 
     # Set player is yellow
-    layer_1 = layer_1.at[player_loc.x * n + 1, player_loc.y * n + 1].set(1)
-    layer_2 = layer_2.at[player_loc.x * n + 1, player_loc.y * n + 1].set(1)
-    layer_3 = layer_3.at[player_loc.x * n + 1, player_loc.y * n + 1].set(0)
+    layer_1 = layer_1.at[player_loc.x*n+1, player_loc.y*n+1].set(1)
+    layer_2 = layer_2.at[player_loc.x*n+1, player_loc.y*n+1].set(1)
+    layer_3 = layer_3.at[player_loc.x*n+1, player_loc.y*n+1].set(0)
 
+    
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
     expand_rgb
-
+            
     return rgb

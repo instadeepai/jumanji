@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence, Tuple, Union
+from typing import Callable, Optional, Sequence, Union, Tuple
 
 import matplotlib.animation
 import matplotlib.cm
@@ -81,7 +81,7 @@ class PacManViewer(MazeViewer):
         else:
             ax = fig.get_axes()[0]
         return fig, ax
-
+    
     def animate(
         self,
         states: Sequence[Union[Observation, State]],

@@ -13,14 +13,10 @@
 # limitations under the License.
 
 from enum import IntEnum
+import jax as jnp
 
 
-class Actions(IntEnum):
-    UP: int = 0
-    RIGHT: int = 1
-    DOWN: int = 2
-    LEFT: int = 3
-    NOOP: int = 4
+MOVES = jnp.array([[-1, 0], [0, 1], [1, 0], [0, -1]])  # Up, Right, Down, Left
 
 
 # Default Maze design
