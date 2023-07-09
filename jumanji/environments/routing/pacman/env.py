@@ -513,7 +513,7 @@ class PacMan(Environment[State]):
             )
 
             # If using the teleporter shift to the other side of the map
-            path = jnp.array([new_pos_col % self.x_size, new_pos_row % self.y_size])
+            path = jnp.array([new_pos_col % self.y_size, new_pos_row % self.x_size])
             path = jax.lax.cond(ghost_start <= 0, lambda: path, lambda: position)
 
             return path, chosen_action
