@@ -348,7 +348,7 @@ class PacMan(Environment[State]):
         # Move player
         next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-        state.last_direction = action
+        state.last_direction = jnp.array(action, jnp.int32)
         ## Move ghosts
         def call_ghost_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
             ghost_paths, ghost_actions, key = self.ghost_move(state)
