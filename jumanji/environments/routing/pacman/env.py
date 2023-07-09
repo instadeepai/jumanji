@@ -120,7 +120,7 @@ class PacMan(Environment[State]):
         self.y_size = self.generator.y_size
         self.pellet_spaces = self.generator.pellet_spaces
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
-        self.time_limit = 2000 or time_limit
+        self.time_limit = 1000 or time_limit
 
         self.generate_obs = create_grid_image
 
@@ -903,7 +903,7 @@ class PacMan(Environment[State]):
             #jax.debug.print("old_ghost_p.y={y}, new_player_pos.y = {x} ", y=old_ghost_p.y, x=new_player_pos.y)
 
             cond3 = cond_x3 * cond_y3
-            cond = cond1 | cond3#cond2 | cond3
+            cond = cond1 |cond2 | cond3
 
             ghost_reset = is_eat * cond
             ghost_init_steps = ghost_reset * 6
