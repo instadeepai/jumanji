@@ -111,7 +111,7 @@ class PacMan(Environment[State]):
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`AsciiGenerator`].
             time_limit: the time_limit of an episode, i.e. the maximum number of environment steps
-                before the episode terminates. By default, set to 2000.
+                before the episode terminates. By default, set to 1000.
             viewer: `Viewer` used for rendering. Defaults to `PacManViewer`.
         """
 
@@ -348,7 +348,7 @@ class PacMan(Environment[State]):
         # Move player
         next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-
+        state.last_direction = action
         ## Move ghosts
         def call_ghost_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
             ghost_paths, ghost_actions, key = self.ghost_move(state)
