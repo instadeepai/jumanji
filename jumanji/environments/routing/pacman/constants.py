@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import IntEnum
-import jax as jnp
+import jax.numpy as jnp
 
 
-MOVES = jnp.array([[-1, 0], [0, 1], [1, 0], [0, -1]])  # Up, Right, Down, Left
+MOVES = jnp.array([[0, -1], [-1, 0], [0, 1], [1, 0],[0,0]])  # Up, Left, Down, Right, No-op
 
 
 # Default Maze design

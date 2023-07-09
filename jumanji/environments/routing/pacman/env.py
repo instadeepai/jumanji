@@ -300,8 +300,9 @@ class PacMan(Environment[State]):
 
         reward = jnp.asarray(collision_rewards)
         action_mask_bool = jnp.array([True, True, True, True, False])
-        action_mask = self._compute_action_mask(state)
+        action_mask = self._compute_action_mask(state).astype(bool)
         action_mask = action_mask*action_mask_bool
+        #jax.debug.print("action_mask={y}", y=action_mask)
 
         # Generate observation from the state
         observation = Observation(
@@ -667,7 +668,7 @@ class PacMan(Environment[State]):
 
         def is_move_valid(agent_position: Position, move: chex.Array) -> chex.Array:
             y, x = jnp.array([agent_position.y, agent_position.x]) + move
-            return grid[y][x]
+            return grid[x][y]
 
         # vmap over the moves.
         action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(player_pos, MOVES)
