@@ -129,8 +129,8 @@ def process_image(observation: Observation) -> chex.Array:
     layer_3 = layer_3.at[0, 0].set(0)
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
-    n = 3
-    rgb = jax.numpy.kron(rgb, jnp.ones((n,n,1)))
+    #n = 3
+    #rgb = jax.numpy.kron(rgb, jnp.ones((n,n,1)))
     return rgb#expand_rgb
 
 
@@ -168,11 +168,11 @@ def make_network_pacman(
         ghost_locations_y = observation.ghost_locations[:, :, 1]
 
         embedding = torso(obs)  # (B, H)
-        output = output = jnp.concatenate(
-            [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
-            axis=-1,
-        )  # (B, H+1)
-
+        #output = output = jnp.concatenate(
+        #    [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
+        #    axis=-1,
+        #)  # (B, H+1)
+        output = embedding
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)
             return jnp.squeeze(head(output), axis=-1)
