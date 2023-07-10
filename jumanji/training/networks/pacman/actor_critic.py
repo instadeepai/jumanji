@@ -168,11 +168,11 @@ def make_network_pacman(
         ghost_locations_y = observation.ghost_locations[:, :, 1]
 
         embedding = torso(obs)  # (B, H)
-        #output = output = jnp.concatenate(
-        #    [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
-        #    axis=-1,
-        #)  # (B, H+1)
-        output = embedding
+        output = output = jnp.concatenate(
+            [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
+            axis=-1,
+        )  # (B, H+1)
+        #output = embedding
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)
             return jnp.squeeze(head(output), axis=-1)
