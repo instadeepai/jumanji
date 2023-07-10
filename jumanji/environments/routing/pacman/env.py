@@ -908,12 +908,14 @@ class PacMan(Environment[State]):
             ghost_reset = is_eat * cond
             ghost_init_steps = ghost_reset * 6
 
+            edible = ghost_eaten
+            
             def no_col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
-                return ghost_pos, False, 0.0,ghost_eaten
+                return ghost_pos, False, 0.0,edible
 
             def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
-                reset_true = lambda: (jnp.array(og_pos), False, 200.0, True)
-                reset_false = lambda: (ghost_pos, True, 0.0,False)
+                reset_true = lambda: (jnp.array(og_pos), False, 200.0, False)
+                reset_false = lambda: (ghost_pos, True, 0.0,edible)
                 path, done, col_reward,ghost_eaten = jax.lax.cond(
                     ghost_reset, reset_true, reset_false
                 )
