@@ -923,7 +923,7 @@ class PacMan(Environment[State]):
 
             # First check for collision
             path, done, col_reward, ghost_eaten = jax.lax.cond(cond, col_fn, no_col_fn)
-            col_reward = col_reward*ghost_eaten
+            col_reward = col_reward*edible
             return path, ghost_init_steps, done, col_reward, ghost_eaten
 
         old_ghost_positions = state.old_ghost_locations
