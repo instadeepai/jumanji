@@ -86,7 +86,6 @@ class UNet(hk.Module):
 
     def __call__(self, grid_observation: chex.Array) -> chex.Array:
         # Grid observation is of shape (B, num_rows, num_cols)
-        num_rows, num_cols = grid_observation.shape[1], grid_observation.shape[2]
 
         # Add a channel dimension
         grid_observation = grid_observation[..., jnp.newaxis]
@@ -110,27 +109,13 @@ class UNet(hk.Module):
             [up_2, grid_observation], axis=-1
         )  # (B, num_rows, num_cols, 64)
 
-        output = hk.Conv2D(1, kernel_shape=1, stride=1, padding="SAME")(
+        output = hk.Conv2D(self.hidden_size, kernel_shape=1, stride=1, padding="SAME")(
             grid_observation
         )
 
         # Crop the upconvolved output
         # to be the same size as the action mask.
         output = output[:, 1:-1, 1:-1]  # (B, num_rows-2, num_cols-2, 1)
-        # Remove the channel dimension
-        output = jnp.squeeze(output, axis=-1)
-
-        # Flatten output to be (B, ...)
-        output = jnp.reshape(output, (output.shape[0], -1))
-
-        output = hk.Linear((num_rows - 2) * (num_cols - 2) * self.hidden_size)(output)
-        # Reshape output to be (B, num_rows-2, num_col-2, H)
-        output = jnp.reshape(
-            output, (output.shape[0], num_rows - 2, num_cols - 2, self.hidden_size)
-        )
-
-        # Reshape down_2 to be (B, num_feature_maps, ...)
-        down_2 = jnp.transpose(down_2, (0, 3, 1, 2))
 
         # Flatten down_2 to be (B, ...)
         grid_conv_encoding = jnp.reshape(
