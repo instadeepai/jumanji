@@ -271,7 +271,7 @@ def test_flat_pack__completed_episode_with_dense_reward(
     assert timestep.step_type == StepType.LAST
     assert jnp.all(state.current_grid == simple_env_grid_state_4)
     assert timestep.reward == 7.0 / 25.0
-    assert not jnp.all(state.action_mask)
+    assert jnp.all(~state.action_mask)
 
 
 def test_flat_pack__completed_episode_with_sparse_reward(
@@ -334,4 +334,4 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     assert timestep.step_type == StepType.LAST
     assert jnp.all(state.current_grid == simple_env_grid_state_4)
     assert timestep.reward == 1.0
-    assert not jnp.all(state.action_mask)
+    assert jnp.all(~state.action_mask)

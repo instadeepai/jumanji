@@ -140,7 +140,7 @@ def solved_state(
 
     return State(
         num_blocks=4,
-        action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
+        action_mask=jnp.zeros((4, 4, 2, 2), dtype=bool),
         placed_blocks=jnp.array(
             [
                 True,
