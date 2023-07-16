@@ -110,7 +110,7 @@ class UNet(hk.Module):
         )  # (B, num_rows, num_cols, 64)
 
         output = hk.Conv2D(self.hidden_size, kernel_shape=1, stride=1, padding="SAME")(
-            grid_observation
+            up_2
         )
 
         # Crop the upconvolved output
