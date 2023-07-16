@@ -178,7 +178,7 @@ class FlatPack(Environment[State]):
         )
 
         # If the action is legal
-        new_block = jax.lax.cond(
+        new_grid = jax.lax.cond(
             action_is_legal,
             lambda: state.current_grid + grid_block,
             lambda: state.current_grid,
@@ -189,10 +189,10 @@ class FlatPack(Environment[State]):
             lambda: state.placed_blocks,
         )
 
-        new_action_mask = self._make_action_mask(new_block, state.blocks, placed_blocks)
+        new_action_mask = self._make_action_mask(new_grid, state.blocks, placed_blocks)
 
         next_state = State(
-            current_grid=new_block,
+            current_grid=new_grid,
             blocks=state.blocks,
             action_mask=new_action_mask,
             num_blocks=state.num_blocks,
@@ -470,7 +470,7 @@ class FlatPack(Environment[State]):
             placed_blocks: array of blocks that have already been placed.
         """
 
-        num_blocks, num_rotations, num_rows, num_cols = (
+        num_blocks, num_rotations, num_placement_rows, num_placement_cols = (
             self.num_blocks,
             4,
             self.num_rows - 2,
@@ -480,8 +480,8 @@ class FlatPack(Environment[State]):
         blocks_grid, rotations_grid, rows_grid, cols_grid = jnp.meshgrid(
             jnp.arange(num_blocks),
             jnp.arange(num_rotations),
-            jnp.arange(num_rows),
-            jnp.arange(num_cols),
+            jnp.arange(num_placement_rows),
+            jnp.arange(num_placement_cols),
             indexing="ij",
         )
 
@@ -509,13 +509,14 @@ class FlatPack(Environment[State]):
         )
 
         legal_actions = legal_actions.reshape(
-            num_blocks, num_rotations, num_rows, num_cols
+            num_blocks, num_rotations, num_placement_rows, num_placement_cols
         )
 
         # Now set all current placed blocks to false in the mask.
         placed_blocks_array = placed_blocks.reshape((self.num_blocks, 1, 1, 1))
         placed_blocks_mask = jnp.tile(
-            placed_blocks_array, (1, num_rotations, num_rows, num_cols)
+            placed_blocks_array,
+            (1, num_rotations, num_placement_rows, num_placement_cols),
         )
         legal_actions = jnp.where(placed_blocks_mask, False, legal_actions)
 
