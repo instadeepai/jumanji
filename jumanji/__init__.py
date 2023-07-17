@@ -20,7 +20,6 @@ from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
 from jumanji.environments.logic.sudoku import data as sudoku_data
 from jumanji.environments.logic.sudoku import generator as sudoku_generator
-from jumanji.environments.routing.sokoban.generator import DeepMindGenerator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -128,14 +127,4 @@ register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 
 # Sokoban with deepmind dataset generator
-register(
-    id="Sokoban-v0",
-    entry_point="jumanji.environments:Sokoban",
-    kwargs={
-        "generator": DeepMindGenerator(
-            difficulty="unfiltered",
-            split="train",
-            proportion_of_files=0.01,
-        )
-    },
-)
+register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
