@@ -24,3 +24,6 @@ pytest-xdist
 pytype
 scipy>=1.7.3
 testfixtures
+types-Pillow
+types-requests
+types-setuptools
