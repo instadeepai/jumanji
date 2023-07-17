@@ -107,15 +107,14 @@ class UNet(hk.Module):
         up_2 = up_2[:, :-1, :-1]
         up_2 = jnp.concatenate(
             [up_2, grid_observation], axis=-1
-        )  # (B, num_rows, num_cols, 64)
+        )  # (B, num_rows, num_cols, 33)
 
         output = hk.Conv2D(self.hidden_size, kernel_shape=1, stride=1, padding="SAME")(
             up_2
         )
 
-        # Crop the upconvolved output
-        # to be the same size as the action mask.
-        output = output[:, 1:-1, 1:-1]  # (B, num_rows-2, num_cols-2, 1)
+        # Crop the upconvolved output to be the same size as the action mask.
+        output = output[:, 1:-1, 1:-1]  # (B, num_rows-2, num_cols-2, hidden_size)
 
         # Flatten down_2 to be (B, ...)
         grid_conv_encoding = jnp.reshape(
@@ -123,7 +122,7 @@ class UNet(hk.Module):
             (down_2.shape[0], -1),
         )
 
-        # Linear mapping to transformer model size here.
+        # Linear mapping to transformer model size.
         grid_conv_encoding = hk.Linear(self.model_size)(
             grid_conv_encoding
         )  # (B, model_size)
@@ -152,8 +151,8 @@ class FlatPackTorso(hk.Module):
         self.hidden_size = hidden_size
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
-        # Observation.blocks (B, num_blocks, 3, 3)
-        # Observation.current_grid (B, num_rows, num_cols)
+        # observation.blocks (B, num_blocks, 3, 3)
+        # observation.current_grid (B, num_rows, num_cols)
 
         # Flatten the blocks
         flattened_blocks = jnp.reshape(
@@ -171,7 +170,6 @@ class FlatPackTorso(hk.Module):
             observation.current_grid
         )  # (B, model_size), (B, num_rows-2, num_cols-2, hidden_size)
 
-        # Cross-attention between blocks_embedding and grid_conv_encoding
         for block_id in range(self.num_transformer_layers):
 
             (
@@ -238,7 +236,6 @@ def make_actor_network_flat_pack(
             name="policy_torso",
         )
         blocks_embedding, grid_embedding = torso(observation)
-        # Outer-product
         outer_product = jnp.einsum(
             "...ijh,...klh->...ijkl", blocks_embedding, grid_embedding
         )
@@ -274,8 +271,8 @@ def make_critic_network_flat_pack(
         )
 
         (
-            blocks_embedding,  # (B, num_blocks, 4, H)
-            final_embedding,  # (B, num_rows-2, num_cols-2, H)
+            blocks_embedding,  # (B, num_blocks, 4, hidden_size)
+            grid_embedding,  # (B, num_rows-2, num_cols-2, hidden_size)
         ) = torso(observation)
 
         # Flatten the blocks embedding
@@ -285,21 +282,20 @@ def make_critic_network_flat_pack(
         )
 
         # Sum over blocks for permutation invariance
-        blocks_embedding = jnp.sum(blocks_embedding, axis=1)  # (B, 4*H)
+        blocks_embedding = jnp.sum(blocks_embedding, axis=1)  # (B, 4*hidden_size)
 
         # Flatten grid embedding while keeping batch dimension
-        final_embedding = jnp.reshape(  # (B, H * num_rows-2 * num_cols-2)
-            final_embedding,
-            (final_embedding.shape[0], -1),
+        grid_embedding = jnp.reshape(  # (B, hidden_size * num_rows-2 * num_cols-2)
+            grid_embedding,
+            (grid_embedding.shape[0], -1),
         )
 
-        final_embedding = hk.Linear(blocks_embedding.shape[-1])(final_embedding)
-        final_embedding = jax.nn.relu(final_embedding)
+        grid_embedding = hk.Linear(blocks_embedding.shape[-1])(grid_embedding)
+        grid_embedding = jax.nn.relu(grid_embedding)
 
-        # Concatenate along the second dimension (axis=1)
-        torso_output = jnp.concatenate([blocks_embedding, final_embedding], axis=-1)
+        # Concatenate along the second dimension
+        torso_output = jnp.concatenate([blocks_embedding, grid_embedding], axis=-1)
 
-        # Should be a sum instead see cvrp
         value = hk.Linear(1)(torso_output)
 
         return jnp.squeeze(value, axis=-1)
@@ -314,8 +310,6 @@ def make_flatpack_masks(observation: Observation) -> Tuple[chex.Array, chex.Arra
     - cross_attention_mask: action mask, i.e. blocks that can be placed.
     """
 
-    # This could be the wrong way around.
-    # Only consider the non-placed blocks.
     mask = jnp.any(observation.action_mask, axis=(2, 3, 4))
 
     # Replicate the mask on the query and key dimensions.
