@@ -149,7 +149,7 @@ def test_boxoban__termination_timelimit(boxoban: Boxoban) -> None:
 
 
 def test_boxoban__termination_solved(boxoban_simple: Boxoban) -> None:
-    """Check that with correct sequence of actions to solve trivial problem,
+    """Check that with correct sequence of actions to solve a trivial problem,
     the environment terminates"""
 
     correct_actions = [0, 1, 3] * 3 + [0]

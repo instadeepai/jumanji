@@ -36,7 +36,8 @@ class BoxViewer(Viewer):
         grid_combine: Callable,
     ) -> None:
         """
-        Viewer for a `Boxoban` environment.
+        Viewer for a `Boxoban` environment using images from
+        https://github.com/mpSchrader/gym-sokoban.
 
         Args:
             name: the window name to be used when initialising the window.

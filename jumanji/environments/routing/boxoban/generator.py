@@ -46,11 +46,11 @@ class Generator(abc.ABC):
 class DeepMindGenerator(Generator):
     """Instance generator that generates a random problem from the DeepMind
     Boxoban dataset a popular dataset for comparing Reinforcement Learning
-    algorithms and Planning Algorithms. The dataset has unfiltered,medium and
-    hard versions. With the unfiltered dataset contain train,test and valid
-    splits. Medium containing train and valid splits. And hard containing just
-    a small number of problems. The problems are have all been ensured to be
-    solvable.
+    algorithms and Planning Algorithms. The dataset has unfiltered, medium and
+    hard versions. The unfiltered dataset contain train, test and valid
+    splits. The Medium has train and valid splits available. And the hard set
+    contains just a small number of problems. The problems are all guaranteed
+    to be solvable.
     """
 
     def __init__(
