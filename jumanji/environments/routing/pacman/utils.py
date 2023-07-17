@@ -135,9 +135,11 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
             layer_3 = layer_3.at[x, y].set(1)
         return layer_1, layer_2, layer_3
 
-    layers = jax.lax.cond(
-        is_scared > 0, set_ghost_colours_scared, set_ghost_colours, layers
-    )
+    if is_scared > 0:
+        layers = set_ghost_colours_scared(layers)
+    else:
+        layers = set_ghost_colours(layers)
+
     layer_1, layer_2, layer_3 = layers
 
     layer_1 = layer_1.at[0, 0].set(0)
@@ -236,9 +238,10 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
 
         return layer_1, layer_2, layer_3
 
-    layers = jax.lax.cond(
-        is_scared > 0, set_ghost_colours_scared2, set_ghost_colours2, layers
-    )
+    if is_scared > 0:
+        layers = set_ghost_colours_scared2(layers)
+    else:
+        layers = set_ghost_colours2(layers)
 
     layer_1, layer_2, layer_3 = layers
 
