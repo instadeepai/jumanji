@@ -14,8 +14,9 @@
 
 import jax.numpy as jnp
 
-
-MOVES = jnp.array([[0, -1], [-1, 0], [0, 1], [1, 0],[0,0]])  # Up, Left, Down, Right, No-op
+MOVES = jnp.array(
+    [[0, -1], [-1, 0], [0, 1], [1, 0], [0, 0]]
+)  # Up, Right, Down, Left, No-op
 
 
 # Default Maze design
