@@ -37,10 +37,10 @@ from jumanji.viewer import Viewer
 class FlatPack(Environment[State]):
 
     """A FlatPack solving environment with a configurable number of row and column blocks.
-        Here the goal of an agent is to completely fill an empty grid by all available
-        placing blocks.
+        Here the goal of an agent is to completely fill an empty grid by placing all
+        available blocks.
 
-    - observation: Observation
+    - observation: `Observation`
         - current_grid: jax array (float) of shape (num_rows, num_cols) with the
             current state of the grid.
         - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
@@ -49,13 +49,18 @@ class FlatPack(Environment[State]):
             this mask includes all possible rotations and possible placement locations
             for each block on the grid.
 
-    - action: jax array (int32) of shape ()
+    - action: jax array (int32) of shape (4,)
         multi discrete array containing the move to perform
         (block to place, number of rotations, row coordinate, column coordinate).
 
     - reward: jax array (float) of shape (), could be either:
-        - dense: the number of non-zero cells in a block normalised by the total number of
-            cells in a grid. this will be a value in the range [0, 1].
+        - cell dense: the number of non-zero cells in a placed block normalised by the
+            total number of cells in a grid. this will be a value in the range [0, 1].
+            that is to say that the agent will optimise for the maximum area to fill on
+            the grid.
+        - block dense: each placed block will receive a reward of 1./num_blocks. this will
+            be a value in the range [0, 1]. that is to say that the agent will optimise
+            for the maximum number of blocks placed on the grid.
         - sparse: 1 if the grid is completely filled, otherwise 0 at each timestep.
 
     - episode termination:
@@ -101,6 +106,8 @@ class FlatPack(Environment[State]):
 
         Args:
             generator: Instance generator for the environment.
+            reward_fn: Reward function for the environment.
+            viewer: Viewer for rendering the environment.
         """
 
         default_generator = RandomFlatPackGenerator(
@@ -139,7 +146,7 @@ class FlatPack(Environment[State]):
             key: PRNG key for generating a new instance.
 
         Returns:
-            a tuple of the initial state and a time step.
+            a tuple of the initial environment state and a time step.
         """
 
         grid_state = self.generator(key)
@@ -159,7 +166,7 @@ class FlatPack(Environment[State]):
             action: action to take.
 
         Returns:
-            a tuple of the next state and a time step.
+            a tuple of the next environment state and a time step.
         """
 
         # Unpack and use actions
@@ -177,7 +184,7 @@ class FlatPack(Environment[State]):
             action, state.current_grid, state.placed_blocks, grid_mask_block
         )
 
-        # If the action is legal
+        # If the action is legal create a new grid and update the placed blocks array
         new_grid = jax.lax.cond(
             action_is_legal,
             lambda: state.current_grid + grid_block,
@@ -260,9 +267,10 @@ class FlatPack(Environment[State]):
 
         Returns:
             Spec for each filed in the observation:
-            - current_grid: BoundedArray (int) of shape (num_rows, num_cols).
-            - blocks: BoundedArray (int) of shape (num_blocks, 3, 3).
-            - action_mask: BoundedArray (bool) of shape (num_blocks,).
+            - current_grid: BoundedArray (float) of shape (num_rows, num_cols).
+            - blocks: BoundedArray (float) of shape (num_blocks, 3, 3).
+            - action_mask: BoundedArray (bool) of shape
+                (num_blocks, 4, num_rows-2, num_cols-2).
         """
 
         current_grid = specs.BoundedArray(
@@ -307,11 +315,11 @@ class FlatPack(Environment[State]):
 
         Returns:
             MultiDiscreteArray (int32) of shape (num_blocks, num_rotations,
-            max_row_position, max_col_position).
+            num_rows-2, num_cols-2).
             - num_blocks: int between 0 and num_blocks - 1 (included).
             - num_rotations: int between 0 and 3 (included).
-            - max_row_position: int between 0 and max_row_position - 1 (included).
-            - max_col_position: int between 0 and max_col_position - 1 (included).
+            - max_row_position: int between 0 and num_rows - 3 (included).
+            - max_col_position: int between 0 and num_cols - 3 (included).
         """
 
         max_row_position = self.num_rows - 2
@@ -347,14 +355,14 @@ class FlatPack(Environment[State]):
         grid_mask_block: chex.Array,
     ) -> bool:
         """Checks if the action is legal by considering the action mask and the
-            grid mask. An action is legal if the action mask is True for that action
-            and the grid mask indicates that there is no overlap with blocks
-            already placed.
+            current grid. An action is legal if the action mask is True for that action
+            and the there is no overlap with blocks already placed.
 
         Args:
             action: action taken.
-            state: current state of the environment.
-             grid_mask_block: grid with ones where the block is placed.
+            current_grid: current state of the grid.
+            placed_blocks: array indicating which blocks have been placed.
+            grid_mask_block: grid with ones where current block should be placed.
 
         Returns:
             True if the action is legal, False otherwise.
@@ -372,7 +380,7 @@ class FlatPack(Environment[State]):
         """Makes a grid of zeroes with ones where the block is placed.
 
         Args:
-            grid_block: block placed on a grid of zeroes.
+            grid_with_ones: block placed on a grid of zeroes.
         """
 
         grid_with_ones = jnp.where(grid_block != 0, 1, 0)
@@ -385,14 +393,13 @@ class FlatPack(Environment[State]):
         row_coord: chex.Numeric,
         col_coord: chex.Numeric,
     ) -> chex.Array:
-        """Takes a block and places it on a grid of zeroes with the same size as the grid.
+        """Places a block on a grid of zeroes with the same size as the grid.
 
         Args:
-            state: current state of the environment.
             block: block to place on the grid.
-            row_coord: row coordinate on the board where the top left corner
+            row_coord: row coordinate on the grid where the top left corner
                 of the block will be placed.
-            col_coord: column coordinate on the board where the top left corner
+            col_coord: column coordinate on the grid where the top left corner
                 of the block will be placed.
 
         Returns:
@@ -429,8 +436,8 @@ class FlatPack(Environment[State]):
         blocks: chex.Array,
         block_idxs: chex.Array,
         rotations: chex.Array,
-        rows: chex.Array,
-        cols: chex.Array,
+        row_coords: chex.Array,
+        col_coords: chex.Array,
     ) -> chex.Array:
         """Takes multiple blocks and their corresponding rotations and positions,
             and generates a grid for each block.
@@ -439,8 +446,8 @@ class FlatPack(Environment[State]):
             blocks: array of possible blocks.
             block_idxs: array of indices of the blocks to place.
             rotations: array of all possible rotations for each block.
-            rows: array of row coordinates.
-            cols: array of column coordinates.
+            row_coords: array of row coordinates.
+            col_coords: array of column coordinates.
         """
 
         batch_expand_block_to_board = jax.vmap(
@@ -451,7 +458,7 @@ class FlatPack(Environment[State]):
         rotated_blocks = jax.vmap(rotate_block, in_axes=(0, 0))(
             all_possible_blocks, rotations
         )
-        grids = batch_expand_block_to_board(rotated_blocks, rows, cols)
+        grids = batch_expand_block_to_board(rotated_blocks, row_coords, col_coords)
 
         batch_get_ones_like_expanded_block = jax.vmap(
             self._get_ones_like_expanded_block, in_axes=(0)
