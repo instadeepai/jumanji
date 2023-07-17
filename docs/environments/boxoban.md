@@ -40,7 +40,7 @@ The episode concludes when:
 
 ## Dataset
 
-The Boxoban dataset offers a collection of puzzle levels. Each level features four boxes and four targets. The objective is to push all boxes onto their corresponding targets. The dataset has three levels of difficulty: 'unfiltered', 'medium', and 'hard'.
+The Boxoban dataset offers a collection of puzzle levels. Each level features four boxes and four targets. The dataset has three levels of difficulty: 'unfiltered', 'medium', and 'hard'.
 
 | Dataset Split | Number of Levels |
 |---------------|------------------|
