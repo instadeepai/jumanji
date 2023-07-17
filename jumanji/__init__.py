@@ -20,6 +20,7 @@ from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
 from jumanji.environments.logic.sudoku import data as sudoku_data
 from jumanji.environments.logic.sudoku import generator as sudoku_generator
+from jumanji.environments.routing.boxoban.generator import DeepMindGenerator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -73,7 +74,6 @@ register(
     kwargs={"generator": very_easy_sudoku_generator},
 )
 
-
 ###
 # Packing Environments
 ###
@@ -92,7 +92,6 @@ register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
 # Tetris - the game of tetris with a grid size of 10x10 and a time limit of 400.
 register(id="Tetris-v0", entry_point="jumanji.environments:Tetris")
-
 
 ###
 # Routing Environments
@@ -127,3 +126,15 @@ register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 
 # TSP with 20 randomly generated cities and a dense reward function.
 register(id="TSP-v1", entry_point="jumanji.environments:TSP")
+
+# Boxoban with deepmind dataset generator
+register(
+    id="Boxoban-v0",
+    entry_point="jumanji.environments:Boxoban",
+    kwargs={"generator": DeepMindGenerator(
+                            difficulty="unfiltered",
+                            split="train",
+                            proportion_of_files=0.01,
+                        )
+            },
+)

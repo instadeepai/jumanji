@@ -152,3 +152,4 @@ cython_debug/
 jumanji_env/
 **/outputs/
 *.xml
+.sokoban_cache/
