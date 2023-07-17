@@ -13,17 +13,19 @@
 # limitations under the License.
 
 import random
-import jumanji
+
 import jax
 import jax.numpy as jnp
 
-#from jumanji.environments.routing.boxoban.env import Boxoban
-#from jumanji.environments.routing.boxoban.generator import ToyGenerator
+import jumanji
+
+# from jumanji.environments.routing.boxoban.env import Boxoban
+# from jumanji.environments.routing.boxoban.generator import ToyGenerator
 
 random.seed(40)
 
-#toy_gen = ToyGenerator()
-#box_env = Boxoban()
+# toy_gen = ToyGenerator()
+# box_env = Boxoban()
 
 box_env = jumanji.make("Boxoban-v0")
 

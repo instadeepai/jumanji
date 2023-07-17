@@ -27,6 +27,7 @@ from jumanji.environments import (
     MMST,
     TSP,
     BinPack,
+    Boxoban,
     Cleaner,
     Connector,
     Game2048,
@@ -41,7 +42,6 @@ from jumanji.environments import (
     Snake,
     Sudoku,
     Tetris,
-    Boxoban,
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent

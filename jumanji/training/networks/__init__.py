@@ -20,6 +20,10 @@ from jumanji.training.networks.bin_pack.actor_critic import (
     make_actor_critic_networks_bin_pack,
 )
 from jumanji.training.networks.bin_pack.random import make_random_policy_bin_pack
+from jumanji.training.networks.boxoban.actor_critic import (
+    make_actor_critic_networks_boxoban,
+)
+from jumanji.training.networks.boxoban.random import make_random_policy_boxoban
 from jumanji.training.networks.cleaner.actor_critic import (
     make_actor_critic_networks_cleaner,
 )
@@ -85,5 +89,3 @@ from jumanji.training.networks.tetris.actor_critic import (
 from jumanji.training.networks.tetris.random import make_random_policy_tetris
 from jumanji.training.networks.tsp.actor_critic import make_actor_critic_networks_tsp
 from jumanji.training.networks.tsp.random import make_random_policy_tsp
-from jumanji.training.networks.boxoban.random import make_random_policy_boxoban
-from jumanji.training.networks.boxoban.actor_critic  import make_actor_critic_networks_boxoban

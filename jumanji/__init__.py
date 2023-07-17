@@ -131,10 +131,11 @@ register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 register(
     id="Boxoban-v0",
     entry_point="jumanji.environments:Boxoban",
-    kwargs={"generator": DeepMindGenerator(
-                            difficulty="unfiltered",
-                            split="train",
-                            proportion_of_files=0.01,
-                        )
-            },
+    kwargs={
+        "generator": DeepMindGenerator(
+            difficulty="unfiltered",
+            split="train",
+            proportion_of_files=0.01,
+        )
+    },
 )

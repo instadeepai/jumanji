@@ -19,7 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.boxoban import Observation, Boxoban
+from jumanji.environments.routing.boxoban import Boxoban, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -57,6 +57,7 @@ def make_actor_critic_networks_boxoban(
         value_network=value_network,
         parametric_action_distribution=parametric_action_distribution,
     )
+
 
 def make_boxoban_cnn(
     num_outputs: int,
@@ -98,16 +99,14 @@ def preprocess_input(
     input_array: chex.Array,
 ) -> chex.Array:
 
-    one_hot_array_fixed = jnp.equal(
-        input_array[..., 0:1], jnp.array([3, 4])
-    ).astype(jnp.float32)
-
-    one_hot_array_variable = jnp.equal(
-        input_array[..., 1:2], jnp.array([1, 2])
-    ).astype(jnp.float32)
-
-    total = jnp.concatenate(
-        (one_hot_array_fixed, one_hot_array_variable), axis=-1
+    one_hot_array_fixed = jnp.equal(input_array[..., 0:1], jnp.array([3, 4])).astype(
+        jnp.float32
     )
+
+    one_hot_array_variable = jnp.equal(input_array[..., 1:2], jnp.array([1, 2])).astype(
+        jnp.float32
+    )
+
+    total = jnp.concatenate((one_hot_array_fixed, one_hot_array_variable), axis=-1)
 
     return total

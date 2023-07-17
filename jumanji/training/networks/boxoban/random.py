@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
+import jax
+import jax.numpy as jnp
+
+from jumanji.environments.routing.boxoban import Observation
+
 # Ok what is a random policy
 from jumanji.training.networks.protocols import RandomPolicy
-from jumanji.environments.routing.boxoban import Observation
-import jax.numpy as jnp
-import jax
-import chex
+
 
 def categorical_random(
-        observation: Observation,
-        key: chex.PRNGKey,
+    observation: Observation,
+    key: chex.PRNGKey,
 ) -> chex.Array:
     logits = jnp.zeros(shape=(observation.grid.shape[0], 4))
 

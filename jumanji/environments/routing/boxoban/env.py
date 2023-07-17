@@ -601,7 +601,6 @@ class Boxoban(Environment[State]):
             next_location: Array (int32) shape (2,)
         """
 
-
         next_location = current_location + MOVES[action]
         box_location = next_location + MOVES[action]
 

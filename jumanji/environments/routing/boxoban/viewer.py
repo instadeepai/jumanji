@@ -27,7 +27,6 @@ import jumanji.environments
 from jumanji.viewer import Viewer
 
 
-
 class BoxViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
 
@@ -59,7 +58,7 @@ class BoxViewer(Viewer):
             "box_on_target",
         ]
 
-        def get_image(image_name):
+        def get_image(image_name: str) -> Image.Image:
             img_path = pkg_resources.resource_filename(
                 "jumanji", f"environments/imgs/boxoban/{image_name}.png"
             )
