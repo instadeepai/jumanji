@@ -177,7 +177,6 @@ class Boxoban(Environment[State]):
         self,
         state: State,
         action: chex.Array
-        # Maybe this should be chex.Numeric?
     ) -> Tuple[State, TimeStep[Observation]]:
         """
         Executes one timestep of the environment's dynamics.
@@ -199,9 +198,10 @@ class Boxoban(Environment[State]):
         # switch to noop if action will have no impact on variable grid
         action = self.detect_noop_action(state.variable_grid, state.fixed_grid, action)
 
-        next_variable_grid, next_agent_location = self.update_grid_and_agent(
-            state,
-            action,
+        next_grid, next_agent_location = jax.lax.cond(
+            jnp.all(action == -1),
+            lambda: (state.variable_grid, state.agent_location),
+            lambda: self.move_agent(state.variable_grid, action, state.agent_location),
         )
 
         next_state = State(
@@ -246,7 +246,7 @@ class Boxoban(Environment[State]):
         Returns:
             specs.Spec[Observation]: The specifications of the observations.
         """
-        grid = specs.BoundedArray(  # What is this grid I am a bit confused
+        grid = specs.BoundedArray(
             shape=(self.num_rows, self.num_cols, 2),
             dtype=jnp.uint8,
             minimum=0,
@@ -347,8 +347,6 @@ class Boxoban(Environment[State]):
         Returns:
             full_grid: Array (uint8) of shape (num_rows, num_cols, 2).
         """
-
-        # This is broken!!!
 
         mask_target_agent = jnp.logical_and(
             fixed_grid == TARGET,
@@ -551,35 +549,6 @@ class Boxoban(Environment[State]):
                 action,
             ),
         )
-
-    # still think a better name can be used or we can remove the whole thigng
-    def update_grid_and_agent(
-        self,
-        state: State,
-        action: chex.Array,
-    ) -> Tuple[chex.Array, chex.Array]:
-        """
-        Moves the agent in the grid if an action other than noop is given.
-
-        Args:
-            state: 'State' object representing the current state of the
-            environment.
-            action: Array (int32) shape () representing the action to take.
-
-        Returns:
-            next_grid: Array (uint8) shape (num_rows, num_cols) The updated
-            grid.
-            next_agent_location: Array (int32) shape (2,) updated Agent
-            location
-        """
-
-        next_grid, next_agent_location = jax.lax.cond(
-            jnp.all(action == -1),
-            lambda: (state.variable_grid, state.agent_location),
-            lambda: self.move_agent(state.variable_grid, action, state.agent_location),
-        )
-
-        return next_grid, next_agent_location
 
     def move_agent(
         self,
