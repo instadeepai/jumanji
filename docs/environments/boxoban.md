@@ -55,15 +55,15 @@ The dataset generation procedure and more details can be found in Guez et al., 2
 
 ## Graphics
 
-| Type             | Graphic                                                   |
-|------------------|-----------------------------------------------------------|
-| Wall             | ![Wall](../../jumanji/environments/imgs/boxoban/wall.png) |
-| Floor            | ![Floor](../../jumanji/environments/imgs/boxoban/floor.png)                    |
-| Target    | ![BoxTarget](../../jumanji/environments/imgs/boxoban/box_target.png)           |
-| Box on Target    | ![BoxTarget](../../jumanji/environments/imgs/boxoban/box_on_target.png)        |
-| Box Off Target   | ![BoxOffTarget](../../jumanji/environments/imgs/boxoban/box.png)               |
-| Agent Off Target | ![PlayerOffTarget](../../jumanji/environments/imgs/boxoban/agent.png)          |
-| Agent On Target  | ![PlayerOnTarget](../../jumanji/environments/imgs/boxoban/agent_on_target.png) |
+| Type             | Graphic                                                                        |
+|------------------|--------------------------------------------------------------------------------|
+| Wall             | ![Wall](../../jumanji/environments/routing/boxoban/imgs/wall.png)              |
+| Floor            | ![Floor](../../jumanji/environments/routing/boxoban/imgs/floor.png)                    |
+| Target    | ![BoxTarget](../../jumanji/environments/routing/boxoban/imgs/box_target.png)           |
+| Box on Target    | ![BoxTarget](../../jumanji/environments/routing/boxoban/imgs/box_on_target.png)        |
+| Box Off Target   | ![BoxOffTarget](../../jumanji/environments/routing/boxoban/imgs/box.png)               |
+| Agent Off Target | ![PlayerOffTarget](../../jumanji/environments/routing/boxoban/imgs/agent.png)          |
+| Agent On Target  | ![PlayerOnTarget](../../jumanji/environments/routing/boxoban/imgs/agent_on_target.png) |
 
 ## Registered Versions 📖
 

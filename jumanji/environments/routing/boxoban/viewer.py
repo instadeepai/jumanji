@@ -61,7 +61,7 @@ class BoxViewer(Viewer):
 
         def get_image(image_name: str) -> Image.Image:
             img_path = pkg_resources.resource_filename(
-                "jumanji", f"environments/imgs/boxoban/{image_name}.png"
+                "jumanji", f"environments/routing/boxoban/imgs/{image_name}.png"
             )
             return Image.open(img_path)
 
