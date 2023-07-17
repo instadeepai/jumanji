@@ -19,12 +19,15 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
-matplotlib.use('TkAgg')
 from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.packing.bin_pack.generator import Generator, RandomGenerator, ConstrainedRandomGenerator
+from jumanji.environments.packing.bin_pack.generator import (
+    ConstrainedRandomGenerator,
+    Generator,
+    RandomGenerator,
+)
 from jumanji.environments.packing.bin_pack.reward import DenseReward, RewardFn
 from jumanji.environments.packing.bin_pack.space import Space
 from jumanji.environments.packing.bin_pack.types import (
@@ -38,10 +41,15 @@ from jumanji.environments.packing.bin_pack.types import (
     item_volume,
     space_from_item_and_location,
 )
-from jumanji.environments.packing.bin_pack.viewer import BinPackViewer, UpgradedBinPackViewer
+from jumanji.environments.packing.bin_pack.viewer import (
+    BinPackViewer,
+    UpgradedBinPackViewer,
+)
 from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
+
+matplotlib.use("TkAgg")
 
 
 class BinPack(Environment[State]):
@@ -535,7 +543,12 @@ class BinPack(Environment[State]):
         )(obs_ems, obs_ems_mask, items, items_mask, items_placed)
         return action_mask
 
-    def _pack_item(self, state: State, ems_id: int, item_id: chex.Numeric) -> State:
+    def _pack_item(
+        self,
+        state: State,
+        ems_id: int,
+        item_id: chex.Numeric,
+    ) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
         ems = tree_slice(state.ems, ems_id)
@@ -704,17 +717,22 @@ class BinPack(Environment[State]):
 
 
 class UpgradedBinPack(BinPack):
-    
     def __init__(
         self,
-        generator: Optional[Generator] = ConstrainedRandomGenerator(20, 40),
+        generator: Optional[Generator] = None,
         obs_num_ems: int = 40,
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
-        viewer: Optional[Viewer[State]] = UpgradedBinPackViewer("ConstrainedBinPack", render_mode="human")
+        viewer: Optional[Viewer[State]] = None,
     ):
-        super().__init__(generator, obs_num_ems, reward_fn, normalize_dimensions, debug, viewer)
+        generator = generator or ConstrainedRandomGenerator(20, 40)
+        viewer = viewer or UpgradedBinPackViewer(
+            "ConstrainedBinPack", render_mode="human"
+        )
+        super().__init__(
+            generator, obs_num_ems, reward_fn, normalize_dimensions, debug, viewer
+        )
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `BinPack` environment.
@@ -739,40 +757,44 @@ class UpgradedBinPack(BinPack):
         obs_num_ems = self.obs_num_ems
         max_num_items = self.generator.max_num_items
         max_dim = max(self.generator.container_dims)
-        
+
         if self.normalize_dimensions:
             items_dict = {
-                f"{axis}": specs.BoundedArray((6,max_num_items), float, 0.0, 1.0, axis)
+                f"{axis}": specs.BoundedArray((6, max_num_items), float, 0.0, 1.0, axis)
                 for axis in ["x_len", "y_len", "z_len"]
             }
         else:
             items_dict = {
                 f"{axis}": specs.BoundedArray(
-                    (6,max_num_items), jnp.int32, 0, max_dim, axis
+                    (6, max_num_items), jnp.int32, 0, max_dim, axis
                 )
                 for axis in ["x_len", "y_len", "z_len"]
             }
         items = specs.Spec(Item, "ItemsSpec", **items_dict)
         items_mask = specs.BoundedArray(
-            (6,max_num_items), bool, False, True, "items_mask"
+            (6, max_num_items), bool, False, True, "items_mask"
         )
         items_placed = specs.BoundedArray(
-            (6,max_num_items), bool, False, True, "items_placed"
+            (6, max_num_items), bool, False, True, "items_placed"
         )
         action_mask = specs.BoundedArray(
-            (6,obs_num_ems, max_num_items),
+            (6, obs_num_ems, max_num_items),
             bool,
             False,
             True,
             "action_mask",
         )
-        return super().observation_spec().replace(
-            items=items, 
-            items_mask=items_mask,
-            items_placed=items_placed,
-            action_mask=action_mask
+        return (
+            super()
+            .observation_spec()
+            .replace(
+                items=items,
+                items_mask=items_mask,
+                items_placed=items_placed,
+                action_mask=action_mask,
+            )
         )
-    
+
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `BinPack` environment.
 
@@ -785,7 +807,7 @@ class UpgradedBinPack(BinPack):
             [6, self.obs_num_ems, self.generator.max_num_items], jnp.int32
         )
         return specs.MultiDiscreteArray(num_values=num_values, name="action")
-    
+
     def step(
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
@@ -812,8 +834,8 @@ class UpgradedBinPack(BinPack):
                     invalid. Only available in debug mode.
         """
         action_is_valid = state.action_mask[tuple(action)]  # type: ignore
-       
-        orientation,obs_ems_id, item_id = action
+
+        orientation, obs_ems_id, item_id = action
         ems_id = state.sorted_ems_indexes[obs_ems_id]
 
         # Pack the item if the provided action is valid.
@@ -830,11 +852,11 @@ class UpgradedBinPack(BinPack):
         reward = self.reward_fn(state, action, next_state, action_is_valid, done)
 
         extras.update(invalid_action=~action_is_valid)
-        
+
         if self.debug:
             ems_are_all_valid = self._ems_are_all_valid(next_state)
             extras.update(invalid_ems_from_env=~ems_are_all_valid)
-        
+
         timestep = jax.lax.cond(
             done,
             lambda: termination(
@@ -850,8 +872,10 @@ class UpgradedBinPack(BinPack):
         )
 
         return next_state, timestep
-    
-    def _pack_item(self, state: State, ems_id: int, item_id: chex.Numeric, item_orientation) -> State:
+
+    def _pack_item(  # type: ignore
+        self, state: State, ems_id: int, item_id: chex.Numeric, item_orientation: int
+    ) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
         ems = tree_slice(state.ems, ems_id)
@@ -859,13 +883,12 @@ class UpgradedBinPack(BinPack):
             state.items_location, item_id, Location(ems.x1, ems.y1, ems.z1)
         )
         state.items_mask = state.items_mask.at[:, item_id].set(False)
-        #jax.debug.print("items_mask : {}",state.items_mask)
-        state.items_placed = state.items_placed.at[item_orientation,item_id].set(True)
-        #jax.debug.print("items_placed : {}",state.items_placed)
+        # jax.debug.print("items_mask : {}",state.items_mask)
+        state.items_placed = state.items_placed.at[item_orientation, item_id].set(True)
+        # jax.debug.print("items_placed : {}",state.items_placed)
         state = self._update_ems(state, item_id, item_orientation)
         return state
 
-  
     def _get_action_mask(
         self,
         obs_ems: EMS,
@@ -896,9 +919,10 @@ class UpgradedBinPack(BinPack):
         ) -> chex.Array:
             item_fits_in_ems = item_fits_in_item(item, item_from_space(ems))
             return ~item_placed & item_mask & ems_mask & item_fits_in_ems
+
         action_masks = []
         for o in range(6):
-            tmp_items = Item(items[:][0][o],items[:][1][o],items[:][2][o])
+            tmp_items = Item(items[:][0][o], items[:][1][o], items[:][2][o])
             action_mask = jax.vmap(
                 jax.vmap(is_action_allowed, in_axes=(None, None, 0, 0, 0)),
                 in_axes=(0, 0, None, None, None),
@@ -913,7 +937,9 @@ class UpgradedBinPack(BinPack):
         ems_intersection_with_items = jnp.zeros((state.ems_mask.shape), bool)
 
         for o in range(6):
-            tmp_items = Item(state.items[:][0][o],state.items[:][1][o],state.items[:][2][o])
+            tmp_items = Item(
+                state.items[:][0][o], state.items[:][1][o], state.items[:][2][o]
+            )
             item_spaces = space_from_item_and_location(tmp_items, state.items_location)
             ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(
                 state.ems, item_spaces
@@ -925,11 +951,14 @@ class UpgradedBinPack(BinPack):
         )
         return ~ems_intersection_with_items & ~ems_outside_container
 
-    def _update_ems(self, state: State, item_id: chex.Numeric, item_orientation) -> State:
+    def _update_ems(  # type: ignore
+        self, state: State, item_id: chex.Numeric, item_orientation
+    ) -> State:
         """Update the EMSs after packing the item."""
-        
+
         item_space = space_from_item_and_location(
-            tree_slice(tree_slice(state.items, item_orientation),item_id), tree_slice(state.items_location, item_id)
+            tree_slice(tree_slice(state.items, item_orientation), item_id),
+            tree_slice(state.items_location, item_id),
         )
 
         # Delete EMSs that intersect the new item.

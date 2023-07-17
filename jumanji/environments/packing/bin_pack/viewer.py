@@ -275,76 +275,78 @@ class BinPackViewer(Viewer):
         )
         return used_volume
 
+
 class UpgradedBinPackViewer(BinPackViewer):
     def __init__(self, name: str, render_mode: str = "human") -> None:
         super().__init__(name, render_mode)
 
-
-
     def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
-            """Sets the bounds of the scene and displays text about the scene.
+        """Sets the bounds of the scene and displays text about the scene.
 
-            Args:
-                state: `State` of the environment
-            """
-            eps = 0.05
-            container = item_from_space(state.container)
-            ax.set(
-                xlim=(-container.x_len * eps, container.x_len * (1 + eps)),
-                ylim=(-container.y_len * eps, container.y_len * (1 + eps)),
-                zlim=(-container.z_len * eps, container.z_len * (1 + eps)),
-            )
-            ax.set_xlabel("x", font=self.FONT_STYLE)
-            ax.set_ylabel("y", font=self.FONT_STYLE)
-            ax.set_zlabel("z", font=self.FONT_STYLE)
+        Args:
+            state: `State` of the environment
+        """
+        eps = 0.05
+        container = item_from_space(state.container)
+        ax.set(
+            xlim=(-container.x_len * eps, container.x_len * (1 + eps)),
+            ylim=(-container.y_len * eps, container.y_len * (1 + eps)),
+            zlim=(-container.z_len * eps, container.z_len * (1 + eps)),
+        )
+        ax.set_xlabel("x", font=self.FONT_STYLE)
+        ax.set_ylabel("y", font=self.FONT_STYLE)
+        ax.set_zlabel("z", font=self.FONT_STYLE)
 
-            n_items = state.items_mask.shape[1]
-            placed_items = np.sum(state.items_placed)
-            container_volume = (
-                float(container.x_len) * float(container.y_len) * float(container.z_len)
-            )
-            used_volume = self._get_used_volume(state)
-            print(used_volume)
-            print(n_items)
-            print(placed_items)
-            metrics = [
-                ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
-                ("Used Volume", f"{used_volume / container_volume:6.1%}"),
-            ]
-            title = " | ".join(key + ": " + value for key, value in metrics)
-            fig.suptitle(title, font=self.FONT_STYLE)
+        n_items = state.items_mask.shape[1]
+        placed_items = np.sum(state.items_placed)
+        container_volume = (
+            float(container.x_len) * float(container.y_len) * float(container.z_len)
+        )
+        used_volume = self._get_used_volume(state)
+        print(used_volume)
+        print(n_items)
+        print(placed_items)
+        metrics = [
+            ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
+            ("Used Volume", f"{used_volume / container_volume:6.1%}"),
+        ]
+        title = " | ".join(key + ": " + value for key, value in metrics)
+        fig.suptitle(title, font=self.FONT_STYLE)
 
     def _create_entities(
-            self, state: State
-        ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
-            entities = []
-            n_items = state.items_mask.shape[1]
-            cmap = plt.cm.get_cmap("hsv", n_items)
-            for i in range(6):
-                for j in range(n_items):
-                    if state.items_placed[i, j]:
-                        box = self._create_box(
-                            (
-                                state.items_location.x[j],
-                                state.items_location.y[j],
-                                state.items_location.z[j],
-                            ),
-                            (state.items.x_len[i,j], state.items.y_len[i,j], state.items.z_len[i,j]),
-                            cmap(j),
-                            0.3,
-                        )
-                        entities.append(box)
+        self, state: State
+    ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
+        entities = []
+        n_items = state.items_mask.shape[1]
+        cmap = plt.cm.get_cmap("hsv", n_items)
+        for i in range(6):
+            for j in range(n_items):
+                if state.items_placed[i, j]:
+                    box = self._create_box(
+                        (
+                            state.items_location.x[j],
+                            state.items_location.y[j],
+                            state.items_location.z[j],
+                        ),
+                        (
+                            state.items.x_len[i, j],
+                            state.items.y_len[i, j],
+                            state.items.z_len[i, j],
+                        ),
+                        cmap(j),
+                        0.3,
+                    )
+                    entities.append(box)
 
-            container = item_from_space(state.container)
-            box = self._create_box(
-                (0.0, 0.0, 0.0),
-                (container.x_len, container.y_len, container.z_len),
-                "cyan",
-                0.05,
-            )
-            entities.append(box)
-            return entities
-
+        container = item_from_space(state.container)
+        box = self._create_box(
+            (0.0, 0.0, 0.0),
+            (container.x_len, container.y_len, container.z_len),
+            "cyan",
+            0.05,
+        )
+        entities.append(box)
+        return entities
 
     def _get_used_volume(self, state: State) -> float:
         used_volume = sum(

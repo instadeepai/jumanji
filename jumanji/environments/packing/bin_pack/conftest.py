@@ -18,14 +18,14 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji import specs
-from jumanji.environments.packing.bin_pack.env import BinPack
+from jumanji.environments.packing.bin_pack.env import BinPack, UpgradedBinPack
 from jumanji.environments.packing.bin_pack.generator import (
     TWENTY_FOOT_DIMS,
+    ConstrainedRandomGenerator,
+    ConstrainedToyGenerator,
     Generator,
     RandomGenerator,
     ToyGenerator,
-    ConstrainedRandomGenerator, 
-    ConstrainedToyGenerator,
     make_container,
 )
 from jumanji.environments.packing.bin_pack.reward import DenseReward, SparseReward
@@ -78,7 +78,7 @@ class DummyGenerator(Generator):
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
             # For deterministic instance generators we always set the key to 0.
             key=jax.random.PRNGKey(0),
-            nb_items = 3
+            nb_items=3,
         )
 
 
@@ -114,48 +114,62 @@ class DummyConstrainedGenerator(DummyGenerator):
             ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
             items=Item(
                 # The 1st and 2nd items have the same shape.
-                x_len=jnp.array([
-                    [1000, 1000, 500], 
-                    [1000, 1000, 500],
-                    [700, 700, 500],
-                    [700, 700, 500],
-                    [900, 900, 600],
-                    [900, 900, 600], 
-                ], jnp.int32),
-                y_len=jnp.array([
-                    [700, 700, 500],
-                    [900, 900, 600], 
-                    [1000, 1000, 500], 
-                    [900, 900, 600], 
-                    [700, 700, 500], 
-                    [1000, 1000, 500]
-
-                ], jnp.int32),
-                z_len=jnp.array([
-                    [900, 900, 600], 
-                    [700, 700, 500], 
-                    [900, 900, 600], 
-                    [1000, 1000, 500],
-                    [1000, 1000, 500],
-                    [700, 700, 500]
-                ], jnp.int32),
+                x_len=jnp.array(
+                    [
+                        [1000, 1000, 500],
+                        [1000, 1000, 500],
+                        [700, 700, 500],
+                        [700, 700, 500],
+                        [900, 900, 600],
+                        [900, 900, 600],
+                    ],
+                    jnp.int32,
+                ),
+                y_len=jnp.array(
+                    [
+                        [700, 700, 500],
+                        [900, 900, 600],
+                        [1000, 1000, 500],
+                        [900, 900, 600],
+                        [700, 700, 500],
+                        [1000, 1000, 500],
+                    ],
+                    jnp.int32,
+                ),
+                z_len=jnp.array(
+                    [
+                        [900, 900, 600],
+                        [700, 700, 500],
+                        [900, 900, 600],
+                        [1000, 1000, 500],
+                        [1000, 1000, 500],
+                        [700, 700, 500],
+                    ],
+                    jnp.int32,
+                ),
             ),
-            items_mask=jnp.array([
-                [True, True, True],
-                [True, True, True],
-                [True, True, True],
-                [True, True, True],
-                [True, True, True],
-                [True, True, True]
-            ], bool),
-            items_placed=jnp.array([
-                [False, False, False],
-                [False, False, False],
-                [False, False, False],
-                [False, False, False],
-                [False, False, False],
-                [False, False, False]
-            ], bool),
+            items_mask=jnp.array(
+                [
+                    [True, True, True],
+                    [True, True, True],
+                    [True, True, True],
+                    [True, True, True],
+                    [True, True, True],
+                    [True, True, True],
+                ],
+                bool,
+            ),
+            items_placed=jnp.array(
+                [
+                    [False, False, False],
+                    [False, False, False],
+                    [False, False, False],
+                    [False, False, False],
+                    [False, False, False],
+                    [False, False, False],
+                ],
+                bool,
+            ),
             items_location=jax.tree_util.tree_map(
                 lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
             ),
@@ -163,13 +177,14 @@ class DummyConstrainedGenerator(DummyGenerator):
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
             # For deterministic instance generators we always set the key to 0.
             key=jax.random.PRNGKey(0),
-            nb_items=3
+            nb_items=3,
         )
 
 
 @pytest.fixture
 def dummy_generator() -> DummyGenerator:
     return DummyGenerator()
+
 
 @pytest.fixture
 def dummy_constrained_generator() -> DummyGenerator:
@@ -206,8 +221,11 @@ def dummy_state(dummy_generator: DummyGenerator) -> State:
     state.action_mask = jnp.ones((num_ems, num_items), bool)
     return state
 
+
 @pytest.fixture
-def dummy_constrained_state(dummy_constrained_generator: DummyConstrainedGenerator) -> State:
+def dummy_constrained_state(
+    dummy_constrained_generator: DummyConstrainedGenerator,
+) -> State:
     state = dummy_constrained_generator(key=jax.random.PRNGKey(0))
     num_ems = dummy_constrained_generator.max_num_ems
     num_items = dummy_constrained_generator.max_num_items
@@ -218,6 +236,13 @@ def dummy_constrained_state(dummy_constrained_generator: DummyConstrainedGenerat
 @pytest.fixture
 def bin_pack(dummy_generator: DummyGenerator) -> BinPack:
     return BinPack(generator=dummy_generator, obs_num_ems=5)
+
+
+@pytest.fixture()
+def upgraded_bin_pack(
+    dummy_constrained_generator: DummyConstrainedGenerator,
+) -> UpgradedBinPack:
+    return UpgradedBinPack(generator=dummy_constrained_generator, obs_num_ems=5)
 
 
 @pytest.fixture
@@ -233,6 +258,7 @@ def space() -> Space:
 @pytest.fixture
 def dense_reward() -> DenseReward:
     return DenseReward()
+
 
 @pytest.fixture
 def bin_pack_dense_reward(

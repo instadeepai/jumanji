@@ -57,9 +57,11 @@ class DenseReward(RewardFn):
             _, item_id = action
             chosen_item_volume = item_volume(tree_slice(state.items, item_id))
         except ValueError as e:
-            if(str(e)== "too many values to unpack (expected 2)"):
+            if str(e) == "too many values to unpack (expected 2)":
                 orientation, _, item_id = action
-                chosen_item_volume = item_volume(tree_slice(state.items, (orientation, item_id)))
+                chosen_item_volume = item_volume(
+                    tree_slice(state.items, (orientation, item_id))
+                )
         container_volume = state.container.volume()
         reward = chosen_item_volume / container_volume
         reward: float = jax.lax.select(is_valid, reward, jnp.array(0, float))

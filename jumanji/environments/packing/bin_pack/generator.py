@@ -31,9 +31,9 @@ from jumanji.environments.packing.bin_pack.types import (
     State,
     empty_ems,
     item_from_space,
+    location_from_space,
     rotated_items_from_space,
     space_from_item_and_location,
-    location_from_space,
 )
 from jumanji.tree_utils import tree_slice, tree_transpose
 
@@ -681,7 +681,7 @@ class RandomGenerator(Generator):
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
             key=key,
-            nb_items=nb_items
+            nb_items=nb_items,
         )
         return solution
 
@@ -881,68 +881,75 @@ class RandomGenerator(Generator):
 
         return items_spaces, items_mask
 
+
 class ConstrainedToyGenerator(ToyGenerator):
     def __init__(self) -> None:
         super().__init__()
-    
+
     def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
         solution = super()._generate_solved_instance(key)
-        x_len, y_len, z_len = solution.items.x_len, solution.items.y_len, solution.items.z_len 
+        x_len, y_len, z_len = (
+            solution.items.x_len,
+            solution.items.y_len,
+            solution.items.z_len,
+        )
         solution.items = Item(
             x_len=jnp.array([x_len, x_len, y_len, y_len, z_len, z_len]),
-            y_len=jnp.array([y_len, z_len, x_len, z_len, y_len, x_len]), 
-            z_len=jnp.array([z_len, y_len, z_len, x_len, x_len, y_len])
+            y_len=jnp.array([y_len, z_len, x_len, z_len, y_len, x_len]),
+            z_len=jnp.array([z_len, y_len, z_len, x_len, x_len, y_len]),
         )
-        solution.items_mask = jnp.array(jnp.array([
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
-        ]))
+        solution.items_mask = jnp.array(
+            jnp.array(
+                [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                ]
+            )
+        )
         return solution
-    
+
     def _unpack_items(self, state: State) -> State:
         state = super()._unpack_items(state)
-        state.items_placed = jnp.zeros((6,self.max_num_items), bool)
+        state.items_placed = jnp.zeros((6, self.max_num_items), bool)
         return state
-    
-class ConstrainedRandomGenerator(RandomGenerator):
 
+
+class ConstrainedRandomGenerator(RandomGenerator):
     def __init__(
-            self,
-            max_num_items: int, 
-            max_num_ems: int, 
-            split_eps: float = 0.3, 
-            prob_split_one_item: float = 0.7, 
-            split_num_same_items: int = 5, 
-            container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS
-        ):
+        self,
+        max_num_items: int,
+        max_num_ems: int,
+        split_eps: float = 0.3,
+        prob_split_one_item: float = 0.7,
+        split_num_same_items: int = 5,
+        container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
+    ):
         super().__init__(
-            max_num_items, 
-            max_num_ems, 
-            split_eps, 
-            prob_split_one_item, 
-            split_num_same_items, 
-            container_dims
+            max_num_items,
+            max_num_ems,
+            split_eps,
+            prob_split_one_item,
+            split_num_same_items,
+            container_dims,
         )
 
     def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
         solved_instance = super()._generate_solved_instance(key)
         solved_instance.items = rotated_items_from_space(
             space_from_item_and_location(
-                solved_instance.items,
-                solved_instance.items_location
+                solved_instance.items, solved_instance.items_location
             )
         )
         solved_instance.items_mask = jnp.broadcast_to(
-            solved_instance.items_mask,
-            (6,solved_instance.items_mask.shape[0])
+            solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
         )
         return solved_instance
 
     def _unpack_items(self, state: State) -> State:
         state = super()._unpack_items(state)
-        state.items_placed = jnp.zeros((6,self.max_num_items), bool)
+        state.items_placed = jnp.zeros((6, self.max_num_items), bool)
         return state
