@@ -70,7 +70,7 @@ class Boxoban(Environment[State]):
         - fixed_grid: jax array (uint8) of shape (num_rows, num_cols)
             array indicating the walls and targets in the level.
         - variable_grid: jax array (uint8) of shape (num_rows, num_cols)
-            array indicating the agent and boxes in the level.
+            array indicating the current location of the agent and boxes.
         - agent_location: jax array (int32) of shape (2,)
             the agent's current location.
         - step_count: jax array (int32) of shape ()
@@ -185,10 +185,10 @@ class Boxoban(Environment[State]):
             state: 'State' object representing the current state of the
             environment.
             action: Array (int32) of shape ().
-                - 0: move left.
-                - 1: move right.
-                - 2: move down.
-                - 3: move to up.
+                - 0: move up.
+                - 1: move down.
+                - 2: move left.
+                - 3: move right.
 
         Returns:
             state, timestep: next state of the environment and timestep to be
@@ -198,7 +198,7 @@ class Boxoban(Environment[State]):
         # switch to noop if action will have no impact on variable grid
         action = self.detect_noop_action(state.variable_grid, state.fixed_grid, action)
 
-        next_grid, next_agent_location = jax.lax.cond(
+        next_variable_grid, next_agent_location = jax.lax.cond(
             jnp.all(action == -1),
             lambda: (state.variable_grid, state.agent_location),
             lambda: self.move_agent(state.variable_grid, action, state.agent_location),
@@ -250,7 +250,7 @@ class Boxoban(Environment[State]):
             shape=(self.num_rows, self.num_cols, 2),
             dtype=jnp.uint8,
             minimum=0,
-            maximum=4,
+            maximum=3,
             name="grid",
         )
         step_count = specs.Array((), jnp.int32, "step_count")
@@ -304,7 +304,7 @@ class Boxoban(Environment[State]):
 
         Returns:
             extras: Dict object containing current proportion of boxes on
-            targets
+            targets and whether the problem is solved.
         """
         num_boxes_on_targets = self.count_targets(state)
         total_num_boxes = N_BOXES
@@ -337,7 +337,10 @@ class Boxoban(Environment[State]):
     ) -> chex.Array:
         """
         Combines the variable grid and fixed grid into one single grid
-        representation of the current Boxoban state.
+        representation of the current Boxoban state required for visual
+        representation of the Boxoban state. Takes care of two possible
+        overlaps of fixed and variable entries (an agent on a target or a box
+        on a target), introducing two additional encodings.
 
         Args:
             variable_grid: Array (uint8) of shape (num_rows, num_cols).
@@ -378,8 +381,8 @@ class Boxoban(Environment[State]):
             environment.
 
         Returns:
-            n_targets: Array (int32) of shape () specifying the number of boxes on
-            targets.
+            n_targets: Array (int32) of shape () specifying the number of boxes
+            on targets.
         """
 
         mask_box = state.variable_grid == BOX
@@ -471,7 +474,7 @@ class Boxoban(Environment[State]):
         Masks actions to -1 that have no effect on the variable grid.
         Determines if there is space in the destination square or if
         there is a box in the destination square, it determines if the box
-        destination square is free.
+        destination square is valid.
 
         Args:
             variable_grid: Array (uint8) shape (num_rows, num_cols).
