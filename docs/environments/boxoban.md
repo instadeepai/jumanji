@@ -4,8 +4,7 @@
         <img src="../env_anim/boxoban.gif" width="500"/>
 </p>
 
-
-We provide here a Jax implementation of the _Boxoban_ environment inspired by the popular Sokoban puzzle game. This implementation utilizes the dataset from DeepMind[^1] and the graphical resources from the Gym Sokoban repository[^2] which also implements Boxoban and a range of variants of Sokoban. The goal of the agent is to navigate a grid world
+We provide here a Jax implementation of the _Boxoban_ environment inspired by the popular Sokoban puzzle game. This implementation utilizes the dataset from <a href="#ref1">[1]</a> and the graphical resources from the <a href="#ref2">[2]</a> which also implements Boxoban and a range of variants of Sokoban. The goal of the agent is to navigate a grid world.
 
 ## Observation
 
@@ -55,6 +54,6 @@ The episode terminates under the following conditions:
 - `Boxoban-v0`: Boxoban game using DeepMind dataset.
 
 ## References
-[1]: Guez, A., Mirza, M., Gregor, K., Kabra, R., Racaniere, S., Weber, T., Raposo, D., Santoro, A., Orseau, L., Eccles, T., Wayne, G., Silver, D., Lillicrap, T., Valdes, V. (2018). An investigation of Model-free planning: boxoban levels. Available at https://github.com/deepmind/boxoban-levels/
+<a id="ref1">[1]</a> Guez, A., Mirza, M., Gregor, K., Kabra, R., Racaniere, S., Weber, T., Raposo, D., Santoro, A., Orseau, L., Eccles, T., Wayne, G., Silver, D., Lillicrap, T., Valdes, V. (2018). An investigation of Model-free planning: boxoban levels. Available at [https://github.com/deepmind/boxoban-levels](https://github.com/deepmind/boxoban-levels)
 
-[2]: Schrader, M. (2018). Gym-sokoban. Available at https://github.com/mpSchrader/gym-sokoban
+<a id="ref2">[2]</a> Schrader, M. (2018). Gym-sokoban. Available at [https://github.com/mpSchrader/gym-sokoban](https://github.com/mpSchrader/gym-sokoban)
