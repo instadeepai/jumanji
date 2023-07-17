@@ -17,7 +17,11 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.packing.flat_pack.reward import CellDenseReward, SparseReward
+from jumanji.environments.packing.flat_pack.reward import (
+    BlockDenseReward,
+    CellDenseReward,
+    SparseReward,
+)
 from jumanji.environments.packing.flat_pack.types import State
 
 
@@ -55,7 +59,7 @@ def state_with_no_blocks_placed(
 
 @pytest.fixture()
 def state_with_block_one_placed(
-    solved_grid: chex.Array,
+    action_mask_with_block_1_placed: chex.Array,
     grid_with_block_one_placed: chex.Array,
     blocks: chex.Array,
     key: chex.PRNGKey,
@@ -66,14 +70,7 @@ def state_with_block_one_placed(
     return State(
         num_blocks=4,
         # TODO: Add the correct full action mask here.
-        action_mask=jnp.array(
-            [
-                False,
-                True,
-                True,
-                True,
-            ]
-        ),
+        action_mask=action_mask_with_block_1_placed,
         placed_blocks=jnp.array(
             [
                 True,
@@ -91,6 +88,7 @@ def state_with_block_one_placed(
 
 @pytest.fixture()
 def state_needing_only_block_one(
+    action_mask_without_only_block_1_placed: chex.Array,
     solved_grid: chex.Array,
     grid_with_block_one_placed: chex.Array,
     blocks: chex.Array,
@@ -104,15 +102,7 @@ def state_needing_only_block_one(
 
     return State(
         num_blocks=4,
-        # TODO: Add the correct full action mask here.
-        action_mask=jnp.array(
-            [
-                True,
-                False,
-                True,
-                True,
-            ]
-        ),
+        action_mask=action_mask_without_only_block_1_placed,
         placed_blocks=jnp.array(
             [
                 True,
@@ -157,25 +147,24 @@ def solved_state(
 
 
 @pytest.fixture()
-def block_one_misplaced(grid_with_block_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where block one has been placed completely incorrectly.
-    That is to say that there is no overlap between where the block has been placed and
-    where it should be placed to solve the grid.
+def block_one_placed_at_2_2(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed with it left top-most
+    corner at position (2, 2).
     """
 
     # Shift all elements in the array two down and two to the right
-    misplaced_block = jnp.roll(grid_with_block_one_placed, shift=2, axis=0)
-    misplaced_block = jnp.roll(misplaced_block, shift=2, axis=1)
+    placed_block = jnp.roll(grid_with_block_one_placed, shift=2, axis=0)
+    placed_block = jnp.roll(placed_block, shift=2, axis=1)
 
-    return misplaced_block
+    return placed_block
 
 
-def test_dense_reward(
+def test_cell_dense_reward(
     state_with_no_blocks_placed: State,
     state_with_block_one_placed: State,
-    block_one_correctly_placed: chex.Array,
-    block_one_partially_placed: chex.Array,
-    block_one_misplaced: chex.Array,
+    block_one_placed_at_0_0: chex.Array,
+    block_one_placed_at_1_1: chex.Array,
+    block_one_placed_at_2_2: chex.Array,
 ) -> None:
 
     dense_reward = jax.jit(CellDenseReward())
@@ -183,7 +172,7 @@ def test_dense_reward(
     # Test placing block one completely correctly
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_correctly_placed,
+        action=block_one_placed_at_0_0,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -193,7 +182,7 @@ def test_dense_reward(
     # Test placing block one partially correct
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_partially_placed,
+        action=block_one_placed_at_1_1,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -203,7 +192,7 @@ def test_dense_reward(
     # Test placing a completely incorrect block
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_misplaced,
+        action=block_one_placed_at_2_2,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -213,7 +202,58 @@ def test_dense_reward(
     # Test invalid action returns 0 reward.
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_correctly_placed,
+        action=block_one_placed_at_0_0,
+        is_valid=False,
+        is_done=False,
+        next_state=state_with_block_one_placed,
+    )
+    assert reward == 0.0
+
+
+def test_block_dense_reward(
+    state_with_no_blocks_placed: State,
+    state_with_block_one_placed: State,
+    block_one_placed_at_0_0: chex.Array,
+    block_one_placed_at_1_1: chex.Array,
+    block_one_placed_at_2_2: chex.Array,
+) -> None:
+
+    dense_reward = jax.jit(BlockDenseReward())
+
+    # Test placing block one completely correctly
+    reward = dense_reward(
+        state=state_with_no_blocks_placed,
+        action=block_one_placed_at_0_0,
+        is_valid=True,
+        is_done=False,
+        next_state=state_with_block_one_placed,
+    )
+    assert reward == 1.0 / 4.0
+
+    # Test placing block one partially correct
+    reward = dense_reward(
+        state=state_with_no_blocks_placed,
+        action=block_one_placed_at_1_1,
+        is_valid=True,
+        is_done=False,
+        next_state=state_with_block_one_placed,
+    )
+    assert reward == 1.0 / 4.0
+
+    # Test placing a completely incorrect block
+    reward = dense_reward(
+        state=state_with_no_blocks_placed,
+        action=block_one_placed_at_2_2,
+        is_valid=True,
+        is_done=False,
+        next_state=state_with_block_one_placed,
+    )
+    assert reward == 1.0 / 4.0
+
+    # Test invalid action returns 0 reward.
+    reward = dense_reward(
+        state=state_with_no_blocks_placed,
+        action=block_one_placed_at_0_0,
         is_valid=False,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -226,7 +266,7 @@ def test_sparse_reward(
     state_with_block_one_placed: State,
     solved_state: State,
     state_needing_only_block_one: State,
-    block_one_correctly_placed: chex.Array,
+    block_one_placed_at_0_0: chex.Array,
 ) -> None:
 
     sparse_reward = jax.jit(SparseReward())
@@ -234,7 +274,7 @@ def test_sparse_reward(
     # Test that a intermediate step returns 0 reward
     reward = sparse_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_correctly_placed,
+        action=block_one_placed_at_0_0,
         next_state=state_with_block_one_placed,
         is_valid=True,
         is_done=False,
@@ -245,7 +285,7 @@ def test_sparse_reward(
     # give a reward of 1.
     reward = sparse_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_correctly_placed,
+        action=block_one_placed_at_0_0,
         next_state=state_with_block_one_placed,
         is_valid=True,
         is_done=True,
@@ -255,7 +295,7 @@ def test_sparse_reward(
     # Test that a final correctly placed block gives 1 reward.
     reward = sparse_reward(
         state=state_needing_only_block_one,
-        action=block_one_correctly_placed,
+        action=block_one_placed_at_0_0,
         next_state=solved_state,
         is_valid=True,
         is_done=True,

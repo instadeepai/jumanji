@@ -204,15 +204,15 @@ def test_random_flat_pack_generator__select_row_interlocks(
 
 def test_random_flat_pack_generator__first_nonzero(
     random_flat_pack_generator: RandomFlatPackGenerator,
-    block_one_partially_placed: chex.Array,
+    block_one_placed_at_1_1: chex.Array,
 ) -> None:
     """Checks that the indices of the first non-zero value in a grid is found correctly."""
 
     first_nonzero_row = random_flat_pack_generator._first_nonzero(
-        block_one_partially_placed, 0
+        block_one_placed_at_1_1, 0
     )
     first_nonzero_col = random_flat_pack_generator._first_nonzero(
-        block_one_partially_placed, 1
+        block_one_placed_at_1_1, 1
     )
 
     assert first_nonzero_row == 1
@@ -221,11 +221,11 @@ def test_random_flat_pack_generator__first_nonzero(
 
 def test_random_flat_pack_generator__crop_nonzero(
     random_flat_pack_generator: RandomFlatPackGenerator,
-    block_one_partially_placed: chex.Array,
+    block_one_placed_at_1_1: chex.Array,
 ) -> None:
     """Checks a block is correctly extracted from a grid of zeros."""
 
-    cropped_block = random_flat_pack_generator._crop_nonzero(block_one_partially_placed)
+    cropped_block = random_flat_pack_generator._crop_nonzero(block_one_placed_at_1_1)
 
     assert cropped_block.shape == (3, 3)
     assert jnp.array_equal(

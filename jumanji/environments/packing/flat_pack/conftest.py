@@ -69,17 +69,18 @@ def grid_with_block_one_placed() -> chex.Array:
 
 
 @pytest.fixture()
-def block_one_correctly_placed(grid_with_block_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where block one has been placed correctly."""
+def block_one_placed_at_0_0(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed with it left top-most
+    corner at position (0, 0).
+    """
 
     return grid_with_block_one_placed
 
 
 @pytest.fixture()
-def block_one_partially_placed(grid_with_block_one_placed: chex.Array) -> chex.Array:
-    """A 2D array of zeros where block one has been placed partially correctly.
-    That is to say that there is overlap between where the block has been placed and
-    where it should be placed to solve the grid.
+def block_one_placed_at_1_1(grid_with_block_one_placed: chex.Array) -> chex.Array:
+    """A 2D array of zeros where block one has been placed with it left top-most
+    corner at position (1, 1).
     """
 
     # Shift all elements in the array one down and one to the right
@@ -87,3 +88,75 @@ def block_one_partially_placed(grid_with_block_one_placed: chex.Array) -> chex.A
     partially_placed_block = jnp.roll(partially_placed_block, shift=1, axis=1)
 
     return partially_placed_block
+
+
+@pytest.fixture()
+def action_mask_with_block_1_placed() -> chex.Array:
+    """Action mask for a 4 piece grid where only block 1 has been placed with its
+    left top-most corner at (1, 1).
+    """
+
+    return jnp.array(
+        [
+            [
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+            ],
+            [
+                [[False, False, True], [False, False, True], [False, True, True]],
+                [[False, False, True], [False, True, True], [False, True, True]],
+                [[False, False, False], [False, False, True], [True, False, True]],
+                [[False, False, False], [False, False, True], [False, False, True]],
+            ],
+            [
+                [[False, False, False], [False, False, True], [True, False, True]],
+                [[False, False, False], [False, False, True], [False, False, True]],
+                [[False, False, False], [False, False, True], [False, False, True]],
+                [[False, False, True], [False, True, True], [True, True, True]],
+            ],
+            [
+                [[False, False, False], [False, False, True], [False, False, True]],
+                [[False, False, True], [False, False, True], [False, True, True]],
+                [[False, False, False], [False, False, True], [False, False, True]],
+                [[False, False, True], [False, False, True], [False, True, True]],
+            ],
+        ]
+    )
+
+
+@pytest.fixture()
+def action_mask_without_only_block_1_placed() -> chex.Array:
+    """Action mask for a 4 piece grid where only block 1 can be placed with its
+    left top-most corner at (1, 1).
+    """
+
+    return jnp.array(
+        [
+            [
+                [[True, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+            ],
+            [
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+            ],
+            [
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+            ],
+            [
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+                [[False, False, False], [False, False, False], [False, False, False]],
+            ],
+        ]
+    )
