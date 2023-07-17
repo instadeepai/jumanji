@@ -69,7 +69,6 @@ def state_with_block_one_placed(
     key, new_key = jax.random.split(key)
     return State(
         num_blocks=4,
-        # TODO: Add the correct full action mask here.
         action_mask=action_mask_with_block_1_placed,
         placed_blocks=jnp.array(
             [
