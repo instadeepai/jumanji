@@ -19,7 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.boxoban import Boxoban, Observation
+from jumanji.environments.routing.sokoban import Sokoban, Observation
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -29,28 +29,28 @@ from jumanji.training.networks.parametric_distribution import (
 )
 
 
-def make_actor_critic_networks_boxoban(
-    boxoban: Boxoban,
+def make_actor_critic_networks_sokoban(
+    sokoban: Sokoban,
     num_channels: int,
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `Boxoban` environment."""
-    num_actions = boxoban.action_spec().num_values
+    """Make actor-critic networks for the `Sokoban` environment."""
+    num_actions = sokoban.action_spec().num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )
-    policy_network = make_boxoban_cnn(
+    policy_network = make_sokoban_cnn(
         num_outputs=num_actions,
         mlp_units=policy_layers,
         conv_n_channels=num_channels,
-        time_limit=boxoban.time_limit,
+        time_limit=sokoban.time_limit,
     )
-    value_network = make_boxoban_cnn(
+    value_network = make_sokoban_cnn(
         num_outputs=1,
         mlp_units=value_layers,
         conv_n_channels=num_channels,
-        time_limit=boxoban.time_limit,
+        time_limit=sokoban.time_limit,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -59,7 +59,7 @@ def make_actor_critic_networks_boxoban(
     )
 
 
-def make_boxoban_cnn(
+def make_sokoban_cnn(
     num_outputs: int,
     mlp_units: Sequence[int],
     conv_n_channels: int,

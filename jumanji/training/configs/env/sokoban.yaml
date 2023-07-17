@@ -1,5 +1,5 @@
-name: boxoban
-registered_version: Boxoban-v0
+name: sokoban
+registered_version: Sokoban-v0
 
 network:
     num_channels: 32

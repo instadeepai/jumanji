@@ -16,7 +16,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.boxoban import Observation
+from jumanji.environments.routing.sokoban import Observation
 
 # Ok what is a random policy
 from jumanji.training.networks.protocols import RandomPolicy
@@ -32,6 +32,6 @@ def categorical_random(
     return action
 
 
-def make_random_policy_boxoban() -> RandomPolicy:
-    """Make random policy for the `Boxoban` environment."""
+def make_random_policy_sokoban() -> RandomPolicy:
+    """Make random policy for the `Sokoban` environment."""
     return categorical_random
