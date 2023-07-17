@@ -40,6 +40,46 @@ class Item(NamedTuple):
     y_len: chex.Numeric
     z_len: chex.Numeric
 
+def rotated_items_from_space(space: Space) -> jnp.ndarray:
+    return Item(
+            x_len=jnp.asarray(
+                [
+                    #x along X, y along Y, z along Z
+                    space.x2 - space.x1,
+                    #x along X, z along Y, y along Z
+                    space.x2 - space.x1,
+                    #y along X, x along Y, z along Z
+                    space.y2 - space.y1,
+                    #y along X, z along Y, x along Z
+                    space.y2 - space.y1,
+                    #z along X, y along Y, x along Z
+                    space.z2 - space.z1,
+                    #z along X, x along Y, y along Z
+                    space.z2 - space.z1
+                ],
+            ),
+            y_len=jnp.asarray(
+                [
+                    space.y2 - space.y1,
+                    space.z2 - space.z1,
+                    space.x2 - space.x1,
+                    space.z2 - space.z1,
+                    space.y2 - space.y1,
+                    space.x2 - space.x1,
+                ]
+            ),
+            z_len=jnp.asarray(
+                [
+                    space.z2 - space.z1,
+                    space.y2 - space.y1,
+                    space.z2 - space.z1,
+                    space.x2 - space.x1,
+                    space.x2 - space.x1,
+                    space.y2 - space.y1,
+
+                ]
+        )
+    )
 
 def item_from_space(space: Space) -> Item:
     """Convert a space to an item whose length on each dimension is the length of the space."""
@@ -119,18 +159,17 @@ class State:
     sorted_ems_indexes: EMS indexes that are sorted by decreasing volume order.
     key: random key used for auto-reset.
     """
-
     container: Container  # leaves of shape ()
     ems: EMS  # leaves of shape (max_num_ems,)
     ems_mask: chex.Array  # (max_num_ems,)
-    items: Item  # leaves of shape (max_num_items,)
-    items_mask: chex.Array  # (max_num_items,)
-    items_placed: chex.Array  # (max_num_items,)
+    items: Item  # leaves of shape (6,max_num_items,)
+    items_mask: chex.Array  # (6,max_num_items)
+    items_placed: chex.Array  # (6,max_num_items,6)
     items_location: Location  # leaves of shape (max_num_items,)
-    action_mask: Optional[chex.Array]  # (obs_num_ems, max_num_items)
+    action_mask: Optional[chex.Array]  # (6, obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # (max_num_ems,)
     key: chex.PRNGKey  # (2,)
-
+    nb_items:Optional[int] = None 
 
 class Observation(NamedTuple):
     """
@@ -146,6 +185,6 @@ class Observation(NamedTuple):
     ems: EMS  # leaves of shape (obs_num_ems,)
     ems_mask: chex.Array  # (obs_num_ems,)
     items: Item  # leaves of shape (max_num_items,)
-    items_mask: chex.Array  # (max_num_items,)
-    items_placed: chex.Array  # (max_num_items,)
-    action_mask: chex.Array  # (obs_num_ems, max_num_items)
+    items_mask: chex.Array  # (6, max_num_items,)
+    items_placed: chex.Array  # (6, max_num_items,)
+    action_mask: chex.Array  # (6, obs_num_ems, max_num_items)

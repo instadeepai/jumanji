@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.packing.bin_pack.env import BinPack
+from jumanji.environments.packing.bin_pack.env import BinPack, UpgradedBinPack
 from jumanji.environments.packing.bin_pack.types import Observation, State

@@ -24,6 +24,8 @@ from jumanji.environments.packing.bin_pack.generator import (
     Generator,
     RandomGenerator,
     ToyGenerator,
+    ConstrainedRandomGenerator, 
+    ConstrainedToyGenerator,
     make_container,
 )
 from jumanji.environments.packing.bin_pack.reward import DenseReward, SparseReward
@@ -76,12 +78,102 @@ class DummyGenerator(Generator):
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
             # For deterministic instance generators we always set the key to 0.
             key=jax.random.PRNGKey(0),
+            nb_items = 3
+        )
+
+
+class DummyConstrainedGenerator(DummyGenerator):
+    """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
+    container and 3 items: two identical items and a different third one to be able to
+    test item aggregation.
+    """
+
+    def __init__(self) -> None:
+        """Instantiate a dummy `Generator` with 3 items and 10 EMSs maximum."""
+        super(DummyGenerator, self).__init__(
+            max_num_items=3, max_num_ems=10, container_dims=TWENTY_FOOT_DIMS
+        )
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Returns a fixed instance with 3 items, 10 EMSs and a 20-ft container.
+
+        Args:
+            key: random key not used here but kept for consistency with parent signature.
+
+        Returns:
+            State.
+        """
+        del key
+        container = make_container(TWENTY_FOOT_DIMS)
+        return State(
+            container=container,
+            ems=jax.tree_util.tree_map(
+                lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
+                container,
+            ),
+            ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
+            items=Item(
+                # The 1st and 2nd items have the same shape.
+                x_len=jnp.array([
+                    [1000, 1000, 500], 
+                    [1000, 1000, 500],
+                    [700, 700, 500],
+                    [700, 700, 500],
+                    [900, 900, 600],
+                    [900, 900, 600], 
+                ], jnp.int32),
+                y_len=jnp.array([
+                    [700, 700, 500],
+                    [900, 900, 600], 
+                    [1000, 1000, 500], 
+                    [900, 900, 600], 
+                    [700, 700, 500], 
+                    [1000, 1000, 500]
+
+                ], jnp.int32),
+                z_len=jnp.array([
+                    [900, 900, 600], 
+                    [700, 700, 500], 
+                    [900, 900, 600], 
+                    [1000, 1000, 500],
+                    [1000, 1000, 500],
+                    [700, 700, 500]
+                ], jnp.int32),
+            ),
+            items_mask=jnp.array([
+                [True, True, True],
+                [True, True, True],
+                [True, True, True],
+                [True, True, True],
+                [True, True, True],
+                [True, True, True]
+            ], bool),
+            items_placed=jnp.array([
+                [False, False, False],
+                [False, False, False],
+                [False, False, False],
+                [False, False, False],
+                [False, False, False],
+                [False, False, False]
+            ], bool),
+            items_location=jax.tree_util.tree_map(
+                lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
+            ),
+            action_mask=None,
+            sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
+            nb_items=3
         )
 
 
 @pytest.fixture
 def dummy_generator() -> DummyGenerator:
     return DummyGenerator()
+
+@pytest.fixture
+def dummy_constrained_generator() -> DummyGenerator:
+    return DummyConstrainedGenerator()
 
 
 @pytest.fixture
@@ -96,11 +188,30 @@ def random_generator() -> RandomGenerator:
 
 
 @pytest.fixture
+def constrained_toy_generator() -> ToyGenerator:
+    return ConstrainedToyGenerator()
+
+
+@pytest.fixture
+def constrained_random_generator() -> RandomGenerator:
+    """Returns a `RandomGenerator` with up to 20 items and that can handle 80 EMSs."""
+    return ConstrainedRandomGenerator(max_num_items=20, max_num_ems=80)
+
+
+@pytest.fixture
 def dummy_state(dummy_generator: DummyGenerator) -> State:
     state = dummy_generator(key=jax.random.PRNGKey(0))
     num_ems = dummy_generator.max_num_ems
     num_items = dummy_generator.max_num_items
     state.action_mask = jnp.ones((num_ems, num_items), bool)
+    return state
+
+@pytest.fixture
+def dummy_constrained_state(dummy_constrained_generator: DummyConstrainedGenerator) -> State:
+    state = dummy_constrained_generator(key=jax.random.PRNGKey(0))
+    num_ems = dummy_constrained_generator.max_num_ems
+    num_items = dummy_constrained_generator.max_num_items
+    state.action_mask = jnp.ones((6, num_ems, num_items), bool)
     return state
 
 
@@ -122,7 +233,6 @@ def space() -> Space:
 @pytest.fixture
 def dense_reward() -> DenseReward:
     return DenseReward()
-
 
 @pytest.fixture
 def bin_pack_dense_reward(
