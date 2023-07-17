@@ -327,7 +327,6 @@ class Boxoban(Environment[State]):
 
         coordinates = jnp.where(grid == AGENT, size=1)
 
-        # Is this the right way to extract?
         x_coord = jnp.squeeze(coordinates[0])
         y_coord = jnp.squeeze(coordinates[1])
 
