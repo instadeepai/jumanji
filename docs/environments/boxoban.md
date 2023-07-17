@@ -67,7 +67,7 @@ The dataset generation procedure and more details can be found in Guez et al., 2
 
 ## Registered Versions 📖
 
-- `Boxoban-v0`: Boxoban game using DeepMind dataset.
+- `Boxoban-v0`: Boxoban game with levels generated using DeepMind dataset (unfiltered train).
 
 ## References
 <a id="ref1">[1]</a> Guez, A., Mirza, M., Gregor, K., Kabra, R., Racaniere, S., Weber, T., Raposo, D., Santoro, A., Orseau, L., Eccles, T., Wayne, G., Silver, D., Lillicrap, T., Valdes, V. (2018). An investigation of Model-free planning: boxoban levels. Available at [https://github.com/deepmind/boxoban-levels](https://github.com/deepmind/boxoban-levels)
