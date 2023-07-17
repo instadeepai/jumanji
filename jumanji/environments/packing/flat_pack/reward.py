@@ -39,9 +39,10 @@ class RewardFn(abc.ABC):
 class CellDenseReward(RewardFn):
     """Reward function for the dense reward setting.
 
-    This reward returns the number of non-zero cells in a placed block divided
+    This reward returns the number of non-zero cells in a placed block normalised
         by the total number of cells in the grid. This means that the maximum possible
-        episode return is 1.
+        episode return is 1. That is to say that, in the case of this reward, an agent
+        will optimise for maximal area coverage in the the grid.
     """
 
     def __call__(
@@ -81,7 +82,8 @@ class BlockDenseReward(RewardFn):
     This reward will give a normalised reward for each block placed on the grid
         with each block being equally weighted. This implies that each placed block
         will have a reward of `1 / num_blocks` and the maximum possible episode return
-        is 1.
+        is 1. That is to say that, in the case of this reward, an agent will optimise
+        for placing as many blocks as possible on the grid.
     """
 
     def __call__(
