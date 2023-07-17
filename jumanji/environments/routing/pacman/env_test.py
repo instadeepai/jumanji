@@ -78,9 +78,8 @@ def test_pac_man__step_jit(pac_man: PacMan) -> None:
     # Check that the state has changed
     assert new_state.player_locations.x == state.player_locations.x
     assert new_state.player_locations.y != state.player_locations.y
-    # assert not jnp.array_equal(new_state.ghost_locations, state.ghost_locations)
+    assert not jnp.array_equal(new_state.ghost_locations, state.ghost_locations)
     assert new_state.pellets != state.pellets
-    assert not jnp.array_equal(new_state.ghost_starts, state.ghost_starts)
 
 
 def test_pac_man_step_invalid(pac_man: PacMan) -> None:

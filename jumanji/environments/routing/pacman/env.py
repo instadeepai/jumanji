@@ -413,6 +413,7 @@ class PacMan(Environment[State]):
         # Decrease ghost starting delay
         state.ghost_starts = state.ghost_starts - 1
         reward = collision_rewards + power_up_rewards + ghost_col_rewards
+        state.score = jnp.array(state.score + reward, jnp.int32)
         return state, reward
 
     def ghost_move(self, state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
