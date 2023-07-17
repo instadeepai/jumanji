@@ -22,7 +22,9 @@ from typing import List, Tuple
 import chex
 import jax
 import jax.numpy as jnp
+import numpy as np
 import requests
+from huggingface_hub import hf_hub_download
 from tqdm import tqdm
 
 
@@ -179,6 +181,72 @@ class DeepMindGenerator(Generator):
                 zip_ref.extractall(self.cache_path)
 
 
+class HuggingFaceDeepMindGenerator(Generator):
+    """Instance generator that generates a random problem from the DeepMind
+    Boxoban dataset a popular dataset for comparing Reinforcement Learning
+    algorithms and Planning Algorithms. The dataset has unfiltered, medium and
+    hard versions. The unfiltered dataset contain train, test and valid
+    splits. The Medium has train and valid splits available. And the hard set
+    contains just a small number of problems. The problems are all guaranteed
+    to be solvable.
+    """
+
+    def __init__(
+        self,
+        dataset_name: str,
+        proportion_of_files: float = 1.0,
+    ) -> None:
+        """Instantiates a `DeepMindGenerator`.
+
+        Args:
+            dataset_name: the name of the dataset to use. Choices are:
+                - unfiltered-train,
+                - unfiltered-valid,
+                - unfiltered-test,
+                - medium-train,
+                - medium-test,
+                - hard.
+            proportion_of_files: float between (0,1) for the proportion of
+            files to use in the dataset .
+        """
+
+        self.dataset_name = dataset_name
+        self.proportion_of_files = proportion_of_files
+
+        dataset_file = hf_hub_download(
+            repo_id="InstaDeepAI/boxoban-levels", filename=f"{dataset_name}.npy"
+        )
+        with open(dataset_file, "rb") as f:
+            dataset = np.load(f)
+
+        # Convert to jax arrays and resize using proportion_of_files
+        length = int(proportion_of_files * dataset.shape[0])
+        self._fixed_grids = jnp.asarray(dataset[:length, ..., 0], jnp.uint8)
+        self._variable_grids = jnp.asarray(dataset[:length, ..., 1], jnp.uint8)
+
+    def __call__(self, rng_key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+        """Generate a random Boxoban problem from the Deepmind dataset.
+
+        Args:
+            rng_key: the Jax random number generation key.
+
+        Returns:
+            fixed_grid: Array (uint8) shape (num_rows, num_cols) the fixed
+                components of the problem.
+            variable_grid: Array (uint8) shape (num_rows, num_cols) the
+                variable components of the problem.
+        """
+
+        key, idx_key = jax.random.split(rng_key)
+        idx = jax.random.randint(
+            idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0]
+        )
+        fixed_grid = self._fixed_grids.take(idx, axis=0)
+        variable_grid = self._variable_grids.take(idx, axis=0)
+
+        return fixed_grid, variable_grid
+
+
 class ToyGenerator(Generator):
     def __call__(
         self,
@@ -254,6 +322,7 @@ class SimpleSolveGenerator(Generator):
             variable_grid: Array (uint8) shape (num_rows, num_cols) the
             variable components of the problem.
         """
+        del rng_key
 
         level1 = [
             "##########",

@@ -36,7 +36,10 @@ from jumanji.environments.routing.sokoban.constants import (
     TARGET_BOX,
     WALL,
 )
-from jumanji.environments.routing.sokoban.generator import DeepMindGenerator, Generator
+from jumanji.environments.routing.sokoban.generator import (
+    Generator,
+    HuggingFaceDeepMindGenerator,
+)
 from jumanji.environments.routing.sokoban.types import Observation, State
 from jumanji.environments.routing.sokoban.viewer import BoxViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -112,9 +115,8 @@ class Sokoban(Environment[State]):
         self.num_cols = GRID_SIZE
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit
-        self.generator = generator or DeepMindGenerator(
-            difficulty="unfiltered",
-            split="train",
+        self.generator = generator or HuggingFaceDeepMindGenerator(
+            "unfiltered-train",
             proportion_of_files=0.01,
         )
         self._viewer = viewer or BoxViewer(
