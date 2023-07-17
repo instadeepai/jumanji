@@ -27,7 +27,6 @@ from jumanji.environments import (
     MMST,
     TSP,
     BinPack,
-    Sokoban,
     Cleaner,
     Connector,
     Game2048,
@@ -40,6 +39,7 @@ from jumanji.environments import (
     RobotWarehouse,
     RubiksCube,
     Snake,
+    Sokoban,
     Sudoku,
     Tetris,
 )

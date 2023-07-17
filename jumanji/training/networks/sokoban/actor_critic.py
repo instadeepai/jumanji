@@ -19,7 +19,7 @@ import haiku as hk
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.sokoban import Sokoban, Observation
+from jumanji.environments.routing.sokoban import Observation, Sokoban
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
