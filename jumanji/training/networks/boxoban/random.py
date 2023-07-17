@@ -12,5 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.boxoban.env import Boxoban
-from jumanji.environments.routing.boxoban.types import Observation, State
+# Ok what is a random policy
+from jumanji.training.networks.protocols import RandomPolicy
+from jumanji.environments.routing.boxoban import Observation
+import jax.numpy as jnp
+import jax
+import chex
+
+def categorical_random(
+        observation: Observation,
+        key: chex.PRNGKey,
+) -> chex.Array:
+    logits = jnp.zeros(shape=(observation.grid.shape[0], 4))
+
+    action = jax.random.categorical(key, logits)
+    return action
+
+
+def make_random_policy_boxoban() -> RandomPolicy:
+    """Make random policy for the `Boxoban` environment."""
+    return categorical_random

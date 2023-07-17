@@ -27,6 +27,7 @@ import jumanji.environments
 from jumanji.viewer import Viewer
 
 
+
 class BoxViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
 
@@ -47,7 +48,7 @@ class BoxViewer(Viewer):
         self.grid_combine = grid_combine
         self._display = self._display_rgb_array
         self._animation: Optional[matplotlib.animation.Animation] = None
-        self.images = {}
+
         image_names = [
             "floor",
             "wall",
@@ -58,10 +59,13 @@ class BoxViewer(Viewer):
             "box_on_target",
         ]
 
-        for i, image_name in enumerate(image_names):
-            self.images[i] = Image.open(
-                pkg_resources.resource_filename(__name__, f"imgs/{image_name}.png")
+        def get_image(image_name):
+            img_path = pkg_resources.resource_filename(
+                "jumanji", f"environments/imgs/boxoban/{image_name}.png"
             )
+            return Image.open(img_path)
+
+        self.images = [get_image(image_name) for image_name in image_names]
 
     def render(self, state: chex.Array) -> Optional[NDArray]:
         """Render the given state of the `Boxoban` environment.
