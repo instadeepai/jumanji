@@ -20,7 +20,6 @@ from jumanji.env import Environment
 from jumanji.environments.logic.rubiks_cube import generator as rubik_generator
 from jumanji.environments.logic.sudoku import data as sudoku_data
 from jumanji.environments.logic.sudoku import generator as sudoku_generator
-from jumanji.environments.packing.flat_pack import generator as flat_pack_generator
 from jumanji.registration import make, register, registered_environments
 from jumanji.version import __version__
 
@@ -83,20 +82,9 @@ register(
 # given in the observation.
 register(id="BinPack-v2", entry_point="jumanji.environments:BinPack")
 
-# 2D grid filling problem with 9 blocks, a 7x7 grid and a random grid generator.
+# 2D grid filling problem with 25 blocks, an 11x11 grid and a random grid generator.
 # The grid must be filled in `num_blocks` steps.
 register(id="FlatPack-v0", entry_point="jumanji.environments:FlatPack")
-
-# Simplified 2D grid filling problem with a 5x5 grid, 4 blocks and a deterministic
-# grid generator.
-deterministic_flat_pack_generator_with_rotation = (
-    flat_pack_generator.ToyFlatPackGeneratorWithRotation()
-)
-register(
-    id="FlatPack-deterministic-rotation-v0",
-    entry_point="jumanji.environments:FlatPack",
-    kwargs={"generator": deterministic_flat_pack_generator_with_rotation},
-)
 
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
