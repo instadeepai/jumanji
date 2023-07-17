@@ -26,7 +26,7 @@ from jumanji.environments.packing.job_shop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.packing.tetris.env import Tetris
 from jumanji.environments.routing import (
-    boxoban,
+    sokoban,
     cleaner,
     connector,
     cvrp,
@@ -37,7 +37,7 @@ from jumanji.environments.routing import (
     snake,
     tsp,
 )
-from jumanji.environments.routing.boxoban.env import Boxoban
+from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.cleaner.env import Cleaner
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.cvrp.env import CVRP

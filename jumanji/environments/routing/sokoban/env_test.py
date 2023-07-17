@@ -19,20 +19,20 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.boxoban.constants import AGENT, BOX, TARGET, WALL
-from jumanji.environments.routing.boxoban.env import Boxoban
-from jumanji.environments.routing.boxoban.generator import (
+from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, WALL
+from jumanji.environments.routing.sokoban.env import Sokoban
+from jumanji.environments.routing.sokoban.generator import (
     DeepMindGenerator,
     SimpleSolveGenerator,
 )
-from jumanji.environments.routing.boxoban.types import State
+from jumanji.environments.routing.sokoban.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.types import TimeStep
 
 
 @pytest.fixture(scope="session")
-def boxoban() -> Boxoban:
-    env = Boxoban(
+def sokoban() -> Sokoban:
+    env = Sokoban(
         generator=DeepMindGenerator(
             difficulty="unfiltered",
             split="train",
@@ -43,14 +43,14 @@ def boxoban() -> Boxoban:
 
 
 @pytest.fixture(scope="session")
-def boxoban_simple() -> Boxoban:
-    env = Boxoban(generator=SimpleSolveGenerator())
+def sokoban_simple() -> Sokoban:
+    env = Sokoban(generator=SimpleSolveGenerator())
     return env
 
 
-def test_boxoban__reset(boxoban: Boxoban) -> None:
+def test_sokoban__reset(sokoban: Sokoban) -> None:
     chex.clear_trace_counter()
-    reset_fn = jax.jit(chex.assert_max_traces(boxoban.reset, n=1))
+    reset_fn = jax.jit(chex.assert_max_traces(sokoban.reset, n=1))
     key = jax.random.PRNGKey(0)
     state, timestep = reset_fn(key)
     assert isinstance(timestep, TimeStep)
@@ -63,17 +63,17 @@ def test_boxoban__reset(boxoban: Boxoban) -> None:
     assert not jnp.array_equal(state2.variable_grid, state.variable_grid)
 
 
-def test_boxoban__multi_step(boxoban: Boxoban) -> None:
-    """Validates the jitted step of the boxoban environment."""
+def test_sokoban__multi_step(sokoban: Sokoban) -> None:
+    """Validates the jitted step of the sokoban environment."""
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(boxoban.step, n=1))
+    step_fn = jax.jit(chex.assert_max_traces(sokoban.step, n=1))
 
     # Repeat test for 5 different state initializations
     for j in range(5):
         step_count = 0
         key = jax.random.PRNGKey(j)
         reset_key, step_key = jax.random.split(key)
-        state, timestep = boxoban.reset(reset_key)
+        state, timestep = sokoban.reset(reset_key)
 
         # Repeating random step 120 times
         for _ in range(120):
@@ -125,16 +125,16 @@ def test_boxoban__multi_step(boxoban: Boxoban) -> None:
             assert num_agents_on_wall == jnp.array(0, jnp.int32)
 
 
-def test_boxoban__termination_timelimit(boxoban: Boxoban) -> None:
+def test_sokoban__termination_timelimit(sokoban: Sokoban) -> None:
     """Check that with random actions the environment terminates after
     120 steps"""
 
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(boxoban.step, n=1))
+    step_fn = jax.jit(chex.assert_max_traces(sokoban.step, n=1))
 
     key = jax.random.PRNGKey(0)
     reset_key, step_key = jax.random.split(key)
-    state, timestep = boxoban.reset(reset_key)
+    state, timestep = sokoban.reset(reset_key)
 
     for _ in range(119):
         action = jnp.array(random.randint(0, 4), jnp.int32)
@@ -148,7 +148,7 @@ def test_boxoban__termination_timelimit(boxoban: Boxoban) -> None:
     assert timestep.last()
 
 
-def test_boxoban__termination_solved(boxoban_simple: Boxoban) -> None:
+def test_sokoban__termination_solved(sokoban_simple: Sokoban) -> None:
     """Check that with correct sequence of actions to solve a trivial problem,
     the environment terminates"""
 
@@ -156,12 +156,12 @@ def test_boxoban__termination_solved(boxoban_simple: Boxoban) -> None:
     wrong_actions = [0, 1, 3] * 3 + [1]
 
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(boxoban_simple.step, n=1))
+    step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
 
     # Check that environment does terminate with right series of actions
     key = jax.random.PRNGKey(0)
     reset_key, step_key = jax.random.split(key)
-    state, timestep = boxoban_simple.reset(reset_key)
+    state, timestep = sokoban_simple.reset(reset_key)
 
     for action in correct_actions:
         assert not timestep.last()
@@ -174,7 +174,7 @@ def test_boxoban__termination_solved(boxoban_simple: Boxoban) -> None:
     # Check that environment does not terminate with wrong series of actions
     key = jax.random.PRNGKey(0)
     reset_key, step_key = jax.random.split(key)
-    state, timestep = boxoban_simple.reset(reset_key)
+    state, timestep = sokoban_simple.reset(reset_key)
 
     for action in wrong_actions:
         assert not timestep.last()
@@ -185,7 +185,7 @@ def test_boxoban__termination_solved(boxoban_simple: Boxoban) -> None:
     assert not timestep.last()
 
 
-def test_boxoban__reward_function_solved(boxoban_simple: Boxoban) -> None:
+def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
     """Check the reward function is correct when solving the trivial problem.
     Every step should give -0.1, each box added to a target adds 1 and
     solving adds an additional 10"""
@@ -194,11 +194,11 @@ def test_boxoban__reward_function_solved(boxoban_simple: Boxoban) -> None:
     correct_actions = [0, 1, 3] * 3 + [0]
 
     chex.clear_trace_counter()
-    step_fn = jax.jit(chex.assert_max_traces(boxoban_simple.step, n=1))
+    step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
 
     key = jax.random.PRNGKey(0)
     reset_key, step_key = jax.random.split(key)
-    state, timestep = boxoban_simple.reset(reset_key)
+    state, timestep = sokoban_simple.reset(reset_key)
 
     for i, action in enumerate(correct_actions):
         action = jnp.array(action, jnp.int32)
@@ -212,7 +212,7 @@ def test_boxoban__reward_function_solved(boxoban_simple: Boxoban) -> None:
             assert timestep.reward == jnp.array(10.9, jnp.float32)
 
 
-def test_boxoban__reward_function_random(boxoban_simple: Boxoban) -> None:
+def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
     """Check the reward function is correct when randomly acting in the
     trivial problem, where accidently pushing boxes onto targets is likely.
     Every step should give -0.1, each box pushed on adds 1 , each box removed
@@ -235,19 +235,19 @@ def test_boxoban__reward_function_random(boxoban_simple: Boxoban) -> None:
 
     for i in range(5):
         chex.clear_trace_counter()
-        step_fn = jax.jit(chex.assert_max_traces(boxoban_simple.step, n=1))
+        step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
 
         key = jax.random.PRNGKey(i)
         reset_key, step_key = jax.random.split(key)
-        state, timestep = boxoban_simple.reset(reset_key)
+        state, timestep = sokoban_simple.reset(reset_key)
 
-        num_boxes_on_targets = boxoban_simple.count_targets(state)
+        num_boxes_on_targets = sokoban_simple.count_targets(state)
 
         for _ in range(120):
             action = jnp.array(random.randint(0, 4), jnp.int32)
             state, timestep = step_fn(state, action)
 
-            num_boxes_on_targets_new = boxoban_simple.count_targets(state)
+            num_boxes_on_targets_new = sokoban_simple.count_targets(state)
 
             check_correct_reward(
                 timestep, num_boxes_on_targets_new, num_boxes_on_targets
@@ -256,6 +256,6 @@ def test_boxoban__reward_function_random(boxoban_simple: Boxoban) -> None:
             num_boxes_on_targets = num_boxes_on_targets_new
 
 
-def test_boxoban__does_not_smoke(boxoban: Boxoban) -> None:
+def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:
     """Test that we can run an episode without any errors."""
-    check_env_does_not_smoke(boxoban)
+    check_env_does_not_smoke(sokoban)

@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.boxoban.env.Boxoban
+::: jumanji.environments.routing.sokoban.env.Sokoban
     selection:
       members:
         - __init__

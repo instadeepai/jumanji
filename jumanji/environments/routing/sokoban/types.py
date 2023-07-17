@@ -27,9 +27,9 @@ class State:
     """
     key: random key used for auto-reset.
     fixed_grid: Array (uint8) shape (n_rows, n_cols) array representing the
-    fixed elements of a boxoban problem.
+    fixed elements of a sokoban problem.
     variable_grid: Array (uint8) shape (n_rows, n_cols) array representing the
-    variable elements of a boxoban problem.
+    variable elements of a sokoban problem.
     agent_location: Array (int32) shape (2,)
     step_count: Array (int32) shape ()
     """
@@ -43,7 +43,7 @@ class State:
 
 class Observation(NamedTuple):
     """
-    The observation returned by the boxoban environment.
+    The observation returned by the sokoban environment.
     grid: Array (uint8) shape (n_rows, n_cols, 2) array representing the
     variable and fixed grids.
     step_count: Array (int32) shape () the index of the current step.

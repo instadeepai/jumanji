@@ -1,10 +1,10 @@
 # Boxoban Environment 👾
 
 <p align="center">
-        <img src="../env_anim/boxoban.gif" width="500"/>
+        <img src="../env_anim/sokoban.gif" width="500"/>
 </p>
 
-This is a Jax implementation of the _Boxoban_ environment, a Sokoban-inspired puzzle game. The agent navigates a grid world, leveraging the dataset from <a href="#ref1">[1]</a> and the graphical resources from <a href="#ref2">[2]</a>.
+This is a Jax implementation of the _Sokoban_ puzzle, a dynamic box-pushing environment where the agent's goal is to place all boxes on their targets. This version follows the rules from the DeepMind paper on [Imagination Augmented Agents](https://arxiv.org/abs/1707.06203), with levels based on the Boxoban dataset from [Guez et al., 2018](https://github.com/deepmind/boxoban-levels)[[1]](#ref1). The graphical assets were taken from [gym-sokoban](https://github.com/mpSchrader/gym-sokoban) by Schrader, a diverse Sokoban library implementing many versions of the game in the OpenAI gym framework [[2]](#ref2).
 
 ## Observation
 
@@ -55,19 +55,19 @@ The dataset generation procedure and more details can be found in Guez et al., 2
 
 ## Graphics
 
-| Type             | Graphic                                                                        |
-|------------------|--------------------------------------------------------------------------------|
-| Wall             | ![Wall](../../jumanji/environments/routing/boxoban/imgs/wall.png)              |
-| Floor            | ![Floor](../../jumanji/environments/routing/boxoban/imgs/floor.png)                    |
-| Target    | ![BoxTarget](../../jumanji/environments/routing/boxoban/imgs/box_target.png)           |
-| Box on Target    | ![BoxTarget](../../jumanji/environments/routing/boxoban/imgs/box_on_target.png)        |
-| Box Off Target   | ![BoxOffTarget](../../jumanji/environments/routing/boxoban/imgs/box.png)               |
-| Agent Off Target | ![PlayerOffTarget](../../jumanji/environments/routing/boxoban/imgs/agent.png)          |
-| Agent On Target  | ![PlayerOnTarget](../../jumanji/environments/routing/boxoban/imgs/agent_on_target.png) |
+| Type             | Graphic                                                                                |
+|------------------|----------------------------------------------------------------------------------------|
+| Wall             | ![Wall](../../jumanji/environments/routing/sokoban/imgs/wall.png)                      |
+| Floor            | ![Floor](../../jumanji/environments/routing/sokoban/imgs/floor.png)                    |
+| Target    | ![BoxTarget](../../jumanji/environments/routing/sokoban/imgs/box_target.png)           |
+| Box on Target    | ![BoxTarget](../../jumanji/environments/routing/sokoban/imgs/box_on_target.png)        |
+| Box Off Target   | ![BoxOffTarget](../../jumanji/environments/routing/sokoban/imgs/box.png)               |
+| Agent Off Target | ![PlayerOffTarget](../../jumanji/environments/routing/sokoban/imgs/agent.png)          |
+| Agent On Target  | ![PlayerOnTarget](../../jumanji/environments/routing/sokoban/imgs/agent_on_target.png) |
 
 ## Registered Versions 📖
 
-- `Boxoban-v0`: Boxoban game with levels generated using DeepMind dataset (unfiltered train).
+- `Sokoban-v0`: Sokoban game with levels generated using DeepMind Boxoban dataset (unfiltered train).
 
 ## References
 <a id="ref1">[1]</a> Guez, A., Mirza, M., Gregor, K., Kabra, R., Racaniere, S., Weber, T., Raposo, D., Santoro, A., Orseau, L., Eccles, T., Wayne, G., Silver, D., Lillicrap, T., Valdes, V. (2018). An investigation of Model-free planning: boxoban levels. Available at [https://github.com/deepmind/boxoban-levels](https://github.com/deepmind/boxoban-levels)

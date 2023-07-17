@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.boxoban.env import Boxoban
-from jumanji.environments.routing.boxoban.types import Observation, State
+from jumanji.environments.routing.sokoban.env import Sokoban
+from jumanji.environments.routing.sokoban.types import Observation, State

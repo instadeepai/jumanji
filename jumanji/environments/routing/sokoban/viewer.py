@@ -36,7 +36,7 @@ class BoxViewer(Viewer):
         grid_combine: Callable,
     ) -> None:
         """
-        Viewer for a `Boxoban` environment using images from
+        Viewer for a `Sokoban` environment using images from
         https://github.com/mpSchrader/gym-sokoban.
 
         Args:
@@ -61,14 +61,14 @@ class BoxViewer(Viewer):
 
         def get_image(image_name: str) -> Image.Image:
             img_path = pkg_resources.resource_filename(
-                "jumanji", f"environments/routing/boxoban/imgs/{image_name}.png"
+                "jumanji", f"environments/routing/sokoban/imgs/{image_name}.png"
             )
             return Image.open(img_path)
 
         self.images = [get_image(image_name) for image_name in image_names]
 
     def render(self, state: chex.Array) -> Optional[NDArray]:
-        """Render the given state of the `Boxoban` environment.
+        """Render the given state of the `Sokoban` environment.
 
         Args:
             state: the environment state to render.
@@ -153,7 +153,7 @@ class BoxViewer(Viewer):
         Add a grid image to the provided axes.
 
         Args:
-            state: 'State' object representing a state of Boxoban.
+            state: 'State' object representing a state of Sokoban.
             ax: (plt.Axes) object where the state image will be added.
         """
         grid = self.grid_combine(state.variable_grid, state.fixed_grid)

@@ -21,7 +21,7 @@ import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.boxoban.constants import (
+from jumanji.environments.routing.sokoban.constants import (
     AGENT,
     BOX,
     EMPTY,
@@ -36,15 +36,15 @@ from jumanji.environments.routing.boxoban.constants import (
     TARGET_BOX,
     WALL,
 )
-from jumanji.environments.routing.boxoban.generator import DeepMindGenerator, Generator
-from jumanji.environments.routing.boxoban.types import Observation, State
-from jumanji.environments.routing.boxoban.viewer import BoxViewer
+from jumanji.environments.routing.sokoban.generator import DeepMindGenerator, Generator
+from jumanji.environments.routing.sokoban.types import Observation, State
+from jumanji.environments.routing.sokoban.viewer import BoxViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Boxoban(Environment[State]):
-    """A JAX implementation of the 'Boxoban' game from deepmind.
+class Sokoban(Environment[State]):
+    """A JAX implementation of the 'Sokoban' game from deepmind.
 
     - observation: `Observation`
         - grid: jax array (uint8) of shape (num_rows, num_cols, 2)
@@ -77,8 +77,8 @@ class Boxoban(Environment[State]):
             current number of steps in the episode.
 
     ```python
-    from jumanji.environments import Boxoban
-    env = Boxoban()
+    from jumanji.environments import Sokoban
+    env = Sokoban()
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
@@ -95,7 +95,7 @@ class Boxoban(Environment[State]):
         viewer: Optional[Viewer] = None,
     ) -> None:
         """
-        Instantiates a `Boxoban` environment with a specific generator,
+        Instantiates a `Sokoban` environment with a specific generator,
         time limit, and viewer.
 
         Args:
@@ -118,16 +118,16 @@ class Boxoban(Environment[State]):
             proportion_of_files=0.01,
         )
         self._viewer = viewer or BoxViewer(
-            name="Boxoban",
+            name="Sokoban",
             grid_combine=self.grid_combine,
         )
 
     def __repr__(self) -> str:
         """
-        Returns a printable representation of the Boxoban environment.
+        Returns a printable representation of the Sokoban environment.
 
         Returns:
-            str: A string representation of the Boxoban environment.
+            str: A string representation of the Sokoban environment.
         """
         return "\n".join(
             [
@@ -145,7 +145,7 @@ class Boxoban(Environment[State]):
         new instance.
 
         Args:
-            key: random key used to sample new Boxoban problem.
+            key: random key used to sample new Sokoban problem.
 
         Returns:
             state: `State` object corresponding to the new state of the
@@ -238,7 +238,7 @@ class Boxoban(Environment[State]):
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """
-        Returns the specifications of the observation of the `Boxoban`
+        Returns the specifications of the observation of the `Sokoban`
         environment.
 
         Returns:
@@ -261,7 +261,7 @@ class Boxoban(Environment[State]):
 
     def action_spec(self) -> specs.DiscreteArray:
         """
-        Returns the action specification for the Boxoban environment.
+        Returns the action specification for the Sokoban environment.
         There are 4 actions: [0,1,2,3] -> [Up, Down, Left, Right].
 
         Returns:
@@ -335,8 +335,8 @@ class Boxoban(Environment[State]):
     ) -> chex.Array:
         """
         Combines the variable grid and fixed grid into one single grid
-        representation of the current Boxoban state required for visual
-        representation of the Boxoban state. Takes care of two possible
+        representation of the current Sokoban state required for visual
+        representation of the Sokoban state. Takes care of two possible
         overlaps of fixed and variable entries (an agent on a target or a box
         on a target), introducing two additional encodings.
 
@@ -392,7 +392,7 @@ class Boxoban(Environment[State]):
 
     def reward(self, state: State, next_state: State) -> chex.Array:
         """
-        Implements the reward function in the Boxoban environment.
+        Implements the reward function in the Sokoban environment.
 
         Args:
             state: `State` object The current state of the environment.
@@ -590,7 +590,7 @@ class Boxoban(Environment[State]):
 
     def render(self, state: State) -> None:
         """
-        Renders the current state of Boxoban.
+        Renders the current state of Sokoban.
 
         Args:
             state: 'State' object , the current state to be rendered.
@@ -605,7 +605,7 @@ class Boxoban(Environment[State]):
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
         """
-        Creates an animated gif of the Boxoban environment based on the
+        Creates an animated gif of the Sokoban environment based on the
         sequence of states.
 
         Args:
