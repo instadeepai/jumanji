@@ -4,12 +4,12 @@
         <img src="../env_anim/boxoban.gif" width="500"/>
 </p>
 
-We provide here a Jax implementation of the _Boxoban_ environment inspired by the popular Sokoban puzzle game. This implementation utilizes the dataset from <a href="#ref1">[1]</a> and the graphical resources from the <a href="#ref2">[2]</a> which also implements Boxoban and a range of variants of Sokoban. The goal of the agent is to navigate a grid world.
+This is a Jax implementation of the _Boxoban_ environment, a Sokoban-inspired puzzle game. The agent navigates a grid world, leveraging the dataset from <a href="#ref1">[1]</a> and the graphical resources from <a href="#ref2">[2]</a>.
 
 ## Observation
 
-- `grid`: Array (uint8) of shape `(10, 10, 2)`, representing the variable grid and fixed grid respectively. The variable grid contains encodings of objects that can move (boxes and the agent). The fixed grid contains encodings for fixed objects (walls and targets).
-- `step_count`: Array (int32) of shape `()`, current number of steps in the episode.
+- `grid`: An Array (uint8) of shape `(10, 10, 2)`. It represents the variable grid (containing movable objects: boxes and the agent) and the fixed grid (containing fixed objects: walls and targets).
+- `step_count`: An Array (int32) of shape `()`, representing the current number of steps in the episode.
 
 ## Object Encodings
 
@@ -21,36 +21,52 @@ We provide here a Jax implementation of the _Boxoban_ environment inspired by th
 | Agent        | 3        |
 | Box          | 4        |
 
-## Action
-The action space is an Array (int32) with possible values of `[0,1,2,3]` -> `[Up, Down, Left, Right]`.
+## Actions
+
+The agent's action space is an Array (int32) with potential values of `[0,1,2,3]` (corresponding to `[Up, Down, Left, Right]`). If the agent attempts to move into a wall, off the grid, or push a box into a wall or off the grid, the grid state remains unchanged; however, the step count is incremented by one. Chained box pushes are not allowed and will result in no action.
 
 ## Reward
-The reward function is
 
-- `-0.1` every step taken in the environment.
+The reward function comprises:
+- `-0.1` for each step taken in the environment.
 - `+1` for each box moved onto a target location and `-1` for each box moved off a target location.
-- `+10` once all 4 boxes are placed on their targets
+- `+10` upon successful placement of all four boxes on their targets.
 
 ## Episode Termination
 
-The episode terminates under the following conditions:
-
+The episode concludes when:
 - The step limit of 120 is reached.
-- The problem is solved (all 4 boxes are placed on targets).
+- All 4 boxes are placed on targets (i.e., the problem is solved).
+
+## Dataset
+
+The Boxoban dataset offers a collection of puzzle levels. Each level features four boxes and four targets. The objective is to push all boxes onto their corresponding targets. The dataset has three levels of difficulty: 'unfiltered', 'medium', and 'hard'.
+
+| Dataset Split | Number of Levels |
+|---------------|------------------|
+| Unfiltered (Training) | 900,000 |
+| Unfiltered (Validation) | 100,000 |
+| Unfiltered (Test) | 1,000 |
+| Medium (Training) | 450,000 |
+| Medium (Validation) | 50,000 |
+| Hard | 3,332 |
+
+The dataset generation procedure and more details can be found in Guez et al., 2018 <a href="#ref1">[1]</a>.
 
 ## Graphics
 
-| Type             | Graphic                                                           |
-|------------------|-------------------------------------------------------------------|
-| Wall             | ![Wall](../img/boxoban_img/wall.png)                  |
-| Floor            | ![Floor](../img/boxoban_img/floor.png)               |
-| Target    | ![BoxTarget](../img/boxoban_img/box_target.png)    |
-| Box on Target    | ![BoxTarget](../img/boxoban_img/box_on_target.png) |
-| Box Off Target   | ![BoxOffTarget](../img/boxoban_img/box.png)       |
-| Agent Off Target | ![PlayerOffTarget](../img/boxoban_img/agent.png)  |
-| Agent On Target  | ![PlayerOnTarget](../img/boxoban_img/agent_on_target.png) |
+| Type             | Graphic                                                   |
+|------------------|-----------------------------------------------------------|
+| Wall             | ![Wall](../../jumanji/environments/imgs/boxoban/wall.png) |
+| Floor            | ![Floor](../../jumanji/environments/imgs/boxoban/floor.png)                    |
+| Target    | ![BoxTarget](../../jumanji/environments/imgs/boxoban/box_target.png)           |
+| Box on Target    | ![BoxTarget](../../jumanji/environments/imgs/boxoban/box_on_target.png)        |
+| Box Off Target   | ![BoxOffTarget](../../jumanji/environments/imgs/boxoban/box.png)               |
+| Agent Off Target | ![PlayerOffTarget](../../jumanji/environments/imgs/boxoban/agent.png)          |
+| Agent On Target  | ![PlayerOnTarget](../../jumanji/environments/imgs/boxoban/agent_on_target.png) |
 
 ## Registered Versions 📖
+
 - `Boxoban-v0`: Boxoban game using DeepMind dataset.
 
 ## References
