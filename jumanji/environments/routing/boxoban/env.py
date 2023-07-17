@@ -174,9 +174,7 @@ class Boxoban(Environment[State]):
         return state, timestep
 
     def step(
-        self,
-        state: State,
-        action: chex.Array
+        self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
         """
         Executes one timestep of the environment's dynamics.
@@ -250,7 +248,7 @@ class Boxoban(Environment[State]):
             shape=(self.num_rows, self.num_cols, 2),
             dtype=jnp.uint8,
             minimum=0,
-            maximum=3,
+            maximum=4,
             name="grid",
         )
         step_count = specs.Array((), jnp.int32, "step_count")
