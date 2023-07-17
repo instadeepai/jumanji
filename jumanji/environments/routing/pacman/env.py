@@ -135,7 +135,7 @@ class PacMan(Environment[State]):
             - grid: BoundedArray (int)) of the ingame maze with walls.
             - ghost_locations: jax array (int) of ghost positions.
             - power_up_locations: jax array (int) of power-pellet locations
-            - pellet_locations: jax array (int) of pellets.
+            - pellet_locations: jax array (int) of pellet locations.
             - action_mask: jax array (bool) defining current actions.
         """
         player_locations = specs.Spec(
