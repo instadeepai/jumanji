@@ -7,7 +7,7 @@
 We provide here a Jax JIT-able implementation of a packing environment named _flat pack_. The goal of
 the agent is to place all the available blocks on an empty 2D grid.
 Each time an episode resets a new set of blocks is created and the grid is emptied. Blocks are randomly
-shuffled and rotated.
+shuffled and rotated and all have shape (3, 3).
 
 ## Observation
 The observation given to the agent gives a view of the current state of the grid as well as
@@ -18,14 +18,14 @@ all blocks that can be placed.
     where no blocks have been placed and numbers corresponding to each block where that particular
     block has been placed.
 
-- `blocks`: jax array (float32) of shape `(num_blocks, 3, 3)` of all possible blocks in the
+- `blocks`: jax array (float32) of shape `(num_blocks, 3, 3)` of all possible blocks in
     that can fit in the current grid. These blocks are shuffled, rotated and will always have shape `(3, 3)`.
 
 - `action_mask`: jax array (bool) of shape `(num_blocks, 4, num_rows-2, num_cols-2)`, representing
     which actions are possible given the current state of the grid. The first index indicates the
     number of blocks associated with a given grid. The second index indicates the number of times a block may be rotated.
-    The third and fourth indices indicate the row and column coordinate of where a block may be placed respectively.
-    Blocks are placed by an agent by specifying the row and column coordinate on the grid where the top left corner
+    The third and fourth indices indicate the row and column coordinate of where a blocks top left-most corner may be placed
+    respectively. Blocks are placed by an agent by specifying the row and column coordinate on the grid where the top left corner
     of the selected block should be placed. These values will always be `num_rows-2` and `num_cols-2`
     respectively to make it impossible for an agent to place a block outside the current grid.
 
@@ -53,5 +53,5 @@ terminates if either the grid is filled or `num_blocks` steps have been taken by
 
 
 ## Registered Versions 📖
-- `FlatPack-v0`, a flat pack environment grid with 7 rows and 7 columns containing 3 row blocks and 3 column blocks
-    for a total of 9 blocks that can be placed on the grid. This version has a dense reward.
+- `FlatPack-v0`, a flat pack environment grid with 11 rows and 11 columns containing 5 row blocks and 5 column blocks
+    for a total of 25 blocks that can be placed on the grid. This version has a dense reward.
