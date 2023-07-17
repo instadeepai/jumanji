@@ -310,6 +310,7 @@ class Boxoban(Environment[State]):
         total_num_boxes = N_BOXES
         extras = {
             "prop_correct_boxes": num_boxes_on_targets / total_num_boxes,
+            "solved": num_boxes_on_targets == 4,
         }
         return extras
 
