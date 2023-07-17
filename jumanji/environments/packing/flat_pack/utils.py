@@ -42,7 +42,7 @@ def rotate_block(block: chex.Array, rotation_value: int) -> chex.Array:
 
     Args:
         block: The block to rotate.
-        rotation: The angle to rotate the block by.
+        rotation: The number of rotations to rotate the block by.
     """
     rotated_block = jax.lax.switch(
         index=rotation_value,
