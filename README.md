@@ -111,7 +111,7 @@ problems.
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
-| :mag: PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
+| ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
 
 ## Installation 🎬
 
