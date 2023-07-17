@@ -55,7 +55,7 @@ class InstanceGenerator(abc.ABC):
             key: jax random key in case stochasticity is used in the instance generation process.
 
         Returns:
-            A `JigSaw` environment state.
+            A `FlatPack` environment state.
         """
 
 
@@ -246,7 +246,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
         num_blocks = self.num_row_blocks * self.num_col_blocks
 
-        # Compute the size of the gri.
+        # Compute the size of the grid.
         grid_row_dim = compute_grid_dim(self.num_row_blocks)
         grid_col_dim = compute_grid_dim(self.num_col_blocks)
 
@@ -292,7 +292,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         )
 
         # Finally shuffle the blocks along the leading dimension to
-        # untangle a blocks number from its position in the blocks array.
+        # untangle a block's number from its position in the blocks array.
         key, shuffle_blocks_key = jax.random.split(key)
         blocks = jax.random.permutation(
             key=shuffle_blocks_key, x=blocks, axis=0, independent=False
@@ -323,7 +323,7 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
 
         del key
 
-        mock_solved_grid = jnp.array(
+        solved_grid = jnp.array(
             [
                 [1.0, 1.0, 1.0, 2.0, 2.0],
                 [1.0, 1.0, 2.0, 2.0, 2.0],
@@ -334,7 +334,7 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
             dtype=jnp.float32,
         )
 
-        mock_blocks = jnp.array(
+        blocks = jnp.array(
             [
                 [[0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
                 [[2.0, 0.0, 0.0], [2.0, 2.0, 2.0], [2.0, 2.0, 0.0]],
@@ -345,8 +345,8 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
         )
 
         return State(
-            blocks=mock_blocks,
-            current_grid=jnp.zeros_like(mock_solved_grid),
+            blocks=blocks,
+            current_grid=jnp.zeros_like(solved_grid),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
             num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
@@ -370,7 +370,7 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
 
         del key
 
-        mock_solved_grid = jnp.array(
+        solved_grid = jnp.array(
             [
                 [1.0, 1.0, 1.0, 2.0, 2.0],
                 [1.0, 1.0, 2.0, 2.0, 2.0],
@@ -381,7 +381,7 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
             dtype=jnp.float32,
         )
 
-        mock_blocks = jnp.array(
+        blocks = jnp.array(
             [
                 [[1.0, 1.0, 1.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
                 [[0.0, 2.0, 2.0], [2.0, 2.0, 2.0], [0.0, 0.0, 2.0]],
@@ -392,11 +392,11 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
         )
 
         return State(
-            blocks=mock_blocks,
+            blocks=blocks,
             num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
-            current_grid=jnp.zeros_like(mock_solved_grid),
+            current_grid=jnp.zeros_like(solved_grid),
             step_count=0,
             placed_blocks=jnp.zeros(4, dtype=bool),
         )
