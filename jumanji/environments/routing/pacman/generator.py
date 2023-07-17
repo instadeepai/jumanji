@@ -111,4 +111,5 @@ class AsciiGenerator(Generator):
             scatter_targets=self.scatter_targets,
             step_count=jnp.array(0, jnp.int32),
             ghost_eaten=jnp.array([True, True, True, True]),
+            score=jnp.array(0, jnp.int32),
         )

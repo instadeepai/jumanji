@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence, Union, Tuple
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import matplotlib.animation
 import matplotlib.cm
@@ -68,6 +68,7 @@ class PacManViewer(MazeViewer):
             ax,
         ) = self._get_fig_ax()
         ax.clear()
+        fig.suptitle(f"Pacman    Score: {int(state.score)}", size=15)
         self._add_grid_image(state, ax)
         return self._display(fig)
 
@@ -81,7 +82,7 @@ class PacManViewer(MazeViewer):
         else:
             ax = fig.get_axes()[0]
         return fig, ax
-    
+
     def animate(
         self,
         states: Sequence[Union[Observation, State]],
@@ -107,6 +108,7 @@ class PacManViewer(MazeViewer):
             ax.clear()
             state = states[state_index]
             self._add_grid_image(state, ax)
+            fig.suptitle(f"Pacman    Score: {int(state.score)}", size=10)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(

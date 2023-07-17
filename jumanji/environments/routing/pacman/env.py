@@ -46,6 +46,7 @@ class PacMan(Environment[State]):
         - power_up_locations: jax array (int) of power-pellet locations
         - pellet_locations: jax array (int) of pellets.
         - action_mask: jax array (bool) defining current actions.
+        - score: (int32) of total points aquired.
 
     - action: jax array (int) of shape () specifiying which action to take [0,1,2,3,4]
         corresponding to [up, right, down, left, no-op. If there is an invalid action
@@ -86,6 +87,9 @@ class PacMan(Environment[State]):
             used to reset ghost positions if eaten
         - scatter_targets: jax array (int) of shape (4,2)
             target locations for ghosts when scatter behavior is active.
+        - step_count: (int32) of total steps taken from reset till current timestep.
+        - ghost_eaten: jax array (bool)of shape (4,) tracking if ghost has been eaten before.
+        - score: (int32) of total points aquired.
 
 
 
@@ -137,6 +141,9 @@ class PacMan(Environment[State]):
             - power_up_locations: jax array (int) of power-pellet locations
             - pellet_locations: jax array (int) of pellet locations.
             - action_mask: jax array (bool) defining current actions.
+            - frightened_state_time: int counting time remaining in
+                scatter mode.
+            - score: (int) of total score obtained by player.
         """
         player_locations = specs.Spec(
             Position,
@@ -175,6 +182,7 @@ class PacMan(Environment[State]):
         )
 
         frightened_state_time = specs.Array((), jnp.int32, "frightened_state_time")
+        score = specs.Array((), jnp.int32, "frightened_state_time")
 
         return specs.Spec(
             Observation,
@@ -186,6 +194,7 @@ class PacMan(Environment[State]):
             frightened_state_time=frightened_state_time,
             pellet_locations=pellet_locations,
             action_mask=action_mask,
+            score=score,
         )
 
     def action_spec(self) -> specs.DiscreteArray:
@@ -238,6 +247,7 @@ class PacMan(Environment[State]):
             frightened_state_time=state.frightened_state_time,
             pellet_locations=state.pellet_locations,
             action_mask=action_mask,
+            score=state.score,
         )
 
         # Return a restart timestep of step type is FIRST.
@@ -290,6 +300,7 @@ class PacMan(Environment[State]):
             scatter_targets=updated_state.scatter_targets,
             step_count=state.step_count + 1,
             ghost_eaten=updated_state.ghost_eaten,
+            score=updated_state.score,
         )
 
         # Check if episode terminates
@@ -314,6 +325,7 @@ class PacMan(Environment[State]):
             frightened_state_time=state.frightened_state_time,
             pellet_locations=state.pellet_locations,
             action_mask=action_mask,
+            score=next_state.score,
         )
 
         # Return either a MID or a LAST timestep depending on done.

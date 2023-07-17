@@ -64,6 +64,9 @@ class State:
         used to reset ghost positions if eaten
     scatter_targets: jax array (int) of scatter targets.
             target locations for ghosts when scatter behavior is active.
+    step_count: (int32) of total steps taken from reset till current timestep.
+    ghost_eaten: jax array (bool) tracking if ghost has been eaten before.
+    score: (int32) of total points aquired.
     """
 
     key: chex.PRNGKey  # (2,)
@@ -87,6 +90,7 @@ class State:
     scatter_targets: chex.Array  # (4,2)
     step_count: jnp.int32  # ()
     ghost_eaten: chex.Array  # (4,)
+    score: jnp.int32  # ()
 
 
 class Observation(NamedTuple):
@@ -99,7 +103,7 @@ class Observation(NamedTuple):
     frightened_state_time: (int32) number of steps left of scatter mode.
     pellet_locations: a 2D matrix of all pellet locations.
     action_mask: array specifying which directions the agent can move in from its current position.
-
+    score: (int32) of total points aquired.
     """
 
     grid: chex.Array  # (31, 28)
@@ -109,3 +113,4 @@ class Observation(NamedTuple):
     frightened_state_time: jnp.int32
     pellet_locations: chex.Array
     action_mask: chex.Array
+    score: jnp.int32  # ()
