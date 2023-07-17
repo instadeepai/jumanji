@@ -36,12 +36,12 @@ from jumanji.environments import (
     Maze,
     Minesweeper,
     MultiCVRP,
+    PacMan,
     RobotWarehouse,
     RubiksCube,
     Snake,
     Sudoku,
     Tetris,
-    PacMan
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
