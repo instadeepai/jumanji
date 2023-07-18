@@ -38,6 +38,8 @@ def test_sokoban__hugging_generator_creation() -> None:
             )
         )
 
+        print(env.generator._fixed_grids.shape)
+
         step_fn = jax.jit(chex.assert_max_traces(env.step, n=1))
 
         key = jax.random.PRNGKey(0)

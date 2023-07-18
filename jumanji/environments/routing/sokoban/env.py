@@ -117,7 +117,7 @@ class Sokoban(Environment[State]):
     state, timestep = jax.jit(env_test.step)(state, action)
     env_test.render(state)
     ```
-    
+
     """
 
     def __init__(
