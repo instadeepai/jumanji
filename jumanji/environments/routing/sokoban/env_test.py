@@ -19,11 +19,14 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, WALL
+from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, \
+    WALL
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.sokoban.generator import (
     DeepMindGenerator,
     SimpleSolveGenerator,
+    HuggingFaceDeepMindGenerator,
+    ToyGenerator,
 )
 from jumanji.environments.routing.sokoban.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
@@ -219,16 +222,18 @@ def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
     on takes away 1 ,solving adds an additional 10"""
 
     def check_correct_reward(
-        timestep: TimeStep,
-        num_boxes_on_targets_new: chex.Array,
-        num_boxes_on_targets: chex.Array,
+            timestep: TimeStep,
+            num_boxes_on_targets_new: chex.Array,
+            num_boxes_on_targets: chex.Array,
     ) -> None:
 
         if num_boxes_on_targets_new == jnp.array(4, jnp.int32):
             assert timestep.reward == jnp.array(10.9, jnp.float32)
-        elif num_boxes_on_targets_new - num_boxes_on_targets > jnp.array(0, jnp.int32):
+        elif num_boxes_on_targets_new - num_boxes_on_targets > jnp.array(0,
+                                                                         jnp.int32):
             assert timestep.reward == jnp.array(0.9, jnp.float32)
-        elif num_boxes_on_targets_new - num_boxes_on_targets < jnp.array(0, jnp.int32):
+        elif num_boxes_on_targets_new - num_boxes_on_targets < jnp.array(0,
+                                                                         jnp.int32):
             assert timestep.reward == jnp.array(-1.1, jnp.float32)
         else:
             assert timestep.reward == jnp.array(-0.1, jnp.float32)
@@ -254,7 +259,6 @@ def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
             )
 
             num_boxes_on_targets = num_boxes_on_targets_new
-
 
 def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:
     """Test that we can run an episode without any errors."""
