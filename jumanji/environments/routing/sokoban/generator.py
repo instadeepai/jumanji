@@ -26,7 +26,8 @@ import numpy as np
 import requests
 from huggingface_hub import hf_hub_download
 from tqdm import tqdm
-
+from jumanji.environments.routing.sokoban.types import State
+from jumanji.environments.routing.sokoban.constants import AGENT
 
 class Generator(abc.ABC):
     """Defines the abstract `Generator` base class. A `Generator` is responsible
@@ -34,7 +35,7 @@ class Generator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def __call__(self, rng_key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+    def __call__(self, rng_key: chex.PRNGKey) -> State:
         """Generate a problem instance.
 
         Args:
@@ -43,6 +44,24 @@ class Generator(abc.ABC):
         Returns:
             state: the generated problem instance.
         """
+
+    def get_agent_coordinates(self, grid: chex.Array) -> chex.Array:
+        """Extracts the coordinates of the agent from a given grid with the
+        assumption there is only one agent in the grid.
+
+        Args:
+            grid: Array (uint8) of shape (num_rows, num_cols)
+
+        Returns:
+            location: (int32) of shape (2,)
+        """
+
+        coordinates = jnp.where(grid == AGENT, size=1)
+
+        x_coord = jnp.squeeze(coordinates[0])
+        y_coord = jnp.squeeze(coordinates[1])
+
+        return jnp.array([x_coord, y_coord])
 
 
 class DeepMindGenerator(Generator):
@@ -91,7 +110,7 @@ class DeepMindGenerator(Generator):
         # Generates the dataset of sokoban levels
         self._fixed_grids, self._variable_grids = self._generate_dataset()
 
-    def __call__(self, rng_key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+    def __call__(self, rng_key: chex.PRNGKey) -> State:
         """Generate a random Boxoban problem from the Deepmind dataset.
 
         Args:
@@ -111,7 +130,17 @@ class DeepMindGenerator(Generator):
         fixed_grid = self._fixed_grids.take(idx, axis=0)
         variable_grid = self._variable_grids.take(idx, axis=0)
 
-        return fixed_grid, variable_grid
+        initial_agent_location = self.get_agent_coordinates(variable_grid)
+
+        state = State(
+            key=key,  #what key do we want to use for this
+            fixed_grid=fixed_grid,
+            variable_grid=variable_grid,
+            agent_location=initial_agent_location,
+            step_count=jnp.array(0, jnp.int32),
+        )
+
+        return state
 
     def _generate_dataset(
         self,
@@ -224,7 +253,7 @@ class HuggingFaceDeepMindGenerator(Generator):
         self._fixed_grids = jnp.asarray(dataset[:length, ..., 0], jnp.uint8)
         self._variable_grids = jnp.asarray(dataset[:length, ..., 1], jnp.uint8)
 
-    def __call__(self, rng_key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+    def __call__(self, rng_key: chex.PRNGKey) -> State:
         """Generate a random Boxoban problem from the Deepmind dataset.
 
         Args:
@@ -244,14 +273,24 @@ class HuggingFaceDeepMindGenerator(Generator):
         fixed_grid = self._fixed_grids.take(idx, axis=0)
         variable_grid = self._variable_grids.take(idx, axis=0)
 
-        return fixed_grid, variable_grid
+        initial_agent_location = self.get_agent_coordinates(variable_grid)
+
+        state = State(
+            key=key,  #what key do we want to use for this
+            fixed_grid=fixed_grid,
+            variable_grid=variable_grid,
+            agent_location=initial_agent_location,
+            step_count=jnp.array(0, jnp.int32),
+        )
+
+        return state
 
 
 class ToyGenerator(Generator):
     def __call__(
         self,
         rng_key: chex.PRNGKey,
-    ) -> Tuple[chex.Array, chex.Array]:
+    ) -> State:
         """Generate a random Boxoban problem from the toy 2 problem dataset.
 
         Args:
@@ -263,6 +302,8 @@ class ToyGenerator(Generator):
             variable_grid: Array (uint8) shape (num_rows, num_cols) the
             variable components of the problem.
         """
+
+        key, idx_key = jax.random.split(rng_key)
 
         level1 = [
             "##########",
@@ -297,20 +338,30 @@ class ToyGenerator(Generator):
         games_variable = jnp.stack([game1_variable, game2_variable])
 
         game_index = jax.random.randint(
-            key=rng_key,
+            key=idx_key,
             shape=(),
             minval=0,
             maxval=games_fixed.shape[0],
         )
 
-        return games_fixed[game_index], games_variable[game_index]
+        initial_agent_location = self.get_agent_coordinates(games_variable[game_index])
+
+        state = State(
+            key=key,  # what key do we want to use for this
+            fixed_grid=games_fixed[game_index],
+            variable_grid=games_variable[game_index],
+            agent_location=initial_agent_location,
+            step_count=jnp.array(0, jnp.int32),
+        )
+
+        return state
 
 
 class SimpleSolveGenerator(Generator):
     def __call__(
         self,
         rng_key: chex.PRNGKey,
-    ) -> Tuple[chex.Array, chex.Array]:
+    ) -> State:
         """Generate a trivial Boxoban problem.
 
         Args:
@@ -322,7 +373,7 @@ class SimpleSolveGenerator(Generator):
             variable_grid: Array (uint8) shape (num_rows, num_cols) the
             variable components of the problem.
         """
-        del rng_key
+        key, _ = jax.random.split(rng_key)
 
         level1 = [
             "##########",
@@ -339,7 +390,17 @@ class SimpleSolveGenerator(Generator):
 
         game_fixed, game_variable = convert_level_to_array(level1)
 
-        return game_fixed, game_variable
+        initial_agent_location = self.get_agent_coordinates(game_variable)
+
+        state = State(
+            key=key,  # what key do we want to use for this
+            fixed_grid=game_fixed,
+            variable_grid=game_variable,
+            agent_location=initial_agent_location,
+            step_count=jnp.array(0, jnp.int32),
+        )
+
+        return state
 
 
 def convert_level_to_array(level: List[str]) -> Tuple[chex.Array, chex.Array]:

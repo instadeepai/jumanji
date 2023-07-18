@@ -117,7 +117,7 @@ class Sokoban(Environment[State]):
         self.time_limit = time_limit
         self.generator = generator or HuggingFaceDeepMindGenerator(
             "unfiltered-train",
-            proportion_of_files=0.01,
+            proportion_of_files=1,
         )
         self._viewer = viewer or BoxViewer(
             name="Sokoban",
@@ -157,16 +157,8 @@ class Sokoban(Environment[State]):
         """
 
         generator_key, key = jax.random.split(key)
-        fixed_grid, variable_grid = self.generator(generator_key)
-        initial_agent_location = self.get_agent_coordinates(variable_grid)
 
-        state = State(
-            key=key,
-            fixed_grid=fixed_grid,
-            variable_grid=variable_grid,
-            agent_location=initial_agent_location,
-            step_count=jnp.array(0, jnp.int32),
-        )
+        state = self.generator(generator_key)
 
         timestep = restart(
             self._state_to_observation(state),
@@ -314,23 +306,7 @@ class Sokoban(Environment[State]):
         }
         return extras
 
-    def get_agent_coordinates(self, grid: chex.Array) -> chex.Array:
-        """Extracts the coordinates of the agent from a given grid with the
-        assumption there is only one agent in the grid.
 
-        Args:
-            grid: Array (uint8) of shape (num_rows, num_cols)
-
-        Returns:
-            location: (int32) of shape (2,)
-        """
-
-        coordinates = jnp.where(grid == AGENT, size=1)
-
-        x_coord = jnp.squeeze(coordinates[0])
-        y_coord = jnp.squeeze(coordinates[1])
-
-        return jnp.array([x_coord, y_coord])
 
     def grid_combine(
         self, variable_grid: chex.Array, fixed_grid: chex.Array
@@ -486,7 +462,7 @@ class Sokoban(Environment[State]):
             detecting noop action.
         """
 
-        new_location = self.get_agent_coordinates(variable_grid) + MOVES[action]
+        new_location = self.generator.get_agent_coordinates(variable_grid) + MOVES[action]
 
         valid_destination = self.check_space(
             fixed_grid, new_location, WALL
