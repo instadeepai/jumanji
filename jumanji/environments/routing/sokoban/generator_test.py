@@ -143,8 +143,7 @@ def test_sokoban__hugging_generator_proportion_of_problems() -> None:
 
 
 def test_sokoban__deepmind_generator_creation() -> None:
-    """checks we can create datasets for all valid boxoban datasets and
-    perform a jitted step"""
+    """checks we can create datasets for all valid boxoban datasets"""
 
     # Different datasets with varying proportion of files to keep rutime low
     valid_datasets: List[List] = [
