@@ -26,13 +26,23 @@ import numpy as np
 import requests
 from huggingface_hub import hf_hub_download
 from tqdm import tqdm
-from jumanji.environments.routing.sokoban.types import State
+
 from jumanji.environments.routing.sokoban.constants import AGENT
+from jumanji.environments.routing.sokoban.types import State
+
 
 class Generator(abc.ABC):
     """Defines the abstract `Generator` base class. A `Generator` is responsible
     for generating a problem instance when the environment is reset.
     """
+
+    def __init__(
+        self,
+    ) -> None:
+        """ """
+
+        self._fixed_grids: chex.Array
+        self._variable_grids: chex.Array
 
     @abc.abstractmethod
     def __call__(self, rng_key: chex.PRNGKey) -> State:
@@ -104,8 +114,9 @@ class DeepMindGenerator(Generator):
 
         if self.difficulty in ["unfiltered", "medium"]:
             if self.difficulty == "medium" and split == "test":
-                raise Exception("not a valid Deepmind Boxoban difficulty split"
-                                "combination")
+                raise Exception(
+                    "not a valid Deepmind Boxoban difficulty split" "combination"
+                )
             self.train_data_dir = os.path.join(
                 self.train_data_dir,
                 split,
@@ -137,7 +148,7 @@ class DeepMindGenerator(Generator):
         initial_agent_location = self.get_agent_coordinates(variable_grid)
 
         state = State(
-            key=key,  #what key do we want to use for this
+            key=key,  # what key do we want to use for this
             fixed_grid=fixed_grid,
             variable_grid=variable_grid,
             agent_location=initial_agent_location,
@@ -280,7 +291,7 @@ class HuggingFaceDeepMindGenerator(Generator):
         initial_agent_location = self.get_agent_coordinates(variable_grid)
 
         state = State(
-            key=key,  #what key do we want to use for this
+            key=key,  # what key do we want to use for this
             fixed_grid=fixed_grid,
             variable_grid=variable_grid,
             agent_location=initial_agent_location,

@@ -19,14 +19,11 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, \
-    WALL
+from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, WALL
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.sokoban.generator import (
     DeepMindGenerator,
     SimpleSolveGenerator,
-    HuggingFaceDeepMindGenerator,
-    ToyGenerator,
 )
 from jumanji.environments.routing.sokoban.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
@@ -213,8 +210,6 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
             assert timestep.reward == jnp.array(-0.1, jnp.float32)
         else:
             assert timestep.reward == jnp.array(10.9, jnp.float32)
-
-
 
 
 def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:

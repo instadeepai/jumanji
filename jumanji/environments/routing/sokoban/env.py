@@ -26,11 +26,8 @@ from jumanji.environments.routing.sokoban.constants import (
     BOX,
     EMPTY,
     GRID_SIZE,
-    LEVEL_COMPLETE_BONUS,
     MOVES,
     N_BOXES,
-    SINGLE_BOX_BONUS,
-    STEP_BONUS,
     TARGET,
     TARGET_AGENT,
     TARGET_BOX,
@@ -40,11 +37,12 @@ from jumanji.environments.routing.sokoban.generator import (
     Generator,
     HuggingFaceDeepMindGenerator,
 )
+from jumanji.environments.routing.sokoban.reward import DenseReward, RewardFn
 from jumanji.environments.routing.sokoban.types import Observation, State
 from jumanji.environments.routing.sokoban.viewer import BoxViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
-from jumanji.environments.routing.sokoban.reward import DenseReward, RewardFn
+
 
 class Sokoban(Environment[State]):
     """A JAX implementation of the 'Sokoban' game from deepmind.
@@ -337,8 +335,6 @@ class Sokoban(Environment[State]):
         }
         return extras
 
-
-
     def grid_combine(
         self, variable_grid: chex.Array, fixed_grid: chex.Array
     ) -> chex.Array:
@@ -378,9 +374,6 @@ class Sokoban(Environment[State]):
         ).astype(jnp.uint8)
 
         return single_grid
-
-
-
 
     def level_complete(self, state: State) -> chex.Array:
         """
@@ -452,7 +445,9 @@ class Sokoban(Environment[State]):
             detecting noop action.
         """
 
-        new_location = self.generator.get_agent_coordinates(variable_grid) + MOVES[action]
+        new_location = (
+            self.generator.get_agent_coordinates(variable_grid) + MOVES[action]
+        )
 
         valid_destination = self.check_space(
             fixed_grid, new_location, WALL

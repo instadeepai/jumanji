@@ -13,24 +13,33 @@
 # limitations under the License.
 
 import abc
-import chex
 
-from jumanji.environments.routing.sokoban.constants import \
-    LEVEL_COMPLETE_BONUS, SINGLE_BOX_BONUS, STEP_BONUS, N_BOXES,BOX,TARGET
-from jumanji.environments.routing.sokoban.types import State
+import chex
 import jax.numpy as jnp
+
+from jumanji.environments.routing.sokoban.constants import (
+    BOX,
+    LEVEL_COMPLETE_BONUS,
+    N_BOXES,
+    SINGLE_BOX_BONUS,
+    STEP_BONUS,
+    TARGET,
+)
+from jumanji.environments.routing.sokoban.types import State
+
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
     def __call__(
-            self,
-            state: State,
-            action: chex.Numeric,
-            next_state: State,
+        self,
+        state: State,
+        action: chex.Numeric,
+        next_state: State,
     ) -> chex.Numeric:
         """Compute the reward based on the current state,
         the chosen action, the next state.
         """
+
     def count_targets(self, state: State) -> chex.Array:
         """
         Calculates the number of boxes on targets.
@@ -51,15 +60,15 @@ class RewardFn(abc.ABC):
 
         return num_boxes_on_targets
 
+
 class SparseReward(RewardFn):
-    """
-    """
+    """ """
 
     def __call__(
-            self,
-            state: State,
-            action: chex.Array,
-            next_state: State,
+        self,
+        state: State,
+        action: chex.Array,
+        next_state: State,
     ) -> chex.Array:
         """
         Implements the sparse reward function in the Sokoban environment.
@@ -82,14 +91,13 @@ class SparseReward(RewardFn):
 
 
 class DenseReward(RewardFn):
-    """
-    """
+    """ """
 
     def __call__(
-            self,
-            state: State,
-            action: chex.Array,
-            next_state: State,
+        self,
+        state: State,
+        action: chex.Array,
+        next_state: State,
     ) -> chex.Array:
         """
         Implements the dense reward function in the Sokoban environment.
@@ -110,9 +118,7 @@ class DenseReward(RewardFn):
         level_completed = next_num_box_target == N_BOXES
 
         return (
-                SINGLE_BOX_BONUS * (next_num_box_target - num_box_target)
-                + LEVEL_COMPLETE_BONUS * level_completed
-                + STEP_BONUS
+            SINGLE_BOX_BONUS * (next_num_box_target - num_box_target)
+            + LEVEL_COMPLETE_BONUS * level_completed
+            + STEP_BONUS
         )
-
-
