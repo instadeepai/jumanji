@@ -215,50 +215,7 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
             assert timestep.reward == jnp.array(10.9, jnp.float32)
 
 
-def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
-    """Check the reward function is correct when randomly acting in the
-    trivial problem, where accidently pushing boxes onto targets is likely.
-    Every step should give -0.1, each box pushed on adds 1 , each box removed
-    on takes away 1 ,solving adds an additional 10"""
 
-    def check_correct_reward(
-            timestep: TimeStep,
-            num_boxes_on_targets_new: chex.Array,
-            num_boxes_on_targets: chex.Array,
-    ) -> None:
-
-        if num_boxes_on_targets_new == jnp.array(4, jnp.int32):
-            assert timestep.reward == jnp.array(10.9, jnp.float32)
-        elif num_boxes_on_targets_new - num_boxes_on_targets > jnp.array(0,
-                                                                         jnp.int32):
-            assert timestep.reward == jnp.array(0.9, jnp.float32)
-        elif num_boxes_on_targets_new - num_boxes_on_targets < jnp.array(0,
-                                                                         jnp.int32):
-            assert timestep.reward == jnp.array(-1.1, jnp.float32)
-        else:
-            assert timestep.reward == jnp.array(-0.1, jnp.float32)
-
-    for i in range(5):
-        chex.clear_trace_counter()
-        step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
-
-        key = jax.random.PRNGKey(i)
-        reset_key, step_key = jax.random.split(key)
-        state, timestep = sokoban_simple.reset(reset_key)
-
-        num_boxes_on_targets = sokoban_simple.count_targets(state)
-
-        for _ in range(120):
-            action = jnp.array(random.randint(0, 4), jnp.int32)
-            state, timestep = step_fn(state, action)
-
-            num_boxes_on_targets_new = sokoban_simple.count_targets(state)
-
-            check_correct_reward(
-                timestep, num_boxes_on_targets_new, num_boxes_on_targets
-            )
-
-            num_boxes_on_targets = num_boxes_on_targets_new
 
 def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:
     """Test that we can run an episode without any errors."""

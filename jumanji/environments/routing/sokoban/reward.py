@@ -13,84 +13,106 @@
 # limitations under the License.
 
 import abc
-
 import chex
-import jax
+
+from jumanji.environments.routing.sokoban.constants import \
+    LEVEL_COMPLETE_BONUS, SINGLE_BOX_BONUS, STEP_BONUS, N_BOXES,BOX,TARGET
+from jumanji.environments.routing.sokoban.types import State
 import jax.numpy as jnp
-
-from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
-from jumanji.environments.routing.cvrp.types import State
-
 
 class RewardFn(abc.ABC):
     @abc.abstractmethod
     def __call__(
-        self,
-        state: State,
-        action: chex.Numeric,
-        next_state: State,
-        is_valid: bool,
+            self,
+            state: State,
+            action: chex.Numeric,
+            next_state: State,
     ) -> chex.Numeric:
-        """Compute the reward based on the current state, the chosen action, the next state and
-        whether the action is valid.
+        """Compute the reward based on the current state,
+        the chosen action, the next state.
         """
 
 
 class SparseReward(RewardFn):
-    """The negative tour length at the end of the episode. The tour length is defined as the sum
-    of the distances between consecutive cities. It is computed by starting at the depot
-    and ending there, after visiting all the cities.
-    Note that the reward is 0 unless the episode terminates. It is `-2 * num_nodes * sqrt(2)`
-    if the chosen action is invalid.
+    """
     """
 
     def __call__(
-        self,
-        state: State,
-        action: chex.Array,
-        next_state: State,
-        is_valid: bool,
-    ) -> chex.Numeric:
-        compute_sparse_reward = lambda: jax.lax.select(
-            is_valid,
-            -compute_tour_length(next_state.coordinates, next_state.trajectory),
-            jnp.array(-len(state.trajectory) * jnp.sqrt(2), float),
-        )
-        is_done = next_state.visited_mask.all() | ~is_valid
-        reward = jax.lax.cond(
-            is_done,
-            compute_sparse_reward,
-            lambda: jnp.array(0, float),
-        )
-        return reward
-v
+            self,
+            state: State,
+            action: chex.Array,
+            next_state: State,
+    ) -> chex.Array:
+        """
+        Implements the sparse reward function in the Sokoban environment.
+
+        Args:
+            state: `State` object The current state of the environment.
+            action:  Array (int32) shape () representing the action taken.
+            next_state:  `State` object The next state of the environment.
+
+        Returns:
+            reward: Array (float32) of shape () specifying the reward received
+            at transition
+        """
+
+        next_num_box_target = self.count_targets(next_state)
+
+        level_completed = next_num_box_target == N_BOXES
+
+        return LEVEL_COMPLETE_BONUS * level_completed
+
 
 class DenseReward(RewardFn):
-    """The negative distance between the current city and the chosen next city to go to length at
-    the end of the episode. It also includes the distance to the depot to complete the tour.
-    Note that the reward is `-2 * num_nodes * sqrt(2)` if the chosen action is invalid.
+    """
     """
 
     def __call__(
-        self,
-        state: State,
-        action: chex.Array,
-        next_state: State,
-        is_valid: bool,
-    ) -> chex.Numeric:
-        previous_city = state.coordinates[state.position]
-        next_city = state.coordinates[next_state.position]
-        # By default, returns the negative distance between the previous and new node.
-        reward = jax.lax.select(
-            is_valid,
-            -distance_between_two_cities(previous_city, next_city),
-            jnp.array(-len(state.trajectory) * jnp.sqrt(2), float),
+            self,
+            state: State,
+            action: chex.Array,
+            next_state: State,
+    ) -> chex.Array:
+        """
+        Implements the dense reward function in the Sokoban environment.
+
+        Args:
+            state: `State` object The current state of the environment.
+            action:  Array (int32) shape () representing the action taken.
+            next_state:  `State` object The next state of the environment.
+
+        Returns:
+            reward: Array (float32) of shape () specifying the reward received
+            at transition
+        """
+
+        num_box_target = self.count_targets(state)
+        next_num_box_target = self.count_targets(next_state)
+
+        level_completed = next_num_box_target == N_BOXES
+
+        return (
+                SINGLE_BOX_BONUS * (next_num_box_target - num_box_target)
+                + LEVEL_COMPLETE_BONUS * level_completed
+                + STEP_BONUS
         )
-        # Adds the distance between the last node and the depot if the tour is finished.
-        depot = state.coordinates[DEPOT_IDX]
-        reward = jax.lax.select(
-            jnp.all(next_state.visited_mask),
-            reward - distance_between_two_cities(next_city, depot),
-            reward,
-        )
-        return reward
+
+    def count_targets(self, state: State) -> chex.Array:
+        """
+        Calculates the number of boxes on targets.
+
+        Args:
+            state: `State` object representing the current state of the
+            environment.
+
+        Returns:
+            n_targets: Array (int32) of shape () specifying the number of boxes
+            on targets.
+        """
+
+        mask_box = state.variable_grid == BOX
+        mask_target = state.fixed_grid == TARGET
+
+        num_boxes_on_targets = jnp.sum(mask_box & mask_target)
+
+        return num_boxes_on_targets

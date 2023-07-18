@@ -44,7 +44,7 @@ from jumanji.environments.routing.sokoban.types import Observation, State
 from jumanji.environments.routing.sokoban.viewer import BoxViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
-
+from jumanji.environments.routing.sokoban.reward import DenseReward, RewardFn
 
 class Sokoban(Environment[State]):
     """A JAX implementation of the 'Sokoban' game from deepmind.
@@ -94,8 +94,9 @@ class Sokoban(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
-        time_limit: int = 120,
+        reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer] = None,
+        time_limit: int = 120,
     ) -> None:
         """
         Instantiates a `Sokoban` environment with a specific generator,
@@ -123,6 +124,7 @@ class Sokoban(Environment[State]):
             name="Sokoban",
             grid_combine=self.grid_combine,
         )
+        self.reward_fn = reward_fn or DenseReward()
 
     def __repr__(self) -> str:
         """
@@ -208,7 +210,7 @@ class Sokoban(Environment[State]):
         time_limit_exceeded = next_state.step_count >= self.time_limit
         done = target_reached | time_limit_exceeded
 
-        reward = jnp.asarray(self.reward(state, next_state), float)
+        reward = jnp.asarray(self.reward_fn(state, action, next_state), float)
 
         observation = self._state_to_observation(next_state)
 
@@ -298,7 +300,7 @@ class Sokoban(Environment[State]):
             extras: Dict object containing current proportion of boxes on
             targets and whether the problem is solved.
         """
-        num_boxes_on_targets = self.count_targets(state)
+        num_boxes_on_targets = self.reward_fn.count_targets(state)
         total_num_boxes = N_BOXES
         extras = {
             "prop_correct_boxes": num_boxes_on_targets / total_num_boxes,
@@ -348,49 +350,8 @@ class Sokoban(Environment[State]):
 
         return single_grid
 
-    def count_targets(self, state: State) -> chex.Array:
-        """
-        Calculates the number of boxes on targets.
 
-        Args:
-            state: `State` object representing the current state of the
-            environment.
 
-        Returns:
-            n_targets: Array (int32) of shape () specifying the number of boxes
-            on targets.
-        """
-
-        mask_box = state.variable_grid == BOX
-        mask_target = state.fixed_grid == TARGET
-
-        num_boxes_on_targets = jnp.sum(mask_box & mask_target)
-
-        return num_boxes_on_targets
-
-    def reward(self, state: State, next_state: State) -> chex.Array:
-        """
-        Implements the reward function in the Sokoban environment.
-
-        Args:
-            state: `State` object The current state of the environment.
-            next_state:  `State` object The next state of the environment.
-
-        Returns:
-            reward: Array (float32) of shape () specifying the reward received
-            at transition
-        """
-
-        num_box_target = self.count_targets(state)
-        next_num_box_target = self.count_targets(next_state)
-
-        level_completed = next_num_box_target == N_BOXES
-
-        return (
-            SINGLE_BOX_BONUS * (next_num_box_target - num_box_target)
-            + LEVEL_COMPLETE_BONUS * level_completed
-            + STEP_BONUS
-        )
 
     def level_complete(self, state: State) -> chex.Array:
         """
@@ -403,7 +364,7 @@ class Sokoban(Environment[State]):
             complete: Boolean indicating whether the level is complete
             or not.
         """
-        return self.count_targets(state) == N_BOXES
+        return self.reward_fn.count_targets(state) == N_BOXES
 
     def check_space(
         self,
