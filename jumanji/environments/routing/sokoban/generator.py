@@ -81,7 +81,10 @@ class DeepMindGenerator(Generator):
     hard versions. The unfiltered dataset contain train, test and valid
     splits. The Medium has train and valid splits available. And the hard set
     contains just a small number of problems with no data split. The problems
-    are all guaranteed to be solvable.
+    are all guaranteed to be solvable. Since converting files from text to Array
+    takes some time a proportion_of_files argument is given to choose to only
+    convert a fraction of the txt files downloaded. Note if too small of a
+    fraction is chosen the dataset size may be 0.
     """
 
     def __init__(

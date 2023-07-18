@@ -172,12 +172,15 @@ def test_sokoban__deepmind_generator_creation() -> None:
 
 
 def test_sokoban__deepmind_invalid_creation() -> None:
-    """checks we can create datasets for all valid boxoban datasets and
-    perform a jitted step"""
+    """checks that asking for invalid difficulty, split, proportion leads to
+     exception"""
 
     # Different datasets with varying proportion of files to keep rutime low
     valid_datasets: List[List] = [
         ["medium", "test", 0.01],
+        ["mediumy", "train", 0.01],
+        ["hardy", "train", 0.01],
+        ["unfiltered", None, 0.01],
     ]
 
     for dataset in valid_datasets:
