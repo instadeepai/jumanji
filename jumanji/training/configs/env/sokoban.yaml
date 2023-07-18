@@ -18,7 +18,7 @@ evaluation:
 
 a2c:
     normalize_advantage: False
-    discount_factor: 0.997
+    discount_factor: 0.99
     bootstrapping_factor: 0.95
     l_pg: 1.0
     l_td: 1.0
