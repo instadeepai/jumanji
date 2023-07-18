@@ -1,0 +1,26 @@
+name: upgraded_bin_pack
+registered_version: UpgradedBinPack-v0
+
+network:
+    num_transformer_layers: 2
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+
+training:
+    num_epochs: 5
+    num_learner_steps_per_epoch: 2
+    n_steps: 3
+    total_batch_size: 4
+
+evaluation:
+    eval_total_batch_size: 0
+    greedy_eval_total_batch_size: 0
+a2c:
+    normalize_advantage: False
+    discount_factor: 1.0
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.005
+    learning_rate: 1e-4

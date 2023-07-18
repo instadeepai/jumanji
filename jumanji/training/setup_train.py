@@ -41,6 +41,7 @@ from jumanji.environments import (
     Snake,
     Sudoku,
     Tetris,
+    UpgradedBinPack,
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
@@ -88,7 +89,24 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    return jumanji.make(cfg.env.registered_version)
+    try:
+        env = jumanji.make(cfg.env.registered_version)
+    except ValueError as error:
+        if (
+            "Unregistered environment" in str(error)
+            and cfg.env.name not in "upgraded_bin_pack"
+        ):
+            raise ValueError(
+                "Unregistered environment setup not possible for any other argument"
+                f"other than bin_pack, env requested is {cfg.env.name}."
+            )
+        env_settings_dict = {}
+        try:
+            env_settings_dict = {**cfg.env.env_settings}
+        except Exception:
+            pass
+        env = UpgradedBinPack(**env_settings_dict)
+    return env
 
 
 def setup_env(cfg: DictConfig) -> Environment:
@@ -134,7 +152,7 @@ def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> RandomPolicy:
     assert cfg.agent == "random"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "upgraded_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         random_policy = networks.make_random_policy_bin_pack(bin_pack=env.unwrapped)
     elif cfg.env.name == "snake":
@@ -201,7 +219,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "upgraded_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
             bin_pack=env.unwrapped,
