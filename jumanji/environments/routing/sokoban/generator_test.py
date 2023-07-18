@@ -173,7 +173,7 @@ def test_sokoban__deepmind_generator_creation() -> None:
 
 def test_sokoban__deepmind_invalid_creation() -> None:
     """checks that asking for invalid difficulty, split, proportion leads to
-     exception"""
+    exception"""
 
     # Different datasets with varying proportion of files to keep rutime low
     valid_datasets: List[List] = [
