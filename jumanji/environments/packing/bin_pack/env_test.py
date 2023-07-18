@@ -22,7 +22,7 @@ import pytest
 from pytest import FixtureRequest
 
 from jumanji import tree_utils
-from jumanji.environments.packing.bin_pack.env import BinPack, UpgradedBinPack
+from jumanji.environments.packing.bin_pack.env import BinPack, ConstrainedBinPack
 from jumanji.environments.packing.bin_pack.generator import (
     ConstrainedRandomGenerator,
     ConstrainedToyGenerator,
@@ -270,7 +270,7 @@ class TestBinPackEnv:
             assert jnp.array_equal(state.items_placed, solution.items_placed)
 
 
-class TestUpgradedBinPack:
+class TestConstrainedBinPack:
 
     # TO-DO:
     # Add test for initial items mask
@@ -278,11 +278,11 @@ class TestUpgradedBinPack:
     # Add test that check that an item is placed along only one orientation
 
     @pytest.fixture
-    def upgraded_bin_pack_random_select_action(
-        self, upgraded_bin_pack: UpgradedBinPack
+    def constrained_bin_pack_random_select_action(
+        self, constrained_bin_pack: ConstrainedBinPack
     ) -> SelectActionFn:
         num_orientations, num_ems, num_items = np.asarray(
-            upgraded_bin_pack.action_spec().num_values
+            constrained_bin_pack.action_spec().num_values
         )
 
         def select_action(key: chex.PRNGKey, observation: Observation) -> chex.Array:
@@ -302,7 +302,7 @@ class TestUpgradedBinPack:
         return jax.jit(select_action)  # type: ignore
 
     @pytest.fixture  # noqa: CCR001
-    def upgraded_bin_pack_optimal_policy_select_action(  # noqa: CCR001
+    def constrained_bin_pack_optimal_policy_select_action(  # noqa: CCR001
         self,
         request: FixtureRequest,
     ) -> Callable[[Observation, State], chex.Array]:
@@ -348,12 +348,12 @@ class TestUpgradedBinPack:
 
         return select_action
 
-    def test__upgraded_bin_pack__reset(
-        self, upgraded_bin_pack: UpgradedBinPack
+    def test__constrained_bin_pack__reset(
+        self, constrained_bin_pack: ConstrainedBinPack
     ) -> None:
         """Validates the jitted reset of the environment."""
         chex.clear_trace_counter()
-        reset_fn = jax.jit(chex.assert_max_traces(upgraded_bin_pack.reset, n=1))
+        reset_fn = jax.jit(chex.assert_max_traces(constrained_bin_pack.reset, n=1))
 
         key = jax.random.PRNGKey(0)
         _ = reset_fn(key)
@@ -369,49 +369,51 @@ class TestUpgradedBinPack:
         assert jnp.any(state.action_mask)
         assert state.items_mask.any()
 
-    def test_upgraded_bin_pack_step__jit(self, upgraded_bin_pack: BinPack) -> None:
+    def test_constrained_bin_pack_step__jit(
+        self, constrained_bin_pack: BinPack
+    ) -> None:
         """Validates jitting the environment step function."""
         chex.clear_trace_counter()
-        step_fn = jax.jit(chex.assert_max_traces(upgraded_bin_pack.step, n=1))
+        step_fn = jax.jit(chex.assert_max_traces(constrained_bin_pack.step, n=1))
 
         key = jax.random.PRNGKey(0)
-        state, timestep = upgraded_bin_pack.reset(key)
+        state, timestep = constrained_bin_pack.reset(key)
 
-        action = upgraded_bin_pack.action_spec().generate_value()
+        action = constrained_bin_pack.action_spec().generate_value()
         _ = step_fn(state, action)
         # Call again to check it does not compile twice.
         state, timestep = step_fn(state, action)
         assert_type_bin_pack_state(state)
 
     def test_bin_pack__render_does_not_smoke(
-        self, upgraded_bin_pack: UpgradedBinPack, dummy_constrained_state: State
+        self, constrained_bin_pack: ConstrainedBinPack, dummy_constrained_state: State
     ) -> None:
-        upgraded_bin_pack.render(dummy_constrained_state)
-        upgraded_bin_pack.close()
+        constrained_bin_pack.render(dummy_constrained_state)
+        constrained_bin_pack.close()
 
     def test_bin_pack__does_not_smoke(
         self,
-        upgraded_bin_pack: UpgradedBinPack,
-        upgraded_bin_pack_random_select_action: SelectActionFn,
+        constrained_bin_pack: ConstrainedBinPack,
+        constrained_bin_pack_random_select_action: SelectActionFn,
     ) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(
-            upgraded_bin_pack, upgraded_bin_pack_random_select_action
+            constrained_bin_pack, constrained_bin_pack_random_select_action
         )
 
     def test_bin_pack__pack_all_items_dummy_instance(
         self,
-        upgraded_bin_pack: UpgradedBinPack,
-        upgraded_bin_pack_random_select_action: SelectActionFn,
+        constrained_bin_pack: ConstrainedBinPack,
+        constrained_bin_pack_random_select_action: SelectActionFn,
     ) -> None:
         """Functional test to check that the dummy instance can be completed with a random agent."""
-        step_fn = jax.jit(upgraded_bin_pack.step)
+        step_fn = jax.jit(constrained_bin_pack.step)
         key = jax.random.PRNGKey(0)
-        state, timestep = upgraded_bin_pack.reset(key)
+        state, timestep = constrained_bin_pack.reset(key)
 
         while not timestep.last():
             action_key, key = jax.random.split(key)
-            action = upgraded_bin_pack_random_select_action(
+            action = constrained_bin_pack_random_select_action(
                 action_key, timestep.observation
             )
             state, timestep = step_fn(state, action)
@@ -419,13 +421,13 @@ class TestUpgradedBinPack:
         assert jnp.array_equal(jnp.sum(state.items_placed), state.nb_items)
 
     @pytest.mark.parametrize(
-        "upgraded_bin_pack_optimal_policy_select_action, normalize_dimensions",
+        "constrained_bin_pack_optimal_policy_select_action, normalize_dimensions",
         [(False, False), (True, True)],
-        indirect=["upgraded_bin_pack_optimal_policy_select_action"],
+        indirect=["constrained_bin_pack_optimal_policy_select_action"],
     )
     def test_bin_pack__optimal_policy_toy_instance(
         self,
-        upgraded_bin_pack_optimal_policy_select_action: Callable[
+        constrained_bin_pack_optimal_policy_select_action: Callable[
             [Observation, State], chex.Array
         ],
         constrained_toy_generator: ConstrainedToyGenerator,
@@ -434,7 +436,7 @@ class TestUpgradedBinPack:
         """Functional test to check that the toy instance can be optimally packed with an optimal
         policy. Checks for both options: normalizing dimensions and not normalizing.
         """
-        toy_bin_pack = UpgradedBinPack(
+        toy_bin_pack = ConstrainedBinPack(
             generator=constrained_toy_generator,
             obs_num_ems=40,
             normalize_dimensions=normalize_dimensions,
@@ -446,7 +448,7 @@ class TestUpgradedBinPack:
         solution = toy_bin_pack.generator.generate_solution(key)
 
         while not timestep.last():
-            action = upgraded_bin_pack_optimal_policy_select_action(
+            action = constrained_bin_pack_optimal_policy_select_action(
                 timestep.observation, solution
             )
             state, timestep = step_fn(state, action)
@@ -460,7 +462,7 @@ class TestUpgradedBinPack:
             assert timestep.extras["ratio_packed_items"] == 1
 
     @pytest.mark.parametrize(
-        "upgraded_bin_pack_optimal_policy_select_action, \
+        "constrained_bin_pack_optimal_policy_select_action, \
             normalize_dimensions, max_num_items, max_num_ems, obs_num_ems",
         [
             (False, False, 5, 20, 10),
@@ -468,11 +470,11 @@ class TestUpgradedBinPack:
             (False, False, 20, 80, 50),
             (True, True, 20, 80, 50),
         ],
-        indirect=["upgraded_bin_pack_optimal_policy_select_action"],
+        indirect=["constrained_bin_pack_optimal_policy_select_action"],
     )
     def test_bin_pack__optimal_policy_random_instance(
         self,
-        upgraded_bin_pack_optimal_policy_select_action: Callable[
+        constrained_bin_pack_optimal_policy_select_action: Callable[
             [Observation, State], chex.Array
         ],
         normalize_dimensions: bool,
@@ -485,7 +487,7 @@ class TestUpgradedBinPack:
         two different sizes: 5 items and 20 items, with respectively 20 and 80 max number of EMSs.
         """
         num_trial_episodes = 3
-        random_bin_pack = UpgradedBinPack(
+        random_bin_pack = ConstrainedBinPack(
             generator=ConstrainedRandomGenerator(max_num_items, max_num_ems),
             obs_num_ems=obs_num_ems,
             normalize_dimensions=normalize_dimensions,
@@ -499,7 +501,7 @@ class TestUpgradedBinPack:
             solution = generate_solution_fn(key)
 
             while not timestep.last():
-                action = upgraded_bin_pack_optimal_policy_select_action(
+                action = constrained_bin_pack_optimal_policy_select_action(
                     timestep.observation, solution
                 )
                 assert timestep.observation.action_mask[tuple(action)]

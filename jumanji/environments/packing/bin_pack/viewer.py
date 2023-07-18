@@ -276,7 +276,7 @@ class BinPackViewer(Viewer):
         return used_volume
 
 
-class UpgradedBinPackViewer(BinPackViewer):
+class ConstrainedBinPackViewer(BinPackViewer):
     def __init__(self, name: str, render_mode: str = "human") -> None:
         super().__init__(name, render_mode)
 
@@ -298,14 +298,12 @@ class UpgradedBinPackViewer(BinPackViewer):
         ax.set_zlabel("z", font=self.FONT_STYLE)
 
         n_items = state.items_mask.shape[1]
-        placed_items = np.sum(state.items_placed)
+        placed_items: np.ndarray = np.sum(state.items_placed)
         container_volume = (
             float(container.x_len) * float(container.y_len) * float(container.z_len)
         )
         used_volume = self._get_used_volume(state)
-        print(used_volume)
-        print(n_items)
-        print(placed_items)
+
         metrics = [
             ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
             ("Used Volume", f"{used_volume / container_volume:6.1%}"),

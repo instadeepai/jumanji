@@ -43,7 +43,7 @@ from jumanji.environments.packing.bin_pack.types import (
 )
 from jumanji.environments.packing.bin_pack.viewer import (
     BinPackViewer,
-    UpgradedBinPackViewer,
+    ConstrainedBinPackViewer,
 )
 from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
@@ -716,7 +716,7 @@ class BinPack(Environment[State]):
         return ems, ems_mask
 
 
-class UpgradedBinPack(BinPack):
+class ConstrainedBinPack(BinPack):
     def __init__(
         self,
         generator: Optional[Generator] = None,
@@ -727,7 +727,7 @@ class UpgradedBinPack(BinPack):
         viewer: Optional[Viewer[State]] = None,
     ):
         generator = generator or ConstrainedRandomGenerator(20, 40)
-        viewer = viewer or UpgradedBinPackViewer(
+        viewer = viewer or ConstrainedBinPackViewer(
             "ConstrainedBinPack", render_mode="human"
         )
         super().__init__(

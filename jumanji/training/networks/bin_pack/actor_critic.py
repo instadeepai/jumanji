@@ -80,20 +80,53 @@ class BinPackTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
+        if(len(observation.items_mask.shape)== 3):
+            reshaped_items_mask = observation.items_mask.reshape(
+                observation.items_mask.shape[0],
+                observation.items_mask.shape[1] * observation.items_mask.shape[2],
+            )
+            reshaped_items_placed = observation.items_placed.reshape(
+                observation.items_placed.shape[0],
+                observation.items_placed.shape[1] * observation.items_placed.shape[2],
+            )
+            reshaped_items = Item(
+                observation.items[0].reshape(
+                    observation.items[0].shape[0],
+                    observation.items[0].shape[1] * observation.items[0].shape[2],
+                ),
+                observation.items[1].reshape(
+                    observation.items[1].shape[0],
+                    observation.items[1].shape[1] * observation.items[1].shape[2],
+                ),
+                observation.items[2].reshape(
+                    observation.items[2].shape[0],
+                    observation.items[2].shape[1] * observation.items[2].shape[2],
+                ),
+            )
+            reshaped_action_mask = observation.action_mask.reshape(
+                observation.action_mask.shape[0],
+                observation.action_mask.shape[2],
+                observation.action_mask.shape[1] * observation.action_mask.shape[3],
+            )
+        else:
+            reshaped_items_mask = observation.items_mask
+            reshaped_items_placed = observation.items_placed
+            reshaped_items = observation.items
+            reshaped_action_mask = observation.action_mask
         # EMS encoder
         ems_mask = self._make_self_attention_mask(observation.ems_mask)
         ems_embeddings = self.embed_ems(observation.ems)
 
         # Item encoder
         items_mask = self._make_self_attention_mask(
-            observation.items_mask & ~observation.items_placed
+            reshaped_items_mask & ~reshaped_items_placed
         )
-        items_embeddings = self.embed_items(observation.items)
+        items_embeddings = self.embed_items(reshaped_items)
 
         # Decoder
-        ems_cross_items_mask = jnp.expand_dims(observation.action_mask, axis=-3)
+        ems_cross_items_mask = jnp.expand_dims(reshaped_action_mask, axis=-3)
         items_cross_ems_mask = jnp.expand_dims(
-            jnp.moveaxis(observation.action_mask, -1, -2), axis=-3
+            jnp.moveaxis(reshaped_action_mask, -1, -2), axis=-3
         )
         for block_id in range(self.num_transformer_layers):
             # Self-attention on EMSs.
@@ -115,7 +148,6 @@ class BinPackTorso(hk.Module):
                 model_size=self.model_size,
                 name=f"self_attention_items_block_{block_id}",
             )(items_embeddings, items_embeddings, items_embeddings, items_mask)
-
             # Cross-attention EMSs on items.
             new_ems_embeddings = TransformerBlock(
                 num_heads=self.transformer_num_heads,
@@ -136,7 +168,6 @@ class BinPackTorso(hk.Module):
                 name=f"cross_attention_items_ems_block_{block_id}",
             )(items_embeddings, ems_embeddings, ems_embeddings, items_cross_ems_mask)
             ems_embeddings = new_ems_embeddings
-
         return ems_embeddings, items_embeddings
 
     def embed_ems(self, ems: EMS) -> chex.Array:
@@ -187,7 +218,12 @@ def make_actor_network_bin_pack(
 
         # Outer-product between the embeddings to obtain logits.
         logits = jnp.einsum("...ek,...ik->...ei", ems_embeddings, items_embeddings)
-        logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
+        reshaped_action_mask = observation.action_mask.reshape(
+            observation.action_mask.shape[0],
+            observation.action_mask.shape[2],
+            observation.action_mask.shape[1] * observation.action_mask.shape[3],
+        )
+        logits = jnp.where(reshaped_action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits.reshape(*logits.shape[:-2], -1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
@@ -213,7 +249,17 @@ def make_critic_network_bin_pack(
         # Sum embeddings over the sequence length (EMSs or items).
         ems_mask = observation.ems_mask
         ems_embedding = jnp.sum(ems_embeddings, axis=-2, where=ems_mask[..., None])
-        items_mask = observation.items_mask & ~observation.items_placed
+        reshaped_items_mask = observation.items_mask.reshape(
+            observation.items_mask.shape[0],
+            observation.items_mask.shape[1] * observation.items_mask.shape[2],
+        )
+        reshaped_items_placed = observation.items_placed.reshape(
+            observation.items_placed.shape[0],
+            observation.items_placed.shape[1] * observation.items_placed.shape[2],
+        )
+
+        items_mask = reshaped_items_mask & ~reshaped_items_placed
+
         items_embedding = jnp.sum(
             items_embeddings, axis=-2, where=items_mask[..., None]
         )

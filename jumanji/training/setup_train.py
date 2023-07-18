@@ -29,6 +29,7 @@ from jumanji.environments import (
     BinPack,
     Cleaner,
     Connector,
+    ConstrainedBinPack,
     Game2048,
     GraphColoring,
     JobShop,
@@ -41,7 +42,6 @@ from jumanji.environments import (
     Snake,
     Sudoku,
     Tetris,
-    UpgradedBinPack,
 )
 from jumanji.training import networks
 from jumanji.training.agents.a2c import A2CAgent
@@ -105,7 +105,7 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
             env_settings_dict = {**cfg.env.env_settings}
         except Exception:
             pass
-        env = UpgradedBinPack(**env_settings_dict)
+        env = ConstrainedBinPack(**env_settings_dict)
     return env
 
 

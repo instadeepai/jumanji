@@ -18,7 +18,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji import specs
-from jumanji.environments.packing.bin_pack.env import BinPack, UpgradedBinPack
+from jumanji.environments.packing.bin_pack.env import BinPack, ConstrainedBinPack
 from jumanji.environments.packing.bin_pack.generator import (
     TWENTY_FOOT_DIMS,
     ConstrainedRandomGenerator,
@@ -239,10 +239,10 @@ def bin_pack(dummy_generator: DummyGenerator) -> BinPack:
 
 
 @pytest.fixture()
-def upgraded_bin_pack(
+def constrained_bin_pack(
     dummy_constrained_generator: DummyConstrainedGenerator,
-) -> UpgradedBinPack:
-    return UpgradedBinPack(generator=dummy_constrained_generator, obs_num_ems=5)
+) -> ConstrainedBinPack:
+    return ConstrainedBinPack(generator=dummy_constrained_generator, obs_num_ems=5)
 
 
 @pytest.fixture
