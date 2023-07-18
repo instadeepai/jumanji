@@ -70,8 +70,8 @@ class DeepMindGenerator(Generator):
     algorithms and Planning Algorithms. The dataset has unfiltered, medium and
     hard versions. The unfiltered dataset contain train, test and valid
     splits. The Medium has train and valid splits available. And the hard set
-    contains just a small number of problems. The problems are all guaranteed
-    to be solvable.
+    contains just a small number of problems with no data split. The problems
+    are all guaranteed to be solvable.
     """
 
     def __init__(
@@ -102,11 +102,15 @@ class DeepMindGenerator(Generator):
             self.cache_path, "boxoban-levels-master", self.difficulty
         )
 
-        if self.difficulty in ["unfiltered", "medium", "hard"]:
+        if self.difficulty in ["unfiltered", "medium"]:
+            if self.difficulty == "medium" and split == "test":
+                raise Exception("not a valid Deepmind Boxoban difficulty split"
+                                "combination")
             self.train_data_dir = os.path.join(
                 self.train_data_dir,
                 split,
             )
+
         # Generates the dataset of sokoban levels
         self._fixed_grids, self._variable_grids = self._generate_dataset()
 
