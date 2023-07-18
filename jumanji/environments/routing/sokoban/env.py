@@ -81,14 +81,43 @@ class Sokoban(Environment[State]):
 
     ```python
     from jumanji.environments import Sokoban
-    env = Sokoban()
-    key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
-    env.render(state)
-    action = env.action_spec().generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
-    env.render(state)
+    from jumanji.environments.routing.sokoban.generator import
+    HuggingFaceDeepMindGenerator,
+
+    env_train = Sokoban(
+        generator=HuggingFaceDeepMindGenerator(
+            dataset_name="unfiltered-train",
+            proportion_of_files=1,
+        )
+    )
+
+    env_test = Sokoban(
+        generator=HuggingFaceDeepMindGenerator(
+            dataset_name="unfiltered-test",
+            proportion_of_files=1,
+        )
+    )
+
+    #Train...
+
+    key_train = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(env_train.reset)(key_train)
+    env_train.render(state)
+    action = env_train.action_spec().generate_value()
+    state, timestep = jax.jit(env_train.step)(state, action)
+    env_train.render(state)
     ```
+
+    #Test...
+
+    key_test = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(env_test.reset)(key_test)
+    env_train.render(state)
+    action = env_test.action_spec().generate_value()
+    state, timestep = jax.jit(env_test.step)(state, action)
+    env_test.render(state)
+    ```
+    
     """
 
     def __init__(

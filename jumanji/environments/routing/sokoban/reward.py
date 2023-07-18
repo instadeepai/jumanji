@@ -31,7 +31,25 @@ class RewardFn(abc.ABC):
         """Compute the reward based on the current state,
         the chosen action, the next state.
         """
+    def count_targets(self, state: State) -> chex.Array:
+        """
+        Calculates the number of boxes on targets.
 
+        Args:
+            state: `State` object representing the current state of the
+            environment.
+
+        Returns:
+            n_targets: Array (int32) of shape () specifying the number of boxes
+            on targets.
+        """
+
+        mask_box = state.variable_grid == BOX
+        mask_target = state.fixed_grid == TARGET
+
+        num_boxes_on_targets = jnp.sum(mask_box & mask_target)
+
+        return num_boxes_on_targets
 
 class SparseReward(RewardFn):
     """
@@ -97,22 +115,4 @@ class DenseReward(RewardFn):
                 + STEP_BONUS
         )
 
-    def count_targets(self, state: State) -> chex.Array:
-        """
-        Calculates the number of boxes on targets.
 
-        Args:
-            state: `State` object representing the current state of the
-            environment.
-
-        Returns:
-            n_targets: Array (int32) of shape () specifying the number of boxes
-            on targets.
-        """
-
-        mask_box = state.variable_grid == BOX
-        mask_target = state.fixed_grid == TARGET
-
-        num_boxes_on_targets = jnp.sum(mask_box & mask_target)
-
-        return num_boxes_on_targets
