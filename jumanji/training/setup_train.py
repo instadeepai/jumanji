@@ -310,6 +310,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, SlidingTilePuzzle)
         actor_critic_networks = networks.make_actor_critic_networks_sliding_tile_puzzle(
             sliding_tile_puzzle=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )

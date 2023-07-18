@@ -17,6 +17,7 @@ from typing import Sequence
 
 import chex
 import haiku as hk
+import jax
 import jax.numpy as jnp
 
 from jumanji.environments.logic.sliding_tile_puzzle import (
@@ -34,6 +35,7 @@ from jumanji.training.networks.parametric_distribution import (
 
 def make_actor_critic_networks_sliding_tile_puzzle(
     sliding_tile_puzzle: SlidingTilePuzzle,
+    num_channels: int,
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
@@ -45,10 +47,12 @@ def make_actor_critic_networks_sliding_tile_puzzle(
     policy_network = make_mlp_network(
         num_outputs=num_actions,
         mlp_units=policy_layers,
+        conv_n_channels=num_channels,
     )
     value_network = make_mlp_network(
         num_outputs=1,
         mlp_units=value_layers,
+        conv_n_channels=num_channels,
     )
     return ActorCriticNetworks(
         policy_network=policy_network,
@@ -60,19 +64,32 @@ def make_actor_critic_networks_sliding_tile_puzzle(
 def make_mlp_network(
     num_outputs: int,
     mlp_units: Sequence[int],
+    conv_n_channels: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        # Flatten the puzzle
-        flat_puzzle = jnp.reshape(observation.puzzle, (-1,))
-
-        # Pass through MLP
-        mlp = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
-        output = mlp(flat_puzzle)
+        puzzle = observation.puzzle.astype(float)[..., None]
+        torso = hk.Sequential(
+            [
+                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
+                jax.nn.relu,
+                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
+                jax.nn.relu,
+                hk.Conv2D(conv_n_channels, (2, 2), 1),
+                jax.nn.relu,
+                hk.Flatten(),
+            ]
+        )
+        embedding = torso(puzzle)
+        head = hk.nets.MLP((*mlp_units, num_outputs), activate_final=False)
 
         if num_outputs == 1:
-            return jnp.squeeze(output, axis=-1)
+            return jnp.squeeze(head(embedding), axis=-1)
         else:
-            return output
+            logits = head(embedding)
+            masked_logits = jnp.where(
+                observation.action_mask, logits, jnp.finfo(jnp.float32).min
+            )
+            return masked_logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

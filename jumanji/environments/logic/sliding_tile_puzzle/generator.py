@@ -128,7 +128,9 @@ class SolvableSTPGenerator(Generator):
         puzzle = jnp.reshape(shuffled_tiles, (self._grid_size, self._grid_size))
 
         # Find the position of the empty tile
-        empty_tile_position = jnp.argwhere(puzzle == 0)[0]
+        empty_tile_position = jnp.stack(
+            jnp.unravel_index(jnp.argmax(puzzle == 0), puzzle.shape)
+        )
 
         return puzzle, empty_tile_position
 
