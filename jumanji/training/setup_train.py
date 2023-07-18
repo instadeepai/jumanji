@@ -40,6 +40,7 @@ from jumanji.environments import (
     PacMan,
     RobotWarehouse,
     RubiksCube,
+    SlidingTilePuzzle,
     Snake,
     Sokoban,
     Sudoku,
@@ -143,6 +144,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         random_policy = networks.make_random_policy_snake()
+    elif cfg.env.name == "sliding_tile_puzzle":
+        assert isinstance(env.unwrapped, SlidingTilePuzzle)
+        random_policy = networks.make_random_policy_sliding_tile_puzzle()
     elif cfg.env.name == "tsp":
         assert isinstance(env.unwrapped, TSP)
         random_policy = networks.make_random_policy_tsp()
@@ -299,6 +303,13 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         actor_critic_networks = networks.make_actor_critic_networks_game_2048(
             game_2048=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "sliding_tile_puzzle":
+        assert isinstance(env.unwrapped, SlidingTilePuzzle)
+        actor_critic_networks = networks.make_actor_critic_networks_sliding_tile_puzzle(
+            sliding_tile_puzzle=env.unwrapped,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
