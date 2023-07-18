@@ -80,7 +80,7 @@ class BinPackTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
-        if(len(observation.items_mask.shape)== 3):
+        if len(observation.items_mask.shape) == 3:
             reshaped_items_mask = observation.items_mask.reshape(
                 observation.items_mask.shape[0],
                 observation.items_mask.shape[1] * observation.items_mask.shape[2],
