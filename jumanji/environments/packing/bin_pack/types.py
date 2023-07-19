@@ -171,7 +171,7 @@ class State:
     action_mask: Optional[chex.Array]  # (6, obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # (max_num_ems,)
     key: chex.PRNGKey  # (2,)
-    nb_items: Optional[int] = None
+    nb_items: int  # leaves of shape ()
 
 
 class Observation(NamedTuple):

@@ -471,6 +471,7 @@ class CSVGenerator(Generator):
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
             key=jax.random.PRNGKey(0),
+            nb_items=num_items,
         )
 
         return reset_state
