@@ -454,7 +454,7 @@ class RobotWarehouse(Environment[State]):
         Returns:
             a random key, updated reward, request queue and shelves.
         """
-        x, y = goal
+        y, x = goal
         shelf_id = grid[_SHELVES, x, y]
 
         def reward_and_update_request_queue_if_shelf_in_goal(
