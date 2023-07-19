@@ -753,25 +753,30 @@ class ConstrainedBinPack(BinPack):
 
         if self.normalize_dimensions:
             items_dict = {
-                f"{axis}": specs.BoundedArray((6, max_num_items), float, 0.0, 1.0, axis)
+                f"{axis}": specs.BoundedArray(
+                    (6 * max_num_items,), float, 0.0, 1.0, axis
+                )
                 for axis in ["x_len", "y_len", "z_len"]
             }
         else:
             items_dict = {
                 f"{axis}": specs.BoundedArray(
-                    (6, max_num_items), jnp.int32, 0, max_dim, axis
+                    (6 * max_num_items,), jnp.int32, 0, max_dim, axis
                 )
                 for axis in ["x_len", "y_len", "z_len"]
             }
         items = specs.Spec(Item, "ItemsSpec", **items_dict)
         items_mask = specs.BoundedArray(
-            (6, max_num_items), bool, False, True, "items_mask"
+            (6 * max_num_items,), bool, False, True, "items_mask"
         )
         items_placed = specs.BoundedArray(
-            (6, max_num_items), bool, False, True, "items_placed"
+            (6 * max_num_items,), bool, False, True, "items_placed"
         )
         action_mask = specs.BoundedArray(
-            (6, obs_num_ems, max_num_items),
+            (
+                obs_num_ems,
+                6 * max_num_items,
+            ),
             bool,
             False,
             True,
@@ -849,7 +854,6 @@ class ConstrainedBinPack(BinPack):
         if self.debug:
             ems_are_all_valid = self._ems_are_all_valid(next_state)
             extras.update(invalid_ems_from_env=~ems_are_all_valid)
-
         timestep = jax.lax.cond(
             done,
             lambda: termination(
@@ -865,6 +869,35 @@ class ConstrainedBinPack(BinPack):
         )
 
         return next_state, timestep
+
+    def _make_observation_and_extras(
+        self, state: State
+    ) -> Tuple[State, Observation, Dict]:
+        def flatten_observation(observation: Observation) -> Observation:
+            flattened_items_mask = observation.items_mask.flatten()
+            flattened_items_placed = observation.items_placed.flatten()
+            flattened_items = Item(
+                observation.items[0].flatten(),
+                observation.items[1].flatten(),
+                observation.items[2].flatten(),
+            )
+            flattened_action_mask = observation.action_mask.reshape(
+                observation.action_mask.shape[1],
+                -1,
+            )
+            flattened_observation = Observation(
+                ems=observation.ems,
+                ems_mask=observation.ems_mask,
+                items=flattened_items,
+                items_mask=flattened_items_mask,
+                items_placed=flattened_items_placed,
+                action_mask=flattened_action_mask,
+            )
+            return flattened_observation
+
+        state, observation, extra = super()._make_observation_and_extras(state)
+        flat_obs = flatten_observation(observation)
+        return state, flat_obs, extra
 
     def _pack_item(  # type: ignore
         self, state: State, ems_id: int, item_id: chex.Numeric, item_orientation: int

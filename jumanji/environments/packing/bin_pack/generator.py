@@ -898,10 +898,14 @@ class ConstrainedToyGenerator(ToyGenerator):
             y_len=jnp.array([y_len, z_len, x_len, z_len, y_len, x_len]),
             z_len=jnp.array([z_len, y_len, z_len, x_len, x_len, y_len]),
         )
+
         solution.items_mask = jnp.array(
             [
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                # Since only the items
+                # 2, 12, 17 and 18 can be placed with their length along any of the container axes,
+                # we mask these orientations of the other items.
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
                 [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],

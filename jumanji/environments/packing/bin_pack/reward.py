@@ -53,15 +53,17 @@ class DenseReward(RewardFn):
         is_done: bool,
     ) -> float:
         del next_state, is_done
-        try:
+        # Check if the environment is BinPack or ConstrainedBinPack
+        # by checking whether the action consists only  of (ems,item)
+        # or of (ems, item, orientation).
+        if len(action) == 2:
             _, item_id = action
             chosen_item_volume = item_volume(tree_slice(state.items, item_id))
-        except ValueError as e:
-            if str(e) == "too many values to unpack (expected 2)":
-                orientation, _, item_id = action
-                chosen_item_volume = item_volume(
-                    tree_slice(state.items, (orientation, item_id))
-                )
+        elif len(action) == 3:
+            orientation, _, item_id = action
+            chosen_item_volume = item_volume(
+                tree_slice(state.items, (orientation, item_id))
+            )
         container_volume = state.container.volume()
         reward = chosen_item_volume / container_volume
         reward: float = jax.lax.select(is_valid, reward, jnp.array(0, float))

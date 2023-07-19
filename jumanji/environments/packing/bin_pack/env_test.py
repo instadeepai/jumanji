@@ -327,9 +327,10 @@ class TestConstrainedBinPack:
             observation: Observation, solution: State
         ) -> chex.Array:
             """Outputs the best action to fully pack the container."""
-            for obs_ems_id, obs_ems_action_mask in enumerate(
-                observation.action_mask[0]
-            ):
+            reshaped_action_mask = observation.action_mask.reshape(
+                6, observation.action_mask.shape[0], -1
+            )
+            for obs_ems_id, obs_ems_action_mask in enumerate(reshaped_action_mask[0]):
                 if not obs_ems_action_mask.any():
                     continue
                 obs_ems = tree_utils.tree_slice(observation.ems, obs_ems_id)
@@ -504,7 +505,10 @@ class TestConstrainedBinPack:
                 action = constrained_bin_pack_optimal_policy_select_action(
                     timestep.observation, solution
                 )
-                assert timestep.observation.action_mask[tuple(action)]
+                reshaped_action_mask = timestep.observation.action_mask.reshape(
+                    6, timestep.observation.action_mask.shape[0], -1
+                )
+                assert reshaped_action_mask[tuple(action)]
                 state, timestep = step_fn(state, action)
                 # assert not timestep.extras["invalid_action"]
                 assert not jnp.any(timestep.extras["invalid_ems_from_env"])
