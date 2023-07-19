@@ -49,8 +49,6 @@ from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
-matplotlib.use("TkAgg")
-
 
 class BinPack(Environment[State]):
     """Problem of 3D bin packing, where a set of items have to be placed in a 3D container with the
@@ -543,12 +541,7 @@ class BinPack(Environment[State]):
         )(obs_ems, obs_ems_mask, items, items_mask, items_placed)
         return action_mask
 
-    def _pack_item(
-        self,
-        state: State,
-        ems_id: int,
-        item_id: chex.Numeric,
-    ) -> State:
+    def _pack_item(self, state: State, ems_id: int, item_id: chex.Numeric) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
         ems = tree_slice(state.ems, ems_id)

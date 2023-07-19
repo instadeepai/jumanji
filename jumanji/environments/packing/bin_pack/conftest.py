@@ -203,12 +203,12 @@ def random_generator() -> RandomGenerator:
 
 
 @pytest.fixture
-def constrained_toy_generator() -> ToyGenerator:
+def constrained_toy_generator() -> ConstrainedToyGenerator:
     return ConstrainedToyGenerator()
 
 
 @pytest.fixture
-def constrained_random_generator() -> RandomGenerator:
+def constrained_random_generator() -> ConstrainedRandomGenerator:
     """Returns a `RandomGenerator` with up to 20 items and that can handle 80 EMSs."""
     return ConstrainedRandomGenerator(max_num_items=20, max_num_ems=80)
 

@@ -80,6 +80,7 @@ class BinPackTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
+        # Check whether we're dealing with constrainedBinPack or with regular BinPack.
         if len(observation.items_mask.shape) == 3:
             reshaped_items_mask = observation.items_mask.reshape(
                 observation.items_mask.shape[0],
@@ -218,11 +219,15 @@ def make_actor_network_bin_pack(
 
         # Outer-product between the embeddings to obtain logits.
         logits = jnp.einsum("...ek,...ik->...ei", ems_embeddings, items_embeddings)
-        reshaped_action_mask = observation.action_mask.reshape(
-            observation.action_mask.shape[0],
-            observation.action_mask.shape[2],
-            observation.action_mask.shape[1] * observation.action_mask.shape[3],
-        )
+        # Check whether we're dealing with constrainedBinPack or with regular BinPack.
+        if len(observation.action_mask.shape) == 4:
+            reshaped_action_mask = observation.action_mask.reshape(
+                observation.action_mask.shape[0],
+                observation.action_mask.shape[2],
+                observation.action_mask.shape[1] * observation.action_mask.shape[3],
+            )
+        else:
+            reshaped_action_mask = observation.action_mask
         logits = jnp.where(reshaped_action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits.reshape(*logits.shape[:-2], -1)
 
@@ -249,15 +254,21 @@ def make_critic_network_bin_pack(
         # Sum embeddings over the sequence length (EMSs or items).
         ems_mask = observation.ems_mask
         ems_embedding = jnp.sum(ems_embeddings, axis=-2, where=ems_mask[..., None])
-        reshaped_items_mask = observation.items_mask.reshape(
-            observation.items_mask.shape[0],
-            observation.items_mask.shape[1] * observation.items_mask.shape[2],
-        )
-        reshaped_items_placed = observation.items_placed.reshape(
-            observation.items_placed.shape[0],
-            observation.items_placed.shape[1] * observation.items_placed.shape[2],
-        )
-
+        # Check whether we're dealing with constrainedBinPack or with regular BinPack.
+        if len(observation.items_mask.shape) == 3:
+            # In case the env is constrainedBinPack we flatten the observations to be coherent with
+            # the shapes of the embeddings returned by the transformer.
+            reshaped_items_mask = observation.items_mask.reshape(
+                observation.items_mask.shape[0],
+                observation.items_mask.shape[1] * observation.items_mask.shape[2],
+            )
+            reshaped_items_placed = observation.items_placed.reshape(
+                observation.items_placed.shape[0],
+                observation.items_placed.shape[1] * observation.items_placed.shape[2],
+            )
+        else:
+            reshaped_items_mask = observation.items_mask
+            reshaped_items_placed = observation.items_placed
         items_mask = reshaped_items_mask & ~reshaped_items_placed
 
         items_embedding = jnp.sum(

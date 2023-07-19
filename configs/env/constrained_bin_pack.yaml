@@ -1,5 +1,5 @@
-name: upgraded_bin_pack
-registered_version: UpgradedBinPack-v0
+name: constrained_bin_pack
+registered_version: ConstrainedBinPack-v0
 
 network:
     num_transformer_layers: 2

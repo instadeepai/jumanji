@@ -20,7 +20,7 @@ from jumanji.training.train import train
 
 warnings.filterwarnings("ignore")
 
-env = "bin_pack"
+env = "constrained_bin_pack"
 agent = "a2c"
 with initialize(version_base=None, config_path="configs"):
     cfg = compose(
