@@ -97,7 +97,7 @@ def is_collision(grid: chex.Array, agent: Agent, agent_id: int) -> chex.Array:
         agent or not.
     """
 
-    # get start and target positions
+    # get current position
     cur_pos = agent.position
 
     # check if agent's own position is occupied by another agent
