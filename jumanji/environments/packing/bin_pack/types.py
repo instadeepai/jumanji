@@ -170,7 +170,7 @@ class State:
     # different items among which it can only pack one.
     items: Item  # leaves of shape (6,max_num_items,)
     items_mask: chex.Array  # (6,max_num_items)
-    items_placed: chex.Array  # (6,max_num_items,6)
+    items_placed: chex.Array  # (6,max_num_items)
     items_location: Location  # leaves of shape (max_num_items,)
     action_mask: Optional[chex.Array]  # (6, obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # (max_num_ems,)

@@ -278,6 +278,13 @@ class BinPackViewer(Viewer):
 
 class ConstrainedBinPackViewer(BinPackViewer):
     def __init__(self, name: str, render_mode: str = "human") -> None:
+        """
+        This class defines a viewer for the ConstrainedBinPack environment.
+        It inherits from the BinPackViewer class and redefines the methods
+        _add_overlay, _create_entities and _get_used_volume. This overriding
+        is necessary because the shape of the items array, items_placed array and item_mask
+        array have changed in this environment.
+        """
         super().__init__(name, render_mode)
 
     def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
