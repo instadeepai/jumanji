@@ -82,7 +82,7 @@ def get_valid_actions(actions: chex.Array, action_mask: chex.Array) -> chex.Arra
     return jax.vmap(get_valid_action)(action_mask, actions)
 
 
-def is_collision(grid: chex.Array, agent: Agent, action: int) -> chex.Array:
+def is_collision(grid: chex.Array, agent: Agent, agent_id: int) -> chex.Array:
     """Calculate whether an agent is about to collide with another
     entity. If the agent instead collides with another agent, the
     episode terminates (this behavior is specific to this JAX version).
@@ -96,18 +96,12 @@ def is_collision(grid: chex.Array, agent: Agent, action: int) -> chex.Array:
         agent or not.
     """
 
-    def check_collision() -> chex.Array:
-        # get start and target positions
-        start = agent.position
-        target = get_new_position_after_forward(grid, start, agent.direction)
+    # get start and target positions
+    cur_pos = agent.position
 
-        agent_id_at_target_pos = grid[_AGENTS, target.x, target.y]
-        check_forward = ~jnp.array_equal(start, target)
-        return check_forward & (agent_id_at_target_pos > 0)
-
-    return jax.lax.cond(
-        jnp.equal(action, Action.FORWARD), check_collision, lambda: False
-    )
+    # check if agent's own position is occupied by another agent
+    agent_id_on_grid = grid[_AGENTS, cur_pos.x, cur_pos.y]
+    return agent_id_on_grid != (agent_id + 1)
 
 
 def calculate_num_observation_features(sensor_range: chex.Array) -> chex.Array:
