@@ -251,12 +251,6 @@ class RobotWarehouse(Environment[State]):
         # check for invalid action -> turn into noops
         actions = utils.get_valid_actions(action, state.action_mask)
 
-        # check for agent collisions
-        collisions = jax.vmap(functools.partial(utils.is_collision, grid))(
-            agents, actions
-        )
-        collision = jnp.any(collisions)
-
         # update agents, shelves and grid
         def update_state_scan(
             carry_info: Tuple[chex.Array, chex.Array, chex.Array, int], action: int
@@ -270,6 +264,12 @@ class RobotWarehouse(Environment[State]):
         (grid, agents, shelves, _), _ = jax.lax.scan(
             update_state_scan, (grid, agents, shelves, 0), actions
         )
+
+        # check for agent collisions
+        collisions = jax.vmap(functools.partial(utils.is_collision, grid))(
+            agents, self.agent_ids
+        )
+        collision = jnp.any(collisions)
 
         # compute shared reward for all agents and update request queue
         # if a requested shelf has been successfully delivered to the goal

@@ -127,12 +127,9 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     new_state2, timestep2 = step_fn(state, action2)
     assert not jnp.all(new_state1.grid != new_state2.grid)
 
-    jax.debug.print("grid: {g}", g=state.grid)
-
     # Check that the state update and timestep creation work as expected
     agents = state.agents
     agent = tree_slice(agents, 1)
-    jax.debug.print("agents: {g}", g=agents)
     x = agent.position.x
     y = agent.position.y
 
