@@ -87,9 +87,6 @@ class Evaluator:
                 lambda x: x[None], acting_state.timestep.observation
             )
             action = acting_policy(observation, action_key)
-            # jax.debug.print("action: {y}", y=action)
-            # print(action)
-            # exit()
             state, timestep = self.eval_env.step(
                 acting_state.state, jnp.squeeze(action, axis=0)
             )
