@@ -164,6 +164,10 @@ class State:
     container: Container  # leaves of shape ()
     ems: EMS  # leaves of shape (max_num_ems,)
     ems_mask: chex.Array  # (max_num_ems,)
+    # Since the items are allowed to take one of 6 orientations the items, items_mask , items_placed
+    # and action_mask tensors all have an extra dimension of size 6 representing the orientation
+    # that the items takes. The agent however sees the several orientations of each items as 6
+    # different items among which it can only pack one.
     items: Item  # leaves of shape (6,max_num_items,)
     items_mask: chex.Array  # (6,max_num_items)
     items_placed: chex.Array  # (6,max_num_items,6)
