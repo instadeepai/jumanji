@@ -217,7 +217,7 @@ class Sokoban(Environment[State]):
         """
 
         # switch to noop if action will have no impact on variable grid
-        action = self.detect_noop_action(state.variable_grid, state.fixed_grid, action)
+        action = self.detect_noop_action(state.variable_grid, state.fixed_grid, action , state.agent_location)
 
         next_variable_grid, next_agent_location = jax.lax.cond(
             jnp.all(action == -1),
@@ -428,6 +428,7 @@ class Sokoban(Environment[State]):
         variable_grid: chex.Array,
         fixed_grid: chex.Array,
         action: chex.Array,
+        agent_location: chex.Array,
     ) -> chex.Array:
         """
         Masks actions to -1 that have no effect on the variable grid.
@@ -445,9 +446,7 @@ class Sokoban(Environment[State]):
             detecting noop action.
         """
 
-        new_location = (
-            self.generator.get_agent_coordinates(variable_grid) + MOVES[action]
-        )
+        new_location = agent_location + MOVES[action].squeeze()
 
         valid_destination = self.check_space(
             fixed_grid, new_location, WALL
