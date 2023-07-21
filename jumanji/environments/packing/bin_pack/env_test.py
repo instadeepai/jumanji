@@ -23,6 +23,7 @@ import pytest
 from jumanji import tree_utils
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.environments.packing.bin_pack.generator import (
+    FullSupportRandomGenerator,
     RandomGenerator,
     ToyGenerator,
 )
@@ -239,6 +240,74 @@ def test_bin_pack__optimal_policy_random_instance(
         obs_num_ems=obs_num_ems,
         normalize_dimensions=normalize_dimensions,
         debug=True,
+    )
+    reset_fn = jax.jit(random_bin_pack.reset)
+    generate_solution_fn = jax.jit(random_bin_pack.generator.generate_solution)
+    step_fn = jax.jit(random_bin_pack.step)
+    for key in jax.random.split(jax.random.PRNGKey(0), num_trial_episodes):
+        state, timestep = reset_fn(key)
+        solution = generate_solution_fn(key)
+
+        while not timestep.last():
+            action = bin_pack_optimal_policy_select_action(
+                timestep.observation, solution
+            )
+            assert timestep.observation.action_mask[tuple(action)]
+            state, timestep = step_fn(state, action)
+            assert not timestep.extras["invalid_action"]
+            assert not timestep.extras["invalid_ems_from_env"]
+        assert jnp.array_equal(state.items_placed, solution.items_placed)
+
+
+def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
+    step_fn = jax.jit(full_support_bin_pack.step)
+    state, timestep = jax.jit(full_support_bin_pack.reset)(0)
+    state, timestep = step_fn(state, jnp.array([0, 1]))
+    nb_remaning_items = full_support_bin_pack.generator.max_num_items - 1
+    while not timestep.last() and nb_remaning_items > 1:
+        action = jnp.array([int(nb_remaning_items < 6), nb_remaning_items])
+        assert timestep.observation.action_mask[tuple(action)]
+        assert jnp.all(~timestep.observation.action_mask[:, 0])
+        state, timestep = step_fn(state, action)
+        # Make sure that big piece isn't placeable because it can't be fully supported.
+        assert not timestep.extras["invalid_action"]
+        assert not timestep.extras["invalid_ems_from_env"]
+        nb_remaning_items -= 1
+    action = jnp.array([0, 0])
+    assert timestep.observation.action_mask[tuple(action)]
+    state, timestep = step_fn(state, action)
+
+    assert jnp.array_equal(state.items_placed, jnp.array(11 * [True]))
+    assert jnp.isclose(timestep.extras["volume_utilization"], 1)
+
+
+@pytest.mark.parametrize(
+    "normalize_dimensions, max_num_items, max_num_ems, obs_num_ems",
+    [
+        (False, 5, 20, 10),
+        (True, 5, 20, 10),
+        (False, 20, 80, 50),
+        (True, 20, 80, 50),
+    ],
+)
+def test_full_support_bin_pack__optimal_policy_random_instance(
+    normalize_dimensions: bool,
+    bin_pack_optimal_policy_select_action: Callable[[Observation, State], chex.Array],
+    max_num_items: int,
+    max_num_ems: int,
+    obs_num_ems: int,
+) -> None:
+    """Functional test to check that random instances can be optimally packed with an optimal
+    policy. Checks for both options: normalizing dimensions and not normalizing, and checks for
+    two different sizes: 5 items and 20 items, with respectively 20 and 80 max number of EMSs.
+    """
+    num_trial_episodes = 3
+    random_bin_pack = BinPack(
+        generator=FullSupportRandomGenerator(max_num_items, max_num_ems),
+        obs_num_ems=obs_num_ems,
+        normalize_dimensions=normalize_dimensions,
+        debug=True,
+        full_support=True,
     )
     reset_fn = jax.jit(random_bin_pack.reset)
     generate_solution_fn = jax.jit(random_bin_pack.generator.generate_solution)

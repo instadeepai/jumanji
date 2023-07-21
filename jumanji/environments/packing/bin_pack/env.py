@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import itertools
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -120,6 +121,7 @@ class BinPack(Environment[State]):
         normalize_dimensions: bool = True,
         debug: bool = False,
         viewer: Optional[Viewer[State]] = None,
+        full_support: Optional[bool] = False,
     ):
         """Instantiates a `BinPack` environment.
 
@@ -156,6 +158,7 @@ class BinPack(Environment[State]):
         self.normalize_dimensions = normalize_dimensions
         self._viewer = viewer or BinPackViewer("BinPack", render_mode="human")
         self.debug = debug
+        self.full_support = full_support
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -573,6 +576,8 @@ class BinPack(Environment[State]):
 
         state.ems = new_ems
         state.ems_mask = new_ems_mask
+        if self.full_support:
+            self.merge_same_height_ems(state)
         return state
 
     def _get_intersections_dict(
@@ -583,9 +588,9 @@ class BinPack(Environment[State]):
         """
         # Create new EMSs from EMSs that intersect the new item
         intersections_ems_dict: Dict[str, Space] = {
-            f"{axis}_{direction}": item_space.hyperplane(axis, direction).intersection(
-                state.ems
-            )
+            f"{axis}_{direction}": item_space.hyperplane(
+                axis, direction, self.full_support
+            ).intersection(state.ems)
             for axis, direction in itertools.product(
                 ["x", "y", "z"], ["lower", "upper"]
             )
@@ -661,6 +666,148 @@ class BinPack(Environment[State]):
 
                 intersections_mask_dict[direction] &= ~to_remove
         return intersections_ems_dict, intersections_mask_dict
+
+    def merge_same_height_ems(self, state: State) -> None:
+        def compute_merge_mask(args: Tuple) -> Tuple:
+            def compute_vector_difference(a: chex.Array, b: chex.Array) -> chex.Array:
+                return jnp.isclose(
+                    jnp.reshape(a, (len(a), 1))
+                    - jnp.reshape(b, (len(b), 1)).transpose(),
+                    jnp.zeros((len(a), len(b))),
+                )
+
+            ems_arr, ems_mask = args
+
+            same_y = compute_vector_difference(
+                ems_arr.y1, ems_arr.y1
+            ) & compute_vector_difference(ems_arr.y2, ems_arr.y2)
+            same_x = compute_vector_difference(
+                ems_arr.x1, ems_arr.x1
+            ) & compute_vector_difference(ems_arr.x2, ems_arr.x2)
+            side_by_side_x = compute_vector_difference(
+                ems_arr.x1, ems_arr.x2
+            ) | compute_vector_difference(ems_arr.x2, ems_arr.x1)
+            side_by_side_y = compute_vector_difference(
+                ems_arr.y1, ems_arr.y2
+            ) | compute_vector_difference(ems_arr.y2, ems_arr.y1)
+            mask = jnp.triu(
+                compute_vector_difference(ems_arr.z1, ems_arr.z1)
+                & ~ems_arr.is_empty()
+                & ems_mask
+            ) & (same_x & side_by_side_y | same_y & side_by_side_x)
+            return mask, same_x
+
+        def merge_ems(args: Tuple[EMS, chex.Array]) -> Tuple[EMS, chex.Array]:
+            empty_ems = Space(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0)
+            ems_arr, ems_mask = args
+
+            def merge(direction: int, space1: "Space", space2: "Space") -> "Space":
+                if direction == 1:
+                    x1 = space1.x1
+                    x2 = space1.x2
+                    y1 = jnp.minimum(space1.y1, space2.y1)
+                    y2 = jnp.maximum(space1.y2, space2.y2)
+                elif direction == 2:
+                    x1 = jnp.minimum(space1.x1, space2.x1)
+                    x2 = jnp.maximum(space1.x2, space2.x2)
+                    y1 = space1.y1
+                    y2 = space1.y2
+                return Space(x1=x1, x2=x2, y1=y1, y2=y2, z1=space1.z1, z2=space1.z2)
+
+            def scan_and_merge(
+                carry: chex.Array, mask_ind: chex.Array
+            ) -> Tuple[chex.Array, chex.Array]:
+                res = jax.lax.cond(
+                    # make sure we can merge the two EMS located at mask_ind// mask_shape and
+                    # mask_ind% mask_shape, and make sure that we haven't merged the ems located at
+                    # mask_ind // mask_shape before this.
+                    mask[mask_ind] & jnp.any(carry[mask_ind // mask_shape]),
+                    lambda _: jax.lax.cond(
+                        same_x[mask_ind],
+                        functools.partial(merge, 1),
+                        functools.partial(merge, 2),
+                        *(
+                            tree_slice(ems_arr, mask_ind // mask_shape),
+                            tree_slice(ems_arr, mask_ind % mask_shape),
+                        ),
+                    ),
+                    lambda *_: empty_ems,
+                    (),
+                )
+                carry = carry.at[mask_ind // mask_shape, mask_ind % mask_shape].set(
+                    ~res.is_empty()
+                )
+                return carry, res
+
+            def delete_merged_ems_and_add_new_ems(
+                carry: EMS, merged_ems_ind: Tuple[chex.Array]
+            ) -> Tuple[EMS, Any]:
+                carry = jax.lax.cond(
+                    is_merged_ems[merged_ems_ind],
+                    lambda ems_arr, ems_mask: (
+                        tree_add_element(
+                            tree_add_element(
+                                ems_arr,
+                                merged_ems_indices[0][merged_ems_ind],
+                                tree_slice(
+                                    merged_ems,
+                                    merged_ems_indices[0][merged_ems_ind] * mask_shape
+                                    + merged_ems_indices[1][merged_ems_ind],
+                                ),
+                            ),
+                            merged_ems_indices[1][merged_ems_ind],
+                            empty_ems,
+                        ),
+                        ems_mask.at[merged_ems_indices[0][merged_ems_ind]]
+                        .set(True)
+                        .at[merged_ems_indices[1][merged_ems_ind]]
+                        .set(False),
+                    ),
+                    lambda *_: _,
+                    *(carry),
+                )
+                return carry, None
+
+            mask, same_x = compute_merge_mask((ems_arr, ems_mask))
+
+            mask_shape = mask.shape[0]
+            init_val = jnp.full_like(mask, jnp.nan)
+
+            same_x = same_x.flatten()
+            mask = mask.flatten()
+
+            # Construct the new ems from merging previous ones
+            # is_merged_ems[i,j] contains a boolean specifying if the two ems at i and j
+            # have been merged
+            is_merged_ems, merged_ems = jax.lax.scan(
+                scan_and_merge, init_val, jnp.arange(len(mask))
+            )
+            is_merged_ems = is_merged_ems.flatten()
+            keys = is_merged_ems.argsort()[::-1]
+            is_merged_ems = is_merged_ems.sort()[::-1]
+            _, merged_ems_indices = jax.lax.scan(
+                lambda carry, key: (carry, (key // mask_shape, key % mask_shape)),
+                jnp.arange(len(ems_arr.x1)),
+                keys,
+            )
+            is_merged_ems = is_merged_ems[: len(ems_arr.x1)]
+            merged_ems_indices = (
+                merged_ems_indices[0][: len(ems_arr.x1)],
+                merged_ems_indices[1][: len(ems_arr.x1)],
+            )
+            (new_ems, new_ems_mask), _ = jax.lax.scan(
+                delete_merged_ems_and_add_new_ems,
+                (ems_arr, ems_mask),
+                jnp.arange(len(ems_arr.x1)),
+            )
+
+            return new_ems, new_ems_mask
+
+        state.ems, state.ems_mask = jax.lax.while_loop(
+            lambda ems: jnp.any(compute_merge_mask(ems)[0]),
+            merge_ems,
+            (state.ems, state.ems_mask),
+        )
 
     def _add_ems(
         self,

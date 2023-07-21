@@ -79,6 +79,86 @@ class DummyGenerator(Generator):
         )
 
 
+class FullSupportDummyGenerator(Generator):
+    """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
+    container and 3 items: two identical items and a different third one to be able to
+    test item aggregation.
+    """
+
+    def __init__(self) -> None:
+        """Instantiate a dummy `Generator` with 3 items and 10 EMSs maximum."""
+        super(FullSupportDummyGenerator, self).__init__(
+            max_num_items=11, max_num_ems=40, container_dims=TWENTY_FOOT_DIMS
+        )
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Returns a fixed instance with 3 items, 10 EMSs and a 20-ft container.
+
+        Args:
+            key: random key not used here but kept for consistency with parent signature.
+
+        Returns:
+            State.
+        """
+        del key
+        container = make_container(TWENTY_FOOT_DIMS)
+        return State(
+            container=container,
+            ems=jax.tree_util.tree_map(
+                lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
+                container,
+            ),
+            ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
+            items=Item(
+                # The 1st and 2nd items have the same shape.
+                x_len=jnp.array(
+                    [5870, 587, 587, 587, 587, 587, 587, 587, 587, 587, 587], jnp.int32
+                ),
+                y_len=jnp.array(11 * [2330], jnp.int32),
+                z_len=jnp.array([1900] + 10 * [300], jnp.int32),
+            ),
+            items_mask=jnp.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ],
+                bool,
+            ),
+            items_placed=jnp.array(
+                [
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                ],
+                bool,
+            ),
+            items_location=jax.tree_util.tree_map(
+                lambda x: jnp.array(11 * [x], jnp.int32), Location(x=0, y=0, z=0)
+            ),
+            action_mask=None,
+            sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
+        )
+
+
 @pytest.fixture
 def dummy_generator() -> DummyGenerator:
     return DummyGenerator()
@@ -148,4 +228,18 @@ def bin_pack_sparse_reward(
         generator=dummy_generator,
         obs_num_ems=5,
         reward_fn=sparse_reward,
+    )
+
+
+@pytest.fixture
+def full_support_dummy_generator() -> FullSupportDummyGenerator:
+    return FullSupportDummyGenerator()
+
+
+@pytest.fixture
+def full_support_bin_pack(
+    full_support_dummy_generator: FullSupportDummyGenerator,
+) -> BinPack:
+    return BinPack(
+        generator=full_support_dummy_generator, full_support=True, debug=True
     )
