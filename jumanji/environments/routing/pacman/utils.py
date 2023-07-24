@@ -424,7 +424,6 @@ def check_ghost_collisions(
     done = jnp.any(dones)
     col_rewards = col_rewards.sum()
     state.ghost_locations = ghost_positions
-    state.ghost_starts = jnp.array(ghost_init, int)
     state.ghost_eaten = ghost_eaten
 
     return state, done, col_rewards

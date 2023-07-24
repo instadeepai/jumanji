@@ -74,8 +74,8 @@ class Generator(abc.ABC):
         Args:
             maze: ascii repsesentation of maze to create.
         """
-        self.x_size = 0
-        self.y_size = 0
+        self.x_size = jnp.array(0, jnp.int32)
+        self.y_size = jnp.array(0, jnp.int32)
         self.pellet_spaces = jnp.array([0, 0])
 
     @abc.abstractmethod
@@ -155,7 +155,7 @@ class AsciiGenerator(Generator):
             ghost_init_targets=ghost_init_targets,
             ghost_actions=ghost_actions,
             visited_index=player_locations,
-            ghost_starts=jnp.array([1, 10, 20, 40]),
+            ghost_starts=jnp.array([1, 5, 7, 9]),
             scatter_targets=self.scatter_targets,
             step_count=jnp.array(0, jnp.int32),
             ghost_eaten=jnp.array([True, True, True, True]),
