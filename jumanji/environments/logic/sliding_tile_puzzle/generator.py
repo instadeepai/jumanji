@@ -114,9 +114,9 @@ class SolvableSTPGenerator(Generator):
             indicating the position of the empty tile.
         """
         # Create a list of all tiles
-        tiles = list(range(1, self._grid_size * self._grid_size)) + [
-            0
-        ]  # The empty tile is represented by 0
+        # The empty tile is represented by 0
+        n = self._grid_size * self._grid_size
+        tiles = jnp.arange(n).at[0].set(n-1).at[n-1].set(0)
 
         # Shuffle the tiles
         key, subkey = jax.random.split(key)
