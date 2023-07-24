@@ -161,4 +161,6 @@ class AsciiGenerator(Generator):
             ghost_eaten=jnp.array([True, True, True, True]),
             score=jnp.array(0, jnp.int32),
             action_mask=jnp.array([True, True, True, True, False]),
+            x_size=jnp.array(self.x_size, jnp.int32),
+            y_size=jnp.array(self.y_size, jnp.int32),
         )

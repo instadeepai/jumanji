@@ -68,6 +68,8 @@ class State:
     ghost_eaten: jax array (bool) tracking if ghost has been eaten before.
     score: (int32) of total points aquired.
     action_mask: array specifying which directions the agent can move in from its current position.
+    x_size: (int32) of the size of the x axis of the grid
+    y_size: (int32) of the size of the x axis of the grid
     """
 
     key: chex.PRNGKey  # (2,)
@@ -93,6 +95,8 @@ class State:
     ghost_eaten: chex.Array  # (4,)
     score: jnp.int32  # ()
     action_mask: chex.Array  # (5,)
+    x_size: jnp.int32  # ()
+    y_size: jnp.int32  # ()
 
 
 class Observation(NamedTuple):
