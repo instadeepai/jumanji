@@ -5,7 +5,7 @@
     <img src="../env_anim/sliding_tile_puzzle.gif" width="500"/>
 </p>
 
-This is a Jax JIT-able implementation of the classic Sliding Tile Puzzle game.
+This is a Jax JIT-able implementation of the classic [Sliding Tile Puzzle game](https://en.wikipedia.org/wiki/Sliding_puzzle).
 
 The Sliding Tile Puzzle game is a classic puzzle that challenges a player to slide (typically flat) pieces along certain routes (usually on a board) to establish a certain end-configuration. The pieces to be moved may consist of simple shapes, or they may be imprinted with colors, patterns, sections of a larger picture (like a jigsaw puzzle), numbers, or letters.
 

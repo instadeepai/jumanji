@@ -78,16 +78,16 @@ class SlidingTilePuzzle(Environment[State]):
 
             viewer: environment viewer for rendering.
         """
-        n = 5
+        grid_size = 5
         # The generator generates a shuffled puzzle
-        self.generator = generator or RandomGenerator(n)
+        self.generator = generator or RandomGenerator(grid_size)
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
         self.movements = jnp.array(
             [[-1, 0], [1, 0], [0, -1], [0, 1]]  # Up  # Down  # Left  # Right
         )
-        self.solved_puzzle = jnp.arange(n**2).reshape((n, n))
+        self.solved_puzzle = jnp.arange(grid_size**2).reshape((grid_size, grid_size))
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state."""
@@ -150,7 +150,8 @@ class SlidingTilePuzzle(Environment[State]):
 
         # Predicate for the conditional
         is_valid_move = jnp.all(
-            (new_empty_tile_position >= 0) & (new_empty_tile_position < puzzle.shape[0])
+            (new_empty_tile_position >= 0)
+            & (new_empty_tile_position < self.generator.grid_size)
         )
 
         def valid_move(puzzle: chex.Array) -> Tuple[chex.Array, Tuple[int, int]]:

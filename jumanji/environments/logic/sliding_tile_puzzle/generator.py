@@ -116,7 +116,7 @@ class SolvableSTPGenerator(Generator):
         # Create a list of all tiles
         # The empty tile is represented by 0
         n = self._grid_size * self._grid_size
-        tiles = jnp.arange(n).at[0].set(n-1).at[n-1].set(0)
+        tiles = jnp.arange(n).at[0].set(n - 1).at[n - 1].set(0)
 
         # Shuffle the tiles
         key, subkey = jax.random.split(key)
@@ -131,26 +131,6 @@ class SolvableSTPGenerator(Generator):
         )
 
         return puzzle, empty_tile_position
-
-    def _random_move(
-        self, key: chex.PRNGKey, tiles: chex.Array, empty_tile_pos: chex.Array
-    ) -> Tuple[chex.Array, chex.Array]:
-        """Performs a valid random move and returns the updated tiles and empty tile position."""
-        # Define possible movements
-        possible_moves = [
-            [-1, 0],  # Up
-            [1, 0],  # Down
-            [0, -1],  # Left
-            [0, 1],  # Right
-        ]
-        for move in possible_moves:
-            new_empty_tile_pos = empty_tile_pos + move
-            if (new_empty_tile_pos >= 0).all() and (
-                new_empty_tile_pos < self.grid_size
-            ).all():
-                tiles = self._swap_tiles(tiles, empty_tile_pos, new_empty_tile_pos)
-                break
-        return tiles, new_empty_tile_pos
 
     def _swap_tiles(
         self, tiles: chex.Array, pos1: chex.Array, pos2: chex.Array
