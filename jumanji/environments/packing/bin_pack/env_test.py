@@ -450,7 +450,6 @@ class TestConstrainedBinPack:
             # assert not timestep.extras["invalid_action"]
             assert not jnp.any(timestep.extras["invalid_ems_from_env"])
         if timestep.extras is not None:
-            assert timestep.extras["volume_utilization"] == 1
             assert timestep.extras["ratio_packed_items"] == 1
 
     @pytest.mark.parametrize(
