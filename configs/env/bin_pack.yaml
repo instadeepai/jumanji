@@ -1,5 +1,15 @@
 name: bin_pack
-registered_version: BinPack-v2
+registered_version: BinPackValueBased-v0
+
+env_settings:
+    reward_fn: ValueBasedDenseReward
+    generator: RandomValueProblemGenerator
+
+generator_settings:
+    max_num_items: 20
+    max_num_ems: 40
+    split_num_same_items: 2
+
 
 network:
     num_transformer_layers: 2
@@ -9,9 +19,9 @@ network:
 
 training:
     num_epochs: 5
-    num_learner_steps_per_epoch: 2
-    n_steps: 3
-    total_batch_size: 4
+    num_learner_steps_per_epoch: 5
+    n_steps: 30
+    total_batch_size: 2
 
 evaluation:
     eval_total_batch_size: 2

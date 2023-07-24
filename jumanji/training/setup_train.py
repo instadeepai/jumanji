@@ -92,16 +92,32 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
     try:
         env = jumanji.make(cfg.env.registered_version)
     except ValueError as error:
-        if (
-            "Unregistered environment" in str(error)
-            and cfg.env.name not in "constrained_bin_pack"
-        ):
+        if "Unregistered environment" in str(error) and cfg.env.name not in [
+            "bin_pack",
+            "constrained_bin_pack",
+        ]:
             raise ValueError(
                 "Unregistered environment setup not possible for any other argument"
                 f"other than bin_pack, env requested is {cfg.env.name}."
             )
         env_settings_dict = getattr(cfg.env, "env_settings", {})
-        env = ConstrainedBinPack(**env_settings_dict)
+        reward_string = cfg.env.env_settings.reward_fn
+        reward_fn = getattr(jumanji.environments.packing.bin_pack.reward, reward_string)
+        generator_string = cfg.env.env_settings.generator
+        generator_settings = cfg.env.generator_settings
+        generator = getattr(
+            jumanji.environments.packing.bin_pack.generator, generator_string
+        )
+        env_settings_dict = {
+            **cfg.env.env_settings,
+            "generator": generator(**generator_settings),
+            "reward_fn": reward_fn(),
+        }
+        env = (
+            BinPack(**env_settings_dict)
+            if cfg.env.name == "constrained_bin_pack"
+            else ConstrainedBinPack(**env_settings_dict)
+        )
     return env
 
 

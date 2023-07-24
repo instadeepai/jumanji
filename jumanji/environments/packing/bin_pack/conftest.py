@@ -28,9 +28,19 @@ from jumanji.environments.packing.bin_pack.generator import (
     ToyGenerator,
     make_container,
 )
-from jumanji.environments.packing.bin_pack.reward import DenseReward, SparseReward
+from jumanji.environments.packing.bin_pack.reward import (
+    DenseReward,
+    SparseReward,
+    ValueBasedDenseReward,
+    ValueBasedSparseReward,
+)
 from jumanji.environments.packing.bin_pack.space import Space
-from jumanji.environments.packing.bin_pack.types import Item, Location, State
+from jumanji.environments.packing.bin_pack.types import (
+    Item,
+    Location,
+    State,
+    ValuedItem,
+)
 
 
 class DummyGenerator(Generator):
@@ -69,6 +79,7 @@ class DummyGenerator(Generator):
                 y_len=jnp.array([700, 700, 500], jnp.int32),
                 z_len=jnp.array([900, 900, 600], jnp.int32),
             ),
+            nb_items=3,
             items_mask=jnp.array([True, True, True], bool),
             items_placed=jnp.array([False, False, False], bool),
             items_location=jax.tree_util.tree_map(
@@ -76,6 +87,61 @@ class DummyGenerator(Generator):
             ),
             action_mask=None,
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For non value based optimisation set these to dummy values by default
+            instance_max_item_value_magnitude=0.0,
+            instance_total_value=0.0,
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
+        )
+
+
+class DummyValueGenerator(Generator):
+    """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
+    container and 3 items: two identical items and a different third one to be able to
+    test item aggregation.
+    """
+
+    def __init__(self) -> None:
+        """Instantiate a dummy `Generator` with 3 items and 10 EMSs maximum."""
+        super(DummyValueGenerator, self).__init__(
+            max_num_items=3, max_num_ems=10, container_dims=TWENTY_FOOT_DIMS
+        )
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Returns a fixed instance with 3 items, 10 EMSs and a 20-ft container.
+
+        Args:
+            key: random key not used here but kept for consistency with parent signature.
+
+        Returns:
+            State.
+        """
+        del key
+        container = make_container(TWENTY_FOOT_DIMS)
+        return State(
+            container=container,
+            ems=jax.tree_util.tree_map(
+                lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
+                container,
+            ),
+            ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
+            items=ValuedItem(
+                # The 1st and 2nd items have the same shape and value.
+                x_len=jnp.array([1000, 1000, 500], jnp.int32),
+                y_len=jnp.array([700, 700, 500], jnp.int32),
+                z_len=jnp.array([900, 900, 600], jnp.int32),
+                value=jnp.array([2.0, 2.0, 1.5], jnp.float32),
+            ),
+            items_mask=jnp.array([True, True, True], bool),
+            items_placed=jnp.array([False, False, False], bool),
+            items_location=jax.tree_util.tree_map(
+                lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
+            ),
+            action_mask=None,
+            sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For non value based optimisation set these to dummy values by default
+            instance_max_item_value_magnitude=2.0,
+            instance_total_value=5.5,
             # For deterministic instance generators we always set the key to 0.
             key=jax.random.PRNGKey(0),
             nb_items=3,
@@ -173,6 +239,8 @@ class DummyConstrainedGenerator(DummyGenerator):
             items_location=jax.tree_util.tree_map(
                 lambda x: jnp.array(3 * [x], jnp.int32), Location(x=0, y=0, z=0)
             ),
+            instance_max_item_value_magnitude=0,
+            instance_total_value=0,
             action_mask=None,
             sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
             # For deterministic instance generators we always set the key to 0.
@@ -272,6 +340,15 @@ def bin_pack_dense_reward(
 
 
 @pytest.fixture
+def bin_pack_dense_value_reward() -> BinPack:
+    return BinPack(
+        generator=DummyValueGenerator(),
+        obs_num_ems=5,
+        reward_fn=ValueBasedDenseReward(),
+    )
+
+
+@pytest.fixture
 def sparse_reward() -> SparseReward:
     return SparseReward()
 
@@ -284,4 +361,13 @@ def bin_pack_sparse_reward(
         generator=dummy_generator,
         obs_num_ems=5,
         reward_fn=sparse_reward,
+    )
+
+
+@pytest.fixture
+def bin_pack_sparse_value_reward() -> BinPack:
+    return BinPack(
+        generator=DummyValueGenerator(),
+        obs_num_ems=5,
+        reward_fn=ValueBasedSparseReward(),
     )
