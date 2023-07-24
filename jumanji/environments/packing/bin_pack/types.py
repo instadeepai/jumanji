@@ -41,6 +41,47 @@ class Item(NamedTuple):
     z_len: chex.Numeric
 
 
+def rotated_items_from_space(space: Space) -> jnp.ndarray:
+    return Item(
+        x_len=jnp.asarray(
+            [
+                # x along X, y along Y, z along Z (orientation A of DeepPack)
+                space.x2 - space.x1,
+                # x along X, z along Y, y along Z (Orientation B of DeepPack)
+                space.x2 - space.x1,
+                # z along X, y along Y, x along Z (Orientation C of DeepPack)
+                space.z2 - space.z1,
+                # y along X, x along Y, z along Z (Orientation D of DeepPack)
+                space.y2 - space.y1,
+                # z along X, x along Y, y along Z (Orientation E of DeepPack)
+                space.z2 - space.z1,
+                # y along X, z along Y, x along Z (Orientation F of deepPack)
+                space.y2 - space.y1,
+            ],
+        ),
+        y_len=jnp.asarray(
+            [
+                space.y2 - space.y1,
+                space.z2 - space.z1,
+                space.y2 - space.y1,
+                space.x2 - space.x1,
+                space.x2 - space.x1,
+                space.z2 - space.z1,
+            ]
+        ),
+        z_len=jnp.asarray(
+            [
+                space.z2 - space.z1,
+                space.y2 - space.y1,
+                space.x2 - space.x1,
+                space.z2 - space.z1,
+                space.y2 - space.y1,
+                space.x2 - space.x1,
+            ]
+        ),
+    )
+
+
 def item_from_space(space: Space) -> Item:
     """Convert a space to an item whose length on each dimension is the length of the space."""
     return Item(
@@ -150,15 +191,20 @@ class State:
     container: Container  # leaves of shape ()
     ems: EMS  # leaves of shape (max_num_ems,)
     ems_mask: chex.Array  # (max_num_ems,)
-    items: ItemType  # leaves of shape (max_num_items,)
-    items_mask: chex.Array  # (max_num_items,)
-    items_placed: chex.Array  # (max_num_items,)
+    # Since the items are allowed to take one of 6 orientations the items, items_mask , items_placed
+    # and action_mask tensors all have an extra dimension of size 6 representing the orientation
+    # that the items takes. The agent however sees the several orientations of each items as 6
+    # different items among which it can only pack one.
+    items: ItemType  # leaves of shape (6,max_num_items,)
+    items_mask: chex.Array  # (6,max_num_items)
+    items_placed: chex.Array  # (6,max_num_items)
     items_location: Location  # leaves of shape (max_num_items,)
-    action_mask: Optional[chex.Array]  # (obs_num_ems, max_num_items)
+    action_mask: Optional[chex.Array]  # (6, obs_num_ems, max_num_items)
     sorted_ems_indexes: chex.Array  # (max_num_ems,)
     instance_max_item_value_magnitude: chex.Numeric  # () - only for value based optimisation
     instance_total_value: chex.Numeric  # leaves of shape () - only for value based optimisation
     key: chex.PRNGKey  # (2,)
+    nb_items: int  # leaves of shape ()
 
 
 class Observation(NamedTuple):
@@ -175,6 +221,6 @@ class Observation(NamedTuple):
     ems: EMS  # leaves of shape (obs_num_ems,)
     ems_mask: chex.Array  # (obs_num_ems,)
     items: ItemType  # leaves of shape (max_num_items,)
-    items_mask: chex.Array  # (max_num_items,)
-    items_placed: chex.Array  # (max_num_items,)
-    action_mask: chex.Array  # (obs_num_ems, max_num_items)
+    items_mask: chex.Array  # (6*max_num_items,)
+    items_placed: chex.Array  # (6*max_num_items,)
+    action_mask: chex.Array  # (obs_num_ems, 6*max_num_items)

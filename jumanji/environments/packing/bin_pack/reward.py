@@ -54,8 +54,17 @@ class DenseReward(RewardFn):
         is_done: bool,
     ) -> float:
         del next_state, is_done
-        _, item_id = action
-        chosen_item_volume = item_volume(tree_slice(state.items, item_id))
+        # Check if the environment is BinPack or ConstrainedBinPack
+        # by checking whether the action consists only  of (ems,item)
+        # or of (ems, item, orientation).
+        if len(action) == 2:
+            _, item_id = action
+            chosen_item_volume = item_volume(tree_slice(state.items, item_id))
+        elif len(action) == 3:
+            orientation, _, item_id = action
+            chosen_item_volume = item_volume(
+                tree_slice(state.items, (orientation, item_id))
+            )
         container_volume = state.container.volume()
         reward = chosen_item_volume / container_volume
         reward: float = jax.lax.select(is_valid, reward, jnp.array(0, float))
@@ -112,8 +121,13 @@ class ValueBasedDenseReward(RewardFn):
     ) -> float:
         del next_state, is_done
         state.items = cast(ValuedItem, state.items)
-        _, item_id = action
-        chosen_item_value = tree_slice(state.items, item_id).value
+        if len(action) == 2:
+            _, item_id = action
+            chosen_item_value = tree_slice(state.items, item_id).value
+        elif len(action) == 3:
+            orientation, _, item_id = action
+            chosen_item_value = tree_slice(state.items, (orientation, item_id)).value
+
         reward = chosen_item_value / state.instance_total_value
         reward: float = jax.lax.select(is_valid, reward, jnp.array(0, float))
         return reward

@@ -29,6 +29,7 @@ from jumanji.environments import (
     BinPack,
     Cleaner,
     Connector,
+    ConstrainedBinPack,
     Game2048,
     GraphColoring,
     JobShop,
@@ -91,11 +92,15 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
     try:
         env = jumanji.make(cfg.env.registered_version)
     except ValueError as error:
-        if "Unregistered environment" in str(error) and cfg.env.name != "bin_pack":
+        if "Unregistered environment" in str(error) and cfg.env.name not in [
+            "bin_pack",
+            "constrained_bin_pack",
+        ]:
             raise ValueError(
                 "Unregistered environment setup not possible for any other argument"
                 f"other than bin_pack, env requested is {cfg.env.name}."
             )
+        env_settings_dict = getattr(cfg.env, "env_settings", {})
         reward_string = cfg.env.env_settings.reward_fn
         reward_fn = getattr(jumanji.environments.packing.bin_pack.reward, reward_string)
         generator_string = cfg.env.env_settings.generator
@@ -108,7 +113,11 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
             "generator": generator(**generator_settings),
             "reward_fn": reward_fn(),
         }
-        env = BinPack(**env_settings_dict)
+        env = (
+            BinPack(**env_settings_dict)
+            if cfg.env.name == "constrained_bin_pack"
+            else ConstrainedBinPack(**env_settings_dict)
+        )
     return env
 
 
@@ -155,7 +164,7 @@ def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> RandomPolicy:
     assert cfg.agent == "random"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "constrained_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         random_policy = networks.make_random_policy_bin_pack(bin_pack=env.unwrapped)
     elif cfg.env.name == "snake":
@@ -222,7 +231,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "constrained_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
             bin_pack=env.unwrapped,
