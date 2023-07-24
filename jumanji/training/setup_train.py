@@ -88,7 +88,28 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    return jumanji.make(cfg.env.registered_version)
+    try:
+        env = jumanji.make(cfg.env.registered_version)
+    except ValueError as error:
+        if "Unregistered environment" in str(error) and cfg.env.name != "bin_pack":
+            raise ValueError(
+                "Unregistered environment setup not possible for any other argument"
+                f"other than bin_pack, env requested is {cfg.env.name}."
+            )
+        reward_string = cfg.env.env_settings.reward_fn
+        reward_fn = getattr(jumanji.environments.packing.bin_pack.reward, reward_string)
+        generator_string = cfg.env.env_settings.generator
+        generator_settings = cfg.env.generator_settings
+        generator = getattr(
+            jumanji.environments.packing.bin_pack.generator, generator_string
+        )
+        env_settings_dict = {
+            **cfg.env.env_settings,
+            "generator": generator(**generator_settings),
+            "reward_fn": reward_fn(),
+        }
+        env = BinPack(**env_settings_dict)
+    return env
 
 
 def setup_env(cfg: DictConfig) -> Environment:
