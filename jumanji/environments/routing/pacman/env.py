@@ -292,7 +292,7 @@ class PacMan(Environment[State]):
             action_mask=updated_state.action_mask,
         )
 
-        next_state = updated_state.replace(step_count=state.step_count + 1)
+        next_state = updated_state.replace(step_count=state.step_count + 1)  # type: ignore
 
         # Check if episode terminates
         num_pellets = state.pellets
@@ -339,7 +339,7 @@ class PacMan(Environment[State]):
         # Move player
         next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-        state = state.replace(last_direction=jnp.array(action, jnp.int32))
+        state = state.replace(last_direction=jnp.array(action, jnp.int32))  # type: ignore
 
         # Move ghosts
         old_ghost_locations = state.ghost_locations
@@ -350,8 +350,8 @@ class PacMan(Environment[State]):
             ghost_paths, next_player_pos, state
         )
 
-        state = state.replace(player_locations=next_player_pos)
-        state = state.replace(dead=done)
+        state = state.replace(player_locations=next_player_pos)  # type: ignore
+        state = state.replace(dead=done)  # type: ignore
 
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
 
@@ -359,12 +359,12 @@ class PacMan(Environment[State]):
         collision_rewards, pellets, num_pellets = self.check_rewards(state)
 
         # Update old ghost locations
-        state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)
-        state = state.replace(old_ghost_locations=old_ghost_locations)
+        state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)  # type: ignore
+        state = state.replace(old_ghost_locations=old_ghost_locations)  # type: ignore
 
-        state = state.replace(pellet_locations=pellets)
-        state = state.replace(pellets=num_pellets)
-        state = state.replace(key=key)
+        state = state.replace(pellet_locations=pellets)  # type: ignore
+        state = state.replace(pellets=num_pellets)  # type: ignore
+        state = state.replace(key=key)  # type: ignore
 
         def powerup_collected() -> chex.Array:
             """If a power-up was collected set scatter time to 30"""
