@@ -18,7 +18,19 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.pacman.types import Observation, State
+from jumanji.environments.routing.pacman.types import Observation, Position, State
+
+
+def get_directions(pacman_position: Position, ghost_position: chex.Array) -> chex.Array:
+    """Get the vector distance between thr ghost and the target position"""
+    distance = jnp.array(
+        [
+            ghost_position[0] - pacman_position.y,
+            ghost_position[1] - pacman_position.x,
+        ]
+    )
+
+    return distance
 
 
 # flake8: noqa: C901

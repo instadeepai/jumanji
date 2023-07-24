@@ -26,7 +26,7 @@ from jumanji.env import Environment
 from jumanji.environments.routing.pacman.constants import DEFAULT_MAZE, MOVES
 from jumanji.environments.routing.pacman.generator import AsciiGenerator, Generator
 from jumanji.environments.routing.pacman.types import Observation, Position, State
-from jumanji.environments.routing.pacman.utils import create_grid_image
+from jumanji.environments.routing.pacman.utils import create_grid_image, get_directions
 from jumanji.environments.routing.pacman.viewer import PacManViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
@@ -728,23 +728,6 @@ class PacMan(Environment[State]):
         # Block old paths so ghosts don't backtrack
         ghost_mask = jnp.any(ghost_p != old_ghost_location, axis=1)
 
-        def get_directions(
-            pacman_position: Position, ghost_position: chex.Array
-        ) -> chex.Array:
-            """Get the vector distance between thr ghost and the target position"""
-            distance = jnp.array(
-                [
-                    ghost_position[0] - pacman_position.y,
-                    ghost_position[1] - pacman_position.x,
-                ]
-            )
-
-            return distance
-
-        def get_distances(distance_list: chex.Array) -> chex.Array:
-            """Get the scalar distance between the ghost and the target position"""
-            return jnp.linalg.norm(distance_list)
-
         # For ghost 0: Move to closest tile to pacman
         def red_ghost(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
             """
@@ -755,7 +738,7 @@ class PacMan(Environment[State]):
             distance_list = jax.vmap(get_directions, in_axes=(None, 0))(
                 pacman_pos, ghost_p
             )
-            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
+            ghost_dist = jax.vmap(jnp.linalg.norm, in_axes=(0))(distance_list)
             return distance_list, ghost_dist
 
         # For ghost 1: move 4 steps ahead of pacman
@@ -771,7 +754,7 @@ class PacMan(Environment[State]):
             distance_list = jax.vmap(get_directions, in_axes=(None, 0))(
                 pac_pos, ghost_p
             )
-            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
+            ghost_dist = jax.vmap(jnp.linalg.norm, in_axes=(0))(distance_list)
 
             return distance_list, ghost_dist
 
@@ -785,7 +768,7 @@ class PacMan(Environment[State]):
             ghost_0_target, _ = red_ghost(pacman_pos)
             ghost_1_target, _ = pink_ghost(pacman_pos=pacman_pos, steps=4)
             distance_list = ghost_0_target + ghost_1_target
-            ghost_dist = jax.vmap(get_distances, in_axes=(0))(distance_list)
+            ghost_dist = jax.vmap(jnp.linalg.norm, in_axes=(0))(distance_list)
             return distance_list, ghost_dist
 
         def orange_ghost(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
