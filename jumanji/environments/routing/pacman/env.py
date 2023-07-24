@@ -41,7 +41,7 @@ class PacMan(Environment[State]):
 
     - observation: `Observation`
         - player_locations: current 2D position of agent.
-        - grid: jax array (int)) of the ingame maze with walls.
+        - grid: jax array (int) of the ingame maze with walls.
         - ghost_locations: jax array (int) of ghost positions.
         - power_up_locations: jax array (int) of power-pellet locations
         - pellet_locations: jax array (int) of pellets.
@@ -235,20 +235,8 @@ class PacMan(Environment[State]):
 
         state = self.generator(key)
 
-        # Create action mask
-        action_mask = jnp.array([True, True, True, True, False])
-
         # Generate observation
-        obs = Observation(
-            grid=state.grid,
-            player_locations=state.player_locations,
-            ghost_locations=state.ghost_locations,
-            power_up_locations=state.power_up_locations,
-            frightened_state_time=state.frightened_state_time,
-            pellet_locations=state.pellet_locations,
-            action_mask=action_mask,
-            score=state.score,
-        )
+        obs = self._observation_from_state(state)
 
         # Return a restart timestep of step type is FIRST.
         timestep = restart(observation=obs)
@@ -301,7 +289,10 @@ class PacMan(Environment[State]):
             step_count=state.step_count + 1,
             ghost_eaten=updated_state.ghost_eaten,
             score=updated_state.score,
+            action_mask=updated_state.action_mask,
         )
+
+        next_state = updated_state.replace(step_count=state.step_count + 1)
 
         # Check if episode terminates
         num_pellets = state.pellets
@@ -317,28 +308,15 @@ class PacMan(Environment[State]):
         action_mask = action_mask * action_mask_bool
 
         # Generate observation from the state
-        observation = Observation(
-            grid=state.grid,
-            player_locations=state.player_locations,
-            ghost_locations=state.ghost_locations,
-            power_up_locations=state.power_up_locations,
-            frightened_state_time=state.frightened_state_time,
-            pellet_locations=state.pellet_locations,
-            action_mask=action_mask,
-            score=next_state.score,
-        )
+        observation = self._observation_from_state(state)
 
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
             done,
-            lambda: termination(
-                reward=reward,
-                observation=observation,
-            ),
-            lambda: transition(
-                reward=reward,
-                observation=observation,
-            ),
+            termination,
+            transition,
+            reward,
+            observation,
         )
 
         return next_state, timestep
@@ -361,50 +339,45 @@ class PacMan(Environment[State]):
         # Move player
         next_player_pos = self.player_step(state=state, action=action, steps=1)
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-        state.last_direction = jnp.array(action, jnp.int32)
+        state = state.replace(last_direction=jnp.array(action, jnp.int32))
 
         # Move ghosts
-        def call_ghost_step(state: State) -> Tuple[chex.Array, int, chex.PRNGKey]:
-            ghost_paths, ghost_actions, key = self.ghost_move(state)
-            return ghost_paths, ghost_actions, key
-
         old_ghost_locations = state.ghost_locations
-        ghost_paths, ghost_actions, key = call_ghost_step(state)
+        ghost_paths, ghost_actions, key = self.ghost_move(state)
 
         # Check for collisions with ghosts
         state, done, ghost_col_rewards = self.check_ghost_collisions(
             ghost_paths, next_player_pos, state
         )
 
-        state.player_locations = next_player_pos
-        state.dead = done
+        state = state.replace(player_locations=next_player_pos)
+        state = state.replace(dead=done)
+
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
 
         # Check for collected pellets
-        collision_rewards, cookie_list, num_cookies = self.check_rewards(state)
+        collision_rewards, pellets, num_pellets = self.check_rewards(state)
 
         # Update old ghost locations
-        state.ghost_init_steps = state.ghost_init_steps - 1
-        state.old_ghost_locations = old_ghost_locations
+        state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)
+        state = state.replace(old_ghost_locations=old_ghost_locations)
 
-        state.pellet_locations = cookie_list
-        state.pellets = num_cookies
-        state.key = key
+        state = state.replace(pellet_locations=pellets)
+        state = state.replace(pellets=num_pellets)
+        state = state.replace(key=key)
 
-        def f_time() -> Any:
+        def powerup_collected() -> chex.Array:
             """If a power-up was collected set scatter time to 30"""
-            frightened_state_time = jnp.array(30, jnp.int32)
-            return frightened_state_time
+            return jnp.array(30, jnp.int32)
 
-        def ff_time() -> Any:
+        def tick_frightened_time() -> chex.Array:
             """If a power-up was not collected reduce scatter time"""
-            frightened_state_time = jnp.array(
-                state.frightened_state_time - 1, jnp.int32
-            )
-            return frightened_state_time
+            return jnp.array(state.frightened_state_time - 1, jnp.int32)
 
         # Check if frightened state is active and decrement timer
-        state.frightened_state_time = jax.lax.cond(eat > 0, f_time, ff_time)
+        state.frightened_state_time = jax.lax.cond(
+            eat > 0, powerup_collected, tick_frightened_time
+        )
 
         # Update power-up locations
         state.power_up_locations = power_up_locations
@@ -429,8 +402,10 @@ class PacMan(Environment[State]):
         """
 
         key = state.key
-        key, subkey0, subkey1, subkey2, subkey3 = jax.random.split(key, 5)
-        ghost_keys = jnp.array([subkey0, subkey1, subkey2, subkey3])
+        key, ghost_key_0, ghost_key_1, ghost_key_2, ghost_key_3 = jax.random.split(
+            key, 5
+        )
+        ghost_keys = jnp.array([ghost_key_0, ghost_key_1, ghost_key_2, ghost_key_3])
         ghost_pos = state.ghost_locations
         player_pos = state.player_locations
         start_time = state.ghost_starts
@@ -440,7 +415,7 @@ class PacMan(Environment[State]):
 
         def move(
             ghost_pos: chex.Array,
-            subkey: chex.PRNGKey,
+            tunnel_key: chex.PRNGKey,
             ghost_action: int,
             ghost_num: int,
             player_pos: chex.Array,
@@ -452,7 +427,7 @@ class PacMan(Environment[State]):
             """Move a single ghost"""
             act = jnp.array([0, 1, 2, 3])
 
-            subkey, subsubkey = jax.random.split(subkey)
+            tunnel_key, ghost_tunnel_key = jax.random.split(tunnel_key)
             _, valids, valid_actions = self.check_ghost_wall_collisions(
                 state,
                 ghost_pos,
@@ -468,51 +443,59 @@ class PacMan(Environment[State]):
             # If valids is  [1,0,1,0] or [0,1,0,1] then use old action
             # this is the case where the ghosts are in a tunnel as ghosts
             # are not allowed to backtrack.
-            condition = jnp.logical_or(
+
+            is_in_tunnel = jnp.logical_or(
                 jnp.array_equal(valids, vert_col), jnp.array_equal(valids, hor_col)
             )
-            condition = jnp.all(condition)
 
-            def is_tunnel(inputs: Tuple[chex.Array, chex.Array, int]) -> int:
+            def is_tunnel(
+                inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
+            ) -> int:
                 """Repeat old action if in tunnel"""
-                _, _, ghost_action = inputs
+                _, _, ghost_action, _, _ = inputs
                 return ghost_action
 
             def no_tunnel(
                 inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
             ) -> Any:
                 """Chose new action when at intersection"""
-                valids, act, _, key0, _ = inputs
-                key0, subkey0 = jax.random.split(key0)
-                logits = valids
-                logits2 = jnp.where(logits == 0, -1e9, logits)
+                logits, actions, _, ghost_tunnel_key, _ = inputs
+                _, ghost_tunnel_key = jax.random.split(ghost_tunnel_key)
+                masked_logits = jnp.where(logits == 0, -1e9, logits)
                 # Softmax distribution
-                softmax_dist = nn.softmax(logits2)
-                a2 = act * logits
-                new_action = jax.random.choice(subkey0, a2, p=softmax_dist).astype(int)
+                softmax_dist = nn.softmax(masked_logits)
+                weighted_actions = actions * logits
+                new_action = jax.random.choice(
+                    ghost_tunnel_key, weighted_actions, p=softmax_dist
+                ).astype(int)
                 return new_action
 
-            inputs_tunnel = (valid_actions, act, ghost_action)
-            inputs_no_tunnel = (valid_actions, act, ghost_action, subsubkey, ghost_num)
+            inputs_no_tunnel = (
+                valid_actions,
+                act,
+                ghost_action,
+                ghost_tunnel_key,
+                ghost_num,
+            )
 
-            result_true = is_tunnel(inputs_tunnel)
-            result_false = no_tunnel(inputs_no_tunnel)
-
-            def start_over() -> Any:
+            def start_over(
+                inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
+            ) -> Any:
                 """If not in waiting mode then pick new action"""
-                chosen_action = jnp.where(
-                    condition[..., None], result_true, result_false
-                )
-                chosen_action = jnp.squeeze(chosen_action)
-                return chosen_action
 
-            def no_start() -> int:
+                chosen_action = jax.lax.cond(is_in_tunnel, is_tunnel, no_tunnel, inputs)
+                return jnp.squeeze(chosen_action)
+
+            def no_start(
+                inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
+            ) -> int:
                 """If in waiting mode then use no-op"""
-                chosen_action = 4
-                return chosen_action
+                return 4
 
             position = ghost_pos
-            chosen_action = jax.lax.cond(ghost_start < 0, start_over, no_start)
+            chosen_action = jax.lax.cond(
+                ghost_start < 0, start_over, no_start, inputs_no_tunnel
+            )
 
             # Use chosen action
             move_left = lambda position: (position[1], position[0] - 1)
@@ -685,6 +668,19 @@ class PacMan(Environment[State]):
         action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(player_pos, MOVES)
 
         return action_mask
+
+    def _observation_from_state(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            grid=state.grid,
+            player_locations=state.player_locations,
+            ghost_locations=state.ghost_locations,
+            power_up_locations=state.power_up_locations,
+            frightened_state_time=state.frightened_state_time,
+            pellet_locations=state.pellet_locations,
+            action_mask=state.action_mask,
+            score=state.score,
+        )
 
     def check_ghost_wall_collisions(
         self,

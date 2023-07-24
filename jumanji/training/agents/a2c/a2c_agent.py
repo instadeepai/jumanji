@@ -208,7 +208,6 @@ class A2CAgent(Agent):
                 log_prob = jnp.zeros_like(
                     parametric_action_distribution.log_prob(logits, raw_action)
                 )
-
             action = parametric_action_distribution.postprocess(raw_action)
             return action, (log_prob, logits)
 

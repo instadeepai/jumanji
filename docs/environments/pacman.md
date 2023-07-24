@@ -7,9 +7,9 @@
 We provide here a minimal Jax JIT-able implementation of the game pacman. The game is played in a 2D matrix where a cell is a free space (black), a wall (dark blue), pacman (yellow) or a ghost.
 
 
-The goal is for the agent (yellow) collect all of the pellets (small pink blocks) on the map without touching any of the ghosts. The agent recieves a reward of +10 when collecting a pellet for the first time and Pellets are removed from the map after being collected.
+The goal is for the agent (yellow) to collect all of the pellets (small pink blocks) on the map without touching any of the ghosts. The agent receives a reward of +10 when collecting a pellet for the first time and pellets are removed from the map after being collected.
 
-The power-ups (large pink blocks) trigger a 'scatter mode' which changes the colour of the ghosts to dark blue for 30 ingame steps. When the ghosts are in this state, the player can touch them which causes them to return to the center of the map.
+The power-ups (large pink blocks) trigger a 'scatter mode' which changes the colour of the ghosts to dark blue for 30 in game steps. When the ghosts are in this state, the player can touch them which causes them to return to the center of the map. This gives a reward of +200 for each unique ghost.
 
 The agent selects an action at each timestep (up, left, right, down, no-op) which determines the direction they wil travel for that step. However, even if an action is in an invalid direction it will still be taken as input and the player will remain stationary. If the no-op action is used the player will not stop but instead take the last action that was selected.
 
@@ -57,7 +57,7 @@ unchanged. Additionally if a no-op is performed the agent will use the last norm
 
 
 ## Reward
-Pacman is a dense reward setting, where the agent recieves a reward of +10 for each pellet collected. The agent also recieve a reward of 20 for collecting a power pellet. The game ends when the agent has collected all 316 pellets on the map or touches a ghost.
+Pacman is a dense reward setting, where the agent receives a reward of +10 for each pellet collected. The agent also recieve a reward of 20 for collecting a power pellet. The game ends when the agent has collected all 316 pellets on the map or touches a ghost.
 
 Eating a ghost when scatter mode is enabled also awards +200 points but, points are only awarded the first time each unique ghost is eaten.
 

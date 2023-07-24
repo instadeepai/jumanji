@@ -12,13 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import abc
-from typing import List
+from typing import Any, List
 
 import chex
 import jax.numpy as jnp
 
 from jumanji.environments.routing.pacman.types import Position, State
-from jumanji.environments.routing.pacman.utils import generate_maze_from_ascii
+
+
+# flake8: noqa: C901
+def generate_maze_from_ascii(maze: List) -> Any:
+    """Generates a numpy maze from ascii"""
+    ascii_maze = maze
+    numpy_maze = []
+    cookie_spaces = []
+    powerup_spaces = []
+    reachable_spaces = []
+    ghost_spawns = []
+    init_targets = []
+    scatter_targets = []
+    player_coords = None
+
+    for x, row in enumerate(ascii_maze):
+        binary_row = []
+        for y, column in enumerate(row):
+            if column == "G":
+                ghost_spawns.append((y, x))
+            if column == "P":
+                player_coords = (y, x)
+            if column == "X":
+                binary_row.append(0)
+            else:
+                binary_row.append(1)
+                cookie_spaces.append((y, x))
+                reachable_spaces.append((y, x))
+                if column == "O":
+                    powerup_spaces.append((y, x))
+                if column == "T":
+                    init_targets.append((y, x))
+                if column == "S":
+                    scatter_targets.append((y, x))
+
+        numpy_maze.append(binary_row)
+
+    return (
+        numpy_maze,
+        cookie_spaces,
+        powerup_spaces,
+        reachable_spaces,
+        ghost_spawns,
+        player_coords,
+        init_targets,
+        scatter_targets,
+    )
 
 
 class Generator(abc.ABC):
@@ -28,20 +74,9 @@ class Generator(abc.ABC):
         Args:
             maze: ascii repsesentation of maze to create.
         """
-        self.maze = maze
-        self.map_data = generate_maze_from_ascii(self.maze)
-        self.numpy_maze = jnp.array(self.map_data[0])
-
-        self.pellet_spaces = jnp.array(self.map_data[1])
-        self.powerup_spaces = jnp.array(self.map_data[2])
-        self.reachable_spaces = self.map_data[3]
-
-        self.ghost_spawns = jnp.array(self.map_data[4])
-        self.player_coords = Position(y=self.map_data[5][0], x=self.map_data[5][1])
-        self.init_targets = self.map_data[6]
-        self.scatter_targets = jnp.array(self.map_data[7])
-        self.x_size = self.numpy_maze.shape[0]
-        self.y_size = self.numpy_maze.shape[1]
+        self.x_size = 0
+        self.y_size = 0
+        self.pellet_spaces = jnp.array([0, 0])
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey) -> chex.Array:
@@ -71,7 +106,20 @@ class AsciiGenerator(Generator):
         Returns:
             state: the generated state.
         """
-        super().__init__(maze)
+        self.maze = maze
+        self.map_data = generate_maze_from_ascii(self.maze)
+        self.numpy_maze = jnp.array(self.map_data[0])
+
+        self.pellet_spaces = jnp.array(self.map_data[1])
+        self.powerup_spaces = jnp.array(self.map_data[2])
+        self.reachable_spaces = self.map_data[3]
+
+        self.ghost_spawns = jnp.array(self.map_data[4])
+        self.player_coords = Position(y=self.map_data[5][0], x=self.map_data[5][1])
+        self.init_targets = self.map_data[6]
+        self.scatter_targets = jnp.array(self.map_data[7])
+        self.x_size = self.numpy_maze.shape[0]
+        self.y_size = self.numpy_maze.shape[1]
 
     def __call__(self, key: chex.PRNGKey) -> State:
 
@@ -112,4 +160,5 @@ class AsciiGenerator(Generator):
             step_count=jnp.array(0, jnp.int32),
             ghost_eaten=jnp.array([True, True, True, True]),
             score=jnp.array(0, jnp.int32),
+            action_mask=jnp.array([True, True, True, True, False]),
         )
