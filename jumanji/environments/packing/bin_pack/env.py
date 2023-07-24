@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import itertools
 from typing import Dict, Optional, Sequence, Tuple
 
@@ -946,15 +947,18 @@ class ConstrainedBinPack(BinPack):
             item_fits_in_ems = item_fits_in_item(item, item_from_space(ems))
             return ~item_placed & item_mask & ems_mask & item_fits_in_ems
 
-        action_masks = []
-        for o in range(6):
-            tmp_items = Item(items[:][0][o], items[:][1][o], items[:][2][o])
-            action_mask = jax.vmap(
-                jax.vmap(is_action_allowed, in_axes=(None, None, 0, 0, 0)),
-                in_axes=(0, 0, None, None, None),
-            )(obs_ems, obs_ems_mask, tmp_items, items_mask[o], items_placed[o])
-            action_masks.append(action_mask)
-        return jnp.asarray(action_masks, bool)
+        expanded_obs_state = jax.tree_util.tree_map(
+            functools.partial(jnp.expand_dims, axis=0), obs_ems
+        )
+        expanded_obs_ems_mask = jax.tree_util.tree_map(
+            functools.partial(jnp.expand_dims, axis=0), obs_ems_mask
+        )
+        action_mask = jax.vmap(
+            jax.vmap(is_action_allowed, in_axes=(None, None, 1, 1, 1)),
+            in_axes=(1, 1, None, None, None),
+        )(expanded_obs_state, expanded_obs_ems_mask, items, items_mask, items_placed)
+        action_mask = jnp.moveaxis(action_mask, -1, 0)
+        return action_mask
 
     def _ems_are_all_valid(self, state: State) -> chex.Array:
         """Checks if all EMSs are valid, i.e. they don't intersect items and do not stick out of the
