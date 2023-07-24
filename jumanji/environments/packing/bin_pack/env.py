@@ -1028,7 +1028,7 @@ class ConstrainedBinPack(BinPack):
             in_axes=(1, 1, None, None, None),
         )(expanded_obs_state, expanded_obs_ems_mask, items, items_mask, items_placed)
         action_mask = jnp.moveaxis(action_mask, -1, 0)
-        return action_mask
+        return jnp.asarray(action_mask, bool)
 
     def _ems_are_all_valid(self, state: State) -> chex.Array:
         """Checks if all EMSs are valid, i.e. they don't intersect items and do not stick out of the

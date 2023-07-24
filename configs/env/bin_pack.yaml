@@ -26,6 +26,7 @@ training:
 evaluation:
     eval_total_batch_size: 2
     greedy_eval_total_batch_size: 2
+
 a2c:
     normalize_advantage: False
     discount_factor: 1.0

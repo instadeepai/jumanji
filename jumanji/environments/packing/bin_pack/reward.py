@@ -128,7 +128,6 @@ class ValueBasedDenseReward(RewardFn):
             orientation, _, item_id = action
             chosen_item_value = tree_slice(state.items, (orientation, item_id)).value
 
-        chosen_item_value = tree_slice(state.items, item_id).value
         reward = chosen_item_value / state.instance_total_value
         reward: float = jax.lax.select(is_valid, reward, jnp.array(0, float))
         return reward
