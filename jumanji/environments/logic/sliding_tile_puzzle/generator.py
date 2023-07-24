@@ -65,9 +65,7 @@ class RandomGenerator(Generator):
             indicating the position of the empty tile.
         """
         # Create a list of all tiles
-        tiles = jnp.arange(
-            self._grid_size * self._grid_size
-        )  # create a list of all tiles
+        tiles = jnp.arange(self._grid_size * self._grid_size)
 
         # Shuffle the tiles
         key, subkey = jax.random.split(key)
