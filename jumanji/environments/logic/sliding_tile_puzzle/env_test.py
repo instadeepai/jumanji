@@ -108,7 +108,7 @@ def test_env_one_move_to_solve(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
     next_state, timestep = sliding_tile_puzzle.step(state, action)
 
     assert jnp.array_equal(next_state.puzzle, solved_puzzle)
-    assert timestep.step_type == 2  # 2 denotes the last step
+    assert timestep.last()
     assert timestep.discount == 0.0
 
 
