@@ -282,8 +282,9 @@ class PacMan(Environment[State]):
         action_mask = self._compute_action_mask(state).astype(bool)
         action_mask = action_mask * action_mask_bool
 
+        next_state = next_state.replace(action_mask=action_mask)  # type: ignore
         # Generate observation from the state
-        observation = self._observation_from_state(state)
+        observation = self._observation_from_state(next_state)
 
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
