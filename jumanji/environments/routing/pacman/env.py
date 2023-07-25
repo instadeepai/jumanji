@@ -270,16 +270,16 @@ class PacMan(Environment[State]):
         next_state = updated_state.replace(step_count=state.step_count + 1)  # type: ignore
 
         # Check if episode terminates
-        num_pellets = state.pellets
-        dead = state.dead
-        time_limit_exceeded = state.step_count >= self.time_limit
+        num_pellets = next_state.pellets
+        dead = next_state.dead
+        time_limit_exceeded = next_state.step_count >= self.time_limit
         all_pellets_found = num_pellets == 0
-        dead = state.dead == 1
+        dead = next_state.dead == 1
         done = time_limit_exceeded | dead | all_pellets_found
 
         reward = jnp.asarray(collision_rewards)
         action_mask_bool = jnp.array([True, True, True, True, False])
-        action_mask = self._compute_action_mask(state).astype(bool)
+        action_mask = self._compute_action_mask(next_state).astype(bool)
         action_mask = action_mask * action_mask_bool
 
         next_state = next_state.replace(action_mask=action_mask)  # type: ignore
