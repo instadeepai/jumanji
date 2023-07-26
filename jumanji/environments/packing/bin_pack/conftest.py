@@ -272,6 +272,14 @@ class FullSupportDummyGenerator(Generator):
         """
         del key
         container = make_container(TWENTY_FOOT_DIMS)
+
+        # This instance consists of 10 identical small items of size
+        # (container_length/10, container_width, 300) and one big item
+        # of size (container_length, container_width, 1900).
+        # This isntance is used to test the full support constraint by forcing the agent to start
+        # by placing one of the small items. Using this instance allows us to test both that
+        # the agent isn't able to place items if they're not fully supported, and make sure that
+        # the merger of ems is done correctly.
         return State(
             container=container,
             instance_max_item_value_magnitude=0,
@@ -282,11 +290,8 @@ class FullSupportDummyGenerator(Generator):
             ),
             ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
             items=Item(
-                # The 1st and 2nd items have the same shape.
-                x_len=jnp.array(
-                    [5870, 587, 587, 587, 587, 587, 587, 587, 587, 587, 587], jnp.int32
-                ),
-                y_len=jnp.array(11 * [2330], jnp.int32),
+                x_len=jnp.array([container.x2] + 10 * [container.x2 / 10], jnp.int32),
+                y_len=jnp.array(11 * [container.y2], jnp.int32),
                 z_len=jnp.array([1900] + 10 * [300], jnp.int32),
             ),
             items_mask=jnp.array(
@@ -322,7 +327,7 @@ class FullSupportDummyGenerator(Generator):
                 bool,
             ),
             items_location=jax.tree_util.tree_map(
-                lambda x: jnp.array(11 * [x], jnp.int32), Location(x=0, y=0, z=0)
+                lambda loc: jnp.array(11 * [loc], jnp.int32), Location(x=0, y=0, z=0)
             ),
             nb_items=11,
             action_mask=None,

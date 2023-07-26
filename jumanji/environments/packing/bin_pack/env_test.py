@@ -26,7 +26,6 @@ from jumanji.environments.packing.bin_pack.env import BinPack, ConstrainedBinPac
 from jumanji.environments.packing.bin_pack.generator import (
     ConstrainedRandomGenerator,
     ConstrainedToyGenerator,
-    FullSupportRandomGenerator,
     RandomGenerator,
     ToyGenerator,
 )
@@ -263,13 +262,22 @@ def test_bin_pack__optimal_policy_random_instance(
 
 
 def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
+    """
+    This tests allows to check that no unsupported item can be placed by the agent
+    and that the merging of EMS with the same height works correctly.
+    """
     step_fn = jax.jit(full_support_bin_pack.step)
     state, timestep = jax.jit(full_support_bin_pack.reset)(0)
+    # Start by forcing the agent to place one of the small items.
     state, timestep = step_fn(state, jnp.array([0, 1]))
     nb_remaning_items = full_support_bin_pack.generator.max_num_items - 1
     while not timestep.last() and nb_remaning_items > 1:
+        # Trick to select the EMS whose bottom is the floor of the container (when the number of
+        # items is less than 6 the biggest ems becomes the EMS whose bottom is the top face of
+        # the set of placed items).
         action = jnp.array([int(nb_remaning_items < 6), nb_remaning_items])
         assert timestep.observation.action_mask[tuple(action)]
+        # Make sure that the big item can't be placed because it won't be supported
         assert jnp.all(~timestep.observation.action_mask[:, 0])
         state, timestep = step_fn(state, action)
         # Make sure that big piece isn't placeable because it can't be fully supported.
@@ -306,7 +314,7 @@ def test_full_support_bin_pack__optimal_policy_random_instance(
     """
     num_trial_episodes = 3
     random_bin_pack = BinPack(
-        generator=FullSupportRandomGenerator(max_num_items, max_num_ems),
+        generator=RandomGenerator(max_num_items, max_num_ems),
         obs_num_ems=obs_num_ems,
         normalize_dimensions=normalize_dimensions,
         debug=True,
