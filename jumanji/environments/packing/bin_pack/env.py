@@ -14,7 +14,7 @@
 
 import functools
 import itertools
-from typing import Dict, Optional, Sequence, Tuple, cast
+from typing import Any, Dict, Optional, Sequence, Tuple, cast
 
 import chex
 import jax
@@ -25,8 +25,7 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.packing.bin_pack.generator import (
-    VALUE_BASED_GENERATORS,
-    ConstrainedRandomGenerator,
+    ExtendedRandomGenerator,
     Generator,
     RandomGenerator,
 )
@@ -48,7 +47,7 @@ from jumanji.environments.packing.bin_pack.types import (
 )
 from jumanji.environments.packing.bin_pack.viewer import (
     BinPackViewer,
-    ConstrainedBinPackViewer,
+    ExtendedBinPackViewer,
 )
 from jumanji.tree_utils import tree_add_element, tree_slice
 from jumanji.types import TimeStep, restart, termination, transition
@@ -204,7 +203,6 @@ class BinPack(Environment[State]):
             - items_placed: BoundedArray (bool) of shape (max_num_items,).
             - action_mask: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
-        valued_items_used = isinstance(self.generator, VALUE_BASED_GENERATORS)
         obs_num_ems = self.obs_num_ems
         max_num_items = self.generator.max_num_items
         max_dim = max(self.generator.container_dims)
@@ -225,15 +223,19 @@ class BinPack(Environment[State]):
             }
         ems = specs.Spec(EMS, "EMSSpec", **ems_dict)
         ems_mask = specs.BoundedArray((obs_num_ems,), bool, False, True, "ems_mask")
-        if valued_items_used:
-            items_dict = self._items_dict_for_valued_items(max_num_items, max_dim)
+        if self.normalize_dimensions:
+            items_dict = {
+                f"{axis}": specs.BoundedArray((max_num_items,), float, 0.0, 1.0, axis)
+                for axis in ["x_len", "y_len", "z_len"]
+            }
         else:
-            items_dict = self._items_dict_for_non_valued_items(max_num_items, max_dim)
-        items = (
-            specs.Spec(ValuedItem, "ItemsSpec", **items_dict)
-            if valued_items_used
-            else specs.Spec(Item, "ItemsSpec", **items_dict)  # type: ignore
-        )
+            items_dict = {
+                f"{axis}": specs.BoundedArray(
+                    (max_num_items,), jnp.int32, 0, max_dim, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
+        items = specs.Spec(Item, "ItemsSpec", **items_dict)  # type: ignore
         items_mask = specs.BoundedArray(
             (max_num_items,), bool, False, True, "items_mask"
         )
@@ -257,55 +259,6 @@ class BinPack(Environment[State]):
             items_placed=items_placed,
             action_mask=action_mask,
         )
-
-    def _items_dict_for_valued_items(self, max_num_items: int, max_dim: int) -> Dict:
-        """Set the items_dict specs to the correct bounded array for valued items depending
-        on whether features are to be normalized or not.
-
-        Args:
-            max_num_items: the maximum number of items that can be in an instance.
-            max_dim: The maximum dimension in this given instance.
-
-        Returns:
-            A dictionary with string keys of the item features and specs BoundedArray as values.
-        """
-        items_dict = self._items_dict_for_non_valued_items(max_num_items, max_dim)
-        if self.normalize_dimensions:
-            items_dict["value"] = specs.BoundedArray(
-                (self.generator.max_num_items,), float, -1.0, 1.0, "value"
-            )
-        else:
-            items_dict["value"] = specs.BoundedArray(
-                (self.generator.max_num_items,), float, -jnp.inf, jnp.inf, "value"
-            )
-        return items_dict
-
-    def _items_dict_for_non_valued_items(
-        self, max_num_items: int, max_dim: int
-    ) -> Dict:
-        """Set the items_dict specs to the correct bounded array for non valued items depending
-        on whether dimensions are to be normalized or not.
-
-        Args:
-            max_num_items: the maximum number of items that can be in an instance.
-            max_dim: The maximum dimension in this given instance.
-
-        Returns:
-            A dictionary with string keys of the item features and specs BoundedArray as values.
-        """
-        if self.normalize_dimensions:
-            return {
-                f"{axis}": specs.BoundedArray(
-                    (self.generator.max_num_items,), float, 0.0, 1.0, axis
-                )
-                for axis in ["x_len", "y_len", "z_len"]
-            }
-        return {
-            f"{axis}": specs.BoundedArray(
-                (self.generator.max_num_items,), jnp.int32, 0, max_dim, axis
-            )
-            for axis in ["x_len", "y_len", "z_len"]
-        }
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `BinPack` environment.
@@ -518,26 +471,7 @@ class BinPack(Environment[State]):
         """Normalize the EMSs and items in the observation. Each dimension is divided by the
         container length so that they are all between 0.0 and 1.0. Hence, the ratio is not kept.
         """
-        # If items have the extra feature: value (for cases where we want to maximize the value
-        # packed into a container instead of the volume) we normalise by the largest valued item
-        # (observed better performances than normalising with respect to the total value of all
-        # items).
-        container_item: ItemType
-        if isinstance(items, ValuedItem):
-            items = cast(ValuedItem, items)
-            state.items = cast(ValuedItem, state.items)
-            (
-                x_len,
-                y_len,
-                z_len,
-                _,
-            ) = container_item = valued_item_from_space_and_max_value(
-                state.container, state.instance_max_item_value_magnitude
-            )
-        else:
-            items = cast(Item, items)
-            x_len, y_len, z_len = container_item = item_from_space(state.container)
-
+        x_len, y_len, z_len = container_item = item_from_space(state.container)
         norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
         obs_ems = jax.tree_util.tree_map(
             lambda ems, container: ems / container, obs_ems, norm_space
@@ -780,23 +714,38 @@ class BinPack(Environment[State]):
         return ems, ems_mask
 
 
-class ConstrainedBinPack(BinPack):
+class ExtendedBinPack(BinPack):
     def __init__(
         self,
+        is_rotation_allowed: bool,
+        is_value_based: bool,
         generator: Optional[Generator] = None,
         obs_num_ems: int = 40,
         reward_fn: Optional[RewardFn] = None,
         normalize_dimensions: bool = True,
         debug: bool = False,
         viewer: Optional[Viewer[State]] = None,
+        mean_value: Optional[float] = None,
+        standard_deviation_value: Optional[float] = None,
     ):
-        generator = generator or ConstrainedRandomGenerator(20, 40)
-        viewer = viewer or ConstrainedBinPackViewer(
-            "ConstrainedBinPack", render_mode="human"
+        generator = generator or ExtendedRandomGenerator(
+            is_rotation_allowed=is_rotation_allowed,
+            is_value_based=is_value_based,
+            max_num_items=20,
+            max_num_ems=40,
+            mean_value=mean_value,
+            standard_deviation_value=standard_deviation_value,
+        )
+        viewer = viewer or ExtendedBinPackViewer(
+            "ExtendedBinPack",
+            is_rotation_allowed=is_rotation_allowed,
+            render_mode="human",
         )
         super().__init__(
             generator, obs_num_ems, reward_fn, normalize_dimensions, debug, viewer
         )
+        self.is_value_based = is_value_based
+        self.is_rotation_allowed = is_rotation_allowed
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `BinPack` environment.
@@ -823,30 +772,39 @@ class ConstrainedBinPack(BinPack):
         max_dim = max(self.generator.container_dims)
 
         if self.normalize_dimensions:
-            items_dict = {
-                f"{axis}": specs.BoundedArray(
-                    (6 * max_num_items,), float, 0.0, 1.0, axis
-                )
-                for axis in ["x_len", "y_len", "z_len"]
-            }
-        else:
-            items_dict = {
-                f"{axis}": specs.BoundedArray(
-                    (6 * max_num_items,), jnp.int32, 0, max_dim, axis
-                )
-                for axis in ["x_len", "y_len", "z_len"]
-            }
-        items = specs.Spec(Item, "ItemsSpec", **items_dict)
+            if self.is_value_based:
+                if self.is_rotation_allowed:
+                    items_dict = self._items_dict_for_rotated_valued_items(
+                        max_num_items, max_dim
+                    )
+                else:
+                    items_dict = self._items_dict_for_valued_items(
+                        max_num_items, max_dim
+                    )
+            else:
+                if self.is_rotation_allowed:
+                    items_dict = self._items_dict_for_rotated_items(
+                        max_num_items, max_dim
+                    )
+                else:
+                    items_dict = self._items_dict_for_non_valued_items(
+                        max_num_items, max_dim
+                    )
+
+        items = specs.Spec(
+            ValuedItem if self.is_value_based else Item, "ItemsSpec", **items_dict
+        )
+        nb_orientations = 1 + 5 * self.is_rotation_allowed
         items_mask = specs.BoundedArray(
-            (6 * max_num_items,), bool, False, True, "items_mask"
+            (nb_orientations * max_num_items,), bool, False, True, "items_mask"
         )
         items_placed = specs.BoundedArray(
-            (6 * max_num_items,), bool, False, True, "items_placed"
+            (nb_orientations * max_num_items,), bool, False, True, "items_placed"
         )
         action_mask = specs.BoundedArray(
             (
                 obs_num_ems,
-                6 * max_num_items,
+                nb_orientations * max_num_items,
             ),
             bool,
             False,
@@ -864,6 +822,112 @@ class ConstrainedBinPack(BinPack):
             )
         )
 
+    def _items_dict_for_valued_items(self, max_num_items: int, max_dim: int) -> Dict:
+        """Set the items_dict specs to the correct bounded array for valued items depending
+        on whether features are to be normalized or not.
+
+        Args:
+            max_num_items: the maximum number of items that can be in an instance.
+            max_dim: The maximum dimension in this given instance.
+
+        Returns:
+            A dictionary with string keys of the item features and specs BoundedArray as values.
+        """
+        items_dict = self._items_dict_for_non_valued_items(max_num_items, max_dim)
+        if self.normalize_dimensions:
+            items_dict["value"] = specs.BoundedArray(
+                (max_num_items,), float, -1.0, 1.0, "value"
+            )
+        else:
+            items_dict["value"] = specs.BoundedArray(
+                (max_num_items,), float, -jnp.inf, jnp.inf, "value"
+            )
+        return items_dict
+
+    def _items_dict_for_non_valued_items(
+        self, max_num_items: int, max_dim: int
+    ) -> Dict:
+        """Set the items_dict specs to the correct bounded array for non valued items depending
+        on whether dimensions are to be normalized or not.
+
+        Args:
+            max_num_items: the maximum number of items that can be in an instance.
+            max_dim: The maximum dimension in this given instance.
+
+        Returns:
+            A dictionary with string keys of the item features and specs BoundedArray as values.
+        """
+        if self.normalize_dimensions:
+            return {
+                f"{axis}": specs.BoundedArray((max_num_items,), float, 0.0, 1.0, axis)
+                for axis in ["x_len", "y_len", "z_len"]
+            }
+        return {
+            f"{axis}": specs.BoundedArray((max_num_items,), jnp.int32, 0, max_dim, axis)
+            for axis in ["x_len", "y_len", "z_len"]
+        }
+
+    def _items_dict_for_rotated_items(self, max_num_items: int, max_dim: int) -> Dict:
+        """Set the items_dict specs to the correct bounded array for items depending
+        on whether features are to be normalized or not.
+
+        Args:
+            max_num_items: the maximum number of items that can be in an instance.
+            max_dim: The maximum dimension in this given instance.
+
+        Returns:
+            A dictionary with string keys of the item features and specs BoundedArray as values.
+        """
+        if self.normalize_dimensions:
+            items_dict = {
+                f"{axis}": specs.BoundedArray(
+                    (6 * max_num_items,), float, 0.0, 1.0, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
+
+        else:
+            items_dict = {
+                f"{axis}": specs.BoundedArray(
+                    (6 * max_num_items,), jnp.int32, 0, max_dim, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
+        return items_dict
+
+    def _items_dict_for_rotated_valued_items(
+        self, max_num_items: int, max_dim: int
+    ) -> Dict:
+        """Set the items_dict specs to the correct bounded array for valued items depending
+        on whether features are to be normalized or not.
+
+        Args:
+            max_num_items: the maximum number of items that can be in an instance.
+            max_dim: The maximum dimension in this given instance.
+
+        Returns:
+            A dictionary with string keys of the item features and specs BoundedArray as values.
+        """
+        items_dict = self._items_dict_for_valued_items(max_num_items, max_dim)
+        if self.normalize_dimensions:
+            items_dict["value"] = specs.BoundedArray(
+                (6 * max_num_items,), float, -1.0, 1.0, "value"
+            )
+        else:
+            items_dict["value"] = specs.BoundedArray(
+                (6 * max_num_items,), float, -jnp.inf, jnp.inf, "value"
+            )
+        for axis in ["x_len", "y_len", "z_len"]:
+            if self.normalize_dimensions:
+                items_dict[axis] = specs.BoundedArray(
+                    (6 * max_num_items,), float, 0.0, 1.0, axis
+                )
+            else:
+                items_dict[axis] = specs.BoundedArray(
+                    (6 * max_num_items,), jnp.int32, 0, max_dim, axis
+                )
+        return items_dict
+
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `BinPack` environment.
 
@@ -872,9 +936,14 @@ class ConstrainedBinPack(BinPack):
             - ems_id: int between 0 and obs_num_ems - 1 (included).
             - item_id: int between 0 and max_num_items - 1 (included).
         """
-        num_values = jnp.array(
-            [6, self.obs_num_ems, self.generator.max_num_items], jnp.int32
-        )
+        if self.is_rotation_allowed:
+            num_values = jnp.array(
+                [6, self.obs_num_ems, self.generator.max_num_items], jnp.int32
+            )
+        else:
+            num_values = jnp.array(
+                [self.obs_num_ems, self.generator.max_num_items], jnp.int32
+            )
         return specs.MultiDiscreteArray(num_values=num_values, name="action")
 
     def step(
@@ -903,8 +972,11 @@ class ConstrainedBinPack(BinPack):
                     invalid. Only available in debug mode.
         """
         action_is_valid = state.action_mask[tuple(action)]  # type: ignore
-
-        orientation, obs_ems_id, item_id = action
+        orientation, obs_ems_id, item_id = None, None, None
+        if self.is_rotation_allowed:
+            orientation, obs_ems_id, item_id = action
+        else:
+            obs_ems_id, item_id = action
         ems_id = state.sorted_ems_indexes[obs_ems_id]
 
         # Pack the item if the provided action is valid.
@@ -947,31 +1019,90 @@ class ConstrainedBinPack(BinPack):
         def flatten_observation(observation: Observation) -> Observation:
             flattened_items_mask = observation.items_mask.flatten()
             flattened_items_placed = observation.items_placed.flatten()
-            flattened_items = Item(
-                observation.items[0].flatten(),
-                observation.items[1].flatten(),
-                observation.items[2].flatten(),
-            )
             flattened_action_mask = observation.action_mask.reshape(
                 observation.action_mask.shape[1],
                 -1,
             )
-            flattened_observation = Observation(
-                ems=observation.ems,
-                ems_mask=observation.ems_mask,
-                items=flattened_items,
-                items_mask=flattened_items_mask,
-                items_placed=flattened_items_placed,
-                action_mask=flattened_action_mask,
-            )
-            return flattened_observation
+            if self.is_value_based:
+                items = cast(
+                    ValuedItem,
+                    observation.items,
+                )
+                return Observation(
+                    ems=observation.ems,
+                    ems_mask=observation.ems_mask,
+                    items=ValuedItem(
+                        items.x_len.flatten(),
+                        items.y_len.flatten(),
+                        items.z_len.flatten(),
+                        items.value.flatten(),
+                    ),
+                    items_mask=flattened_items_mask,
+                    items_placed=flattened_items_placed,
+                    action_mask=flattened_action_mask,
+                )
+
+            else:
+                return Observation(
+                    ems=observation.ems,
+                    ems_mask=observation.ems_mask,
+                    items=Item(
+                        observation.items.x_len.flatten(),
+                        observation.items.y_len.flatten(),
+                        observation.items.z_len.flatten(),
+                    ),
+                    items_mask=flattened_items_mask,
+                    items_placed=flattened_items_placed,
+                    action_mask=flattened_action_mask,
+                )
 
         state, observation, extra = super()._make_observation_and_extras(state)
-        flat_obs = flatten_observation(observation)
+        flat_obs = observation
+        if self.is_rotation_allowed:
+            flat_obs = flatten_observation(flat_obs)
         return state, flat_obs, extra
 
+    def _normalize_ems_and_items(
+        self, state: State, obs_ems: EMS, items: ItemType  # type: ignore
+    ) -> Tuple[EMS, Item]:
+        """Normalize the EMSs and items in the observation. Each dimension is divided by the
+        container length so that they are all between 0.0 and 1.0. Hence, the ratio is not kept.
+        """
+        # If items have the extra feature: value (for cases where we want to maximize the value
+        # packed into a container instead of the volume) we normalise by the largest valued item
+        # (observed better performances than normalising with respect to the total value of all
+        # items).
+        container_item: ItemType
+        if isinstance(items, ValuedItem):
+            items = cast(ValuedItem, items)
+            state.items = cast(ValuedItem, state.items)
+            (
+                x_len,
+                y_len,
+                z_len,
+                _,
+            ) = container_item = valued_item_from_space_and_max_value(
+                state.container, state.instance_max_item_value_magnitude
+            )
+        else:
+            items = cast(Item, items)
+            x_len, y_len, z_len = container_item = item_from_space(state.container)
+
+        norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
+        obs_ems = jax.tree_util.tree_map(
+            lambda ems, container: ems / container, obs_ems, norm_space
+        )
+        items = jax.tree_util.tree_map(
+            lambda item, container: item / container, items, container_item
+        )
+        return obs_ems, items
+
     def _pack_item(  # type: ignore
-        self, state: State, ems_id: int, item_id: chex.Numeric, item_orientation: int
+        self,
+        state: State,
+        ems_id: int,
+        item_id: chex.Numeric,
+        item_orientation: Optional[Any] = None,
     ) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
@@ -979,10 +1110,15 @@ class ConstrainedBinPack(BinPack):
         state.items_location = tree_add_element(
             state.items_location, item_id, Location(ems.x1, ems.y1, ems.z1)
         )
-        state.items_mask = state.items_mask.at[:, item_id].set(False)
-        # jax.debug.print("items_mask : {}",state.items_mask)
-        state.items_placed = state.items_placed.at[item_orientation, item_id].set(True)
-        # jax.debug.print("items_placed : {}",state.items_placed)
+        if item_orientation is not None:
+            state.items_mask = state.items_mask.at[:, item_id].set(False)
+            state.items_placed = state.items_placed.at[item_orientation, item_id].set(
+                True
+            )
+        else:
+            state.items_mask = state.items_mask.at[item_id].set(False)
+
+            state.items_placed = state.items_placed.at[item_id].set(True)
         state = self._update_ems(state, item_id, item_orientation)
         return state
 
@@ -1017,50 +1153,69 @@ class ConstrainedBinPack(BinPack):
             item_fits_in_ems = item_fits_in_item(item, item_from_space(ems))
             return ~item_placed & item_mask & ems_mask & item_fits_in_ems
 
-        expanded_obs_state = jax.tree_util.tree_map(
-            functools.partial(jnp.expand_dims, axis=0), obs_ems
-        )
-        expanded_obs_ems_mask = jax.tree_util.tree_map(
-            functools.partial(jnp.expand_dims, axis=0), obs_ems_mask
-        )
-        action_mask = jax.vmap(
-            jax.vmap(is_action_allowed, in_axes=(None, None, 1, 1, 1)),
-            in_axes=(1, 1, None, None, None),
-        )(expanded_obs_state, expanded_obs_ems_mask, items, items_mask, items_placed)
-        action_mask = jnp.moveaxis(action_mask, -1, 0)
-        return jnp.asarray(action_mask, bool)
+        if self.is_rotation_allowed:
+            expanded_obs_state = jax.tree_util.tree_map(
+                functools.partial(jnp.expand_dims, axis=0), obs_ems
+            )
+            expanded_obs_ems_mask = jax.tree_util.tree_map(
+                functools.partial(jnp.expand_dims, axis=0), obs_ems_mask
+            )
+            action_mask = jax.vmap(
+                jax.vmap(is_action_allowed, in_axes=(None, None, 1, 1, 1)),
+                in_axes=(1, 1, None, None, None),
+            )(
+                expanded_obs_state,
+                expanded_obs_ems_mask,
+                items,
+                items_mask,
+                items_placed,
+            )
+            action_mask = jnp.moveaxis(action_mask, -1, 0)
+            return jnp.asarray(action_mask, bool)
+        else:
+            return super()._get_action_mask(
+                obs_ems, obs_ems_mask, items, items_mask, items_placed
+            )
 
     def _ems_are_all_valid(self, state: State) -> chex.Array:
         """Checks if all EMSs are valid, i.e. they don't intersect items and do not stick out of the
         container. This check is only done in debug mode.
         """
         ems_intersection_with_items = jnp.zeros((state.ems_mask.shape), bool)
-
-        for o in range(6):
-            tmp_items = Item(
-                state.items[:][0][o], state.items[:][1][o], state.items[:][2][o]
+        if self.is_rotation_allowed:
+            for o in range(6):
+                tmp_items = Item(
+                    state.items[:][0][o], state.items[:][1][o], state.items[:][2][o]
+                )
+                item_spaces = space_from_item_and_location(
+                    tmp_items, state.items_location
+                )
+                ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(
+                    state.ems, item_spaces
+                )
+                ems_intersect_items &= jnp.outer(state.ems_mask, state.items_placed[o])
+                ems_intersection_with_items |= jnp.any(ems_intersect_items)
+            ems_outside_container = jnp.any(
+                state.ems_mask & ~state.ems.is_included(state.container)
             )
-            item_spaces = space_from_item_and_location(tmp_items, state.items_location)
-            ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(
-                state.ems, item_spaces
-            )
-            ems_intersect_items &= jnp.outer(state.ems_mask, state.items_placed[o])
-            ems_intersection_with_items |= jnp.any(ems_intersect_items)
-        ems_outside_container = jnp.any(
-            state.ems_mask & ~state.ems.is_included(state.container)
-        )
-        return ~ems_intersection_with_items & ~ems_outside_container
+            return ~ems_intersection_with_items & ~ems_outside_container
+        else:
+            return super()._ems_are_all_valid(state)
 
     def _update_ems(  # type: ignore
         self, state: State, item_id: chex.Numeric, item_orientation
     ) -> State:
         """Update the EMSs after packing the item."""
-
-        item_space = space_from_item_and_location(
-            tree_slice(tree_slice(state.items, item_orientation), item_id),
-            tree_slice(state.items_location, item_id),
-        )
-
+        if item_orientation is not None:
+            item_space = space_from_item_and_location(
+                tree_slice(tree_slice(state.items, item_orientation), item_id),
+                tree_slice(state.items_location, item_id),
+            )
+        else:
+            item_space = space_from_item_and_location(
+                tree_slice(state.items, item_id),
+                tree_slice(state.items_location, item_id),
+            )
         # Delete EMSs that intersect the new item.
         ems_mask_after_intersect = ~item_space.intersect(state.ems) & state.ems_mask
 

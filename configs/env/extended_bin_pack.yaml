@@ -1,5 +1,19 @@
-name: constrained_bin_pack
-registered_version: ConstrainedBinPack-v0
+name: extended_bin_pack
+registered_version: ExtendedBinPack-v0
+
+env_settings:
+    reward_fn: ValueBasedDenseReward
+    generator: ExtendedRandomGenerator
+    is_value_based: True
+    is_rotation_allowed: False
+
+generator_settings:
+    max_num_items: 10
+    max_num_ems: 40
+    is_value_based: True
+    is_rotation_allowed: False
+    mean_value: 0
+    standard_deviation_value: 1
 
 network:
     num_transformer_layers: 2
