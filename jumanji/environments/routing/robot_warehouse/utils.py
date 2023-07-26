@@ -84,7 +84,7 @@ def get_valid_actions(actions: chex.Array, action_mask: chex.Array) -> chex.Arra
 
 def is_collision(grid: chex.Array, agent: Agent, agent_id: int) -> chex.Array:
     """Calculate whether an agent collides with another
-    agent. If there is a collision, theepisode terminates
+    agent. If there is a collision, the episode terminates
     (this behavior is specific to the JAX version of the
     robotic warehouse (RWARE) environment).
 
