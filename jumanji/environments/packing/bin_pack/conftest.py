@@ -251,8 +251,13 @@ class DummyConstrainedGenerator(DummyGenerator):
 
 class FullSupportDummyGenerator(Generator):
     """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
-    container and 3 items: two identical items and a different third one to be able to
-    test item aggregation.
+    container and 11 items 10 identical small items of size
+    (container_length/10, container_width, 300) and one big item of size
+    (container_length, container_width, 1900).
+    This isntance is used to test the full support constraint by forcing the agent to start by
+    placing one of the small items. Using this instance allows us to test both that the agent isn't
+    able to place items if they're not fully supported, and make sure that
+    the merger of ems is correct.
     """
 
     def __init__(self) -> None:
@@ -273,13 +278,6 @@ class FullSupportDummyGenerator(Generator):
         del key
         container = make_container(TWENTY_FOOT_DIMS)
 
-        # This instance consists of 10 identical small items of size
-        # (container_length/10, container_width, 300) and one big item
-        # of size (container_length, container_width, 1900).
-        # This isntance is used to test the full support constraint by forcing the agent to start
-        # by placing one of the small items. Using this instance allows us to test both that
-        # the agent isn't able to place items if they're not fully supported, and make sure that
-        # the merger of ems is done correctly.
         return State(
             container=container,
             instance_max_item_value_magnitude=0,
