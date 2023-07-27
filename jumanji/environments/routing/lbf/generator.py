@@ -153,7 +153,6 @@ class UniformRandomGenerator(Generator):
             id=jnp.arange(self.num_agents),
             position=jnp.stack(agent_positions, axis=1),
             level=agent_levels,
-            fov=jnp.full((self.num_agents,), self.grid_size),
         )
 
         # Create the food pytree that corresponds to the grid.
