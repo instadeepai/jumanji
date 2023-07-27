@@ -49,13 +49,11 @@ class Food(Entity):
 @dataclass
 class State:
     """
-    grid: grid representing the position of all agents.
     step_count: the index of the current step.
     agents: a stacked pytree of type Agent.
     key: random key used for auto-reset.
     """
 
-    grid: chex.Array  # (grid_size, grid_size)
     step_count: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
     foods: Food  # (num_foods, ...)

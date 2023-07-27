@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import jax.numpy as jnp
 
 # Observations
 EMPTY = 0
@@ -24,6 +25,9 @@ RIGHT = 2
 DOWN = 3
 LEFT = 4
 LOAD = 5
+
+# No-op, Up, Right, Down, Left, Load
+MOVES = jnp.array([[0, 0], [-1, 0], [0, 1], [1, 0], [0, -1], [0, 0]])
 
 # Rendering
 VIEWER_WIDTH = 1000

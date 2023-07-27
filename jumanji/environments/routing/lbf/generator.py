@@ -164,6 +164,4 @@ class UniformRandomGenerator(Generator):
 
         step_count = jnp.array(0, jnp.int32)
 
-        return State(
-            key=key, grid=grid, step_count=step_count, agents=agents, foods=foods
-        )
+        return State(key=key, step_count=step_count, agents=agents, foods=foods)

@@ -4,21 +4,24 @@ import chex
 import jax
 import jax.numpy as jnp
 
+from jumanji.environments.routing.lbf.constants import MOVES
 from jumanji.environments.routing.lbf.types import Agent, Entity, Food
 
 
 def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
+    # todo: this places the agent on the grid, how does lbf display the agent's level in the obs without obstructing the food level?
     return grid.at[agent.position].set(agent.id)
 
 
-def move(
-    agent: Agent, action: chex.Array, foods: Food, max_row: int, max_col: int
-) -> Agent:
-    movements = jnp.array([[0, 0], [0, 1], [0, -1], [1, 0], [-1, 0], [0, 0]])
-    bounds = jnp.array([max_row, max_col])
+def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
+    return jax.lax.select(food.eaten, grid, grid.at[food.position].set(food.level))
+
+
+def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent:
+    bounds = jnp.array([grid_size, grid_size])
 
     # add action to agent position
-    new_position = agent.position + movements[action]
+    new_position = agent.position + MOVES[action]
 
     # if position is not in food positions and not out of bounds, move agent
     out_of_bounds = jnp.any(new_position < 0) | jnp.any(new_position >= bounds)
@@ -36,23 +39,28 @@ def is_adj(a: Entity, b: Entity) -> bool:
     return jnp.linalg.norm(a.position - b.position, axis=-1) == 1
 
 
-def eat(agents: Agent, food: Food) -> Tuple[bool, Food]:
-    """Return whether any agents ate any food, and the new food."""
-    # get the level of all adjacent agents, if an agent is not adjacent, it's level is 0
-    adjacent_levels = jax.vmap(
-        lambda agent, food: jax.lax.select(
+def eat(agents: Agent, food: Food) -> Tuple[Food, bool, chex.Array]:
+    """Return the new food, whether any agents ate any food and the agents that were loading around the food."""
+
+    def get_adj_level(agent: Agent, food: Food) -> chex.Array:
+        return jax.lax.select(
             is_adj(agent, food),
             agent.level,
             0,
         )
-    )(agents, food)
+
+    # get the level of all adjacent agents, if an agent is not adjacent, it's level is 0
+    adjacent_levels = jax.vmap(get_adj_level, (0, None))(agents, food)
 
     # sum the levels of all adjacent agents that are loading
-    adjacent_level = jnp.sum(jnp.where(agents.loading, adjacent_levels, 0))
+    adjacent_loading_levels = jnp.where(agents.loading, adjacent_levels, 0)
+    adjacent_level = jnp.sum(adjacent_loading_levels)
 
-    # todo: check if greater than equal to
-    food_eaten = adjacent_level >= food.level
-    return food_eaten, food.replace(eaten=food_eaten)
+    # todo: check if greater than equal to or just greater than
+    food_eaten = (adjacent_level >= food.level) & (~food.eaten)
+    # set food to eaten if it was eaten and if it was already eaten leave it as eaten
+    new_food = food.replace(eaten=food_eaten | food.eaten)
+    return new_food, food_eaten, adjacent_loading_levels != 0
 
 
 def flag_duplicates(a: chex.Array):
