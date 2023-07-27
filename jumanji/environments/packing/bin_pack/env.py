@@ -25,7 +25,6 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.packing.bin_pack.generator import (
-    VALUE_BASED_GENERATORS,
     ExtendedRandomGenerator,
     Generator,
     RandomGenerator,
@@ -73,16 +72,16 @@ class BinPack(Environment[State]):
         - ems_mask: jax array (bool) of shape (obs_num_ems,)
             indicates the EMSs that are valid.
         - items: `Item` tree of jax arrays (float if `normalize_dimensions` else int32) each of
-            shape (max_num_items,),
+            shape (max_num_items, 6),
             characteristics of all items for this instance.
-        - items_mask: jax array (bool) of shape (max_num_items,)
+        - items_mask: jax array (bool) of shape (max_num_items, 6)
             indicates the items that are valid.
-        - items_placed: jax array (bool) of shape (max_num_items,)
+        - items_placed: jax array (bool) of shape (max_num_items, 6)
             indicates the items that have been placed so far.
-        - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items,)
+        - action_mask: jax array (bool) of shape (obs_num_ems, max_num_items, 6)
             mask of the joint action space: `True` if the action (ems_id, item_id) is valid.
 
-    - action: `MultiDiscreteArray` (int32) of shape (obs_num_ems, max_num_items,).
+    - action: `MultiDiscreteArray` (int32) of shape (obs_num_ems, max_num_items, 6).
         - ems_id: int between 0 and obs_num_ems - 1 (included).
         - item_id: int between 0 and max_num_items - 1 (included).
 
@@ -204,10 +203,10 @@ class BinPack(Environment[State]):
             - items_placed: BoundedArray (bool) of shape (max_num_items,).
             - action_mask: BoundedArray (bool) of shape (obs_num_ems, max_num_items).
         """
-        valued_items_used = isinstance(self.generator, VALUE_BASED_GENERATORS)
         obs_num_ems = self.obs_num_ems
         max_num_items = self.generator.max_num_items
         max_dim = max(self.generator.container_dims)
+
         if self.normalize_dimensions:
             ems_dict = {
                 f"{coord_name}": specs.BoundedArray(
@@ -224,16 +223,18 @@ class BinPack(Environment[State]):
             }
         ems = specs.Spec(EMS, "EMSSpec", **ems_dict)
         ems_mask = specs.BoundedArray((obs_num_ems,), bool, False, True, "ems_mask")
-
-        if valued_items_used:
-            items_dict = self._items_dict_for_valued_items(max_num_items, max_dim)
+        if self.normalize_dimensions:
+            items_dict = {
+                f"{axis}": specs.BoundedArray((max_num_items,), float, 0.0, 1.0, axis)
+                for axis in ["x_len", "y_len", "z_len"]
+            }
         else:
-            items_dict = self._items_dict_for_non_valued_items(max_num_items, max_dim)
-        items = (
-            specs.Spec(ValuedItem, "ItemsSpec", **items_dict)
-            if valued_items_used
-            else specs.Spec(Item, "ItemsSpec", **items_dict)  # type: ignore
-        )
+            items_dict = {
+                f"{axis}": specs.BoundedArray(
+                    (max_num_items,), jnp.int32, 0, max_dim, axis
+                )
+                for axis in ["x_len", "y_len", "z_len"]
+            }
         items = specs.Spec(Item, "ItemsSpec", **items_dict)  # type: ignore
         items_mask = specs.BoundedArray(
             (max_num_items,), bool, False, True, "items_mask"
@@ -258,51 +259,6 @@ class BinPack(Environment[State]):
             items_placed=items_placed,
             action_mask=action_mask,
         )
-
-    def _items_dict_for_valued_items(self, max_num_items: int, max_dim: int) -> Dict:
-        """Set the items_dict specs to the correct bounded array for valued items depending
-        on whether features are to be normalized or not.
-        Args:
-            max_num_items: the maximum number of items that can be in an instance.
-            max_dim: The maximum dimension in this given instance.
-        Returns:
-            A dictionary with string keys of the item features and specs BoundedArray as values.
-        """
-        items_dict = self._items_dict_for_non_valued_items(max_num_items, max_dim)
-        if self.normalize_dimensions:
-            items_dict["value"] = specs.BoundedArray(
-                (self.generator.max_num_items,), float, -1.0, 1.0, "value"
-            )
-        else:
-            items_dict["value"] = specs.BoundedArray(
-                (self.generator.max_num_items,), float, -jnp.inf, jnp.inf, "value"
-            )
-        return items_dict
-
-    def _items_dict_for_non_valued_items(
-        self, max_num_items: int, max_dim: int
-    ) -> Dict:
-        """Set the items_dict specs to the correct bounded array for non valued items depending
-        on whether dimensions are to be normalized or not.
-        Args:
-            max_num_items: the maximum number of items that can be in an instance.
-            max_dim: The maximum dimension in this given instance.
-        Returns:
-            A dictionary with string keys of the item features and specs BoundedArray as values.
-        """
-        if self.normalize_dimensions:
-            return {
-                f"{axis}": specs.BoundedArray(
-                    (self.generator.max_num_items,), float, 0.0, 1.0, axis
-                )
-                for axis in ["x_len", "y_len", "z_len"]
-            }
-        return {
-            f"{axis}": specs.BoundedArray(
-                (self.generator.max_num_items,), jnp.int32, 0, max_dim, axis
-            )
-            for axis in ["x_len", "y_len", "z_len"]
-        }
 
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `BinPack` environment.
@@ -388,7 +344,6 @@ class BinPack(Environment[State]):
 
         # Make the observation.
         next_state, observation, extras = self._make_observation_and_extras(next_state)
-
         done = ~jnp.any(next_state.action_mask) | ~action_is_valid
         reward = self.reward_fn(state, action, next_state, action_is_valid, done)
 
@@ -500,7 +455,7 @@ class BinPack(Environment[State]):
         items_volume = jnp.sum(item_volume(state.items) * state.items_placed)
         volume_utilization = items_volume / state.container.volume()
         packed_items = jnp.sum(state.items_placed)
-        ratio_packed_items = packed_items / jnp.sum(state.items_mask)
+        ratio_packed_items = packed_items / state.nb_items
         active_ems = jnp.sum(state.ems_mask)
         extras = {
             "volume_utilization": volume_utilization,
@@ -516,26 +471,7 @@ class BinPack(Environment[State]):
         """Normalize the EMSs and items in the observation. Each dimension is divided by the
         container length so that they are all between 0.0 and 1.0. Hence, the ratio is not kept.
         """
-        # If items have the extra feature: value (for cases where we want to maximize the value
-        # packed into a container instead of the volume) we normalise by the largest valued item
-        # (observed better performances than normalising with respect to the total value of all
-        # items).
-        container_item: ItemType
-        if isinstance(items, ValuedItem):
-            items = cast(ValuedItem, items)
-            state.items = cast(ValuedItem, state.items)
-            (
-                x_len,
-                y_len,
-                z_len,
-                _,
-            ) = container_item = valued_item_from_space_and_max_value(
-                state.container, state.instance_max_item_value_magnitude
-            )
-        else:
-            items = cast(Item, items)
-            x_len, y_len, z_len = container_item = item_from_space(state.container)
-
+        x_len, y_len, z_len = container_item = item_from_space(state.container)
         norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
         obs_ems = jax.tree_util.tree_map(
             lambda ems, container: ems / container, obs_ems, norm_space
