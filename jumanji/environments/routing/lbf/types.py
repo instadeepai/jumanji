@@ -23,22 +23,8 @@ else:
     from chex import dataclass
 
 
-class Agent(NamedTuple):
-    """
-    id: unique number representing only this agent.
-    position: the current position of this agent.
-    level: the level of this agent.
-    fov: the field of view of this agent.
-    """
-
-    id: chex.Array  # ()
-    position: chex.Array  # (2,)
-    level: chex.Array  # ()
-    fov: chex.Array  # () - field of view
-
-
-# todo: should there be a food class?
-class Food(NamedTuple):
+@dataclass
+class Entity:
     """
     id: unique number representing only this food.
     position: the position of this food.
@@ -48,6 +34,16 @@ class Food(NamedTuple):
     id: chex.Array  # ()
     position: chex.Array  # (2,)
     level: chex.Array  # ()
+
+
+@dataclass
+class Agent(Entity):
+    loading: chex.Array = jnp.asarray(False)  # () - bool: is loading food
+
+
+@dataclass
+class Food(Entity):
+    eaten: chex.Array = jnp.asarray(False)  # () - bool: has been eaten
 
 
 @dataclass
