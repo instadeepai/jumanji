@@ -92,8 +92,6 @@ def _make_raw_env(cfg: DictConfig) -> Environment:
     try:
         env = jumanji.make(cfg.env.registered_version)
     except ValueError as error:
-        print("here")
-        print(str(error))
         if (
             "Unregistered environment" in str(error)
             and cfg.env.name != "extended_bin_pack"
