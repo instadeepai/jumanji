@@ -856,8 +856,8 @@ class BinPack(Environment[State]):
                         if the i-th EMS and the j-th EMS are already merged.
                     mask_ind: the index of the element of the mask that the function will examine.
                 Returns:
-                    Tuple[chex.Array, chex.Array]: Triangular boolean matrix is_merged_ems, and
-                    Space resulting from the merger of the EMS at  mask_ind// max_nb_ems and
+                    Triangular boolean matrix is_merged_ems, and Space resulting from the merger of
+                    the EMS at  mask_ind// max_nb_ems and
                     mask_ind% max_nb_ems.
                 """
 
@@ -891,24 +891,26 @@ class BinPack(Environment[State]):
                 return is_merged_ems, merged_ems
 
             def delete_merged_ems_and_add_new_ems(
-                carry: EMS, merged_ems_ind: Tuple[chex.Array]
+                new_ems_and_mask: Tuple[EMS, chex.Array],
+                merged_ems_ind: Tuple[chex.Array],
             ) -> Tuple[EMS, Any]:
                 """
                     Function that takes the a list of EMS and the indices of two merged EMS
                     and removes those EMS from that list and puts in that list the EMS resulting
                     from merging those two EMS.
                 Args:
-                    carry: Array of EMS.
+                    new_ems_and_mask: Array of EMS.
                     merged_ems_ind: indices of two merged EMS.
 
                 Returns:
                     List of EMS where the merged EMS were deleted and the
                     newly created EMS added.
                 """
-                carry = jax.lax.cond(
+                new_ems_and_mask = jax.lax.cond(
                     flat_is_merged_ems[merged_ems_ind],
                     lambda ems_arr, ems_mask: (
                         tree_add_element(
+                            # Add the new EMS at the place of the first EMS used to merge.
                             tree_add_element(
                                 ems_arr,
                                 merged_ems_indices[0][merged_ems_ind],
@@ -918,18 +920,21 @@ class BinPack(Environment[State]):
                                     + merged_ems_indices[1][merged_ems_ind],
                                 ),
                             ),
+                            # Add an enmpty EMS at the place of the second EMS used to merge.
                             merged_ems_indices[1][merged_ems_ind],
                             zero_vol_ems,
                         ),
+                        # Set the mask to True at the index of the newly added merged EMS
+                        # and to False at the index of the empty EMS.
                         ems_mask.at[merged_ems_indices[0][merged_ems_ind]]
                         .set(True)
                         .at[merged_ems_indices[1][merged_ems_ind]]
                         .set(False),
                     ),
                     lambda *_: _,
-                    *(carry),
+                    *(new_ems_and_mask),
                 )
-                return carry, None
+                return new_ems_and_mask, None
 
             # can_merge_ems = True if emss i and j can be merged.
             can_merge_ems, same_x = compute_merge_mask((ems_arr, ems_mask))
@@ -945,8 +950,8 @@ class BinPack(Environment[State]):
 
             # Construct new emss from merging previous ones.
             # - is_merged_ems[i,j] = True if the two ems at i and j have not been merged.
-            # - merged_ems is a list of length max_nb_ems**2 and contains the newly created EMSs
-            #   from merging the initial EMS.
+            # - merged_ems is a Tree of Spaces of length max_nb_ems**2 and contains the newly
+            #   created EMSs from merging the initial EMS.
             is_merged_ems, merged_ems = jax.lax.scan(
                 merge_if_possible, is_merged_ems, jnp.arange(len(flat_can_merge_ems))
             )
