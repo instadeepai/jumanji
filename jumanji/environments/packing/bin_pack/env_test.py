@@ -263,7 +263,7 @@ def test_bin_pack__optimal_policy_random_instance(
 
 def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
     """
-    This tests allows to check that no unsupported item can be placed by the agent
+    This test checks that no unsupported item can be placed by the agent
     and that the merging of EMS with the same height works correctly.
     """
     step_fn = jax.jit(full_support_bin_pack.step)
@@ -275,6 +275,11 @@ def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
         # Trick to select the EMS whose bottom is the floor of the container (when the number of
         # items is less than 6 the biggest ems becomes the EMS whose bottom is the top face of
         # the set of placed items).
+        # At first int(nb_remaning_items < 6) = 0 since the number of reamining items is bigger than
+        # 6 and so the EMS selected would be the biggest EMS which is the one whose bottom side is
+        # the floor. When the number of remaining items is less than 6 int(nb_remaning_items < 6)
+        # would be equal to 1 and so the selected EMS would be the second largest EMS which is
+        # the one with the bottom side on the floor.
         action = jnp.array([int(nb_remaning_items < 6), nb_remaning_items])
         assert timestep.observation.action_mask[tuple(action)]
         # Make sure that the big item can't be placed because it won't be supported
@@ -288,6 +293,7 @@ def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
     assert timestep.observation.action_mask[tuple(action)]
     state, timestep = step_fn(state, action)
 
+    # Make sure that all the items were placed and that the container was filled to 100%
     assert jnp.array_equal(state.items_placed, jnp.array(11 * [True]))
     assert jnp.isclose(timestep.extras["volume_utilization"], 1)
 
