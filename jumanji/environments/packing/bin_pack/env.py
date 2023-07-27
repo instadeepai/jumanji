@@ -949,7 +949,7 @@ class BinPack(Environment[State]):
             return new_ems, new_ems_mask
 
         state.ems, state.ems_mask = jax.lax.while_loop(
-            lambda ems: jnp.any(compute_merge_mask(ems)[0]),
+            lambda ems_and_mask: jnp.any(compute_merge_mask(ems_and_mask)[0]),
             merge_ems,
             (state.ems, state.ems_mask),
         )
