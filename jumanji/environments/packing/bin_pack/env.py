@@ -158,9 +158,9 @@ class BinPack(Environment[State]):
                 this metric slows down the environment. Default to False.
             viewer: `Viewer` used for rendering. Defaults to `BinPackViewer` with "human" render
                 mode.
-            full_support: if full_support is true a box can only placed on top of set of boxes only
-                if the bottom face of that box is fully supported by the top face of that set of
-                boxes.
+            full_support: if full_support is true a box can only be placed on top of set of boxes
+                only if the bottom face of that box is fully supported by the top face of that set
+                of boxes.
         """
         self.generator = generator or RandomGenerator(
             max_num_items=20,
@@ -747,6 +747,12 @@ class BinPack(Environment[State]):
         return intersections_ems_dict, intersections_mask_dict
 
     def merge_same_height_ems(self, state: State) -> None:
+        """
+        Function that takes the state as input and merges all the EMS that are contiguous and
+        have the same height into one bigger EMS.
+
+        """
+
         def compute_merge_mask(args: Tuple) -> Tuple:
             """Function that takes an array of EMS and an array representing the EMS_mask and
             returns a matrix of all the EMS that have the same height and can be merged to form a
@@ -757,19 +763,14 @@ class BinPack(Environment[State]):
                 same_x : 2D boolean array where same_x[i,j] is True if
                     tree_slice(EMS,i).x1 == tree_slice(EMS,j).x1 and
                     tree_slice(EMS,i).x2 == tree_slice(EMS,j).x2. This matrix is used to know along
-                    which axis of the container those two EMS should be merged if they're mergeable.
+                    which axis of the container those two EMS should be merged if it's possible to
+                    merge them.
             """
 
             def isclose_matrix(a: chex.Array, b: chex.Array) -> chex.Array:
                 """
                 This function takes two 1D vectors and returns a 2D boolean matrix where
                     (i,j) = True if a[i] is close to b[j].
-                Args:
-                    a (chex.Array):1D vector²
-                    b (chex.Array):1D vector²
-
-                Returns:
-                    chex.Array: _description_
                 """
                 return jnp.isclose(
                     jnp.expand_dims(a, -1) - jnp.expand_dims(b, -1).transpose(),
@@ -790,18 +791,28 @@ class BinPack(Environment[State]):
             side_by_side_y = isclose_matrix(ems_arr.y1, ems_arr.y2) | isclose_matrix(
                 ems_arr.y2, ems_arr.y1
             )
-            # Two EMS can be merged if they have the same height and start at the same z1 and either
-            # have the same width and start at the same y1 and they're continuous on the x axis
-            # of the container,
-            # or have same length and start at the same x1 and they're continuous on the y axis
-            # of the container.
-            mask = jnp.triu(
-                isclose_matrix(ems_arr.z1, ems_arr.z1) & ~ems_arr.is_empty() & ems_mask
-            ) & (same_x & side_by_side_y | same_y & side_by_side_x)
+            # Two EMS can be merged if they're both not empty (empty here meaning that they have
+            # non zero volume), have the same height and start at the same z1 (we don't care about
+            # z2 since this is only done in the case of a full support constraint and z2 is always
+            # equal to container.height in that case), and either have the same width and start at
+            # the same y1 and they're continuous on the x axis of the container, or have same length
+            # and start at the same x1 and they're continuous on the y axis of the container.
+            mask = jnp.triu(isclose_matrix(ems_arr.z1, ems_arr.z1) & ems_mask) & (
+                same_x & side_by_side_y | same_y & side_by_side_x
+            )
             return mask, same_x
 
         def merge_ems(args: Tuple[EMS, chex.Array]) -> Tuple[EMS, chex.Array]:
-            empty_ems = Space(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0)
+            """
+                Function that merges all the ems it can.
+            Args:
+                args:Tuple containing the array of EMS and the EMS mask.
+
+            Returns:
+                Update Array of EMS and EMS mask after merging all the contiguous EMS
+                having the same z1.
+            """
+            zero_vol_ems = Space(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0)
             ems_arr, ems_mask = args
 
             def merge(direction: int, space1: "Space", space2: "Space") -> "Space":
@@ -832,8 +843,8 @@ class BinPack(Environment[State]):
                 """
                    Function that merges two EMS if the merge_mask allows it.
                 Args:
-                    carry: 2D triagular boolean matrix where carry[i,j] is False if the i-th EMS and
-                    the j-th EMS were merged.
+                    carry: 2D triangular boolean matrix where carry[i,j] is False if the i-th EMS
+                    and the j-th EMS were merged.
                     mask_ind: the index of the element of the mask that the function will examine.
                 Returns:
                     Tuple[chex.Array, chex.Array]: Triangular boolean matrix carry, and Space
@@ -854,7 +865,7 @@ class BinPack(Environment[State]):
                             tree_slice(ems_arr, mask_ind % mask_shape),
                         ),
                     ),
-                    lambda *_: empty_ems,
+                    lambda *_: zero_vol_ems,
                     (),
                 )
                 carry = carry.at[mask_ind // mask_shape, mask_ind % mask_shape].set(
@@ -870,11 +881,11 @@ class BinPack(Environment[State]):
                     and removes those EMS from that list and puts in that list the EMS resulting
                     from merging those two EMS.
                 Args:
-                    carry (EMS): Array of EMS
-                    merged_ems_ind (Tuple[chex.Array]): indices of two merged EMS.
+                    carry: Array of EMS.
+                    merged_ems_ind: indices of two merged EMS.
 
                 Returns:
-                    Tuple[EMS, Any]: List of EMS where the merged EMS were deleted and the
+                    List of EMS where the merged EMS were deleted and the
                     newly created EMS added.
                 """
                 carry = jax.lax.cond(
@@ -891,7 +902,7 @@ class BinPack(Environment[State]):
                                 ),
                             ),
                             merged_ems_indices[1][merged_ems_ind],
-                            empty_ems,
+                            zero_vol_ems,
                         ),
                         ems_mask.at[merged_ems_indices[0][merged_ems_ind]]
                         .set(True)
@@ -912,7 +923,7 @@ class BinPack(Environment[State]):
             same_x = same_x.flatten()
             mask = mask.flatten()
 
-            # Construct the new ems from merging previous ones
+            # Construct the new ems from merging previous ones.
             # is_merged_ems[i,j] contains a boolean specifying if the two ems at i and j
             # have not been merged.
             # Merged_ems is a list of size len(ems_arr) * len(ems_arr) and contains the newly
