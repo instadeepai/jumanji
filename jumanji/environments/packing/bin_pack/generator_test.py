@@ -20,11 +20,10 @@ import pytest
 
 from jumanji.environments.packing.bin_pack.conftest import DummyGenerator
 from jumanji.environments.packing.bin_pack.generator import (
-    ConstrainedRandomGenerator,
-    ConstrainedToyGenerator,
     CSVGenerator,
+    ExtendedRandomGenerator,
+    ExtendedToyGenerator,
     RandomGenerator,
-    RandomValueProblemGenerator,
     ToyGenerator,
     save_instance_to_csv,
 )
@@ -216,19 +215,26 @@ class TestRandomValueProblemGenerator:
     @pytest.fixture
     def random_generator(
         self, max_num_items: int = 12, max_num_ems: int = 20
-    ) -> RandomValueProblemGenerator:
-        return RandomValueProblemGenerator(max_num_items, max_num_ems)
+    ) -> ExtendedRandomGenerator:
+        return ExtendedRandomGenerator(
+            max_num_items,
+            max_num_ems,
+            is_value_based=True,
+            is_rotation_allowed=False,
+            mean_item_value=1,
+            std_item_value=0.5,
+        )
 
     def test_random_generator__properties(
         self,
-        random_generator: RandomValueProblemGenerator,
+        random_generator: ExtendedRandomGenerator,
     ) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert random_generator.max_num_items == 12
         assert random_generator.max_num_ems == 20
 
     def test_random_generator__call(
-        self, random_generator: RandomValueProblemGenerator
+        self, random_generator: ExtendedRandomGenerator
     ) -> None:
         """Validate that the random instance generator's call function is jittable and compiles
         only once. Also check that giving two different keys results in two different instances.
@@ -243,7 +249,7 @@ class TestRandomValueProblemGenerator:
 
     def test_random_generator__generate_solution(
         self,
-        random_generator: RandomValueProblemGenerator,
+        random_generator: ExtendedRandomGenerator,
     ) -> None:
         """Validate that the random instance generator's generate_solution method behaves correctly.
         Also check that it is jittable and compiles only once.
@@ -295,10 +301,10 @@ class TestRandomValueProblemGenerator:
         assert_trees_are_different(solution_state1, solution_state2)
 
 
-class TestConstrainedToyGenerator:
+class TestExtendedToyGenerator:
     @pytest.fixture
-    def toy_generator(self) -> ConstrainedToyGenerator:
-        return ConstrainedToyGenerator()
+    def toy_generator(self) -> ExtendedToyGenerator:
+        return ExtendedToyGenerator()
 
     def test_toy_generator__properties(
         self,
@@ -351,12 +357,14 @@ class TestConstrainedToyGenerator:
         assert_trees_are_equal(solution_state1, solution_state2)
 
 
-class TestConstrainedRandomGenerator:
+class TestRotationRandomGenerator:
     @pytest.fixture
     def random_generator(
         self, max_num_items: int = 6, max_num_ems: int = 10
     ) -> RandomGenerator:
-        return ConstrainedRandomGenerator(max_num_items, max_num_ems)
+        return ExtendedRandomGenerator(
+            max_num_items, max_num_ems, is_rotation_allowed=True, is_value_based=False
+        )
 
     def test_random_generator__properties(
         self,
@@ -402,7 +410,9 @@ class TestConstrainedRandomGenerator:
         assert_trees_are_different(
             solution_state1.items_location, state1.items_location
         )
-        assert jnp.all(solution_state1.items_placed | ~solution_state1.items_mask)
+        # In the optimal solution all the generated items are placed in their initial orientation so
+        # an item is either placed in its initial orientation in the bin or it doesn't even exist.
+        assert jnp.all(solution_state1.items_placed[0] | ~solution_state1.items_mask)
         non_rotated_items = Item(
             solution_state1.items.x_len[0],
             solution_state1.items.y_len[0],
@@ -413,5 +423,82 @@ class TestConstrainedRandomGenerator:
         ).sum()
         assert jnp.isclose(items_volume, solution_state1.container.volume())
 
+        solution_state2 = generate_solution(jax.random.PRNGKey(2))
+        assert_trees_are_different(solution_state1, solution_state2)
+
+
+class TestExtendedRandomGenerator:
+    @pytest.fixture
+    def random_generator(
+        self, max_num_items: int = 12, max_num_ems: int = 20
+    ) -> RandomGenerator:
+        return ExtendedRandomGenerator(
+            max_num_items,
+            max_num_ems,
+            is_rotation_allowed=True,
+            is_value_based=True,
+            mean_item_value=1,
+            std_item_value=0.5,
+        )
+
+    def test_random_generator__properties(
+        self,
+        random_generator: RandomGenerator,
+    ) -> None:
+        """Validate that the random instance generator has the correct properties."""
+        assert random_generator.max_num_items == 12
+        assert random_generator.max_num_ems == 20
+
+    def test_random_generator__call(self, random_generator: RandomGenerator) -> None:
+        """Validate that the random instance generator's call function is jittable and compiles
+        only once. Also check that giving two different keys results in two different instances.
+        """
+        chex.clear_trace_counter()
+        call_fn = jax.jit(chex.assert_max_traces(random_generator.__call__, n=1))
+        state1 = call_fn(key=jax.random.PRNGKey(1))
+        assert isinstance(state1, State)
+
+        state2 = call_fn(key=jax.random.PRNGKey(2))
+        assert_trees_are_different(state1, state2)
+
+    def test_random_generator__generate_solution(
+        self,
+        random_generator: RandomGenerator,
+    ) -> None:
+        """Validate that the random instance generator's generate_solution method behaves correctly.
+        Also check that it is jittable and compiles only once.
+        """
+        state1 = random_generator(jax.random.PRNGKey(1))
+
+        chex.clear_trace_counter()
+        generate_solution = jax.jit(
+            chex.assert_max_traces(random_generator.generate_solution, n=1)
+        )
+
+        solution_state1 = generate_solution(jax.random.PRNGKey(1))
+        assert isinstance(solution_state1, State)
+        assert_trees_are_equal(solution_state1.ems, state1.ems)
+        assert_trees_are_different(solution_state1.ems_mask, state1.ems_mask)
+        assert_trees_are_close(solution_state1.items, state1.items)
+        assert_trees_are_equal(solution_state1.items_mask, state1.items_mask)
+        assert_trees_are_different(solution_state1.items_placed, state1.items_placed)
+        assert_trees_are_different(
+            solution_state1.items_location, state1.items_location
+        )
+
+        placed_items_volume = (
+            item_volume(solution_state1.items) * solution_state1.items_placed
+        ).sum()
+        assert jnp.isclose(placed_items_volume, solution_state1.container.volume())
+
+        # Checks that the total volume of all items in an instance is greater than the volume of the
+        # container
+        items_volume = (
+            item_volume(solution_state1.items) * solution_state1.items_mask
+        ).sum()
+        assert not jnp.isclose(items_volume, solution_state1.container.volume())
+        assert items_volume > solution_state1.container.volume()
+
+        # Generates a solution to a new instance (will be new because a different random key).
         solution_state2 = generate_solution(jax.random.PRNGKey(2))
         assert_trees_are_different(solution_state1, solution_state2)

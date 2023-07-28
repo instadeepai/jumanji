@@ -54,7 +54,7 @@ class DenseReward(RewardFn):
         is_done: bool,
     ) -> float:
         del next_state, is_done
-        # Check if the environment is BinPack or ConstrainedBinPack
+        # Check if the environment is BinPack or ExtendedBinPack
         # by checking whether the action consists only  of (ems,item)
         # or of (ems, item, orientation).
         if len(action) == 2:
