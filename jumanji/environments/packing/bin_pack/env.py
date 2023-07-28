@@ -752,8 +752,32 @@ class BinPack(Environment[State]):
         have the same height into one bigger EMS.
 
         """
+        zero_vol_ems = Space(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0)
+        max_nb_ems = len(state.ems.x1)
 
-        def compute_merge_mask(args: Tuple) -> Tuple:
+        def merge(direction: int, space1: "Space", space2: "Space") -> "Space":
+            """
+                Function that takes two spaces and a direction and returns a merged space from
+                those two spaces along that direction.
+
+            Args:
+                direction: 1: merge along y axis, 2: merge along the x axis.
+            Returns:
+                Space: Space obtained from the merger of the two input spaces.
+            """
+            if direction == 1:
+                x1 = space1.x1
+                x2 = space1.x2
+                y1 = jnp.minimum(space1.y1, space2.y1)
+                y2 = jnp.maximum(space1.y2, space2.y2)
+            elif direction == 2:
+                x1 = jnp.minimum(space1.x1, space2.x1)
+                x2 = jnp.maximum(space1.x2, space2.x2)
+                y1 = space1.y1
+                y2 = space1.y2
+            return Space(x1=x1, x2=x2, y1=y1, y2=y2, z1=space1.z1, z2=space1.z2)
+
+        def compute_merge_mask(args: Tuple) -> Tuple[chex.Array, chex.Array]:
             """Computes a boolean matrix where element i, j is True if ems i and j can be merged.
 
             Two EMS can be merged if they start at the same z1, either have the same width, start
@@ -763,7 +787,11 @@ class BinPack(Environment[State]):
             case of a full support constraint and z2 is always equal to container.height in that
             case, ie. there are no overhanging items.
 
-            TODO(FC): args
+            Args:
+                ems_arr: Array EMS representing all the current EMSs of the state.
+                ems_mask: Mask over all the EMSs of the state.
+
+
             Returns:
                 mask: 2D boolean array where mask[i,j] is True if tree_slice(EMS,i) and
                     tree_slice(EMS, j) have the same height and can be merged.
@@ -811,6 +839,128 @@ class BinPack(Environment[State]):
             )  # [nb_ems, nb_ems] (but only use the upper triangular part of the matrix).
             return mask, same_x
 
+        def merge_if_possible(
+            ems_arr: EMS,
+            flat_can_merge_ems: chex.Array,
+            same_x: chex.Array,
+            is_merged_ems: chex.Array,
+            mask_ind: chex.Array,
+        ) -> Tuple[chex.Array, chex.Array]:
+            """
+               Function that merges two EMS if the merge_mask allows it.
+            Args:
+                ems_arr : initial array of EMSs.
+                flat_can_merge_ems: 1D array obtained from flattening a 2D array returned by the
+                compute_merge_mask function. flat_can_merge_ems[i] = True means that the EMSs
+                i//max_nb_ems and i%max_nb_ems can be merged.
+                same_x: 1D boolean array where same_x[i] is True if (
+                    tree_slice(EMS,i//max_nb_ems).x1 == tree_slice(EMS,i%max_nb_ems).x1 and
+                    tree_slice(EMS,i//max_nb_ems).x2 == tree_slice(EMS,i%max_nb_ems).x2).
+                If flat_can_merge_ems[i]==True and same_x[i] == True then we can merge these
+                EMSs along the y axis of the container and if False we can merge them along the
+                x axis of the container.
+                is_merged_ems: 2D triangular boolean matrix where is_merged_ems[i,j] is False
+                    if the i-th EMS and the j-th EMS are already merged.
+                mask_ind: the index of the element of the mask that the function will examine.
+            Returns:
+                Triangular boolean matrix is_merged_ems, and Space resulting from the merger of
+                the EMS at  mask_ind// max_nb_ems and
+                mask_ind% max_nb_ems.
+            """
+
+            # Get the indeces of the 2 emss corresponding to mask_ind in the the non-flattened
+            # can_merge_ems matrix.
+            row = mask_ind // max_nb_ems
+            column = mask_ind % max_nb_ems
+            merged_ems = jax.lax.cond(
+                # make sure we can merge the two EMS located at mask_ind// max_nb_ems and
+                # mask_ind% max_nb_ems, and make sure that we haven't merged the ems located at
+                # row before this.
+                flat_can_merge_ems[mask_ind] & ~jnp.any(is_merged_ems[row]),
+                lambda _: jax.lax.cond(
+                    same_x[mask_ind],
+                    functools.partial(merge, 1),
+                    functools.partial(merge, 2),
+                    *(
+                        tree_slice(ems_arr, row),
+                        tree_slice(ems_arr, column),
+                    ),
+                ),
+                lambda *_: zero_vol_ems,
+                (),
+            )
+            is_merged_ems = is_merged_ems.at[row, column].set(~merged_ems.is_empty())
+            return is_merged_ems, merged_ems
+
+        def delete_merged_ems_and_add_new_ems(
+            flat_is_merged_ems: chex.Array,
+            flat_merged_ems: chex.Array,
+            merged_ems_indices: Tuple[chex.Array, chex.Array],
+            new_ems_and_mask: Tuple[EMS, chex.Array],
+            merged_ems_ind: Tuple[chex.Array],
+        ) -> Tuple[EMS, Any]:
+            """
+                Function that takes the a list of EMS and the indices of two merged EMS
+                and removes those EMS from that list and puts in that list the EMS resulting
+                from merging those two EMS.
+            Args:
+                flat_is_merged_ems: 1D array obtained from the flattening of the 2D array
+                    is_merged_ems. flat_is_merged_ems[i] ==  True if the two ems at
+                    i//max_nb_ems and i%max_nb_ems have been merged.
+                flat_merged_ems is a Tree of Spaces of length max_nb_ems**2 and contains the
+                    newly created EMSs from merging the initial EMS.
+                    if flat_is_merged_ems[i] then flat_merged_ems[i] = EMS obtained from merging
+                    the two EMSs at i//max_nb_ems and i%max_nb_ems.
+                merged_ems_indices: Tuple of Arrays, where merged_ems_indices[:,merged_ems_ind]
+                contains the indices in the initial ems array of the two ems that were
+                merged in order to create the EMS at flat_merged_ems[
+                    merged_ems_indices[0][merged_ems_ind] * max_nb_ems
+                    + merged_ems_indices[1][merged_ems_ind]
+                ]
+                new_ems_and_mask: Tuple containing the Initial Array of EMSs and the mask
+                    associated to it.
+                merged_ems_ind: indices of two merged EMS.
+
+            Returns:
+                List of EMS where the merged EMS were deleted and the
+                newly created EMS added.
+            """
+            ems_arr, ems_mask = new_ems_and_mask
+            new_ems_and_mask = jax.lax.cond(
+                # If the current EMS is the product of merging two EMSs together.
+                flat_is_merged_ems[merged_ems_ind],
+                lambda ems_arr, ems_mask: (
+                    tree_add_element(
+                        # Add the new EMS at the place of the first EMS used to merge.
+                        tree_add_element(
+                            ems_arr,
+                            merged_ems_indices[0][merged_ems_ind],
+                            tree_slice(
+                                flat_merged_ems,
+                                # The Resulting EMS is at this index because the merged_ems
+                                # array is flat and has a shape of max_nb_ems ** 2
+                                # (but only the first max_nb_ems make sense).
+                                merged_ems_indices[0][merged_ems_ind] * max_nb_ems
+                                + merged_ems_indices[1][merged_ems_ind],
+                            ),
+                        ),
+                        # Add an empty EMS at the place of the second EMS used to merge.
+                        merged_ems_indices[1][merged_ems_ind],
+                        zero_vol_ems,
+                    ),
+                    # Set the mask to True at the index of the newly added merged EMS
+                    # and to False at the index of the empty EMS.
+                    ems_mask.at[merged_ems_indices[0][merged_ems_ind]]
+                    .set(True)
+                    .at[merged_ems_indices[1][merged_ems_ind]]
+                    .set(False),
+                ),
+                lambda *_: _,
+                ems_arr,
+                ems_mask,
+            )
+            return new_ems_and_mask, None
+
         def merge_ems(args: Tuple[EMS, chex.Array]) -> Tuple[EMS, chex.Array]:
             """Function that merges all the ems it can.
 
@@ -821,139 +971,24 @@ class BinPack(Environment[State]):
                 Updated EMS and EMS mask arrays after merging all the contiguous EMS having the same
                 z1.
             """
-            zero_vol_ems = Space(x1=0, x2=0, y1=0, y2=0, z1=0, z2=0)
             ems_arr, ems_mask = args
-
-            def merge(direction: int, space1: "Space", space2: "Space") -> "Space":
-                """
-                    Function that takes two spaces and a direction and returns a merged space from
-                    those two spaces along that direction.
-
-                Args:
-                    direction: 1: merge along y axis, 2: merge along the x axis.
-                Returns:
-                    Space: Space obtained from the merger of the two input spaces.
-                """
-                if direction == 1:
-                    x1 = space1.x1
-                    x2 = space1.x2
-                    y1 = jnp.minimum(space1.y1, space2.y1)
-                    y2 = jnp.maximum(space1.y2, space2.y2)
-                elif direction == 2:
-                    x1 = jnp.minimum(space1.x1, space2.x1)
-                    x2 = jnp.maximum(space1.x2, space2.x2)
-                    y1 = space1.y1
-                    y2 = space1.y2
-                return Space(x1=x1, x2=x2, y1=y1, y2=y2, z1=space1.z1, z2=space1.z2)
-
-            def merge_if_possible(
-                is_merged_ems: chex.Array, mask_ind: chex.Array
-            ) -> Tuple[chex.Array, chex.Array]:
-                """
-                   Function that merges two EMS if the merge_mask allows it.
-                Args:
-                    is_merged_ems: 2D triangular boolean matrix where is_merged_ems[i,j] is False
-                        if the i-th EMS and the j-th EMS are already merged.
-                    mask_ind: the index of the element of the mask that the function will examine.
-                Returns:
-                    Triangular boolean matrix is_merged_ems, and Space resulting from the merger of
-                    the EMS at  mask_ind// max_nb_ems and
-                    mask_ind% max_nb_ems.
-                """
-
-                # Get the indeces of the 2 emss corresponding to mask_ind in the the non-flattened
-                # can_merge_ems matrix.
-                # TODO(FC): replace the divisions with row an column for clarity
-                # row = mask_ind // max_nb_ems
-                # column = mask_ind % max_nb_ems
-                merged_ems = jax.lax.cond(
-                    # make sure we can merge the two EMS located at mask_ind// max_nb_ems and
-                    # mask_ind% max_nb_ems, and make sure that we haven't merged the ems located at
-                    # mask_ind // max_nb_ems before this.
-                    # TODO(FC): check why is isn't not any here
-                    flat_can_merge_ems[mask_ind]
-                    & ~jnp.any(is_merged_ems[mask_ind // max_nb_ems]),
-                    lambda _: jax.lax.cond(
-                        same_x[mask_ind],
-                        functools.partial(merge, 1),
-                        functools.partial(merge, 2),
-                        *(
-                            tree_slice(ems_arr, mask_ind // max_nb_ems),
-                            tree_slice(ems_arr, mask_ind % max_nb_ems),
-                        ),
-                    ),
-                    lambda *_: zero_vol_ems,
-                    (),
-                )
-                is_merged_ems = is_merged_ems.at[
-                    mask_ind // max_nb_ems, mask_ind % max_nb_ems
-                ].set(~merged_ems.is_empty())
-                return is_merged_ems, merged_ems
-
-            def delete_merged_ems_and_add_new_ems(
-                new_ems_and_mask: Tuple[EMS, chex.Array],
-                merged_ems_ind: Tuple[chex.Array],
-            ) -> Tuple[EMS, Any]:
-                """
-                    Function that takes the a list of EMS and the indices of two merged EMS
-                    and removes those EMS from that list and puts in that list the EMS resulting
-                    from merging those two EMS.
-                Args:
-                    new_ems_and_mask: Array of EMS.
-                    merged_ems_ind: indices of two merged EMS.
-
-                Returns:
-                    List of EMS where the merged EMS were deleted and the
-                    newly created EMS added.
-                """
-                new_ems_and_mask = jax.lax.cond(
-                    flat_is_merged_ems[merged_ems_ind],
-                    lambda ems_arr, ems_mask: (
-                        tree_add_element(
-                            # Add the new EMS at the place of the first EMS used to merge.
-                            tree_add_element(
-                                ems_arr,
-                                merged_ems_indices[0][merged_ems_ind],
-                                tree_slice(
-                                    merged_ems,
-                                    merged_ems_indices[0][merged_ems_ind] * max_nb_ems
-                                    + merged_ems_indices[1][merged_ems_ind],
-                                ),
-                            ),
-                            # Add an enmpty EMS at the place of the second EMS used to merge.
-                            merged_ems_indices[1][merged_ems_ind],
-                            zero_vol_ems,
-                        ),
-                        # Set the mask to True at the index of the newly added merged EMS
-                        # and to False at the index of the empty EMS.
-                        ems_mask.at[merged_ems_indices[0][merged_ems_ind]]
-                        .set(True)
-                        .at[merged_ems_indices[1][merged_ems_ind]]
-                        .set(False),
-                    ),
-                    lambda *_: _,
-                    *(new_ems_and_mask),
-                )
-                return new_ems_and_mask, None
-
             # can_merge_ems = True if emss i and j can be merged.
             can_merge_ems, same_x = compute_merge_mask((ems_arr, ems_mask))
 
-            max_nb_ems = can_merge_ems.shape[0]
+            is_merged_ems = jnp.full_like(can_merge_ems, False)
 
-            is_merged_ems = jnp.full_like(
-                can_merge_ems, False
-            )  # TODO(FC): check why this isn't false
-
-            same_x = same_x.flatten()
+            flat_same_x = same_x.flatten()
             flat_can_merge_ems = can_merge_ems.flatten()
-
             # Construct new emss from merging previous ones.
-            # - is_merged_ems[i,j] = True if the two ems at i and j have not been merged.
-            # - merged_ems is a Tree of Spaces of length max_nb_ems**2 and contains the newly
+            # - is_merged_ems[i,j] = True if the two ems at i and j have been merged.
+            # - flat_merged_ems is a Tree of Spaces of length max_nb_ems**2 and contains the newly
             #   created EMSs from merging the initial EMS.
-            is_merged_ems, merged_ems = jax.lax.scan(
-                merge_if_possible, is_merged_ems, jnp.arange(len(flat_can_merge_ems))
+            is_merged_ems, flat_merged_ems = jax.lax.scan(
+                functools.partial(
+                    merge_if_possible, ems_arr, flat_can_merge_ems, flat_same_x
+                ),
+                is_merged_ems,
+                jnp.arange(len(flat_can_merge_ems)),
             )
             flat_is_merged_ems = is_merged_ems.flatten()
             # Make sure that the indices of the merged EMS are at the top of this list.
@@ -965,18 +1000,17 @@ class BinPack(Environment[State]):
                 jnp.arange(max_nb_ems),
                 keys,
             )
-            # Truncate the list of merged EMS since we know that it can contain at most number of
-            # initial ems given to this function.
-            flat_is_merged_ems = flat_is_merged_ems[:max_nb_ems]
-            # Truncation the list of indices.
-            merged_ems_indices = (
-                merged_ems_indices[0][:max_nb_ems],
-                merged_ems_indices[1][:max_nb_ems],
-            )
+            # Go through the first max_nb_ems  elements of the list of merged EMS since we know that
+            # it can contain at most number of initial ems given to this function.
             # Loop through the original ems tree and delete all the EMSs that were merged and add
             # the newly created EMSs.
             (new_ems, new_ems_mask), _ = jax.lax.scan(
-                delete_merged_ems_and_add_new_ems,
+                functools.partial(
+                    delete_merged_ems_and_add_new_ems,
+                    flat_is_merged_ems,
+                    flat_merged_ems,
+                    merged_ems_indices,
+                ),
                 (ems_arr, ems_mask),
                 jnp.arange(max_nb_ems),
             )
