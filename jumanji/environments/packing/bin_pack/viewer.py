@@ -276,16 +276,19 @@ class BinPackViewer(Viewer):
         return used_volume
 
 
-class ConstrainedBinPackViewer(BinPackViewer):
-    def __init__(self, name: str, render_mode: str = "human") -> None:
+class ExtendedBinPackViewer(BinPackViewer):
+    def __init__(
+        self, name: str, is_rotation_allowed: bool, render_mode: str = "human"
+    ) -> None:
         """
-        This class defines a viewer for the ConstrainedBinPack environment.
+        This class defines a viewer for the ExtendedBinPack environment.
         It inherits from the BinPackViewer class and redefines the methods
         _add_overlay, _create_entities and _get_used_volume. This overriding
         is necessary because the shape of the items array, items_placed array and item_mask
         array have changed in this environment.
         """
         super().__init__(name, render_mode)
+        self.is_rotation_allowed = is_rotation_allowed
 
     def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
         """Sets the bounds of the scene and displays text about the scene.
@@ -303,8 +306,10 @@ class ConstrainedBinPackViewer(BinPackViewer):
         ax.set_xlabel("x", font=self.FONT_STYLE)
         ax.set_ylabel("y", font=self.FONT_STYLE)
         ax.set_zlabel("z", font=self.FONT_STYLE)
-
-        n_items = state.items_mask.shape[1]
+        if self.is_rotation_allowed:
+            n_items = state.items_mask.shape[1]
+        else:
+            n_items = state.items_mask.shape[0]
         placed_items: np.ndarray = np.sum(state.items_placed)
         container_volume = (
             float(container.x_len) * float(container.y_len) * float(container.z_len)
@@ -318,48 +323,54 @@ class ConstrainedBinPackViewer(BinPackViewer):
         title = " | ".join(key + ": " + value for key, value in metrics)
         fig.suptitle(title, font=self.FONT_STYLE)
 
-    def _create_entities(
+    def _create_entities(  # noqa: CCR001
         self, state: State
     ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
         entities = []
-        n_items = state.items_mask.shape[1]
-        cmap = plt.cm.get_cmap("hsv", n_items)
-        for i in range(6):
-            for j in range(n_items):
-                if state.items_placed[i, j]:
-                    box = self._create_box(
-                        (
-                            state.items_location.x[j],
-                            state.items_location.y[j],
-                            state.items_location.z[j],
-                        ),
-                        (
-                            state.items.x_len[i, j],
-                            state.items.y_len[i, j],
-                            state.items.z_len[i, j],
-                        ),
-                        cmap(j),
-                        0.3,
-                    )
-                    entities.append(box)
+        if self.is_rotation_allowed:
+            n_items = state.items_mask.shape[1]
+            cmap = plt.cm.get_cmap("hsv", n_items)
+            for i in range(6):
+                for j in range(n_items):
+                    if state.items_placed[i, j]:
+                        box = self._create_box(
+                            (
+                                state.items_location.x[j],
+                                state.items_location.y[j],
+                                state.items_location.z[j],
+                            ),
+                            (
+                                state.items.x_len[i, j],
+                                state.items.y_len[i, j],
+                                state.items.z_len[i, j],
+                            ),
+                            cmap(j),
+                            0.3,
+                        )
+                        entities.append(box)
 
-        container = item_from_space(state.container)
-        box = self._create_box(
-            (0.0, 0.0, 0.0),
-            (container.x_len, container.y_len, container.z_len),
-            "cyan",
-            0.05,
-        )
-        entities.append(box)
-        return entities
+            container = item_from_space(state.container)
+            box = self._create_box(
+                (0.0, 0.0, 0.0),
+                (container.x_len, container.y_len, container.z_len),
+                "cyan",
+                0.05,
+            )
+            entities.append(box)
+            return entities
+        else:
+            return super()._create_entities(state)
 
     def _get_used_volume(self, state: State) -> float:
-        used_volume = sum(
-            float(state.items.x_len[i, j])
-            * float(state.items.y_len[i, j])
-            * float(state.items.z_len[i, j])
-            for i in range(6)
-            for j, placed in enumerate(state.items_placed[i])
-            if placed
-        )
-        return used_volume
+        if self.is_rotation_allowed:
+            used_volume = sum(
+                float(state.items.x_len[i, j])
+                * float(state.items.y_len[i, j])
+                * float(state.items.z_len[i, j])
+                for i in range(6)
+                for j, placed in enumerate(state.items_placed[i])
+                if placed
+            )
+            return used_volume
+        else:
+            return super()._get_used_volume(state)
