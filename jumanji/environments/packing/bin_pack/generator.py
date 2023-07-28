@@ -1173,8 +1173,7 @@ class ExtendedRandomGenerator(RandomGenerator):
         ems_mask = jnp.zeros(self.max_num_ems, bool)
 
         # Create less than half of max_num_items item spaces by splitting up a container. This
-        # will lead to nb_items_in_one_container it
-        # ems that fit perfectly into a single container.
+        # will lead to nb_items_in_one_container items that fit perfectly into a single container.
         nb_items_in_one_container = math.floor(0.5 * self.max_num_items)
         # This will generate items_spaces and item_mask of size nb_items_in_one_container.
         items_spaces, items_mask = self._split_container_into_items_spaces(
@@ -1477,20 +1476,6 @@ class ExtendedTrainingGenerator(ExtendedRandomGenerator):
         )
         return solution
 
-    def _generate_rotated_solved_instance(self, key: chex.PRNGKey) -> State:
-        solved_instance = super()._generate_solved_instance(key)
-        solved_instance.items = rotated_items_from_space(
-            space_from_item_and_location(
-                solved_instance.items, solved_instance.items_location
-            )
-        )
-        tmp = jnp.zeros((6, solved_instance.items_placed.shape[0]), bool)
-        solved_instance.items_placed = tmp.at[0].set(solved_instance.items_placed)
-        solved_instance.items_mask = jnp.broadcast_to(
-            solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
-        )
-        return solved_instance
-
     def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
         target_volume = randint(self.min_target_volume, self.max_target_volume)
         solved_instance = self._generate_value_based_solved_instance(key, target_volume)
@@ -1507,14 +1492,6 @@ class ExtendedTrainingGenerator(ExtendedRandomGenerator):
             solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
         )
         return solved_instance
-
-    def _unpack_items(self, state: State) -> State:
-        state = super()._unpack_items(state)
-        placed_item_arr_dims = (
-            (6, self.max_num_items) if self.is_rotation_allowed else self.max_num_items
-        )
-        state.items_placed = jnp.zeros(placed_item_arr_dims, bool)
-        return state
 
 
 class ExtendedCSVGenerator(CSVGenerator):
