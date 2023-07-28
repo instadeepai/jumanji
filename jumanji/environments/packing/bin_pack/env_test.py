@@ -373,10 +373,10 @@ def test_full_support_bin_pack__optimal_policy_random_instance(
 
 class TestExtendedBinPackRotationNoValue:
 
-    # TO-DO:
-    # Add test for initial items mask
-    # Add test for items mask after placing an item
-    # Add test that check that an item is placed along only one orientation
+    """
+    Class Used to test the Extended Bin pack environment when Items are allowed to take all
+    possible orientations but have no value associated to them.
+    """
 
     @pytest.fixture
     def rotation_bin_pack_random_select_action(
@@ -624,11 +624,10 @@ class TestExtendedBinPackRotationNoValue:
 
 
 class TestExtendedBinPackRotationValue:
-
-    # TO-DO:
-    # Add test for initial items mask
-    # Add test for items mask after placing an item
-    # Add test that check that an item is placed along only one orientation
+    """
+    Class Used to test the Extended Bin pack environment when Items are allowed to take all
+    possible orientations and have a value associated with them.
+    """
 
     @pytest.fixture
     def extended_bin_pack_random_select_action(

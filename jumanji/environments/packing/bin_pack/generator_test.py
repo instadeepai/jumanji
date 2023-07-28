@@ -410,6 +410,8 @@ class TestRotationRandomGenerator:
         assert_trees_are_different(
             solution_state1.items_location, state1.items_location
         )
+        # In the optimal solution all the generated items are placed in their initial orientation so
+        # an item is either placed in its initial orientation in the bin or it doesn't even exist.
         assert jnp.all(solution_state1.items_placed[0] | ~solution_state1.items_mask)
         non_rotated_items = Item(
             solution_state1.items.x_len[0],

@@ -1293,6 +1293,11 @@ class ExtendedBinPack(BinPack):
         Args:
             state: a state of the ExtendedBinPack environment.
 
+        Returns:
+            - State with the updated EMSs and EMS mask.
+            - Observation with the valid action_mask, item_placed and items_mask.
+            - extra metrics that can be used to measure the performance of the agent.
+
         """
 
         def flatten_observation(observation: Observation) -> Observation:
@@ -1379,12 +1384,12 @@ class ExtendedBinPack(BinPack):
 
         norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
         obs_ems = jax.tree_util.tree_map(
-            lambda ems, normalization_value: ems / normalization_value,
+            lambda ems, normalization_ems: ems / normalization_ems,
             obs_ems,
             norm_space,
         )
         items = jax.tree_util.tree_map(
-            lambda item, normalization_value: item / normalization_value,
+            lambda item, normalization_items: item / normalization_items,
             items,
             container_item,
         )
