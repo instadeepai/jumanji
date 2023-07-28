@@ -158,9 +158,9 @@ class BinPack(Environment[State]):
                 this metric slows down the environment. Default to False.
             viewer: `Viewer` used for rendering. Defaults to `BinPackViewer` with "human" render
                 mode.
-            full_support: if full_support is true a box can only be placed on top of set of boxes
-                only if the bottom face of that box is fully supported by the top face of that set
-                of boxes.
+            full_support: if full_support is true a box can only be placed on top of a set of boxes
+                only if the bottom face of the box being placed is fully supported by the top face
+                of the set of supporting boxes.
         """
         self.generator = generator or RandomGenerator(
             max_num_items=20,
@@ -809,8 +809,7 @@ class BinPack(Environment[State]):
                     (i,j) = True if a[i] is close to b[j].
                 """
                 return jnp.isclose(
-                    jnp.expand_dims(a, -1) - jnp.expand_dims(b, -1).transpose(),
-                    0,
+                    jnp.expand_dims(a, -1) - jnp.expand_dims(b, -1).transpose(), 0
                 )
 
             ems_arr, ems_mask = args

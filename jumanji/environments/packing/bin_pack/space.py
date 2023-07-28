@@ -136,8 +136,7 @@ class Space:
         """
         inf_ = jnp.inf
         axis_direction = f"{axis}_{direction}"
-        # This check is possible because this method is only ever called by item spaces and
-        # nothing else.
+        # Can set supporting item to self because this method is only ever called by item spaces.
         if full_support:
             supporting_item_space = self
         else:
