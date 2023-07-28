@@ -41,47 +41,6 @@ class Item(NamedTuple):
     z_len: chex.Numeric
 
 
-def rotated_items_from_space(space: Space) -> jnp.ndarray:
-    return Item(
-        x_len=jnp.asarray(
-            [
-                # x along X, y along Y, z along Z (orientation A of DeepPack)
-                space.x2 - space.x1,
-                # x along X, z along Y, y along Z (Orientation B of DeepPack)
-                space.x2 - space.x1,
-                # z along X, y along Y, x along Z (Orientation C of DeepPack)
-                space.z2 - space.z1,
-                # y along X, x along Y, z along Z (Orientation D of DeepPack)
-                space.y2 - space.y1,
-                # z along X, x along Y, y along Z (Orientation E of DeepPack)
-                space.z2 - space.z1,
-                # y along X, z along Y, x along Z (Orientation F of deepPack)
-                space.y2 - space.y1,
-            ],
-        ),
-        y_len=jnp.asarray(
-            [
-                space.y2 - space.y1,
-                space.z2 - space.z1,
-                space.y2 - space.y1,
-                space.x2 - space.x1,
-                space.x2 - space.x1,
-                space.z2 - space.z1,
-            ]
-        ),
-        z_len=jnp.asarray(
-            [
-                space.z2 - space.z1,
-                space.y2 - space.y1,
-                space.x2 - space.x1,
-                space.z2 - space.z1,
-                space.y2 - space.y1,
-                space.x2 - space.x1,
-            ]
-        ),
-    )
-
-
 def item_from_space(space: Space) -> Item:
     """Convert a space to an item whose length on each dimension is the length of the space."""
     return Item(
@@ -110,6 +69,57 @@ def valued_item_from_space_and_max_value(
 
 
 ItemType: TypeAlias = Union[Item, ValuedItem]
+
+
+def rotated_items_from_space(
+    space: Space, value: Optional[chex.Numeric] = None
+) -> ItemType:
+    x_len = jnp.asarray(
+        [
+            # x along X, y along Y, z along Z (orientation A of DeepPack)
+            space.x2 - space.x1,
+            # x along X, z along Y, y along Z (Orientation B of DeepPack)
+            space.x2 - space.x1,
+            # z along X, y along Y, x along Z (Orientation C of DeepPack)
+            space.z2 - space.z1,
+            # y along X, x along Y, z along Z (Orientation D of DeepPack)
+            space.y2 - space.y1,
+            # z along X, x along Y, y along Z (Orientation E of DeepPack)
+            space.z2 - space.z1,
+            # y along X, z along Y, x along Z (Orientation F of deepPack)
+            space.y2 - space.y1,
+        ],
+    )
+    y_len = jnp.asarray(
+        [
+            space.y2 - space.y1,
+            space.z2 - space.z1,
+            space.y2 - space.y1,
+            space.x2 - space.x1,
+            space.x2 - space.x1,
+            space.z2 - space.z1,
+        ]
+    )
+    z_len = jnp.asarray(
+        [
+            space.z2 - space.z1,
+            space.y2 - space.y1,
+            space.x2 - space.x1,
+            space.z2 - space.z1,
+            space.y2 - space.y1,
+            space.x2 - space.x1,
+        ]
+    )
+    if value is None:
+        return Item(
+            x_len=x_len,
+            y_len=y_len,
+            z_len=z_len,
+        )
+    else:
+        return ValuedItem(
+            x_len=x_len, y_len=y_len, z_len=z_len, value=jnp.asarray(6 * [value])
+        )
 
 
 def item_fits_in_item(item: ItemType, other_item: ItemType) -> chex.Array:
