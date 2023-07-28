@@ -288,6 +288,89 @@ def test_bin_pack__optimal_policy_random_instance(
         assert jnp.array_equal(state.items_placed, solution.items_placed)
 
 
+def test_full_support_bin_pack(full_support_bin_pack: BinPack) -> None:
+    """
+    This test checks that no unsupported item can be placed by the agent
+    and that the merging of EMS with the same height works correctly.
+    """
+    step_fn = jax.jit(full_support_bin_pack.step)
+    state, timestep = jax.jit(full_support_bin_pack.reset)(0)
+    # Start by forcing the agent to place one of the small items.
+    state, timestep = step_fn(state, jnp.array([0, 1]))
+    nb_remaning_items = full_support_bin_pack.generator.max_num_items - 1
+    while not timestep.last() and nb_remaning_items > 1:
+        # Trick to select the EMS whose bottom is the floor of the container (when the number of
+        # items is less than 6 the biggest ems becomes the EMS whose bottom is the top face of
+        # the set of placed items).
+        # At first int(nb_remaning_items < 6) = 0 since the number of reamining items is bigger than
+        # 6 and so the EMS selected would be the biggest EMS which is the one whose bottom side is
+        # the floor. When the number of remaining items is less than 6 int(nb_remaning_items < 6)
+        # would be equal to 1 and so the selected EMS would be the second largest EMS which is
+        # the one with the bottom side on the floor.
+        action = jnp.array([int(nb_remaning_items < 6), nb_remaning_items])
+        assert timestep.observation.action_mask[tuple(action)]
+        # Make sure that the big item can't be placed because it won't be supported
+        assert jnp.all(~timestep.observation.action_mask[:, 0])
+        state, timestep = step_fn(state, action)
+        # Make sure that big piece isn't placeable because it can't be fully supported.
+        assert not timestep.extras["invalid_action"]
+        assert not timestep.extras["invalid_ems_from_env"]
+        nb_remaning_items -= 1
+    action = jnp.array([0, 0])
+    assert timestep.observation.action_mask[tuple(action)]
+    state, timestep = step_fn(state, action)
+
+    # Make sure that all the items were placed and that the container was filled to 100%
+    assert jnp.array_equal(state.items_placed, jnp.array(11 * [True]))
+    assert jnp.isclose(timestep.extras["volume_utilization"], 1)
+
+
+@pytest.mark.parametrize(
+    "normalize_dimensions, max_num_items, max_num_ems, obs_num_ems",
+    [
+        (False, 5, 20, 10),
+        (True, 5, 20, 10),
+        (False, 20, 80, 50),
+        (True, 20, 80, 50),
+    ],
+)
+def test_full_support_bin_pack__optimal_policy_random_instance(
+    normalize_dimensions: bool,
+    bin_pack_optimal_policy_select_action: Callable[[Observation, State], chex.Array],
+    max_num_items: int,
+    max_num_ems: int,
+    obs_num_ems: int,
+) -> None:
+    """Functional test to check that random instances can be optimally packed with an optimal
+    policy. Checks for both options: normalizing dimensions and not normalizing, and checks for
+    two different sizes: 5 items and 20 items, with respectively 20 and 80 max number of EMSs.
+    """
+    num_trial_episodes = 3
+    random_bin_pack = BinPack(
+        generator=RandomGenerator(max_num_items, max_num_ems),
+        obs_num_ems=obs_num_ems,
+        normalize_dimensions=normalize_dimensions,
+        debug=True,
+        full_support=True,
+    )
+    reset_fn = jax.jit(random_bin_pack.reset)
+    generate_solution_fn = jax.jit(random_bin_pack.generator.generate_solution)
+    step_fn = jax.jit(random_bin_pack.step)
+    for key in jax.random.split(jax.random.PRNGKey(0), num_trial_episodes):
+        state, timestep = reset_fn(key)
+        solution = generate_solution_fn(key)
+
+        while not timestep.last():
+            action = bin_pack_optimal_policy_select_action(
+                timestep.observation, solution
+            )
+            assert timestep.observation.action_mask[tuple(action)]
+            state, timestep = step_fn(state, action)
+            assert not timestep.extras["invalid_action"]
+            assert not timestep.extras["invalid_ems_from_env"]
+        assert jnp.array_equal(state.items_placed, solution.items_placed)
+
+
 class TestExtendedBinPackRotationNoValue:
 
     # TO-DO:

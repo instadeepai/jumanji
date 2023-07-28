@@ -361,6 +361,92 @@ class DummyRotationGenerator(DummyGenerator):
         )
 
 
+class FullSupportDummyGenerator(Generator):
+    """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
+    container and 11 items: 10 identical small items of size
+    (container_length/10, container_width, 300) and one big item of size
+    (container_length, container_width, 1900).
+    This instance is used to test the full support constraint by forcing the agent to start by
+    placing one of the small items. Using this instance allows us to test both that the agent isn't
+    able to place items if they're not fully supported, and make sure that
+    the merger of ems is correct.
+    """
+
+    def __init__(self) -> None:
+        """Instantiate a dummy `Generator` with 3 items and 10 EMSs maximum."""
+        super(FullSupportDummyGenerator, self).__init__(
+            max_num_items=11, max_num_ems=40, container_dims=TWENTY_FOOT_DIMS
+        )
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Returns a fixed instance with 3 items, 10 EMSs and a 20-ft container.
+
+        Args:
+            key: random key not used here but kept for consistency with parent signature.
+
+        Returns:
+            State.
+        """
+        del key
+        container = make_container(TWENTY_FOOT_DIMS)
+
+        return State(
+            container=container,
+            instance_max_item_value_magnitude=0,
+            instance_total_value=0,
+            ems=jax.tree_util.tree_map(
+                lambda x: jnp.array([x] + (self.max_num_ems - 1) * [0], jnp.int32),
+                container,
+            ),
+            ems_mask=jnp.array([True] + (self.max_num_ems - 1) * [False], bool),
+            items=Item(
+                x_len=jnp.array([container.x2] + 10 * [container.x2 / 10], jnp.int32),
+                y_len=jnp.array(11 * [container.y2], jnp.int32),
+                z_len=jnp.array([1900] + 10 * [300], jnp.int32),
+            ),
+            items_mask=jnp.array(
+                [
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                    True,
+                ],
+                bool,
+            ),
+            items_placed=jnp.array(
+                [
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                ],
+                bool,
+            ),
+            items_location=jax.tree_util.tree_map(
+                lambda loc: jnp.array(11 * [loc], jnp.int32), Location(x=0, y=0, z=0)
+            ),
+            nb_items=11,
+            action_mask=None,
+            sorted_ems_indexes=jnp.arange(self.max_num_ems, dtype=jnp.int32),
+            # For deterministic instance generators we always set the key to 0.
+            key=jax.random.PRNGKey(0),
+        )
+
+
 @pytest.fixture
 def dummy_generator() -> DummyGenerator:
     return DummyGenerator()
@@ -516,4 +602,18 @@ def bin_pack_sparse_value_reward() -> BinPack:
         reward_fn=ValueBasedSparseReward(),
         is_rotation_allowed=False,
         is_value_based=True,
+    )
+
+
+@pytest.fixture
+def full_support_dummy_generator() -> FullSupportDummyGenerator:
+    return FullSupportDummyGenerator()
+
+
+@pytest.fixture
+def full_support_bin_pack(
+    full_support_dummy_generator: FullSupportDummyGenerator,
+) -> BinPack:
+    return BinPack(
+        generator=full_support_dummy_generator, full_support=True, debug=True
     )
