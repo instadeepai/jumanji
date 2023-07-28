@@ -221,8 +221,8 @@ class TestRandomValueProblemGenerator:
             max_num_ems,
             is_value_based=True,
             is_rotation_allowed=False,
-            mean_value=1,
-            standard_deviation_value=0.5,
+            mean_item_value=1,
+            std_item_value=0.5,
         )
 
     def test_random_generator__properties(
@@ -435,8 +435,8 @@ class TestExtendedRandomGenerator:
             max_num_ems,
             is_rotation_allowed=True,
             is_value_based=True,
-            mean_value=1,
-            standard_deviation_value=0.5,
+            mean_item_value=1,
+            std_item_value=0.5,
         )
 
     def test_random_generator__properties(

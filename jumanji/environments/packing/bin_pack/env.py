@@ -14,7 +14,7 @@
 
 import functools
 import itertools
-from typing import Any, Dict, Optional, Sequence, Tuple, cast
+from typing import Dict, Optional, Sequence, Tuple, cast
 
 import chex
 import jax
@@ -725,16 +725,16 @@ class ExtendedBinPack(BinPack):
         normalize_dimensions: bool = True,
         debug: bool = False,
         viewer: Optional[Viewer[State]] = None,
-        mean_value: Optional[float] = None,
-        standard_deviation_value: Optional[float] = None,
+        mean_item_value: Optional[float] = None,
+        std_item_value: Optional[float] = None,
     ):
         generator = generator or ExtendedRandomGenerator(
             is_rotation_allowed=is_rotation_allowed,
             is_value_based=is_value_based,
             max_num_items=20,
             max_num_ems=40,
-            mean_value=mean_value,
-            standard_deviation_value=standard_deviation_value,
+            mean_item_value=mean_item_value,
+            std_item_value=std_item_value,
         )
         viewer = viewer or ExtendedBinPackViewer(
             "ExtendedBinPack",
@@ -771,25 +771,20 @@ class ExtendedBinPack(BinPack):
         max_num_items = self.generator.max_num_items
         max_dim = max(self.generator.container_dims)
 
-        if self.normalize_dimensions:
-            if self.is_value_based:
-                if self.is_rotation_allowed:
-                    items_dict = self._items_dict_for_rotated_valued_items(
-                        max_num_items, max_dim
-                    )
-                else:
-                    items_dict = self._items_dict_for_valued_items(
-                        max_num_items, max_dim
-                    )
+        if self.is_value_based:
+            if self.is_rotation_allowed:
+                items_dict = self._items_dict_for_rotated_valued_items(
+                    max_num_items, max_dim
+                )
             else:
-                if self.is_rotation_allowed:
-                    items_dict = self._items_dict_for_rotated_items(
-                        max_num_items, max_dim
-                    )
-                else:
-                    items_dict = self._items_dict_for_non_valued_items(
-                        max_num_items, max_dim
-                    )
+                items_dict = self._items_dict_for_valued_items(max_num_items, max_dim)
+        else:
+            if self.is_rotation_allowed:
+                items_dict = self._items_dict_for_rotated_items(max_num_items, max_dim)
+            else:
+                items_dict = self._items_dict_for_non_valued_items(
+                    max_num_items, max_dim
+                )
 
         items = specs.Spec(
             ValuedItem if self.is_value_based else Item, "ItemsSpec", **items_dict
@@ -908,7 +903,7 @@ class ExtendedBinPack(BinPack):
         Returns:
             A dictionary with string keys of the item features and specs BoundedArray as values.
         """
-        items_dict = self._items_dict_for_valued_items(max_num_items, max_dim)
+        items_dict = self._items_dict_for_rotated_items(max_num_items, max_dim)
         if self.normalize_dimensions:
             items_dict["value"] = specs.BoundedArray(
                 (6 * max_num_items,), float, -1.0, 1.0, "value"
@@ -917,15 +912,7 @@ class ExtendedBinPack(BinPack):
             items_dict["value"] = specs.BoundedArray(
                 (6 * max_num_items,), float, -jnp.inf, jnp.inf, "value"
             )
-        for axis in ["x_len", "y_len", "z_len"]:
-            if self.normalize_dimensions:
-                items_dict[axis] = specs.BoundedArray(
-                    (6 * max_num_items,), float, 0.0, 1.0, axis
-                )
-            else:
-                items_dict[axis] = specs.BoundedArray(
-                    (6 * max_num_items,), jnp.int32, 0, max_dim, axis
-                )
+
         return items_dict
 
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -1016,7 +1003,26 @@ class ExtendedBinPack(BinPack):
     def _make_observation_and_extras(
         self, state: State
     ) -> Tuple[State, Observation, Dict]:
+        """Computes the observation and the environment metrics to include in `timestep.extras`.
+        Also updates the `action_mask` and `sorted_ems_indexes` in the state. The observation is
+        obtained by selecting a subset of all EMSs, namely the `obs_num_ems` largest ones.
+
+        Args:
+            state: a state of the ExtendedBinPack environment.
+
+        """
+
         def flatten_observation(observation: Observation) -> Observation:
+            """In the case where item rotation is allowed, this function is used to
+
+            Args:
+                observation: Initial observation with items, items_placed and items_mask arrays of
+                shape (6, max_nb_items) and an action mask of shape (6, max_nb_ems, max_nb_items)
+
+            Returns:
+                Observation where the items, items_placed and items_mask array have a shape
+                (6 * max_nb_items) and the action_mask has a shape of (max_nb_ems, 6 * max_nb_items)
+            """
             flattened_items_mask = observation.items_mask.flatten()
             flattened_items_placed = observation.items_placed.flatten()
             flattened_action_mask = observation.action_mask.reshape(
@@ -1090,10 +1096,14 @@ class ExtendedBinPack(BinPack):
 
         norm_space = Space(x1=x_len, x2=x_len, y1=y_len, y2=y_len, z1=z_len, z2=z_len)
         obs_ems = jax.tree_util.tree_map(
-            lambda ems, container: ems / container, obs_ems, norm_space
+            lambda ems, normalization_value: ems / normalization_value,
+            obs_ems,
+            norm_space,
         )
         items = jax.tree_util.tree_map(
-            lambda item, container: item / container, items, container_item
+            lambda item, normalization_value: item / normalization_value,
+            items,
+            container_item,
         )
         return obs_ems, items
 
@@ -1102,7 +1112,7 @@ class ExtendedBinPack(BinPack):
         state: State,
         ems_id: int,
         item_id: chex.Numeric,
-        item_orientation: Optional[Any] = None,
+        item_orientation: Optional[int] = None,
     ) -> State:
         """This method assumes that the item can be placed correctly, i.e. the action is valid."""
         # Place the item in the bottom left corner of the EMS.
@@ -1117,8 +1127,8 @@ class ExtendedBinPack(BinPack):
             )
         else:
             state.items_mask = state.items_mask.at[item_id].set(False)
-
             state.items_placed = state.items_placed.at[item_id].set(True)
+
         state = self._update_ems(state, item_id, item_orientation)
         return state
 

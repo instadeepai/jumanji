@@ -1061,9 +1061,6 @@ class ValueProblemCSVGenerator(CSVGenerator):
         return list_of_items
 
 
-VALUE_BASED_GENERATORS = (ValueProblemCSVGenerator,)
-
-
 class ExtendedToyGenerator(ToyGenerator):
     def __init__(self) -> None:
         super().__init__()
@@ -1115,18 +1112,18 @@ class ExtendedRandomGenerator(RandomGenerator):
         prob_split_one_item: float = 0.7,
         split_num_same_items: int = 5,
         container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
-        mean_value: Optional[float] = None,
-        standard_deviation_value: Optional[float] = None,
+        mean_item_value: Optional[float] = None,
+        std_item_value: Optional[float] = None,
     ):
         """
         Args:
             is_rotation_allowed: whether the generator has to generate instances where item
-            rotation is possible. Defaults to False.
+                rotation is possible. Defaults to False.
             is_value_based: whether the generator has to generator has to generate
-            instance with values. Defaults to False.
-            mean_value: The mean value of the normal distribution from which the item values will be
-                sampled.
-            standard_deviation_value: The standard deviation of the normal distribution from which
+                instance with values. Defaults to False.
+            mean_item_value: The mean value of the normal distribution from which the item values
+                will be sampled.
+            std_item_value: The standard deviation of the normal distribution from which
                 the item values will be sampled.
         Raises:
             ValueError: When the generator has to generate value based instances but the mean and
@@ -1142,16 +1139,14 @@ class ExtendedRandomGenerator(RandomGenerator):
         )
         self.is_rotation_allowed = is_rotation_allowed
         self.is_value_based = is_value_based
-        self.mean_value = mean_value
-        self.standard_deviation_value = standard_deviation_value
-        if self.is_value_based and (
-            mean_value is None or standard_deviation_value is None
-        ):
-            std_name = "standard_deviation_value"
+        self.mean_item_value = mean_item_value
+        self.std_item_value = std_item_value
+        if self.is_value_based and (mean_item_value is None or std_item_value is None):
+            std_name = "std_item_value"
             raise ValueError(
                 "Value Based generator not provided with"
-                + f"{'mean_value attribute' if mean_value is None else ''}"
-                + f"{f'{std_name} attribute' if standard_deviation_value is None else ''}"
+                + f"{'mean_item_value attribute' if mean_item_value is None else ''}"
+                + f"{f'{std_name} attribute' if std_item_value is None else ''}"
             )
 
     def _generate_value_based_solved_instance(self, key: chex.PRNGKey) -> State:
@@ -1185,8 +1180,8 @@ class ExtendedRandomGenerator(RandomGenerator):
         # total_value_of_generated_values to generate a "perfect instance" with a known optimal
         # solution.
         key, split_key = jax.random.split(key)
-        item_values = self.mean_value + (
-            self.standard_deviation_value
+        item_values = self.mean_item_value + (
+            self.std_item_value
             * jax.random.normal(split_key, (len(items_mask),), jnp.float32)
         )
         total_value_of_generated_values = sum(item_values)
