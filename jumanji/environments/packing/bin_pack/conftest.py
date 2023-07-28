@@ -150,8 +150,8 @@ class DummyValueGenerator(Generator):
 
 class DummyExtendedGenerator(DummyGenerator):
     """Dummy instance generator used for testing. It outputs a constant instance with a 20-ft
-    container and 3 items: two identical items and a different third one to be able to
-    test item aggregation.
+    container and 3 items that can take all 6 possible orientations: two identical items and a
+    different third one.
     """
 
     def __init__(self) -> None:
@@ -367,12 +367,12 @@ def dummy_generator() -> DummyGenerator:
 
 
 @pytest.fixture
-def dummy_rotation_generator() -> DummyGenerator:
+def dummy_rotation_generator() -> DummyRotationGenerator:
     return DummyRotationGenerator()
 
 
 @pytest.fixture
-def dummy_extended_generator() -> DummyGenerator:
+def dummy_extended_generator() -> DummyExtendedGenerator:
     return DummyExtendedGenerator()
 
 
