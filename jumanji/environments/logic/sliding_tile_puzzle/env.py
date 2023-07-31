@@ -85,7 +85,9 @@ class SlidingTilePuzzle(Environment[State]):
         self.movements = jnp.array(
             [[-1, 0], [1, 0], [0, -1], [0, 1]]  # Up  # Down  # Left  # Right
         )
-        self.solved_puzzle = jnp.arange(grid_size**2).reshape((grid_size, grid_size))
+        self.solved_puzzle = jnp.arange(self.generator.grid_size**2).reshape(
+            (self.generator.grid_size, self.generator.grid_size)
+        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state."""

@@ -1,7 +1,6 @@
 # Sliding Tile Puzzle Environment
 
 <p align="center">
-    <!-- Replace with the image of your environment -->
     <img src="../env_anim/sliding_tile_puzzle.gif" width="500"/>
 </p>
 
@@ -41,4 +40,4 @@ The reward function is -1 for each step until the puzzle is solved, at which poi
 
 ## Registered Versions 📖
 
-- `SlidingTilePuzzle-v0`, the default settings for Sliding Tile Puzzle with a grid size of 4x4.
+- `SlidingTilePuzzle-v0`, the Sliding Tile Puzzle with a grid size of 5x5.
