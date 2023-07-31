@@ -27,6 +27,10 @@ from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
     RandomGenerator,
 )
+from jumanji.environments.logic.sliding_tile_puzzle.reward import (
+    ImprovedDenseRewardFn,
+    RewardFn,
+)
 from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, State
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
     SlidingTilePuzzleViewer,
@@ -67,6 +71,7 @@ class SlidingTilePuzzle(Environment[State]):
     def __init__(
         self,
         generator: Optional[Generator] = None,
+        reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiate a `SlidingTilePuzzle` environment.
@@ -75,10 +80,15 @@ class SlidingTilePuzzle(Environment[State]):
             generator: callable to instantiate environment instances.
                 Defaults to `RandomGenerator` which generates puzzles with
                 a size of 5x5.
-
+            reward_fn: RewardFn whose `__call__` method computes the reward of an environment
+                transition. The function must compute the reward based on the current state,
+                the chosen action and the next state.
+                Implemented options are [`DenseRewardFn`, `SparseRewardFn`,
+                `ImprovedDenseRewardFn`]. Defaults to `ImprovedDenseRewardFn`.
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomGenerator(grid_size=5)
+        self.reward_fn = reward_fn or ImprovedDenseRewardFn()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
@@ -131,7 +141,7 @@ class SlidingTilePuzzle(Environment[State]):
             action_mask=action_mask,
         )
 
-        reward = -jnp.sum(obs.puzzle != self.solved_puzzle).astype(jnp.float32)
+        reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
 
         timestep = lax.cond(done, termination, transition, reward, obs)
 
