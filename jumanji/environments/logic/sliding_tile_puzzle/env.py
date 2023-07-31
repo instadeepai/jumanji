@@ -78,9 +78,7 @@ class SlidingTilePuzzle(Environment[State]):
 
             viewer: environment viewer for rendering.
         """
-        grid_size = 5
-        # The generator generates a shuffled puzzle
-        self.generator = generator or RandomGenerator(grid_size)
+        self.generator = generator or RandomGenerator(grid_size=5)
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
