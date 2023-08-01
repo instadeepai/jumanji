@@ -39,7 +39,7 @@ def is_adj(a: Entity, b: Entity) -> bool:
     return jnp.linalg.norm(a.position - b.position, axis=-1) == 1
 
 
-def eat(agents: Agent, food: Food) -> Tuple[Food, bool, chex.Array]:
+def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     """Return the new food, whether any agents ate any food and the agents that were loading around the food."""
 
     def get_adj_level(agent: Agent, food: Food) -> chex.Array:
@@ -92,4 +92,14 @@ def fix_collisions(moved_agents: Agent, orig_agents: Agent) -> Agent:
         position=new_positions,
         level=orig_agents.level,
         loading=orig_agents.loading,
+    )
+
+
+def slice_around(pos: chex.Array, fov: int):
+    """Return a slice that when used to index a grid will return a 2*fov+1 x 2*fov+1 grid centered around pos."""
+    # because we pad the grid by fov we need to shift the pos to the position it will be in the padded grid
+    shifted_pos = pos + fov
+    return (
+        slice(shifted_pos[0] - fov, shifted_pos[0] + fov + 1),
+        slice(shifted_pos[1] - fov, shifted_pos[1] + fov + 1),
     )

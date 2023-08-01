@@ -81,6 +81,30 @@ def foods(food0: Food, food1: Food) -> Food:
 
 
 @pytest.fixture
+def agent_grid():
+    """Returns the agents' levels in the postion on the grid"""
+    return jnp.array(
+        [
+            [1, 2, 0],
+            [2, 0, 2],
+            [0, 0, 0],
+        ]
+    )
+
+
+@pytest.fixture
+def food_grid():
+    """Returns the food's levels in the postion on the grid"""
+    return jnp.array(
+        [
+            [0, 0, 0],
+            [0, 4, 0],
+            [3, 0, 0],
+        ]
+    )
+
+
+@pytest.fixture
 def level_based_foraging_env():
     generator = UniformRandomGenerator(
         grid_size=3, num_agents=4, num_food=2, max_agent_level=2, max_food_level=4
