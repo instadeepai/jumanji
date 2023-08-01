@@ -10,7 +10,7 @@ from jumanji.environments.routing.lbf.types import Agent, Entity, Food
 
 def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     # todo: this places the agent on the grid, how does lbf display the agent's level in the obs without obstructing the food level?
-    return grid.at[agent.position].set(agent.id)
+    return grid.at[agent.position].set(agent.level)
 
 
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:

@@ -1,6 +1,8 @@
 import jax.numpy as jnp
 import pytest
 
+from jumanji.environments.routing.lbf.env import LevelBasedForaging
+from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
 from jumanji.environments.routing.lbf.types import Agent, Food
 from jumanji.tree_utils import tree_transpose
 
@@ -76,3 +78,11 @@ def agents(agent0: Agent, agent1: Agent, agent2: Agent, agent3: Agent) -> Agent:
 @pytest.fixture
 def foods(food0: Food, food1: Food) -> Food:
     return tree_transpose([food0, food1])
+
+
+@pytest.fixture
+def level_based_foraging_env():
+    generator = UniformRandomGenerator(
+        grid_size=3, num_agents=4, num_food=2, max_agent_level=2, max_food_level=4
+    )
+    return LevelBasedForaging(generator=generator, fov=1, max_steps=500)
