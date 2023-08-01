@@ -491,11 +491,12 @@ class RobotWarehouse(Environment[State]):
             return key, reward, request_queue, shelves
 
         # check if shelf is at goal position and in request queue
-        cond = jnp.logical_not(jnp.equal(shelf_id, 0))
-        cond = jnp.logical_and(cond, jnp.isin(shelf_id, request_queue + 1))
+        shelf_at_goal = (~jnp.equal(shelf_id, 0)) & jnp.isin(
+            shelf_id, request_queue + 1
+        )
 
         key, reward, request_queue, shelves = jax.lax.cond(
-            cond,
+            shelf_at_goal,
             reward_and_update_request_queue_if_shelf_in_goal,
             lambda k, r, rq, g, _: (k, r, rq, g),
             key,
