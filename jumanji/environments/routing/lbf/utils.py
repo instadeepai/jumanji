@@ -10,22 +10,22 @@ from jumanji.environments.routing.lbf.types import Agent, Entity, Food
 
 def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     # todo: this places the agent on the grid, how does lbf display the agent's level in the obs without obstructing the food level?
-    return grid.at[agent.position].set(agent.level)
+    x, y = agent.position
+    return grid.at[x, y].set(agent.level)
 
 
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
-    return jax.lax.select(food.eaten, grid, grid.at[food.position].set(food.level))
+    x, y = food.position
+    return jax.lax.select(food.eaten, grid, grid.at[x, y].set(food.level))
 
 
 def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent:
-    bounds = jnp.array([grid_size, grid_size])
-
     # add action to agent position
     new_position = agent.position + MOVES[action]
 
     # if position is not in food positions and not out of bounds, move agent
-    out_of_bounds = jnp.any(new_position < 0) | jnp.any(new_position >= bounds)
-    invalid_position = jnp.any(agent.position == foods.position, axis=-1)
+    out_of_bounds = (new_position < 0) | (new_position >= grid_size)
+    invalid_position = jnp.any(jnp.all(new_position == foods.position, axis=1))
 
     return agent.replace(
         position=jnp.where(
@@ -60,7 +60,7 @@ def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     food_eaten = (adjacent_level >= food.level) & (~food.eaten)
     # set food to eaten if it was eaten and if it was already eaten leave it as eaten
     new_food = food.replace(eaten=food_eaten | food.eaten)
-    return new_food, food_eaten, adjacent_loading_levels != 0
+    return new_food, food_eaten, adjacent_loading_levels
 
 
 def flag_duplicates(a: chex.Array):

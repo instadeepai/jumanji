@@ -7,23 +7,26 @@ import jax.numpy as jnp
 import jumanji.environments.routing.lbf.utils as utils
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.routing.lbf.constants import MOVES
+from jumanji.environments.routing.lbf.constants import LOAD, MOVES
 from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
 from jumanji.environments.routing.lbf.types import Agent, Food, Observation, State
-from jumanji.types import TimeStep, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 
 class LevelBasedForaging(Environment[State]):
     def __init__(
-        self, generator: Optional[UniformRandomGenerator], fov: int = 1, max_steps=500
+        self,
+        generator: Optional[UniformRandomGenerator] = None,
+        fov: int = 1,
+        time_limit=500,
     ) -> None:
         super().__init__()
 
         self._generator = generator or UniformRandomGenerator(
-            grid_size=10, num_agents=4, num_food=5, max_agent_level=3, max_food_level=3
+            grid_size=5, num_agents=4, num_food=5, max_agent_level=3, max_food_level=3
         )
         self._fov = fov
-        self._time_limit = max_steps
+        self._time_limit = time_limit
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         state = self._generator(key)
@@ -31,16 +34,22 @@ class LevelBasedForaging(Environment[State]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
-        moved_agents = jax.vmap(utils.move, (0, 0, None, None, None))(
+    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
+        # move agents, fix collisions that may happen and set loading status
+        moved_agents = jax.vmap(utils.move, (0, 0, None, None))(
             state.agents,
-            action,
+            actions,
             state.foods,
             self._generator.grid_size,
         )
-        # todo: make sure that agent doesn't move into food
-        # check that no two agent share the same position
+        # check that no two agent share the same position after moving
         moved_agents = utils.fix_collisions(moved_agents, state.agents)
+
+        # set agent's loading status
+        moved_agents = jax.vmap(
+            lambda agent, action: agent.replace(loading=action == LOAD)
+        )(moved_agents, actions)
+
         # eat food
         foods, eaten, adj_loading_level = jax.vmap(utils.eat, (None, 0))(
             moved_agents, state.foods
@@ -57,13 +66,13 @@ class LevelBasedForaging(Environment[State]):
 
         return state, self._state_to_timestep(state, reward)
 
-    # Do we make this a param of the env even though there's probably only a single reward?
+    # Do we make this a param of the env even though there's probably only a single type of reward?
     def get_reward(
         self, foods: Food, adj_agent_levels: chex.Array, eaten: chex.Array
     ) -> chex.Array:
         """Returns a reward for all agents given all foods."""
-        # get each agents reward for each food that was eaten
-        # sum agent rewards for each food to get rewards per agent
+        # Get reward per food for all food (by vmapping over foods).
+        # Then sum that reward on agent dim to get reward per agent.
         return jnp.sum(
             jax.vmap(self._reward_per_food)(foods, adj_agent_levels, eaten),
             axis=0,

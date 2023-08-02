@@ -17,15 +17,15 @@ def test_move(agent1: Agent, foods: Food) -> None:
     assert jnp.all(agent1_new.position == jnp.array([0, 0]))
 
     # move agent twice from [0, 0] to [2, 0] (where food is)
-    agent1_new = move(agent1_new, DOWN, foods, grid_size)
-    agent1_new = move(agent1_new, DOWN, foods, grid_size)
+    agent1_new = move(agent1_new, DOWN, foods, grid_size)  # valid: [1, 0]
+    agent1_new = move(agent1_new, DOWN, foods, grid_size)  # invalid: [2, 0]
     assert jnp.all(agent1_new.position == jnp.array([1, 0]))
 
-    # move agent to [0, 2]
+    # move agent from [0, 1] to [0, 2]
     agent1_new = move(agent1, RIGHT, foods, grid_size)
     assert jnp.all(agent1_new.position == jnp.array([0, 2]))
 
-    # try move agent to [1, 1] (where food is)
+    # try move agent from [0, 1] to [1, 1] (where food is)
     agent1_new = move(agent1, DOWN, foods, grid_size)
     assert jnp.all(agent1_new.position == jnp.array([0, 1]))
 
@@ -54,19 +54,19 @@ def test_eat(agents: Agent, food0: Food, food1: Food) -> None:
     new_food0, eaten_food0, adj_agents = eat(all_loading_agents, food0)
     assert new_food0.eaten == True
     assert eaten_food0 == True
-    assert jnp.all(adj_agents == jnp.array([False, True, True, True]))
+    assert jnp.all(adj_agents == agents.level * jnp.array([0, 1, 1, 1]))
 
     # check that food 1 cannot be eaten
     new_food1, eaten_food1, adj_agents = eat(all_loading_agents, food1)
     assert new_food1.eaten == False
     assert eaten_food1 == False
-    assert jnp.all(adj_agents == jnp.array([False, False, True, False]))
+    assert jnp.all(adj_agents == agents.level * jnp.array([0, 0, 1, 0]))
 
     # check that if food is already eaten, it cannot be eaten again
     new_food0, eaten_food0, adj_agents = eat(all_loading_agents, new_food0)
     assert new_food0.eaten == True
     assert eaten_food0 == False
-    assert jnp.all(adj_agents == jnp.array([False, True, True, True]))
+    assert jnp.all(adj_agents == agents.level * jnp.array([0, 1, 1, 1]))
 
 
 def test_flag_duplicates() -> None:

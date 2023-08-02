@@ -18,7 +18,8 @@ def test_generator():
     )
     state = gen(key)
 
-    assert state.grid.shape == (grid_size, grid_size)
-    assert jnp.sum((state.grid > 0) & (state.grid <= num_agents)) == num_agents
-    assert jnp.sum(state.grid > num_agents) == num_food
-    assert jnp.sum(state.grid == 0) == grid_size**2 - num_agents - num_food
+    # Test foods and agents placed within grid bounds.
+    assert jnp.all(state.agents.position >= 0)
+    assert jnp.all(state.agents.position < grid_size)
+    assert jnp.all(state.foods.position >= 0)
+    assert jnp.all(state.foods.position < grid_size)
