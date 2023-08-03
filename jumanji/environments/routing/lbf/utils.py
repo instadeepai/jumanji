@@ -9,17 +9,22 @@ from jumanji.environments.routing.lbf.types import Agent, Entity, Food
 
 
 def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
-    # todo: this places the agent on the grid, how does lbf display the agent's level in the obs without obstructing the food level?
+    """Return the grid with the agent placed on it."""
     x, y = agent.position
     return grid.at[x, y].set(agent.level)
 
 
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
+    """Return the grid with the food placed on it."""
     x, y = food.position
     return jax.lax.select(food.eaten, grid, grid.at[x, y].set(food.level))
 
 
 def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent:
+    """Return the new agent position after taking `action`.
+
+    Agent cannot move to a position that is occupied by food or out of bounds.
+    """
     # add action to agent position
     new_position = agent.position + MOVES[action]
 
@@ -36,6 +41,8 @@ def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent
 
 def is_adj(a: Entity, b: Entity) -> bool:
     """Return whether `a` and `b` are adjacent."""
+    # todo: would it be quicker to just:
+    # (abs(a.position[0] - b.position[0]) == 1 and a.position[1] == b.position[1]) or (a.position[0] == b.position[0] and abs(a.position[1] - b.position[1]) == 1)
     return jnp.linalg.norm(a.position - b.position, axis=-1) == 1
 
 
@@ -75,6 +82,7 @@ def flag_duplicates(a: chex.Array):
 
 
 def fix_collisions(moved_agents: Agent, orig_agents: Agent) -> Agent:
+    """Return agents with collisions fixed, if two agents are in the same position, use the original agent position."""
     duplicates = flag_duplicates(moved_agents.position)
     # need to broadcast this so the where works
     duplicates = jnp.broadcast_to(duplicates[:, None], orig_agents.position.shape)
@@ -96,7 +104,7 @@ def fix_collisions(moved_agents: Agent, orig_agents: Agent) -> Agent:
 
 
 def slice_around(pos: chex.Array, fov: int):
-    """Return a slice that when used to index a grid will return a 2*fov+1 x 2*fov+1 grid centered around pos."""
+    """Return a slice that when used to index a grid will return a 2*fov+1 x 2*fov+1 sub-grid centered around pos."""
     # because we pad the grid by fov we need to shift the pos to the position it will be in the padded grid
     shifted_pos = pos + fov
     return (

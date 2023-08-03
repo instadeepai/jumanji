@@ -109,4 +109,4 @@ def level_based_foraging_env():
     generator = UniformRandomGenerator(
         grid_size=3, num_agents=4, num_food=2, max_agent_level=2, max_food_level=4
     )
-    return LevelBasedForaging(generator=generator, fov=1, max_steps=500)
+    return LevelBasedForaging(generator=generator, fov=1, time_limit=500)

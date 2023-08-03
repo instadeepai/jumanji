@@ -72,21 +72,47 @@ class UniformRandomGenerator(Generator):
             grid_size: size of the square grid to generate.
             num_agents: number of agents/paths on the grid.
         """
+        # todo: need to assert that grid is sufficiently big enough to place all foods
+        # num_food < grid_size ?
         super().__init__(grid_size, num_agents)
         self.num_food = num_food
         self.max_food_level = max_food_level
         self.max_agent_level = max_agent_level
 
     def sample_food(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+        flat_size = self.grid_size**2
         pos_key, level_key = jax.random.split(key)
+        pos_keys = jax.random.split(pos_key, self.num_food)
 
-        # todo: food positions also cannot be adjacent to eachother
-        positions_flat = jax.random.choice(
-            key=pos_key,
-            a=self.grid_size**2,
-            shape=(self.num_food,),
-            replace=False,  # Food positions cannot overlap
-        )
+        # cannot place on the edges so mask them out
+        mask = jnp.ones(flat_size, dtype=bool)
+
+        top = jnp.arange(self.grid_size)
+        bottom = jnp.arange(flat_size - self.grid_size, flat_size)
+        left = jnp.arange(0, flat_size, self.grid_size)
+        right = jnp.arange(self.grid_size - 1, flat_size, self.grid_size)
+
+        mask = mask.at[top].set(False)
+        mask = mask.at[bottom].set(False)
+        mask = mask.at[left].set(False)
+        mask = mask.at[right].set(False)
+
+        def take_positions(mask, key):
+            food_pos = jax.random.choice(key=key, a=flat_size, shape=(), p=mask)
+            # mask out all adj positions so no foods are placed next to eachother
+            adj_positions = jnp.array(
+                [
+                    food_pos,
+                    food_pos + 1,  # right
+                    food_pos - 1,  # left
+                    food_pos + self.grid_size,  # up
+                    food_pos - self.grid_size,  # down
+                ]
+            )
+            return mask.at[adj_positions].set(False), food_pos
+
+        _, food_positions_flat = jax.lax.scan(take_positions, mask, pos_keys)
+        food_positions = jnp.divmod(food_positions_flat, self.grid_size)
 
         levels = jax.random.randint(
             level_key,
@@ -94,8 +120,7 @@ class UniformRandomGenerator(Generator):
             minval=1,
             maxval=self.max_food_level + 1,
         )
-
-        return jnp.divmod(positions_flat, self.grid_size), levels
+        return food_positions, levels
 
     def sample_agents(
         self, key: chex.PRNGKey, mask: chex.Array
@@ -123,7 +148,6 @@ class UniformRandomGenerator(Generator):
             maxval=self.max_agent_level + 1,
         )
 
-        # sample agent levels
         return jnp.divmod(positions_flat, self.grid_size), levels
 
     def __call__(self, key: chex.PRNGKey) -> State:
@@ -132,21 +156,17 @@ class UniformRandomGenerator(Generator):
         Returns:
             A `LBF` state.
         """
-        # Create empty grid.
-        grid = jnp.zeros((self.grid_size, self.grid_size), dtype=jnp.int32)
-
         food_key, agent_key, key = jax.random.split(key, 3)
         food_positions, food_levels = self.sample_food(key=food_key)
 
-        # Place food on the grid.
         food_ids = jnp.arange(self.num_agents + 1, self.num_agents + self.num_food + 1)
-        grid = grid.at[food_positions].set(food_ids)
 
         # Place agents on the grid.
         # Mask contains 0's where food is placed, 1's where agents can be placed.
-        mask = jnp.reshape(grid == 0, -1)
+        mask = jnp.ones((self.grid_size, self.grid_size), dtype=bool)
+        mask = mask.at[food_positions].set(False)
+        mask = mask.reshape(-1)
         agent_positions, agent_levels = self.sample_agents(key=agent_key, mask=mask)
-        grid = grid.at[agent_positions].set(jnp.arange(1, self.num_agents + 1))
 
         # Create the agent pytree that corresponds to the grid.
         agents = jax.vmap(Agent)(

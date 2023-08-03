@@ -9,7 +9,7 @@ def test_generator():
 
     grid_size = 6
     num_agents = 7
-    num_food = 8
+    num_food = 6
     max_food_level = 9
     max_agent_level = 10
 
@@ -23,3 +23,14 @@ def test_generator():
     assert jnp.all(state.agents.position < grid_size)
     assert jnp.all(state.foods.position >= 0)
     assert jnp.all(state.foods.position < grid_size)
+
+    # test no foods are adjacent to eachother
+    # assert jnp.all(
+    #     jnp.linalg.norm(
+    #         state.foods.position[:, None, :] - state.foods.position[None, :, :], axis=-1
+    #     )
+    # )
+
+    # test no foods are on the edge of the grid
+    assert jnp.all(state.foods.position != 0)
+    assert jnp.all(state.foods.position != grid_size - 1)
