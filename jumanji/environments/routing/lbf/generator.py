@@ -23,6 +23,7 @@ from jumanji.environments.routing.lbf.constants import AGENT, FOOD
 from jumanji.environments.routing.lbf.types import Agent, Food, State
 
 
+# todo: do we need this base class, there is only one viable generator to match lbf?
 class Generator(abc.ABC):
     """Base class for generators for the LBF environment."""
 
@@ -80,6 +81,9 @@ class UniformRandomGenerator(Generator):
         self.max_agent_level = max_agent_level
 
     def sample_food(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+        """Samples food positions such that no two foods are adjacent
+        and no food is on the edge of the grid.
+        """
         flat_size = self.grid_size**2
         pos_key, level_key = jax.random.split(key)
         pos_keys = jax.random.split(pos_key, self.num_food)
