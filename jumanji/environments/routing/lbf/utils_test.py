@@ -4,7 +4,13 @@ import jax.numpy as jnp
 
 from jumanji.environments.routing.lbf.constants import DOWN, LEFT, RIGHT
 from jumanji.environments.routing.lbf.types import Agent, Food
-from jumanji.environments.routing.lbf.utils import eat, fix_collisions, is_adj, move
+from jumanji.environments.routing.lbf.utils import (
+    eat,
+    fix_collisions,
+    is_adj,
+    move,
+    slice_around,
+)
 
 
 def test_move(agent1: Agent, foods: Food) -> None:
@@ -94,3 +100,42 @@ def test_fix_collisions(agents: Agent):
 
     new_agents = fix_collisions(moved_agents, agents)
     chex.assert_trees_all_equal(new_agents, expected_agents)
+
+
+def test_slice_around():
+    pos = jnp.array([1, 1])
+    fov = 1
+
+    grid = jnp.arange(9).reshape(3, 3)
+    grid = jnp.pad(grid, 1, mode="constant", constant_values=-1)
+
+    # expected slice
+    expected_slice = jnp.array(
+        [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+        ]
+    )
+
+    # slice around pos
+    slice_coords = slice_around(pos, fov)
+    slice = grid[slice_coords]
+
+    assert jnp.all(slice == expected_slice)
+
+    # slice around pos with fov=2
+    fov = 2
+    expected_slice = jnp.array(
+        [
+            [-1, -1, -1, -1, -1],
+            [-1, 0, 1, 2, -1],
+            [-1, 3, 4, 5, -1],
+            [-1, 6, 7, 8, -1],
+            [-1, -1, -1, -1, -1],
+        ]
+    )
+
+    slice_coords = slice_around(pos, fov)
+    slice = grid[slice_coords]
+    assert jnp.all(slice == expected_slice)
