@@ -30,9 +30,9 @@ class LevelBasedForaging(Environment[State]):
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         state = self._generator(key)
-        timestep = self._state_to_timestep(state, jnp.zeros(self._generator.num_agents))
+        observation = self._state_to_obs(state)
 
-        return state, timestep
+        return state, restart(observation)
 
     def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
         # move agents, fix collisions that may happen and set loading status
@@ -64,7 +64,12 @@ class LevelBasedForaging(Environment[State]):
             key=state.key,
         )
 
-        return state, self._state_to_timestep(state, reward)
+        observation = self._state_to_obs(state)
+        # First condition is truncation, second is termination. Jumanji doesn't support truncation yet.
+        done = state.step_count >= self._time_limit | jnp.all(state.foods.eaten)
+        timestep = jax.lax.cond(done, termination, transition, observation, reward)
+
+        return state, timestep
 
     # Do we make this a param of the env even though there's probably only a single type of reward?
     def get_reward(
@@ -101,7 +106,7 @@ class LevelBasedForaging(Environment[State]):
 
         return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)
 
-    def _state_to_timestep(self, state: State, reward: chex.Array) -> TimeStep:
+    def _state_to_obs(self, state: State) -> Observation:
         grid = jnp.zeros((self._generator.grid_size, self._generator.grid_size))
         agent_grid = jax.vmap(utils.place_agent_on_grid, (0, None))(state.agents, grid)
         food_grid = jax.vmap(utils.place_food_on_grid, (0, None))(state.foods, grid)
@@ -109,16 +114,12 @@ class LevelBasedForaging(Environment[State]):
         grids, action_masks = jax.vmap(self._get_agent_obs, (0, None, None))(
             state.agents, agent_grid, food_grid
         )
-        observation = Observation(
+
+        return Observation(
             agent_views=grids,
             action_mask=action_masks,
             step_count=state.step_count,
         )
-
-        # First condition is truncation, second is termination. Jumanji doesn't support truncation yet.
-        done = state.step_count >= self._time_limit | jnp.all(state.foods.eaten)
-
-        return jax.lax.cond(done, termination, transition, observation, reward)
 
     # This is the new observation that lbf offers.
     # The old obs was used in the paper, but these obs make more sense and are implemented
