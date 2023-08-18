@@ -4,13 +4,13 @@ flake8==3.9.2
 importlib-metadata<5.0
 isort==5.11.5
 livereload
-mkdocs==1.2.3
+mkdocs
 mkdocs-git-revision-date-plugin
 mkdocs-include-markdown-plugin
 mkdocs-material
-mkdocs-mermaid2-plugin==0.6.0
-mkdocstrings==0.18.0
-mknotebooks==0.7.1
+mkdocs-mermaid2-plugin
+mkdocstrings[python]
+mknotebooks
 mypy==0.991
 nbmake
 pre-commit==2.17.0
