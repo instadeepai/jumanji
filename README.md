@@ -83,7 +83,7 @@ JAX-based environments.
 - 🏎️ **Training:** example agents that can be used as inspiration for the agents one may implement
 in their research.
 
-<h2 name="environments">Environments 🌍</h2>
+<h2 name="environments" id="environments">Environments 🌍</h2>
 
 Jumanji provides a diverse range of environments ranging from simple games to NP-hard combinatorial
 problems.
@@ -109,7 +109,7 @@ problems.
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 
-<h2 name="install">Installation 🎬</h2>
+<h2 name="install" id="install">Installation 🎬</h2>
 
 You can install the latest release of Jumanji from PyPI:
 
@@ -134,7 +134,7 @@ you will need a GUI backend. For example, on Linux, you can install Tk via:
 [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of
 backends you can use.
 
-<h2 name="quickstart">Quickstart ⚡</h2>
+<h2 name="quickstart" id="quickstart">Quickstart ⚡</h2>
 
 RL practitioners will find Jumanji's interface familiar as it combines the widely adopted
 [OpenAI Gym](https://github.com/openai/gym) and
@@ -190,7 +190,7 @@ the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out
 [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
-<h2 name="training">Training 🏎️</h2>
+<h2 name="training" id="training">Training 🏎️</h2>
 
 To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
 actor-critic (A2C) agent. These agents can be found in
@@ -217,7 +217,7 @@ Contributions are welcome! See our issue tracker for
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
 details on how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
-<h2 name="citing">Citing Jumanji ✏️</h2>
+<h2 name="citing" id="citing">Citing Jumanji ✏️</h2>
 
 If you use Jumanji in your work, please cite the library using:
 
