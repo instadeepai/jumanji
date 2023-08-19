@@ -225,12 +225,12 @@ def test_robot_warehouse_utils__is_collision(
 
     # check no collision with original grid
     agent = tree_slice(agents, 0)
-    action = 1  # forward
-    collision = is_collision(grid, agent, action)
+    agent_id = 0
+    collision = is_collision(grid, agent, agent_id)
     assert bool(collision) is False
 
-    # create grid with agents next to each other
-    grid_prior_to_collision = jnp.array(
+    # create grid with agents on top of each other
+    grid = jnp.array(
         [
             [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -241,7 +241,7 @@ def test_robot_warehouse_utils__is_collision(
             ],
             [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 1, 2, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 2, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -249,13 +249,8 @@ def test_robot_warehouse_utils__is_collision(
         ]
     )
 
-    # update agent zero to face agent 2
-    agents = update_agent(agents, 0, "position", Position(1, 6))
-    agents = update_agent(agents, 0, "direction", 1)
-    agent = tree_slice(agents, 0)
-
-    # check collision if moving forward
-    collision = is_collision(grid_prior_to_collision, agent, action)
+    # check collision is true with agent 2 "on top" of agent 1
+    collision = is_collision(grid, agent, agent_id)
     assert bool(collision) is True
 
 
@@ -422,7 +417,6 @@ def test_robot_warehouse_utils__get_valid_action(
 
     action_mask = compute_action_mask(grid, agents)
     actions = get_valid_actions(actions, action_mask)
-    jax.debug.print("action, {a}", a=actions)
     assert jnp.array_equal(actions, jnp.array([1, 1]))
 
     # Let agent 2 turn around, pick up shelf and move forward
