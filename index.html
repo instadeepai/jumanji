@@ -388,33 +388,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#environments" class="md-nav__link">
-    Environments 🌍
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    Installation 🎬
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    Quickstart ⚡
-  </a>
-  
-    <nav class="md-nav" aria-label="Quickstart ⚡">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#basic-usage" class="md-nav__link">
     Basic Usage 🧑‍💻
@@ -442,22 +415,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#training" class="md-nav__link">
-    Training 🏎️
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#contributing" class="md-nav__link">
     Contributing 🤝
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#citing-jumanji" class="md-nav__link">
-    Citing Jumanji ✏️
   </a>
   
 </li>
@@ -1580,11 +1539,11 @@
 <a href="http://mypy-lang.org/"><img alt="MyPy" src="http://www.mypy-lang.org/static/mypy_badge.svg" /></a>
 <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-orange.svg" /></a>
 <a href="https://huggingface.co/InstaDeepAI"><img alt="Hugging Face" src="https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-F8D521" /></a></p>
-<p><a href="#environments-"><strong>Environments</strong></a>
-| <a href="#installation-"><strong>Installation</strong></a>
-| <a href="#quickstart-"><strong>Quickstart</strong></a>
-| <a href="#training-%EF%B8%8F"><strong>Training</strong></a>
-| <a href="#citing-jumanji-%EF%B8%8F"><strong>Citation</strong></a>
+<p><a href="#environments"><strong>Environments</strong></a>
+| <a href="#install"><strong>Installation</strong></a>
+| <a href="#quickstart"><strong>Quickstart</strong></a>
+| <a href="#training"><strong>Training</strong></a>
+| <a href="#citing"><strong>Citation</strong></a>
 | <a href="https://instadeepai.github.io/jumanji"><strong>Docs</strong></a></p>
 <hr />
 <div class="collage">
@@ -1646,7 +1605,8 @@ JAX-based environments.</li>
 <li>🏎️ <strong>Training:</strong> example agents that can be used as inspiration for the agents one may implement
 in their research.</li>
 </ul>
-<h2 id="environments">Environments 🌍<a class="headerlink" href="#environments" title="Permanent link">#</a></h2>
+<h2 name="environments" id="environments">Environments 🌍</h2>
+
 <p>Jumanji provides a diverse range of environments ranging from simple games to NP-hard combinatorial
 problems.</p>
 <table>
@@ -1788,7 +1748,8 @@ problems.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="installation">Installation 🎬<a class="headerlink" href="#installation" title="Permanent link">#</a></h2>
+<h2 name="install" id="install">Installation 🎬</h2>
+
 <p>You can install the latest release of Jumanji from PyPI:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>jumanji
 </code></pre></div></td></tr></table></div>
@@ -1804,7 +1765,8 @@ you will need a GUI backend. For example, on Linux, you can install Tk via:
 <code>apt-get install python3-tk</code>, or using conda: <code>conda install tk</code>. Check out
 <a href="https://matplotlib.org/stable/users/explain/backends.html">Matplotlib backends</a> for a list of
 backends you can use.</p>
-<h2 id="quickstart">Quickstart ⚡<a class="headerlink" href="#quickstart" title="Permanent link">#</a></h2>
+<h2 name="quickstart" id="quickstart">Quickstart ⚡</h2>
+
 <p>RL practitioners will find Jumanji's interface familiar as it combines the widely adopted
 <a href="https://github.com/openai/gym">OpenAI Gym</a> and
 <a href="https://github.com/deepmind/dm_env">DeepMind Environment</a> interfaces. From OpenAI Gym, we adopted
@@ -1867,7 +1829,8 @@ When changes are made to environments that might impact learning results,
 the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out
 <a href="https://instadeepai.github.io/jumanji/environments/tsp/">the documentation</a>.</p>
-<h2 id="training">Training 🏎️<a class="headerlink" href="#training" title="Permanent link">#</a></h2>
+<h2 name="training" id="training">Training 🏎️</h2>
+
 <p>To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
 actor-critic (A2C) agent. These agents can be found in
 <a href="https://github.com/instadeepai/jumanji/tree/main/jumanji/training/">jumanji/training/</a>.</p>
@@ -1889,7 +1852,8 @@ agents and networks will <strong>not</strong> be maintained to a production stan
 <a href="https://github.com/instadeepai/jumanji/labels/good%20first%20issue">good first issues</a>. Please read
 our <a href="https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md">contributing guidelines</a> for
 details on how to submit pull requests, our Contributor License Agreement, and community guidelines.</p>
-<h2 id="citing-jumanji">Citing Jumanji ✏️<a class="headerlink" href="#citing-jumanji" title="Permanent link">#</a></h2>
+<h2 name="citing" id="citing">Citing Jumanji ✏️</h2>
+
 <p>If you use Jumanji in your work, please cite the library using:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -1947,7 +1911,7 @@ from Google's <a href="https://sites.research.google/trc/about/">TPU Research Cl
   <small>
     
       Last update:
-      2023-06-26
+      2023-08-19
     
   </small>
 </div>
