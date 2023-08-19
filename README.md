@@ -12,11 +12,11 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-F8D521)](https://huggingface.co/InstaDeepAI)
 
-[**Environments**](#environments-)
-| [**Installation**](#installation-)
-| [**Quickstart**](#quickstart-)
-| [**Training**](#training-%EF%B8%8F)
-| [**Citation**](#citing-jumanji-%EF%B8%8F)
+[**Environments**](#environments)
+| [**Installation**](#install)
+| [**Quickstart**](#quickstart)
+| [**Training**](#training)
+| [**Citation**](#citing)
 | [**Docs**](https://instadeepai.github.io/jumanji)
 ---
 
@@ -83,7 +83,7 @@ JAX-based environments.
 - 🏎️ **Training:** example agents that can be used as inspiration for the agents one may implement
 in their research.
 
-## Environments 🌍
+<h2 name="environments" id="environments">Environments 🌍</h2>
 
 Jumanji provides a diverse range of environments ranging from simple games to NP-hard combinatorial
 problems.
@@ -110,7 +110,7 @@ problems.
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 
-## Installation 🎬
+<h2 name="install" id="install">Installation 🎬</h2>
 
 You can install the latest release of Jumanji from PyPI:
 
@@ -135,7 +135,7 @@ you will need a GUI backend. For example, on Linux, you can install Tk via:
 [Matplotlib backends](https://matplotlib.org/stable/users/explain/backends.html) for a list of
 backends you can use.
 
-## Quickstart ⚡
+<h2 name="quickstart" id="quickstart">Quickstart ⚡</h2>
 
 RL practitioners will find Jumanji's interface familiar as it combines the widely adopted
 [OpenAI Gym](https://github.com/openai/gym) and
@@ -191,7 +191,7 @@ the version number is incremented by one to prevent potential confusion.
 For a full list of registered versions of each environment, check out
 [the documentation](https://instadeepai.github.io/jumanji/environments/tsp/).
 
-## Training 🏎️
+<h2 name="training" id="training">Training 🏎️</h2>
 
 To showcase how to train RL agents on Jumanji environments, we provide a random agent and a vanilla
 actor-critic (A2C) agent. These agents can be found in
@@ -218,7 +218,7 @@ Contributions are welcome! See our issue tracker for
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
 details on how to submit pull requests, our Contributor License Agreement, and community guidelines.
 
-## Citing Jumanji ✏️
+<h2 name="citing" id="citing">Citing Jumanji ✏️</h2>
 
 If you use Jumanji in your work, please cite the library using:
 
