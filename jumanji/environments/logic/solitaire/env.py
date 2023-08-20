@@ -247,7 +247,7 @@ class Solitaire(Environment[State]):
         """Generates an initial board for the environment.
 
 
-        The method generates a full board and then removes the central tile.
+        The method generates a full board and then removes the central peg.
         Args:
             key: random number generator key.
 

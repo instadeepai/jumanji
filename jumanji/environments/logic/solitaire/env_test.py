@@ -138,7 +138,6 @@ def test_solitaire__generate_board(solitaire: Solitaire) -> None:
     key = jax.random.PRNGKey(0)
     generate_board = jax.jit(solitaire._generate_board)
     board = generate_board(key)
-    # Check that all the tiles are zero except one tile with value (1 or 2).
     assert jnp.array_equal(
         board,
         jnp.array(
