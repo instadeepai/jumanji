@@ -217,7 +217,9 @@ class Sokoban(Environment[State]):
         """
 
         # switch to noop if action will have no impact on variable grid
-        action = self.detect_noop_action(state.variable_grid, state.fixed_grid, action , state.agent_location)
+        action = self.detect_noop_action(
+            state.variable_grid, state.fixed_grid, action, state.agent_location
+        )
 
         next_variable_grid, next_agent_location = jax.lax.cond(
             jnp.all(action == -1),
