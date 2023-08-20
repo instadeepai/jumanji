@@ -29,7 +29,7 @@ Board: TypeAlias = chex.Array
 @dataclass
 class State:
     """
-    board: the game board, each element is a space for a possible peg. True corresponds
+    board: the board, each element is a space for a possible peg. True corresponds
         to a peg and False corresponds to a hole. Even though the whole grid is stored,
         only a cross of width 3 and height 3 contains possible positions for storing pegs.
     step_count: the number of steps taken so far.
@@ -48,7 +48,7 @@ class State:
 
 class Observation(NamedTuple):
     """
-    board: the game board, each element is a space for a possible peg. True corresponds
+    board: the board, each element is a space for a possible peg. True corresponds
         to a peg and False corresponds to a hole. Even though the whole grid is stored,
         only a cross of width 3 and height 3 contains possible positions for storing pegs.
     action_mask: array of booleans that indicate the feasible actions, i.e. valid
