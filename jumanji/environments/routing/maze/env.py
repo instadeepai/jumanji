@@ -272,13 +272,13 @@ class Maze(Environment[State]):
         """
 
         def is_move_valid(agent_position: Position, move: chex.Array) -> chex.Array:
-            x, y = jnp.array([agent_position.row, agent_position.col]) + move
+            row, col = jnp.array([agent_position.row, agent_position.col]) + move
             return (
-                (x >= 0)
-                & (x < self.num_cols)
-                & (y >= 0)
-                & (y < self.num_rows)
-                & ~(walls[x, y])
+                (row >= 0)
+                & (row < self.num_rows)
+                & (col >= 0)
+                & (col < self.num_cols)
+                & ~(walls[row, col])
             )
 
         # vmap over the moves.

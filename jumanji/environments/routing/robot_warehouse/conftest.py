@@ -44,7 +44,7 @@ def robot_warehouse_env() -> RobotWarehouse:
 
     env = RobotWarehouse(
         generator=generator,
-        time_limit=5,
+        time_limit=10,
     )
     return env
 

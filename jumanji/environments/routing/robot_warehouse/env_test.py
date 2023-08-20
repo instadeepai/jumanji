@@ -127,12 +127,9 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     new_state2, timestep2 = step_fn(state, action2)
     assert not jnp.all(new_state1.grid != new_state2.grid)
 
-    jax.debug.print("grid: {g}", g=state.grid)
-
     # Check that the state update and timestep creation work as expected
     agents = state.agents
     agent = tree_slice(agents, 1)
-    jax.debug.print("agents: {g}", g=agents)
     x = agent.position.x
     y = agent.position.y
 
@@ -207,7 +204,7 @@ def test_robot_warehouse__truncate_upon_collision(
     step_fn = jax.jit(robot_warehouse_env.step)
 
     # actions for agent 1 to collide with agent 2
-    actions = [3, 1, 1, 3, 1, 1, 1]
+    actions = [3, 3, 1, 1, 3, 1, 1, 1]
 
     # take actions until collision
     for action in actions:
@@ -217,3 +214,23 @@ def test_robot_warehouse__truncate_upon_collision(
     # TODO: uncomment once we have changed termination
     # in the env code to truncation (also see above)
     # assert not jnp.all(timestep.discount == 0)
+
+
+def test_robot_warehouse__reward_in_goal(
+    deterministic_robot_warehouse_env: Tuple[RobotWarehouse, State, TimeStep]
+) -> None:
+    """Validate goal reward behavior."""
+    robot_warehouse_env, state, timestep = deterministic_robot_warehouse_env
+    step_fn = jax.jit(robot_warehouse_env.step)
+
+    # actions for agent 1 to deliver shelf to goal
+    actions = [4, 1, 2, 1, 1, 1, 3]
+
+    # check no reward is given when not at goal state
+    for action in actions:
+        state, timestep = step_fn(state, jnp.array([0, action]))
+        assert timestep.reward == 0
+
+    # final step to delivery shelf
+    state, timestep = step_fn(state, jnp.array([0, 1]))
+    assert timestep.reward == 1
