@@ -18,6 +18,7 @@ promise
 pymdown-extensions
 pytest==7.0.1
 pytest-cov
+pytest-lazy-fixture
 pytest-mock
 pytest-parallel
 pytest-xdist
