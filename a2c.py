@@ -113,9 +113,6 @@ class A2CAgent:
         data: Transition,
         key: chex.PRNGKey
     ) -> Tuple[float, Tuple[ActingState, Dict]]:
-        parametric_action_distribution = (
-            self.actor_critic_networks.parametric_action_distribution
-        )
         value_apply = self.actor_critic_networks.value_network.apply
 
 
@@ -136,7 +133,11 @@ class A2CAgent:
             self.actor_critic_networks.parametric_action_distribution
         )
 
-        logits = jax.vmap(policy_network.apply, in_axes=(None, 0))(params.actor, data.observation)
+        # logits.shape, raw_action.shape, log_prob.shape, action.shape
+        # ((1, 18), (1,), (1,), (1, 3))
+        logits = jax.vmap(policy_network.apply, in_axes=(None, 0))(
+            params.actor, data.observation)
+        # (10, 16, 18) shape
         chex.assert_equal_shape((logits, data.logits))
         log_prob = jax.vmap(jax.vmap(parametric_action_distribution.log_prob))(
             logits[:, :, None], parametric_action_distribution.inverse_postprocess(data.action))
