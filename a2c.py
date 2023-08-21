@@ -223,12 +223,12 @@ class A2CAgent:
         Returns:
             shape (n_steps, batch_size_per_device, *)
         """
-        policy = self.make_policy(policy_params=policy_params, stochastic=True)
 
         def run_one_step(
-            acting_state: ActingState, key: chex.PRNGKey
+            acting_state: ActingState, key: chex.PRNGKey, policy_params: hk.Params,
         ) -> Tuple[ActingState, Transition]:
             timestep = acting_state.timestep
+            policy = self.make_policy(policy_params=policy_params, stochastic=True)
             action, (log_prob, logits) = policy(timestep.observation, key)
             next_env_state, next_timestep = self.env.step(acting_state.state, action)
 
@@ -261,7 +261,7 @@ class A2CAgent:
 
         datas = []
         for i in range(self.n_steps):
-            acting_state, data = run_one_step(acting_state, acting_keys[i])
+            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i], policy_params)
             datas.append(data)
 
         def func(args):
