@@ -129,6 +129,20 @@ class A2CAgent:
         )
 
         value = jax.vmap(value_apply, in_axes=(None, 0))(params.critic, observation)
+
+        # EDIT: recalculate logits and policy
+        policy_network = self.actor_critic_networks.policy_network
+        parametric_action_distribution = (
+            self.actor_critic_networks.parametric_action_distribution
+        )
+
+        logits = jax.vmap(policy_network.apply, in_axes=(None, 0))(params.actor, data.observation)
+        chex.assert_equal_shape((logits, data.logits))
+        log_prob = jax.vmap(jax.vmap(parametric_action_distribution.log_prob))(
+            logits[:, :, None], parametric_action_distribution.inverse_postprocess(data.action))
+        log_prob = jnp.squeeze(log_prob, axis=-1)
+        chex.assert_equal_shape((data.log_prob, log_prob))
+
         discounts = jnp.asarray(self.discount_factor * data.discount, float)
         value_tm1 = value[:-1]
         value_t = value[1:]
@@ -155,11 +169,11 @@ class A2CAgent:
         if self.normalize_advantage:
             metrics.update(unnormalized_advantage=jnp.mean(advantage))
             advantage = jax.nn.standardize(advantage)
-        policy_loss = -jnp.mean(jax.lax.stop_gradient(advantage) * data.log_prob)
+        policy_loss = -jnp.mean(jax.lax.stop_gradient(advantage) * log_prob)
 
         # Compute the entropy loss, i.e. negative of the entropy.
         entropy = jnp.mean(
-            parametric_action_distribution.entropy(data.logits, key)
+            parametric_action_distribution.entropy(logits, key)
         )
         entropy_loss = -entropy
 
