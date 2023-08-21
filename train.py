@@ -40,8 +40,10 @@ from jumanji.training.setup_train import _setup_actor_critic_neworks
 import optax
 
 
-@hydra.main(config_path="configs", config_name="config.yaml")
+
 def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: bool = False) -> None:
+    print(f"gpu acting {gpu_acting}")
+
     logging.info(omegaconf.OmegaConf.to_yaml(cfg))
     logging.getLogger().setLevel(logging.INFO)
     logging.info({"devices": jax.local_devices()})
