@@ -36,8 +36,8 @@ from jumanji.viewer import Viewer
 class Solitaire(Environment[State]):
     """Environment for peg solitaire. This is a one player game played on a board with pegs. At each
     move, a player selects a peg to jump over another peg into a free space and removes the
-    intermediate peg. The game ends no more moves are possible, which may include an empty board
-    where all the pegs have been removed.
+    intermediate peg. The game ends no more moves are possible, including when there is only one peg
+    remaining, the winning position.
 
     - observation: `Observation`
         - board: jax array (bool) of shape (board_size, board_size)
@@ -89,7 +89,7 @@ class Solitaire(Environment[State]):
         self.mid_size = board_size // 2
 
         # Create viewer used for rendering
-        self._viewer = viewer or SolitaireViewer("solitaire", board_size)
+        self._viewer = viewer or SolitaireViewer("Solitaire", board_size)
 
     def __repr__(self) -> str:
         """String representation of the environment.

@@ -165,6 +165,7 @@ class SolitaireViewer(Viewer):
         board = jnp.flip(board, 0)
         board_size = int(self._board_size)
 
+        ax.set_facecolor(self.COLORS["bg"])
         ax.set_xticks(jnp.arange(-0.5, board_size + 0.5, 1))
         ax.set_yticks(jnp.arange(-0.5, board_size + 0.5, 1))
         ax.tick_params(
