@@ -129,7 +129,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
                 training_state, metrics = epoch_fn(training_state)
                 jax.block_until_ready((training_state, metrics))
             logger.write(
-                data=utils.first_from_device(metrics),
+                data=metrics,
                 label="train",
                 env_steps=env_steps,
             )
