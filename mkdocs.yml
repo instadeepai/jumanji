@@ -22,6 +22,7 @@ nav:
           - GraphColoring: environments/graph_coloring.md
           - Minesweeper: environments/minesweeper.md
           - RubiksCube: environments/rubiks_cube.md
+          - Solitaire: environments/solitaire.md
           - Sudoku: environments/sudoku.md
       - Packing:
           - BinPack: environments/bin_pack.md
@@ -51,6 +52,7 @@ nav:
               - GraphColoring: api/environments/graph_coloring.md
               - Minesweeper: api/environments/minesweeper.md
               - RubiksCube: api/environments/rubiks_cube.md
+              - Solitaire: api/environments/solitaire.md
               - Sudoku: api/environments/sudoku.md
           - Packing:
               - BinPack: api/environments/bin_pack.md

@@ -34,7 +34,10 @@ from jumanji.viewer import Viewer
 
 
 class Solitaire(Environment[State]):
-    """Environment for peg solitaire. https://en.wikipedia.org/wiki/Peg_solitaire
+    """Environment for peg solitaire. This is a one player game played on a board with pegs. At each
+    move, a player selects a peg to jump over another peg into a free space and removes the
+    intermediate peg. The game ends no more moves are possible, which may include an empty board
+    where all the pegs have been removed.
 
     - observation: `Observation`
         - board: jax array (bool) of shape (board_size, board_size)
