@@ -219,6 +219,73 @@ class A2CAgent:
         policy_params: hk.Params,
         acting_state: ActingState,
     ) -> Tuple[ActingState, Transition]:
+        if self.gpu_acting:
+            return self.rollout_gpu(policy_params, acting_state)
+        else:
+            return self.rollout_cpu(policy_params, acting_state)
+
+    def rollout_gpu(
+        self,
+        policy_params: hk.Params,
+        acting_state: ActingState,
+    ) -> Tuple[ActingState, Transition]:
+        """Rollout for training purposes.
+        Returns:
+            shape (n_steps, batch_size_per_device, *)
+        """
+        policy = self.make_policy(policy_params=policy_params, stochastic=True)
+
+        def run_one_step(
+            acting_state: ActingState, key: chex.PRNGKey
+        ) -> Tuple[ActingState, Transition]:
+            timestep = acting_state.timestep
+            action, (log_prob, logits) = policy(timestep.observation, key)
+            next_env_state, next_timestep = self.env.step(acting_state.state, action)
+
+            acting_state = ActingState(
+                state=next_env_state,
+                timestep=next_timestep,
+                key=key,
+                episode_count=acting_state.episode_count + next_timestep.last().sum(),
+                # + jax.lax.psum(next_timestep.last().sum(), "devices"),
+                env_step_count=acting_state.env_step_count + self.batch_size_per_device,
+                # + jax.lax.psum(self.batch_size_per_device, "devices"),
+            )
+
+            transition = Transition(
+                observation=timestep.observation,
+                action=action,
+                reward=next_timestep.reward,
+                discount=next_timestep.discount,
+                next_observation=next_timestep.observation,
+                log_prob=log_prob,
+                logits=logits,
+                extras=next_timestep.extras,
+            )
+
+            return acting_state, transition
+
+        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
+            (self.n_steps, -1)
+        )
+
+        datas = []
+        for i in range(self.n_steps):
+            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i])
+            datas.append(data)
+
+        def func(args):
+            return jnp.stack(args)
+
+        data = jax.tree_map(lambda *xs: func(xs), *datas)
+        return acting_state, data
+
+
+    def rollout_cpu(
+        self,
+        policy_params: hk.Params,
+        acting_state: ActingState,
+    ) -> Tuple[ActingState, Transition]:
         """Rollout for training purposes.
         Returns:
             shape (n_steps, batch_size_per_device, *)
@@ -234,8 +301,7 @@ class A2CAgent:
         ) -> Tuple[ActingState, Transition]:
             timestep = acting_state.timestep
             action, (log_prob, logits) = policy_forward(policy_params, timestep.observation, key)
-            device = jax.devices("gpu")[0] if self.gpu_acting else jax.devices("cpu")[0]
-            print(f"acting device {device}")
+            device = jax.devices("cpu")[0]
             env_state, action = jax.device_put((acting_state.state, action), device=device)
             next_env_state, next_timestep = jax.jit(self.env.step)(env_state, action)
             next_env_state, next_timestep, acting_state, action = jax.device_put((next_env_state, next_timestep,
