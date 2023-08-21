@@ -41,7 +41,7 @@ import optax
 
 
 @hydra.main(config_path="configs", config_name="config.yaml")
-def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
+def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: bool = False) -> None:
     logging.info(omegaconf.OmegaConf.to_yaml(cfg))
     logging.getLogger().setLevel(logging.INFO)
     logging.info({"devices": jax.local_devices()})
@@ -63,6 +63,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
         l_pg=cfg.env.a2c.l_pg,
         l_td=cfg.env.a2c.l_td,
         l_en=cfg.env.a2c.l_en,
+        gpu_acting=gpu_acting
     )
     stochastic_eval, greedy_eval = setup_evaluators(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)

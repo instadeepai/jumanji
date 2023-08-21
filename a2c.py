@@ -18,7 +18,7 @@ from jumanji.training.types import (
     Transition,
 )
 
-from jumanji.training.agents.a2c import a2c_agent
+# from jumanji.training.agents.a2c import a2c_agent
 
 
 class A2CAgent:
@@ -35,9 +35,10 @@ class A2CAgent:
         l_pg: float,
         l_td: float,
         l_en: float,
+        gpu_acting: bool
     ) -> None:
         super().__init__()
-
+        self.gpu_acting = gpu_acting
         # Hack from Agent class
         self.total_batch_size = total_batch_size
         num_devices = jax.local_device_count()
@@ -260,7 +261,9 @@ class A2CAgent:
 
         datas = []
         for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step, backend='cpu')(acting_state, acting_keys[i])
+            acting_state, data = jax.jit(run_one_step, backend='gpu' if
+                        self.gpu_acting else 'cpu')(acting_state, acting_keys[i])
+
             datas.append(data)
 
         def func(args):
@@ -284,6 +287,7 @@ if __name__ == '__main__':
     env = "rubiks_cube"  # @param ['bin_pack', 'cleaner', 'connector', 'cvrp', 'game_2048', 'graph_coloring', 'job_shop', 'knapsack', 'maze', 'minesweeper', 'mmst', 'multi_cvrp', 'robot_warehouse', 'rubiks_cube', 'snake', 'sudoku', 'tetris', 'tsp']
     agent = "a2c"  # @param ['random', 'a2c']
     batch_size = 32
+    gpu_acting = False
 
     def download_file(url: str, file_path: str) -> None:
         # Send an HTTP GET request to the URL
@@ -310,5 +314,5 @@ if __name__ == '__main__':
                                  "env.training.total_batch_size=16"])
         cfg.env.network.dense_layer_dims = [16, ]
 
-    train(cfg)
+    train(cfg, gpu_acting=gpu_acting)
 
