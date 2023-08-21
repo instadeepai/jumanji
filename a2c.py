@@ -2,6 +2,7 @@ import functools
 from typing import Any, Callable, Dict, Tuple
 
 import chex
+import distrax
 import haiku as hk
 import jax
 import jax.numpy as jnp
@@ -139,9 +140,11 @@ class A2CAgent:
             params.actor, data.observation)
         # (10, 16, 18) shape
         chex.assert_equal_shape((logits, data.logits))
-        log_prob = jax.vmap(jax.vmap(parametric_action_distribution.log_prob))(
-            logits[:, :, None], parametric_action_distribution.inverse_postprocess(data.action))
-        log_prob = jnp.squeeze(log_prob, axis=-1)
+        # log_prob = jax.vmap(jax.vmap(parametric_action_distribution.log_prob))(
+        #     logits[:, :, None], parametric_action_distribution.inverse_postprocess(data.action))
+        # log_prob = jnp.squeeze(log_prob, axis=-1)
+        log_prob = distrax.Categorical(logits=logits).log_prob(
+            jnp.squeeze(parametric_action_distribution.inverse_postprocess(data.action)))
         chex.assert_equal_shape((data.log_prob, log_prob))
 
         discounts = jnp.asarray(self.discount_factor * data.discount, float)
