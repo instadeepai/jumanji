@@ -260,7 +260,7 @@ class A2CAgent:
 
         datas = []
         for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i])
+            acting_state, data = jax.jit(run_one_step, backend='cpu')(acting_state, acting_keys[i])
             datas.append(data)
 
         def func(args):
