@@ -83,10 +83,22 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: boo
     def epoch_fn(training_state: TrainingState) -> Tuple[TrainingState, Dict]:
         training_state = jax.tree_map(lambda x: x[0], training_state)
 
+        if not gpu_acting:
+            policy_params, acting_state = jax.device_put((training_state.params_state.params.actor,
+                                                          training_state.acting_state),
+                                                         device=jax.devices("cpu")[0])
+        else:
+            policy_params, acting_state = (training_state.params_state.params.actor,
+                                                          training_state.acting_state)
+
         acting_state, data = agent.rollout(
-            policy_params=training_state.params_state.params.actor,
-            acting_state=training_state.acting_state,
+            policy_params=policy_params,
+            acting_state=acting_state,
         )  # data.shape == (T, B, ...)
+
+        if not gpu_acting:
+            acting_state, data = jax.device_put((acting_state, data), device=jax.devices()[0])
+
         training_state = training_state._replace(acting_state=acting_state)
         training_state, metrics = jax.jit(agent.gradient_step)(training_state, data)
         metrics = jax.tree_util.tree_map(jnp.mean, metrics)
