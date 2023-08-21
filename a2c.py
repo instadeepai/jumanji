@@ -223,14 +223,24 @@ class A2CAgent:
         Returns:
             shape (n_steps, batch_size_per_device, *)
         """
-        policy = self.make_policy(policy_params=policy_params, stochastic=True)
+
+        @jax.jit
+        def policy_forward(policy_params, observation, key):
+            policy = self.make_policy(policy_params=policy_params, stochastic=True)
+            return policy(observation, key)
 
         def run_one_step(
             acting_state: ActingState, key: chex.PRNGKey
         ) -> Tuple[ActingState, Transition]:
             timestep = acting_state.timestep
-            action, (log_prob, logits) = policy(timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
+            action, (log_prob, logits) = policy_forward(policy_params, timestep.observation, key)
+            device = jax.devices("gpu")[0] if self.gpu_acting else jax.devices("cpu")[0]
+            print(f"acting device {device}")
+            env_state, action = jax.device_put((acting_state.state, action), device=device)
+            next_env_state, next_timestep = jax.jit(self.env.step)(env_state, action)
+            next_env_state, next_timestep, acting_state, action = jax.device_put((next_env_state, next_timestep,
+                                                                                  acting_state, action),
+                                                                         device=jax.devices()[0])
 
             acting_state = ActingState(
                 state=next_env_state,
@@ -261,8 +271,7 @@ class A2CAgent:
 
         datas = []
         for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step, backend='gpu' if
-                        self.gpu_acting else 'cpu')(acting_state, acting_keys[i])
+            acting_state, data = run_one_step(acting_state, acting_keys[i])
 
             datas.append(data)
 
