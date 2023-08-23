@@ -39,6 +39,7 @@ from jumanji.environments import (
     RobotWarehouse,
     RubiksCube,
     Snake,
+    Solitaire,
     Sudoku,
     Tetris,
 )
@@ -192,6 +193,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
         random_policy = networks.make_random_policy_graph_coloring()
+    elif cfg.env.name == "solitaire":
+        assert isinstance(env.unwrapped, Solitaire)
+        random_policy = networks.make_random_policy_solitaire(solitaire=env.unwrapped)
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy

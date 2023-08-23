@@ -1,0 +1,12 @@
+name: solitaire
+registered_version: Solitaire-v0
+
+training:
+    num_epochs: 200
+    num_learner_steps_per_epoch: 500
+    n_steps: 20
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 1024
+    greedy_eval_total_batch_size: 1024
