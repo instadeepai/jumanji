@@ -370,6 +370,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
+    elif cfg.env.name == "solitaire":
+        assert isinstance(env.unwrapped, Solitaire)
+        actor_critic_networks = networks.make_actor_critic_networks_solitaire(
+            solitaire=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return actor_critic_networks

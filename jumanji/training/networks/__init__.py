@@ -74,6 +74,9 @@ from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,
 )
 from jumanji.training.networks.snake.random import make_random_policy_snake
+from jumanji.training.networks.solitaire.actor_critic import (
+    make_actor_critic_networks_solitaire,
+)
 from jumanji.training.networks.solitaire.random import make_random_policy_solitaire
 from jumanji.training.networks.sudoku.actor_critic import (
     make_cnn_actor_critic_networks_sudoku,

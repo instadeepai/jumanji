@@ -1,12 +1,26 @@
 name: solitaire
 registered_version: Solitaire-v0
 
+network:
+    num_channels: 32
+    policy_layers: [64, 64]
+    value_layers: [128, 128]
+
 training:
     num_epochs: 200
-    num_learner_steps_per_epoch: 500
-    n_steps: 20
-    total_batch_size: 128
+    num_learner_steps_per_epoch: 100
+    n_steps: 50
+    total_batch_size: 256
 
 evaluation:
     eval_total_batch_size: 1024
     greedy_eval_total_batch_size: 1024
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 1.0
+    bootstrapping_factor: 0.97
+    l_pg: 1.0
+    l_td: .5
+    l_en: 0.01
+    learning_rate: 1e-3
