@@ -82,58 +82,73 @@ def test_get_reward(
     assert jnp.all(reward == expected_reward)
 
 
-def test__get_agent_obs(
-    level_based_foraging_env: LevelBasedForaging,
-    agents: Agent,
-    agent_grid: chex.Array,
-    food_grid: chex.Array,
-):
-    # agent grid
-    # [1, 2, 0],
-    # [2, 0, 2],
-    # [0, 0, 0],
+# def test__get_agent_obs(
+#     level_based_foraging_env: LevelBasedForaging,
+#     agents: Agent,
+#     agent_grid: chex.Array,
+#     food_grid: chex.Array,
+# ):
+#     # agent grid
+#     # [1, 2, 0],
+#     # [2, 0, 2],
+#     # [0, 0, 0],
+#
+#     # food grid
+#     # [0, 0, 0],
+#     # [0, 4, 0],
+#     # [3, 0, 0],
+#
+#     # pad the grids as they should be before passing to this fn
+#     agent_grid = jnp.pad(
+#         agent_grid,
+#         pad_width=level_based_foraging_env._fov,
+#         mode="constant",
+#         constant_values=-1,
+#     )
+#     food_grid = jnp.pad(
+#         food_grid,
+#         pad_width=level_based_foraging_env._fov,
+#         mode="constant",
+#         constant_values=-1,
+#     )
+#
+#     agent0 = tree_slice(agents, 0)
+#     agent0_view, agent0_action_mask = level_based_foraging_env._get_agent_obs(
+#         agent0, agent_grid, food_grid
+#     )
+#
+#     expected_agent_0_view = jnp.array(
+#         [
+#             [
+#                 # other agents
+#                 [-1, -1, -1],
+#                 [-1, 1, 2],
+#                 [-1, 2, 0],
+#             ],
+#             [
+#                 # foods
+#                 [-1, -1, -1],
+#                 [-1, 0, 0],
+#                 [-1, 0, 4],
+#             ],
+#             [
+#                 # access (where can the agent go?)
+#                 [0, 0, 0],
+#                 [0, 1, 0],
+#                 [0, 0, 0],
+#             ],
+#         ]
+#     )
+#
+#     assert jnp.all(agent0_view == expected_agent_0_view)
+#     assert jnp.all(
+#         agent0_action_mask == jnp.array([True, False, False, False, False, True])
+#     )
+#
+#     # todo: test another agent
 
-    # food grid
-    # [0, 0, 0],
-    # [0, 4, 0],
-    # [3, 0, 0],
 
-    agent0 = tree_slice(agents, 0)
-    agent0_view, agent0_action_mask = level_based_foraging_env._get_agent_obs(
-        agent0, agent_grid, food_grid
-    )
-    expected_agent_0_view = jnp.array(
-        [
-            [
-                # other agents
-                [-1, -1, -1],
-                [-1, 1, 2],
-                [-1, 2, 0],
-            ],
-            [
-                # foods
-                [-1, -1, -1],
-                [-1, 0, 0],
-                [-1, 0, 4],
-            ],
-            [
-                # access (where can the agent go?)
-                [0, 0, 0],
-                [0, 1, 0],
-                [0, 0, 0],
-            ],
-        ]
-    )
-
-    assert jnp.all(agent0_view == expected_agent_0_view)
-    assert jnp.all(
-        agent0_action_mask == jnp.array([True, False, False, False, False, True])
-    )
-
-    # todo: test another agent
-
-
-def test__state_to_timestep(level_based_foraging_env: LevelBasedForaging):
+def test__state_to_obs(level_based_foraging_env: LevelBasedForaging):
     pass
 
 
@@ -149,5 +164,5 @@ def test_step_done(level_based_foraging_env: LevelBasedForaging):
     pass
 
 
-# def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging):
-#     check_env_does_not_smoke(level_based_foraging_env)
+def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging):
+    check_env_does_not_smoke(level_based_foraging_env)

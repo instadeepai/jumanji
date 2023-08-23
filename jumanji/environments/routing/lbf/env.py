@@ -9,7 +9,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.lbf.constants import LOAD, MOVES
 from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
-from jumanji.environments.routing.lbf.types import Agent, Food, Observation, State
+from jumanji.environments.routing.lbf.types import Food, Observation, State
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -66,8 +66,8 @@ class LevelBasedForaging(Environment[State]):
 
         observation = self._state_to_obs(state)
         # First condition is truncation, second is termination. Jumanji doesn't support truncation yet.
-        done = state.step_count >= self._time_limit | jnp.all(state.foods.eaten)
-        timestep = jax.lax.cond(done, termination, transition, observation, reward)
+        done = state.step_count + 1 >= self._time_limit | jnp.all(state.foods.eaten)
+        timestep = jax.lax.cond(done, termination, transition, reward, observation)
 
         return state, timestep
 
@@ -102,54 +102,65 @@ class LevelBasedForaging(Environment[State]):
             """Returns the reward for a single agent given it's level if it was adjacent."""
             reward = adj_level_if_eaten * food.level
             normalizer = total_adj_level * self._generator.num_food
-            return reward / normalizer
+            # often the case that no agents are adjacent to the food so we need to avoid dividing by 0
+            return jnp.nan_to_num(reward / normalizer)
 
         return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)
 
     def _state_to_obs(self, state: State) -> Observation:
-        grid = jnp.zeros((self._generator.grid_size, self._generator.grid_size))
-        agent_grid = jax.vmap(utils.place_agent_on_grid, (0, None))(state.agents, grid)
-        food_grid = jax.vmap(utils.place_food_on_grid, (0, None))(state.foods, grid)
+        grid_size = self._generator.grid_size
+        grid = jnp.zeros((grid_size, grid_size), dtype=jnp.int32)
+        agent_grids = jax.vmap(utils.place_agent_on_grid, (0, None))(state.agents, grid)
+        food_grids = jax.vmap(utils.place_food_on_grid, (0, None))(state.foods, grid)
 
-        grids, action_masks = jax.vmap(self._get_agent_obs, (0, None, None))(
-            state.agents, agent_grid, food_grid
+        agent_grid = jnp.sum(agent_grids, axis=0)
+        food_grid = jnp.sum(food_grids, axis=0)
+
+        # pad the grid so obs cannot go out of bounds
+        agent_grid = jnp.pad(agent_grid, self._fov, constant_values=-1)
+        food_grid = jnp.pad(food_grid, self._fov, constant_values=-1)
+
+        # get the indexes to slice in the grid to obtain the view around the agent
+        slice_len = 2 * self._fov + 1, 2 * self._fov + 1
+        slice_xs, slice_ys = jax.vmap(utils.slice_around, (0, None))(
+            state.agents.position, self._fov
         )
 
+        # slice agent and food grids to obtain the view around the agent
+        agents_view = jax.vmap(jax.lax.dynamic_slice, in_axes=(None, 0, None))(
+            agent_grid, (slice_xs, slice_ys), slice_len
+        )
+        foods_view = jax.vmap(jax.lax.dynamic_slice, in_axes=(None, 0, None))(
+            food_grid, (slice_xs, slice_ys), slice_len
+        )
+        # compute access mask (action mask in the observation); noop is always available
+        access_masks = (agents_view + foods_view) == 0
+        access_masks = access_masks.at[:, self._fov, self._fov].set(True)
+
+        # compute action mask
+        local_pos = jnp.array([self._fov, self._fov])
+        action_mask = jax.vmap(
+            lambda access_mask: jax.vmap(lambda mv: access_mask[tuple(local_pos + mv)])(
+                MOVES
+            ),
+        )(access_masks)
+
         return Observation(
-            agent_views=grids,
-            action_mask=action_masks,
+            agent_views=jnp.stack([agents_view, foods_view, access_masks], axis=1),
+            action_mask=action_mask,
             step_count=state.step_count,
         )
 
-    # This is the new observation that lbf offers.
-    # The old obs was used in the paper, but these obs make more sense and are implemented
-    # in the original repo.
-    def _get_agent_obs(
-        self, agent: Agent, agent_grid: chex.Array, food_grid: chex.Array
-    ) -> Tuple[chex.Array, chex.Array]:
-        slice_coords = utils.slice_around(agent.position, self._fov)
-
-        agent_view = jnp.pad(agent_grid, self._fov, constant_values=-1)[slice_coords]
-        food_view = jnp.pad(food_grid, self._fov, constant_values=-1)[slice_coords]
-        access_mask = (agent_view + food_view) == 0
-        # noop is always available
-        access_mask = access_mask.at[self._fov, self._fov].set(True)
-
-        # todo: should this be it's own function?
-        local_pos = jnp.array([self._fov, self._fov])
-        action_mask = jax.vmap(lambda mv: access_mask[tuple(local_pos + mv)])(MOVES)
-
-        return jnp.stack([agent_view, food_view, access_mask]), action_mask
-
     def observation_spec(self) -> specs.Spec[Observation]:
-        grid = specs.BoundedArray(
-            shape=(self._generator.grid_size, self._generator.grid_size),
+        max_ob = jnp.max(
+            jnp.array([self._generator.max_food_level, self._generator.max_agent_level])
+        )
+        agent_views = specs.BoundedArray(
+            shape=(self._generator.num_agents, 3, self._fov * 2 + 1, self._fov * 2 + 1),
             dtype=jnp.int32,
-            name="grid",
-            minimum=0,
-            maximum=jnp.max(
-                self._generator.max_food_level, self._generator.max_agent_level
-            ),
+            name="agent_views",
+            minimum=-1,
+            maximum=max_ob,
         )
 
         action_mask = specs.BoundedArray(
@@ -169,7 +180,7 @@ class LevelBasedForaging(Environment[State]):
         return specs.Spec(
             Observation,
             "ObservationSpec",
-            grid=grid,
+            agent_views=agent_views,
             action_mask=action_mask,
             step_count=step_count,
         )
@@ -184,7 +195,7 @@ class LevelBasedForaging(Environment[State]):
             observation_spec: `MultiDiscreteArray` of shape (num_agents,).
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([6] * self._generator.num_agents),
+            num_values=jnp.array([len(MOVES)] * self._generator.num_agents),
             dtype=jnp.int32,
             name="action",
         )

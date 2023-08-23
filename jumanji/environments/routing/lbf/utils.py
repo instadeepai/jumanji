@@ -12,6 +12,12 @@ def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     """Return the grid with the agent placed on it."""
     x, y = agent.position
     return grid.at[x, y].set(agent.level)
+    # jax.debug.print("ag pos: {a}, {b}", a=x, b=y)
+    # print(f"x, y = {x.shape}, {y.shape}")
+
+    # I don't like this, but can't find a better way to index a 2D array with another 2D array
+    # inds = jax.vmap(tuple)(agent.position)
+    # return grid.at[inds].set(agent.level)
 
 
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
@@ -77,7 +83,10 @@ def flag_duplicates(a: chex.Array):
         a = jnp.array([1, 2, 3, 2, 1, 5])
         flag_duplicates(a)  # jnp.array([True, False, True, False, True, True])
     """
-    _, indices, counts = jnp.unique(a, return_inverse=True, return_counts=True, axis=0)
+    # https://stackoverflow.com/a/11528078/5768407
+    _, indices, counts = jnp.unique(
+        a, return_inverse=True, return_counts=True, size=len(a), axis=0
+    )
     return ~(counts[indices] == 1)
 
 
@@ -103,11 +112,15 @@ def fix_collisions(moved_agents: Agent, orig_agents: Agent) -> Agent:
     )
 
 
-def slice_around(pos: chex.Array, fov: int):
-    """Return a slice that when used to index a grid will return a 2*fov+1 x 2*fov+1 sub-grid centered around pos."""
+def slice_around(pos: chex.Array, fov: int) -> Tuple[chex.Array, chex.Array]:
+    """Return the start and length of a slice that when used to index a grid will
+    return a 2*fov+1 x 2*fov+1 sub-grid centered around pos.
+
+    Returns are meant to be used with a `jax.lax.dynamic_slice`
+    """
     # because we pad the grid by fov we need to shift the pos to the position it will be in the padded grid
     shifted_pos = pos + fov
-    return (
-        slice(shifted_pos[0] - fov, shifted_pos[0] + fov + 1),
-        slice(shifted_pos[1] - fov, shifted_pos[1] + fov + 1),
-    )
+
+    start_x = shifted_pos[0] - fov
+    start_y = shifted_pos[1] - fov
+    return start_x, start_y

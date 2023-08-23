@@ -9,8 +9,27 @@ from jumanji.environments.routing.lbf.utils import (
     fix_collisions,
     is_adj,
     move,
+    place_agent_on_grid,
     slice_around,
 )
+
+
+def test_place_agent_on_grid(agent1: Agent, agents: Agent) -> None:
+    grid = jnp.zeros((3, 3))
+
+    expected_agent_1_grid = jnp.array([[0, agent1.level, 0], [0, 0, 0], [0, 0, 0]])
+    assert jnp.all(place_agent_on_grid(agent1, grid) == expected_agent_1_grid)
+
+    agent_grids = jax.vmap(place_agent_on_grid, (0, None))(agents, grid)
+    expected_grids = jnp.array(
+        [
+            [[1, 0, 0], [0, 0, 0], [0, 0, 0]],
+            expected_agent_1_grid,
+            [[0, 0, 0], [2, 0, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 0, 1], [0, 0, 0]],
+        ]
+    )
+    assert jnp.all(agent_grids == expected_grids)
 
 
 def test_move(agent1: Agent, foods: Food) -> None:
@@ -120,7 +139,7 @@ def test_slice_around():
 
     # slice around pos
     slice_coords = slice_around(pos, fov)
-    slice = grid[slice_coords]
+    slice = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
 
     assert jnp.all(slice == expected_slice)
 
@@ -137,5 +156,5 @@ def test_slice_around():
     )
 
     slice_coords = slice_around(pos, fov)
-    slice = grid[slice_coords]
+    slice = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
     assert jnp.all(slice == expected_slice)
