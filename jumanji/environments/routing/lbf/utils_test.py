@@ -32,6 +32,10 @@ def test_place_agent_on_grid(agent1: Agent, agents: Agent) -> None:
     assert jnp.all(agent_grids == expected_grids)
 
 
+def test_place_food_on_grid(foods: Food) -> None:
+    pass
+
+
 def test_move(agent1: Agent, foods: Food) -> None:
     # agent 1 is at [0, 1] and can move to [0, 0] or [0, 2].
     # But there is a food at [1, 1] so it cannot move there.

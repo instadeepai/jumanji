@@ -12,12 +12,6 @@ def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     """Return the grid with the agent placed on it."""
     x, y = agent.position
     return grid.at[x, y].set(agent.level)
-    # jax.debug.print("ag pos: {a}, {b}", a=x, b=y)
-    # print(f"x, y = {x.shape}, {y.shape}")
-
-    # I don't like this, but can't find a better way to index a 2D array with another 2D array
-    # inds = jax.vmap(tuple)(agent.position)
-    # return grid.at[inds].set(agent.level)
 
 
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
