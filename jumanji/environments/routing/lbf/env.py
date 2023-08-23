@@ -108,11 +108,12 @@ class LevelBasedForaging(Environment[State]):
         return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)
 
     def _state_to_obs(self, state: State) -> Observation:
+        # get grids with only agents and grid with only foods
         grid_size = self._generator.grid_size
         grid = jnp.zeros((grid_size, grid_size), dtype=jnp.int32)
         agent_grids = jax.vmap(utils.place_agent_on_grid, (0, None))(state.agents, grid)
         food_grids = jax.vmap(utils.place_food_on_grid, (0, None))(state.foods, grid)
-
+        # join all agents into 1 grid and all food into 1 grid
         agent_grid = jnp.sum(agent_grids, axis=0)
         food_grid = jnp.sum(food_grids, axis=0)
 
@@ -139,10 +140,10 @@ class LevelBasedForaging(Environment[State]):
 
         # compute action mask
         local_pos = jnp.array([self._fov, self._fov])
-        action_mask = jax.vmap(
-            lambda access_mask: jax.vmap(lambda mv: access_mask[tuple(local_pos + mv)])(
-                MOVES
-            ),
+        action_mask = jax.vmap(  # vmap over all access masks
+            lambda access_mask: jax.vmap(  # vmap over all moves
+                lambda mv: access_mask[tuple(local_pos + mv)]
+            )(MOVES)
         )(access_masks)
 
         return Observation(
