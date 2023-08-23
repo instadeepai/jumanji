@@ -68,8 +68,8 @@ been used by another agent.
 
 
 ## Reward
-An agent recieves a reward of 10.0 every step it gets a valid connection, a reward of -1.0 if it does not
-connect and an extra penalty of -1.0 if choses an invalid action.
+At every step, an agent receives a reward of 10.0 if it gets a valid connection, a reward of -1.0 if it does not
+connect and an extra penalty of -1.0 if it chooses an invalid action.
 
 The total step reward is the sum of rewards per agent.
 

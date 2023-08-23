@@ -642,7 +642,7 @@ def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
     Returns:
         Numpy array or nested dictionary of numpy arrays.
     """
-    if isinstance(observation, chex.Array):
+    if isinstance(observation, jnp.ndarray):
         return np.asarray(observation)
     elif hasattr(observation, "__dict__"):
         # Applies to various containers including `chex.dataclass`

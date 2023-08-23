@@ -1,20 +1,20 @@
 name: cleaner
 registered_version: Cleaner-v0
 
+network:
+  num_conv_channels: [4, 4, 1]
+  policy_layers: [64]
+  value_layers: [128]
+
 training:
     num_epochs: 300
     num_learner_steps_per_epoch: 500
     n_steps: 10
     total_batch_size: 128
 
-network:
-  num_conv_channels: [4, 4, 1]
-  policy_layers: [64]
-  value_layers: [128]
-
 evaluation:
-    eval_total_batch_size: 500
-    greedy_eval_total_batch_size: 500
+    eval_total_batch_size: 512
+    greedy_eval_total_batch_size: 512
 
 a2c:
     normalize_advantage: False
