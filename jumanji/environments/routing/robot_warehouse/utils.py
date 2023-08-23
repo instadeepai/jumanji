@@ -145,7 +145,7 @@ def calculate_num_observation_features(sensor_range: chex.Array) -> chex.Array:
     """
     num_obs_sensors = (1 + 2 * sensor_range) ** 2
     obs_features = 8  # agent's own features
-    obs_features += (num_obs_sensors - 1) * 5  # other agent features
+    obs_features += num_obs_sensors * 5  # other agent features
     obs_features += num_obs_sensors * 2  # shelf features
     return jnp.array(obs_features, jnp.int32)
 
@@ -238,13 +238,11 @@ def make_agent_observation(
     )
 
     # function for writing receptive field cells
-    def write_no_agent(
-        obs: chex.Array, idx: int, _: int, is_self: bool
-    ) -> Tuple[chex.Array, int]:
+    def write_no_agent(obs: chex.Array, idx: int) -> Tuple[chex.Array, int]:
         "Write information for empty agent cell."
         # if there is no agent we set a 0 and all zeros
         # for the direction as well, i.e. [0, 0, 0, 0, 0]
-        idx = jax.lax.cond(is_self, lambda i: i, lambda i: move_writer_index(i, 5), idx)
+        idx = move_writer_index(idx, 5)
         return obs, idx
 
     def write_agent(
@@ -271,26 +269,20 @@ def make_agent_observation(
         return obs, idx
 
     def agent_sensor_scan(
-        obs_idx_and_agent_id: Tuple[chex.Array, chex.Array, chex.Array],
+        obs_and_idx: Tuple[chex.Array, chex.Array, chex.Array],
         agent_sensor: chex.Array,
     ) -> Tuple[Tuple[chex.Array, chex.Array, chex.Array], None]:
         """Write agent observation with agent sensor information
         of other agents.
         """
-        obs, idx, agent_id = obs_idx_and_agent_id
-        sensor_check_for_self = jnp.equal(agent_sensor, agent_id + 1)
-        sensor_check_for_self_or_no_other = jnp.logical_or(
-            jnp.equal(agent_sensor, 0),
-            sensor_check_for_self,
-        )
+        obs, idx = obs_and_idx
         obs, idx = jax.lax.cond(
-            sensor_check_for_self_or_no_other,
+            jnp.equal(agent_sensor, 0),
             write_no_agent,
             write_agent,
             obs,
             idx,
             agent_sensor,
-            sensor_check_for_self,
         )
         return (obs, idx, agent_id), None
 
@@ -311,9 +303,7 @@ def make_agent_observation(
         )
         return (obs, idx), None
 
-    (obs, idx, _), _ = jax.lax.scan(
-        agent_sensor_scan, (obs, idx, agent_id), agents_grid
-    )
+    (obs, idx), _ = jax.lax.scan(agent_sensor_scan, (obs, idx), agents_grid)
     (obs, _), _ = jax.lax.scan(shelf_sensor_scan, (obs, idx), shelves_grid)
     return obs
 

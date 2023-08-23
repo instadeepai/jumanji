@@ -344,11 +344,11 @@ def test_robot_warehouse_utils__calculate_num_observation_features() -> None:
     vector based on sensor range."""
     sensor_range = 1
     num_obs_features = calculate_num_observation_features(sensor_range)
-    assert num_obs_features == 66
+    assert num_obs_features == 71
 
     sensor_range = 2
     num_obs_features = calculate_num_observation_features(sensor_range)
-    assert num_obs_features == 178
+    assert num_obs_features == 183
 
 
 def test_robot_warehouse_utils__observation_writer(
