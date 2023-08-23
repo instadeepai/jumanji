@@ -1,3 +1,17 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Optional, Tuple
 
 import chex
@@ -18,7 +32,7 @@ class LevelBasedForaging(Environment[State]):
         self,
         generator: Optional[UniformRandomGenerator] = None,
         fov: int = 1,
-        time_limit=500,
+        time_limit: int = 500,
     ) -> None:
         super().__init__()
 
@@ -65,7 +79,8 @@ class LevelBasedForaging(Environment[State]):
         )
 
         observation = self._state_to_obs(state)
-        # First condition is truncation, second is termination. Jumanji doesn't support truncation yet.
+        # First condition is truncation, second is termination.
+        # Jumanji doesn't support truncation yet...
         done = state.step_count + 1 >= self._time_limit | jnp.all(state.foods.eaten)
         timestep = jax.lax.cond(done, termination, transition, reward, observation)
 
@@ -102,7 +117,8 @@ class LevelBasedForaging(Environment[State]):
             """Returns the reward for a single agent given it's level if it was adjacent."""
             reward = adj_level_if_eaten * food.level
             normalizer = total_adj_level * self._generator.num_food
-            # often the case that no agents are adjacent to the food so we need to avoid dividing by 0
+            # often the case that no agents are adjacent to the food
+            # so we need to avoid dividing by 0
             return jnp.nan_to_num(reward / normalizer)
 
         return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)
@@ -189,8 +205,9 @@ class LevelBasedForaging(Environment[State]):
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec for the Level Based Foraging environment.
 
-        6 actions: [0,1,2,3,4,5] -> [No Op, Up, Right, Down, Left, Load]. Since this is an environment with
-        a multi-dimensional action space, it expects an array of actions of shape (num_agents,).
+        6 actions: [0,1,2,3,4,5] -> [No Op, Up, Right, Down, Left, Load].
+        Since this is an environment with a multi-dimensional action space,
+        it expects an array of actions of shape (num_agents,).
 
         Returns:
             observation_spec: `MultiDiscreteArray` of shape (num_agents,).

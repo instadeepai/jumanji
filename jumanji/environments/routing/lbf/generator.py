@@ -13,13 +13,12 @@
 # limitations under the License.
 
 import abc
-from typing import Any, Tuple
+from typing import Tuple
 
 import chex
 import jax
 from jax import numpy as jnp
 
-from jumanji.environments.routing.lbf.constants import AGENT, FOOD
 from jumanji.environments.routing.lbf.types import Agent, Food, State
 
 
@@ -101,7 +100,9 @@ class UniformRandomGenerator(Generator):
         mask = mask.at[left].set(False)
         mask = mask.at[right].set(False)
 
-        def take_positions(mask, key):
+        def take_positions(
+            mask: chex.Array, key: chex.PRNGKey
+        ) -> Tuple[chex.Array, chex.Array]:
             food_pos = jax.random.choice(key=key, a=flat_size, shape=(), p=mask)
             # mask out all adj positions so no foods are placed next to eachother
             adj_positions = jnp.array(

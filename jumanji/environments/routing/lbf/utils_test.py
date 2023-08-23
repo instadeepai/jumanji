@@ -1,3 +1,17 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import chex
 import jax
 import jax.numpy as jnp
@@ -61,7 +75,7 @@ def test_move(agent1: Agent, foods: Food) -> None:
 
 def test_is_adj(
     agents: Agent, agent0: Agent, agent1: Agent, agent2: Agent, agent3: Agent
-):
+) -> None:
     assert is_adj(agent0, agent1)
     assert is_adj(agent0, agent2)
     assert not is_adj(agent0, agent3)
@@ -81,20 +95,20 @@ def test_eat(agents: Agent, food0: Food, food1: Food) -> None:
 
     # check that food 0 can be eaten
     new_food0, eaten_food0, adj_agents = eat(all_loading_agents, food0)
-    assert new_food0.eaten == True
-    assert eaten_food0 == True
+    assert new_food0.eaten
+    assert eaten_food0
     assert jnp.all(adj_agents == agents.level * jnp.array([0, 1, 1, 1]))
 
     # check that food 1 cannot be eaten
     new_food1, eaten_food1, adj_agents = eat(all_loading_agents, food1)
-    assert new_food1.eaten == False
-    assert eaten_food1 == False
+    assert not new_food1.eaten
+    assert not eaten_food1
     assert jnp.all(adj_agents == agents.level * jnp.array([0, 0, 1, 0]))
 
     # check that if food is already eaten, it cannot be eaten again
     new_food0, eaten_food0, adj_agents = eat(all_loading_agents, new_food0)
-    assert new_food0.eaten == True
-    assert eaten_food0 == False
+    assert new_food0.eaten
+    assert not eaten_food0
     assert jnp.all(adj_agents == agents.level * jnp.array([0, 1, 1, 1]))
 
 
@@ -102,7 +116,7 @@ def test_flag_duplicates() -> None:
     pass
 
 
-def test_fix_collisions(agents: Agent):
+def test_fix_collisions(agents: Agent) -> None:
     # agents original postions: [[0, 0], [0, 1], [1, 0], [1, 2]]
 
     # fake moves for agents:
@@ -125,7 +139,7 @@ def test_fix_collisions(agents: Agent):
     chex.assert_trees_all_equal(new_agents, expected_agents)
 
 
-def test_slice_around():
+def test_slice_around() -> None:
     pos = jnp.array([1, 1])
     fov = 1
 
@@ -143,9 +157,9 @@ def test_slice_around():
 
     # slice around pos
     slice_coords = slice_around(pos, fov)
-    slice = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
+    view = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
 
-    assert jnp.all(slice == expected_slice)
+    assert jnp.all(view == expected_slice)
 
     # slice around pos with fov=2
     fov = 2
@@ -160,5 +174,5 @@ def test_slice_around():
     )
 
     slice_coords = slice_around(pos, fov)
-    slice = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
-    assert jnp.all(slice == expected_slice)
+    view = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
+    assert jnp.all(view == expected_slice)

@@ -1,15 +1,28 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
 from jumanji.environments.routing.lbf.types import Agent, Food, State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
-from jumanji.tree_utils import tree_slice
 
 
 def test_get_reward(
     level_based_foraging_env: LevelBasedForaging, agents: Agent, foods: Food
-):
+) -> None:
     adj_food0_level = jnp.array([0.0, agents.level[1], agents.level[2], 0.0])
     adj_food1_level = jnp.array([0.0, 0.0, agents.level[2], 0.0])
     adj_agent_levels = jnp.array([adj_food0_level, adj_food1_level])
@@ -29,7 +42,7 @@ def test__reward_per_food(
     agents: Agent,
     food0: Food,
     food1: Food,
-):
+) -> None:
     # what is the level of agents adjacent to food0
     adj_food0_level = jnp.array(
         [
@@ -84,7 +97,7 @@ def test__reward_per_food(
 
 def test__state_to_obs(
     level_based_foraging_env: LevelBasedForaging, agents: Agent, foods: Food
-):
+) -> None:
     # agent grid
     # [1, 2, 0],
     # [2, 0, 1],
@@ -150,17 +163,17 @@ def test__state_to_obs(
     )
 
 
-def test_reset(level_based_foraging_env: LevelBasedForaging):
+def test_reset(level_based_foraging_env: LevelBasedForaging) -> None:
     pass
 
 
-def test_step(level_based_foraging_env: LevelBasedForaging):
+def test_step(level_based_foraging_env: LevelBasedForaging) -> None:
     pass
 
 
-def test_step_done(level_based_foraging_env: LevelBasedForaging):
+def test_step_done(level_based_foraging_env: LevelBasedForaging) -> None:
     pass
 
 
-def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging):
+def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging) -> None:
     check_env_does_not_smoke(level_based_foraging_env)
