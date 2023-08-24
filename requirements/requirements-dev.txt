@@ -5,9 +5,9 @@ importlib-metadata<5.0
 isort==5.11.5
 livereload
 mkdocs==1.2.3
-mkdocs-git-revision-date-plugin
-mkdocs-include-markdown-plugin
-mkdocs-material
+mkdocs-git-revision-date-plugin==0.3.2
+mkdocs-include-markdown-plugin==4.0.4
+mkdocs-material==8.2.7
 mkdocs-mermaid2-plugin==0.6.0
 mkdocstrings==0.18.0
 mknotebooks==0.7.1
