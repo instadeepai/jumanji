@@ -1,3 +1,17 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import functools
 from typing import Any, Callable, Dict, Tuple
 
@@ -19,8 +33,6 @@ from jumanji.training.types import (
     Transition,
 )
 
-# from jumanji.training.agents.a2c import a2c_agent
-
 
 class A2CAgent:
     def __init__(
@@ -36,10 +48,8 @@ class A2CAgent:
         l_pg: float,
         l_td: float,
         l_en: float,
-        gpu_acting: bool
     ) -> None:
         super().__init__()
-        self.gpu_acting = gpu_acting
         # Hack from Agent class
         self.total_batch_size = total_batch_size
         num_devices = jax.local_device_count()
@@ -79,19 +89,18 @@ class A2CAgent:
         )
         return params_state
 
-    def gradient_step(self,
-                  training_state: TrainingState,
-                  data: Transition,
-                  ) -> Tuple[TrainingState, Dict]:
+    def gradient_step(
+        self,
+        training_state: TrainingState,
+        data: Transition,
+    ) -> Tuple[TrainingState, Dict]:
         if not isinstance(training_state.params_state, ParamsState):
             raise TypeError(
                 "Expected params_state to be of type ParamsState, got "
                 f"type {type(training_state.params_state)}."
             )
         grad, metrics = jax.grad(self.a2c_loss, has_aux=True)(
-            training_state.params_state.params,
-            data,
-            training_state.acting_state.key
+            training_state.params_state.params, data, training_state.acting_state.key
         )
         # grad, metrics = jax.lax.pmean((grad, metrics), "devices")
         updates, opt_state = self.optimizer.update(
@@ -109,13 +118,9 @@ class A2CAgent:
         return training_state, metrics
 
     def a2c_loss(
-        self,
-        params: ActorCriticParams,
-        data: Transition,
-        key: chex.PRNGKey
+        self, params: ActorCriticParams, data: Transition, key: chex.PRNGKey
     ) -> Tuple[float, Tuple[ActingState, Dict]]:
         value_apply = self.actor_critic_networks.value_network.apply
-
 
         last_observation = jax.tree_util.tree_map(
             lambda x: x[-1], data.next_observation
@@ -137,14 +142,16 @@ class A2CAgent:
         # logits.shape, raw_action.shape, log_prob.shape, action.shape
         # ((1, 18), (1,), (1,), (1, 3))
         logits = jax.vmap(policy_network.apply, in_axes=(None, 0))(
-            params.actor, data.observation)
+            params.actor, data.observation
+        )
         # (10, 16, 18) shape
         chex.assert_equal_shape((logits, data.logits))
         # log_prob = jax.vmap(jax.vmap(parametric_action_distribution.log_prob))(
         #     logits[:, :, None], parametric_action_distribution.inverse_postprocess(data.action))
         # log_prob = jnp.squeeze(log_prob, axis=-1)
         log_prob = distrax.Categorical(logits=logits).log_prob(
-            jnp.squeeze(parametric_action_distribution.inverse_postprocess(data.action)))
+            jnp.squeeze(parametric_action_distribution.inverse_postprocess(data.action))
+        )
         chex.assert_equal_shape((data.log_prob, log_prob))
 
         discounts = jnp.asarray(self.discount_factor * data.discount, float)
@@ -176,9 +183,7 @@ class A2CAgent:
         policy_loss = -jnp.mean(jax.lax.stop_gradient(advantage) * log_prob)
 
         # Compute the entropy loss, i.e. negative of the entropy.
-        entropy = jnp.mean(
-            parametric_action_distribution.entropy(logits, key)
-        )
+        entropy = jnp.mean(parametric_action_distribution.entropy(logits, key))
         entropy_loss = -entropy
 
         total_loss = (
@@ -243,21 +248,24 @@ class A2CAgent:
         """
 
         def run_one_step(
-            acting_state: ActingState, key: chex.PRNGKey, policy_params: hk.Params,
+            acting_state: ActingState,
+            key: chex.PRNGKey,
+            policy_params: hk.Params,
         ) -> Tuple[ActingState, Transition]:
             timestep = acting_state.timestep
-            policy = self.make_policy(policy_params=policy_params, stochastic=True)
-            action, (log_prob, logits) = policy(timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
+            with jax.default_device(jax.devices("cpu")[0]):
+                policy = self.make_policy(policy_params=policy_params, stochastic=True)
+                action, (log_prob, logits) = policy(timestep.observation, key)
+                next_env_state, next_timestep = self.env.step(
+                    acting_state.state, action
+                )
 
             acting_state = ActingState(
                 state=next_env_state,
                 timestep=next_timestep,
                 key=key,
                 episode_count=acting_state.episode_count + next_timestep.last().sum(),
-                # + jax.lax.psum(next_timestep.last().sum(), "devices"),
                 env_step_count=acting_state.env_step_count + self.batch_size_per_device,
-                # + jax.lax.psum(self.batch_size_per_device, "devices"),
             )
 
             transition = Transition(
@@ -277,226 +285,24 @@ class A2CAgent:
             (self.n_steps, -1)
         )
 
-        datas = []
-        for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i], policy_params)
-            datas.append(data)
-
-        def func(args):
-            return jnp.stack(args)
-
-        data = jax.tree_map(lambda *xs: func(xs), *datas)
-        return acting_state, data
-
-    # def rollout(
-    #     self,
-    #     policy_params: hk.Params,
-    #     acting_state: ActingState,
-    # ) -> Tuple[ActingState, Transition]:
-    #     if self.gpu_acting:
-    #         return self.rollout_gpu(policy_params, acting_state)
-    #     else:
-    #         return self.rollout_cpu(policy_params, acting_state)
-
-    def rollout_gpu(
-        self,
-        policy_params: hk.Params,
-        acting_state: ActingState,
-    ) -> Tuple[ActingState, Transition]:
-        """Rollout for training purposes.
-        Returns:
-            shape (n_steps, batch_size_per_device, *)
-        """
-        policy = self.make_policy(policy_params=policy_params, stochastic=True)
-
-        def run_one_step(
-            acting_state: ActingState, key: chex.PRNGKey
-        ) -> Tuple[ActingState, Transition]:
-            timestep = acting_state.timestep
-            action, (log_prob, logits) = policy(timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
-
-            acting_state = ActingState(
-                state=next_env_state,
-                timestep=next_timestep,
-                key=key,
-                episode_count=acting_state.episode_count + next_timestep.last().sum(),
-                # + jax.lax.psum(next_timestep.last().sum(), "devices"),
-                env_step_count=acting_state.env_step_count + self.batch_size_per_device,
-                # + jax.lax.psum(self.batch_size_per_device, "devices"),
-            )
-
-            transition = Transition(
-                observation=timestep.observation,
-                action=action,
-                reward=next_timestep.reward,
-                discount=next_timestep.discount,
-                next_observation=next_timestep.observation,
-                log_prob=log_prob,
-                logits=logits,
-                extras=next_timestep.extras,
-            )
-
-            return acting_state, transition
-
-        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
-            (self.n_steps, -1)
+        acting_state, data = jax.lax.scan(
+            lambda c, x: run_one_step(c, x, policy_params), acting_state, acting_keys
         )
-
-        datas = []
-        for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i])
-            datas.append(data)
-
-        def func(args):
-            return jnp.stack(args)
-
-        data = jax.tree_map(lambda *xs: func(xs), *datas)
-        return acting_state, data
-
-    def rollout_cpu(
-        self,
-        policy_params: hk.Params,
-        acting_state: ActingState,
-    ) -> Tuple[ActingState, Transition]:
-        """Rollout for training purposes.
-        Returns:
-            shape (n_steps, batch_size_per_device, *)
-        """
-        policy_params, acting_state = jax.device_put((policy_params, acting_state), device=jax.devices("cpu")[0])
-
-
-        policy = self.make_policy(policy_params=policy_params, stochastic=True)
-
-        def run_one_step(
-            acting_state: ActingState, key: chex.PRNGKey
-        ) -> Tuple[ActingState, Transition]:
-            timestep = acting_state.timestep
-            action, (log_prob, logits) = policy(timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
-
-            acting_state = ActingState(
-                state=next_env_state,
-                timestep=next_timestep,
-                key=key,
-                episode_count=acting_state.episode_count + next_timestep.last().sum(),
-                # + jax.lax.psum(next_timestep.last().sum(), "devices"),
-                env_step_count=acting_state.env_step_count + self.batch_size_per_device,
-                # + jax.lax.psum(self.batch_size_per_device, "devices"),
-            )
-
-            transition = Transition(
-                observation=timestep.observation,
-                action=action,
-                reward=next_timestep.reward,
-                discount=next_timestep.discount,
-                next_observation=next_timestep.observation,
-                log_prob=log_prob,
-                logits=logits,
-                extras=next_timestep.extras,
-            )
-
-            return acting_state, transition
-
-        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
-            (self.n_steps, -1)
-        )
-
-        datas = []
-        for i in range(self.n_steps):
-            acting_state, data = jax.jit(run_one_step)(acting_state, acting_keys[i])
-            datas.append(data)
-
-        def func(args):
-            return jnp.stack(args)
-
-        data = jax.tree_map(lambda *xs: func(xs), *datas)
-        acting_state, data = jax.device_put((acting_state, data), device=jax.devices()[0])
         return acting_state, data
 
 
-    def rollout_cpu_v1(
-        self,
-        policy_params: hk.Params,
-        acting_state: ActingState,
-    ) -> Tuple[ActingState, Transition]:
-        """Rollout for training purposes.
-        Returns:
-            shape (n_steps, batch_size_per_device, *)
-        """
-
-        @jax.jit
-        def policy_forward(policy_params, observation, key):
-            policy = self.make_policy(policy_params=policy_params, stochastic=True)
-            return policy(observation, key)
-
-        def run_one_step(
-            acting_state: ActingState, key: chex.PRNGKey
-        ) -> Tuple[ActingState, Transition]:
-            timestep = acting_state.timestep
-            action, (log_prob, logits) = policy_forward(policy_params, timestep.observation, key)
-            device = jax.devices("cpu")[0]
-            env_state, action = jax.device_put((acting_state.state, action), device=device)
-            next_env_state, next_timestep = jax.jit(self.env.step)(env_state, action)
-            next_env_state, next_timestep, acting_state, action = jax.device_put((next_env_state, next_timestep,
-                                                                                  acting_state, action),
-                                                                         device=jax.devices()[0])
-
-            acting_state = ActingState(
-                state=next_env_state,
-                timestep=next_timestep,
-                key=key,
-                episode_count=acting_state.episode_count + next_timestep.last().sum(),
-                # + jax.lax.psum(next_timestep.last().sum(), "devices"),
-                env_step_count=acting_state.env_step_count + self.batch_size_per_device,
-                # + jax.lax.psum(self.batch_size_per_device, "devices"),
-            )
-
-            transition = Transition(
-                observation=timestep.observation,
-                action=action,
-                reward=next_timestep.reward,
-                discount=next_timestep.discount,
-                next_observation=next_timestep.observation,
-                log_prob=log_prob,
-                logits=logits,
-                extras=next_timestep.extras,
-            )
-
-            return acting_state, transition
-
-        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
-            (self.n_steps, -1)
-        )
-
-        datas = []
-        for i in range(self.n_steps):
-            acting_state, data = run_one_step(acting_state, acting_keys[i])
-
-            datas.append(data)
-
-        def func(args):
-            return jnp.stack(args)
-
-        data = jax.tree_map(lambda *xs: func(xs), *datas)
-        return acting_state, data
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Note: we can use `n_step` = batch_size * `n_step` and batch size of 1 to get environment with no-parellelelizm.
 
+    import os
 
-    from train import train
+    import requests
     from hydra import compose, initialize
 
-    import os
-    import requests
-
+    from train import train
 
     env = "rubiks_cube"  # @param ['bin_pack', 'cleaner', 'connector', 'cvrp', 'game_2048', 'graph_coloring', 'job_shop', 'knapsack', 'maze', 'minesweeper', 'mmst', 'multi_cvrp', 'robot_warehouse', 'rubiks_cube', 'snake', 'sudoku', 'tetris', 'tsp']
     agent = "a2c"  # @param ['random', 'a2c']
-    batch_size = 32
-    gpu_acting = False
 
     def download_file(url: str, file_path: str) -> None:
         # Send an HTTP GET request to the URL
@@ -508,7 +314,6 @@ if __name__ == '__main__':
         else:
             print("Failed to download the file.")
 
-
     os.makedirs("configs", exist_ok=True)
     config_url = "https://raw.githubusercontent.com/instadeepai/jumanji/main/jumanji/training/configs/config.yaml"
     download_file(config_url, "configs/config.yaml")
@@ -516,12 +321,19 @@ if __name__ == '__main__':
     os.makedirs("configs/env", exist_ok=True)
     download_file(env_url, f"configs/env/{env}.yaml")
 
-
     with initialize(version_base=None, config_path="configs"):
-        cfg = compose(config_name="config.yaml",
-                      overrides=[f"env={env}", f"agent={agent}", "logger.type=terminal", "logger.save_checkpoint=true",
-                                 "env.training.total_batch_size=16"])
-        cfg.env.network.dense_layer_dims = [16, ]
+        cfg = compose(
+            config_name="config.yaml",
+            overrides=[
+                f"env={env}",
+                f"agent={agent}",
+                "logger.type=terminal",
+                "logger.save_checkpoint=false",
+                "env.training.total_batch_size=16",
+            ],
+        )
+        cfg.env.network.dense_layer_dims = [
+            16,
+        ]
 
-    train(cfg, gpu_acting=gpu_acting)
-
+    train(cfg)

@@ -68,6 +68,7 @@ class Evaluator:
         if isinstance(self.agent, RandomAgent):
             acting_policy = policy
         else:
+
             def acting_policy(observation: Any, key: chex.PRNGKey) -> chex.Array:
                 action, _ = policy(observation, key)
                 return action

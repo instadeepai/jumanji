@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
 import logging
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
-import hydra
 import jax
 import jax.numpy as jnp
 import omegaconf
+import optax
 from tqdm.auto import trange
 
+from a2c import A2CAgent
 from jumanji.training import utils
 from jumanji.training.agents.random import RandomAgent
 from jumanji.training.loggers import TerminalLogger
 from jumanji.training.setup_train import (
-    setup_agent,
+    _setup_actor_critic_neworks,
     setup_env,
     setup_evaluators,
     setup_logger,
@@ -35,15 +35,8 @@ from jumanji.training.setup_train import (
 from jumanji.training.timer import Timer
 from jumanji.training.types import TrainingState
 
-from a2c import A2CAgent
-from jumanji.training.setup_train import _setup_actor_critic_neworks
-import optax
 
-
-
-def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: bool = False) -> None:
-    print(f"gpu acting {gpu_acting}")
-
+def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
     logging.info(omegaconf.OmegaConf.to_yaml(cfg))
     logging.getLogger().setLevel(logging.INFO)
     logging.info({"devices": jax.local_devices()})
@@ -65,7 +58,6 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: boo
         l_pg=cfg.env.a2c.l_pg,
         l_td=cfg.env.a2c.l_td,
         l_en=cfg.env.a2c.l_en,
-        gpu_acting=gpu_acting
     )
     stochastic_eval, greedy_eval = setup_evaluators(cfg, agent)
     training_state = setup_training_state(env, agent, init_key)
@@ -79,31 +71,30 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False, gpu_acting: boo
         out_var_name="metrics", num_steps_per_timing=num_steps_per_epoch
     )
 
-
     def epoch_fn(training_state: TrainingState) -> Tuple[TrainingState, Dict]:
-        training_state = jax.tree_map(lambda x: x[0], training_state)
+        def one_epoch_fn(
+            training_state: TrainingState, x: Any
+        ) -> Tuple[TrainingState, Dict]:
+            training_state = jax.tree_map(lambda x: x[0], training_state)
 
-        if not gpu_acting:
-            policy_params, acting_state = jax.device_put((training_state.params_state.params.actor,
-                                                          training_state.acting_state),
-                                                         device=jax.devices("cpu")[0])
-        else:
-            policy_params, acting_state = (training_state.params_state.params.actor,
-                                                          training_state.acting_state)
+            acting_state, data = agent.rollout(
+                policy_params=training_state.params_state.params.actor,
+                acting_state=training_state.acting_state,
+            )  # data.shape == (T, B, ...)
 
-        acting_state, data = agent.rollout(
-            policy_params=policy_params,
-            acting_state=acting_state,
-        )  # data.shape == (T, B, ...)
+            training_state = training_state._replace(acting_state=acting_state)
+            training_state, metrics = agent.gradient_step(training_state, data)
+            metrics = jax.tree_util.tree_map(jnp.mean, metrics)
 
-        if not gpu_acting:
-            acting_state, data = jax.device_put((acting_state, data), device=jax.devices()[0])
+            training_state = jax.tree_map(lambda x: x[None], training_state)
+            return training_state, metrics
 
-        training_state = training_state._replace(acting_state=acting_state)
-        training_state, metrics = jax.jit(agent.gradient_step)(training_state, data)
+        training_state, metrics = jax.lax.scan(
+            one_epoch_fn,
+            training_state,
+            length=cfg.env.training.num_learner_steps_per_epoch,
+        )
         metrics = jax.tree_util.tree_map(jnp.mean, metrics)
-
-        training_state = jax.tree_map(lambda x: x[None], training_state)
         return training_state, metrics
 
     with jax.log_compiles(log_compiles), logger:
