@@ -130,6 +130,37 @@ class LevelBasedForaging(Environment[State]):
 
     def _state_to_obs(self, state: State) -> Observation:
         # get grids with only agents and grid with only foods
+        # obs_size = 3 * self._generator.num_agents + 3 * self._generator.num_food
+        num_agents = self._generator.num_agents
+        num_food = self._generator.num_food
+        init_vals = jnp.array([-1, -1, 0])
+        obs = jnp.tile(init_vals, num_food + num_agents)
+        food_ys = jnp.where(
+            state.foods.eaten, jnp.zeros(num_food) - 1, state.foods.position[:, 0]
+        )
+        food_xs = jnp.where(
+            state.foods.eaten, jnp.zeros(num_food) - 1, state.foods.position[:, 1]
+        )
+        agent_ys = state.agents.position[:, 0]
+        agent_xs = state.agents.position[:, 1]
+
+        obs = obs.at[jnp.arange(0, 3 * num_food, 3)].set(food_ys)
+        obs = obs.at[jnp.arange(1, 3 * num_food, 3)].set(food_xs)
+        obs = obs.at[jnp.arange(2, 3 * num_food, 3)].set(
+            state.foods.level * ~state.foods.eaten
+        )
+
+        obs = obs.at[jnp.arange(3 * num_food, 3 * num_food + 3 * num_agents, 3)].set(
+            agent_ys
+        )
+        obs = obs.at[
+            jnp.arange(3 * num_food + 1, 3 * num_food + 3 * num_agents, 3)
+        ].set(agent_xs)
+        obs = obs.at[
+            jnp.arange(3 * num_food + 2, 3 * num_food + 3 * num_agents, 3)
+        ].set(state.agents.level)
+
+        # other method - gets the action mask
         grid_size = self._generator.grid_size
         grid = jnp.zeros((grid_size, grid_size), dtype=jnp.int32)
         agent_grids = jax.vmap(utils.place_agent_on_grid, (0, None))(state.agents, grid)
@@ -168,7 +199,7 @@ class LevelBasedForaging(Environment[State]):
         )(access_masks)
 
         return Observation(
-            agent_views=jnp.stack([agents_view, foods_view, access_masks], axis=1),
+            agent_views=obs,
             action_mask=action_mask,
             step_count=state.step_count,
         )
@@ -178,7 +209,10 @@ class LevelBasedForaging(Environment[State]):
             jnp.array([self._generator.max_food_level, self._generator.max_agent_level])
         )
         agent_views = specs.BoundedArray(
-            shape=(self._generator.num_agents, 3, self._fov * 2 + 1, self._fov * 2 + 1),
+            shape=(
+                self._generator.num_agents,
+                self._generator.num_food * 3 + self._generator.num_agents * 3,
+            ),
             dtype=jnp.int32,
             name="agent_views",
             minimum=-1,
