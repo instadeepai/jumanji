@@ -23,7 +23,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.lbf.constants import LOAD, MOVES
 from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
-from jumanji.environments.routing.lbf.types import Food, Observation, State
+from jumanji.environments.routing.lbf.types import Agent, Food, Observation, State
 from jumanji.types import TimeStep, restart, termination, transition
 
 
@@ -132,33 +132,63 @@ class LevelBasedForaging(Environment[State]):
         # get grids with only agents and grid with only foods
         # obs_size = 3 * self._generator.num_agents + 3 * self._generator.num_food
         num_agents = self._generator.num_agents
-        num_food = self._generator.num_food
-        init_vals = jnp.array([-1, -1, 0])
-        obs = jnp.tile(init_vals, num_food + num_agents)
-        food_ys = jnp.where(
-            state.foods.eaten, jnp.zeros(num_food) - 1, state.foods.position[:, 0]
-        )
-        food_xs = jnp.where(
-            state.foods.eaten, jnp.zeros(num_food) - 1, state.foods.position[:, 1]
-        )
-        agent_ys = state.agents.position[:, 0]
-        agent_xs = state.agents.position[:, 1]
 
-        obs = obs.at[jnp.arange(0, 3 * num_food, 3)].set(food_ys)
-        obs = obs.at[jnp.arange(1, 3 * num_food, 3)].set(food_xs)
-        obs = obs.at[jnp.arange(2, 3 * num_food, 3)].set(
-            state.foods.level * ~state.foods.eaten
-        )
+        def make_obs(agent: Agent):
+            neighbour_agents = (
+                jnp.linalg.norm(agent.position - state.agents.position, axis=-1)
+                <= jnp.sqrt(2)
+            ) & ~(agent.id == state.agents.id)
 
-        obs = obs.at[jnp.arange(3 * num_food, 3 * num_food + 3 * num_agents, 3)].set(
-            agent_ys
-        )
-        obs = obs.at[
-            jnp.arange(3 * num_food + 1, 3 * num_food + 3 * num_agents, 3)
-        ].set(agent_xs)
-        obs = obs.at[
-            jnp.arange(3 * num_food + 2, 3 * num_food + 3 * num_agents, 3)
-        ].set(state.agents.level)
+            neighbour_foods = (
+                jnp.linalg.norm(agent.position - state.foods.position, axis=-1)
+                <= jnp.sqrt(2)
+            ) & ~state.foods.eaten
+
+            num_agents = self._generator.num_agents
+            num_food = self._generator.num_food
+            init_vals = jnp.array([-1, -1, 0])
+            obs = jnp.tile(init_vals, num_food + num_agents)
+            food_ys = jnp.where(neighbour_foods, state.foods.position[:, 0], -1)
+            food_xs = jnp.where(neighbour_foods, state.foods.position[:, 1], -1)
+            food_levels = jnp.where(neighbour_foods, state.foods.level, 0)
+
+            agent_ys = jnp.where(neighbour_agents, state.agents.position[:, 0], -1)
+            agent_xs = jnp.where(neighbour_agents, state.agents.position[:, 1], -1)
+            agent_levels = jnp.where(neighbour_agents, state.agents.level, 0)
+
+            # filter
+            agent_ys_i = jnp.where(agent.id != state.agents.id, size=num_agents - 1)
+            agent_xs_i = jnp.where(agent.id != state.agents.id, size=num_agents - 1)
+            agent_levels_i = jnp.where(agent.id != state.agents.id, size=num_agents - 1)
+            agent_ys = agent_ys[agent_ys_i]
+            agent_xs = agent_xs[agent_xs_i]
+            agent_levels = agent_levels[agent_levels_i]
+
+            obs = obs.at[jnp.arange(0, 3 * num_food, 3)].set(food_ys)
+            obs = obs.at[jnp.arange(1, 3 * num_food, 3)].set(food_xs)
+            obs = obs.at[jnp.arange(2, 3 * num_food, 3)].set(food_levels)
+
+            # current agent always first
+            obs = obs.at[3 * num_food].set(agent.position[0])
+            obs = obs.at[3 * num_food + 1].set(agent.position[1])
+            obs = obs.at[3 * num_food + 2].set(agent.level)
+
+            agent_start_idx = 3 * num_food + 3
+            obs = obs.at[
+                jnp.arange(agent_start_idx, agent_start_idx + 3 * (num_agents - 1), 3)
+            ].set(agent_ys)
+            obs = obs.at[
+                jnp.arange(
+                    agent_start_idx + 1, agent_start_idx + 3 * (num_agents - 1), 3
+                )
+            ].set(agent_xs)
+            obs = obs.at[
+                jnp.arange(
+                    agent_start_idx + 2, agent_start_idx + 3 * (num_agents - 1), 3
+                )
+            ].set(agent_levels)
+
+            return obs
 
         # other method - gets the action mask
         grid_size = self._generator.grid_size
@@ -199,7 +229,7 @@ class LevelBasedForaging(Environment[State]):
         )(access_masks)
 
         return Observation(
-            agent_views=obs,
+            agents_view=jax.vmap(make_obs)(state.agents),
             action_mask=action_mask,
             step_count=state.step_count,
         )
@@ -208,13 +238,13 @@ class LevelBasedForaging(Environment[State]):
         max_ob = jnp.max(
             jnp.array([self._generator.max_food_level, self._generator.max_agent_level])
         )
-        agent_views = specs.BoundedArray(
+        agents_view = specs.BoundedArray(
             shape=(
                 self._generator.num_agents,
                 self._generator.num_food * 3 + self._generator.num_agents * 3,
             ),
             dtype=jnp.int32,
-            name="agent_views",
+            name="agents_view",
             minimum=-1,
             maximum=max_ob,
         )
@@ -236,7 +266,7 @@ class LevelBasedForaging(Environment[State]):
         return specs.Spec(
             Observation,
             "ObservationSpec",
-            agent_views=agent_views,
+            agents_view=agents_view,
             action_mask=action_mask,
             step_count=step_count,
         )

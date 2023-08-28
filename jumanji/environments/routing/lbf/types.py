@@ -69,6 +69,6 @@ class Observation(NamedTuple):
     step_count: (int32) the current episode step.
     """
 
-    agent_views: chex.Array  # (num_agents, grid_size, grid_size)
+    agents_view: chex.Array  # (num_agents, grid_size, grid_size)
     action_mask: chex.Array  # (num_agents, 6)
     step_count: chex.Array  # ()

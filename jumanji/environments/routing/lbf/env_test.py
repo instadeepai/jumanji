@@ -182,7 +182,7 @@ def test_reset(level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey) 
     assert len(state.foods.position) == level_based_foraging_env._generator.num_food
 
     expected_obs_shape = (num_agents, 3, grid_size, grid_size)
-    assert timestep.observation.agent_views.shape == expected_obs_shape
+    assert timestep.observation.agents_view.shape == expected_obs_shape
 
     assert jnp.all(timestep.discount == 1.0)
     assert jnp.all(timestep.reward == 0.0)
@@ -246,8 +246,8 @@ def test_step(
     # seeing as we loaded food and no one moved agent slice should look the same
     assert jnp.all(state.agents.position == next_state.agents.position)
     assert jnp.all(
-        next_timestep.observation.agent_views[:, 0, ...]
-        == timestep.observation.agent_views[:, 0, ...]
+        next_timestep.observation.agents_view[:, 0, ...]
+        == timestep.observation.agents_view[:, 0, ...]
     )
 
     # check food positions
@@ -269,10 +269,10 @@ def test_step(
     )
     assert jnp.all(next_state.foods.eaten == jnp.array([True, False]))
     assert jnp.all(
-        next_timestep.observation.agent_views[:, 1, ...] == expected_foods_view
+        next_timestep.observation.agents_view[:, 1, ...] == expected_foods_view
     )
     assert jnp.all(
-        next_timestep.observation.agent_views[:, 2, ...] == expected_mask_view
+        next_timestep.observation.agents_view[:, 2, ...] == expected_mask_view
     )
 
     # Test agents moving
@@ -361,8 +361,8 @@ def test_step_done_all_eaten(
         ]
     )
 
-    assert jnp.all(timestep.observation.agent_views[:, 1, ...] == expected_foods_view)
-    assert jnp.all(timestep.observation.agent_views[:, 2, ...] == expected_mask_view)
+    assert jnp.all(timestep.observation.agents_view[:, 1, ...] == expected_foods_view)
+    assert jnp.all(timestep.observation.agents_view[:, 2, ...] == expected_mask_view)
 
     adj_levels_food_0 = state.agents.level[jnp.array([1, 2, 3])]
     total_adj_level_food_0 = jnp.sum(adj_levels_food_0)
