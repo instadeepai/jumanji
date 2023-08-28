@@ -31,8 +31,8 @@ class LevelBasedForaging(Environment[State]):
     def __init__(
         self,
         generator: Optional[UniformRandomGenerator] = None,
-        fov: int = 1,
-        time_limit: int = 500,
+        fov: int = 2,
+        time_limit: int = 50,
     ) -> None:
         super().__init__()
 
@@ -137,15 +137,24 @@ class LevelBasedForaging(Environment[State]):
         num_agents = self._generator.num_agents
 
         def make_obs(agent: Agent):
-            neighbour_agents = (
-                jnp.linalg.norm(agent.position - state.agents.position, axis=-1)
-                <= jnp.sqrt(2)
-            ) & ~(agent.id == state.agents.id)
+            dist = jnp.array([self._fov, self._fov])
 
+            neighbour_agents = jnp.all(
+                jnp.abs(agent.position - state.agents.position) <= dist
+            ) & ~(agent.id == state.agents.id)
+            # neighbour_agents = (
+            #     jnp.linalg.norm(agent.position - state.agents.position, axis=-1)
+            #     <= jnp.sqrt(2)
+            # ) & ~(agent.id == state.agents.id)
+
+            # neighbour_foods = (
+            #     jnp.linalg.norm(agent.position - state.foods.position, axis=-1)
+            #     <= jnp.sqrt(2)
+            # ) & ~state.foods.eaten
             neighbour_foods = (
-                jnp.linalg.norm(agent.position - state.foods.position, axis=-1)
-                <= jnp.sqrt(2)
-            ) & ~state.foods.eaten
+                jnp.all(jnp.abs(agent.position - state.foods.position) <= dist)
+                & ~state.foods.eaten
+            )
 
             num_food = self._generator.num_food
             init_vals = jnp.array([-1, -1, 0])
