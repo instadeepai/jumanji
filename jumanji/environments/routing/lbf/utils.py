@@ -44,7 +44,9 @@ def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent
 
     # if position is not in food positions and not out of bounds, move agent
     out_of_bounds = (new_position < 0) | (new_position >= grid_size)
-    invalid_position = jnp.any(jnp.all(new_position == foods.position, axis=1))
+    invalid_position = jnp.any(
+        jnp.all((new_position == foods.position) & ~foods.eaten, axis=1)
+    )
 
     return agent.replace(  # type: ignore
         position=jnp.where(

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import chex
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -25,6 +26,11 @@ from jumanji.tree_utils import tree_transpose
 # AGENT | AGENT | EMPTY
 # AGENT | FOOD  | AGENT
 # FOOD  | EMPTY | EMPTY
+
+
+@pytest.fixture
+def key() -> chex.PRNGKey:
+    return jax.random.PRNGKey(42)
 
 
 @pytest.fixture
@@ -124,4 +130,4 @@ def level_based_foraging_env() -> LevelBasedForaging:
     generator = UniformRandomGenerator(
         grid_size=3, num_agents=4, num_food=2, max_agent_level=2, max_food_level=4
     )
-    return LevelBasedForaging(generator=generator, fov=1, time_limit=500)
+    return LevelBasedForaging(generator=generator, fov=1, time_limit=5)

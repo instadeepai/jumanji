@@ -46,7 +46,7 @@ class LevelBasedForaging(Environment[State]):
         state = self._generator(key)
         observation = self._state_to_obs(state)
 
-        return state, restart(observation)
+        return state, restart(observation, shape=self._generator.num_agents)
 
     def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
         # move agents, fix collisions that may happen and set loading status
@@ -81,8 +81,12 @@ class LevelBasedForaging(Environment[State]):
         observation = self._state_to_obs(state)
         # First condition is truncation, second is termination.
         # Jumanji doesn't support truncation yet...
-        done = state.step_count + 1 >= self._time_limit | jnp.all(state.foods.eaten)
-        timestep = jax.lax.cond(done, termination, transition, reward, observation)
+        done = (state.step_count >= self._time_limit) | jnp.all(state.foods.eaten)
+        timestep = jax.lax.cond(
+            done,
+            lambda: termination(reward, observation, shape=self._generator.num_agents),
+            lambda: transition(reward, observation, shape=self._generator.num_agents),
+        )
 
         return state, timestep
 
@@ -113,12 +117,13 @@ class LevelBasedForaging(Environment[State]):
         # zero out all agents if food was not eaten
         adj_levels_if_eaten = adj_agent_levels * eaten
 
+        # todo: think this can be done through normal broadcasting
         def _reward(adj_level_if_eaten: chex.Numeric, food: Food) -> chex.Array:
             """Returns the reward for a single agent given it's level if it was adjacent."""
             reward = adj_level_if_eaten * food.level
             normalizer = total_adj_level * self._generator.num_food
-            # often the case that no agents are adjacent to the food
-            # so we need to avoid dividing by 0
+            # It's often the case that no agents are adjacent to the food
+            # so we need to avoid dividing by 0 -> nan_to_num
             return jnp.nan_to_num(reward / normalizer)
 
         return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)

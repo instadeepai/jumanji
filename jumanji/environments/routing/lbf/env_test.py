@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
 import jax
 import jax.numpy as jnp
+from jax.random import PRNGKey
 
+from jumanji.environments.routing.lbf.constants import DOWN, LOAD, NOOP, RIGHT
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
 from jumanji.environments.routing.lbf.types import Agent, Food, State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.types import StepType
 
 
 def test_get_reward(
@@ -96,7 +100,10 @@ def test__reward_per_food(
 
 
 def test__state_to_obs(
-    level_based_foraging_env: LevelBasedForaging, agents: Agent, foods: Food
+    level_based_foraging_env: LevelBasedForaging,
+    agents: Agent,
+    foods: Food,
+    key: chex.PRNGKey,
 ) -> None:
     # agent grid
     # [1, 2, 0],
@@ -107,7 +114,6 @@ def test__state_to_obs(
     # [0, 0, 0],
     # [0, 4, 0],
     # [3, 0, 0],
-    key = jax.random.PRNGKey(0)
     state = State(step_count=jnp.asarray(0), agents=agents, foods=foods, key=key)
     obs = level_based_foraging_env._state_to_obs(state)
     expected_agent_0_view = jnp.array(
@@ -163,16 +169,175 @@ def test__state_to_obs(
     )
 
 
-def test_reset(level_based_foraging_env: LevelBasedForaging) -> None:
-    pass
+def test_reset(level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey) -> None:
+    num_agents = level_based_foraging_env._generator.num_agents
+    grid_size = level_based_foraging_env._generator.grid_size
+
+    state, timestep = level_based_foraging_env.reset(key)
+    assert len(state.agents.position) == num_agents
+    assert len(state.foods.position) == level_based_foraging_env._generator.num_food
+
+    expected_obs_shape = (num_agents, 3, grid_size, grid_size)
+    assert timestep.observation.agent_views.shape == expected_obs_shape
+
+    assert jnp.all(timestep.discount == 1.0)
+    assert jnp.all(timestep.reward == 0.0)
+    assert timestep.step_type == StepType.FIRST
+
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
 
 
-def test_step(level_based_foraging_env: LevelBasedForaging) -> None:
-    pass
+def test_step(
+    level_based_foraging_env: LevelBasedForaging,
+    agents: Agent,
+    foods: Food,
+    key: chex.PRNGKey,
+) -> None:
+    # agent grid
+    # [a0, a1, 0],
+    # [a2, 0, a3],
+    # [0, 0, 0],
+
+    # food grid
+    # [0, 0, 0],
+    # [0, f0, 0],
+    # [f1, 0, 0],
+
+    # todo: conftest
+    num_agents = level_based_foraging_env._generator.num_agents
+    num_foods = level_based_foraging_env._generator.num_food
+
+    state = State(step_count=jnp.asarray(0), agents=agents, foods=foods, key=key)
+
+    # tranisition where everyone does a no-op
+    action = jnp.array([NOOP] * num_agents)
+    next_state, timestep = level_based_foraging_env.step(state, action)
+
+    assert jnp.all(timestep.discount == 1.0)
+    assert jnp.all(timestep.reward == 0.0)
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
+    assert timestep.step_type == StepType.MID
+
+    assert next_state.step_count == state.step_count + 1
+
+    chex.assert_trees_all_equal(next_state.foods, state.foods)
+    chex.assert_trees_all_equal(next_state.agents, state.agents)
+
+    # transition where all agents load food
+    # middle food was eaten
+    action = jnp.array([LOAD] * num_agents)
+    next_state, next_timestep = level_based_foraging_env.step(state, action)
+    assert jnp.all(next_timestep.discount == 1.0)
+    # check reward is correct
+    adj_levels = next_state.agents.level[jnp.array([1, 2, 3])]
+    total_adj_level = jnp.sum(adj_levels)
+    reward = (foods.level[0] * adj_levels) / (total_adj_level * num_foods)
+    reward = jnp.concatenate([jnp.array([0.0]), reward])  # add reward for agent 0
+
+    assert jnp.all(next_timestep.reward == reward)
+    assert next_timestep.discount.shape == (num_agents,)
+    assert next_timestep.reward.shape == (num_agents,)
+
+    # seeing as we loaded food and no one moved agent slice should look the same
+    assert jnp.all(state.agents.position == next_state.agents.position)
+    assert jnp.all(
+        next_timestep.observation.agent_views[:, 0, ...]
+        == timestep.observation.agent_views[:, 0, ...]
+    )
+
+    # check food positions
+    expected_foods_view = jnp.array(
+        [
+            [[-1, -1, -1], [-1, 0, 0], [-1, 0, 0]],  # agent 0's food view
+            [[-1, -1, -1], [0, 0, 0], [0, 0, 0]],  # agent 1's food view
+            [[-1, 0, 0], [-1, 0, 0], [-1, 3, 0]],  # agent 2's food view
+            [[0, 0, -1], [0, 0, -1], [0, 0, -1]],  # agent 3's food view
+        ]
+    )
+    expected_mask_view = jnp.array(
+        [
+            [[0, 0, 0], [0, 1, 0], [0, 0, 1]],  # agent 0's mask view
+            [[0, 0, 0], [0, 1, 1], [0, 1, 0]],  # agent 1's mask view
+            [[0, 0, 0], [0, 1, 1], [0, 0, 1]],  # agent 2's mask view
+            [[0, 1, 0], [1, 1, 0], [1, 1, 0]],  # agent 3's mask view
+        ]
+    )
+    assert jnp.all(next_state.foods.eaten == jnp.array([True, False]))
+    assert jnp.all(
+        next_timestep.observation.agent_views[:, 1, ...] == expected_foods_view
+    )
+    assert jnp.all(
+        next_timestep.observation.agent_views[:, 2, ...] == expected_mask_view
+    )
+    # move agent 1, 2 and 3
+    action = jnp.array([NOOP, RIGHT, RIGHT, DOWN])
+    next_state_1, next_timestep_1 = level_based_foraging_env.step(next_state, action)
+    assert jnp.all(next_timestep_1.discount == 1.0)
+    assert jnp.all(next_timestep_1.reward == 0.0)
+    assert next_timestep_1.discount.shape == (num_agents,)
+    assert next_timestep_1.reward.shape == (num_agents,)
+
+    # check agent positions after move
+    expected_agent_positions = jnp.array([[0, 0], [0, 2], [1, 1], [2, 2]])
+    assert jnp.all(next_state_1.agents.position == expected_agent_positions)
+    # todo: check agent positions in agent view
+
+    # todo: test eating both foods at once
 
 
-def test_step_done(level_based_foraging_env: LevelBasedForaging) -> None:
-    pass
+def test_step_done_horizon(
+    level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey
+) -> None:
+    num_agents = level_based_foraging_env._generator.num_agents
+    # test done after 5 steps
+    state, timestep = level_based_foraging_env.reset(key)
+    assert timestep.step_type == StepType.FIRST
+    assert state.step_count == 0
+    assert jnp.all(timestep.discount == 1.0)
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
+
+    action = jnp.array([NOOP] * num_agents)
+    state, timestep = level_based_foraging_env.step(state, action)
+
+    for i in range(1, 5):
+        assert timestep.step_type == StepType.MID
+        assert state.step_count == i
+        assert jnp.all(timestep.discount == 1.0)
+        assert timestep.discount.shape == (num_agents,)
+        assert timestep.reward.shape == (num_agents,)
+
+        state, timestep = level_based_foraging_env.step(state, action)
+
+    assert timestep.step_type == StepType.LAST
+    assert state.step_count == 5
+    assert jnp.all(timestep.discount == 0.0)
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
+
+
+def test_step_done_all_eaten(
+    level_based_foraging_env: LevelBasedForaging,
+    agents: Agent,
+    foods: Food,
+    key: chex.PRNGKey,
+) -> None:
+    num_agents = level_based_foraging_env._generator.num_agents
+
+    # set agent 2's level high enough to eat food 1
+    agents.level = agents.level.at[2].set(5)
+
+    state = State(step_count=0, agents=agents, foods=foods, key=key)
+    action = jnp.array([LOAD] * num_agents)
+    state, timestep = level_based_foraging_env.step(state, action)
+
+    assert timestep.step_type == StepType.LAST
+    assert jnp.all(timestep.discount == 0.0)
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
+    assert jnp.all(state.foods.eaten)
 
 
 def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging) -> None:
