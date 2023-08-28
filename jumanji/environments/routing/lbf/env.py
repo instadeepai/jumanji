@@ -101,12 +101,18 @@ class LevelBasedForaging(Environment[State]):
         # Get reward per food for all food (by vmapping over foods).
         # Then sum that reward on agent dim to get reward per agent.
         return jnp.sum(
-            jax.vmap(self._reward_per_food)(foods, adj_agent_levels, eaten),
-            axis=0,
+            jax.vmap(self._reward_per_food, in_axes=(0, 0, 0, None))(
+                foods, adj_agent_levels, eaten, jnp.sum(foods.level)
+            ),
+            axis=(0),
         )
 
     def _reward_per_food(
-        self, food: Food, adj_agent_levels: chex.Array, eaten: chex.Array
+        self,
+        food: Food,
+        adj_agent_levels: chex.Array,
+        eaten: chex.Array,
+        total_food_level: chex.Array,
     ) -> chex.Array:
         """Returns the reward for all agents given a single food.
 
@@ -124,7 +130,7 @@ class LevelBasedForaging(Environment[State]):
         def _reward(adj_level_if_eaten: chex.Numeric, food: Food) -> chex.Array:
             """Returns the reward for a single agent given it's level if it was adjacent."""
             reward = adj_level_if_eaten * food.level
-            normalizer = total_adj_level * self._generator.num_food
+            normalizer = total_adj_level * total_food_level
             # It's often the case that no agents are adjacent to the food
             # so we need to avoid dividing by 0 -> nan_to_num
             return jnp.nan_to_num(reward / normalizer)
