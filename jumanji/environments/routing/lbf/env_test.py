@@ -204,7 +204,6 @@ def test_step(
     # [0, f0, 0],
     # [f1, 0, 0],
 
-    # todo: conftest
     num_agents = level_based_foraging_env._generator.num_agents
     num_foods = level_based_foraging_env._generator.num_food
 
@@ -271,7 +270,9 @@ def test_step(
     assert jnp.all(
         next_timestep.observation.agent_views[:, 2, ...] == expected_mask_view
     )
-    # move agent 1, 2 and 3
+
+    # Test agents moving
+    # Only agents 1, 2 and 3 have space to move
     action = jnp.array([NOOP, RIGHT, RIGHT, DOWN])
     next_state_1, next_timestep_1 = level_based_foraging_env.step(next_state, action)
     assert jnp.all(next_timestep_1.discount == 1.0)
@@ -283,8 +284,6 @@ def test_step(
     expected_agent_positions = jnp.array([[0, 0], [0, 2], [1, 1], [2, 2]])
     assert jnp.all(next_state_1.agents.position == expected_agent_positions)
     # todo: check agent positions in agent view
-
-    # todo: test eating both foods at once
 
 
 def test_step_done_horizon(
@@ -325,6 +324,7 @@ def test_step_done_all_eaten(
     key: chex.PRNGKey,
 ) -> None:
     num_agents = level_based_foraging_env._generator.num_agents
+    num_foods = level_based_foraging_env._generator.num_food
 
     # set agent 2's level high enough to eat food 1
     agents.level = agents.level.at[2].set(5)
@@ -337,7 +337,48 @@ def test_step_done_all_eaten(
     assert jnp.all(timestep.discount == 0.0)
     assert timestep.discount.shape == (num_agents,)
     assert timestep.reward.shape == (num_agents,)
+
+    # check food positions
     assert jnp.all(state.foods.eaten)
+    expected_foods_view = jnp.array(
+        [
+            [[-1, -1, -1], [-1, 0, 0], [-1, 0, 0]],  # agent 0's food view
+            [[-1, -1, -1], [0, 0, 0], [0, 0, 0]],  # agent 1's food view
+            [[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]],  # agent 2's food view
+            [[0, 0, -1], [0, 0, -1], [0, 0, -1]],  # agent 3's food view
+        ]
+    )
+    expected_mask_view = jnp.array(
+        [
+            [[0, 0, 0], [0, 1, 0], [0, 0, 1]],  # agent 0's mask view
+            [[0, 0, 0], [0, 1, 1], [0, 1, 0]],  # agent 1's mask view
+            [[0, 0, 0], [0, 1, 1], [0, 1, 1]],  # agent 2's mask view
+            [[0, 1, 0], [1, 1, 0], [1, 1, 0]],  # agent 3's mask view
+        ]
+    )
+
+    assert jnp.all(timestep.observation.agent_views[:, 1, ...] == expected_foods_view)
+    assert jnp.all(timestep.observation.agent_views[:, 2, ...] == expected_mask_view)
+
+    adj_levels_food_0 = state.agents.level[jnp.array([1, 2, 3])]
+    total_adj_level_food_0 = jnp.sum(adj_levels_food_0)
+    reward_food0 = (foods.level[0] * adj_levels_food_0) / (
+        total_adj_level_food_0 * num_foods
+    )
+    # add reward for agent 0
+    reward_food0 = jnp.concatenate([jnp.array([0.0]), reward_food0])
+
+    adj_levels_food_1 = state.agents.level[2]
+    total_adj_adj_level_food_1 = jnp.sum(adj_levels_food_1)
+    reward_food1 = (foods.level[1] * adj_levels_food_1) / (
+        total_adj_adj_level_food_1 * num_foods
+    )
+    # add reward for agents 0, 1 and 3
+    reward_food1 = jnp.concatenate(
+        [jnp.array([0.0, 0.0]), jnp.array([reward_food1]), jnp.array([0.0])]
+    )
+
+    assert jnp.all(timestep.reward == reward_food0 + reward_food1)
 
 
 def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging) -> None:
