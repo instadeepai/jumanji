@@ -37,10 +37,13 @@ class LevelBasedForaging(Environment[State]):
         super().__init__()
 
         self._generator = generator or UniformRandomGenerator(
-            grid_size=5, num_agents=4, num_food=5, max_agent_level=3, max_food_level=3
+            grid_size=10, num_agents=4, num_food=5, max_agent_level=3, max_food_level=3
         )
         self._fov = fov
         self._time_limit = time_limit
+        self.time_limit = time_limit
+        self.num_agents = self._generator.num_agents
+        self.num_obs_features = self.num_agents * 3 + self._generator.num_food * 3
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         state = self._generator(key)
@@ -144,7 +147,6 @@ class LevelBasedForaging(Environment[State]):
                 <= jnp.sqrt(2)
             ) & ~state.foods.eaten
 
-            num_agents = self._generator.num_agents
             num_food = self._generator.num_food
             init_vals = jnp.array([-1, -1, 0])
             obs = jnp.tile(init_vals, num_food + num_agents)
@@ -239,10 +241,7 @@ class LevelBasedForaging(Environment[State]):
             jnp.array([self._generator.max_food_level, self._generator.max_agent_level])
         )
         agents_view = specs.BoundedArray(
-            shape=(
-                self._generator.num_agents,
-                self._generator.num_food * 3 + self._generator.num_agents * 3,
-            ),
+            shape=(self.num_agents, self.num_obs_features),
             dtype=jnp.int32,
             name="agents_view",
             minimum=-1,
@@ -286,3 +285,6 @@ class LevelBasedForaging(Environment[State]):
             dtype=jnp.int32,
             name="action",
         )
+
+    def reward_spec(self) -> specs.Array:
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
