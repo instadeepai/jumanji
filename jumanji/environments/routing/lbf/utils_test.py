@@ -24,6 +24,7 @@ from jumanji.environments.routing.lbf.utils import (
     is_adj,
     move,
     place_agent_on_grid,
+    place_food_on_grid,
     slice_around,
 )
 
@@ -47,7 +48,11 @@ def test_place_agent_on_grid(agent1: Agent, agents: Agent) -> None:
 
 
 def test_place_food_on_grid(foods: Food) -> None:
-    pass
+    grid = jnp.zeros((3, 3))
+
+    expected_food_grid = jnp.array([[0, 0, 0], [0, 4, 0], [3, 0, 0]])
+    food_grid = jnp.sum(jax.vmap(place_food_on_grid, (0, None))(foods, grid), axis=0)
+    assert jnp.all(food_grid == expected_food_grid)
 
 
 def test_move(agent1: Agent, foods: Food) -> None:
