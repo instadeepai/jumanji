@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import random
-from typing import List
+#from typing import List
 
 import chex
 import jax
 import jax.numpy as jnp
-import pytest
+#import pytest
 
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.sokoban.generator import (
