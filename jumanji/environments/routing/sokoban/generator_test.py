@@ -13,17 +13,18 @@
 # limitations under the License.
 
 import random
+from typing import List
 
 import chex
 import jax
 import jax.numpy as jnp
+import pytest
 
 from jumanji.environments.routing.sokoban.env import Sokoban
-from jumanji.environments.routing.sokoban.generator import HuggingFaceDeepMindGenerator
-
-# from typing import List
-
-# import pytest
+from jumanji.environments.routing.sokoban.generator import (
+    DeepMindGenerator,
+    HuggingFaceDeepMindGenerator,
+)
 
 
 def test_sokoban__hugging_generator_creation() -> None:
@@ -141,55 +142,55 @@ def test_sokoban__hugging_generator_proportion_of_problems() -> None:
     )
 
 
-# def test_sokoban__deepmind_generator_creation() -> None:
-#     """checks we can create datasets for all valid boxoban datasets"""
-#
-#     # Different datasets with varying proportion of files to keep rutime low
-#     valid_datasets: List[List] = [
-#         ["unfiltered", "train", 0.01],
-#         ["unfiltered", "test", 1],
-#         ["unfiltered", "valid", 0.02],
-#         ["medium", "train", 0.01],
-#         ["medium", "valid", 0.02],
-#         ["hard", None, 1],
-#     ]
-#
-#     for dataset in valid_datasets:
-#
-#         chex.clear_trace_counter()
-#
-#         env = Sokoban(
-#             generator=DeepMindGenerator(
-#                 difficulty=dataset[0],
-#                 split=dataset[1],
-#                 proportion_of_files=dataset[2],
-#             )
-#         )
-#
-#         assert env.generator._fixed_grids.shape[0] > 0
-#
-#
-# def test_sokoban__deepmind_invalid_creation() -> None:
-#     """checks that asking for invalid difficulty, split, proportion leads to
-#     exception"""
-#
-#     # Different datasets with varying proportion of files to keep rutime low
-#     valid_datasets: List[List] = [
-#         ["medium", "test", 0.01],
-#         ["mediumy", "train", 0.01],
-#         ["hardy", "train", 0.01],
-#         ["unfiltered", None, 0.01],
-#     ]
-#
-#     for dataset in valid_datasets:
-#
-#         chex.clear_trace_counter()
-#
-#         with pytest.raises(Exception):
-#             _ = Sokoban(
-#                 generator=DeepMindGenerator(
-#                     difficulty=dataset[0],
-#                     split=dataset[1],
-#                     proportion_of_files=dataset[2],
-#                 )
-#             )
+def test_sokoban__deepmind_generator_creation() -> None:
+    """checks we can create datasets for all valid boxoban datasets"""
+
+    # Different datasets with varying proportion of files to keep rutime low
+    valid_datasets: List[List] = [
+        ["unfiltered", "train", 0.01],
+        ["unfiltered", "test", 1],
+        ["unfiltered", "valid", 0.02],
+        ["medium", "train", 0.01],
+        ["medium", "valid", 0.02],
+        ["hard", None, 1],
+    ]
+
+    for dataset in valid_datasets:
+
+        chex.clear_trace_counter()
+
+        env = Sokoban(
+            generator=DeepMindGenerator(
+                difficulty=dataset[0],
+                split=dataset[1],
+                proportion_of_files=dataset[2],
+            )
+        )
+
+        assert env.generator._fixed_grids.shape[0] > 0
+
+
+def test_sokoban__deepmind_invalid_creation() -> None:
+    """checks that asking for invalid difficulty, split, proportion leads to
+    exception"""
+
+    # Different datasets with varying proportion of files to keep rutime low
+    valid_datasets: List[List] = [
+        ["medium", "test", 0.01],
+        ["mediumy", "train", 0.01],
+        ["hardy", "train", 0.01],
+        ["unfiltered", None, 0.01],
+    ]
+
+    for dataset in valid_datasets:
+
+        chex.clear_trace_counter()
+
+        with pytest.raises(Exception):
+            _ = Sokoban(
+                generator=DeepMindGenerator(
+                    difficulty=dataset[0],
+                    split=dataset[1],
+                    proportion_of_files=dataset[2],
+                )
+            )

@@ -74,18 +74,163 @@ class Generator(abc.ABC):
         return jnp.array([x_coord, y_coord])
 
 
+#
+# class DeepMindGenerator(Generator):
+#     """Instance generator that generates a random problem from the DeepMind
+#     Boxoban dataset a popular dataset for comparing Reinforcement Learning
+#     algorithms and Planning Algorithms. The dataset has unfiltered, medium and
+#     hard versions. The unfiltered dataset contain train, test and valid
+#     splits. The Medium has train and valid splits available. And the hard set
+#     contains just a small number of problems with no data split. The problems
+#     are all guaranteed to be solvable. Since converting files from text to Array
+#     takes some time a proportion_of_files argument is given to choose to only
+#     convert a fraction of the txt files downloaded. Note if too small of a
+#     fraction is chosen the dataset size may be 0.
+#     """
+#
+#     def __init__(
+#         self,
+#         difficulty: str,
+#         split: str,
+#         proportion_of_files: float = 1.0,
+#         verbose: bool = False,
+#     ) -> None:
+#         """Instantiates a `DeepMindGenerator`.
+#
+#         Args:
+#             difficulty: which difficulty subset to use
+#             (hard,medium,unfiltered).
+#             split: which part of the dataset to use (train,test,valid).
+#             proportion_of_files: float between (0,1) for the proportion of
+#             files to use in the dataset .
+#             verbose: bool activating verbose mode.
+#         """
+#
+#         self.difficulty = difficulty
+#         self.verbose = verbose
+#         self.proportion_of_files = proportion_of_files
+#         # Downloads data if not already downloaded
+#         self.cache_path = ".sokoban_cache"
+#         self._download_data()
+#         self.train_data_dir = os.path.join(
+#             self.cache_path, "boxoban-levels-master", self.difficulty
+#         )
+#
+#         if self.difficulty in ["unfiltered", "medium"]:
+#             if self.difficulty == "medium" and split == "test":
+#                 raise Exception(
+#                     "not a valid Deepmind Boxoban difficulty split" "combination"
+#                 )
+#             self.train_data_dir = os.path.join(
+#                 self.train_data_dir,
+#                 split,
+#             )
+#
+#         # Generates the dataset of sokoban levels
+#         self._fixed_grids, self._variable_grids = self._generate_dataset()
+#
+#     def __call__(self, rng_key: chex.PRNGKey) -> State:
+#         """Generate a random Boxoban problem from the Deepmind dataset.
+#
+#         Args:
+#             rng_key: the Jax random number generation key.
+#
+#         Returns:
+#             fixed_grid: Array (uint8) shape (num_rows, num_cols) the fixed
+#             components of the problem.
+#             variable_grid: Array (uint8) shape (num_rows, num_cols) the
+#             variable components of the problem.
+#         """
+#
+#         key, idx_key = jax.random.split(rng_key)
+#         idx = jax.random.randint(
+#             idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0]
+#         )
+#         fixed_grid = self._fixed_grids.take(idx, axis=0)
+#         variable_grid = self._variable_grids.take(idx, axis=0)
+#
+#         initial_agent_location = self.get_agent_coordinates(variable_grid)
+#
+#         state = State(
+#             key=key,  # what key do we want to use for this
+#             fixed_grid=fixed_grid,
+#             variable_grid=variable_grid,
+#             agent_location=initial_agent_location,
+#             step_count=jnp.array(0, jnp.int32),
+#         )
+#
+#         return state
+#
+#     def _generate_dataset(
+#         self,
+#     ) -> Tuple[chex.Array, chex.Array]:
+#         """Parses the text files to generate a jax arrays (fixed and variable
+#         grids representing the Boxoban dataset
+#
+#         Returns:
+#             fixed_grid: Array (uint8) shape (dataset_size, num_rows, num_cols)
+#             the fixed components of the problem.
+#             variable_grid: Array (uint8) shape (dataset_size, num_rows,
+#             num_cols) the variable components of the problem.
+#         """
+#
+#         all_files = [
+#             f
+#             for f in listdir(self.train_data_dir)
+#             if isfile(join(self.train_data_dir, f))
+#         ]
+#         # Only keep a few files if specified
+#         all_files = all_files[: int(self.proportion_of_files * len(all_files))]
+#
+#         fixed_grids_list: List[chex.Array] = []
+#         variable_grids_list: List[chex.Array] = []
+#         for file in all_files:
+#             source_file = join(self.train_data_dir, file)
+#             current_map: List[str] = []
+#             # parses a game file containing multiple games
+#             with open(source_file, "r") as sf:
+#                 for line in sf.readlines():
+#                     if ";" in line and current_map:
+#                         fixed_grid, variable_grid = convert_level_to_array(current_map)
+#                         fixed_grids_list.append(fixed_grid)
+#                         variable_grids_list.append(variable_grid)
+#                         current_map = []
+#                     if "#" == line[0]:
+#                         current_map.append(line.strip())
+#         fixed_grids = jnp.asarray(fixed_grids_list, jnp.uint8)
+#         variable_grids = jnp.asarray(variable_grids_list, jnp.uint8)
+#
+#         return fixed_grids, variable_grids
+#
+#     def _download_data(self) -> None:
+#         """Downloads the deepmind boxoban dataset from github into text
+#         files"""
+#
+#         if not os.path.exists(self.cache_path):
+#             url = "https://github.com/deepmind/boxoban-levels/archive/master.zip"
+#             if self.verbose:
+#                 print("Boxoban: Pregenerated levels not downloaded.")
+#                 print('Starting download from "{}"'.format(url))
+#
+#             response = requests.get(url, stream=True)
+#
+#             if response.status_code != 200:
+#                 raise Exception("Could not download levels")
+#
+#             os.makedirs(self.cache_path)
+#             path_to_zip_file = os.path.join(
+#                 self.cache_path, "boxoban_levels-master.zip"
+#             )
+#             with open(path_to_zip_file, "wb") as handle:
+#                 for data in tqdm(response.iter_content()):
+#                     handle.write(data)
+#
+#             with zipfile.ZipFile(path_to_zip_file, "r") as zip_ref:
+#                 zip_ref.extractall(self.cache_path)
+
+
 class DeepMindGenerator(Generator):
-    """Instance generator that generates a random problem from the DeepMind
-    Boxoban dataset a popular dataset for comparing Reinforcement Learning
-    algorithms and Planning Algorithms. The dataset has unfiltered, medium and
-    hard versions. The unfiltered dataset contain train, test and valid
-    splits. The Medium has train and valid splits available. And the hard set
-    contains just a small number of problems with no data split. The problems
-    are all guaranteed to be solvable. Since converting files from text to Array
-    takes some time a proportion_of_files argument is given to choose to only
-    convert a fraction of the txt files downloaded. Note if too small of a
-    fraction is chosen the dataset size may be 0.
-    """
+    """... (rest of the docstring remains unchanged)"""
 
     def __init__(
         self,
@@ -94,23 +239,18 @@ class DeepMindGenerator(Generator):
         proportion_of_files: float = 1.0,
         verbose: bool = False,
     ) -> None:
-        """Instantiates a `DeepMindGenerator`.
-
-        Args:
-            difficulty: which difficulty subset to use
-            (hard,medium,unfiltered).
-            split: which part of the dataset to use (train,test,valid).
-            proportion_of_files: float between (0,1) for the proportion of
-            files to use in the dataset .
-            verbose: bool activating verbose mode.
-        """
-
         self.difficulty = difficulty
         self.verbose = verbose
         self.proportion_of_files = proportion_of_files
+
+        # Set the cache path to user's home directory's .cache sub-directory
+        self.cache_path = os.path.join(
+            os.path.expanduser("~"), ".cache", "sokoban_dataset"
+        )
+
         # Downloads data if not already downloaded
-        self.cache_path = ".sokoban_cache"
         self._download_data()
+
         self.train_data_dir = os.path.join(
             self.cache_path, "boxoban-levels-master", self.difficulty
         )
@@ -202,10 +342,15 @@ class DeepMindGenerator(Generator):
         return fixed_grids, variable_grids
 
     def _download_data(self) -> None:
-        """Downloads the deepmind boxoban dataset from github into text
-        files"""
+        """Downloads the deepmind boxoban dataset from github into text files"""
 
+        # Check if the cache directory exists, if not, create it
         if not os.path.exists(self.cache_path):
+            os.makedirs(self.cache_path)
+
+        # Check if the dataset is already downloaded in the cache
+        dataset_path = os.path.join(self.cache_path, "boxoban-levels-master")
+        if not os.path.exists(dataset_path):
             url = "https://github.com/deepmind/boxoban-levels/archive/master.zip"
             if self.verbose:
                 print("Boxoban: Pregenerated levels not downloaded.")
@@ -216,7 +361,6 @@ class DeepMindGenerator(Generator):
             if response.status_code != 200:
                 raise Exception("Could not download levels")
 
-            os.makedirs(self.cache_path)
             path_to_zip_file = os.path.join(
                 self.cache_path, "boxoban_levels-master.zip"
             )
