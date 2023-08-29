@@ -31,13 +31,13 @@ class LevelBasedForaging(Environment[State]):
     def __init__(
         self,
         generator: Optional[UniformRandomGenerator] = None,
-        fov: int = 2,
+        fov: int = 10,
         time_limit: int = 50,
     ) -> None:
         super().__init__()
 
         self._generator = generator or UniformRandomGenerator(
-            grid_size=10, num_agents=4, num_food=5, max_agent_level=3, max_food_level=3
+            grid_size=10, num_agents=3, num_food=3, max_agent_level=2, max_food_level=6
         )
         self._fov = fov
         self._time_limit = time_limit
