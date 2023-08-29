@@ -13,17 +13,17 @@
 # limitations under the License.
 
 import random
-#from typing import List
 
 import chex
 import jax
 import jax.numpy as jnp
-#import pytest
 
 from jumanji.environments.routing.sokoban.env import Sokoban
-from jumanji.environments.routing.sokoban.generator import (
-    HuggingFaceDeepMindGenerator,
-)
+from jumanji.environments.routing.sokoban.generator import HuggingFaceDeepMindGenerator
+
+# from typing import List
+
+# import pytest
 
 
 def test_sokoban__hugging_generator_creation() -> None:
