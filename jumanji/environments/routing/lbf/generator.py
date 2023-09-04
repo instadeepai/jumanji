@@ -26,7 +26,14 @@ from jumanji.environments.routing.lbf.types import Agent, Food, State
 class Generator(abc.ABC):
     """Base class for generators for the LBF environment."""
 
-    def __init__(self, grid_size: int, num_agents: int) -> None:
+    def __init__(
+        self,
+        grid_size: int,
+        num_agents: int,
+        num_food: int,
+        max_agent_level: int,
+        max_food_level: int,
+    ) -> None:
         """Initialises a LBF generator, used to generate grids for the LBF environment.
 
         Args:
@@ -35,6 +42,9 @@ class Generator(abc.ABC):
         """
         self._grid_size = grid_size
         self._num_agents = num_agents
+        self.num_food = num_food
+        self.max_food_level = max_food_level
+        self.max_agent_level = max_agent_level
 
     @property
     def grid_size(self) -> int:
@@ -53,31 +63,10 @@ class Generator(abc.ABC):
         """
 
 
-class UniformRandomGenerator(Generator):
+class RandomGenerator(Generator):
     """Randomly generates `LBF` grids that may or may not be solvable. This generator places
     start and target positions uniformly at random on the grid.
     """
-
-    def __init__(
-        self,
-        grid_size: int,
-        num_agents: int,
-        num_food: int,
-        max_agent_level: int,
-        max_food_level: int,
-    ) -> None:
-        """Instantiates a `UniformRandomGenerator`.
-
-        Args:
-            grid_size: size of the square grid to generate.
-            num_agents: number of agents/paths on the grid.
-        """
-        # todo: need to assert that grid is sufficiently big enough to place all foods
-        # num_food < grid_size ?
-        super().__init__(grid_size, num_agents)
-        self.num_food = num_food
-        self.max_food_level = max_food_level
-        self.max_agent_level = max_agent_level
 
     def sample_food(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
         """Samples food positions such that no two foods are adjacent

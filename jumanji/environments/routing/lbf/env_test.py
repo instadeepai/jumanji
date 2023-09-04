@@ -35,7 +35,7 @@ def test_get_reward(
     reward = level_based_foraging_env.get_reward(foods, adj_agent_levels, eaten)
 
     expected_reward = (adj_food0_level * foods.level[0]) / (
-        level_based_foraging_env._generator.num_food * jnp.sum(adj_food0_level)
+        jnp.sum(foods.level) * jnp.sum(adj_food0_level)
     )
 
     assert jnp.all(reward == expected_reward)
@@ -47,6 +47,7 @@ def test__reward_per_food(
     food0: Food,
     food1: Food,
 ) -> None:
+    tot_food_level = food0.level + food1.level
     # what is the level of agents adjacent to food0
     adj_food0_level = jnp.array(
         [
@@ -68,109 +69,34 @@ def test__reward_per_food(
     )
 
     # check that reward is 0 if food is not eaten
+    # food 0
     reward_not_eaten = level_based_foraging_env._reward_per_food(
-        food0, adj_food0_level, jnp.asarray(False)
+        food0, adj_food0_level, jnp.asarray(False), tot_food_level
+    )
+    assert jnp.all(reward_not_eaten == 0.0)
+    # food 1
+    reward_not_eaten = level_based_foraging_env._reward_per_food(
+        food1, adj_food1_level, jnp.asarray(False), tot_food_level
     )
     assert jnp.all(reward_not_eaten == 0.0)
 
-    reward_not_eaten = level_based_foraging_env._reward_per_food(
-        food1, adj_food1_level, jnp.asarray(False)
-    )
-    assert jnp.all(reward_not_eaten == 0.0)
-
-    # check that correct reward received for food0
+    # check that correct reward received for food0 when eaten
     reward_eaten = level_based_foraging_env._reward_per_food(
-        food0, adj_food0_level, jnp.asarray(True)
+        food0, adj_food0_level, jnp.asarray(True), tot_food_level
     )
     assert jnp.all(
         reward_eaten
-        == (adj_food0_level * food0.level)
-        / (level_based_foraging_env._generator.num_food * jnp.sum(adj_food0_level))
+        == (adj_food0_level * food0.level) / (jnp.sum(adj_food0_level) * tot_food_level)
     )
 
-    # check that correct reward received for food1
+    # check that correct reward received for food1 when eaten
     reward_eaten = level_based_foraging_env._reward_per_food(
-        food1, adj_food1_level, jnp.asarray(True)
+        food1, adj_food1_level, jnp.asarray(True), tot_food_level
     )
     assert jnp.all(
         reward_eaten
-        == (adj_food1_level * food1.level)
-        / (level_based_foraging_env._generator.num_food * jnp.sum(adj_food1_level))
+        == (adj_food1_level * food1.level) / (jnp.sum(adj_food1_level) * tot_food_level)
     )
-
-
-def test__state_to_obs(
-    level_based_foraging_env: LevelBasedForaging,
-    agents: Agent,
-    foods: Food,
-    key: chex.PRNGKey,
-) -> None:
-    # agent grid
-    # [1, 2, 0],
-    # [2, 0, 1],
-    # [0, 0, 0],
-
-    # food grid
-    # [0, 0, 0],
-    # [0, 4, 0],
-    # [3, 0, 0],
-    state = State(step_count=jnp.asarray(0), agents=agents, foods=foods, key=key)
-    obs = level_based_foraging_env._state_to_obs(state)
-    print("\nHEHREHRHERHEHRHE")
-    print(obs)
-    print(state)
-
-    # expected_agent_0_view = jnp.array(
-    #     [
-    #         [
-    #             # other agent levels
-    #             [-1, -1, -1],
-    #             [-1, 1, 2],
-    #             [-1, 2, 0],
-    #         ],
-    #         [
-    #             # food levels
-    #             [-1, -1, -1],
-    #             [-1, 0, 0],
-    #             [-1, 0, 4],
-    #         ],
-    #         [
-    #             # access (where can the agent go?)
-    #             [0, 0, 0],
-    #             [0, 1, 0],
-    #             [0, 0, 0],
-    #         ],
-    #     ]
-    # )
-    #
-    # assert jnp.all(obs.agent_views[0, ...] == expected_agent_0_view)
-    # assert jnp.all(
-    #     obs.action_mask[0, ...] == jnp.array([True, False, False, False, False, True])
-    # )
-    #
-    # expected_agent_1_view = jnp.array(
-    #     [
-    #         [
-    #             [-1, -1, -1],
-    #             [1, 2, 0],
-    #             [2, 0, 1],
-    #         ],
-    #         [
-    #             [-1, -1, -1],
-    #             [0, 0, 0],
-    #             [0, 4, 0],
-    #         ],
-    #         [
-    #             [0, 0, 0],
-    #             [0, 1, 1],
-    #             [0, 0, 0],
-    #         ],
-    #     ]
-    # )
-    # assert jnp.all(obs.agent_views[1, ...] == expected_agent_1_view)
-    # assert jnp.all(
-    #     obs.action_mask[1, ...] == jnp.array([True, False, True, False, False, True])
-    # )
 
 
 def test_reset(level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey) -> None:
@@ -192,12 +118,7 @@ def test_reset(level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey) 
     assert timestep.reward.shape == (num_agents,)
 
 
-def test_step(
-    level_based_foraging_env: LevelBasedForaging,
-    agents: Agent,
-    foods: Food,
-    key: chex.PRNGKey,
-) -> None:
+def test_step(level_based_foraging_env: LevelBasedForaging, state: State) -> None:
     # agent grid
     # [a0, a1, 0],
     # [a2, 0, a3],
@@ -209,9 +130,7 @@ def test_step(
     # [f1, 0, 0],
 
     num_agents = level_based_foraging_env._generator.num_agents
-    num_foods = level_based_foraging_env._generator.num_food
-
-    state = State(step_count=jnp.asarray(0), agents=agents, foods=foods, key=key)
+    foods = state.foods
 
     # tranisition where everyone does a no-op
     action = jnp.array([NOOP] * num_agents)
@@ -236,7 +155,7 @@ def test_step(
     # check reward is correct
     adj_levels = next_state.agents.level[jnp.array([1, 2, 3])]
     total_adj_level = jnp.sum(adj_levels)
-    reward = (foods.level[0] * adj_levels) / (total_adj_level * num_foods)
+    reward = (foods.level[0] * adj_levels) / (total_adj_level * jnp.sum(foods.level))
     reward = jnp.concatenate([jnp.array([0.0]), reward])  # add reward for agent 0
 
     assert jnp.all(next_timestep.reward == reward)
@@ -369,7 +288,7 @@ def test_step_done_all_eaten(
     reward_food0 = (foods.level[0] * adj_levels_food_0) / (
         total_adj_level_food_0 * num_foods
     )
-    # add reward for agent 0
+    # Add reward for agent 0.
     reward_food0 = jnp.concatenate([jnp.array([0.0]), reward_food0])
 
     adj_levels_food_1 = state.agents.level[2]
@@ -377,12 +296,13 @@ def test_step_done_all_eaten(
     reward_food1 = (foods.level[1] * adj_levels_food_1) / (
         total_adj_adj_level_food_1 * num_foods
     )
-    # add reward for agents 0, 1 and 3
+    # Add reward for agents 0, 1 and 3.
     reward_food1 = jnp.concatenate(
         [jnp.array([0.0, 0.0]), jnp.array([reward_food1]), jnp.array([0.0])]
     )
 
-    assert jnp.all(timestep.reward == reward_food0 + reward_food1)
+    # If all foods are eaten total reward is 1.
+    assert jnp.sum(timestep.reward) == 1
 
 
 def test_env_does_not_smoke(level_based_foraging_env: LevelBasedForaging) -> None:

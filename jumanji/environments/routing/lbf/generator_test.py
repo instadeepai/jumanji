@@ -16,7 +16,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
+from jumanji.environments.routing.lbf.generator import RandomGenerator
 
 
 def is_adj(pos0: chex.Array, pos1: chex.Array) -> chex.Array:
@@ -32,7 +32,7 @@ def test_generator() -> None:
     max_food_level = 9
     max_agent_level = 10
 
-    gen = UniformRandomGenerator(
+    gen = RandomGenerator(
         grid_size, num_agents, num_food, max_agent_level, max_food_level
     )
     state = gen(key)

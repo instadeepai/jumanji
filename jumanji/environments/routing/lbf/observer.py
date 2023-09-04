@@ -5,6 +5,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
+from jumanji import specs
 from jumanji.environments.routing.lbf import utils
 from jumanji.environments.routing.lbf.constants import MOVES
 from jumanji.environments.routing.lbf.types import Agent, Observation, State
@@ -14,13 +15,46 @@ from jumanji.environments.routing.lbf.types import Agent, Observation, State
 # An agent can move to another agents spot if that agent also moved
 # however we mask out agents current positions.
 class LbfObserver(abc.ABC):
-    def __init__(self, fov: int, grid_size: int) -> None:
+    def __init__(
+        self,
+        fov: int,
+        grid_size: int,
+    ) -> None:
         self._fov = fov
         self._grid_size = grid_size
 
     @abc.abstractmethod
     def state_to_observation(self, state: State) -> Observation:
         pass
+
+    @abc.abstractmethod
+    def observation_spec(
+        self,
+        num_agents: int,
+        num_foods: int,
+        max_agent_level: int,
+        max_food_level: int,
+        time_limit: int,
+    ) -> specs.Spec[Observation]:
+        pass
+
+    def _action_mask_spec(self, num_agents) -> specs.BoundedArray:
+        return specs.BoundedArray(
+            shape=(num_agents, 6),
+            dtype=bool,
+            minimum=False,
+            maximum=True,
+            name="action_mask",
+        )
+
+    def _step_count_spec(self, time_limit: int) -> specs.BoundedArray:
+        return specs.BoundedArray(
+            shape=(),
+            dtype=jnp.int32,
+            minimum=0,
+            maximum=time_limit,
+            name="step_count",
+        )
 
 
 class LbfVectorObserver(LbfObserver):
@@ -116,6 +150,31 @@ class LbfVectorObserver(LbfObserver):
             agents_view=obs, action_mask=action_mask, step_count=state.step_count
         )
 
+    def observation_spec(
+        self,
+        num_agents: int,
+        num_foods: int,
+        max_agent_level: int,
+        max_food_level: int,
+        time_limit: int,
+    ) -> specs.Spec[Observation]:
+        max_ob = jnp.max(jnp.array([max_food_level, max_agent_level]))
+        agents_view = specs.BoundedArray(
+            shape=(num_agents, num_agents * 3 + num_foods * 3),
+            dtype=jnp.int32,
+            name="agents_view",
+            minimum=-1,
+            maximum=max_ob,
+        )
+
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            agents_view=agents_view,
+            action_mask=self._action_mask_spec(num_agents),
+            step_count=self._step_count_spec(time_limit),
+        )
+
 
 class LbfGridObserver(LbfObserver):
     def state_to_observation(self, state: State) -> Observation:
@@ -157,4 +216,30 @@ class LbfGridObserver(LbfObserver):
             agents_view=jnp.stack([agents_view, foods_view, access_masks], axis=1),
             action_mask=action_mask,
             step_count=state.step_count,
+        )
+
+    def observation_spec(
+        self,
+        num_agents: int,
+        num_foods: int,
+        max_agent_level: int,
+        max_food_level: int,
+        time_limit: int,
+    ) -> specs.Spec[Observation]:
+        max_ob = jnp.max(jnp.array([max_food_level, max_agent_level]))
+        visible_area = 2 * self._fov + 1
+        agents_view = specs.BoundedArray(
+            shape=(num_agents, 3, visible_area, visible_area),
+            dtype=jnp.int32,
+            name="agents_view",
+            minimum=-1,
+            maximum=max_ob,
+        )
+
+        return specs.Spec(
+            Observation,
+            "ObservationSpec",
+            agents_view=agents_view,
+            action_mask=self._action_mask_spec(num_agents),
+            step_count=self._step_count_spec(time_limit),
         )
