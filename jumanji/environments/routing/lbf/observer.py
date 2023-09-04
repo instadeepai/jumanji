@@ -10,6 +10,9 @@ from jumanji.environments.routing.lbf.constants import MOVES
 from jumanji.environments.routing.lbf.types import Agent, Observation, State
 
 
+# todo: check how lbf does action mask - this isn't quite correct:
+# An agent can move to another agents spot if that agent also moved
+# however we mask out agents current positions.
 class LbfObserver(abc.ABC):
     def __init__(self, fov: int, grid_size: int) -> None:
         self._fov = fov
@@ -80,8 +83,6 @@ class LbfVectorObserver(LbfObserver):
             obs = obs.at[jnp.arange(start_idx + 2, end_idx, 3)].set(agent_levels)
 
             # Get action mask
-            # todo: check how lbf does action mask - this isn't quite correct:
-            # an agent can move to another agents spot if that agent also moved
             next_positions = agent.position + MOVES
             # Is an agent currently in a next position?
             # I know this is a bit complex, any clearer way to do this?
@@ -102,7 +103,7 @@ class LbfVectorObserver(LbfObserver):
             )(next_positions)
             # Is the next position out of bounds?
             out_of_bounds = jnp.any(
-                (next_positions < 0) | (next_positions > self._grid_size), axis=-1
+                (next_positions < 0) | (next_positions >= self._grid_size), axis=-1
             )
 
             occupied = food_occupied | agent_occupied

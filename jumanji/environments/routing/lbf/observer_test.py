@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 from jumanji.environments.routing.lbf.observer import LbfGridObserver, LbfVectorObserver
-from jumanji.environments.routing.lbf.types import State
+from jumanji.environments.routing.lbf.types import Food, State
 
 # Levels:
 # agent grid
@@ -106,7 +106,54 @@ def test_grid_observer(state: State) -> None:
         obs.action_mask[3, ...] == jnp.array([True, True, False, True, False, True])
     )
 
-    # todo: test different fov
+    # test different fov
+    observer = LbfGridObserver(fov=3, grid_size=3)
+    # test eaten food is not visible
+    eaten = jnp.array([True, False])
+    foods = Food(
+        eaten=eaten,
+        id=state.foods.id,
+        position=state.foods.position,
+        level=state.foods.level,
+    )
+    state = state.replace(foods=foods)
+
+    obs = observer.state_to_observation(state)
+    expected_agent_2_view = jnp.array(
+        [
+            [
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, 1, 2, 0, -1],
+                [-1, -1, -1, 2, 0, 1, -1],
+                [-1, -1, -1, 0, 0, 0, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+            ],
+            [
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, 0, 0, 0, -1],
+                [-1, -1, -1, 0, 0, 0, -1],
+                [-1, -1, -1, 3, 0, 0, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1],
+            ],
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 1, 1, 0, 0],
+                [0, 0, 0, 0, 1, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ],
+        ]
+    )
+    assert jnp.all(obs.agents_view[2, ...] == expected_agent_2_view)
+    assert jnp.all(
+        obs.action_mask[2, ...] == jnp.array([True, False, True, False, False, True])
+    )
 
 
 def test_vector_observer(state: State) -> None:
@@ -128,4 +175,23 @@ def test_vector_observer(state: State) -> None:
         obs.action_mask[2, ...] == jnp.array([True, False, False, False, False, True])
     )
 
-    # todo test different fov
+    # test different fov
+    observer = LbfVectorObserver(fov=3, grid_size=3)
+    # test eaten food is not visible
+    eaten = jnp.array([True, False])
+    foods = Food(
+        eaten=eaten,
+        id=state.foods.id,
+        position=state.foods.position,
+        level=state.foods.level,
+    )
+    state = state.replace(foods=foods)
+
+    obs = observer.state_to_observation(state)
+    expected_agent_3_view = jnp.array(
+        [-1, -1, 0, 2, 0, 3, 1, 2, 1, 0, 0, 1, 0, 1, 2, 1, 0, 2]
+    )
+    assert jnp.all(obs.agents_view[3, ...] == expected_agent_3_view)
+    assert jnp.all(
+        obs.action_mask[3, ...] == jnp.array([True, True, False, True, True, True])
+    )

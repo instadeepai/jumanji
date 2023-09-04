@@ -31,7 +31,7 @@ def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
 def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
     """Return the grid with the food placed on it."""
     x, y = food.position
-    return jax.lax.select(food.eaten, grid, grid.at[x, y].set(food.level))
+    return grid.at[x, y].set(food.level * ~food.eaten)  # 0 if eaten else level
 
 
 def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent:
