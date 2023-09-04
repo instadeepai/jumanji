@@ -1,3 +1,17 @@
+# Copyright 2022 InstaDeep Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import abc
 from typing import Tuple
 
@@ -15,11 +29,7 @@ from jumanji.environments.routing.lbf.types import Agent, Observation, State
 # An agent can move to another agents spot if that agent also moved
 # however we mask out agents current positions.
 class LbfObserver(abc.ABC):
-    def __init__(
-        self,
-        fov: int,
-        grid_size: int,
-    ) -> None:
+    def __init__(self, fov: int, grid_size: int) -> None:
         self._fov = fov
         self._grid_size = grid_size
 
@@ -38,7 +48,7 @@ class LbfObserver(abc.ABC):
     ) -> specs.Spec[Observation]:
         pass
 
-    def _action_mask_spec(self, num_agents) -> specs.BoundedArray:
+    def _action_mask_spec(self, num_agents: int) -> specs.BoundedArray:
         return specs.BoundedArray(
             shape=(num_agents, 6),
             dtype=bool,

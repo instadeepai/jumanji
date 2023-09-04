@@ -24,7 +24,7 @@ from jumanji.env import Environment
 from jumanji.environments.routing.lbf.constants import LOAD, MOVES
 from jumanji.environments.routing.lbf.generator import Generator, RandomGenerator
 from jumanji.environments.routing.lbf.observer import LbfGridObserver, LbfObserver
-from jumanji.environments.routing.lbf.types import Agent, Food, Observation, State
+from jumanji.environments.routing.lbf.types import Food, Observation, State
 from jumanji.types import TimeStep, restart, termination, transition
 
 

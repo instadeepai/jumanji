@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import chex
-import jax
 import jax.numpy as jnp
-from jax.random import PRNGKey
 
 from jumanji.environments.routing.lbf.constants import DOWN, LOAD, NOOP, RIGHT
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
