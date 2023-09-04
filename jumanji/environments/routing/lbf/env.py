@@ -73,11 +73,11 @@ class LevelBasedForaging(Environment[State]):
         )(moved_agents, actions)
 
         # eat food
-        foods, eaten, adj_loading_level = jax.vmap(utils.eat, (None, 0))(
+        foods, eaten_this_step, adj_loading_level = jax.vmap(utils.eat, (None, 0))(
             moved_agents, state.foods
         )
 
-        reward = self.get_reward(foods, adj_loading_level, eaten)
+        reward = self.get_reward(foods, adj_loading_level, eaten_this_step)
 
         state = State(
             agents=moved_agents,
@@ -124,21 +124,17 @@ class LevelBasedForaging(Environment[State]):
             food: a food that may or may not have been eaten.
             adj_agent_levels: the level of the agent adjacent to the food,
              this is 0 if the agent is not adjacent.
+            eaten: whether the food was eaten or not (this step).
+            total_food_level: the sum of all food levels in the environment.
         """
-        total_adj_level = jnp.sum(adj_agent_levels)
         # zero out all agents if food was not eaten
         adj_levels_if_eaten = adj_agent_levels * eaten
 
-        # todo: think this can be done through normal broadcasting
-        def _reward(adj_level_if_eaten: chex.Numeric, food: Food) -> chex.Array:
-            """Returns the reward for a single agent given it's level if it was adjacent."""
-            reward = adj_level_if_eaten * food.level
-            normalizer = total_adj_level * total_food_level
-            # It's often the case that no agents are adjacent to the food
-            # so we need to avoid dividing by 0 -> nan_to_num
-            return jnp.nan_to_num(reward / normalizer)
-
-        return jax.vmap(_reward, (0, None))(adj_levels_if_eaten, food)
+        reward = adj_levels_if_eaten * food.level
+        normalizer = jnp.sum(adj_agent_levels) * total_food_level
+        # It's often the case that no agents are adjacent to the food
+        # so we need to avoid dividing by 0 -> nan_to_num
+        return jnp.nan_to_num(reward / normalizer)
 
     def observation_spec(self) -> specs.Spec[Observation]:
         return self._observer.observation_spec(

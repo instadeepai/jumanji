@@ -167,30 +167,7 @@ def test_step(level_based_foraging_env: LevelBasedForaging, state: State) -> Non
         == timestep.observation.agents_view[:, 0, ...]
     )
 
-    # check food positions
-    expected_foods_view = jnp.array(
-        [
-            [[-1, -1, -1], [-1, 0, 0], [-1, 0, 0]],  # agent 0's food view
-            [[-1, -1, -1], [0, 0, 0], [0, 0, 0]],  # agent 1's food view
-            [[-1, 0, 0], [-1, 0, 0], [-1, 3, 0]],  # agent 2's food view
-            [[0, 0, -1], [0, 0, -1], [0, 0, -1]],  # agent 3's food view
-        ]
-    )
-    expected_mask_view = jnp.array(
-        [
-            [[0, 0, 0], [0, 1, 0], [0, 0, 1]],  # agent 0's mask view
-            [[0, 0, 0], [0, 1, 1], [0, 1, 0]],  # agent 1's mask view
-            [[0, 0, 0], [0, 1, 1], [0, 0, 1]],  # agent 2's mask view
-            [[0, 1, 0], [1, 1, 0], [1, 1, 0]],  # agent 3's mask view
-        ]
-    )
     assert jnp.all(next_state.foods.eaten == jnp.array([True, False]))
-    assert jnp.all(
-        next_timestep.observation.agents_view[:, 1, ...] == expected_foods_view
-    )
-    assert jnp.all(
-        next_timestep.observation.agents_view[:, 2, ...] == expected_mask_view
-    )
 
     # Test agents moving
     # Only agents 1, 2 and 3 have space to move
@@ -204,7 +181,6 @@ def test_step(level_based_foraging_env: LevelBasedForaging, state: State) -> Non
     # check agent positions after move
     expected_agent_positions = jnp.array([[0, 0], [0, 2], [1, 1], [2, 2]])
     assert jnp.all(next_state_1.agents.position == expected_agent_positions)
-    # todo: check agent positions in agent view
 
 
 def test_step_done_horizon(

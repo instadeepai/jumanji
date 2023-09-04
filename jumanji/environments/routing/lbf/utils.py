@@ -72,7 +72,7 @@ def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
 
     Returns: (new_food: Food, food_eaten: bool, adjacent_loading_levels: chex.Array)
         new_food: the food with the eaten flag set if it was eaten.
-        food_eaten: whether the food was eaten.
+        food_eaten: whether the food was eaten this step.
         adjacent_loading_levels: the agents that were loading around the food.
     """
 
@@ -91,10 +91,10 @@ def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     adjacent_level = jnp.sum(adjacent_loading_levels)
 
     # todo: check if greater than equal to or just greater than
-    food_eaten = (adjacent_level >= food.level) & (~food.eaten)
+    food_eaten_this_step = (adjacent_level >= food.level) & (~food.eaten)
     # set food to eaten if it was eaten and if it was already eaten leave it as eaten
-    new_food = food.replace(eaten=food_eaten | food.eaten)  # type: ignore
-    return new_food, food_eaten, adjacent_loading_levels
+    new_food = food.replace(eaten=food_eaten_this_step | food.eaten)  # type: ignore
+    return new_food, food_eaten_this_step, adjacent_loading_levels
 
 
 def flag_duplicates(a: chex.Array) -> chex.Array:
