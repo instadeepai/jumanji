@@ -64,7 +64,7 @@ class Observation(NamedTuple):
     """
     The observation returned by the LBF environment.
 
-    agent_views: (num_agents, grid_size, grid_size) int8 array representing the view of each agent.
+    agents_view: (num_agents, grid_size, grid_size) int8 array representing the view of each agent.
     action_mask: boolean array representing whether each of the 5 actions is legal, for each agent.
     step_count: (int32) the current episode step.
     """

@@ -19,7 +19,7 @@ import pytest
 
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
 from jumanji.environments.routing.lbf.generator import UniformRandomGenerator
-from jumanji.environments.routing.lbf.types import Agent, Food
+from jumanji.environments.routing.lbf.types import Agent, Food, State
 from jumanji.tree_utils import tree_transpose
 
 # create food and agents for grid that looks like:
@@ -99,6 +99,11 @@ def agents(agent0: Agent, agent1: Agent, agent2: Agent, agent3: Agent) -> Agent:
 @pytest.fixture
 def foods(food0: Food, food1: Food) -> Food:
     return tree_transpose([food0, food1])
+
+
+@pytest.fixture
+def state(agents: Agent, foods: Food, key: chex.PRNGKey) -> State:
+    return State(agents=agents, foods=foods, step_count=0, key=key)
 
 
 @pytest.fixture
