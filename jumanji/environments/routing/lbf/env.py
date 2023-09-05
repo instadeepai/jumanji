@@ -57,11 +57,12 @@ class LevelBasedForaging(Environment[State]):
         return state, restart(observation, shape=self._generator.num_agents)
 
     def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
-        # move agents, fix collisions that may happen and set loading status
-        moved_agents = jax.vmap(utils.move, (0, 0, None, None))(
+        # Move agents, fix collisions that may happen and set loading status.
+        moved_agents = jax.vmap(utils.move, (0, 0, None, None, None))(
             state.agents,
             actions,
             state.foods,
+            state.agents,
             self._generator.grid_size,
         )
         # check that no two agent share the same position after moving

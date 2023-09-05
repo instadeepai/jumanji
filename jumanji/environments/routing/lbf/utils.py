@@ -34,23 +34,36 @@ def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
     return grid.at[x, y].set(food.level * ~food.eaten)  # 0 if eaten else level
 
 
-def move(agent: Agent, action: chex.Array, foods: Food, grid_size: int) -> Agent:
+def move(
+    agent: Agent, action: chex.Array, foods: Food, agents: Agent, grid_size: int
+) -> Agent:
     """Return the new agent position after taking `action`.
 
-    Agent cannot move to a position that is occupied by food or out of bounds.
+    Agents cannot move to a position that is occupied by food, other agent or is out of bounds.
+
+    Args:
+        agent: the agent to move.
+        action: the action to take.
+        foods: all food in the grid.
+        agents: all agents in the grid.
+        grid_size: the size of the grid.
     """
-    # add action to agent position
+    # Add action to agent position.
     new_position = agent.position + MOVES[action]
 
-    # if position is not in food positions and not out of bounds, move agent
+    # If position is not in food/agent positions and not out of bounds, move agent.
     out_of_bounds = (new_position < 0) | (new_position >= grid_size)
-    invalid_position = jnp.any(
-        jnp.all((new_position == foods.position), axis=1) & ~foods.eaten
+    food_at_position = jnp.any(
+        jnp.all(new_position == foods.position, axis=1) & ~foods.eaten
     )
+    agent_at_position = jnp.any(
+        jnp.all(new_position == agents.position, axis=1) & (agent.id != agents.id)
+    )
+    entity_at_position = food_at_position | agent_at_position
 
     return agent.replace(  # type: ignore
         position=jnp.where(
-            out_of_bounds | invalid_position, agent.position, new_position
+            out_of_bounds | entity_at_position, agent.position, new_position
         )
     )
 

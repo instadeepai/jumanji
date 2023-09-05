@@ -16,7 +16,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.routing.lbf.constants import DOWN, LEFT, RIGHT
+from jumanji.environments.routing.lbf.constants import DOWN, LEFT, RIGHT, UP
 from jumanji.environments.routing.lbf.types import Agent, Food
 from jumanji.environments.routing.lbf.utils import (
     eat,
@@ -55,27 +55,25 @@ def test_place_food_on_grid(foods: Food) -> None:
     assert jnp.all(food_grid == expected_food_grid)
 
 
-def test_move(agent1: Agent, foods: Food) -> None:
-    # agent 1 is at [0, 1] and can move to [0, 0] or [0, 2].
+def test_move(agent3: Agent, agent1: Agent, agents: Agent, foods: Food) -> None:
+    # Agent 1 is at [0, 1] and can move to [0, 0] or [0, 2].
     # But there is a food at [1, 1] so it cannot move there.
     grid_size = 3
-
-    # move to [0, 0]
-    agent1_new = move(agent1, LEFT, foods, grid_size)
-    assert jnp.all(agent1_new.position == jnp.array([0, 0]))
-
-    # move agent twice from [0, 0] to [2, 0] (where food is)
-    agent1_new = move(agent1_new, DOWN, foods, grid_size)  # valid: [1, 0]
-    agent1_new = move(agent1_new, DOWN, foods, grid_size)  # invalid: [2, 0]
-    assert jnp.all(agent1_new.position == jnp.array([1, 0]))
-
-    # move agent from [0, 1] to [0, 2]
-    agent1_new = move(agent1, RIGHT, foods, grid_size)
+    # Move agent 1 to [0, 2]
+    agent1_new = move(agent1, RIGHT, foods, agents, grid_size)
     assert jnp.all(agent1_new.position == jnp.array([0, 2]))
 
-    # try move agent from [0, 1] to [1, 1] (where food is)
-    agent1_new = move(agent1, DOWN, foods, grid_size)
-    assert jnp.all(agent1_new.position == jnp.array([0, 1]))
+    # Try move agent 1 into agent 0.
+    agent1_new = move(agent1, LEFT, foods, agents, grid_size)
+    assert jnp.all(agent1_new.position == agent1.position)
+
+    # Try move agent 1 into food 0.
+    agent1_new = move(agent1, DOWN, foods, agents, grid_size)
+    assert jnp.all(agent1_new.position == agent1.position)
+
+    # Try move agent 1 out of bounds.
+    agent1_new = move(agent1, UP, foods, agents, grid_size)
+    assert jnp.all(agent1_new.position == agent1.position)
 
 
 def test_is_adj(
