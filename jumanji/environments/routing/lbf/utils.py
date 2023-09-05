@@ -83,18 +83,15 @@ def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
         agents: all agents in the grid.
         food: the food to try to eat.
 
-    Returns: (new_food: Food, food_eaten: bool, adjacent_loading_levels: chex.Array)
+    Returns: (new_food: Food, eaten: bool, adjacent_loading_levels: chex.Array)
         new_food: the food with the eaten flag set if it was eaten.
-        food_eaten: whether the food was eaten this step.
+        eaten: whether the food was eaten this step.
         adjacent_loading_levels: the agents that were loading around the food.
     """
 
     def get_adj_level(agent: Agent, food: Food) -> chex.Array:
-        return jax.lax.select(
-            is_adj(agent, food),
-            agent.level,
-            0,
-        )
+        """Return the level of the agent if it is adjacent to the food, else 0."""
+        return jax.lax.select(is_adj(agent, food), agent.level, 0)
 
     # get the level of all adjacent agents, if an agent is not adjacent, it's level is 0
     adjacent_levels = jax.vmap(get_adj_level, (0, None))(agents, food)
@@ -103,7 +100,6 @@ def eat(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     adjacent_loading_levels = jnp.where(agents.loading, adjacent_levels, 0)
     adjacent_level = jnp.sum(adjacent_loading_levels)
 
-    # todo: check if greater than equal to or just greater than
     food_eaten_this_step = (adjacent_level >= food.level) & (~food.eaten)
     # set food to eaten if it was eaten and if it was already eaten leave it as eaten
     new_food = food.replace(eaten=food_eaten_this_step | food.eaten)  # type: ignore
@@ -130,17 +126,17 @@ def fix_collisions(moved_agents: Agent, orig_agents: Agent) -> Agent:
     If two agents are in the same position use the original agent position.
     """
     duplicates = flag_duplicates(moved_agents.position)
-    # need to broadcast this so the where works
+    # Need to broadcast this so the `jnp.where` works correctly.
     duplicates = jnp.broadcast_to(duplicates[:, None], orig_agents.position.shape)
 
-    # if there are duplicates, use the original agent position
+    # If there are duplicates, use the original agent position.
     new_positions = jnp.where(
         duplicates,
         orig_agents.position,
         moved_agents.position,
     )
 
-    # recreate agents with new positions
+    # Recreate agents with new positions.
     agents: Agent = jax.vmap(Agent)(
         id=orig_agents.id,
         position=new_positions,

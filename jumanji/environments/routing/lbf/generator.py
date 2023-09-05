@@ -39,12 +39,15 @@ class Generator(abc.ABC):
         Args:
             grid_size: size of the grid to generate.
             num_agents: number of agents on the grid.
+            num_food: number of food items on the grid.
+            max_agent_level: maximum level of the agents (inclusive).
+            max_food_level: maximum level of the food items (inclusive).
         """
         self._grid_size = grid_size
         self._num_agents = num_agents
-        self.num_food = num_food
-        self.max_food_level = max_food_level
-        self.max_agent_level = max_agent_level
+        self._num_food = num_food
+        self._max_food_level = max_food_level
+        self._max_agent_level = max_agent_level
 
     @property
     def grid_size(self) -> int:
@@ -64,8 +67,11 @@ class Generator(abc.ABC):
 
 
 class RandomGenerator(Generator):
-    """Randomly generates `LBF` grids that may or may not be solvable. This generator places
-    start and target positions uniformly at random on the grid.
+    """Randomly generates `LBF` grids.
+
+    If too many foods and agents are given for a small grid size, it might not be able to
+    place them on the grid. Because of jax this will fail silently and many foods will
+    be placed at (0, 0).
     """
 
     def sample_food(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
@@ -74,7 +80,7 @@ class RandomGenerator(Generator):
         """
         flat_size = self.grid_size**2
         pos_key, level_key = jax.random.split(key)
-        pos_keys = jax.random.split(pos_key, self.num_food)
+        pos_keys = jax.random.split(pos_key, self._num_food)
 
         # cannot place on the edges so mask them out
         mask = jnp.ones(flat_size, dtype=bool)
@@ -110,9 +116,9 @@ class RandomGenerator(Generator):
 
         levels = jax.random.randint(
             level_key,
-            shape=(self.num_food,),
+            shape=(self._num_food,),
             minval=1,
-            maxval=self.max_food_level + 1,
+            maxval=self._max_food_level + 1,
         )
         return food_positions, levels
 
@@ -139,7 +145,7 @@ class RandomGenerator(Generator):
             level_key,
             shape=(self.num_agents,),
             minval=1,
-            maxval=self.max_agent_level + 1,
+            maxval=self._max_agent_level + 1,
         )
 
         return jnp.divmod(positions_flat, self.grid_size), levels
@@ -153,7 +159,7 @@ class RandomGenerator(Generator):
         food_key, agent_key, key = jax.random.split(key, 3)
         food_positions, food_levels = self.sample_food(key=food_key)
 
-        food_ids = jnp.arange(self.num_agents + 1, self.num_agents + self.num_food + 1)
+        food_ids = jnp.arange(self.num_agents + 1, self.num_agents + self._num_food + 1)
 
         # Place agents on the grid.
         # Mask contains 0's where food is placed, 1's where agents can be placed.

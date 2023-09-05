@@ -103,7 +103,7 @@ def test_reset(level_based_foraging_env: LevelBasedForaging, key: chex.PRNGKey) 
 
     state, timestep = level_based_foraging_env.reset(key)
     assert len(state.agents.position) == num_agents
-    assert len(state.foods.position) == level_based_foraging_env._generator.num_food
+    assert len(state.foods.position) == level_based_foraging_env._generator._num_food
 
     expected_obs_shape = (num_agents, 3, grid_size, grid_size)
     assert timestep.observation.agents_view.shape == expected_obs_shape
@@ -221,7 +221,7 @@ def test_step_done_all_eaten(
     key: chex.PRNGKey,
 ) -> None:
     num_agents = level_based_foraging_env._generator.num_agents
-    num_foods = level_based_foraging_env._generator.num_food
+    num_foods = level_based_foraging_env._generator._num_food
 
     # set agent 2's level high enough to eat food 1
     agents.level = agents.level.at[2].set(5)

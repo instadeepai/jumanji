@@ -14,7 +14,7 @@
 
 import jax.numpy as jnp
 
-from jumanji.environments.routing.lbf.observer import LbfGridObserver, LbfVectorObserver
+from jumanji.environments.routing.lbf.observer import GridObserver, VectorObserver
 from jumanji.environments.routing.lbf.types import Food, State
 
 # Levels:
@@ -41,7 +41,7 @@ from jumanji.environments.routing.lbf.types import Food, State
 
 
 def test_grid_observer(state: State) -> None:
-    observer = LbfGridObserver(fov=1, grid_size=3)
+    observer = GridObserver(fov=1, grid_size=3)
     obs = observer.state_to_observation(state)
     expected_agent_0_view = jnp.array(
         [
@@ -121,7 +121,7 @@ def test_grid_observer(state: State) -> None:
     )
 
     # test different fov
-    observer = LbfGridObserver(fov=3, grid_size=3)
+    observer = GridObserver(fov=3, grid_size=3)
     # test eaten food is not visible
     eaten = jnp.array([True, False])
     foods = Food(
@@ -171,7 +171,7 @@ def test_grid_observer(state: State) -> None:
 
 
 def test_vector_observer(state: State) -> None:
-    observer = LbfVectorObserver(fov=1, grid_size=3)
+    observer = VectorObserver(fov=1, grid_size=3)
     obs = observer.state_to_observation(state)
     expected_agent_0_view = jnp.array(
         [1, 1, 4, -1, -1, 0, 0, 0, 1, 0, 1, 2, 1, 0, 2, -1, -1, 0]
@@ -190,7 +190,7 @@ def test_vector_observer(state: State) -> None:
     )
 
     # test different fov
-    observer = LbfVectorObserver(fov=3, grid_size=3)
+    observer = VectorObserver(fov=3, grid_size=3)
     # test eaten food is not visible
     eaten = jnp.array([True, False])
     foods = Food(

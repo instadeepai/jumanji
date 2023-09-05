@@ -26,6 +26,8 @@ else:
 @dataclass
 class Entity:
     """
+    An entity is something that can be placed in the LBF environment (agent or food).
+
     id: unique number representing only this food.
     position: the position of this food.
     level: the level of this food.
@@ -38,25 +40,46 @@ class Entity:
 
 @dataclass
 class Agent(Entity):
+    """
+    An agent is an entity that can move and load food.
+
+    id: unique number representing only this food.
+    position: the position of this food.
+    level: the level of this food.
+    loading: whether the agent is currently loading food.
+    """
+
     loading: chex.Array = jnp.asarray(False)  # () - bool: is loading food
 
 
 @dataclass
 class Food(Entity):
+    """
+    A food is an entity that can be eaten by an agent.
+
+    id: unique number representing only this food.
+    position: the position of this food.
+    level: the level of this food.
+    eaten: whether the food has been eaten.
+    """
+
     eaten: chex.Array = jnp.asarray(False)  # () - bool: has been eaten
 
 
 @dataclass
 class State:
     """
+    Holds the dynamics of the LBF environment.
+
+    agents: a stacked pytree of Agents - all the agents in the environment.
+    foods: a stacked pytree of Foods - all the foods in the environment.
     step_count: the index of the current step.
-    agents: a stacked pytree of type Agent.
     key: random key used for auto-reset.
     """
 
-    step_count: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
     foods: Food  # (num_foods, ...)
+    step_count: chex.Array  # ()
     key: chex.PRNGKey  # (2,)
 
 
@@ -64,7 +87,7 @@ class Observation(NamedTuple):
     """
     The observation returned by the LBF environment.
 
-    agents_view: (num_agents, grid_size, grid_size) int8 array representing the view of each agent.
+    agents_view: (num_agents, grid_size, grid_size) int32 array representing the view of each agent.
     action_mask: boolean array representing whether each of the 5 actions is legal, for each agent.
     step_count: (int32) the current episode step.
     """

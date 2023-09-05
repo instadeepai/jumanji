@@ -25,16 +25,20 @@ from jumanji.environments.routing.lbf.constants import MOVES
 from jumanji.environments.routing.lbf.types import Agent, Observation, State
 
 
-# todo: check how lbf does action mask - this isn't quite correct:
-# An agent can move to another agents spot if that agent also moved
-# however we mask out agents current positions.
 class LbfObserver(abc.ABC):
+    """The original LBF environment has two different observation types.
+
+    This is a base class to allow for implementing both observation types.
+    Original implementation: https://github.com/semitable/lb-foraging/blob/60939b921e8e9f8ab5affa33c4ad29e916b47d41/lbforaging/foraging/environment.py#L378
+    """  # noqa: E501
+
     def __init__(self, fov: int, grid_size: int) -> None:
         self._fov = fov
         self._grid_size = grid_size
 
     @abc.abstractmethod
     def state_to_observation(self, state: State) -> Observation:
+        """Converts a `State` to an `Observation`."""
         pass
 
     @abc.abstractmethod
@@ -46,9 +50,14 @@ class LbfObserver(abc.ABC):
         max_food_level: int,
         time_limit: int,
     ) -> specs.Spec[Observation]:
+        """Returns the observation spec for the environment."""
         pass
 
     def _action_mask_spec(self, num_agents: int) -> specs.BoundedArray:
+        """Returns the action mask spec for the environment.
+
+        The action mask is a boolean array of shape (num_agents, 6).
+        """
         return specs.BoundedArray(
             shape=(num_agents, 6),
             dtype=bool,
@@ -58,6 +67,7 @@ class LbfObserver(abc.ABC):
         )
 
     def _step_count_spec(self, time_limit: int) -> specs.BoundedArray:
+        """Returns the step count spec for the environment."""
         return specs.BoundedArray(
             shape=(),
             dtype=jnp.int32,
@@ -67,7 +77,22 @@ class LbfObserver(abc.ABC):
         )
 
 
-class LbfVectorObserver(LbfObserver):
+class VectorObserver(LbfObserver):
+    """
+    An observer for the LBF environment that returns a vector observation.
+
+    This observation is the same observation used in the paper: Benchmarking Multi-Agent
+    Deep Reinforcement Learning Algorithms in Cooperative Tasks - Papoudakis et al.
+
+    The observation is a vector of length 3 * num_foods + 3 * num_agents + 1, for each agent.
+    The first 3 * num_foods elements are the food positions and levels.
+    The next 3 elements are the current agent's position and level.
+    The final 3 * num_agents elements are the other agents' positions and levels.
+
+    Foods and agents are represented as (y, x, level). If a food or agent is not in the
+    agent's field of view, it is represented as (-1, -1, 0).
+    """
+
     def state_to_observation(self, state: State) -> Observation:
         num_food = len(state.foods.level)
         num_agents = len(state.agents.level)
@@ -186,7 +211,20 @@ class LbfVectorObserver(LbfObserver):
         )
 
 
-class LbfGridObserver(LbfObserver):
+class GridObserver(LbfObserver):
+    """
+    An observer for the LBF environment that returns a grid observation.
+
+    This is a new observation where instead of a vector of absolute positions,
+    each agent's view is returned as a grid of shape (3, 2 * fov + 1, 2 * fov + 1).
+    Where the grid represents the environment around the agent split into 3 slices.
+
+    The first slice is the agent slice, where all agent's levels are placed.
+    The second slice is the food slice, where all food's levels are placed.
+    The third slice is the access slice, where 1s represent empty cells and 0s represent
+    cells that are occupied by an agent or food.
+    """
+
     def state_to_observation(self, state: State) -> Observation:
         # get grids with only agents and grid with only foods
         grid = jnp.zeros((self._grid_size, self._grid_size), dtype=jnp.int32)
