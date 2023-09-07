@@ -1,6 +1,6 @@
 name: Tests and Linters 🧪
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   tests-and-linters:
@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9"]
-        os: [ubuntu-latest]
+        os: [self-hosted]
 
     steps:
       - name: Install dependencies for viewer test
@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-            python-version: "${{ matrix.python-version }}"
+          python-version: "${{ matrix.python-version }}"
       - name: Install python dependencies 🔧
         run: pip install .[dev,train]
       - name: Run linters 🖌️
