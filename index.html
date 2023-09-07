@@ -1527,9 +1527,11 @@
   <h1>Home</h1>
 
 <p align="center">
-    <a href="img/jumanji_logo.png">
-        <img src="img/jumanji_logo.png" alt="Jumanji logo" width="50%"/>
-    </a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/jumanji_logo_dm.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/jumanji_logo.png">
+  <img alt="Jumanji Logo" src="docs/img/jumanji_logo.png", width="50%">
+</picture>
 </p>
 
 <p><a href="https://www.python.org/doc/versions/"><img alt="Python Versions" src="https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square" /></a>
@@ -1911,7 +1913,7 @@ from Google's <a href="https://sites.research.google/trc/about/">TPU Research Cl
   <small>
     
       Last update:
-      2023-08-21
+      2023-09-07
     
   </small>
 </div>
