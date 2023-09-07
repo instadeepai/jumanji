@@ -121,7 +121,9 @@ class LevelBasedForaging(Environment[State]):
         self._observer = observer or GridObserver(
             fov=10, grid_size=self._generator.grid_size
         )
-        self._time_limit = time_limit
+
+        self.time_limit = time_limit
+        self.num_agents = self._generator.num_agents
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment.
@@ -187,7 +189,7 @@ class LevelBasedForaging(Environment[State]):
 
         observation = self._observer.state_to_observation(state)
         # First condition is truncation, second is termination.
-        done = (state.step_count >= self._time_limit) | jnp.all(state.foods.eaten)
+        done = (state.step_count >= self.time_limit) | jnp.all(state.foods.eaten)
         timestep = jax.lax.cond(
             done,
             lambda: termination(reward, observation, shape=self._generator.num_agents),
@@ -263,7 +265,7 @@ class LevelBasedForaging(Environment[State]):
             self._generator._num_food,
             self._generator._max_agent_level,
             self._generator._max_food_level,
-            self._time_limit,
+            self.time_limit,
         )
 
     def action_spec(self) -> specs.MultiDiscreteArray:
