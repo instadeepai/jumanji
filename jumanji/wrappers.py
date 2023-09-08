@@ -100,7 +100,7 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the reward spec."""
         return self._env.reward_spec()
 
-    def discount_spec(self) -> specs.Array:
+    def discount_spec(self) -> specs.BoundedArray:
         """Returns the discount spec."""
         return self._env.discount_spec()
 
