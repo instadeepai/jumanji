@@ -96,6 +96,14 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the action spec."""
         return self._env.action_spec()
 
+    def reward_spec(self) -> specs.Array:
+        """Returns the reward spec."""
+        return self._env.reward_spec()
+
+    def discount_spec(self) -> specs.Array:
+        """Returns the discount spec."""
+        return self._env.discount_spec()
+
     def render(self, state: State) -> Any:
         """Compute render frames during initialisation of the environment.
 
