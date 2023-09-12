@@ -111,6 +111,7 @@ def restart(
     Returns:
         TimeStep identified as a reset.
     """
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.FIRST,
         reward=jnp.zeros(shape, dtype=float),
@@ -145,6 +146,7 @@ def transition(
         TimeStep identified as a transition.
     """
     discount = discount if discount is not None else jnp.ones(shape, dtype=float)
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.MID,
         reward=reward,
@@ -176,6 +178,7 @@ def termination(
     Returns:
         TimeStep identified as the termination of an episode.
     """
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,
@@ -209,6 +212,7 @@ def truncation(
         TimeStep identified as the truncation of an episode.
     """
     discount = discount if discount is not None else jnp.ones(shape, dtype=float)
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,
