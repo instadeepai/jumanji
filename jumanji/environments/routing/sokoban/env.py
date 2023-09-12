@@ -237,7 +237,9 @@ class Sokoban(Environment[State]):
 
         target_reached = self.level_complete(next_state)
         time_limit_exceeded = next_state.step_count >= self.time_limit
-        done = target_reached | time_limit_exceeded
+
+        #done = target_reached | time_limit_exceeded
+        done = jnp.logical_or(target_reached, time_limit_exceeded)
 
         reward = jnp.asarray(self.reward_fn(state, action, next_state), float)
 
