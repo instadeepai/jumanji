@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import field
 from typing import TYPE_CHECKING, Dict, Generic, Optional, Sequence, TypeVar, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
@@ -71,14 +72,14 @@ class TimeStep(Generic[Observation]):
         extras: environment metric(s) or information returned by the environment but
             not observed by the agent (hence not in the observation). For example, it
             could be whether an invalid action was taken. In most environments, extras
-            is None.
+            is an empty dictionary.
     """
 
     step_type: StepType
     reward: Array
     discount: Array
     observation: Observation
-    extras: Optional[Dict] = None
+    extras: Dict = field(default_factory=dict)
 
     def first(self) -> Array:
         return self.step_type == StepType.FIRST
