@@ -25,7 +25,7 @@ from jumanji.environments.routing.lbf.constants import LOAD, MOVES
 from jumanji.environments.routing.lbf.generator import Generator, RandomGenerator
 from jumanji.environments.routing.lbf.observer import GridObserver, LbfObserver
 from jumanji.environments.routing.lbf.types import Food, Observation, State
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 
 
 class LevelBasedForaging(Environment[State]):
@@ -189,11 +189,23 @@ class LevelBasedForaging(Environment[State]):
 
         observation = self._observer.state_to_observation(state)
         # First condition is truncation, second is termination.
-        done = (state.step_count >= self.time_limit) | jnp.all(state.foods.eaten)
-        timestep = jax.lax.cond(
-            done,
-            lambda: termination(reward, observation, shape=self._generator.num_agents),
-            lambda: transition(reward, observation, shape=self._generator.num_agents),
+        term = jnp.all(state.foods.eaten)
+        trunc = state.step_count >= self.time_limit
+
+        timestep = jax.lax.switch(
+            term + 2 * trunc,
+            [
+                # !term !trunc
+                lambda rew, obs: transition(rew, obs, shape=self.num_agents),
+                # term !trunc
+                lambda rew, obs: termination(rew, obs, shape=self.num_agents),
+                # !term trunc
+                lambda rew, obs: truncation(rew, obs, shape=self.num_agents),
+                # term trunc
+                lambda rew, obs: termination(rew, obs, shape=self.num_agents),
+            ],
+            reward,
+            observation,
         )
 
         return state, timestep
