@@ -134,7 +134,7 @@ def food_grid() -> chex.Array:
 @pytest.fixture
 def level_based_foraging_env() -> LevelBasedForaging:
     generator = RandomGenerator(
-        grid_size=3, num_agents=4, num_food=2, max_agent_level=2, max_food_level=4
+        grid_size=3, num_agents=4, num_food=2, max_agent_level=2
     )
     observer = GridObserver(fov=1, grid_size=3)
 

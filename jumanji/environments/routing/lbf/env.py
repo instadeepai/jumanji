@@ -116,7 +116,7 @@ class LevelBasedForaging(Environment[State]):
         super().__init__()
 
         self._generator = generator or RandomGenerator(
-            grid_size=10, num_agents=3, num_food=3, max_agent_level=2, max_food_level=6
+            grid_size=10, num_agents=3, num_food=3, max_agent_level=3
         )
         self._observer = observer or GridObserver(
             fov=10, grid_size=self._generator.grid_size
@@ -272,11 +272,13 @@ class LevelBasedForaging(Environment[State]):
             - action_mask: BoundedArray (bool) of shape (num_agents, 6).
             - step_count: BoundedArray (int32) of shape ().
         """
+        max_agent_level = self._generator._max_agent_level
+        max_food_level = jnp.minimum(self.num_agents, 3) * max_agent_level
         return self._observer.observation_spec(
             self._generator.num_agents,
             self._generator._num_food,
-            self._generator._max_agent_level,
-            self._generator._max_food_level,
+            max_agent_level,
+            max_food_level,
             self.time_limit,
         )
 
