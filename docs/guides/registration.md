@@ -37,7 +37,7 @@ and access them through the familiar `jumanji.make` function. Assuming you creat
 by subclassing Jumanji `Environment` base class, you can register it as follows:
 
 ```python
-from jumanji import register
+from jumanji.registration import register
 
 register(
     id="CustomEnv-v0",                            # format: (env_name)-v(version)
