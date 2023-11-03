@@ -52,6 +52,9 @@ register(
     kwargs={"time_limit": 20, "generator": partly_scrambled_rubiks_cube_generator},
 )
 
+# Solitaire - English Solitaire with a board size of 7x7.
+register(id="Solitaire-v0", entry_point="jumanji.environments:Solitaire")
+
 # Sudoku - the standard Sudoku puzzle with grid of size 9x9. By default 10000 puzzles
 # of mixed difficulties are set for reset.
 

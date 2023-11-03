@@ -14,11 +14,12 @@
 
 import sys
 
-from jumanji.environments.logic import game_2048, minesweeper, rubiks_cube
+from jumanji.environments.logic import game_2048, minesweeper, rubiks_cube, solitaire
 from jumanji.environments.logic.game_2048.env import Game2048
 from jumanji.environments.logic.graph_coloring.env import GraphColoring
 from jumanji.environments.logic.minesweeper import Minesweeper
 from jumanji.environments.logic.rubiks_cube import RubiksCube
+from jumanji.environments.logic.solitaire import Solitaire
 from jumanji.environments.logic.sudoku import Sudoku
 from jumanji.environments.packing import bin_pack, job_shop, knapsack, tetris
 from jumanji.environments.packing.bin_pack.env import BinPack
