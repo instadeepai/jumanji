@@ -73,7 +73,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
     elif cfg.logger.type == "neptune":
         logger = NeptuneLogger(
             name=cfg.logger.name,
-            project="InstaDeep/jumanji",
+            project="InstaDeep/quarks-search",
             cfg=cfg,
             save_checkpoint=cfg.logger.save_checkpoint,
         )
@@ -330,7 +330,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, Sokoban)
         actor_critic_networks = networks.make_actor_critic_networks_sokoban(
             sokoban=env.unwrapped,
-            num_channels=cfg.env.network.num_channels,
+            channels=cfg.env.network.channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )

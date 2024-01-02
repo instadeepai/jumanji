@@ -31,7 +31,7 @@ from jumanji.training.networks.parametric_distribution import (
 
 def make_actor_critic_networks_sokoban(
     sokoban: Sokoban,
-    num_channels: int,
+    channels: Sequence[int],
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
@@ -40,18 +40,20 @@ def make_actor_critic_networks_sokoban(
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )
+
     policy_network = make_sokoban_cnn(
         num_outputs=num_actions,
         mlp_units=policy_layers,
-        conv_n_channels=num_channels,
+        channels=channels,
         time_limit=sokoban.time_limit,
     )
     value_network = make_sokoban_cnn(
         num_outputs=1,
         mlp_units=value_layers,
-        conv_n_channels=num_channels,
+        channels=channels,
         time_limit=sokoban.time_limit,
     )
+
     return ActorCriticNetworks(
         policy_network=policy_network,
         value_network=value_network,
@@ -62,19 +64,20 @@ def make_actor_critic_networks_sokoban(
 def make_sokoban_cnn(
     num_outputs: int,
     mlp_units: Sequence[int],
-    conv_n_channels: int,
+    channels: Sequence[int],
     time_limit: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-        torso = hk.Sequential(
-            [
-                hk.Conv2D(conv_n_channels, (2, 2), 2),
-                jax.nn.relu,
-                hk.Conv2D(conv_n_channels, (2, 2), 1),
-                jax.nn.relu,
-                hk.Flatten(),
-            ]
-        )
+
+        # Iterate over the channels sequence to create convolutional layers
+        layers = []
+        for i, conv_n_channels in enumerate(channels):
+            layers.append(hk.Conv2D(conv_n_channels, (3, 3), stride=2 if i == 0 else 1))
+            layers.append(jax.nn.relu)
+
+        layers.append(hk.Flatten())
+
+        torso = hk.Sequential(layers)
 
         x_processed = preprocess_input(observation.grid)
 
