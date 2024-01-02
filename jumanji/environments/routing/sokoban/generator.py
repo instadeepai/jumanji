@@ -73,6 +73,7 @@ class Generator(abc.ABC):
 
         return jnp.array([x_coord, y_coord])
 
+
 class DeepMindGenerator(Generator):
     """... (rest of the docstring remains unchanged)"""
 
