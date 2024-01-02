@@ -131,9 +131,10 @@ class Sokoban(Environment[State]):
 
         Args:
             generator: `Generator` whose `__call__` instantiates an environment
-             instance. Implemented options are [`ToyGenerator`,
-             `DeepMindGenerator`].Defaults to `DeepMindGenerator` with
-             'difficulty=unfiltered','split=train', 'proportion_of_files=0.01'.
+             instance (an initial state). Implemented options are [`ToyGenerator`,
+             `DeepMindGenerator`, and `HuggingFaceDeepMindGenerator`].
+             Defaults to `HuggingFaceDeepMindGenerator` with
+             `dataset_name="unfiltered-train", proportion_of_files=1`.
             time_limit: int, max steps for the environment ,defaults to 120.
             viewer: 'Viewer' object, used to render the environment.
             If not provided, defaults to`BoxViewer`.
