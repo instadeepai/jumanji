@@ -433,15 +433,14 @@ def check_ghost_collisions(
 
 
 def get_directions(pacman_position: Position, ghost_position: chex.Array) -> chex.Array:
-    """Get the vector distance between thr ghost and the target position"""
-    distance = jnp.array(
+    """Get the vector distance between the ghost and the target position"""
+    direction = jnp.array(
         [
             ghost_position[0] - pacman_position.y,
             ghost_position[1] - pacman_position.x,
         ]
     )
-
-    return distance
+    return direction
 
 
 def player_step(
