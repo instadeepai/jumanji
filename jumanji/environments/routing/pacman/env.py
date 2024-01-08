@@ -444,8 +444,8 @@ class PacMan(Environment[State]):
         ps = jnp.array([ps_y, ps_x])
 
         # Check if player and power_up position are shared
-        valid = (ps == power_up_locations).all(axis=-1).any()
-        eat = 1 * valid
+        on_powerup = (ps == power_up_locations).all(axis=-1).any()
+        eat = on_powerup.astype(int)
         mask = (ps == power_up_locations).all(axis=-1)
         invert_mask = mask != True  # type: ignore # noqa: E712
         invert_mask = invert_mask.reshape(4, 1)
