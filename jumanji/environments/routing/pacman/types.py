@@ -67,7 +67,6 @@ class State:
     step_count: (int32) of total steps taken from reset till current timestep.
     ghost_eaten: jax array (bool) tracking if ghost has been eaten before.
     score: (int32) of total points aquired.
-    action_mask: array specifying which directions the agent can move in from its current position.
     """
 
     key: chex.PRNGKey  # (2,)
@@ -92,7 +91,6 @@ class State:
     step_count: jnp.int32  # ()
     ghost_eaten: chex.Array  # (4,)
     score: jnp.int32  # ()
-    action_mask: chex.Array  # (5,)
 
 
 class Observation(NamedTuple):

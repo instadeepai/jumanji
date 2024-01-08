@@ -275,11 +275,6 @@ class PacMan(Environment[State]):
         done = time_limit_exceeded | dead | all_pellets_found
 
         reward = jnp.asarray(collision_rewards)
-        default_action_mask = jnp.array([True, True, True, True, False])
-        action_mask = self._compute_action_mask(next_state).astype(bool)
-        action_mask = action_mask * default_action_mask
-
-        next_state = next_state.replace(action_mask=action_mask)  # type: ignore
         # Generate observation from the state
         observation = self._observation_from_state(next_state)
 
@@ -495,12 +490,15 @@ class PacMan(Environment[State]):
             return grid[x][y]
 
         # vmap over the moves.
-        action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(player_pos, MOVES)
+        action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(
+            player_pos, MOVES
+        ) * jnp.array([True, True, True, True, False])
 
         return action_mask
 
     def _observation_from_state(self, state: State) -> Observation:
         """Create an observation from the state of the environment."""
+        action_mask = self._compute_action_mask(state).astype(bool)
         return Observation(
             grid=state.grid,
             player_locations=state.player_locations,
@@ -508,7 +506,7 @@ class PacMan(Environment[State]):
             power_up_locations=state.power_up_locations,
             frightened_state_time=state.frightened_state_time,
             pellet_locations=state.pellet_locations,
-            action_mask=state.action_mask,
+            action_mask=action_mask,
             score=state.score,
         )
 
