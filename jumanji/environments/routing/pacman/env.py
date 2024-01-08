@@ -447,7 +447,7 @@ class PacMan(Environment[State]):
         on_powerup = (ps == power_up_locations).all(axis=-1).any()
         eat = on_powerup.astype(int)
         mask = (ps == power_up_locations).all(axis=-1)
-        invert_mask = mask != True  # type: ignore # noqa: E712
+        invert_mask = mask != ~mask
         invert_mask = invert_mask.reshape(4, 1)
 
         # Mask out collected power-ups
