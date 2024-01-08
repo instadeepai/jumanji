@@ -321,7 +321,7 @@ class PacMan(Environment[State]):
         )
 
         state = state.replace(player_locations=next_player_pos)  # type: ignore
-        state = state.replace(dead=done)  # type: ignore
+        state = state.replace(dead=done)
 
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)
 
