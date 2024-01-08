@@ -335,9 +335,7 @@ def check_ghost_wall_collisions(
 
     location_value = grid[new_player_pos[1]][new_player_pos[0]]
     # Check if colliding with walls
-    false_cond = lambda x: False
-    true_cond = lambda x: True
-    collision = jax.lax.cond(location_value == 1, false_cond, true_cond, 0)
+    collision = location_value != 1
     return collision, valid_locs, masked_dist
 
 
