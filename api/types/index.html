@@ -1642,11 +1642,11 @@ also valid in place of a scalar array.</p></td>
       </tr>
       <tr>
         <td><code>extras</code></td>
-        <td><code>Optional[Dict]</code></td>
+        <td><code>Dict</code></td>
         <td><p>environment metric(s) or information returned by the environment but
 not observed by the agent (hence not in the observation). For example, it
 could be whether an invalid action was taken. In most environments, extras
-is None.</p></td>
+is an empty dictionary.</p></td>
       </tr>
   </tbody>
 </table>
@@ -1749,7 +1749,7 @@ is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.extras" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
@@ -1795,7 +1795,7 @@ is None.</p></td>
 
 
 <h4 id="jumanji.types.TimeStep.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_type</span><span class="p">:</span> <span class="n">StepType</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">],</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">],</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_type</span><span class="p">:</span> <span class="n">StepType</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">],</span> <span class="n">discount</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">],</span> <span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2453,7 +2453,7 @@ the supported dtype of float32.</p>
   <small>
     
       Last update:
-      2023-09-08
+      2024-01-08
     
   </small>
 </div>
