@@ -332,9 +332,9 @@ class PacMan(Environment[State]):
         state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)
         state = state.replace(old_ghost_locations=old_ghost_locations)
 
-        state = state.replace(pellet_locations=pellets)  # type: ignore
-        state = state.replace(pellets=num_pellets)  # type: ignore
-        state = state.replace(key=key)  # type: ignore
+        state = state.replace(pellet_locations=pellets)
+        state = state.replace(pellets=num_pellets)
+        state = state.replace(key=key)
 
         def powerup_collected() -> chex.Array:
             """If a power-up was collected set scatter time to 30"""
