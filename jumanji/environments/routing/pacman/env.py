@@ -376,15 +376,15 @@ class PacMan(Environment[State]):
         player_space = state.player_locations
         ps = jnp.array([player_space.y, player_space.x])
 
-        num_cookies = state.pellets
-        valid = jnp.any(jnp.all(ps == pellet_spaces, axis=-1))
+        num_pellets = state.pellets
+        ate_pellet = jnp.any(jnp.all(ps == pellet_spaces, axis=-1))
 
-        num_cookies -= valid * 1
-        rewards = valid * 10.0
+        num_pellets -= ate_pellet * 1
+        rewards = ate_pellet * 10.0
         mask = jnp.logical_not(jnp.all(ps == pellet_spaces, axis=-1))
         pellet_spaces = pellet_spaces * mask[..., None]
 
-        return rewards, pellet_spaces, num_cookies
+        return rewards, pellet_spaces, num_pellets
 
     def player_step(self, state: State, action: int, steps: int = 1) -> Position:
         """
