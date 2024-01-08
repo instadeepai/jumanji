@@ -275,9 +275,9 @@ class PacMan(Environment[State]):
         done = time_limit_exceeded | dead | all_pellets_found
 
         reward = jnp.asarray(collision_rewards)
-        action_mask_bool = jnp.array([True, True, True, True, False])
+        default_action_mask = jnp.array([True, True, True, True, False])
         action_mask = self._compute_action_mask(next_state).astype(bool)
-        action_mask = action_mask * action_mask_bool
+        action_mask = action_mask * default_action_mask
 
         next_state = next_state.replace(action_mask=action_mask)  # type: ignore
         # Generate observation from the state
