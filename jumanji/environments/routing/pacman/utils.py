@@ -370,11 +370,8 @@ def check_ghost_collisions(
         old_ghost_pos: chex.Array,
     ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric, chex.Numeric]:
         """Check if ghost has collided with player"""
-        eat = lambda: True
-        no_eat = lambda: False
         frightened_time = state.frightened_state_time
-
-        is_eat = jax.lax.cond(frightened_time > 0, eat, no_eat)
+        is_eat = frightened_time > 0
 
         ghost_p = Position(y=ghost_pos[0], x=ghost_pos[1])
         old_ghost_p = Position(y=old_ghost_pos[0], x=old_ghost_pos[1])
