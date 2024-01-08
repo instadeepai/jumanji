@@ -85,7 +85,7 @@ class State:
     ghost_init_steps: chex.Array  # (4,)
     ghost_actions: chex.Array  # (4,)
     last_direction: jnp.int32  # ()
-    dead: jnp.bool_  # ()
+    dead: bool  # ()
     visited_index: chex.Array  # (320,2)
     ghost_starts: chex.Array  # (4,2)
     scatter_targets: chex.Array  # (4,2)
