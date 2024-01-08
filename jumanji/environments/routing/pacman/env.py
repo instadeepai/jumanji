@@ -329,8 +329,8 @@ class PacMan(Environment[State]):
         collision_rewards, pellets, num_pellets = self.check_rewards(state)
 
         # Update old ghost locations
-        state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)  # type: ignore
-        state = state.replace(old_ghost_locations=old_ghost_locations)  # type: ignore
+        state = state.replace(ghost_init_steps=state.ghost_init_steps - 1)
+        state = state.replace(old_ghost_locations=old_ghost_locations)
 
         state = state.replace(pellet_locations=pellets)  # type: ignore
         state = state.replace(pellets=num_pellets)  # type: ignore
