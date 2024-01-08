@@ -385,7 +385,7 @@ class PacMan(Environment[State]):
         ate_pellet = jnp.any(jnp.all(ps == pellet_spaces, axis=-1))
 
         # Reduce number of pellets on map if eaten, add reward and remove eaten pellet
-        num_pellets -= ate_pellet * 1
+        num_pellets -= ate_pellet.astype(int)
         rewards = ate_pellet * 10.0
         mask = jnp.logical_not(jnp.all(ps == pellet_spaces, axis=-1))
         pellet_spaces = pellet_spaces * mask[..., None]
