@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""File adapted from [Rware](https://github.com/semitable/robotic-warehouse). More specifically,
+the rendering code is copied from the original Rware environment and should be ignored from the
+copyright."""
+
 # flake8: noqa: CCR001
 
 from typing import Callable, Optional, Sequence, Tuple
