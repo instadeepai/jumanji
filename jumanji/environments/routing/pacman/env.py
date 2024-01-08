@@ -371,7 +371,6 @@ class PacMan(Environment[State]):
             rewards: an integer representing the reward earned by the player in the current state
             pellet_spaces: a 2D jax array showing the location of all remaining cookies
             num_cookies: an integer counting the remaining cookies on the map.
-
         """
         pellet_spaces = jnp.array(state.pellet_locations)
         player_space = state.player_locations
