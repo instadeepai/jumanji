@@ -206,10 +206,7 @@ class PacMan(Environment[State]):
         Returns:
             action_spec: a `specs.DiscreteArray` spec object.
         """
-        return specs.DiscreteArray(
-            5,
-            name="action",
-        )
+        return specs.DiscreteArray(5, name="action")
 
     def __repr__(self) -> str:
 
