@@ -22,7 +22,9 @@ from jax import nn
 from jumanji.environments.routing.pacman.types import Position, State
 
 
-def ghost_move(state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
+def ghost_move(
+    state: State, x_size: int, y_size: int
+) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
     """
     Generate a move for each ghost and update their positions accordingly.
 
@@ -67,6 +69,8 @@ def ghost_move(state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
             ghost_init_target,
             old_ghost_locations,
             scatter_target,
+            x_size,
+            y_size,
         )
         vert_col = jnp.array([1, 0, 1, 0])
         hor_col = jnp.array([0, 1, 0, 1])
@@ -142,7 +146,7 @@ def ghost_move(state: State) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
         )
 
         # If using the teleporter shift to the other side of the map
-        path = jnp.array([new_pos_col % state.y_size, new_pos_row % state.x_size])
+        path = jnp.array([new_pos_col % y_size, new_pos_row % x_size])
         path = jax.lax.cond(ghost_start <= 0, lambda: path, lambda: position)
 
         return path, chosen_action
@@ -172,6 +176,8 @@ def check_ghost_wall_collisions(
     init_target: chex.Array,
     old_ghost_locations: chex.Array,
     scatter_target: chex.Array,
+    x_size: int,
+    y_size: int,
 ) -> Tuple[bool, chex.Array, chex.Array]:
 
     """
@@ -229,7 +235,7 @@ def check_ghost_wall_collisions(
         of the current position of pacman.
         """
 
-        pac_pos = player_step(state, pac_dir, steps=steps)
+        pac_pos = player_step(state, pac_dir, x_size, y_size, steps=steps)
         distance_list = jax.vmap(get_directions, in_axes=(None, 0))(pac_pos, ghost_p)
         ghost_dist = jax.vmap(jnp.linalg.norm, in_axes=(0))(distance_list)
 
@@ -441,7 +447,9 @@ def get_directions(pacman_position: Position, ghost_position: chex.Array) -> che
     return distance
 
 
-def player_step(state: State, action: int, steps: int = 1) -> Position:
+def player_step(
+    state: State, action: int, x_size: int, y_size: int, steps: int = 1
+) -> Position:
     """
     Compute the new position of the player based on the given state and action.
 
@@ -466,5 +474,5 @@ def player_step(state: State, action: int, steps: int = 1) -> Position:
         action, [move_left, move_up, move_right, move_down, no_op], position
     )
 
-    new_pos = Position(x=new_pos_col % state.x_size, y=new_pos_row % state.y_size)
+    new_pos = Position(x=new_pos_col % x_size, y=new_pos_row % y_size)
     return new_pos

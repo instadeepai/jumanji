@@ -313,13 +313,15 @@ class PacMan(Environment[State]):
         key, _ = jax.random.split(key)
 
         # Move player
-        next_player_pos = player_step(state=state, action=action, steps=1)
+        next_player_pos = player_step(
+            state=state, action=action, x_size=self.x_size, y_size=self.y_size, steps=1
+        )
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
         state = state.replace(last_direction=jnp.array(action, jnp.int32))  # type: ignore
 
         # Move ghosts
         old_ghost_locations = state.ghost_locations
-        ghost_paths, ghost_actions, key = ghost_move(state)
+        ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size)
 
         # Check for collisions with ghosts
         state, done, ghost_col_rewards = check_ghost_collisions(
@@ -418,7 +420,7 @@ class PacMan(Environment[State]):
             action, [move_left, move_up, move_right, move_down, no_op], position
         )
 
-        new_pos = Position(x=new_pos_col % state.x_size, y=new_pos_row % state.y_size)
+        new_pos = Position(x=new_pos_col % self.x_size, y=new_pos_row % self.y_size)
         return new_pos
 
     def check_power_up(
