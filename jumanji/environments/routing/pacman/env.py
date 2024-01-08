@@ -372,13 +372,19 @@ class PacMan(Environment[State]):
             pellet_spaces: a 2D jax array showing the location of all remaining cookies
             num_cookies: an integer counting the remaining cookies on the map.
         """
+
+        # Get the locations of the pellets and the player
         pellet_spaces = jnp.array(state.pellet_locations)
         player_space = state.player_locations
         ps = jnp.array([player_space.y, player_space.x])
 
+        # Get the number of pellets on the map
         num_pellets = state.pellets
+
+        # Check if player has eaten a pellet in this step
         ate_pellet = jnp.any(jnp.all(ps == pellet_spaces, axis=-1))
 
+        # Reduce number of pellets on map if eaten, add reward and remove eaten pellet
         num_pellets -= ate_pellet * 1
         rewards = ate_pellet * 10.0
         mask = jnp.logical_not(jnp.all(ps == pellet_spaces, axis=-1))
