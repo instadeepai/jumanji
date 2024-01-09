@@ -140,7 +140,7 @@ class AsciiGenerator(Generator):
         return State(
             key=key,
             grid=grid,
-            pellets=pellets,
+            pellets=jnp.array(pellets, jnp.int32),
             frightened_state_time=frightened_state_time,
             pellet_locations=pellet_locations,
             power_up_locations=power_up_locations,
