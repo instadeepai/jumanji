@@ -447,7 +447,7 @@ class PacMan(Environment[State]):
         on_powerup = (player_loc == power_up_locations).all(axis=-1).any()
         eat = on_powerup.astype(int)
         mask = (player_loc == power_up_locations).all(axis=-1)
-        invert_mask = mask != ~mask
+        invert_mask = ~mask
         invert_mask = invert_mask.reshape(4, 1)
 
         # Mask out collected power-ups
