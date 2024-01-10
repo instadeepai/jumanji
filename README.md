@@ -1,7 +1,9 @@
 <p align="center">
-    <a href="docs/img/jumanji_logo.png">
-        <img src="docs/img/jumanji_logo.png" alt="Jumanji logo" width="50%"/>
-    </a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/jumanji_logo_dm.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/jumanji_logo.png">
+  <img alt="Jumanji Logo" src="docs/img/jumanji_logo.png", width="50%">
+</picture>
 </p>
 
 [![Python Versions](https://img.shields.io/pypi/pyversions/jumanji.svg?style=flat-square)](https://www.python.org/doc/versions/)

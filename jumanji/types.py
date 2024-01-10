@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import field
 from typing import TYPE_CHECKING, Dict, Generic, Optional, Sequence, TypeVar, Union
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
@@ -71,14 +72,14 @@ class TimeStep(Generic[Observation]):
         extras: environment metric(s) or information returned by the environment but
             not observed by the agent (hence not in the observation). For example, it
             could be whether an invalid action was taken. In most environments, extras
-            is None.
+            is an empty dictionary.
     """
 
     step_type: StepType
     reward: Array
     discount: Array
     observation: Observation
-    extras: Optional[Dict] = None
+    extras: Dict = field(default_factory=dict)
 
     def first(self) -> Array:
         return self.step_type == StepType.FIRST
@@ -110,6 +111,7 @@ def restart(
     Returns:
         TimeStep identified as a reset.
     """
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.FIRST,
         reward=jnp.zeros(shape, dtype=float),
@@ -144,6 +146,7 @@ def transition(
         TimeStep identified as a transition.
     """
     discount = discount if discount is not None else jnp.ones(shape, dtype=float)
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.MID,
         reward=reward,
@@ -175,6 +178,7 @@ def termination(
     Returns:
         TimeStep identified as the termination of an episode.
     """
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,
@@ -208,6 +212,7 @@ def truncation(
         TimeStep identified as the truncation of an episode.
     """
     discount = discount if discount is not None else jnp.ones(shape, dtype=float)
+    extras = extras or {}
     return TimeStep(
         step_type=StepType.LAST,
         reward=reward,
@@ -228,4 +233,4 @@ def get_valid_dtype(dtype: Union[jnp.dtype, type]) -> jnp.dtype:
     Returns:
         dtype converted to the correct type precision.
     """
-    return jnp.empty((), dtype).dtype
+    return jnp.empty((), dtype).dtype  # type: ignore
