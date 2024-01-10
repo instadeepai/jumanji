@@ -184,13 +184,13 @@ class TestArray:
 
     def test_dtype_type_error(self) -> None:
         with pytest.raises(TypeError):
-            specs.Array((1, 2, 3), "32")
+            specs.Array((1, 2, 3), "32")  # type: ignore
 
     def test_scalar_shape(self) -> None:
         specs.Array((), jnp.int32)
 
     def test_string_dtype_error(self) -> None:
-        specs.Array((1, 2, 3), "int32")
+        specs.Array((1, 2, 3), "int32")  # type: ignore
 
     def test_dtype(self) -> None:
         specs.Array((1, 2, 3), int)
