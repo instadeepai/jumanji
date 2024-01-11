@@ -94,7 +94,7 @@ class AsciiGenerator(Generator):
     """Generate maze from an ascii diagram."""
 
     def __init__(self, maze: List) -> None:
-        """Instantiates a `DefaultGenerator`.
+        """Instantiates an `AsciiGenerator `.
 
         This method takes in an ascii maze where each entry is one row of the maze.
         This maze is used to generate the initial state and has specific values to
