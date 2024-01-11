@@ -4,7 +4,7 @@
         <img src="../env_anim/pacman.gif" width="600"/>
 </p>
 
-We provide here a minimal Jax JIT-able implementation of the game pacman. The game is played in a 2D matrix where a cell is a free space (black), a wall (dark blue), pacman (yellow) or a ghost.
+We provide here a minimal Jax JIT-able implementation of the game [PAC-MAN](https://pacman.com/en/history/). The game is played in a 2D matrix where a cell is a free space (black), a wall (dark blue), pacman (yellow) or a ghost.
 
 
 The goal is for the agent (yellow) to collect all of the pellets (small pink blocks) on the map without touching any of the ghosts. The agent receives a reward of +10 when collecting a pellet for the first time and pellets are removed from the map after being collected.
