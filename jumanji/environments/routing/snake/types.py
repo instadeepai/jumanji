@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 from enum import IntEnum
 from typing import TYPE_CHECKING, NamedTuple
@@ -27,12 +28,12 @@ class Position(NamedTuple):
     row: chex.Array
     col: chex.Array
 
-    def __eq__(self, other: "Position") -> chex.Array:  # type: ignore[override]
+    def __eq__(self, other: Position) -> chex.Array:  # type: ignore[override]
         if not isinstance(other, Position):
             return NotImplemented
         return (self.row == other.row) & (self.col == other.col)
 
-    def __add__(self, other: "Position") -> "Position":  # type: ignore[override]
+    def __add__(self, other: Position) -> Position:  # type: ignore[override]
         if not isinstance(other, Position):
             return NotImplemented
         return Position(row=self.row + other.row, col=self.col + other.col)
