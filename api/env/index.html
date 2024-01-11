@@ -1611,7 +1611,7 @@ The API is inspired by <a href="https://github.com/google/brax/blob/main/brax/en
 
 
 <h3 id="jumanji.env.Environment.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.env.Environment.reset" class="headerlink" title="Permanent link">#</a></h3>
@@ -1633,7 +1633,7 @@ The API is inspired by <a href="https://github.com/google/brax/blob/main/brax/en
   <tbody>
       <tr>
         <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
+        <td><code>chex.PRNGKey</code></td>
         <td><p>random key used to reset the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1666,7 +1666,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h3 id="jumanji.env.Environment.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.env.Environment.step" class="headerlink" title="Permanent link">#</a></h3>
@@ -1688,13 +1688,13 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
+        <td><code>chex.Array</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1727,7 +1727,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h3 id="jumanji.env.Environment.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Spec</span></code>
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
 
 
 <a href="#jumanji.env.Environment.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
@@ -1762,7 +1762,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h3 id="jumanji.env.Environment.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Spec</span></code>
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
 
 
 <a href="#jumanji.env.Environment.action_spec" class="headerlink" title="Permanent link">#</a></h3>
@@ -1797,7 +1797,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h3 id="jumanji.env.Environment.reward_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
+<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
 
 
 <a href="#jumanji.env.Environment.reward_spec" class="headerlink" title="Permanent link">#</a></h3>
@@ -1833,7 +1833,7 @@ single float.</p>
 
 
 <h3 id="jumanji.env.Environment.discount_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoundedArray</span></code>
+<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">BoundedArray</span></code>
 
 
 <a href="#jumanji.env.Environment.discount_spec" class="headerlink" title="Permanent link">#</a></h3>
@@ -1869,7 +1869,7 @@ single float between 0 and 1.</p>
 
 
 <h3 id="jumanji.env.Environment.render" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
+<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
 
 
 <a href="#jumanji.env.Environment.render" class="headerlink" title="Permanent link">#</a></h3>
@@ -1891,7 +1891,7 @@ single float between 0 and 1.</p>
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the current dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1981,7 +1981,7 @@ single float between 0 and 1.</p>
   <small>
     
       Last update:
-      2024-01-10
+      2024-01-11
     
   </small>
 </div>

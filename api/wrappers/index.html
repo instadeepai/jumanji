@@ -1628,7 +1628,7 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
 
 
 <h4 id="jumanji.wrappers.Wrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -1650,7 +1650,7 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
   <tbody>
       <tr>
         <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
+        <td><code>chex.PRNGKey</code></td>
         <td><p>random key used to reset the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1683,7 +1683,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.Wrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1705,13 +1705,13 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
+        <td><code>chex.Array</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1744,7 +1744,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h4 id="jumanji.wrappers.Wrapper.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Spec</span></code>
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.observation_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -1764,7 +1764,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h4 id="jumanji.wrappers.Wrapper.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Spec</span></code>
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.action_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -1784,7 +1784,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h4 id="jumanji.wrappers.Wrapper.reward_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
+<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.reward_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -1804,7 +1804,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h4 id="jumanji.wrappers.Wrapper.discount_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoundedArray</span></code>
+<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">BoundedArray</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.discount_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -1824,7 +1824,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 <h4 id="jumanji.wrappers.Wrapper.render" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
+<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.render" class="headerlink" title="Permanent link">#</a></h4>
@@ -1846,7 +1846,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -1991,7 +1991,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">prng</span><span class="o">.</span><span class="n">PRNGKeyArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2022,7 +2022,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
       </tr>
       <tr>
         <td><code>key</code></td>
-        <td><code>Optional[jax._src.prng.PRNGKeyArray]</code></td>
+        <td><code>Optional[chex.PRNGKey]</code></td>
         <td><p>optional key to initialize the <code>Environment</code> with.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -2039,7 +2039,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -2084,7 +2084,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStep</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">ArrayNumpy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">TimeStep</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2112,7 +2112,7 @@ has been constructed and <code>reset</code> has not been called. Again, in this 
   <tbody>
       <tr>
         <td><code>action</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>chex.ArrayNumpy</code></td>
         <td><p>A NumPy array, or a nested dict, list or tuple of arrays
 corresponding to <code>action_spec()</code>.</p></td>
         <td><em>required</em></td>
@@ -2159,7 +2159,7 @@ corresponding to <code>action_spec()</code>.</p></td>
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.observation_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -2179,7 +2179,7 @@ corresponding to <code>action_spec()</code>.</p></td>
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span></code>
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToDMEnvWrapper.action_spec" class="headerlink" title="Permanent link">#</a></h4>
@@ -2239,7 +2239,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7fc4dd0de670</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7fc4dd0dee50</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f160ac735e0</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f160ac73dc0</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2273,14 +2273,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x7fc4dd0de670&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f160ac735e0&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x7fc4dd0dee50&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f160ac73dc0&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -2295,7 +2295,7 @@ scalar value, e.g. max.</p></td>
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="o">~</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.MultiToSingleWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -2317,7 +2317,7 @@ scalar value, e.g. max.</p></td>
   <tbody>
       <tr>
         <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
+        <td><code>chex.PRNGKey</code></td>
         <td><p>random key used to reset the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2350,7 +2350,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="o">~</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.MultiToSingleWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2375,13 +2375,13 @@ essentially means that if any single agent is alive, the discount value won't be
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
+        <td><code>chex.Array</code></td>
         <td><p>Array containing the action to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2460,7 +2460,7 @@ batch size is not known to the VmapWrapper. Methods that omit the batch dimensio
 
 
 <h4 id="jumanji.wrappers.VmapWrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="o">~</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.VmapWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -2485,7 +2485,7 @@ with the parameter <code>num</code> representing the number of concurrent enviro
   <tbody>
       <tr>
         <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
+        <td><code>chex.PRNGKey</code></td>
         <td><p>random keys used to reset the environments where the first dimension is the number
 of desired environments.</p></td>
         <td><em>required</em></td>
@@ -2520,7 +2520,7 @@ timestep: TimeStep object corresponding the first timesteps returned by the
 
 
 <h4 id="jumanji.wrappers.VmapWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="o">~</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.VmapWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2545,13 +2545,13 @@ environments.</p>
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the dynamics of the environments.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
+        <td><code>chex.Array</code></td>
         <td><p>Array containing the actions to take.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2584,7 +2584,7 @@ timestep: TimeStep object corresponding the timesteps returned by the environmen
 
 
 <h4 id="jumanji.wrappers.VmapWrapper.render" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
+<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
 
 
 <a href="#jumanji.wrappers.VmapWrapper.render" class="headerlink" title="Permanent link">#</a></h4>
@@ -2607,7 +2607,7 @@ The remaining elements of the batched state are ignored.</p>
   <tbody>
       <tr>
         <td><code>state</code></td>
-        <td><code>~State</code></td>
+        <td><code>State</code></td>
         <td><p>State object containing the current dynamics of the environment.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2670,7 +2670,7 @@ being processed each time <code>step</code> is called. Please use the <code>Vmap
 
 
 <h4 id="jumanji.wrappers.AutoResetWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="o">~</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="o">~</span><span class="n">Observation</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.AutoResetWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2822,7 +2822,7 @@ JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>)
 
 
 <h4 id="jumanji.wrappers.JumanjiToGymWrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">GymObservation</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GymObservation</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToGymWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -2859,7 +2859,7 @@ info (optional): contains supplementary information such as metrics.</p></td>
 
 
 <h4 id="jumanji.wrappers.JumanjiToGymWrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">ArrayNumpy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GymObservation</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.JumanjiToGymWrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -2881,7 +2881,7 @@ info (optional): contains supplementary information such as metrics.</p></td>
   <tbody>
       <tr>
         <td><code>action</code></td>
-        <td><code>ndarray</code></td>
+        <td><code>chex.ArrayNumpy</code></td>
         <td><p>A NumPy array representing the action provided by the agent.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -3025,7 +3025,7 @@ info: contains supplementary information such as metrics.</p></td>
 
 
 <h3 id="jumanji.wrappers.jumanji_to_gym_obs" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">jumanji_to_gym_obs</span><span class="p">(</span><span class="n">observation</span><span class="p">:</span> <span class="o">~</span><span class="n">Observation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span></code>
+<code class="highlight language-python"><span class="n">jumanji_to_gym_obs</span><span class="p">(</span><span class="n">observation</span><span class="p">:</span> <span class="n">Observation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GymObservation</span></code>
 
 
 <a href="#jumanji.wrappers.jumanji_to_gym_obs" class="headerlink" title="Permanent link">#</a></h3>
@@ -3047,7 +3047,7 @@ info: contains supplementary information such as metrics.</p></td>
   <tbody>
       <tr>
         <td><code>observation</code></td>
-        <td><code>~Observation</code></td>
+        <td><code>Observation</code></td>
         <td><p>JAX pytree with (possibly nested) containers that
 either have the <code>__dict__</code> or <code>_asdict</code> methods implemented.</p></td>
         <td><em>required</em></td>
@@ -3064,7 +3064,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   </thead>
   <tbody>
     <tr>
-      <td><code>Any</code></td>
+      <td><code>GymObservation</code></td>
       <td><p>Numpy array or nested dictionary of numpy arrays.</p></td>
     </tr>
   </tbody>
@@ -3089,7 +3089,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2024-01-10
+      2024-01-11
     
   </small>
 </div>
