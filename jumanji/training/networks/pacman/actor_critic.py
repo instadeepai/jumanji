@@ -173,7 +173,7 @@ def make_network_pacman(
         output = output = jnp.concatenate(
             [embedding, player_pos, ghost_locations_x, ghost_locations_y, scatter_time],
             axis=-1,
-        )  # (B, H+1)
+        )  # (B, H+...)
 
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)
