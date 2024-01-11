@@ -18,7 +18,6 @@ The game takes place on a fixed map and the same map is generated on each reset.
 ## Observation
 As an observation, the agent has access to the current maze configuration in the array named
 `grid`. It also has access to its current position `player_locations`, the ghosts' locations
-
 `ghost_locations`, the power-pellet locations `power_up_location`, the time left for the scatter state `frightened_state_time`, the pellet locations `pellet_locations` and the action
 mask `action_mask`.
 
