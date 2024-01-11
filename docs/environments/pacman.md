@@ -24,11 +24,11 @@ mask `action_mask`.
 
 - `agent_position`: Position(row, col) (int32) each of shape `()`, agent position in the maze.
 
-- `ghost_locations`: jax array (int) of shape `(4,4)`, with the (y,x) coordinates of each ghost
+- `ghost_locations`: jax array (int32) of shape `(4,2)`, with the (y,x) coordinates of each ghost
 
-- `power_up_locations`: jax array (int) of shape `(4,4)`, with the (y,x) coordinates of each power-pellet
+- `power_up_locations`: jax array (int32) of shape `(4,2)`, with the (y,x) coordinates of each power-pellet
 
-- `pellet_locations`: jax array (int) of shape `(4,4)`, with the (y,x) coordinates of each pellet
+- `pellet_locations`: jax array (int32) of shape `(4,2)`, with the (y,x) coordinates of each pellet
 
 - `frightened_state_time`: jax array (int32) of shape `()`, number of steps left of the scatter state.
 
