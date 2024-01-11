@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Adapted from Brax."""
+from __future__ import annotations
 
 import abc
 
@@ -39,7 +40,7 @@ class Distribution(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def kl_divergence(self, other: "Distribution") -> chex.Array:
+    def kl_divergence(self, other: Distribution) -> chex.Array:
         pass
 
 
@@ -77,7 +78,7 @@ class CategoricalDistribution(Distribution):
 
     def kl_divergence(  # type: ignore[override]
         self,
-        other: "CategoricalDistribution",
+        other: CategoricalDistribution,
     ) -> chex.Array:
         log_probs = jax.nn.log_softmax(self.logits)
         probs = jax.nn.softmax(self.logits)
