@@ -13,7 +13,7 @@ The power-ups (large pink blocks) trigger a 'scatter mode' which changes the col
 
 The agent selects an action at each timestep (up, left, right, down, no-op) which determines the direction they wil travel for that step. However, even if an action is in an invalid direction it will still be taken as input and the player will remain stationary. If the no-op action is used the player will not stop but instead take the last action that was selected.
 
-The game takes place on a fixed map and the same map is generated on each reset. The generator can be used to generate new maps based on an ASCII representation of the desired map.
+The game takes place on a fixed map and the same map is generated on each reset. The generator can be used to generate new maps based on an ASCII representation of the desired map. This ASCII generator is deterministic and will always initialise to the same state as long as the same ASCII diagram is is use.
 
 ## Observation
 As an observation, the agent has access to the current maze configuration in the array named

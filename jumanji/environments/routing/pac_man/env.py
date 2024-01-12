@@ -36,11 +36,12 @@ from jumanji.viewer import Viewer
 
 
 class PacMan(Environment[State]):
-    """A JAX implementation of the 'Pac-Man' game where a single agent must navigate a
+    """A JAX implementation of the 'PacMan' game where a single agent must navigate a
     maze to collect pellets and avoid 4 heuristic agents. The game takes place on a 31x28
     grid where the player can move in 4 directions (left, right, up, down) and collect
     pellets to gain points. The goal is to collect all of the pellets on the board without
-    colliding with one of the heuristic agents.
+    colliding with one of the heuristic agents. Using the AsciiGenerator the environment
+    will always generate the same maze as long as the same Ascii diagram is in use.
 
     - observation: `Observation`
         - player_locations: current 2D position of agent.

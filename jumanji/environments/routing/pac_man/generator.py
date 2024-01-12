@@ -98,7 +98,9 @@ class AsciiGenerator(Generator):
 
         This method takes in an ascii maze where each entry is one row of the maze.
         This maze is used to generate the initial state and has specific values to
-        represent pellets, power_ups, the ghosts, the player and walls.
+        represent pellets, power_ups, the ghosts, the player and walls. It is
+        important to note that this generator is deterministic and will always
+        generate the same maze for for the same Ascii diagram.
 
         Args:
             maze: ascii repsesentation of maze to create.
