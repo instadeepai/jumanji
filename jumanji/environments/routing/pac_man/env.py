@@ -170,7 +170,7 @@ class PacMan(Environment[State]):
             name="power_up_locations",
         )
         pellet_locations = specs.Array(
-            shape=(self.pellet_spaces.shape[0], self.pellet_spaces.shape[1]),
+            shape=(self.pellet_spaces.shape),
             dtype=jnp.int32,
             name="pellet_locations",
         )
