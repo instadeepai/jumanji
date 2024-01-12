@@ -31,7 +31,7 @@ mask `action_mask`.
 
 - `frightened_state_time`: jax array (int32) of shape `()`, number of steps left of the scatter state.
 
-- `action_mask`: jax array (bool) of shape `(4,)`, binary values denoting whether each action is
+- `action_mask`: jax array (bool) of shape `(5,)`, binary values denoting whether each action is
 possible.
 - `frightened_state_time`: (int32) tracking the number of steps for the scatter state.
 - `score`: (int32) tracking the total points accumulated since the last reset.
