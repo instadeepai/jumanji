@@ -56,10 +56,10 @@ unchanged. Additionally if a no-op is performed the agent will use the last norm
 
 
 ## Reward
-Pacman is a dense reward setting, where the agent receives a reward of +10 for each pellet collected. The agent also recieve a reward of 20 for collecting a power pellet. The game ends when the agent has collected all 316 pellets on the map or touches a ghost.
+PacMan is a dense reward setting, where the agent receives a reward of +10 for each pellet collected. The agent also recieve a reward of 20 for collecting a power pellet. The game ends when the agent has collected all 316 pellets on the map or touches a ghost.
 
 Eating a ghost when scatter mode is enabled also awards +200 points but, points are only awarded the first time each unique ghost is eaten.
 
 
 ## Registered Versions 📖
-- `PacMan-v0`, Pacman in a 31x28 map with simple grid observations.
+- `PacMan-v0`, PacMan in a 31x28 map with simple grid observations.

@@ -32,7 +32,7 @@ from jumanji.environments.routing import (
     maze,
     mmst,
     multi_cvrp,
-    pacman,
+    pac_man,
     robot_warehouse,
     snake,
     tsp,
@@ -43,7 +43,7 @@ from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.maze.env import Maze
 from jumanji.environments.routing.mmst.env import MMST
 from jumanji.environments.routing.multi_cvrp import MultiCVRP
-from jumanji.environments.routing.pacman.env import PacMan
+from jumanji.environments.routing.pac_man.env import PacMan
 from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.tsp.env import TSP

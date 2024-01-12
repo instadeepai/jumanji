@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from jumanji.environments.routing.pacman import Observation, PacMan
+from jumanji.environments.routing.pac_man import Observation, PacMan
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
