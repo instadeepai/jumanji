@@ -25,7 +25,7 @@ from jumanji.environments.routing.pac_man.viewer import PacManViewer
 
 @pytest.fixture
 def pac_man() -> PacMan:
-    """Instantiates a default pacman environment."""
+    """Instantiates a default PacMan environment."""
     return PacMan()
 
 

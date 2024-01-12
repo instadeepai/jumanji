@@ -31,25 +31,25 @@ from jumanji.training.networks.parametric_distribution import (
 
 
 def make_actor_critic_networks_pacman(
-    pacman: PacMan,
+    pac_man: PacMan,
     num_channels: Sequence[int],
     policy_layers: Sequence[int],
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
-    """Make actor-critic networks for the `pacman` environment."""
-    num_actions = np.asarray(pacman.action_spec().num_values)
+    """Make actor-critic networks for the `PacMan` environment."""
+    num_actions = np.asarray(pac_man.action_spec().num_values)
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )
-    policy_network = make_network_pacman(
-        pacman=pacman,
+    policy_network = make_network_pac_man(
+        pac_man=pac_man,
         critic=False,
         conv_n_channels=num_channels,
         mlp_units=policy_layers,
         num_actions=num_actions,
     )
-    value_network = make_network_pacman(
-        pacman=pacman,
+    value_network = make_network_pac_man(
+        pac_man=pac_man,
         critic=True,
         conv_n_channels=num_channels,
         mlp_units=value_layers,
@@ -131,8 +131,8 @@ def process_image(observation: Observation) -> chex.Array:
     return rgb
 
 
-def make_network_pacman(
-    pacman: PacMan,
+def make_network_pac_man(
+    pac_man: PacMan,
     critic: bool,
     conv_n_channels: Sequence[int],
     mlp_units: Sequence[int],
