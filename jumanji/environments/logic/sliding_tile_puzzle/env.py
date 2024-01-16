@@ -88,7 +88,7 @@ class SlidingTilePuzzle(Environment[State]):
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomGenerator(grid_size=5)
-        self.reward_fn = reward_fn or ImprovedDenseRewardFn()
+        self.reward_fn = reward_fn or DenseRewardFn()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
