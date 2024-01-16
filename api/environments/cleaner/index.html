@@ -1560,7 +1560,7 @@ a maze.</p>
 <li>
 <p>observation: <code>Observation</code></p>
 <ul>
-<li>grid: jax array (int32) of shape (num_rows, num_cols)
+<li>grid: jax array (int8) of shape (num_rows, num_cols)
     contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.</li>
 <li>agents_locations: jax array (int32) of shape (num_agents, 2)
     contains the location of each agent on the board.</li>
@@ -1590,7 +1590,7 @@ a maze.</p>
 <li>
 <p>state: <code>State</code></p>
 <ul>
-<li>grid: jax array (int32) of shape (num_rows, num_cols)
+<li>grid: jax array (int8) of shape (num_rows, num_cols)
     contains the current state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.</li>
 <li>agents_locations: jax array (int32) of shape (num_agents, 2)
     contains the location of each agent on the board.</li>
@@ -1750,7 +1750,7 @@ mode.</p></td>
     <tr>
       <td><code>Spec for the `Observation`, consisting of the fields</code></td>
       <td><ul>
-<li>grid: BoundedArray (int32) of shape (num_rows, num_cols). Values
+<li>grid: BoundedArray (int8) of shape (num_rows, num_cols). Values
         are between 0 and 2 (inclusive).<ul>
 <li>agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
     Maximum value for the first column is num_rows, and maximum value
@@ -2067,7 +2067,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2024-01-11
+      2024-01-16
     
   </small>
 </div>

@@ -1508,7 +1508,7 @@ always start in the top left corner of the maze.</p>
 <p>The <strong>observation</strong> seen by the agent is a <code>NamedTuple</code> containing the following:</p>
 <ul>
 <li>
-<p><code>grid</code>: jax array (int) of shape <code>(num_rows, num_cols)</code>, array representing the grid, each tile is
+<p><code>grid</code>: jax array (int8) of shape <code>(num_rows, num_cols)</code>, array representing the grid, each tile is
     either dirty (0), clean (1), or a wall (2).</p>
 </li>
 <li>
@@ -1550,7 +1550,7 @@ maze faster.</p>
   <small>
     
       Last update:
-      2024-01-11
+      2024-01-16
     
   </small>
 </div>
