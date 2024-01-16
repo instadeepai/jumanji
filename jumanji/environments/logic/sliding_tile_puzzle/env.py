@@ -44,6 +44,7 @@ class SlidingTilePuzzle(Environment[State]):
 
     The problem is a combinatorial optimization task where the goal is
     to move the empty tile around in order to arrange all the tiles in order.
+    See more info: https://en.wikipedia.org/wiki/Sliding_puzzle.
 
     - observation: `Observation`
         - puzzle: jax array (int32) of shape (N, N), representing the current state of the puzzle.
