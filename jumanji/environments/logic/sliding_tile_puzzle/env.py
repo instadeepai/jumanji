@@ -84,8 +84,7 @@ class SlidingTilePuzzle(Environment[State]):
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
-                Implemented options are [`DenseRewardFn`, `SparseRewardFn`,
-                `ImprovedDenseRewardFn`]. Defaults to `ImprovedDenseRewardFn`.
+                Implemented options are [`DenseRewardFn`, `SparseRewardFn`]. Defaults to `DenseRewardFn`.
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomGenerator(grid_size=5)
