@@ -28,7 +28,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     RandomGenerator,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.reward import (
-    ImprovedDenseRewardFn,
+    DenseRewardFn,
     RewardFn,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, State
