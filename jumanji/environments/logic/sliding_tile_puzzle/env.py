@@ -152,7 +152,7 @@ class SlidingTilePuzzle(Environment[State]):
         puzzle: chex.Array,
         empty_tile_position: chex.Array,
         action: chex.Array,
-    ) -> Tuple[chex.Array, chex.Array]:
+    ) -> chex.Array:
         """Moves the empty tile in the given direction and returns the updated puzzle and reward."""
 
         # Compute the new position
