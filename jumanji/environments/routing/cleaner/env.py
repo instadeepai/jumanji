@@ -35,7 +35,7 @@ class Cleaner(Environment[State]):
     a maze.
 
     - observation: `Observation`
-        - grid: jax array (int32) of shape (num_rows, num_cols)
+        - grid: jax array (int8) of shape (num_rows, num_cols)
             contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int32) of shape (num_agents, 2)
             contains the location of each agent on the board.
@@ -57,7 +57,7 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int32) of shape (num_rows, num_cols)
+        - grid: jax array (int8) of shape (num_rows, num_cols)
             contains the current state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int32) of shape (num_agents, 2)
             contains the location of each agent on the board.
@@ -127,7 +127,7 @@ class Cleaner(Environment[State]):
 
         Returns:
             Spec for the `Observation`, consisting of the fields:
-                - grid: BoundedArray (int32) of shape (num_rows, num_cols). Values
+                - grid: BoundedArray (int8) of shape (num_rows, num_cols). Values
                     are between 0 and 2 (inclusive).
                 - agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
                     Maximum value for the first column is num_rows, and maximum value
