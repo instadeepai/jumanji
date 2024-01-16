@@ -52,7 +52,7 @@ class SlidingTilePuzzle(Environment[State]):
         - action_mask: jax array (bool) of shape (4,), indicating which actions are valid
             in the current state of the environment.
 
-    - action: Tuple of int32, representing the direction to move the empty tile
+    - action: int32, representing the direction to move the empty tile
         (up, down, left, right)
 
     - reward: float, a dense reward is provided based on the arrangement of the tiles.
