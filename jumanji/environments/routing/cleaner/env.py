@@ -135,7 +135,7 @@ class Cleaner(Environment[State]):
                 - action_mask: BoundedArray (bool) of shape (num_agent, 4).
                 - step_count: BoundedArray (int32) of shape ().
         """
-        grid = specs.BoundedArray(self.grid_shape, jnp.int32, 0, 2, "grid")
+        grid = specs.BoundedArray(self.grid_shape, jnp.int8, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
             (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
         )

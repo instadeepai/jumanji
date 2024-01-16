@@ -32,7 +32,8 @@ SAMPLE_GRID = jnp.array(
         [DIRTY, DIRTY, DIRTY, DIRTY, WALL],
         [DIRTY, WALL, WALL, DIRTY, WALL],
         [DIRTY, WALL, DIRTY, DIRTY, DIRTY],
-    ]
+    ],
+    dtype=jnp.int8,
 )
 
 
