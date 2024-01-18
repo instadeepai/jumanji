@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 from typing import (
     Any,
@@ -120,7 +121,7 @@ class Wrapper(Environment[State], Generic[State]):
         """
         return self._env.close()
 
-    def __enter__(self) -> "Wrapper":
+    def __enter__(self) -> Wrapper:
         return self
 
     def __exit__(self, *args: Any) -> None:

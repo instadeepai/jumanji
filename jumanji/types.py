@@ -233,4 +233,4 @@ def get_valid_dtype(dtype: Union[jnp.dtype, type]) -> jnp.dtype:
     Returns:
         dtype converted to the correct type precision.
     """
-    return jnp.empty((), dtype).dtype
+    return jnp.empty((), dtype).dtype  # type: ignore

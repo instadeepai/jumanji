@@ -14,6 +14,7 @@
 
 # Inspired from https://stackoverflow.com/questions/51849395/how-can-we-associate-a-python-context-m
 # anager-to-the-variables-appearing-in-it#:~:text=also%20inspect%20the-,stack,-for%20locals()%20variables
+from __future__ import annotations
 
 import inspect
 import logging
@@ -45,7 +46,7 @@ class Timer(AbstractContextManager):
         """
         return {(k, id(v)): v for k, v in inspect.stack()[2].frame.f_locals.items()}
 
-    def __enter__(self) -> "Timer":
+    def __enter__(self) -> Timer:
         self._variables_enter = self._get_variables()
         self._start_time = time.perf_counter()
         return self
