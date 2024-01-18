@@ -72,13 +72,13 @@ class State:
     Holds the dynamics of the LBF environment.
 
     agents: a stacked pytree of Agents - all the agents in the environment.
-    foods: a stacked pytree of Foods - all the foods in the environment.
+    food: a stacked pytree of Food - all the food in the environment.
     step_count: the index of the current step.
     key: random key used for auto-reset.
     """
 
-    agents: Agent  # (num_agents, ...)
-    foods: Food  # (num_foods, ...)
+    agents: Agent  # List of Agent entities (pytree structure)
+    food_items: Food  # List of Food entities (pytree structure)
     step_count: chex.Array  # ()
     key: chex.PRNGKey  # (2,)
 
@@ -86,12 +86,13 @@ class State:
 class Observation(NamedTuple):
     """
     The observation returned by the LBF environment.
-
-    agents_view: (num_agents, grid_size, grid_size) int32 array representing the view of each agent.
-    action_mask: boolean array representing whether each of the 5 actions is legal, for each agent.
+    agents_view: (num_agents, grid_size, grid_size) int32 array
+        representing the view of each agent.
+    action_mask: boolean array representing which action (noop, up, right, down, left, load)
+        is legal, for each agent.
     step_count: (int32) the current episode step.
     """
 
-    agents_view: chex.Array  # (num_agents, grid_size, grid_size)
+    agents_view: chex.Array  # (num_agents, 3 * (num_food + num_agents))
     action_mask: chex.Array  # (num_agents, 6)
     step_count: chex.Array  # ()

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.lbf.env import LevelBasedForaging
-from jumanji.environments.routing.lbf.observer import GridObserver, VectorObserver
-from jumanji.environments.routing.lbf.types import Agent, Food, Observation, State
+from jumanji.training.networks.masked_categorical_random import (
+    masked_categorical_random,
+)
+from jumanji.training.networks.protocols import RandomPolicy
+
+
+def make_random_policy_lbf() -> RandomPolicy:
+    """Make random policy for RobotWarehouse."""
+    return masked_categorical_random

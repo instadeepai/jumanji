@@ -14,18 +14,19 @@
 
 # flake8: noqa: CCR001
 
-import math
+import os
 from typing import Callable, Optional, Sequence, Tuple
 
-import chex
 import matplotlib.animation as animation
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from numpy.typing import NDArray
 
 import jumanji
-import jumanji.environments.routing.robot_warehouse.constants as constants
+import jumanji.environments.routing.lbf.constants as constants
 from jumanji.environments.routing.lbf.types import Agent, Entity, Food, State
 from jumanji.tree_utils import tree_slice
 from jumanji.viewer import Viewer
@@ -34,25 +35,24 @@ from jumanji.viewer import Viewer
 class LevelBasedForagingViewer(Viewer):
     def __init__(
         self,
-        grid_size: Tuple[int, int],
-        name: str = "RobotWarehouse",
+        grid_size: int,
+        name: str = "LevelBasedForaging",
         render_mode: str = "human",
     ) -> None:
-        """Viewer for the RobotWarehouse environment.
+        """Viewer for the LevelBasedForaging environment.
 
         Args:
-            grid_size: the size of the warehouse floor grid (width, height)
-            name: custom name for the Viewer. Defaults to `RobotWarehouse`.
+            grid_size: the size of the grid (width, height)
+            name: custom name for the Viewer. Defaults to `LevelBasedForaging`.
         """
         self._name = name
-        self.rows, self.cols = grid_size
+        self.rows, self.cols = (grid_size, grid_size)
+        self.grid_size = 30
 
-        self.cell_size = 30
-        self.icon_size = int(self.cell_size / 3)
-        self.adjust_center = self.cell_size / 2
+        self.icon_size = self.grid_size * 5 / self.rows
 
-        self.width = 1 + self.cols * (self.cell_size + 1)
-        self.height = 1 + self.rows * (self.cell_size + 1)
+        self.width = 1 + self.cols * (self.grid_size + 1)
+        self.height = 1 + self.rows * (self.grid_size + 1)
 
         self._display: Callable[[plt.Figure], Optional[NDArray]]
         if render_mode == "rgb_array":
@@ -67,7 +67,7 @@ class LevelBasedForagingViewer(Viewer):
         self._animation: Optional[animation.Animation] = None
 
     def render(self, state: State) -> Optional[NDArray]:
-        """Render the given state of the `RobotWarehouse` environment.
+        """Render the given state of the `LevelBasedForaging` environment.
 
         Args:
             state: the environment state to render.
@@ -96,7 +96,11 @@ class LevelBasedForagingViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=constants._FIGURE_SIZE)
+        fig = plt.figure(
+            f"{self._name}Animation",
+            figsize=constants._FIGURE_SIZE,
+            facecolor=constants._GRID_COLOR,
+        )
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         ax = fig.add_subplot(111)
         plt.close(fig)
@@ -132,7 +136,9 @@ class LevelBasedForagingViewer(Viewer):
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=constants._FIGURE_SIZE, facecolor="black")
+        fig = plt.figure(
+            self._name, figsize=constants._FIGURE_SIZE, facecolor=constants._GRID_COLOR
+        )
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
         if recreate:
@@ -157,72 +163,28 @@ class LevelBasedForagingViewer(Viewer):
 
     def _draw_state(self, ax: plt.Axes, state: State) -> None:
         self._draw_grid(ax)
+        self._draw_food(state.food_items, ax)
         self._draw_agents(state.agents, ax)
-        self._draw_foods(state.foods, ax)
-
-    def _entity_position(self, entity: Entity) -> Tuple[float, float]:
-        """Return the position of an entity on the grid."""
-        row, col = entity.position
-        return (
-            row * self.cell_size + 1 + row + self.adjust_center,
-            col * self.cell_size + 1 + col + self.adjust_center,
-        )
 
     def _draw_grid(self, ax: plt.Axes) -> None:
-        """Draw grid of warehouse floor."""
-        lines = []
-        # VERTICAL LINES
-        for r in range(self.rows + 1):
-            lines.append(
-                [
-                    (0, (self.cell_size + 1) * r + 1),
-                    ((self.cell_size + 1) * self.cols, (self.cell_size + 1) * r + 1),
-                ]
-            )
-
+        """Draw the grid."""
+        lines = [
+            [
+                (0, (self.grid_size + 1) * r + 1),
+                ((self.grid_size + 1) * self.cols, (self.grid_size + 1) * r + 1),
+            ]
+            for r in range(self.rows + 1)
+        ]
         # HORIZONTAL LINES
-        for c in range(self.cols + 1):
-            lines.append(
-                [
-                    ((self.cell_size + 1) * c + 1, 0),
-                    ((self.cell_size + 1) * c + 1, (self.cell_size + 1) * self.rows),
-                ]
-            )
-
-        lc = LineCollection(lines, colors=(1, 1, 1))
+        lines.extend(
+            [
+                ((self.grid_size + 1) * c + 1, 0),
+                ((self.grid_size + 1) * c + 1, (self.grid_size + 1) * self.rows),
+            ]
+            for c in range(self.cols + 1)
+        )
+        lc = LineCollection(lines, colors=(constants._LINE_COLOR,))
         ax.add_collection(lc)
-
-    def _draw_foods(self, foods: Food, ax: plt.Axes) -> None:
-        """Draw the foods on the grid."""
-        num_foods = len(foods.level)
-
-        for i in range(num_foods):
-            food = tree_slice(foods, i)
-            if food.eaten:
-                continue
-
-            patch = plt.Circle(
-                self._entity_position(food),
-                radius=self.icon_size / 1.5,
-                facecolor="red",
-            )
-            ax.add_patch(patch)
-
-    def _draw_agents(self, agents: Agent, ax: plt.Axes) -> None:
-        """Draw the agents on the grid."""
-        num_agents = len(agents.level)
-
-        for i in range(num_agents):
-            agent = tree_slice(agents, i)
-            cell_center = self._entity_position(agent)
-            anchor_point = (
-                cell_center[0] - self.icon_size / 2,
-                cell_center[1] - self.icon_size / 2,
-            )
-            patch = plt.Rectangle(
-                anchor_point, self.icon_size, self.icon_size, facecolor="white"
-            )
-            ax.add_patch(patch)
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
@@ -238,3 +200,102 @@ class LevelBasedForagingViewer(Viewer):
     def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
         fig.canvas.draw()
         return np.asarray(fig.canvas.buffer_rgba())
+
+    def _draw_agents(self, agents: Agent, ax: plt.Axes) -> None:
+        """Draw the agents on the grid."""
+        num_agents = len(agents.level)
+
+        for i in range(num_agents):
+            agent = tree_slice(agents, i)
+            cell_center = self._entity_position(agent)
+
+            # Read the image file
+            img = mpimg.imread(
+                os.path.join(os.path.dirname(__file__), "icons/agent.png")
+            )
+
+            # Create an OffsetImage and add it to the axis
+            imagebox = OffsetImage(img, zoom=self.icon_size / self.grid_size)
+            ab = AnnotationBbox(
+                imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0
+            )
+            ax.add_artist(ab)
+
+            # Add a rectangle (polygon) next to the agent with the agent's level
+            self.draw_badge(agent.level, cell_center, ax)
+
+    def _draw_food(self, food_items: Food, ax: plt.Axes) -> None:
+        """Draw the food on the grid."""
+        num_food = len(food_items.level)
+
+        for i in range(num_food):
+            food = tree_slice(food_items, i)
+            if food.eaten:
+                continue
+
+            # Read the image file
+            img = mpimg.imread(
+                os.path.join(os.path.dirname(__file__), "icons/apple.png")
+            )
+            cell_center = self._entity_position(food)
+            self.draw_badge(food.level, cell_center, ax)
+
+            # Create an OffsetImage and add it to the axis
+            imagebox = OffsetImage(img, zoom=self.icon_size / self.grid_size)
+            ab = AnnotationBbox(
+                imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0
+            )
+            ax.add_artist(ab)
+
+            # Add a rectangle (polygon) next to the agent with the food's level
+
+    def _entity_position(self, entity: Entity) -> Tuple[float, float]:
+        """Return the position of an entity on the grid."""
+        row, col = entity.position
+        row = self.rows - row - 1  # pyglet rendering is reversed
+        x_center = (self.grid_size + 1) * col + self.grid_size // 2 + 1
+        y_center = (self.grid_size + 1) * row + self.grid_size // 2 + 1
+        return (
+            x_center,
+            y_center,
+        )
+
+    def draw_badge(
+        self, level: int, anchor_point: Tuple[float, float], ax: plt.Axes
+    ) -> None:
+        resolution = 6
+        radius = self.grid_size / 6
+
+        badge_center_x = anchor_point[0] + self.grid_size / 3 - 3
+        badge_center_y = anchor_point[1] - self.grid_size / 3
+
+        # make a circle
+        verts = []
+        for i in range(resolution):
+            angle = 2 * np.pi * i / resolution
+
+            x_radius = radius * np.cos(angle)
+            x = x_radius + badge_center_x + 1
+
+            y_radius = radius * np.sin(angle) + 1
+            y = y_radius + badge_center_y
+            verts += [[x, y]]
+
+            circle = plt.Polygon(
+                verts,
+                edgecolor="white",
+                facecolor=constants._GRID_COLOR,
+            )
+
+        ax.add_patch(circle)
+        fontsize = 10 if self.rows <= 10 else (6 if 10 < self.rows < 15 else 5)
+        ax.annotate(
+            str(level),
+            xy=(badge_center_x + 1, badge_center_y + 1),
+            color="white",
+            ha="center",
+            va="center",
+            zorder=10,
+            fontsize=fontsize,
+            weight="bold",
+        )

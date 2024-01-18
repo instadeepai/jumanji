@@ -13,22 +13,20 @@
 # limitations under the License.
 import jax.numpy as jnp
 
-# Observations
-EMPTY = 0
-FOOD = 1
-AGENT = 2
-
 # Actions
 NOOP = 0
 UP = 1
-RIGHT = 2
-DOWN = 3
-LEFT = 4
+DOWN = 2
+LEFT = 3
+RIGHT = 4
 LOAD = 5
 
-# No-op, Up, Right, Down, Left, Load
-MOVES = jnp.array([[0, 0], [-1, 0], [0, 1], [1, 0], [0, -1], [0, 0]])
+# NOOP, UP, DOWN, LEFT, RIGHT, LOAD
+MOVES = jnp.array([[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1], [0, 0]])
 
-# Rendering
-VIEWER_WIDTH = 1000
-VIEWER_HEIGHT = 1000
+# viewer constants
+_FIGURE_SIZE = (5, 5)
+
+# Define some colors for visualization.
+_GRID_COLOR = (0, 0, 0)  # black
+_LINE_COLOR = (1, 1, 1)  # white
