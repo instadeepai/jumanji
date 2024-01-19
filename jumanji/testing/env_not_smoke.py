@@ -29,7 +29,7 @@ SelectActionFn = Callable[[chex.PRNGKey, Observation], Action]
 def make_random_select_action_fn(
     action_spec: Union[
         specs.BoundedArray, specs.DiscreteArray, specs.MultiDiscreteArray
-    ]
+    ],
 ) -> SelectActionFn:
     """Create select action function that chooses random actions."""
 
@@ -97,3 +97,11 @@ def check_env_does_not_smoke(
         env.observation_spec().validate(timestep.observation)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))
+
+
+def check_env_specs_does_not_smoke(env: Environment) -> None:
+    """Access specs of the environment in a jitted function to check no errors occur."""
+    jax.jit(env.observation_spec())
+    jax.jit(env.action_spec())
+    jax.jit(env.reward_spec())
+    jax.jit(env.discount_spec())

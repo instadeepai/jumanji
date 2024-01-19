@@ -17,7 +17,10 @@ import jax
 from jax import numpy as jnp
 
 from jumanji.environments.packing.knapsack import Knapsack, State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
 
@@ -74,6 +77,12 @@ class TestSparseKnapsack:
     ) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(knapsack_sparse_reward)
+
+    def test_knapsack_sparse__specs_does_not_smoke(
+        self, knapsack_sparse_reward: Knapsack
+    ) -> None:
+        """Test that we can access specs without any errors."""
+        check_env_specs_does_not_smoke(knapsack_sparse_reward)
 
     def test_knapsack_sparse__trajectory_action(
         self, knapsack_sparse_reward: Knapsack

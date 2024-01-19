@@ -24,7 +24,10 @@ from jumanji.environments.routing.connector.constants import EMPTY
 from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import get_position, get_target
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.tree_utils import tree_slice
 from jumanji.types import StepType, TimeStep
 
@@ -228,6 +231,11 @@ def test_connector__step_agent_invalid(connector: Connector, state: State) -> No
 def test_connector__does_not_smoke(connector: Connector) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(connector)
+
+
+def test_connector__specs_does_not_smoke(connector: Connector) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(connector)
 
 
 def test_connector__get_action_mask(state: State, connector: Connector) -> None:

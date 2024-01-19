@@ -24,13 +24,16 @@ from jumanji.environments.routing.mmst.constants import (
 )
 from jumanji.environments.routing.mmst.env import MMST
 from jumanji.environments.routing.mmst.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
 def test__mmst_agent_observation(
-    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep],
 ) -> None:
     """Test that agent observation view of the node types is correct"""
 
@@ -49,7 +52,7 @@ def test__mmst_agent_observation(
 
 
 def test__mmst_action_tie_break(
-    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep],
 ) -> None:
     """Test if the actions are mask correctly if multiple agents select the same node
     as next nodes.
@@ -131,10 +134,14 @@ def test__mmst_does_not_smoke(
     check_env_does_not_smoke(mmst_split_gn_env)
 
 
-def test__mmst_termination(
-    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
-) -> None:
+def test__mmst_specs_does_not_smoke(mmst_split_gn_env: MMST) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(mmst_split_gn_env)
 
+
+def test__mmst_termination(
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep],
+) -> None:
     env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
@@ -170,7 +177,6 @@ def test__mmst_termination(
 
 
 def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
-
     env, state, timestep = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 
@@ -182,9 +188,8 @@ def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) 
 
 
 def test__mmst_action_masking(
-    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
+    deterministic_mmst_env: Tuple[MMST, State, TimeStep],
 ) -> None:
-
     env, state, _ = deterministic_mmst_env
     step_fn = jax.jit(env.step)
 

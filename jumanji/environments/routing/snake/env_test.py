@@ -22,7 +22,10 @@ import pytest
 
 from jumanji.environments.routing.snake.env import Snake, State
 from jumanji.environments.routing.snake.types import Position
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -92,6 +95,11 @@ def test_snake__step(snake: Snake) -> None:
 def test_snake__does_not_smoke(snake: Snake) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(snake)
+
+
+def test_snake__specs_does_not_smoke(snake: Snake) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(snake)
 
 
 def test_update_head_position(snake: Snake) -> None:
