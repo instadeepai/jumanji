@@ -111,7 +111,7 @@ def bin_pack(dummy_generator: DummyGenerator) -> BinPack:
 
 @pytest.fixture
 def obs_spec(bin_pack: BinPack) -> specs.Spec:
-    return bin_pack.observation_spec()
+    return bin_pack.observation_spec
 
 
 @pytest.fixture

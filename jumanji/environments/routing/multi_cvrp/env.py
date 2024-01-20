@@ -127,6 +127,7 @@ class MultiCVRP(Environment[State]):
             max_single_vehicle_distance(self._map_max, self._num_customers)
             / self._speed
         )
+        super().__init__()
 
     def __repr__(self) -> str:
         return f"MultiCVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
@@ -177,9 +178,9 @@ class MultiCVRP(Environment[State]):
 
         return new_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """
-        Returns the observation spec.
+        Returns new observation spec.
 
         Returns:
             observation_spec: a Tuple containing the spec for each of the constituent fields of an
@@ -306,9 +307,9 @@ class MultiCVRP(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.BoundedArray:
+    def _make_action_spec(self) -> specs.BoundedArray:
         """
-        Returns the action spec.
+        Returns new action spec.
 
         Returns:
             action_spec: a `specs.BoundedArray` spec.

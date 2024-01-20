@@ -72,17 +72,16 @@ def check_env_does_not_smoke(
     assert_finite_check: bool = True,
 ) -> None:
     """Run an episode of the environment, with a jitted step function to check no errors occur."""
-    action_spec = env.action_spec()
     if select_action is None:
-        if isinstance(action_spec, specs.BoundedArray) or isinstance(
-            action_spec, specs.DiscreteArray
+        if isinstance(env.action_spec, specs.BoundedArray) or isinstance(
+            env.action_spec, specs.DiscreteArray
         ):
-            select_action = make_random_select_action_fn(action_spec)
+            select_action = make_random_select_action_fn(env.action_spec)
         else:
             raise NotImplementedError(
                 f"Currently the `make_random_select_action_fn` only works for environments with "
                 f"either discrete actions or bounded continuous actions. The input environment to "
-                f"this test has an action spec of type {action_spec}, and therefore requires "
+                f"this test has an action spec of type {env.action_spec}, and therefore requires "
                 f"a custom `SelectActionFn` to be provided to this test."
             )
     key = jax.random.PRNGKey(0)
@@ -92,16 +91,21 @@ def check_env_does_not_smoke(
     while not timestep.last():
         key, action_key = jax.random.split(key)
         action = select_action(action_key, timestep.observation)
-        env.action_spec().validate(action)
+        env.action_spec.validate(action)
         state, timestep = step_fn(state, action)
-        env.observation_spec().validate(timestep.observation)
+        env.observation_spec.validate(timestep.observation)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))
 
 
+def access_specs(env: Environment) -> None:
+    """Access specs of the environment."""
+    env.observation_spec
+    env.action_spec
+    env.reward_spec
+    env.discount_spec
+
+
 def check_env_specs_does_not_smoke(env: Environment) -> None:
     """Access specs of the environment in a jitted function to check no errors occur."""
-    jax.jit(env.observation_spec())
-    jax.jit(env.action_spec())
-    jax.jit(env.reward_spec())
-    jax.jit(env.discount_spec())
+    jax.jit(access_specs, static_argnums=0)(env)

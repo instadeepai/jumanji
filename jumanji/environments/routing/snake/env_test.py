@@ -63,7 +63,7 @@ def test_snake__step(snake: Snake) -> None:
     # Sample two different actions
     action1, action2 = jax.random.choice(
         action_key,
-        jnp.arange(snake.action_spec()._num_values),
+        jnp.arange(snake.action_spec._num_values),
         shape=(2,),
         replace=False,
     )
@@ -148,7 +148,7 @@ def test_snake__render(monkeypatch: pytest.MonkeyPatch, snake: Snake) -> None:
     monkeypatch.setattr(plt, "show", lambda fig: None)
     step_fn = jax.jit(snake.step)
     state, timestep = snake.reset(jax.random.PRNGKey(0))
-    action = snake.action_spec().generate_value()
+    action = snake.action_spec.generate_value()
     state, timestep = step_fn(state, action)
     snake.render(state)
     snake.close()
@@ -159,7 +159,7 @@ def test_snake__animation(snake: Snake, tmpdir: py.path.local) -> None:
     step_fn = jax.jit(snake.step)
     state, _ = snake.reset(jax.random.PRNGKey(0))
     states = [state]
-    action = snake.action_spec().generate_value()
+    action = snake.action_spec.generate_value()
     state, _ = step_fn(state, action)
     states.append(state)
     animation = snake.animate(states)

@@ -76,7 +76,7 @@ class GraphColoring(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -100,6 +100,7 @@ class GraphColoring(Environment[State]):
             num_nodes=20, edge_probability=0.8
         )
         self.num_nodes = self.generator.num_nodes
+        super().__init__()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or GraphColoringViewer(name="GraphColoring")
@@ -206,8 +207,8 @@ class GraphColoring(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
+        """Returns new observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:
@@ -253,7 +254,7 @@ class GraphColoring(Environment[State]):
             ),
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
+    def _make_action_spec(self) -> specs.DiscreteArray:
         """Specification of the action for the `GraphColoring` environment.
 
         Returns:

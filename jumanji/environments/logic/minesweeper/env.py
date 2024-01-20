@@ -81,7 +81,7 @@ class Minesweeper(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -127,6 +127,7 @@ class Minesweeper(Environment[State]):
         self.num_rows = self.generator.num_rows
         self.num_cols = self.generator.num_cols
         self.num_mines = self.generator.num_mines
+        super().__init__()
         self._viewer = viewer or MinesweeperViewer(
             num_rows=self.num_rows, num_cols=self.num_cols
         )
@@ -182,7 +183,7 @@ class Minesweeper(Environment[State]):
         )
         return next_state, next_timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Minesweeper` environment.
 
         Returns:
@@ -229,8 +230,8 @@ class Minesweeper(Environment[State]):
             step_count=step_count,
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns new action spec.
         An action consists of the height and width of the square to be explored.
 
         Returns:

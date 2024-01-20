@@ -126,7 +126,7 @@ def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(minesweeper_env.reset)(key)
     # For this board, this action will be a non-mined square
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -170,7 +170,7 @@ def test_minesweeper__render(
     state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     minesweeper_env.render(state)
     minesweeper_env.close()
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     state, timestep = jax.jit(minesweeper_env.step)(state, action)
     minesweeper_env.render(state)
     minesweeper_env.close()
@@ -179,7 +179,7 @@ def test_minesweeper__render(
 def test_minesweeper__done_invalid_action(minesweeper_env: Minesweeper) -> None:
     """Test that the strict done signal is sent correctly"""
     # Note that this action corresponds to not stepping on a mine
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     *_, episode_length = play_and_get_episode_stats(
         env=minesweeper_env, actions=[action for _ in range(10)], time_limit=10
     )

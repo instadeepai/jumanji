@@ -69,7 +69,7 @@ class Tetris(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -106,6 +106,7 @@ class Tetris(Environment[State]):
         self.TETROMINOES_LIST = jnp.array(TETROMINOES_LIST, jnp.int32)
         self.reward_list = jnp.array(REWARD_LIST, float)
         self.time_limit = time_limit
+        super().__init__()
         self._viewer = viewer or TetrisViewer(
             num_rows=self.num_rows,
             num_cols=self.num_cols,
@@ -246,7 +247,7 @@ class Tetris(Environment[State]):
         """
         return self._viewer.render(state)
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Tetris` environment.
 
         Returns:
@@ -285,8 +286,8 @@ class Tetris(Environment[State]):
             ),
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec. An action consists of two pieces of information:
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns new action spec. An action consists of two pieces of information:
         the amount of rotation (number of 90-degree rotations) and the x-position of
         the leftmost part of the tetromino.
 

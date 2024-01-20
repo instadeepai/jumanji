@@ -44,7 +44,7 @@ from jumanji.types import TimeStep
 
 @pytest.fixture
 def bin_pack_random_select_action(bin_pack: BinPack) -> SelectActionFn:
-    num_ems, num_items = np.asarray(bin_pack.action_spec().num_values)
+    num_ems, num_items = np.asarray(bin_pack.action_spec.num_values)
 
     def select_action(key: chex.PRNGKey, observation: Observation) -> chex.Array:
         """Randomly sample valid actions, as determined by `observation.action_mask`."""
@@ -152,7 +152,7 @@ def test_bin_pack_step__jit(bin_pack: BinPack) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = bin_pack.reset(key)
 
-    action = bin_pack.action_spec().generate_value()
+    action = bin_pack.action_spec.generate_value()
     _ = step_fn(state, action)
     # Call again to check it does not compile twice.
     state, timestep = step_fn(state, action)

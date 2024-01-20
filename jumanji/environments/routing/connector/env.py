@@ -88,7 +88,7 @@ class Connector(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_specc.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -118,6 +118,7 @@ class Connector(Environment[State]):
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
+        super().__init__()
         self._agent_ids = jnp.arange(self.num_agents)
         self._viewer = viewer or ConnectorViewer(
             "Connector", self.num_agents, render_mode="human"
@@ -318,7 +319,7 @@ class Connector(Environment[State]):
         """
         self._viewer.close()
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
 
         Returns:
@@ -356,8 +357,8 @@ class Connector(Environment[State]):
             step_count=step_count,
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec for the Connector environment.
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns new action spec for the Connector environment.
 
         5 actions: [0,1,2,3,4] -> [No Op, Up, Right, Down, Left]. Since this is an environment with
         a multi-dimensional action space, it expects an array of actions of shape (num_agents,).

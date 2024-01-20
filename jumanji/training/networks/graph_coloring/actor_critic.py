@@ -38,7 +38,7 @@ def make_actor_critic_networks_graph_coloring(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `GraphColoring` environment."""
-    num_actions = graph_coloring.action_spec().num_values
+    num_actions = graph_coloring.action_spec.num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )

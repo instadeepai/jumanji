@@ -56,10 +56,11 @@ class FakeEnvironment(Environment[FakeState]):
         self.time_limit = time_limit
         self.observation_shape = observation_shape
         self.action_shape = action_shape
-        self._example_action = self.action_spec().generate_value()
+        super().__init__()
+        self._example_action = self.action_spec.generate_value()
 
-    def observation_spec(self) -> specs.Array:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Array:
+        """Returns new observation spec.
 
         Returns:
             observation_spec: a `specs.Array` spec.
@@ -69,8 +70,8 @@ class FakeEnvironment(Environment[FakeState]):
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
-    def action_spec(self) -> specs.BoundedArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.BoundedArray:
+        """Returns new action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.
@@ -169,14 +170,15 @@ class FakeMultiEnvironment(Environment[FakeState]):
         self.observation_shape = observation_shape
         self.num_action_values = num_action_values
         self.num_agents = num_agents
+        super().__init__()
         self.reward_per_step = reward_per_step
         assert (
             observation_shape[0] == num_agents
         ), f"""a leading dimension of size 'num_agents': {num_agents} is expected
             for the observation, got shape: {observation_shape}."""
 
-    def observation_spec(self) -> specs.Array:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Array:
+        """Returns new observation spec.
 
         Returns:
             observation_spec: a `specs.Array` spec.
@@ -186,8 +188,8 @@ class FakeMultiEnvironment(Environment[FakeState]):
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
-    def action_spec(self) -> specs.BoundedArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.BoundedArray:
+        """Returns new action spec.
 
         Returns:
             action_spec: a `specs.Array` spec.
@@ -197,15 +199,15 @@ class FakeMultiEnvironment(Environment[FakeState]):
             (self.num_agents,), int, 0, self.num_action_values - 1
         )
 
-    def reward_spec(self) -> specs.Array:
-        """Returns the reward spec.
+    def _make_reward_spec(self) -> specs.Array:
+        """Returns new reward spec.
 
         Returns:
             reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
-    def discount_spec(self) -> specs.BoundedArray:
+    def _make_discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
 
         Returns:
@@ -231,7 +233,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
 
         state = FakeState(key=key, step=0)
-        observation = self.observation_spec().generate_value()
+        observation = self.observation_spec.generate_value()
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 

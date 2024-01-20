@@ -45,6 +45,13 @@ class Environment(abc.ABC, Generic[State]):
     def __repr__(self) -> str:
         return "Environment."
 
+    def __init__(self) -> None:
+        """Initialize environment."""
+        self._observation_spec = self._make_observation_spec()
+        self._action_spec = self._make_action_spec()
+        self._reward_spec = self._make_reward_spec()
+        self._discount_spec = self._make_discount_spec()
+
     @abc.abstractmethod
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
         """Resets the environment to an initial state.
@@ -70,34 +77,68 @@ class Environment(abc.ABC, Generic[State]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
 
-    @abc.abstractmethod
+    @property
     def observation_spec(self) -> specs.Spec:
         """Returns the observation spec.
 
         Returns:
             observation_spec: a NestedSpec tree of spec.
         """
+        return self._observation_spec
 
     @abc.abstractmethod
+    def _make_observation_spec(self) -> specs.Spec:
+        """Returns new observation spec.
+
+        Returns:
+            observation_spec: a NestedSpec tree of spec.
+        """
+
+    @property
     def action_spec(self) -> specs.Spec:
         """Returns the action spec.
 
         Returns:
             action_spec: a NestedSpec tree of spec.
         """
+        return self._action_spec
 
+    @abc.abstractmethod
+    def _make_action_spec(self) -> specs.Spec:
+        """Returns new action spec.
+
+        Returns:
+            action_spec: a NestedSpec tree of spec.
+        """
+
+    @property
     def reward_spec(self) -> specs.Array:
-        """Describes the reward returned by the environment. By default, this is assumed to be a
-        single float.
+        """Returns the reward spec. By default, this is assumed to be a single float.
+
+        Returns:
+            reward_spec: a `specs.Array` spec.
+        """
+        return self._reward_spec
+
+    def _make_reward_spec(self) -> specs.Array:
+        """Returns new reward spec. By default, this is assumed to be a single float.
 
         Returns:
             reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(), dtype=float, name="reward")
 
+    @property
     def discount_spec(self) -> specs.BoundedArray:
-        """Describes the discount returned by the environment. By default, this is assumed to be a
-        single float between 0 and 1.
+        """Returns the discount spec. By default, this is assumed to be a single float between 0 and 1.
+
+        Returns:
+            discount_spec: a `specs.BoundedArray` spec.
+        """
+        return self._discount_spec
+
+    def _make_discount_spec(self) -> specs.BoundedArray:
+        """Returns new discount spec. By default, this is assumed to be a single float between 0 and 1.
 
         Returns:
             discount_spec: a `specs.BoundedArray` spec.

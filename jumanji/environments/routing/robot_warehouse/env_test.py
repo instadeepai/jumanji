@@ -32,8 +32,8 @@ from jumanji.types import TimeStep
 
 def test_robot_warehouse__specs(robot_warehouse_env: RobotWarehouse) -> None:
     """Validate environment specs conform to the expected shapes and values"""
-    action_spec = robot_warehouse_env.action_spec()
-    observation_spec = robot_warehouse_env.observation_spec()
+    action_spec = robot_warehouse_env.action_spec
+    observation_spec = robot_warehouse_env.observation_spec
 
     assert observation_spec.agents_view.shape == (2, 66)  # type: ignore
     assert action_spec.num_values.shape[0] == robot_warehouse_env.num_agents

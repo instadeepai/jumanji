@@ -109,37 +109,39 @@ class TestBaseWrapper:
 
         mock_reset.assert_called_once_with(mock_key)
 
-    def test_wrapper__observation_spec(
+    def test_wrapper__make_observation_spec(
         self,
         mocker: pytest_mock.MockerFixture,
         wrapped_fake_environment: Wrapper,
         fake_environment: FakeEnvironment,
     ) -> None:
-        """Checks `Wrapper.observation_spec` calls the observation_spec function of
+        """Checks `Wrapper._make_observation_spec` calls the _make_observation_spec function of
         the underlying env.
         """
-        mock_obs_spec = mocker.patch.object(
-            fake_environment, "observation_spec", autospec=True
+        mock_make_obs_spec = mocker.patch.object(
+            fake_environment, "_make_observation_spec", autospec=True
         )
 
-        wrapped_fake_environment.observation_spec()
+        wrapped_fake_environment._make_observation_spec()
 
-        mock_obs_spec.assert_called_once()
+        mock_make_obs_spec.assert_called_once()
 
-    def test_wrapper__action_spec(
+    def test_wrapper__make_action_spec(
         self,
         mocker: pytest_mock.MockerFixture,
         wrapped_fake_environment: Wrapper,
         fake_environment: FakeEnvironment,
     ) -> None:
-        """Checks `Wrapper.action_spec` calls the action_spec function of the underlying env."""
-        mock_action_spec = mocker.patch.object(
-            fake_environment, "action_spec", autospec=True
+        """Checks `Wrapper._make_action_spec` calls the _make_action_spec function of the underlying
+        env.
+        """
+        mock_make_action_spec = mocker.patch.object(
+            fake_environment, "_make_action_spec", autospec=True
         )
 
-        wrapped_fake_environment.action_spec()
+        wrapped_fake_environment._make_action_spec()
 
-        mock_action_spec.assert_called_once()
+        mock_make_action_spec.assert_called_once()
 
     def test_wrapper__repr(self, wrapped_fake_environment: Wrapper) -> None:
         """Checks `Wrapper.__repr__` returns the expected representation string."""
@@ -302,7 +304,6 @@ class TestJumanjiEnvironmentToGymEnv:
         mocker: pytest_mock.MockerFixture,
         fake_gym_env: JumanjiToGymWrapper,
     ) -> None:
-
         mock_render = mocker.patch.object(
             fake_gym_env.unwrapped, "render", autospec=True
         )
@@ -317,7 +318,6 @@ class TestJumanjiEnvironmentToGymEnv:
         mocker: pytest_mock.MockerFixture,
         fake_gym_env: JumanjiToGymWrapper,
     ) -> None:
-
         mock_close = mocker.patch.object(fake_gym_env.unwrapped, "close", autospec=True)
 
         fake_gym_env.close()
@@ -375,7 +375,7 @@ class TestMultiToSingleEnvironment:
         agent wrapped environment.
         """
         state, timestep = fake_multi_to_single_env.reset(key)  # type: ignore
-        action = fake_multi_to_single_env.action_spec().generate_value()
+        action = fake_multi_to_single_env.action_spec.generate_value()
         state, next_timestep = jax.jit(fake_multi_to_single_env.step)(state, action)
         assert next_timestep != timestep
         assert next_timestep.reward.shape == ()
@@ -398,7 +398,7 @@ class TestMultiToSingleEnvironment:
             fake_multi_environment, reward_aggregator=jnp.mean
         )
         state, timestep = mean_fake_multi_to_single_env.reset(key)  # type: ignore
-        action = mean_fake_multi_to_single_env.action_spec().generate_value()
+        action = mean_fake_multi_to_single_env.action_spec.generate_value()
         state, next_timestep = mean_fake_multi_to_single_env.step(
             state, action
         )  # type: Tuple[FakeState, TimeStep]
@@ -416,9 +416,9 @@ class TestMultiToSingleEnvironment:
         """Validates observation_spec property of the multi agent to single
         agent wrapped environment.
         """
-        obs_spec: specs.Array = fake_multi_to_single_env.observation_spec()  # type: ignore
+        obs_spec: specs.Array = fake_multi_to_single_env.observation_spec  # type: ignore
         assert isinstance(obs_spec, specs.Array)
-        assert obs_spec.shape == fake_multi_environment.observation_spec().shape
+        assert obs_spec.shape == fake_multi_environment.observation_spec.shape
 
     def test_multi_env__action_spec(
         self,
@@ -428,9 +428,9 @@ class TestMultiToSingleEnvironment:
         """Validates action_spec property of the multi agent to single
         agent wrapped environment.
         """
-        action_spec: specs.Array = fake_multi_to_single_env.action_spec()  # type: ignore
-        assert isinstance(fake_multi_to_single_env.action_spec(), specs.Array)
-        assert action_spec.shape == fake_multi_environment.action_spec().shape
+        action_spec: specs.Array = fake_multi_to_single_env.action_spec  # type: ignore
+        assert isinstance(fake_multi_to_single_env.action_spec, specs.Array)
+        assert action_spec.shape == fake_multi_environment.action_spec.shape
 
     def test_multi_env__unwrapped(
         self,
@@ -473,9 +473,9 @@ class TestVmapWrapper:
         state, timestep = fake_vmap_environment.reset(
             keys
         )  # type: Tuple[FakeState, TimeStep]
-        action = jax.vmap(
-            lambda _: fake_vmap_environment.action_spec().generate_value()
-        )(keys)
+        action = jax.vmap(lambda _: fake_vmap_environment.action_spec.generate_value())(
+            keys
+        )
 
         state, next_timestep = jax.jit(fake_vmap_environment.step)(
             state, action
@@ -547,7 +547,7 @@ class TestAutoResetWrapper:
         )  # type: Tuple[FakeState, TimeStep]
 
         # Generate an action
-        action = fake_auto_reset_environment.action_spec().generate_value()
+        action = fake_auto_reset_environment.action_spec.generate_value()
 
         state, timestep = jax.jit(fake_auto_reset_environment.step)(
             state, action
@@ -573,7 +573,7 @@ class TestAutoResetWrapper:
         # Loop across time_limit so auto-reset occurs
         timestep = first_timestep
         for _ in range(fake_environment.time_limit):
-            action = fake_auto_reset_environment.action_spec().generate_value()
+            action = fake_auto_reset_environment.action_spec.generate_value()
             state, timestep = jax.jit(fake_auto_reset_environment.step)(state, action)
 
         assert timestep.step_type == StepType.LAST
@@ -592,7 +592,7 @@ class TestVmapAutoResetWrapper:
         self, fake_vmap_auto_reset_environment: VmapAutoResetWrapper, keys: chex.PRNGKey
     ) -> chex.Array:
         generate_action_fn = (
-            lambda _: fake_vmap_auto_reset_environment.action_spec().generate_value()
+            lambda _: fake_vmap_auto_reset_environment.action_spec.generate_value()
         )
         return jax.vmap(generate_action_fn)(keys)
 
@@ -765,9 +765,8 @@ class TestJumanjiToGymObservation:
 
     def test_jumanji_to_gym_obs__bin_pack(self) -> None:
         """Check that an example bin_pack observation is correctly converted."""
-        env = BinPack(obs_num_ems=1)
-        env.generator = bin_pack_conftest.DummyGenerator()
-        obs = env.observation_spec().generate_value()
+        env = BinPack(generator=bin_pack_conftest.DummyGenerator(), obs_num_ems=1)
+        obs = env.observation_spec.generate_value()
 
         converted_obs = jumanji_to_gym_obs(obs)
         correct_obs = {

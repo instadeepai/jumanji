@@ -89,7 +89,7 @@ class CVRP(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -121,6 +121,7 @@ class CVRP(Environment[State]):
             max_demand=10,
         )
         self.num_nodes = self.generator.num_nodes
+        super().__init__()
         self.max_capacity = self.generator.max_capacity
         self.max_demand = self.generator.max_demand
         if self.max_capacity < self.max_demand:
@@ -195,8 +196,8 @@ class CVRP(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
+        """Returns new observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:
@@ -261,8 +262,8 @@ class CVRP(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.DiscreteArray:
+        """Returns new action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.

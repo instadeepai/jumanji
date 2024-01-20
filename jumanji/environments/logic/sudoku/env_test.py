@@ -56,7 +56,7 @@ def test_sudoku__step(sudoku_env: Sudoku) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(sudoku_env.reset)(key)
 
-    action = sudoku_env.action_spec().generate_value()
+    action = sudoku_env.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -89,7 +89,7 @@ def test_sudoku__render(monkeypatch: pytest.MonkeyPatch, sudoku_env: Sudoku) -> 
     state, timestep = jax.jit(sudoku_env.reset)(jax.random.PRNGKey(0))
     sudoku_env.render(state)
     sudoku_env.close()
-    action = sudoku_env.action_spec().generate_value()
+    action = sudoku_env.action_spec.generate_value()
     state, timestep = jax.jit(sudoku_env.step)(state, action)
     sudoku_env.render(state)
     sudoku_env.close()

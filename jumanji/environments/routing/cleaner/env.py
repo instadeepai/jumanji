@@ -74,7 +74,7 @@ class Cleaner(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -107,6 +107,7 @@ class Cleaner(Environment[State]):
         self.num_cols = self.generator.num_cols
         self.grid_shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit or (self.num_rows * self.num_cols)
+        super().__init__()
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
@@ -122,7 +123,7 @@ class Cleaner(Environment[State]):
             ")"
         )
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specification of the observation of the `Cleaner` environment.
 
         Returns:
@@ -152,7 +153,7 @@ class Cleaner(Environment[State]):
             step_count=step_count,
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
         """Specification of the action for the `Cleaner` environment.
 
         Returns:

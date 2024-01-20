@@ -83,7 +83,7 @@ class JobShop(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -113,6 +113,7 @@ class JobShop(Environment[State]):
         self.num_machines = self.generator.num_machines
         self.max_num_ops = self.generator.max_num_ops
         self.max_op_duration = self.generator.max_op_duration
+        super().__init__()
 
         # Define the "job id" of a no-op action as the number of jobs
         self.no_op_idx = self.num_jobs
@@ -356,7 +357,7 @@ class JobShop(Environment[State]):
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `JobShop` environment.
 
         Returns:
@@ -421,7 +422,7 @@ class JobShop(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action in the `JobShop` environment. The action gives each
         machine a job id ranging from 0, 1, ..., num_jobs where the last value corresponds
         to a no-op.

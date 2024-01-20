@@ -48,8 +48,8 @@ class Wrapper(Environment[State], Generic[State]):
     """
 
     def __init__(self, env: Environment):
-        super().__init__()
         self._env = env
+        super().__init__()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({repr(self._env)})"
@@ -89,21 +89,21 @@ class Wrapper(Environment[State], Generic[State]):
         """
         return self._env.step(state, action)
 
-    def observation_spec(self) -> specs.Spec:
+    def _make_observation_spec(self) -> specs.Spec:
         """Returns the observation spec."""
-        return self._env.observation_spec()
+        return self._env._make_observation_spec()
 
-    def action_spec(self) -> specs.Spec:
+    def _make_action_spec(self) -> specs.Spec:
         """Returns the action spec."""
-        return self._env.action_spec()
+        return self._env._make_action_spec()
 
-    def reward_spec(self) -> specs.Array:
+    def _make_reward_spec(self) -> specs.Array:
         """Returns the reward spec."""
-        return self._env.reward_spec()
+        return self._env._make_reward_spec()
 
-    def discount_spec(self) -> specs.BoundedArray:
+    def _make_discount_spec(self) -> specs.BoundedArray:
         """Returns the discount spec."""
-        return self._env.discount_spec()
+        return self._env._make_discount_spec()
 
     def render(self, state: State) -> Any:
         """Compute render frames during initialisation of the environment.
@@ -165,7 +165,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
                 - observation: A NumPy array, or a nested dict, list or tuple of arrays.
                     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
                     are also valid in place of a scalar array. Must conform to the
-                    specification returned by `observation_spec()`.
+                    specification returned by `observation_spec`.
         """
         reset_key, self._key = jax.random.split(self._key)
         self._state, timestep = self._jitted_reset(reset_key)
@@ -184,21 +184,21 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
 
         Args:
             action: A NumPy array, or a nested dict, list or tuple of arrays
-                corresponding to `action_spec()`.
+                corresponding to `action_spec`.
 
         Returns:
             A `TimeStep` namedtuple containing:
                 - step_type: A `StepType` value.
                 - reward: Reward at this timestep, or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
-                    `reward_spec()`.
+                    `reward_spec`.
                 - discount: A discount in the range [0, 1], or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
-                    `discount_spec()`.
+                    `discount_spec`.
                 - observation: A NumPy array, or a nested dict, list or tuple of arrays.
                     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
                     are also valid in place of a scalar array. Must conform to the
-                    specification returned by `observation_spec()`.
+                    specification returned by `observation_spec`.
         """
         self._state, timestep = self._jitted_step(self._state, action)
         return dm_env.TimeStep(
@@ -210,11 +210,11 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
 
     def observation_spec(self) -> dm_env.specs.Array:
         """Returns the dm_env observation spec."""
-        return specs.jumanji_specs_to_dm_env_specs(self._env.observation_spec())
+        return specs.jumanji_specs_to_dm_env_specs(self._env.observation_spec)
 
     def action_spec(self) -> dm_env.specs.Array:
         """Returns the dm_env action spec."""
-        return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec())
+        return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec)
 
     @property
     def unwrapped(self) -> Environment:
@@ -540,9 +540,9 @@ class JumanjiToGymWrapper(gym.Env):
         self.backend = backend
         self._state = None
         self.observation_space = specs.jumanji_specs_to_gym_spaces(
-            self._env.observation_spec()
+            self._env.observation_spec
         )
-        self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec())
+        self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec)
 
         def reset(key: chex.PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
             """Reset function of a Jumanji environment to be jitted."""

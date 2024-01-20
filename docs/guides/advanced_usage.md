@@ -16,7 +16,7 @@ env = AutoResetWrapper(env)     # Automatically reset the environment when an ep
 
 batch_size = 7
 rollout_length = 5
-num_actions = env.action_spec().num_values
+num_actions = env.action_spec.num_values
 
 random_key = jax.random.PRNGKey(0)
 key1, key2 = jax.random.split(random_key)

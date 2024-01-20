@@ -69,7 +69,7 @@ class Game2048(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -85,6 +85,7 @@ class Game2048(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `Game2048Viewer`.
         """
         self.board_size = board_size
+        super().__init__()
 
         # Create viewer used for rendering
         self._viewer = viewer or Game2048Viewer("2048", board_size)
@@ -97,7 +98,7 @@ class Game2048(Environment[State]):
         """
         return f"2048 Game(board_size={self.board_size})"
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Game2048` environment.
 
         Returns:
@@ -122,8 +123,8 @@ class Game2048(Environment[State]):
             ),
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.DiscreteArray:
+        """Returns new action spec.
 
         4 actions: [0, 1, 2, 3] -> [Up, Right, Down, Left].
 

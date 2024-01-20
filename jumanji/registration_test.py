@@ -94,7 +94,7 @@ def test_register__override_kwargs(mocker: pytest_mock.MockerFixture) -> None:
     env: FakeEnvironment = registration.make(  # type: ignore
         env_id, observation_shape=obs_shape
     )
-    assert env.observation_spec().shape == obs_shape
+    assert env.observation_spec.shape == obs_shape
 
 
 def test_registration__make() -> None:

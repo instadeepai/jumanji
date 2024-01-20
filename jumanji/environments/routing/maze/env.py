@@ -71,7 +71,7 @@ class Maze(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -100,6 +100,7 @@ class Maze(Environment[State]):
         self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
         self.num_rows = self.generator.num_rows
         self.num_cols = self.generator.num_cols
+        super().__init__()
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit or self.num_rows * self.num_cols
 
@@ -117,7 +118,7 @@ class Maze(Environment[State]):
             ]
         )
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Maze` environment.
 
         Returns:
@@ -159,8 +160,8 @@ class Maze(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
+    def _make_action_spec(self) -> specs.DiscreteArray:
+        """Returns new action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 
         Returns:
             action_spec: discrete action space with 4 values.

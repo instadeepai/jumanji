@@ -54,7 +54,7 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     step_fn = jax.jit(chex.assert_max_traces(rubiks_cube.step, n=1))
     key = jax.random.PRNGKey(0)
     state, timestep = rubiks_cube.reset(key)
-    action = rubiks_cube.action_spec().generate_value()
+    action = rubiks_cube.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -105,7 +105,7 @@ def test_rubiks_cube__render(
     state, timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
     rubiks_cube.render(state)
     rubiks_cube.close()
-    action = rubiks_cube.action_spec().generate_value()
+    action = rubiks_cube.action_spec.generate_value()
     state, timestep = rubiks_cube.step(state, action)
     rubiks_cube.render(state)
     rubiks_cube.close()
@@ -116,7 +116,7 @@ def test_rubiks_cube__done(time_limit: int) -> None:
     """Test that the done signal is sent correctly."""
     env = RubiksCube(time_limit=time_limit)
     state, timestep = env.reset(jax.random.PRNGKey(0))
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     episode_length = 0
     step_fn = jax.jit(env.step)
     while not timestep.last():

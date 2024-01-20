@@ -21,7 +21,7 @@ from jumanji.training.networks.protocols import RandomPolicy
 
 def make_random_policy_bin_pack(bin_pack: BinPack) -> RandomPolicy:
     """Make random policy for BinPack."""
-    action_spec_num_values = bin_pack.action_spec().num_values
+    action_spec_num_values = bin_pack.action_spec.num_values
     return make_masked_categorical_random_ndim(
         action_spec_num_values=action_spec_num_values
     )

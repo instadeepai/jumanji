@@ -159,7 +159,7 @@ state, timestep = jax.jit(env.reset)(key)
 env.render(state)
 
 # Interact with the (jit-able) environment
-action = env.action_spec().generate_value()          # Action selection (dummy value here)
+action = env.action_spec.generate_value()          # Action selection (dummy value here)
 state, timestep = jax.jit(env.step)(state, action)   # Take a step and observe the next state and time step
 ```
 

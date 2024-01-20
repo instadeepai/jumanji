@@ -37,7 +37,7 @@ def make_actor_critic_networks_maze(
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Maze` environment."""
-    num_actions = np.asarray(maze.action_spec().num_values)
+    num_actions = np.asarray(maze.action_spec.num_values)
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )

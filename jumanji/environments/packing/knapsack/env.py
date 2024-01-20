@@ -76,7 +76,7 @@ class Knapsack(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -107,6 +107,7 @@ class Knapsack(Environment[State]):
             total_budget=12.5,
         )
         self.num_items = self.generator.num_items
+        super().__init__()
         self.total_budget = self.generator.total_budget
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or KnapsackViewer(
@@ -176,8 +177,8 @@ class Knapsack(Environment[State]):
 
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
+        """Returns new observation spec.
 
         Returns:
             Spec for each field in the Observation:
@@ -223,8 +224,8 @@ class Knapsack(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec.
+    def _make_action_spec(self) -> specs.DiscreteArray:
+        """Returns new action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.

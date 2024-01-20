@@ -84,7 +84,7 @@ class Snake(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -108,11 +108,11 @@ class Snake(Environment[State]):
                 the episode ends. Defaults to 4000.
             viewer: `Viewer` used for rendering. Defaults to `SnakeViewer`.
         """
-        super().__init__()
         self.num_rows = num_rows
         self.num_cols = num_cols
         self.board_shape = (num_rows, num_cols)
         self.time_limit = time_limit
+        super().__init__()
         self._viewer = viewer or SnakeViewer()
 
     def __repr__(self) -> str:
@@ -235,8 +235,8 @@ class Snake(Environment[State]):
         )
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec.
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
+        """Returns new observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:
@@ -269,8 +269,8 @@ class Snake(Environment[State]):
             action_mask=action_mask,
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
-        """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
+    def _make_action_spec(self) -> specs.DiscreteArray:
+        """Returns new action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.

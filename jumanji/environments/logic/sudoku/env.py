@@ -66,7 +66,7 @@ class Sudoku(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -78,6 +78,7 @@ class Sudoku(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
+        super().__init__()
         if generator is None:
             file_path = os.path.dirname(os.path.abspath(__file__))
             database_file = DATABASES["mixed"]
@@ -129,8 +130,8 @@ class Sudoku(Environment[State]):
 
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
-        """Returns the observation spec containing the board and action_mask arrays.
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
+        """Returns new observation spec containing the board and action_mask arrays.
 
         Returns:
             Spec containing all the specifications for all the `Observation` fields:
@@ -158,8 +159,8 @@ class Sudoku(Environment[State]):
             Observation, "ObservationSpec", board=board, action_mask=action_mask
         )
 
-    def action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns the action spec. An action is composed of 3 integers: the row index,
+    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns new action spec. An action is composed of 3 integers: the row index,
         the column index and the value to be placed in the cell.
 
         Returns:
