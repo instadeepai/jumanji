@@ -30,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Maze(Environment[State]):
+class Maze(Environment[State, specs.DiscreteArray]):
     """A JAX implementation of a 2D Maze. The goal is to navigate the maze to find the target
     position.
 

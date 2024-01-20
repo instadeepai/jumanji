@@ -29,7 +29,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Snake(Environment[State]):
+class Snake(Environment[State, specs.DiscreteArray]):
     """A JAX implementation of the 'Snake' game.
 
     - observation: `Observation`

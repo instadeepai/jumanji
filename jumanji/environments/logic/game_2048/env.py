@@ -29,7 +29,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Game2048(Environment[State]):
+class Game2048(Environment[State, specs.DiscreteArray]):
     """Environment for the game 2048. The game consists of a board of size board_size x board_size
     (4x4 by default) in which the player can take actions to move the tiles on the board up, down,
     left, or right. The goal of the game is to combine tiles with the same number to create a tile

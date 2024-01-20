@@ -31,7 +31,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class TSP(Environment[State]):
+class TSP(Environment[State, specs.DiscreteArray]):
     """Traveling Salesman Problem (TSP) environment as described in [1].
 
     - observation: Observation

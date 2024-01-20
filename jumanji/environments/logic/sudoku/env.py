@@ -32,7 +32,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Sudoku(Environment[State]):
+class Sudoku(Environment[State, specs.MultiDiscreteArray]):
     """A JAX implementation of the sudoku game.
 
     - observation: `Observation`

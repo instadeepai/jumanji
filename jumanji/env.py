@@ -33,9 +33,10 @@ class StateProtocol(Protocol):
 
 
 State = TypeVar("State", bound="StateProtocol")
+ActionSpec = TypeVar("ActionSpec", bound=specs.Array)
 
 
-class Environment(abc.ABC, Generic[State]):
+class Environment(abc.ABC, Generic[State, ActionSpec]):
     """Environment written in Jax that differs from the gym API to make the step and
     reset functions jittable. The state contains all the dynamics and data needed to step
     the environment, no computation stored in attributes of self.
@@ -95,7 +96,7 @@ class Environment(abc.ABC, Generic[State]):
         """
 
     @property
-    def action_spec(self) -> specs.Spec:
+    def action_spec(self) -> ActionSpec:
         """Returns the action spec.
 
         Returns:
@@ -104,7 +105,7 @@ class Environment(abc.ABC, Generic[State]):
         return self._action_spec
 
     @abc.abstractmethod
-    def _make_action_spec(self) -> specs.Spec:
+    def _make_action_spec(self) -> ActionSpec:
         """Returns new action spec.
 
         Returns:

@@ -30,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Cleaner(Environment[State]):
+class Cleaner(Environment[State, specs.MultiDiscreteArray]):
     """A JAX implementation of the 'Cleaner' game where multiple agents have to clean all tiles of
     a maze.
 

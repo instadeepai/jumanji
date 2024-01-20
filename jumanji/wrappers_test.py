@@ -25,7 +25,7 @@ import pytest
 import pytest_mock
 
 from jumanji import specs
-from jumanji.env import Environment
+from jumanji.env import ActionSpec, Environment
 from jumanji.environments.packing.bin_pack import conftest as bin_pack_conftest
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
@@ -48,7 +48,7 @@ Observation = TypeVar("Observation")
 
 @pytest.fixture
 def mock_wrapper_class() -> Type[Wrapper]:
-    class MockWrapper(Wrapper[FakeState]):
+    class MockWrapper(Wrapper[FakeState, ActionSpec]):
         pass
 
     return MockWrapper
@@ -418,7 +418,8 @@ class TestMultiToSingleEnvironment:
         """
         obs_spec: specs.Array = fake_multi_to_single_env.observation_spec  # type: ignore
         assert isinstance(obs_spec, specs.Array)
-        assert obs_spec.shape == fake_multi_environment.observation_spec.shape
+        multi_obs_spec: specs.Array = fake_multi_environment.observation_spec  # type: ignore
+        assert obs_spec.shape == multi_obs_spec.shape
 
     def test_multi_env__action_spec(
         self,

@@ -33,7 +33,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji import specs, tree_utils
-from jumanji.env import Environment, State
+from jumanji.env import ActionSpec, Environment, State
 from jumanji.types import TimeStep
 
 Observation = TypeVar("Observation")
@@ -42,12 +42,12 @@ Observation = TypeVar("Observation")
 GymObservation = Any
 
 
-class Wrapper(Environment[State], Generic[State]):
+class Wrapper(Environment[State, ActionSpec], Generic[State, ActionSpec]):
     """Wraps the environment to allow modular transformations.
     Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
     """
 
-    def __init__(self, env: Environment):
+    def __init__(self, env: Environment[State, ActionSpec]):
         self._env = env
         super().__init__()
 
@@ -93,7 +93,7 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the observation spec."""
         return self._env._make_observation_spec()
 
-    def _make_action_spec(self) -> specs.Spec:
+    def _make_action_spec(self) -> ActionSpec:
         """Returns the action spec."""
         return self._env._make_action_spec()
 

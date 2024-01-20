@@ -33,7 +33,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class GraphColoring(Environment[State]):
+class GraphColoring(Environment[State, specs.DiscreteArray]):
     """Environment for the GraphColoring problem.
     The problem is a combinatorial optimization task where the goal is
       to assign a color to each vertex of a graph

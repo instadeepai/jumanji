@@ -43,7 +43,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class BinPack(Environment[State]):
+class BinPack(Environment[State, specs.MultiDiscreteArray]):
     """Problem of 3D bin packing, where a set of items have to be placed in a 3D container with the
     goal of maximizing its volume utilization. This environment only supports 1 bin, meaning it is
     equivalent to the 3D-knapsack problem. We use the Empty Maximal Space (EMS) formulation of this

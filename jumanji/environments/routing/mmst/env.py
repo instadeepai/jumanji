@@ -42,7 +42,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MMST(Environment[State]):
+class MMST(Environment[State, specs.MultiDiscreteArray]):
     """The `MMST` (Multi Minimum Spanning Tree) environment
     consists of a random connected graph
     with groups of nodes (same node types) that needs to be connected.
