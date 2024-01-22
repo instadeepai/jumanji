@@ -38,7 +38,7 @@ nav:
           - RobotWarehouse: environments/robot_warehouse.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
-          - Boxoban: environments/boxoban.md
+          - Sokoban: environments/sokoban.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
@@ -68,7 +68,7 @@ nav:
               - RobotWarehouse: api/environments/robot_warehouse.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
-              - Boxoban: api/environments/boxoban.md
+              - Sokoban: api/environments/sokoban.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 

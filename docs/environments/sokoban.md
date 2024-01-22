@@ -1,4 +1,4 @@
-# Boxoban Environment 👾
+# Sokoban Environment 👾
 
 <p align="center">
         <img src="../env_anim/sokoban.gif" width="500"/>

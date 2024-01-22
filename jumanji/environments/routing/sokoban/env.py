@@ -309,13 +309,15 @@ class Sokoban(Environment[State]):
             The observation derived from the state.
         """
 
-        total_grid = jnp.concatenate(
-            (
-                jnp.expand_dims(state.variable_grid, axis=-1),
-                jnp.expand_dims(state.fixed_grid, axis=-1),
-            ),
-            axis=-1,
-        )
+        # total_grid = jnp.concatenate(
+        #     (
+        #         jnp.expand_dims(state.variable_grid, axis=-1),
+        #         jnp.expand_dims(state.fixed_grid, axis=-1),
+        #     ),
+        #     axis=-1,
+        # )
+
+        total_grid = jnp.stack([state.variable_grid, state.fixed_grid], axis=-1)
 
         return Observation(
             grid=total_grid,
