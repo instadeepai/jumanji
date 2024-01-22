@@ -32,6 +32,7 @@ from jumanji.environments.routing.sokoban.constants import (
     TARGET_AGENT,
     TARGET_BOX,
     WALL,
+    NOOP,
 )
 from jumanji.environments.routing.sokoban.generator import (
     Generator,
@@ -223,7 +224,7 @@ class Sokoban(Environment[State]):
         )
 
         next_variable_grid, next_agent_location = jax.lax.cond(
-            jnp.all(action == -1),
+            jnp.all(action == NOOP),
             lambda: (state.variable_grid, state.agent_location),
             lambda: self.move_agent(state.variable_grid, action, state.agent_location),
         )

@@ -75,7 +75,6 @@ class Generator(abc.ABC):
 
 
 class DeepMindGenerator(Generator):
-    """... (rest of the docstring remains unchanged)"""
 
     def __init__(
         self,
