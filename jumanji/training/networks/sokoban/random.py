@@ -17,8 +17,6 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.sokoban import Observation
-
-# Ok what is a random policy
 from jumanji.training.networks.protocols import RandomPolicy
 
 
