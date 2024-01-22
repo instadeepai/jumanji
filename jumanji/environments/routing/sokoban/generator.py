@@ -75,7 +75,6 @@ class Generator(abc.ABC):
 
 
 class DeepMindGenerator(Generator):
-
     def __init__(
         self,
         difficulty: str,
@@ -169,7 +168,7 @@ class DeepMindGenerator(Generator):
         variable_grids_list: List[chex.Array] = []
 
         for file in all_files:
-   
+
             source_file = join(self.train_data_dir, file)
             current_map: List[str] = []
             # parses a game file containing multiple games
@@ -179,7 +178,9 @@ class DeepMindGenerator(Generator):
                         fixed_grid, variable_grid = convert_level_to_array(current_map)
 
                         fixed_grids_list.append(jnp.array(fixed_grid, dtype=jnp.uint8))
-                        variable_grids_list.append(jnp.array(variable_grid, dtype=jnp.uint8))
+                        variable_grids_list.append(
+                            jnp.array(variable_grid, dtype=jnp.uint8)
+                        )
 
                         current_map = []
                     if "#" == line[0]:
@@ -258,8 +259,8 @@ class HuggingFaceDeepMindGenerator(Generator):
 
         dataset_file = hf_hub_download(
             repo_id="InstaDeepAI/boxoban-levels",
-            revision= "116e18ac8e6b62e3f7d813d53cf87a000f188cfd",
-            filename=f"{dataset_name}.npy"
+            revision="116e18ac8e6b62e3f7d813d53cf87a000f188cfd",
+            filename=f"{dataset_name}.npy",
         )
 
         with open(dataset_file, "rb") as f:

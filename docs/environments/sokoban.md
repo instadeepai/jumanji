@@ -44,12 +44,12 @@ The Boxoban dataset offers a collection of puzzle levels. Each level features fo
 
 | Dataset Split | Number of Levels |
 |---------------|------------------|
-| Unfiltered (Training) | 899,100          |
-| Unfiltered (Validation) | 99,900           |
-| Unfiltered (Test) | 999              |
-| Medium (Training) | 449,550          |
-| Medium (Validation) | 49,950           |
-| Hard | 3328             |
+| Unfiltered (Training) | 900,000          |
+| Unfiltered (Validation) | 100,000           |
+| Unfiltered (Test) | 1000              |
+| Medium (Training) | 450,000          |
+| Medium (Validation) | 50,000           |
+| Hard | 3332             |
 
 
 The dataset generation procedure and more details can be found in Guez et al., 2018 <a href="#ref1">[1]</a>.

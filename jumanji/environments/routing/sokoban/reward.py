@@ -62,7 +62,6 @@ class RewardFn(abc.ABC):
 
 
 class SparseReward(RewardFn):
-
     def __call__(
         self,
         state: State,
@@ -90,7 +89,6 @@ class SparseReward(RewardFn):
 
 
 class DenseReward(RewardFn):
-
     def __call__(
         self,
         state: State,

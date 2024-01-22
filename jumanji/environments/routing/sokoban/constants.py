@@ -15,7 +15,7 @@
 import jax.numpy as jnp
 
 # Translating actions to coordinate changes
-MOVES = jnp.array([[-1, 0], [0, 1],[1, 0], [0, -1]])
+MOVES = jnp.array([[-1, 0], [0, 1], [1, 0], [0, -1]])
 
 # Object encodings
 EMPTY = 0
