@@ -56,7 +56,7 @@ class Sokoban(Environment[State]):
             current number of steps in the episode.
 
     - action: jax array (int32) of shape ()
-        [0,1,2,3] -> [Up, Down, Left, Right].
+        [0,1,2,3] -> [Up, Right, Down, Left].
 
     - reward: jax array (float) of shape ()
         A reward of 1.0 is given for each box placed on a target and -1
@@ -291,7 +291,7 @@ class Sokoban(Environment[State]):
     def action_spec(self) -> specs.DiscreteArray:
         """
         Returns the action specification for the Sokoban environment.
-        There are 4 actions: [0,1,2,3] -> [Up, Down, Left, Right].
+        There are 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 
         Returns:
             specs.DiscreteArray: Discrete action specifications.
