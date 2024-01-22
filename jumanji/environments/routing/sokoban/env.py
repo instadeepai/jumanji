@@ -28,11 +28,11 @@ from jumanji.environments.routing.sokoban.constants import (
     GRID_SIZE,
     MOVES,
     N_BOXES,
+    NOOP,
     TARGET,
     TARGET_AGENT,
     TARGET_BOX,
     WALL,
-    NOOP,
 )
 from jumanji.environments.routing.sokoban.generator import (
     Generator,
@@ -145,10 +145,12 @@ class Sokoban(Environment[State]):
         self.num_cols = GRID_SIZE
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit
+
         self.generator = generator or HuggingFaceDeepMindGenerator(
             "unfiltered-train",
             proportion_of_files=1,
         )
+
         self._viewer = viewer or BoxViewer(
             name="Sokoban",
             grid_combine=self.grid_combine,
@@ -240,7 +242,6 @@ class Sokoban(Environment[State]):
         target_reached = self.level_complete(next_state)
         time_limit_exceeded = next_state.step_count >= self.time_limit
 
-        # done = target_reached | time_limit_exceeded
         done = jnp.logical_or(target_reached, time_limit_exceeded)
 
         reward = jnp.asarray(self.reward_fn(state, action, next_state), float)
@@ -545,13 +546,14 @@ class Sokoban(Environment[State]):
         next_variable_grid = variable_grid.at[tuple(current_location)].set(EMPTY)
 
         # either move agent or move agent and box
-        next_variable_grid = jax.lax.cond(
+
+        next_variable_grid = jax.lax.select(
             self.check_space(variable_grid, next_location, BOX),
-            lambda: next_variable_grid.at[tuple(next_location)]
+            next_variable_grid.at[tuple(next_location)]
             .set(AGENT)
             .at[tuple(box_location)]
             .set(BOX),
-            lambda: next_variable_grid.at[tuple(next_location)].set(AGENT),
+            next_variable_grid.at[tuple(next_location)].set(AGENT),
         )
 
         return next_variable_grid, next_location

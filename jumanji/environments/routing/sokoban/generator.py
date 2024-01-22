@@ -167,7 +167,9 @@ class DeepMindGenerator(Generator):
 
         fixed_grids_list: List[chex.Array] = []
         variable_grids_list: List[chex.Array] = []
+
         for file in all_files:
+   
             source_file = join(self.train_data_dir, file)
             current_map: List[str] = []
             # parses a game file containing multiple games
@@ -175,11 +177,17 @@ class DeepMindGenerator(Generator):
                 for line in sf.readlines():
                     if ";" in line and current_map:
                         fixed_grid, variable_grid = convert_level_to_array(current_map)
-                        fixed_grids_list.append(fixed_grid)
-                        variable_grids_list.append(variable_grid)
+
+                        fixed_grids_list.append(jnp.array(fixed_grid, dtype=jnp.uint8))
+                        variable_grids_list.append(jnp.array(variable_grid, dtype=jnp.uint8))
+
                         current_map = []
                     if "#" == line[0]:
                         current_map.append(line.strip())
+
+                fixed_grids_list.append(jnp.array(fixed_grid, dtype=jnp.uint8))
+                variable_grids_list.append(jnp.array(variable_grid, dtype=jnp.uint8))
+
         fixed_grids = jnp.asarray(fixed_grids_list, jnp.uint8)
         variable_grids = jnp.asarray(variable_grids_list, jnp.uint8)
 
@@ -249,8 +257,11 @@ class HuggingFaceDeepMindGenerator(Generator):
         self.proportion_of_files = proportion_of_files
 
         dataset_file = hf_hub_download(
-            repo_id="InstaDeepAI/boxoban-levels", filename=f"{dataset_name}.npy"
+            repo_id="InstaDeepAI/boxoban-levels",
+            revision= "116e18ac8e6b62e3f7d813d53cf87a000f188cfd",
+            filename=f"{dataset_name}.npy"
         )
+
         with open(dataset_file, "rb") as f:
             dataset = np.load(f)
 
