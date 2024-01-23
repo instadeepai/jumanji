@@ -7,7 +7,7 @@ network:
     value_layers: [128, 128]
 
 training:
-    num_epochs: 400
+    num_epochs: 1000
     num_learner_steps_per_epoch: 500
     n_steps: 20
     total_batch_size: 128
