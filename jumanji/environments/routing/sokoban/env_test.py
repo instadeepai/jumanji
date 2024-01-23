@@ -152,8 +152,8 @@ def test_sokoban__termination_solved(sokoban_simple: Sokoban) -> None:
     """Check that with correct sequence of actions to solve a trivial problem,
     the environment terminates"""
 
-    correct_actions = [0, 2, 1] * 1 + [0]
-    wrong_actions = [0, 2, 1] * 1 + [2]
+    correct_actions = [0, 2, 1] * 3 + [0]
+    wrong_actions = [0, 2, 1] * 3 + [2]
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
@@ -191,7 +191,7 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
     solving adds an additional 10"""
 
     # Correct actions that lead to placing a box every 3 actions
-    correct_actions = [0, 2, 1] * 1 + [0]
+    correct_actions = [0, 2, 1] * 3 + [0]
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
