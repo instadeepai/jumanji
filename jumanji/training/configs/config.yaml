@@ -4,7 +4,7 @@ defaults:
 
 agent: a2c  # [random, a2c]
 
-seed: 42
+seed: 1
 
 logger:
     type: neptune  # [neptune, tensorboard, terminal]
