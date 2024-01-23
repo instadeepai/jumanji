@@ -157,7 +157,7 @@ class AsciiGenerator(Generator):
             ghost_init_targets=ghost_init_targets,
             ghost_actions=ghost_actions,
             visited_index=player_locations,
-            ghost_starts=jnp.array([1, 10, 20, 30]),
+            ghost_starts=jnp.array([1, 5, 10, 15]),
             scatter_targets=self.scatter_targets,
             step_count=jnp.array(0, jnp.int32),
             ghost_eaten=jnp.array([True, True, True, True]),
