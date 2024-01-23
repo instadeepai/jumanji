@@ -259,7 +259,6 @@ class HuggingFaceDeepMindGenerator(Generator):
 
         dataset_file = hf_hub_download(
             repo_id="InstaDeepAI/boxoban-levels",
-            revision="116e18ac8e6b62e3f7d813d53cf87a000f188cfd",
             filename=f"{dataset_name}.npy",
         )
 
