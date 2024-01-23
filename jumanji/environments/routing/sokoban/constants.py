@@ -16,6 +16,7 @@ import jax.numpy as jnp
 
 # Translating actions to coordinate changes
 MOVES = jnp.array([[-1, 0], [0, 1], [1, 0], [0, -1]])
+NOOP = -1
 
 # Object encodings
 EMPTY = 0
@@ -34,4 +35,5 @@ GRID_SIZE = 10
 LEVEL_COMPLETE_BONUS = 10
 SINGLE_BOX_BONUS = 1
 STEP_BONUS = -0.1
-NOOP = -1
+
+
