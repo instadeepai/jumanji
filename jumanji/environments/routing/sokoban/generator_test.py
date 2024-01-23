@@ -119,7 +119,7 @@ def test_sokoban__hugging_generator_proportion_of_problems() -> None:
 
     chex.clear_trace_counter()
 
-    unfiltered_dataset_size = 899100
+    unfiltered_dataset_size = 900000
 
     generator_full = HuggingFaceDeepMindGenerator(
         dataset_name="unfiltered-train",
