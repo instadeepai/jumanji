@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 import abc
 import collections
@@ -56,7 +57,7 @@ class Logger(AbstractContextManager):
     def upload_checkpoint(self) -> None:
         """Uploads a checkpoint when exiting the logger."""
 
-    def __enter__(self) -> "Logger":
+    def __enter__(self) -> Logger:
         logging.info("Starting logger.")
         self._variables_enter = self._get_variables()
         return self
