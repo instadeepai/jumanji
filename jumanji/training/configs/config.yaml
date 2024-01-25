@@ -1,10 +1,10 @@
 defaults:
     - _self_
-    - env: pac_man  # [snake, cleaner, connector, cvrp, game_2048, graph_coloring, job_shop, knapsack, maze, minesweeper, mmst, multi_cvrp, robot_warehouse, rubiks_cube, snake, sudoku, tetris, tsp]
+    - env: snake  # [snake, cleaner, connector, cvrp, game_2048, graph_coloring, job_shop, knapsack, maze, minesweeper, mmst, multi_cvrp, robot_warehouse, rubiks_cube, snake, sudoku, tetris, tsp]
 
 agent: random  # [random, a2c]
 
-seed: 12
+seed: 0
 
 logger:
     type: neptune  # [neptune, tensorboard, terminal]
