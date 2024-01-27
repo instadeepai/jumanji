@@ -19,6 +19,8 @@ import chex
 import jax
 from jax import numpy as jnp
 
+from jumanji.environments.logic.sliding_tile_puzzle.constants import EMPTY_TILE
+
 
 class Generator(abc.ABC):
     @property
@@ -76,7 +78,7 @@ class RandomGenerator(Generator):
 
         # Find the position of the empty tile
         empty_tile_position = jnp.stack(
-            jnp.unravel_index(jnp.argmax(puzzle == 0), puzzle.shape)
+            jnp.unravel_index(jnp.argmax(puzzle == EMPTY_TILE), puzzle.shape)
         )
 
         return puzzle, empty_tile_position
@@ -127,7 +129,7 @@ class SolvableSTPGenerator(Generator):
 
         # Find the position of the empty tile
         empty_tile_position = jnp.stack(
-            jnp.unravel_index(jnp.argmax(puzzle == 0), puzzle.shape)
+            jnp.unravel_index(jnp.argmax(puzzle == EMPTY_TILE), puzzle.shape)
         )
 
         return puzzle, empty_tile_position
