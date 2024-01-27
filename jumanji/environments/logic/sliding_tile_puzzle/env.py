@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple, cast
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -223,9 +223,7 @@ class SlidingTilePuzzle(Environment[State]):
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec."""
         # Up, Down, Left, Right
-        return specs.DiscreteArray(
-            num_values=4, name="action", dtype=jnp.int32
-        ) 
+        return specs.DiscreteArray(num_values=4, name="action", dtype=jnp.int32)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the puzzle board.
