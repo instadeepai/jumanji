@@ -200,7 +200,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=specs.BoundedArray(
                 shape=(n, n),
                 dtype=jnp.int32,
-                minimum=-1,
+                minimum=0,
                 maximum=n * n - 1,
                 name="puzzle",
             ),
