@@ -95,5 +95,7 @@ def check_env_does_not_smoke(
         env.action_spec().validate(action)
         state, timestep = step_fn(state, action)
         env.observation_spec().validate(timestep.observation)
+        env.reward_spec().validate(timestep.reward)
+        env.discount_spec().validate(timestep.discount)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))
