@@ -34,7 +34,7 @@ class FakeState:
     step: jnp.int32
 
 
-class FakeEnvironment(Environment[FakeState, specs.BoundedArray]):
+class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
     """
     A fake environment that inherits from Environment, for testing purposes.
     The observation is an array full of `state.step` of shape `(self.observation_shape,)`
@@ -143,7 +143,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray]):
         return state.step * jnp.ones(self.observation_shape, float)
 
 
-class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray]):
+class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
     """
     A fake multi agent environment that inherits from Environment, for testing purposes.
     """

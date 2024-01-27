@@ -29,7 +29,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class JobShop(Environment[State, specs.MultiDiscreteArray]):
+class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The Job Shop Scheduling Problem, as described in [1], is one of the best known
     combinatorial optimization problems. We are given `num_jobs` jobs, each consisting
     of at most `max_num_ops` ops, which need to be processed on `num_machines` machines.

@@ -42,7 +42,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class RubiksCube(Environment[State, specs.MultiDiscreteArray]):
+class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the Rubik's Cube with a configurable cube size (by default, 3) and
     number of scrambles at reset.
 

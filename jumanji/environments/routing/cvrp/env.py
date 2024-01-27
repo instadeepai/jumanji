@@ -30,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class CVRP(Environment[State, specs.DiscreteArray]):
+class CVRP(Environment[State, specs.DiscreteArray, Observation]):
     """Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
 
     - observation: `Observation`

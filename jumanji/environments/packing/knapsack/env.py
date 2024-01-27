@@ -30,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Knapsack(Environment[State, specs.DiscreteArray]):
+class Knapsack(Environment[State, specs.DiscreteArray, Observation]):
     """Knapsack environment as described in [1].
 
     - observation: Observation

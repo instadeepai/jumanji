@@ -34,7 +34,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Tetris(Environment[State, specs.MultiDiscreteArray]):
+class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
     """RL Environment for the game of Tetris.
     The environment has a grid where the player can place tetrominoes.
     The environment has the following characteristics:

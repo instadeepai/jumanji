@@ -13,17 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Generic,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, ClassVar, Dict, Generic, Optional, Tuple, Union
 
 import chex
 import dm_env.specs
@@ -33,21 +23,21 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji import specs, tree_utils
-from jumanji.env import ActionSpec, Environment, State
+from jumanji.env import ActionSpec, Environment, Observation, State
 from jumanji.types import TimeStep
-
-Observation = TypeVar("Observation")
 
 # Type alias that corresponds to ObsType in the Gym API
 GymObservation = Any
 
 
-class Wrapper(Environment[State, ActionSpec], Generic[State, ActionSpec]):
+class Wrapper(
+    Environment[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Wraps the environment to allow modular transformations.
     Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
     """
 
-    def __init__(self, env: Environment[State, ActionSpec]):
+    def __init__(self, env: Environment[State, ActionSpec, Observation]):
         self._env = env
         super().__init__()
 
@@ -60,11 +50,11 @@ class Wrapper(Environment[State, ActionSpec], Generic[State, ActionSpec]):
         return getattr(self._env, name)
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         """Returns the wrapped env."""
         return self._env.unwrapped
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -76,7 +66,9 @@ class Wrapper(Environment[State, ActionSpec], Generic[State, ActionSpec]):
         """
         return self._env.reset(key)
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -89,7 +81,7 @@ class Wrapper(Environment[State, ActionSpec], Generic[State, ActionSpec]):
         """
         return self._env.step(state, action)
 
-    def _make_observation_spec(self) -> specs.Spec:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
         return self._env._make_observation_spec()
 

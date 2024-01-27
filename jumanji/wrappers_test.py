@@ -25,7 +25,7 @@ import pytest
 import pytest_mock
 
 from jumanji import specs
-from jumanji.env import ActionSpec, Environment
+from jumanji.env import Environment
 from jumanji.environments.packing.bin_pack import conftest as bin_pack_conftest
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeState
@@ -48,7 +48,7 @@ Observation = TypeVar("Observation")
 
 @pytest.fixture
 def mock_wrapper_class() -> Type[Wrapper]:
-    class MockWrapper(Wrapper[FakeState, ActionSpec]):
+    class MockWrapper(Wrapper[FakeState, specs.BoundedArray, chex.Array]):
         pass
 
     return MockWrapper

@@ -46,7 +46,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Connector(Environment[State, specs.MultiDiscreteArray]):
+class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
     must be connected without overlapping the paths taken by any other set. This is achieved
     by allowing certain points to move to an adjacent cell at each step. However, each time a

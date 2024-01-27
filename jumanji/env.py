@@ -34,9 +34,10 @@ class StateProtocol(Protocol):
 
 State = TypeVar("State", bound="StateProtocol")
 ActionSpec = TypeVar("ActionSpec", bound=specs.Array)
+Observation = TypeVar("Observation")
 
 
-class Environment(abc.ABC, Generic[State, ActionSpec]):
+class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
     """Environment written in Jax that differs from the gym API to make the step and
     reset functions jittable. The state contains all the dynamics and data needed to step
     the environment, no computation stored in attributes of self.
@@ -54,7 +55,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         self._discount_spec = self._make_discount_spec()
 
     @abc.abstractmethod
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -66,7 +67,9 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -79,7 +82,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """
 
     @property
-    def observation_spec(self) -> specs.Spec:
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:
@@ -88,7 +91,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         return self._observation_spec
 
     @abc.abstractmethod
-    def _make_observation_spec(self) -> specs.Spec:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """Returns new observation spec.
 
         Returns:
@@ -149,7 +152,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         )
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self
 
     def render(self, state: State) -> Any:

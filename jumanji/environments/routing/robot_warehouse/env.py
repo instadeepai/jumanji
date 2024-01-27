@@ -48,7 +48,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class RobotWarehouse(Environment[State, specs.MultiDiscreteArray]):
+class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the 'Robotic warehouse' environment:
     https://github.com/semitable/robotic-warehouse
     which is described in the paper [1].

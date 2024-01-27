@@ -36,7 +36,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Minesweeper(Environment[State, specs.MultiDiscreteArray]):
+class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the minesweeper game.
 
     - observation: `Observation`

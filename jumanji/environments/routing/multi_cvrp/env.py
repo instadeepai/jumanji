@@ -48,7 +48,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MultiCVRP(Environment[State, specs.BoundedArray]):
+class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
     """
     Multi-Vehicle Routing Problems with Soft Time Windows (MVRPSTW) environment as described in [1].
     We simplfy the naming to multi-agent capacitated vehicle routing problem (MultiCVRP).
