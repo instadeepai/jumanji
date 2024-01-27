@@ -83,7 +83,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a NestedSpec tree of spec.
+            observation_spec: a potentially nested `Spec` structure representing the observation.
         """
         return self._observation_spec
 
@@ -92,7 +92,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """Returns new observation spec.
 
         Returns:
-            observation_spec: a NestedSpec tree of spec.
+            observation_spec: a potentially nested `Spec` structure representing the observation.
         """
 
     @property
@@ -100,7 +100,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """Returns the action spec.
 
         Returns:
-            action_spec: a NestedSpec tree of spec.
+            action_spec: a potentially nested `Spec` structure representing the action.
         """
         return self._action_spec
 
@@ -109,7 +109,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec]):
         """Returns new action spec.
 
         Returns:
-            action_spec: a NestedSpec tree of spec.
+            action_spec: a potentially nested `Spec` structure representing the action.
         """
 
     @property
