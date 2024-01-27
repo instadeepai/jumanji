@@ -178,10 +178,7 @@ class SlidingTilePuzzle(Environment[State]):
             # If the move is not valid, return the original puzzle
             return puzzle, empty_tile_position
 
-        return cast(
-            Tuple[chex.Array, chex.Array],
-            lax.cond(is_valid_move, valid_move, invalid_move, puzzle),
-        )
+        return lax.cond(is_valid_move, valid_move, invalid_move, puzzle)
 
     def _get_valid_actions(self, empty_tile_position: chex.Array) -> chex.Array:
         # Compute the new positions if these movements are applied
