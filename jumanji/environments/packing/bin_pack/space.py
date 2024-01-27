@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
@@ -32,7 +33,7 @@ class Space:
     z1: chex.Numeric
     z2: chex.Numeric
 
-    def astype(self, dtype: Any) -> "Space":
+    def astype(self, dtype: Any) -> Space:
         space_dict = {
             key: jnp.asarray(value, dtype) for key, value in self.__dict__.items()
         }
@@ -90,7 +91,7 @@ class Space:
         z_len = jnp.asarray(self.z2 - self.z1, float)
         return x_len * y_len * z_len
 
-    def intersection(self, space: "Space") -> "Space":
+    def intersection(self, space: Space) -> Space:
         """Returns the intersected space with another space (i.e. the space that is included in both
         spaces whose volume is maximum).
         """
@@ -102,7 +103,7 @@ class Space:
         z2 = jnp.minimum(self.z2, space.z2)
         return Space(x1=x1, x2=x2, y1=y1, y2=y2, z1=z1, z2=z2)
 
-    def intersect(self, space: "Space") -> chex.Numeric:
+    def intersect(self, space: Space) -> chex.Numeric:
         """Returns whether a space intersect another space or not."""
         return ~(self.intersection(space).is_empty())
 
@@ -110,7 +111,7 @@ class Space:
         """A space is empty if at least one dimension is negative or zero."""
         return (self.x1 >= self.x2) | (self.y1 >= self.y2) | (self.z1 >= self.z2)
 
-    def is_included(self, space: "Space") -> chex.Numeric:
+    def is_included(self, space: Space) -> chex.Numeric:
         """Returns whether self is included into another space."""
         return (
             (self.x1 >= space.x1)
@@ -121,7 +122,7 @@ class Space:
             & (self.z2 <= space.z2)
         )
 
-    def hyperplane(self, axis: str, direction: str) -> "Space":
+    def hyperplane(self, axis: str, direction: str) -> Space:
         """Returns the hyperplane (e.g. lower hyperplane on the x axis) for EMS creation when
         packing an item.
 
