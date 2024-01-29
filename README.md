@@ -46,7 +46,7 @@
     <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
   </div>
     <div class="row" align="center">
-    <img src="docs/env_anim/pacman.gif" alt="RobotWarehouse" width="16%">
+    <img src="docs/env_anim/pac_man.gif" alt="RobotWarehouse" width="16%">
   </div>
 </div>
 
