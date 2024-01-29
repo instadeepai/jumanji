@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 from typing import (
     Any,
@@ -96,6 +97,14 @@ class Wrapper(Environment[State], Generic[State]):
         """Returns the action spec."""
         return self._env.action_spec()
 
+    def reward_spec(self) -> specs.Array:
+        """Returns the reward spec."""
+        return self._env.reward_spec()
+
+    def discount_spec(self) -> specs.BoundedArray:
+        """Returns the discount spec."""
+        return self._env.discount_spec()
+
     def render(self, state: State) -> Any:
         """Compute render frames during initialisation of the environment.
 
@@ -112,7 +121,7 @@ class Wrapper(Environment[State], Generic[State]):
         """
         return self._env.close()
 
-    def __enter__(self) -> "Wrapper":
+    def __enter__(self) -> Wrapper:
         return self
 
     def __exit__(self, *args: Any) -> None:

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, NamedTuple
 
@@ -42,7 +43,7 @@ class Agent:
         """returns: True if the agent has reached its target."""
         return jnp.all(self.position == self.target, axis=-1)
 
-    def __eq__(self: "Agent", agent_2: Any) -> chex.Array:
+    def __eq__(self: Agent, agent_2: Any) -> chex.Array:
         if not isinstance(agent_2, Agent):
             return NotImplemented
         same_ids = (agent_2.id == self.id).all()
