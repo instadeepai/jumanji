@@ -120,10 +120,16 @@ class Wrapper(
         self.close()
 
 
-class JumanjiToDMEnvWrapper(dm_env.Environment):
+class JumanjiToDMEnvWrapper(
+    dm_env.Environment, Generic[State, ActionSpec, Observation]
+):
     """A wrapper that converts Environment to dm_env.Environment."""
 
-    def __init__(self, env: Environment, key: Optional[chex.PRNGKey] = None):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        key: Optional[chex.PRNGKey] = None,
+    ):
         """Create the wrapped environment.
 
         Args:
@@ -209,16 +215,18 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
         return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec)
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self._env
 
 
-class MultiToSingleWrapper(Wrapper):
+class MultiToSingleWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """A wrapper that converts a multi-agent Environment to a single-agent Environment."""
 
     def __init__(
         self,
-        env: Environment,
+        env: Environment[State, ActionSpec, Observation],
         reward_aggregator: Callable = jnp.sum,
         discount_aggregator: Callable = jnp.max,
     ):
@@ -235,7 +243,9 @@ class MultiToSingleWrapper(Wrapper):
         self._reward_aggregator = reward_aggregator
         self._discount_aggregator = discount_aggregator
 
-    def _aggregate_timestep(self, timestep: TimeStep) -> TimeStep:
+    def _aggregate_timestep(
+        self, timestep: TimeStep[Observation]
+    ) -> TimeStep[Observation]:
         """Apply the reward and discount aggregator to a multi-agent
             timestep object to create a new timestep object that consists
             of a scalar reward and discount value.
@@ -290,7 +300,9 @@ class MultiToSingleWrapper(Wrapper):
         return state, timestep
 
 
-class VmapWrapper(Wrapper):
+class VmapWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Vectorized Jax env.
     Please note that all methods that return arrays do not return a batch dimension because the
     batch size is not known to the VmapWrapper. Methods that omit the batch dimension include:
@@ -352,7 +364,9 @@ class VmapWrapper(Wrapper):
         return super().render(state_0)
 
 
-class AutoResetWrapper(Wrapper):
+class AutoResetWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Automatically resets environments that are done. Once the terminal state is reached,
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
@@ -404,7 +418,9 @@ class AutoResetWrapper(Wrapper):
         return state, timestep
 
 
-class VmapAutoResetWrapper(Wrapper):
+class VmapAutoResetWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Efficient combination of VmapWrapper and AutoResetWrapper, to be used as a replacement of
     the combination of both wrappers.
     `env = VmapAutoResetWrapper(env)` is equivalent to `env = VmapWrapper(AutoResetWrapper(env))`
@@ -463,7 +479,7 @@ class VmapAutoResetWrapper(Wrapper):
         return state, timestep
 
     def _auto_reset(
-        self, state: State, timestep: TimeStep
+        self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
@@ -487,7 +503,7 @@ class VmapAutoResetWrapper(Wrapper):
         return state, timestep
 
     def _maybe_reset(
-        self, state: State, timestep: TimeStep
+        self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
         """Overwrite the state and timestep appropriately if the episode terminates."""
         state, timestep = jax.lax.cond(
@@ -511,14 +527,19 @@ class VmapAutoResetWrapper(Wrapper):
         return super().render(state_0)
 
 
-class JumanjiToGymWrapper(gym.Env):
+class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
     """A wrapper that converts a Jumanji `Environment` to one that follows the `gym.Env` API."""
 
     # Flag that prevents `gym.register` from misinterpreting the `_step` and
     # `_reset` as signs of a deprecated gym Env API.
     _gym_disable_underscore_compat: ClassVar[bool] = True
 
-    def __init__(self, env: Environment, seed: int = 0, backend: Optional[str] = None):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        seed: int = 0,
+        backend: Optional[str] = None,
+    ):
         """Create the Gym environment.
 
         Args:
@@ -622,6 +643,8 @@ class JumanjiToGymWrapper(gym.Env):
             mode: currently not used since Jumanji does not currently support modes.
         """
         del mode
+        if self._state is None:
+            raise ValueError("Cannot render when _state is None.")
         return self._env.render(self._state)
 
     def close(self) -> None:
@@ -629,7 +652,7 @@ class JumanjiToGymWrapper(gym.Env):
         self._env.close()
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self._env
 
 

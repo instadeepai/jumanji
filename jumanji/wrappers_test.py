@@ -309,6 +309,9 @@ class TestJumanjiEnvironmentToGymEnv:
         )
 
         mock_state = mocker.MagicMock()
+        with pytest.raises(ValueError):
+            fake_gym_env.render(mock_state)
+        fake_gym_env.reset()
         fake_gym_env.render(mock_state)
 
         mock_render.assert_called_once()
