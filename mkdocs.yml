@@ -38,6 +38,7 @@ nav:
           - RobotWarehouse: environments/robot_warehouse.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
+          - PacMan: environments/pac_man.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
@@ -67,6 +68,7 @@ nav:
               - RobotWarehouse: api/environments/robot_warehouse.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
+              - PacMan: api/environments/pac_man.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
