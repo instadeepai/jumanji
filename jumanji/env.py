@@ -23,7 +23,7 @@ import chex
 from typing_extensions import Protocol
 
 from jumanji import specs
-from jumanji.types import TimeStep
+from jumanji.types import Observation, TimeStep
 
 
 class StateProtocol(Protocol):
@@ -34,7 +34,6 @@ class StateProtocol(Protocol):
 
 State = TypeVar("State", bound="StateProtocol")
 ActionSpec = TypeVar("ActionSpec", bound=specs.Array)
-Observation = TypeVar("Observation")
 
 
 class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):

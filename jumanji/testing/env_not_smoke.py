@@ -20,8 +20,8 @@ import jax.numpy as jnp
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.types import Observation
 
-Observation = TypeVar("Observation")
 Action = TypeVar("Action")
 SelectActionFn = Callable[[chex.PRNGKey, Observation], Action]
 

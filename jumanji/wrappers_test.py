@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import namedtuple
-from typing import Tuple, Type, TypeVar
+from typing import Tuple, Type
 
 import chex
 import dm_env.specs
@@ -42,8 +42,6 @@ from jumanji.wrappers import (
     jumanji_to_gym_obs,
 )
 
-State = TypeVar("State")
-Observation = TypeVar("Observation")
 FakeWrapper = Wrapper[FakeState, specs.BoundedArray, chex.Array]
 
 
