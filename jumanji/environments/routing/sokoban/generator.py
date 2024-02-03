@@ -377,12 +377,12 @@ class ToyGenerator(Generator):
 class SimpleSolveGenerator(Generator):
     def __call__(
         self,
-        rng_key: chex.PRNGKey,
+        key: chex.PRNGKey,
     ) -> State:
         """Generate a trivial Boxoban problem.
 
         Args:
-            rng_key: the Jax random number generation key.
+            key: the Jax random number generation key.
 
         Returns:
             fixed_grid: Array (uint8) shape (num_rows, num_cols) the fixed
@@ -390,8 +390,6 @@ class SimpleSolveGenerator(Generator):
             variable_grid: Array (uint8) shape (num_rows, num_cols) the
             variable components of the problem.
         """
-        key, _ = jax.random.split(rng_key)
-
         level1 = [
             "##########",
             "#       ##",
@@ -410,7 +408,7 @@ class SimpleSolveGenerator(Generator):
         initial_agent_location = self.get_agent_coordinates(game_variable)
 
         state = State(
-            key=key,  # what key do we want to use for this
+            key=key,
             fixed_grid=game_fixed,
             variable_grid=game_variable,
             agent_location=initial_agent_location,
