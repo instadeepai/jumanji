@@ -113,7 +113,7 @@ problems.
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 | ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
-| 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://instadeepai.github.io/jumanji/environments/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
+| 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
 
 <h2 name="install" id="install">Installation 🎬</h2>
 
