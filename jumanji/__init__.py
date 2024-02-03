@@ -128,3 +128,5 @@ register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 
 # Sokoban with deepmind dataset generator
 register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
+# Pacman - minimal version of Atarti Pacman game
+register(id="PacMan-v0", entry_point="jumanji.environments:PacMan")
