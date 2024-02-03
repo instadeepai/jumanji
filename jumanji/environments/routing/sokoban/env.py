@@ -136,7 +136,7 @@ class Sokoban(Environment[State]):
              `DeepMindGenerator`, and `HuggingFaceDeepMindGenerator`].
              Defaults to `HuggingFaceDeepMindGenerator` with
              `dataset_name="unfiltered-train", proportion_of_files=1`.
-            time_limit: int, max steps for the environment ,defaults to 120.
+            time_limit: int, max steps for the environment, defaults to 120.
             viewer: 'Viewer' object, used to render the environment.
             If not provided, defaults to`BoxViewer`.
         """
