@@ -107,18 +107,6 @@ class Sokoban(Environment[State]):
     state, timestep = jax.jit(env_train.step)(state, action)
     env_train.render(state)
     ```
-
-    # Test...
-    
-    ```
-    key_test = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env_test.reset)(key_test)
-    env_train.render(state)
-    action = env_test.action_spec().generate_value()
-    state, timestep = jax.jit(env_test.step)(state, action)
-    env_test.render(state)
-    ```
-
     """
 
     def __init__(
