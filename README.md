@@ -47,6 +47,7 @@
   </div>
     <div class="row" align="center">
     <img src="docs/env_anim/pac_man.gif" alt="RobotWarehouse" width="16%">
+    <img src="docs/env_anim/sokoban.gif" alt="RobotWarehouse" width="16%">
   </div>
 </div>
 
