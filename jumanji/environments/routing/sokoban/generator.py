@@ -364,7 +364,7 @@ class ToyGenerator(Generator):
         initial_agent_location = self.get_agent_coordinates(games_variable[game_index])
 
         state = State(
-            key=key,  # what key do we want to use for this
+            key=key,
             fixed_grid=games_fixed[game_index],
             variable_grid=games_variable[game_index],
             agent_location=initial_agent_location,
