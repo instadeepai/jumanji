@@ -73,7 +73,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
     elif cfg.logger.type == "neptune":
         logger = NeptuneLogger(
             name=cfg.logger.name,
-            project="InstaDeep/quarks-search",
+            project="InstaDeep/jumanji",
             cfg=cfg,
             save_checkpoint=cfg.logger.save_checkpoint,
         )
