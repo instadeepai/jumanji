@@ -445,7 +445,7 @@ class Sokoban(Environment[State]):
 
         updated_action = jax.lax.select(
             valid_destination,
-            -jnp.ones(shape=(), dtype=jnp.int32),
+            jnp.full(shape=(),fill_value=NOOP, dtype=jnp.int32),
             jax.lax.select(
                 self.check_space(variable_grid, new_location, BOX),
                 self.update_box_push_action(
@@ -491,14 +491,14 @@ class Sokoban(Environment[State]):
                 BOX,
             )
             | ~self.in_grid(new_location + MOVES[action].squeeze()),
-            -jnp.ones(shape=(), dtype=jnp.int32),
+            jnp.full(shape=(),fill_value=NOOP, dtype=jnp.int32),
             jax.lax.select(
                 self.check_space(
                     fixed_grid,
                     new_location + MOVES[action].squeeze(),
                     WALL,
                 ),
-                -jnp.ones(shape=(), dtype=jnp.int32),
+                jnp.full(shape=(),fill_value=NOOP, dtype=jnp.int32),
                 action,
             ),
         )
