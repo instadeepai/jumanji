@@ -97,8 +97,9 @@ class Sokoban(Environment[State]):
         )
     )
 
-    #Train...
-
+    # Train...
+    
+    ```
     key_train = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env_train.reset)(key_train)
     env_train.render(state)
