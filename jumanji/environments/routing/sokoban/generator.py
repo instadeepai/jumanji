@@ -134,7 +134,7 @@ class DeepMindGenerator(Generator):
         initial_agent_location = self.get_agent_coordinates(variable_grid)
 
         state = State(
-            key=key,  # what key do we want to use for this
+            key=key,
             fixed_grid=fixed_grid,
             variable_grid=variable_grid,
             agent_location=initial_agent_location,
