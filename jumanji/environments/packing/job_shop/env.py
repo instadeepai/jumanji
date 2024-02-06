@@ -80,7 +80,7 @@ class JobShop(Environment[State]):
     ```python
     from jumanji.environments import JobShop
     env = JobShop()
-    key = jax.random.key(0)
+    key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec().generate_value()

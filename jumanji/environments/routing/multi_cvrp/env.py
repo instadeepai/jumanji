@@ -64,6 +64,17 @@ class MultiCVRP(Environment[State]):
 
     [1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
     Multi-Agent Reinforcement Learning Approach".
+
+    ```python
+    from jumanji.environments import MultiCVRP
+    env = MultiCVRP()
+    key = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
+    action = env.action_spec().generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
+    ```
     """
 
     def __init__(

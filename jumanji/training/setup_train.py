@@ -40,6 +40,7 @@ from jumanji.environments import (
     RobotWarehouse,
     RubiksCube,
     Snake,
+    Sokoban,
     Sudoku,
     Tetris,
 )
@@ -178,6 +179,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "maze":
         assert isinstance(env.unwrapped, Maze)
         random_policy = networks.make_random_policy_maze()
+    elif cfg.env.name == "sokoban":
+        assert isinstance(env.unwrapped, Sokoban)
+        random_policy = networks.make_random_policy_sokoban()
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
@@ -323,6 +327,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         actor_critic_networks = networks.make_actor_critic_networks_maze(
             maze=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "sokoban":
+        assert isinstance(env.unwrapped, Sokoban)
+        actor_critic_networks = networks.make_actor_critic_networks_sokoban(
+            sokoban=env.unwrapped,
+            channels=cfg.env.network.channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
