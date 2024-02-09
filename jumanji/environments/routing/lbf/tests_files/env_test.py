@@ -36,16 +36,34 @@ def test_lbf_environment_integration(
         timestep.reward, jnp.zeros(lbf_environment.num_agents, dtype=float)
     ).all()
     assert timestep.extras == {
-        "num_eaten": jnp.int32(0),
+        "num_eaten": jnp.float32(0),
         "percent_eaten": jnp.float32(0),
     }
     # Test the step function
-    action = jnp.array(
-        [0] * lbf_environment.num_agents
-    )  # Example action for two agents
+    action = jnp.array([NOOP] * lbf_environment.num_agents)
     next_state, timestep = lbf_environment.step(initial_state, action)
     assert isinstance(next_state, State)
     assert isinstance(timestep, TimeStep)
+    assert timestep.step_type == StepType.MID
+
+
+def test_reset(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
+    num_agents = lbf_environment.num_agents
+    num_food = lbf_environment.num_food
+
+    state, timestep = lbf_environment.reset(key)
+    assert len(state.agents.position) == num_agents
+    assert len(state.food_items.position) == lbf_environment.num_food
+
+    expected_obs_shape = (num_agents, 3 * (num_food + num_agents))
+    assert timestep.observation.agents_view.shape == expected_obs_shape
+
+    assert jnp.all(timestep.discount == 1.0)
+    assert jnp.all(timestep.reward == 0.0)
+    assert timestep.step_type == StepType.FIRST
+
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
 
 
 def test_get_reward(
@@ -67,25 +85,6 @@ def test_get_reward(
     )
     expected_reward = expected_reward_food0 + expected_reward_food1
     assert jnp.all(reward == expected_reward)
-
-
-def test_reset(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
-    num_agents = lbf_environment._generator.num_agents
-    num_food = lbf_environment._generator.num_food
-
-    state, timestep = lbf_environment.reset(key)
-    assert len(state.agents.position) == num_agents
-    assert len(state.food_items.position) == lbf_environment._generator.num_food
-
-    expected_obs_shape = (num_agents, 3 * (num_food + num_agents))
-    assert timestep.observation.agents_view.shape == expected_obs_shape
-
-    assert jnp.all(timestep.discount == 1.0)
-    assert jnp.all(timestep.reward == 0.0)
-    assert timestep.step_type == StepType.FIRST
-
-    assert timestep.discount.shape == (num_agents,)
-    assert timestep.reward.shape == (num_agents,)
 
 
 def test_step(lbf_environment: LevelBasedForaging, state: State) -> None:
@@ -158,5 +157,8 @@ def test_step_done_horizon(
     assert timestep.reward.shape == (num_agents,)
 
 
-def test_env_does_not_smoke(lbf_environment: LevelBasedForaging) -> None:
+def test_env_does_not_smoke(
+    lbf_environment: LevelBasedForaging, lbf_env_grid_obs: LevelBasedForaging
+) -> None:
     check_env_does_not_smoke(lbf_environment)
+    check_env_does_not_smoke(lbf_env_grid_obs)

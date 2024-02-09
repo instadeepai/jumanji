@@ -24,7 +24,7 @@ import jumanji.environments.routing.lbf.utils as utils
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.lbf.constants import MOVES
-from jumanji.environments.routing.lbf.generator import Generator, RandomGenerator
+from jumanji.environments.routing.lbf.generator import RandomGenerator
 from jumanji.environments.routing.lbf.observer import GridObserver, VectorObserver
 from jumanji.environments.routing.lbf.types import Food, Observation, State
 from jumanji.environments.routing.lbf.viewer import LevelBasedForagingViewer
@@ -111,7 +111,7 @@ class LevelBasedForaging(Environment[State]):
 
     def __init__(
         self,
-        generator: Optional[Generator] = None,
+        generator: Optional[RandomGenerator] = None,
         viewer: Optional[Viewer[State]] = None,
         time_limit: int = 200,
         grid_observation: bool = False,
@@ -206,8 +206,7 @@ class LevelBasedForaging(Environment[State]):
         state = self._generator(key)
         observation = self._observer.state_to_observation(state)
         timestep = restart(observation, shape=self._num_agents)
-        # TODO: Can be removed since timestep.restart set extras={}
-        timestep.extras = {"num_eaten": jnp.int32(0), "percent_eaten": jnp.float32(0)}
+        timestep.extras = self._get_extra_info(state, timestep)
 
         return state, timestep
 
@@ -269,14 +268,16 @@ class LevelBasedForaging(Environment[State]):
             reward,
             observation,
         )
-        timestep.extras = self._get_extra_info(state)
+        timestep.extras = self._get_extra_info(state, timestep)
 
         return state, timestep
 
-    def _get_extra_info(self, state: State) -> Dict:
+    def _get_extra_info(self, state: State, timestep: TimeStep) -> Dict:
         """Computes extras metrics to be returned within the timestep."""
-        n_eaten = state.food_items.eaten.sum()
-        percent_eaten = n_eaten / state.food_items.eaten.size
+        n_eaten = state.food_items.eaten.sum() + timestep.extras.get(
+            "eaten_food", jnp.float32(0)
+        )
+        percent_eaten = (n_eaten / self.num_food) * 100
         return {"num_eaten": n_eaten, "percent_eaten": percent_eaten}
 
     def get_reward(

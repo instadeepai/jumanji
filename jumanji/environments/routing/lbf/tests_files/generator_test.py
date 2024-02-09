@@ -79,7 +79,7 @@ def test_sample_agents(random_generator: RandomGenerator, key: chex.PRNGKey) -> 
     )
 
 
-def test_sample_levels(random_generator: RandomGenerator, key: chex.PRNGKeyy) -> None:
+def test_sample_levels(random_generator: RandomGenerator, key: chex.PRNGKey) -> None:
     agent_levels = random_generator.sample_levels(
         random_generator.max_agent_level, (random_generator.num_agents,), key
     )

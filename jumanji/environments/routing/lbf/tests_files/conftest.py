@@ -109,34 +109,6 @@ def state(agents: Agent, food_items: Food, key: chex.PRNGKey) -> State:
 
 
 @pytest.fixture
-def lbf_environment() -> LevelBasedForaging:
-    generator = RandomGenerator(
-        grid_size=6,
-        fov=6,
-        num_agents=3,
-        num_food=3,
-        max_agent_level=4,
-        force_coop=True,
-    )
-
-    return LevelBasedForaging(generator=generator, time_limit=5)
-
-
-@pytest.fixture
-def lbf_env_2s() -> LevelBasedForaging:
-    generator = RandomGenerator(
-        grid_size=8,
-        fov=2,
-        num_agents=2,
-        num_food=2,
-        max_agent_level=2,
-        force_coop=False,
-    )
-
-    return LevelBasedForaging(generator=generator, time_limit=5)
-
-
-@pytest.fixture
 def agent_grid() -> chex.Array:
     """Returns the agents' levels in their postion on the grid."""
     return jnp.array(
@@ -176,6 +148,48 @@ def random_generator() -> RandomGenerator:
         max_agent_level=2,
         force_coop=True,
     )
+
+
+@pytest.fixture
+def lbf_environment() -> LevelBasedForaging:
+    generator = RandomGenerator(
+        grid_size=6,
+        fov=6,
+        num_agents=3,
+        num_food=3,
+        max_agent_level=4,
+        force_coop=True,
+    )
+
+    return LevelBasedForaging(generator=generator, time_limit=5)
+
+
+@pytest.fixture
+def lbf_env_2s() -> LevelBasedForaging:
+    generator = RandomGenerator(
+        grid_size=8,
+        fov=2,
+        num_agents=2,
+        num_food=2,
+        max_agent_level=2,
+        force_coop=False,
+    )
+
+    return LevelBasedForaging(generator=generator, time_limit=5)
+
+
+@pytest.fixture
+def lbf_env_grid_obs() -> LevelBasedForaging:
+    generator = RandomGenerator(
+        grid_size=6,
+        fov=6,
+        num_agents=3,
+        num_food=3,
+        max_agent_level=4,
+        force_coop=True,
+    )
+
+    return LevelBasedForaging(generator=generator, grid_observation=True)
 
 
 @pytest.fixture

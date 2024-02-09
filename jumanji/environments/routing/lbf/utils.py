@@ -51,41 +51,6 @@ def flag_duplicates(a: chex.Array) -> chex.Array:
     return ~(counts[indices] == 1)
 
 
-def update_agent_positions(
-    agents: Agent, actions: chex.Array, food_items: Food, grid_size: int
-) -> Any:
-    """
-    Update agent positions based on actions, resolve collisions, and set loading status.
-
-    Args:
-        agents (Agent): The current state of agents.
-        actions (chex.Array): Actions taken by agents.
-        food_items (Food): All food items in the grid.
-        grid_size (int): The size of the grid.
-
-    Returns:
-        Agent: Agents with updated positions and loading status.
-    """
-    # Move the agent to a valid position
-    moved_agents = jax.vmap(simulate_agent_movement, (0, 0, None, None, None))(
-        agents,
-        actions,
-        food_items,
-        agents,
-        grid_size,
-    )
-
-    # Fix collisions
-    moved_agents = fix_collisions(moved_agents, agents)
-
-    # set agent's loading status
-    moved_agents = jax.vmap(
-        lambda agent, action: agent.replace(loading=(action == LOAD))
-    )(moved_agents, actions)
-
-    return moved_agents
-
-
 def simulate_agent_movement(
     agent: Agent, action: chex.Array, food_items: Food, agents: Agent, grid_size: int
 ) -> Agent:
@@ -126,6 +91,41 @@ def simulate_agent_movement(
 
     # Return the agent with the updated position
     return Agent(id=agent.id, position=new_agent_position, level=agent.level)
+
+
+def update_agent_positions(
+    agents: Agent, actions: chex.Array, food_items: Food, grid_size: int
+) -> Any:
+    """
+    Update agent positions based on actions, resolve collisions, and set loading status.
+
+    Args:
+        agents (Agent): The current state of agents.
+        actions (chex.Array): Actions taken by agents.
+        food_items (Food): All food items in the grid.
+        grid_size (int): The size of the grid.
+
+    Returns:
+        Agent: Agents with updated positions and loading status.
+    """
+    # Move the agent to a valid position
+    moved_agents = jax.vmap(simulate_agent_movement, (0, 0, None, None, None))(
+        agents,
+        actions,
+        food_items,
+        agents,
+        grid_size,
+    )
+
+    # Fix collisions
+    moved_agents = fix_collisions(moved_agents, agents)
+
+    # set agent's loading status
+    moved_agents = jax.vmap(
+        lambda agent, action: agent.replace(loading=(action == LOAD))
+    )(moved_agents, actions)
+
+    return moved_agents
 
 
 def fix_collisions(moved_agents: Agent, original_agents: Agent) -> Agent:

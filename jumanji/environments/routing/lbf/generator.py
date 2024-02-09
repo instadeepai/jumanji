@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 from typing import Tuple
 
 import chex
@@ -22,19 +21,25 @@ from jax import numpy as jnp
 from jumanji.environments.routing.lbf.types import Agent, Food, State
 
 
-class Generator(abc.ABC):
-    """Base class for generators for the LBF environment."""
+class RandomGenerator:
+    """Randomly generates `LBF` grids.
+
+    If too many food items and agents are given for a small grid size, it might not be able to
+    place them on the grid. Because of jax this will fail silently and many food items will
+    be placed at (0, 0).
+    """
 
     def __init__(
         self,
         grid_size: int,
-        fov: int,
         num_agents: int,
         num_food: int,
-        max_agent_level: int,
-        force_coop: bool,
+        fov: int,
+        max_agent_level: int = 2,
+        force_coop: bool = False,
     ) -> None:
-        """Initialises a LBF generator, used to generate grids for the LBF environment.
+        """Initialises a LBF generator, used to generate grids for
+        the LevelBasedForaging environment.
 
         Args:
             grid_size: size of the grid to generate.
@@ -44,14 +49,6 @@ class Generator(abc.ABC):
             max_agent_level: maximum level of the agents (inclusive).
             force_coop: Force cooperation between agents.
         """
-        # Add assertions to check the validity of the input values.
-        assert 5 <= grid_size, "Grid size must be greater than 5."
-        assert 2 <= fov <= grid_size, "Field of view must be between 2 and grid_size."
-        assert 0 < num_agents, "Number of agents must be positif."
-        assert 0 < num_food, "Number of food items must be positif."
-        assert (
-            max_agent_level >= 2
-        ), "Maximum agent level must be equal or greater to 2."
 
         if fov is None:
             fov = grid_size
@@ -62,13 +59,14 @@ class Generator(abc.ABC):
         self._max_agent_level = max_agent_level
         self._force_coop = force_coop
 
-    @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a `LBF` state that contains the grid and the agents' layout.
-
-        Returns:
-            A `LBF` state.
-        """
+        # Add assertions to check the validity of the input values.
+        assert 5 <= grid_size, "Grid size must be greater than 5."
+        assert 2 <= fov <= grid_size, "Field of view must be between 2 and grid_size."
+        assert 0 < num_agents, "Number of agents must be positif."
+        assert 0 < num_food, "Number of food items must be positif."
+        assert (
+            max_agent_level >= 2
+        ), "Maximum agent level must be equal or greater to 2."
 
     @property
     def grid_size(self) -> int:
@@ -93,35 +91,6 @@ class Generator(abc.ABC):
     @property
     def force_coop(self) -> int:
         return self._force_coop
-
-
-class RandomGenerator(Generator):
-    """Randomly generates `LBF` grids.
-
-    If too many food itms and agents are given for a small grid size, it might not be able to
-    place them on the grid. Because of jax this will fail silently and many food items will
-    be placed at (0, 0).
-    """
-
-    def __init__(
-        self,
-        grid_size: int,
-        fov: int,
-        num_agents: int,
-        num_food: int,
-        max_agent_level: int = 2,
-        force_coop: bool = False,
-    ) -> None:
-        """Initialises an lbf generator, used to generate grids for
-        the LevelBasedForaging environment."""
-        super().__init__(
-            grid_size=grid_size,
-            fov=fov,
-            num_agents=num_agents,
-            num_food=num_food,
-            max_agent_level=max_agent_level,
-            force_coop=force_coop,
-        )
 
     def sample_food(self, key: chex.PRNGKey) -> chex.Array:
         """Randomly samples food positions on the grid, ensuring no two food items are adjacent
