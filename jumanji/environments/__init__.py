@@ -39,7 +39,7 @@ from jumanji.environments.routing import (
     tsp,
 )
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.connector.env import Connector
+from jumanji.environments.routing.connector.env import Connector, MaConnector
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
 from jumanji.environments.routing.maze.env import Maze

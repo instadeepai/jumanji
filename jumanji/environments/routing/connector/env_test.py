@@ -46,6 +46,7 @@ def test_connector__reset(connector: Connector, key: jax.random.KeyArray) -> Non
     state, timestep = connector.reset(key)
 
     assert state.grid.shape == (connector.grid_size, connector.grid_size)
+    assert jnp.all(timestep.observation.grid == state.grid)
 
     for agent_id in range(connector.num_agents):
         assert jnp.any(state.grid == get_position(agent_id))
@@ -83,7 +84,7 @@ def test_connector__step_connected(
     """Tests that timestep is done when all agents connect"""
     step_fn = jax.jit(connector.step)
     real_state1, timestep = step_fn(state, action1)
-    reward = connector._reward_fn(state, action1, real_state1)
+    reward = jnp.sum(connector._reward_fn(state, action1, real_state1))
     assert jnp.array_equal(timestep.reward, reward)
     chex.assert_trees_all_equal(real_state1, state1)
 
@@ -91,13 +92,15 @@ def test_connector__step_connected(
     chex.assert_trees_all_equal(real_state2, state2)
 
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
-    reward = connector._reward_fn(real_state1, action2, real_state2)
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0.0))
+    reward = jnp.sum(connector._reward_fn(real_state1, action2, real_state2))
     assert jnp.array_equal(timestep.reward, reward)
 
     assert all(is_head_on_grid(state.agents, state.grid))
-    # None of the targets should be on the grid because everyone is connected
+    # None of the targets should be on the grid because everyone is connected.
     assert not any(is_target_on_grid(real_state2.agents, real_state2.grid))
+    # Make sure the observation corresponds to the state.
+    assert jnp.all(timestep.observation.grid == real_state2.grid)
 
 
 def test_connector__step_blocked(
@@ -143,7 +146,7 @@ def test_connector__step_blocked(
 
     assert jnp.array_equal(state.grid, expected_grid)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0.0))
 
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
@@ -162,12 +165,12 @@ def test_connector__step_horizon(connector: Connector, state: State) -> None:
         state, timestep = step_fn(state, actions)
 
         assert timestep.step_type != StepType.LAST
-        assert jnp.array_equal(timestep.discount, jnp.asarray(1))
+        assert jnp.array_equal(timestep.discount, jnp.asarray(1.0))
 
     # step 5
     state, timestep = step_fn(state, actions)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
+    assert jnp.array_equal(timestep.discount, jnp.asarray(0.0))
 
 
 def test_connector__step_agents_collision(

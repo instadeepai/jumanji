@@ -40,13 +40,14 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
+    switch_perspective,
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Connector(Environment[State]):
+class MaConnector(Environment[State]):
     """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
     must be connected without overlapping the paths taken by any other set. This is achieved
     by allowing certain points to move to an adjacent cell at each step. However, each time a
@@ -69,9 +70,9 @@ class Connector(Environment[State]):
         - can take the values [0,1,2,3,4] which correspond to [No Op, Up, Right, Down, Left].
         - each value in the array corresponds to an agent's action.
 
-    - reward: jax array (float) of shape ():
-        - dense: reward is 1 for each successful connection on that step. Additionally,
-            each pair of points that have not connected receives a penalty reward of -0.03.
+    - reward: jax array (float) of shape (num_agents,):
+        - dense: for each agent a reward is 1 if connected on that step. Additionally,
+            a penalty reward of -0.03 is given for each step the agent is not connected.
 
     - episode termination:
         - all agents either can't move (no available actions) or have connected to their target.
@@ -134,17 +135,12 @@ class Connector(Environment[State]):
             timestep: `TimeStep` object corresponding to the initial environment timestep.
         """
         state = self._generator(key)
-
-        action_mask = jax.vmap(self._get_action_mask, (0, None))(
-            state.agents, state.grid
-        )
-        observation = Observation(
-            grid=state.grid,
-            action_mask=action_mask,
-            step_count=state.step_count,
-        )
+        observation = self._obs_from_state(state)
         extras = self._get_extras(state)
-        timestep = restart(observation=observation, extras=extras)
+        timestep = restart(
+            observation=observation, extras=extras, shape=(self.num_agents,)
+        )
+
         return state, timestep
 
     def step(
@@ -172,24 +168,25 @@ class Connector(Environment[State]):
 
         # Construct timestep: get reward, legal actions and done
         reward = self._reward_fn(state, action, new_state)
-        action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
-        observation = Observation(
-            grid=grid, action_mask=action_mask, step_count=new_state.step_count
-        )
-
-        done = jnp.all(jax.vmap(connected_or_blocked)(agents, action_mask))
+        observation = self._obs_from_state(new_state)
+        done = jax.vmap(connected_or_blocked)(agents, observation.action_mask)
+        discount = (1 - done).astype(float)
         extras = self._get_extras(new_state)
+
         timestep = jax.lax.cond(
-            done | (new_state.step_count >= self.time_limit),
+            jnp.all(done) | (new_state.step_count >= self.time_limit),
             lambda: termination(
                 reward=reward,
                 observation=observation,
                 extras=extras,
+                shape=(self.num_agents,),
             ),
             lambda: transition(
                 reward=reward,
                 observation=observation,
                 extras=extras,
+                discount=discount,
+                shape=(self.num_agents,),
             ),
         )
 
@@ -255,6 +252,21 @@ class Connector(Environment[State]):
         )
 
         return new_agent, new_grid
+
+    def _obs_from_state(self, state: State) -> Observation:
+        """Generates the observation from the state."""
+        action_mask = jax.vmap(self._get_action_mask, (0, None))(
+            state.agents, state.grid
+        )
+        grid = jax.vmap(switch_perspective, (None, 0, None))(
+            state.grid, self._agent_ids, self.num_agents
+        )
+
+        return Observation(
+            grid=grid,
+            action_mask=action_mask,
+            step_count=state.step_count,
+        )
 
     def _get_action_mask(self, agent: Agent, grid: chex.Array) -> chex.Array:
         """Gets an agent's action mask."""
@@ -369,4 +381,53 @@ class Connector(Environment[State]):
             num_values=jnp.array([5] * self.num_agents),
             dtype=jnp.int32,
             name="action",
+        )
+
+    def reward_spec(self) -> specs.Array:
+        """Returns: a reward per agent."""
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
+
+    def discount_spec(self) -> specs.BoundedArray:
+        """Returns: discount per agent."""
+        return specs.BoundedArray(
+            shape=(self.num_agents,),
+            dtype=float,
+            minimum=0.0,
+            maximum=1.0,
+            name="discount",
+        )
+
+
+class Connector(MaConnector):
+    def multi_to_single_agent_timestep(
+        self, timestep: TimeStep[Observation]
+    ) -> TimeStep[Observation]:
+        """Converts a multi-agent timestep to a single-agent timestep."""
+        grid = timestep.observation.grid[0]
+        observation = timestep.observation._replace(grid=grid)
+
+        return timestep.replace(  # type: ignore
+            observation=observation,
+            reward=jnp.sum(timestep.reward),
+            discount=jnp.all(timestep.discount).astype(float),
+        )
+
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+        state, timestep = super().reset(key)
+        return state, self.multi_to_single_agent_timestep(timestep)
+
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
+        state, timestep = super().step(state, action)
+        return state, self.multi_to_single_agent_timestep(timestep)
+
+    def reward_spec(self) -> specs.Array:
+        """Returns: a single reward, summed for all agents."""
+        return specs.Array(shape=(), dtype=float, name="reward")
+
+    def discount_spec(self) -> specs.BoundedArray:
+        """Returns: a single discount, one for all agents."""
+        return specs.BoundedArray(
+            shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount"
         )

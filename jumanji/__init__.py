@@ -102,6 +102,9 @@ register(id="Cleaner-v0", entry_point="jumanji.environments:Cleaner")
 # Connector with grid size of 10 and 10 agents.
 register(id="Connector-v2", entry_point="jumanji.environments:Connector")
 
+# Multi-agent Connector with grid size of 10 and 10 agents.
+register(id="MaConnector-v2", entry_point="jumanji.environments:MaConnector")
+
 # MMST with 3 agents, 36 nodes, 72 edges, 4 nodes to connect per agent, and a time limit of 70.
 register(id="MMST-v0", entry_point="jumanji.environments:MMST")
 
