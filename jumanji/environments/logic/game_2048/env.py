@@ -66,7 +66,7 @@ class Game2048(Environment[State]):
     ```python
     from jumanji.environments import Game2048
     env = Game2048()
-    key = jax.random.key(0)
+    key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec().generate_value()

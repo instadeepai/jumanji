@@ -73,7 +73,6 @@ register(
     kwargs={"generator": very_easy_sudoku_generator},
 )
 
-
 ###
 # Packing Environments
 ###
@@ -92,7 +91,6 @@ register(id="Knapsack-v1", entry_point="jumanji.environments:Knapsack")
 
 # Tetris - the game of tetris with a grid size of 10x10 and a time limit of 400.
 register(id="Tetris-v0", entry_point="jumanji.environments:Tetris")
-
 
 ###
 # Routing Environments
@@ -127,6 +125,12 @@ register(id="Snake-v1", entry_point="jumanji.environments:Snake")
 
 # TSP with 20 randomly generated cities and a dense reward function.
 register(id="TSP-v1", entry_point="jumanji.environments:TSP")
+
+# Sokoban with deepmind dataset generator
+register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
+
+# Pacman - minimal version of Atarti Pacman game
+register(id="PacMan-v0", entry_point="jumanji.environments:PacMan")
 
 # LevelBasedForaging  with a random generator with 8 grid size,
 # 2 agents and 2 foods and maximum agent's level is 2.

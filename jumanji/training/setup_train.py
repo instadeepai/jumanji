@@ -37,9 +37,11 @@ from jumanji.environments import (
     Maze,
     Minesweeper,
     MultiCVRP,
+    PacMan,
     RobotWarehouse,
     RubiksCube,
     Snake,
+    Sokoban,
     Sudoku,
     Tetris,
 )
@@ -182,6 +184,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "maze":
         assert isinstance(env.unwrapped, Maze)
         random_policy = networks.make_random_policy_maze()
+    elif cfg.env.name == "sokoban":
+        assert isinstance(env.unwrapped, Sokoban)
+        random_policy = networks.make_random_policy_sokoban()
     elif cfg.env.name == "connector":
         assert isinstance(env.unwrapped, Connector)
         random_policy = networks.make_random_policy_connector()
@@ -200,6 +205,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "lbf":
         assert isinstance(env.unwrapped, LevelBasedForaging)
         random_policy = networks.make_random_policy_lbf()
+    elif cfg.env.name == "pac_man":
+        assert isinstance(env.unwrapped, PacMan)
+        random_policy = networks.make_random_policy_pacman()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -330,6 +338,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
         )
+    elif cfg.env.name == "sokoban":
+        assert isinstance(env.unwrapped, Sokoban)
+        actor_critic_networks = networks.make_actor_critic_networks_sokoban(
+            sokoban=env.unwrapped,
+            channels=cfg.env.network.channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     elif cfg.env.name == "cleaner":
         assert isinstance(env.unwrapped, Cleaner)
         actor_critic_networks = networks.make_actor_critic_networks_cleaner(
@@ -382,6 +398,13 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+    elif cfg.env.name == "pac_man":
+        assert isinstance(env.unwrapped, PacMan)
+        actor_critic_networks = networks.make_actor_critic_networks_pacman(
+            pac_man=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
