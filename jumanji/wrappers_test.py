@@ -32,6 +32,7 @@ from jumanji.testing.fakes import FakeEnvironment, FakeMultiEnvironment, FakeSta
 from jumanji.testing.pytrees import assert_trees_are_different
 from jumanji.types import StepType, TimeStep
 from jumanji.wrappers import (
+    OBS_IN_EXTRAS_KEY,
     AutoResetWrapper,
     JumanjiToDMEnvWrapper,
     JumanjiToGymWrapper,
@@ -535,6 +536,8 @@ class TestAutoResetWrapper:
             state, timestep
         )
         chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+        # Expect that non-reset timestep obs and extras are the same.
+        assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
 
     def test_auto_reset_wrapper__step_no_reset(
         self, fake_auto_reset_environment: AutoResetWrapper, key: chex.PRNGKey
@@ -556,6 +559,8 @@ class TestAutoResetWrapper:
         assert timestep.step_type == StepType.MID
         assert_trees_are_different(timestep, first_timestep)
         chex.assert_trees_all_equal(timestep.reward, 0)
+        # no reset so expect extras and obs to be the same.
+        assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
 
     def test_auto_reset_wrapper__step_reset(
         self,
@@ -566,18 +571,28 @@ class TestAutoResetWrapper:
         """Validates that the auto-reset is done correctly by the step function
         of the AutoResetWrapper when the terminal timestep is reached.
         """
-        state, first_timestep = fake_auto_reset_environment.reset(key)
+        state, first_timestep = fake_auto_reset_environment.reset(key)  # type: ignore
 
         fake_environment.time_limit = 5
 
         # Loop across time_limit so auto-reset occurs
-        timestep = first_timestep
-        for _ in range(fake_environment.time_limit):
+        for _ in range(fake_environment.time_limit - 1):
             action = fake_auto_reset_environment.action_spec().generate_value()
             state, timestep = jax.jit(fake_auto_reset_environment.step)(state, action)
+            assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
 
-        assert timestep.step_type == StepType.LAST
-        chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
+        state, final_timestep = jax.jit(fake_auto_reset_environment.step)(state, action)
+
+        assert final_timestep.step_type == StepType.LAST
+        chex.assert_trees_all_equal(
+            final_timestep.observation, first_timestep.observation
+        )
+        assert not jnp.all(
+            final_timestep.observation == final_timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
+        assert jnp.all(
+            (timestep.observation + 1) == final_timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
 
 
 class TestVmapAutoResetWrapper:
@@ -614,6 +629,8 @@ class TestVmapAutoResetWrapper:
         assert timestep.observation.shape[0] == keys.shape[0]
         assert timestep.reward.shape == (keys.shape[0],)
         assert timestep.discount.shape == (keys.shape[0],)
+        # only reset so expect extras and obs to be the same.
+        assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
 
     def test_vmap_auto_reset_wrapper__auto_reset(
         self,
@@ -627,6 +644,8 @@ class TestVmapAutoResetWrapper:
             (state, timestep),
         )
         chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+        # expect rest timestep.extras to have the same obs as the original timestep
+        assert jnp.all(timestep.observation == reset_timestep.extras[OBS_IN_EXTRAS_KEY])
 
     def test_vmap_auto_reset_wrapper__maybe_reset(
         self,
@@ -640,6 +659,8 @@ class TestVmapAutoResetWrapper:
             (state, timestep),
         )
         chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
+        # expect rest timestep.extras to have the same obs as the original timestep
+        assert jnp.all(timestep.observation == reset_timestep.extras[OBS_IN_EXTRAS_KEY])
 
     def test_vmap_auto_reset_wrapper__step_no_reset(
         self,
@@ -657,6 +678,13 @@ class TestVmapAutoResetWrapper:
         assert_trees_are_different(timestep, first_timestep)
         chex.assert_trees_all_equal(timestep.reward, 0)
 
+        # no reset so expect extras and obs to be the same.
+        # and the first timestep should have different obs in extras.
+        assert not jnp.all(
+            first_timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
+        assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
+
     def test_vmap_auto_reset_wrapper__step_reset(
         self,
         fake_environment: Environment,
@@ -671,13 +699,25 @@ class TestVmapAutoResetWrapper:
         fake_vmap_auto_reset_environment.unwrapped.time_limit = 5  # type: ignore
 
         # Loop across time_limit so auto-reset occurs
-        for _ in range(fake_vmap_auto_reset_environment.time_limit):
+        for _ in range(fake_vmap_auto_reset_environment.time_limit - 1):
             state, timestep = jax.jit(fake_vmap_auto_reset_environment.step)(
                 state, action
             )
+            assert jnp.all(timestep.observation == timestep.extras[OBS_IN_EXTRAS_KEY])
 
-        assert jnp.all(timestep.step_type == StepType.LAST)
-        chex.assert_trees_all_equal(timestep.observation, first_timestep.observation)
+        state, final_timestep = jax.jit(fake_vmap_auto_reset_environment.step)(
+            state, action
+        )
+        assert jnp.all(final_timestep.step_type == StepType.LAST)
+        chex.assert_trees_all_equal(
+            final_timestep.observation, first_timestep.observation
+        )
+        assert not jnp.all(
+            final_timestep.observation == final_timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
+        assert jnp.all(
+            (timestep.observation + 1) == final_timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
 
     def test_vmap_auto_reset_wrapper__step(
         self,
@@ -696,6 +736,10 @@ class TestVmapAutoResetWrapper:
         assert next_timestep.reward.shape == (keys.shape[0],)
         assert next_timestep.discount.shape == (keys.shape[0],)
         assert next_timestep.observation.shape[0] == keys.shape[0]
+        # expect observation and extras to be the same, since no reset
+        assert jnp.all(
+            next_timestep.observation == next_timestep.extras[OBS_IN_EXTRAS_KEY]
+        )
 
     def test_vmap_auto_reset_wrapper__render(
         self, fake_vmap_auto_reset_environment: VmapAutoResetWrapper, keys: chex.PRNGKey
