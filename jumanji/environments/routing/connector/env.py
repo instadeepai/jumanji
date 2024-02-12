@@ -137,7 +137,9 @@ class MaConnector(Environment[State]):
         state = self._generator(key)
         observation = self._obs_from_state(state)
         extras = self._get_extras(state)
-        timestep = restart(observation=observation, extras=extras)
+        timestep = restart(
+            observation=observation, extras=extras, shape=(self.num_agents,)
+        )
 
         return state, timestep
 
@@ -184,6 +186,7 @@ class MaConnector(Environment[State]):
                 observation=observation,
                 extras=extras,
                 discount=discount,
+                shape=(self.num_agents,),
             ),
         )
 
