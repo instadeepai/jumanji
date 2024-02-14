@@ -35,7 +35,7 @@ class Cleaner(Environment[State]):
     a maze.
 
     - observation: `Observation`
-        - grid: jax array (int32) of shape (num_rows, num_cols)
+        - grid: jax array (int8) of shape (num_rows, num_cols)
             contains the state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int32) of shape (num_agents, 2)
             contains the location of each agent on the board.
@@ -57,7 +57,7 @@ class Cleaner(Environment[State]):
         - An invalid action is selected for any of the agents.
 
     - state: `State`
-        - grid: jax array (int32) of shape (num_rows, num_cols)
+        - grid: jax array (int8) of shape (num_rows, num_cols)
             contains the current state of the board: 0 for dirty tile, 1 for clean tile, 2 for wall.
         - agents_locations: jax array (int32) of shape (num_agents, 2)
             contains the location of each agent on the board.
@@ -71,7 +71,7 @@ class Cleaner(Environment[State]):
     ```python
     from jumanji.environments import Cleaner
     env = Cleaner()
-    key = jax.random.key(0)
+    key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec().generate_value()
@@ -127,7 +127,7 @@ class Cleaner(Environment[State]):
 
         Returns:
             Spec for the `Observation`, consisting of the fields:
-                - grid: BoundedArray (int32) of shape (num_rows, num_cols). Values
+                - grid: BoundedArray (int8) of shape (num_rows, num_cols). Values
                     are between 0 and 2 (inclusive).
                 - agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
                     Maximum value for the first column is num_rows, and maximum value
@@ -135,7 +135,7 @@ class Cleaner(Environment[State]):
                 - action_mask: BoundedArray (bool) of shape (num_agent, 4).
                 - step_count: BoundedArray (int32) of shape ().
         """
-        grid = specs.BoundedArray(self.grid_shape, jnp.int32, 0, 2, "grid")
+        grid = specs.BoundedArray(self.grid_shape, jnp.int8, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
             (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
         )

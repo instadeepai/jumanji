@@ -41,5 +41,6 @@ module = [
     "haiku.*",
     "hydra.*",
     "omegaconf.*",
+    "huggingface_hub.*",
 ]
 ignore_missing_imports = true

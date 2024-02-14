@@ -20,7 +20,7 @@ always start in the top left corner of the maze.
 ## Observation
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 
-- `grid`: jax array (int) of shape `(num_rows, num_cols)`, array representing the grid, each tile is
+- `grid`: jax array (int8) of shape `(num_rows, num_cols)`, array representing the grid, each tile is
     either dirty (0), clean (1), or a wall (2).
 
 - `agents_locations`: jax array (int) of shape `(num_agents, 2)`, array specifying the x and y

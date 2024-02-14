@@ -14,6 +14,8 @@
 
 """Abstract environment class"""
 
+from __future__ import annotations
+
 import abc
 from typing import Any, Generic, Tuple, TypeVar
 
@@ -105,7 +107,7 @@ class Environment(abc.ABC, Generic[State]):
         )
 
     @property
-    def unwrapped(self) -> "Environment":
+    def unwrapped(self) -> Environment:
         return self
 
     def render(self, state: State) -> Any:
@@ -119,7 +121,7 @@ class Environment(abc.ABC, Generic[State]):
     def close(self) -> None:
         """Perform any necessary cleanup."""
 
-    def __enter__(self) -> "Environment":
+    def __enter__(self) -> Environment:
         return self
 
     def __exit__(self, *args: Any) -> None:
