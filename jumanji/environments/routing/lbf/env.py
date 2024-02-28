@@ -332,6 +332,42 @@ class LevelBasedForaging(Environment[State]):
         )
         return jnp.sum(reward_per_food, axis=0)
 
+    def render(self, state: State) -> Optional[NDArray]:
+        """Renders the current state of the `LevelBasedForaging` environment.
+
+        Args:
+            state (State): The current environment state to be rendered.
+
+        Returns:
+            Optional[NDArray]: Rendered environment state.
+        """
+        return self._viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save_path: Optional[str] = None,
+    ) -> matplotlib.animation.FuncAnimation:
+        """Creates an animation from a sequence of states.
+
+        Args:
+            states (Sequence[State]): Sequence of `State` corresponding to subsequent timesteps.
+            interval (int): Delay between frames in milliseconds, default to 200.
+            save_path (Optional[str]): The path where the animation file should be saved.
+
+        Returns:
+            matplotlib.animation.FuncAnimation: Animation object that can be saved as a GIF, MP4,
+            or rendered with HTML.
+        """
+        return self._viewer.animate(
+            states=states, interval=interval, save_path=save_path
+        )
+
+    def close(self) -> None:
+        """Perform any necessary cleanup."""
+        self._viewer.close()
+
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the environment.
 
@@ -377,38 +413,16 @@ class LevelBasedForaging(Environment[State]):
         """
         return specs.Array(shape=(self._num_agents,), dtype=float, name="reward")
 
-    def render(self, state: State) -> Optional[NDArray]:
-        """Renders the current state of the `LevelBasedForaging` environment.
-
-        Args:
-            state (State): The current environment state to be rendered.
+    def discount_spec(self) -> specs.BoundedArray:
+        """Describes the discount returned by the environment.
 
         Returns:
-            Optional[NDArray]: Rendered environment state.
+            discount_spec: a `specs.BoundedArray` spec.
         """
-        return self._viewer.render(state)
-
-    def animate(
-        self,
-        states: Sequence[State],
-        interval: int = 200,
-        save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
-        """Creates an animation from a sequence of states.
-
-        Args:
-            states (Sequence[State]): Sequence of `State` corresponding to subsequent timesteps.
-            interval (int): Delay between frames in milliseconds, default to 200.
-            save_path (Optional[str]): The path where the animation file should be saved.
-
-        Returns:
-            matplotlib.animation.FuncAnimation: Animation object that can be saved as a GIF, MP4,
-            or rendered with HTML.
-        """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
+        return specs.BoundedArray(
+            shape=(self.num_agents,),
+            dtype=float,
+            minimum=0.0,
+            maximum=1.0,
+            name="discount",
         )
-
-    def close(self) -> None:
-        """Perform any necessary cleanup."""
-        self._viewer.close()

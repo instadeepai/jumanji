@@ -398,6 +398,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+        )
     elif cfg.env.name == "pac_man":
         assert isinstance(env.unwrapped, PacMan)
         actor_critic_networks = networks.make_actor_critic_networks_pacman(
