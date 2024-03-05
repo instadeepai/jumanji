@@ -42,5 +42,8 @@ module = [
     "hydra.*",
     "omegaconf.*",
     "huggingface_hub.*",
+    "requests.*",
+    "pkg_resources.*",
+    "PIL.*",
 ]
 ignore_missing_imports = true
