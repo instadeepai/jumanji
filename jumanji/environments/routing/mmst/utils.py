@@ -596,10 +596,10 @@ def multi_random_walk(
     ]
 
     # Get the total number of edges we need to add when merging the graphs.
-    sum_ratio: int = np.sum(np.arange(1, num_agents))
+    sum_ratio = np.arange(1, num_agents).sum()
     frac = np.cumsum(
-        [total_edges_merge_graph * (i) / sum_ratio for i in range(1, num_agents - 1)]
-    )
+        total_edges_merge_graph * np.arange(1, num_agents - 1) / sum_ratio
+    ).astype(np.int32)
     edges_per_merge_graph = jnp.split(jnp.arange(total_edges_merge_graph), frac)
     num_edges_per_merge_graph = [len(edges) for edges in edges_per_merge_graph]
 
@@ -608,6 +608,7 @@ def multi_random_walk(
     total_edges = num_edges_per_sub_graph[0]
     merge_graph_keys = jax.random.split(base_key, num_agents - 1)
 
+    # TODO: could do a scan to speed up compilation
     for i in range(1, num_agents):
         total_edges += num_edges_per_sub_graph[i] + num_edges_per_merge_graph[i - 1]
         graph_i = correct_graph_offset(graphs[i - 1], nodes_offsets[i])
