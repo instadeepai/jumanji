@@ -15,7 +15,6 @@
 import abc
 
 import chex
-import jax
 import jax.numpy as jnp
 
 from jumanji.environments.logic.sliding_tile_puzzle.types import State
@@ -58,7 +57,7 @@ class DenseRewardFn(RewardFn):
             The calculated reward.
         """
         # The dense reward is simply the negative of the number of incorrectly placed tiles.
-        return -jnp.sum(next_state.puzzle != solved_puzzle)
+        return -jnp.sum(next_state.puzzle != solved_puzzle).astype(jnp.float32)
 
 
 class SparseRewardFn(RewardFn):
@@ -84,9 +83,7 @@ class SparseRewardFn(RewardFn):
             The calculated reward.
         """
         # The sparse reward is 1 if the puzzle is solved, and 0 otherwise.
-        return jnp.float32(
-            jax.lax.cond(jnp.array_equal(next_state.puzzle, solved_puzzle), 1.0, 0.0)
-        )
+        return jnp.array_equal(next_state.puzzle, solved_puzzle).astype(float)
 
 
 class ImprovedDenseRewardFn(RewardFn):
@@ -120,4 +117,4 @@ class ImprovedDenseRewardFn(RewardFn):
         new_incorrect_tiles = jnp.sum(
             (next_state.puzzle != solved_puzzle) & (state.puzzle == solved_puzzle)
         )
-        return new_correct_tiles - new_incorrect_tiles
+        return (new_correct_tiles - new_incorrect_tiles).astype(float)

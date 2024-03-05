@@ -35,7 +35,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, St
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
     SlidingTilePuzzleViewer,
 )
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -73,6 +73,7 @@ class SlidingTilePuzzle(Environment[State]):
         self,
         generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
+        time_limit: int = 500,
         viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """Instantiate a `SlidingTilePuzzle` environment.
@@ -86,10 +87,13 @@ class SlidingTilePuzzle(Environment[State]):
                 the chosen action and the next state.
                 Implemented options are [`DenseRewardFn`, `SparseRewardFn`].
                 Defaults to `DenseRewardFn`.
+            time_limit: maximum number of steps before the episode is terminated.
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomGenerator(grid_size=5)
         self.reward_fn = reward_fn or DenseRewardFn()
+
+        self.time_limit = time_limit
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
@@ -108,6 +112,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=puzzle,
             empty_tile_position=empty_tile_position,
             key=key,
+            step_count=0,
         )
         action_mask = self._get_valid_actions(empty_tile_position)
         obs = Observation(
@@ -127,6 +132,7 @@ class SlidingTilePuzzle(Environment[State]):
         )
         # Check if the puzzle is solved
         done = jnp.array_equal(updated_puzzle, self.solved_puzzle)
+        horizon_reached = state.step_count >= self.time_limit
 
         # Update the action mask
         action_mask = self._get_valid_actions(updated_empty_tile_position)
@@ -135,6 +141,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=updated_puzzle,
             empty_tile_position=updated_empty_tile_position,
             key=state.key,
+            step_count=state.step_count + 1,
         )
         obs = Observation(
             puzzle=updated_puzzle,
@@ -144,7 +151,19 @@ class SlidingTilePuzzle(Environment[State]):
 
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
 
-        timestep = lax.cond(done, termination, transition, reward, obs)
+        timestep = lax.cond(
+            done,
+            termination,
+            lambda r, o: lax.cond(
+                horizon_reached,
+                truncation,
+                transition,
+                r,
+                o,
+            ),
+            reward,
+            obs,
+        )
 
         return next_state, timestep
 

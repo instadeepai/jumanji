@@ -34,6 +34,7 @@ class State:
     puzzle: chex.Array  # (N, N)
     empty_tile_position: chex.Array  # (2,)
     key: chex.PRNGKey  # (2,)
+    step_count: chex.Array  # (1,)
 
 
 class Observation(NamedTuple):
