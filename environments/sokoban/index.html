@@ -12,14 +12,14 @@
         <meta name="author" content="InstaDeep Research">
       
       
-        <link rel="canonical" href="https://instadeepai.github.io/jumanji/environments/pac_man/">
+        <link rel="canonical" href="https://instadeepai.github.io/jumanji/environments/sokoban/">
       
       <link rel="icon" href="../../img/instadeep_logo.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
     
     
       
-        <title>PacMan - Jumanji</title>
+        <title>Sokoban - Jumanji</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#pacman-environment" class="md-skip">
+        <a href="#sokoban-environment" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PacMan
+              Sokoban
             
           </span>
         </div>
@@ -784,20 +784,6 @@
               
   
   
-  
-    <li class="md-nav__item">
-      <a href="../sokoban/" class="md-nav__link">
-        Sokoban
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
     
   
   
@@ -810,12 +796,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          PacMan
+          Sokoban
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        PacMan
+        Sokoban
       </a>
       
         
@@ -841,8 +827,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#action" class="md-nav__link">
-    Action
+  <a href="#object-encodings" class="md-nav__link">
+    Object Encodings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    Actions
   </a>
   
 </li>
@@ -855,8 +848,36 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#episode-termination" class="md-nav__link">
+    Episode Termination
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset" class="md-nav__link">
+    Dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graphics" class="md-nav__link">
+    Graphics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#registered-versions" class="md-nav__link">
     Registered Versions 📖
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
   </a>
   
 </li>
@@ -865,6 +886,20 @@
   
 </nav>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pac_man/" class="md-nav__link">
+        PacMan
+      </a>
     </li>
   
 
@@ -1549,74 +1584,148 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/environments/pac_man.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/environments/sokoban.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="pacman-environment">PacMan Environment<a class="headerlink" href="#pacman-environment" title="Permanent link">#</a></h1>
+<h1 id="sokoban-environment">Sokoban Environment 👾<a class="headerlink" href="#sokoban-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/pac_man.gif" width="600"/>
+        <img src="../../env_anim/sokoban.gif" width="500"/>
 </p>
 
-<p>We provide here a minimal Jax JIT-able implementation of the game <a href="https://pacman.com/en/history/">PAC-MAN</a>. The game is played in a 2D matrix where a cell is a free space (black), a wall (dark blue), pacman (yellow) or a ghost.</p>
-<p>The goal is for the agent (yellow) to collect all of the pellets (small pink blocks) on the map without touching any of the ghosts. The agent receives a reward of +10 when collecting a pellet for the first time and pellets are removed from the map after being collected.</p>
-<p>The power-ups (large pink blocks) trigger a 'scatter mode' which changes the colour of the ghosts to dark blue for 30 in game steps. When the ghosts are in this state, the player can touch them which causes them to return to the center of the map. This gives a reward of +200 for each unique ghost.</p>
-<p>The agent selects an action at each timestep (up, left, right, down, no-op) which determines the direction they wil travel for that step. However, even if an action is in an invalid direction it will still be taken as input and the player will remain stationary. If the no-op action is used the player will not stop but instead take the last action that was selected.</p>
-<p>The game takes place on a fixed map and the same map is generated on each reset. The generator can be used to generate new maps based on an ASCII representation of the desired map. This ASCII generator is deterministic and will always initialise to the same state as long as the same ASCII diagram is is use.</p>
+<p>This is a Jax implementation of the <em>Sokoban</em> puzzle, a dynamic box-pushing environment where the agent's goal is to place all boxes on their targets. This version follows the rules from the DeepMind paper on <a href="https://arxiv.org/abs/1707.06203">Imagination Augmented Agents</a>, with levels based on the Boxoban dataset from <a href="https://github.com/deepmind/boxoban-levels">Guez et al., 2018</a><a href="#ref1">[1]</a>. The graphical assets were taken from <a href="https://github.com/mpSchrader/gym-sokoban">gym-sokoban</a> by Schrader, a diverse Sokoban library implementing many versions of the game in the OpenAI gym framework <a href="#ref2">[2]</a>.</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>As an observation, the agent has access to the current maze configuration in the array named
-<code>grid</code>. It also has access to its current position <code>player_locations</code>, the ghosts' locations
-<code>ghost_locations</code>, the power-pellet locations <code>power_up_location</code>, the time left for the scatter state <code>frightened_state_time</code>, the pellet locations <code>pellet_locations</code> and the action
-mask <code>action_mask</code>.</p>
 <ul>
-<li>
-<p><code>agent_position</code>: Position(row, col) (int32) each of shape <code>()</code>, agent position in the maze.</p>
-</li>
-<li>
-<p><code>ghost_locations</code>: jax array (int32) of shape <code>(4,2)</code>, with the (y,x) coordinates of each ghost</p>
-</li>
-<li>
-<p><code>power_up_locations</code>: jax array (int32) of shape <code>(4,2)</code>, with the (y,x) coordinates of each power-pellet</p>
-</li>
-<li>
-<p><code>pellet_locations</code>: jax array (int32) of shape <code>(4,2)</code>, with the (y,x) coordinates of each pellet</p>
-</li>
-<li>
-<p><code>frightened_state_time</code>: jax array (int32) of shape <code>()</code>, number of steps left of the scatter state.</p>
-</li>
-<li>
-<p><code>action_mask</code>: jax array (bool) of shape <code>(5,)</code>, binary values denoting whether each action is
-possible.</p>
-</li>
-<li><code>frightened_state_time</code>: (int32) tracking the number of steps for the scatter state.</li>
-<li><code>score</code>: (int32) tracking the total points accumulated since the last reset.</li>
+<li><code>grid</code>: An Array (uint8) of shape <code>(10, 10, 2)</code>. It represents the variable grid (containing movable objects: boxes and the agent) and the fixed grid (containing fixed objects: walls and targets).</li>
+<li><code>step_count</code>: An Array (int32) of shape <code>()</code>, representing the current number of steps in the episode.</li>
 </ul>
-<p>An example 5x5 observation <code>grid</code> array, is shown below. 1 represents a wall, and 0 represents free
-space.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>[0, 1, 0, 0, 0],
-[0, 1, 0, 1, 1],
-[0, 1, 0, 0, 0],
-[0, 0, 0, 1, 1],
-[0, 0, 0, 0, 0]
-</code></pre></div></td></tr></table></div>
-<h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>The action space is a <code>DiscreteArray</code> of integer values in the range of [0, 4]. I.e. the agent can
-take one of four actions: up (<code>0</code>), right (<code>1</code>), down (<code>2</code>), left (<code>3</code>) or no-op (<code>4</code>). If an invalid action is
-taken, or an action is blocked by a wall, a no-op is performed and the agent's position remains
-unchanged. Additionally if a no-op is performed the agent will use the last normal action used.</p>
+<h2 id="object-encodings">Object Encodings<a class="headerlink" href="#object-encodings" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Encoding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Empty Space</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Wall</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Target</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Box</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<h2 id="actions">Actions<a class="headerlink" href="#actions" title="Permanent link">#</a></h2>
+<p>The agent's action space is an Array (int32) with potential values of <code>[0,1,2,3]</code> (corresponding to <code>[Up, Down, Left, Right]</code>). If the agent attempts to move into a wall, off the grid, or push a box into a wall or off the grid, the grid state remains unchanged; however, the step count is incremented by one. Chained box pushes are not allowed and will result in no action.</p>
 <h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
-<p>PacMan is a dense reward setting, where the agent receives a reward of +10 for each pellet collected. The agent also recieve a reward of 20 for collecting a power pellet. The game ends when the agent has collected all 316 pellets on the map or touches a ghost.</p>
-<p>Eating a ghost when scatter mode is enabled also awards +200 points but, points are only awarded the first time each unique ghost is eaten.</p>
+<p>The reward function comprises:
+- <code>-0.1</code> for each step taken in the environment.
+- <code>+1</code> for each box moved onto a target location and <code>-1</code> for each box moved off a target location.
+- <code>+10</code> upon successful placement of all four boxes on their targets.</p>
+<h2 id="episode-termination">Episode Termination<a class="headerlink" href="#episode-termination" title="Permanent link">#</a></h2>
+<p>The episode concludes when:
+- The step limit of 120 is reached.
+- All 4 boxes are placed on targets (i.e., the problem is solved).</p>
+<h2 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Permanent link">#</a></h2>
+<p>The Boxoban dataset offers a collection of puzzle levels. Each level features four boxes and four targets. The dataset has three levels of difficulty: 'unfiltered', 'medium', and 'hard'.</p>
+<table>
+<thead>
+<tr>
+<th>Dataset Split</th>
+<th>Number of Levels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unfiltered (Training)</td>
+<td>900,000</td>
+</tr>
+<tr>
+<td>Unfiltered (Validation)</td>
+<td>100,000</td>
+</tr>
+<tr>
+<td>Unfiltered (Test)</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>Medium (Training)</td>
+<td>450,000</td>
+</tr>
+<tr>
+<td>Medium (Validation)</td>
+<td>50,000</td>
+</tr>
+<tr>
+<td>Hard</td>
+<td>3332</td>
+</tr>
+</tbody>
+</table>
+<p>The dataset generation procedure and more details can be found in Guez et al., 2018 <a href="#ref1">[1]</a>.</p>
+<h2 id="graphics">Graphics<a class="headerlink" href="#graphics" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Graphic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wall</td>
+<td><img alt="Wall" src="../../environments/routing/sokoban/imgs/wall.png" /></td>
+</tr>
+<tr>
+<td>Floor</td>
+<td><img alt="Floor" src="../../environments/routing/sokoban/imgs/floor.png" /></td>
+</tr>
+<tr>
+<td>Target</td>
+<td><img alt="BoxTarget" src="../../environments/routing/sokoban/imgs/box_target.png" /></td>
+</tr>
+<tr>
+<td>Box on Target</td>
+<td><img alt="BoxTarget" src="../../environments/routing/sokoban/imgs/box_on_target.png" /></td>
+</tr>
+<tr>
+<td>Box Off Target</td>
+<td><img alt="BoxOffTarget" src="../../environments/routing/sokoban/imgs/box.png" /></td>
+</tr>
+<tr>
+<td>Agent Off Target</td>
+<td><img alt="PlayerOffTarget" src="../../environments/routing/sokoban/imgs/agent.png" /></td>
+</tr>
+<tr>
+<td>Agent On Target</td>
+<td><img alt="PlayerOnTarget" src="../../environments/routing/sokoban/imgs/agent_on_target.png" /></td>
+</tr>
+</tbody>
+</table>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
-<li><code>PacMan-v0</code>, PacMan in a 31x28 map with simple grid observations.</li>
+<li><code>Sokoban-v0</code>: Sokoban game with levels generated using DeepMind Boxoban dataset (unfiltered train).</li>
 </ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">#</a></h2>
+<p><a id="ref1">[1]</a> Guez, A., Mirza, M., Gregor, K., Kabra, R., Racaniere, S., Weber, T., Raposo, D., Santoro, A., Orseau, L., Eccles, T., Wayne, G., Silver, D., Lillicrap, T., Valdes, V. (2018). An investigation of Model-free planning: boxoban levels. Available at <a href="https://github.com/deepmind/boxoban-levels">https://github.com/deepmind/boxoban-levels</a></p>
+<p><a id="ref2">[2]</a> Schrader, M. (2018). Gym-sokoban. Available at <a href="https://github.com/mpSchrader/gym-sokoban">https://github.com/mpSchrader/gym-sokoban</a></p>
 
   <hr>
 <div class="md-source-file">
@@ -1645,7 +1754,7 @@ unchanged. Additionally if a no-op is performed the agent will use the last norm
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../sokoban/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sokoban" rel="prev">
+        <a href="../tsp/" class="md-footer__link md-footer__link--prev" aria-label="Previous: TSP" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1654,20 +1763,20 @@ unchanged. Additionally if a no-op is performed the agent will use the last norm
               <span class="md-footer__direction">
                 Previous
               </span>
-              Sokoban
+              TSP
             </div>
           </div>
         </a>
       
       
         
-        <a href="../../guides/advanced_usage/" class="md-footer__link md-footer__link--next" aria-label="Next: Advanced Usage" rel="next">
+        <a href="../pac_man/" class="md-footer__link md-footer__link--next" aria-label="Next: PacMan" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Advanced Usage
+              PacMan
             </div>
           </div>
           <div class="md-footer__button md-icon">

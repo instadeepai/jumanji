@@ -632,6 +632,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_2_3">
@@ -766,6 +768,20 @@
     <li class="md-nav__item">
       <a href="../../../environments/tsp/" class="md-nav__link">
         TSP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../environments/sokoban/" class="md-nav__link">
+        Sokoban
       </a>
     </li>
   
@@ -1235,6 +1251,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4_1_4">
@@ -1381,6 +1399,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../sokoban/" class="md-nav__link">
+        Sokoban
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../pac_man/" class="md-nav__link">
         PacMan
       </a>
@@ -1489,6 +1521,22 @@ We simplfy the naming to multi-agent capacitated vehicle routing problem (MultiC
 </ul>
 <p>[1] Zhang et al. (2020). "Multi-Vehicle Routing Problems with Soft Time Windows: A
 Multi-Agent Reinforcement Learning Approach".</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">jumanji.environments</span> <span class="kn">import</span> <span class="n">MultiCVRP</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">MultiCVRP</span><span class="p">()</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
+<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
 
 
 
@@ -1764,7 +1812,7 @@ timestep: TimeStep object corresponding to the first timestep returned by the
   <small>
     
       Last update:
-      2024-01-29
+      2024-03-05
     
   </small>
 </div>

@@ -634,6 +634,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_2_3">
@@ -768,6 +770,20 @@
     <li class="md-nav__item">
       <a href="../../../environments/tsp/" class="md-nav__link">
         TSP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../environments/sokoban/" class="md-nav__link">
+        Sokoban
       </a>
     </li>
   
@@ -1243,6 +1259,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4_1_4">
@@ -1467,6 +1485,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../sokoban/" class="md-nav__link">
+        Sokoban
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../pac_man/" class="md-nav__link">
         PacMan
       </a>
@@ -1629,7 +1661,7 @@ Snake            (<a class="autorefs autorefs-internal" title="jumanji.env.Envir
 <span class="normal">7</span>
 <span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">jumanji.environments</span> <span class="kn">import</span> <span class="n">Snake</span>
 <span class="n">env</span> <span class="o">=</span> <span class="n">Snake</span><span class="p">()</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
@@ -1918,7 +1950,7 @@ timestep: <code>TimeStep</code> object corresponding to the first timestep retur
   <small>
     
       Last update:
-      2024-01-29
+      2024-03-05
     
   </small>
 </div>
