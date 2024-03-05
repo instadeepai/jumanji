@@ -70,11 +70,11 @@ def make_mlp_network(
         puzzle = observation.puzzle.astype(float)[..., None]
         torso = hk.Sequential(
             [
-                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
+                hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
                 jax.nn.relu,
-                hk.Conv2D(conv_n_channels, (2, 2), 1, padding="VALID"),
+                hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
                 jax.nn.relu,
-                hk.Conv2D(conv_n_channels, (2, 2), 1),
+                hk.Conv2D(conv_n_channels, (3, 3)),
                 jax.nn.relu,
                 hk.Flatten(),
             ]

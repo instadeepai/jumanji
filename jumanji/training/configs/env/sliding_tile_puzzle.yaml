@@ -2,6 +2,7 @@ name: sliding_tile_puzzle
 registered_version: SlidingTilePuzzle-v0
 
 network:
+    num_channels: 32
     policy_layers: [128, 128]
     value_layers: [256, 256]
 
