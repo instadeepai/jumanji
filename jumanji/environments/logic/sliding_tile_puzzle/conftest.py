@@ -15,9 +15,11 @@
 import pytest
 
 from jumanji.environments.logic.sliding_tile_puzzle import SlidingTilePuzzle
+from jumanji.environments.logic.sliding_tile_puzzle.generator import RandomGenerator
 
 
 @pytest.fixture
 def sliding_tile_puzzle() -> SlidingTilePuzzle:
     """Instantiates a default SlidingTilePuzzle environment."""
-    return SlidingTilePuzzle()
+    generator = RandomGenerator(grid_size=2)
+    return SlidingTilePuzzle(generator=generator)

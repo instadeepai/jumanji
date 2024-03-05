@@ -47,13 +47,18 @@ def test_sliding_tile_puzzle_reset_jit(sliding_tile_puzzle: SlidingTilePuzzle) -
 def test_sliding_tile_puzzle_step_jit(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
     """Confirm that the step is only compiled once when jitted."""
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(sliding_tile_puzzle.reset)(key)
-    action = jnp.array(0)
+    puzzle = jnp.array([[0, 2], [1, 3]])
+    state = State(
+        puzzle=puzzle, empty_tile_position=jnp.array([0, 0]), key=key, step_count=0
+    )
+
+    right_action = jnp.array(3)
+    up_action = jnp.array(1)
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(sliding_tile_puzzle.step, n=1))
 
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _ = step_fn(state, right_action)
 
     # Check that the state has changed.
     assert not jnp.array_equal(new_state.puzzle, state.puzzle)
@@ -63,7 +68,7 @@ def test_sliding_tile_puzzle_step_jit(sliding_tile_puzzle: SlidingTilePuzzle) ->
 
     # New step
     state = new_state
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _ = step_fn(state, up_action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.puzzle, state.puzzle)
@@ -94,18 +99,19 @@ def test_env_one_move_to_solve(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
     """Test that the environment correctly handles a situation
     where the puzzle is one move away from being solved."""
     # Set up a state that is one move away from being solved.
-    solved_puzzle = jnp.array([[1, 2], [3, 0]])
-    one_move_away = jnp.array([[1, 0], [3, 2]])
+    solved_puzzle = jnp.array([[0, 1], [2, 3]])
+    one_move_away = jnp.array([[1, 0], [2, 3]])
     empty_tile_position = jnp.array([0, 1])
     state = State(
         puzzle=one_move_away,
         empty_tile_position=empty_tile_position,
         key=jax.random.PRNGKey(0),
+        step_count=0,
     )
 
-    # The correct action to solve the puzzle is to move the empty tile to the right (action=3).
-    action = jnp.array(3)
-    next_state, timestep = sliding_tile_puzzle.step(state, action)
+    # The correct action to solve the puzzle is to move the empty tile down (action=1).
+    down_action = jnp.array(2)
+    next_state, timestep = sliding_tile_puzzle.step(state, down_action)
 
     assert jnp.array_equal(next_state.puzzle, solved_puzzle)
     assert timestep.last()
@@ -123,6 +129,7 @@ def test_env_illegal_move_does_not_change_board(
         puzzle=puzzle,
         empty_tile_position=empty_tile_position,
         key=jax.random.PRNGKey(0),
+        step_count=0,
     )
 
     # An illegal move is to move the empty tile down (action=1) from its current position.
@@ -143,6 +150,7 @@ def test_env_legal_move_changes_board_as_expected(
         puzzle=puzzle,
         empty_tile_position=empty_tile_position,
         key=jax.random.PRNGKey(0),
+        step_count=0,
     )
 
     # A legal move is to move the empty tile up (action=0).
