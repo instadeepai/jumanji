@@ -35,7 +35,7 @@ class RewardFn(abc.ABC):
 
 class DenseRewardFn(RewardFn):
     """Reward function that returns a dense reward based on
-    the number of incorrectly placed tiles."""
+    the number of correctly placed tiles."""
 
     def __call__(
         self,
@@ -56,8 +56,10 @@ class DenseRewardFn(RewardFn):
         Returns:
             The calculated reward.
         """
-        # The dense reward is simply the negative of the number of incorrectly placed tiles.
-        return -jnp.sum(next_state.puzzle != solved_puzzle).astype(jnp.float32)
+        # The reward the number of correctly placed tiles divided by the total number of tiles.
+        # In other words, it is the proportion of correctly placed tiles.
+        n_correct_tiles = jnp.sum(next_state.puzzle == solved_puzzle)
+        return n_correct_tiles.astype(jnp.float32) / solved_puzzle.size
 
 
 class SparseRewardFn(RewardFn):
