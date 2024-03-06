@@ -12,14 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import jax
+import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.logic.sliding_tile_puzzle import SlidingTilePuzzle
 from jumanji.environments.logic.sliding_tile_puzzle.generator import RandomGenerator
+from jumanji.environments.logic.sliding_tile_puzzle.types import State
 
 
 @pytest.fixture
 def sliding_tile_puzzle() -> SlidingTilePuzzle:
     """Instantiates a default SlidingTilePuzzle environment."""
-    generator = RandomGenerator(grid_size=2)
+    generator = RandomGenerator(grid_size=3)
     return SlidingTilePuzzle(generator=generator)
+
+
+@pytest.fixture
+def state() -> State:
+    key = jax.random.PRNGKey(0)
+    empty_pos = jnp.array([0, 0])
+    puzzle = jnp.array(
+        [
+            [0, 1, 3],
+            [4, 2, 5],
+            [7, 8, 6],
+        ]
+    )
+    return State(puzzle=puzzle, empty_tile_position=empty_pos, key=key, step_count=0)

@@ -56,10 +56,21 @@ class DenseRewardFn(RewardFn):
         Returns:
             The calculated reward.
         """
-        # The reward the number of correctly placed tiles divided by the total number of tiles.
-        # In other words, it is the proportion of correctly placed tiles.
-        n_correct_tiles = jnp.sum(next_state.puzzle == solved_puzzle)
-        return n_correct_tiles.astype(jnp.float32) / solved_puzzle.size
+        # get the indexes of where each element in the puzzle should be
+        inds_of_puzzle_pieces = jnp.array(
+            jnp.divmod(next_state.puzzle, next_state.puzzle.shape[-1])
+        )
+        # get the indexes of where each element in the solved puzzle should be
+        inds_of_solved_puzzle_pieces = jnp.indices(solved_puzzle.shape)
+        # calculate the distance between the puzzle pieces and the solved puzzle pieces.
+        distance_to_solved = jnp.linalg.norm(
+            inds_of_puzzle_pieces - inds_of_solved_puzzle_pieces, ord=1, axis=0
+        )
+        # max distance a single puzzle piece can be from its solved position
+        max_dist_piece = jnp.sum(jnp.asarray(next_state.puzzle.shape[-2:])) - 2
+        max_dist_all = max_dist_piece * solved_puzzle.size
+
+        return jnp.sum(1 - distance_to_solved / (max_dist_all)).astype(float)
 
 
 class SparseRewardFn(RewardFn):

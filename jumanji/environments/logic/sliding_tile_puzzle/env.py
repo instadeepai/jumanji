@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 import chex
 import jax
@@ -23,6 +23,7 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
+from jumanji.environments.logic.sliding_tile_puzzle.constants import MOVES
 from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
     RandomGenerator,
@@ -35,7 +36,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, St
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
     SlidingTilePuzzleViewer,
 )
-from jumanji.types import TimeStep, restart, termination, transition, truncation
+from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
@@ -97,9 +98,6 @@ class SlidingTilePuzzle(Environment[State]):
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
-        self.movements = jnp.array(
-            [[-1, 0], [1, 0], [0, -1], [0, 1]]  # Up  # Down  # Left  # Right
-        )
         self.solved_puzzle = jnp.arange(self.generator.grid_size**2).reshape(
             (self.generator.grid_size, self.generator.grid_size)
         )
@@ -120,7 +118,7 @@ class SlidingTilePuzzle(Environment[State]):
             empty_tile_position=empty_tile_position,
             action_mask=action_mask,
         )
-        timestep = restart(observation=obs)
+        timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
 
     def step(
@@ -150,19 +148,20 @@ class SlidingTilePuzzle(Environment[State]):
         )
 
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
+        extras = self._get_extras(next_state)
 
-        timestep = lax.cond(
-            done,
-            termination,
-            lambda r, o: lax.cond(
-                horizon_reached,
-                truncation,
-                transition,
-                r,
-                o,
+        timestep = jax.lax.cond(
+            done | (next_state.step_count >= self.time_limit),
+            lambda: termination(
+                reward=reward,
+                observation=obs,
+                extras=extras,
             ),
-            reward,
-            obs,
+            lambda: transition(
+                reward=reward,
+                observation=obs,
+                extras=extras,
+            ),
         )
 
         return next_state, timestep
@@ -176,7 +175,7 @@ class SlidingTilePuzzle(Environment[State]):
         """Moves the empty tile in the given direction and returns the updated puzzle and reward."""
 
         # Compute the new position
-        new_empty_tile_position = empty_tile_position + self.movements[action]
+        new_empty_tile_position = empty_tile_position + MOVES[action]
 
         # Predicate for the conditional
         is_valid_move = jnp.all(
@@ -201,7 +200,7 @@ class SlidingTilePuzzle(Environment[State]):
 
     def _get_valid_actions(self, empty_tile_position: chex.Array) -> chex.Array:
         # Compute the new positions if these movements are applied
-        new_positions = empty_tile_position + self.movements
+        new_positions = empty_tile_position + MOVES
 
         # Check if the new positions are within the grid boundaries
         valid_moves_mask = jnp.all(
@@ -209,6 +208,10 @@ class SlidingTilePuzzle(Environment[State]):
         )
 
         return valid_moves_mask
+
+    def _get_extras(self, state: State) -> Dict[str, chex.Array]:
+        n_correctly_placed = jnp.sum(self.solved_puzzle == state.puzzle)
+        return {"percent_solved": n_correctly_placed / state.puzzle.size}
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
