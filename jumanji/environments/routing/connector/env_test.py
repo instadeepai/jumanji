@@ -41,7 +41,7 @@ def is_target_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
     return jnp.any(grid[agent.target] == get_target(agent.id))
 
 
-def test_connector__reset(connector: Connector, key: jax.random.KeyArray) -> None:
+def test_connector__reset(connector: Connector, key: jax.random.PRNGKey) -> None:
     """Test that all heads and targets are on the board."""
     state, timestep = connector.reset(key)
 
