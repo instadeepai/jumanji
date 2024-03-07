@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import abc
-from typing import List, Tuple
+from typing import Tuple
 
 import chex
 import jax
@@ -145,8 +145,11 @@ class SolvableSTPGenerator(Generator):
     def _make_random_move(
         self, key: chex.PRNGKey, puzzle: chex.Array, empty_tile_position: chex.Array
     ) -> Tuple[chex.Array, chex.Array]:
-        """Make a random valid move using the _swap_tiles function."""
-        valid_moves = self._get_valid_moves(empty_tile_position)
+        """Makes a random valid move."""
+        new_positions = empty_tile_position + MOVES
+        valid_moves = jnp.all(
+            (new_positions >= 0) & (new_positions < self._grid_size), axis=-1
+        )
         move = jax.random.choice(key, jnp.array(valid_moves, dtype=jnp.int32))
         new_empty_tile_position = empty_tile_position + MOVES[move]
 
@@ -156,12 +159,3 @@ class SolvableSTPGenerator(Generator):
         )
 
         return new_empty_tile_position, updated_puzzle
-
-    def _get_valid_moves(self, empty_tile_position: chex.Array) -> List[int]:
-        """Get a list of valid move indices for the empty tile."""
-        valid_moves = []
-        for i, move in enumerate(MOVES):
-            new_position = empty_tile_position + move
-            if jnp.all((new_position >= 0) & (new_position < self._grid_size)):
-                valid_moves.append(i)
-        return valid_moves
