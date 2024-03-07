@@ -23,7 +23,10 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.sliding_tile_puzzle.constants import MOVES
+from jumanji.environments.logic.sliding_tile_puzzle.constants import (
+    MOVES,
+    INITIAL_STEP_COUNT,
+)
 from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
     RandomGenerator,
@@ -117,6 +120,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=puzzle,
             empty_tile_position=empty_tile_position,
             action_mask=action_mask,
+            step_count=INITIAL_STEP_COUNT,
         )
         timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
@@ -144,6 +148,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=updated_puzzle,
             empty_tile_position=updated_empty_tile_position,
             action_mask=action_mask,
+            action_mask=next_state.step_count,
         )
 
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
@@ -238,6 +243,13 @@ class SlidingTilePuzzle(Environment[State]):
                 minimum=False,
                 maximum=True,
                 name="action_mask",
+            ),
+            step_count=specs.BoundedArray(
+                shape=(),
+                dtype=jnp.int32,
+                minimum=0,
+                maximum=self.time_limit,
+                name="step_count",
             ),
         )
 

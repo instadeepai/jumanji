@@ -47,3 +47,4 @@ class Observation(NamedTuple):
     puzzle: chex.Array  # (N, N)
     empty_tile_position: chex.Array  # (2,)
     action_mask: chex.Array  # (4,)  # assuming 4 possible actions: up, down, left, right
+    step_count: int  # Current timestep

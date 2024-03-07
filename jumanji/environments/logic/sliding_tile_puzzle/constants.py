@@ -14,6 +14,7 @@
 import jax.numpy as jnp
 
 EMPTY_TILE = 0
+INITIAL_STEP_COUNT = 0
 
 UP = [-1, 0]
 DOWN = [1, 0]
