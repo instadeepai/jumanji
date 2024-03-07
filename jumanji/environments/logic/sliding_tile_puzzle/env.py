@@ -130,7 +130,6 @@ class SlidingTilePuzzle(Environment[State]):
         )
         # Check if the puzzle is solved
         done = jnp.array_equal(updated_puzzle, self.solved_puzzle)
-        horizon_reached = state.step_count >= self.time_limit
 
         # Update the action mask
         action_mask = self._get_valid_actions(updated_empty_tile_position)
