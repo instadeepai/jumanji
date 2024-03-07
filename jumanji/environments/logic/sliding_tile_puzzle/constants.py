@@ -20,4 +20,4 @@ DOWN = [1, 0]
 LEFT = [0, -1]
 RIGHT = [0, 1]
 
-MOVES = jnp.array([UP, DOWN, LEFT, RIGHT])
+MOVES = jnp.array([UP, RIGHT, DOWN, LEFT])

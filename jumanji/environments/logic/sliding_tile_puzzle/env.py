@@ -244,7 +244,7 @@ class SlidingTilePuzzle(Environment[State]):
 
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec."""
-        # Up, Down, Left, Right
+        # Up, Right, Down, Left
         return specs.DiscreteArray(num_values=4, name="action", dtype=jnp.int32)
 
     def render(self, state: State) -> Optional[NDArray]:
