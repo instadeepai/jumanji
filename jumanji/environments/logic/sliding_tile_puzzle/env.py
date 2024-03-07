@@ -24,8 +24,8 @@ from numpy.typing import NDArray
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.logic.sliding_tile_puzzle.constants import (
-    MOVES,
     INITIAL_STEP_COUNT,
+    MOVES,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
@@ -148,7 +148,7 @@ class SlidingTilePuzzle(Environment[State]):
             puzzle=updated_puzzle,
             empty_tile_position=updated_empty_tile_position,
             action_mask=action_mask,
-            action_mask=next_state.step_count,
+            step_count=next_state.step_count,
         )
 
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)

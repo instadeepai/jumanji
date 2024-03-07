@@ -13,13 +13,13 @@
 # limitations under the License.
 
 import abc
-from typing import Tuple
+from typing import List, Tuple
 
 import chex
 import jax
 from jax import numpy as jnp
 
-from jumanji.environments.logic.sliding_tile_puzzle.constants import EMPTY_TILE
+from jumanji.environments.logic.sliding_tile_puzzle.constants import EMPTY_TILE, MOVES
 
 
 class Generator(abc.ABC):
@@ -115,22 +115,18 @@ class SolvableSTPGenerator(Generator):
             A tuple of a 2D array representing a problem instance and a tuple
             indicating the position of the empty tile.
         """
-        # Create a list of all tiles
-        # The empty tile is represented by 0
-        n = self._grid_size * self._grid_size
-        tiles = jnp.arange(n).at[0].set(n - 1).at[n - 1].set(0)
-
-        # Shuffle the tiles
-        key, subkey = jax.random.split(key)
-        shuffled_tiles = jax.random.permutation(subkey, jnp.array(tiles))
-
-        # Reshape the tiles into a 2D array
-        puzzle = jnp.reshape(shuffled_tiles, (self._grid_size, self._grid_size))
-
-        # Find the position of the empty tile
-        empty_tile_position = jnp.stack(
-            jnp.unravel_index(jnp.argmax(puzzle == EMPTY_TILE), puzzle.shape)
+        # Start with a solved puzzle
+        puzzle = jnp.arange(self._grid_size**2).reshape(
+            (self._grid_size, self._grid_size)
         )
+        empty_tile_position = jnp.array([self._grid_size - 1, self._grid_size - 1])
+
+        # Perform a number of shuffle moves
+        for _ in range(self.num_shuffle_moves):
+            key, subkey = jax.random.split(key)
+            empty_tile_position, puzzle = self._make_random_move(
+                subkey, puzzle, empty_tile_position
+            )
 
         return puzzle, empty_tile_position
 
@@ -145,3 +141,27 @@ class SolvableSTPGenerator(Generator):
         tiles = tiles.at[flattened_pos2].set(EMPTY_TILE)
 
         return tiles
+
+    def _make_random_move(
+        self, key: chex.PRNGKey, puzzle: chex.Array, empty_tile_position: chex.Array
+    ) -> Tuple[chex.Array, chex.Array]:
+        """Make a random valid move using the _swap_tiles function."""
+        valid_moves = self._get_valid_moves(empty_tile_position)
+        move = jax.random.choice(key, jnp.array(valid_moves, dtype=jnp.int32))
+        new_empty_tile_position = empty_tile_position + MOVES[move]
+
+        # Swap the empty tile with the tile at the new position using _swap_tiles
+        updated_puzzle = self._swap_tiles(
+            puzzle, empty_tile_position, new_empty_tile_position
+        )
+
+        return new_empty_tile_position, updated_puzzle
+
+    def _get_valid_moves(self, empty_tile_position: chex.Array) -> List[int]:
+        """Get a list of valid move indices for the empty tile."""
+        valid_moves = []
+        for i, move in enumerate(MOVES):
+            new_position = empty_tile_position + move
+            if jnp.all((new_position >= 0) & (new_position < self._grid_size)):
+                valid_moves.append(i)
+        return valid_moves
