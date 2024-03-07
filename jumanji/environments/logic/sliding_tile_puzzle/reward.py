@@ -62,7 +62,7 @@ class DenseRewardFn(RewardFn):
         )
         # get the indexes of where each element in the solved puzzle should be
         inds_of_solved_puzzle_pieces = jnp.indices(solved_puzzle.shape)
-        # calculate the distance between the puzzle pieces and the solved puzzle pieces.
+        # calculate the Manhattan distance between the puzzle pieces and the solved puzzle pieces.
         distance_to_solved = jnp.linalg.norm(
             inds_of_puzzle_pieces - inds_of_solved_puzzle_pieces, ord=1, axis=0
         )
