@@ -142,6 +142,6 @@ class SolvableSTPGenerator(Generator):
         flattened_pos2 = pos2[0] * self.grid_size + pos2[1]
 
         tiles = tiles.at[flattened_pos1].set(tiles[flattened_pos2])
-        tiles = tiles.at[flattened_pos2].set(0)  # Empty tile
+        tiles = tiles.at[flattened_pos2].set(EMPTY_TILE)
 
         return tiles
