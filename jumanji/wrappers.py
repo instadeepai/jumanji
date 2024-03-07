@@ -360,13 +360,13 @@ class VmapWrapper(Wrapper):
         return super().render(state_0)
 
 
-OBS_IN_EXTRAS_KEY = "real_next_obs"
+NEXT_OBS_KEY_IN_EXTRAS = "next_obs"
 
 
 def _obs_in_extras(
     state: State, timestep: TimeStep[Observation]
 ) -> Tuple[State, TimeStep[Observation]]:
-    """Place the observation in timestep.extras[OBS_IN_EXTRAS_KEY].
+    """Place the observation in timestep.extras[NEXT_OBS_KEY_IN_EXTRAS].
     Used when auto-resetting to store the observation from the terminal TimeStep.
 
     Args:
@@ -374,10 +374,10 @@ def _obs_in_extras(
         timestep: TimeStep object containing the timestep returned by the environment.
 
     Returns:
-        (state, timestep): where the observation is placed in timestep.extras[OBS_IN_EXTRAS_KEY].
+        (state, timestep): where the observation is placed in timestep.extras["next_obs"].
     """
     extras = timestep.extras
-    extras[OBS_IN_EXTRAS_KEY] = timestep.observation
+    extras[NEXT_OBS_KEY_IN_EXTRAS] = timestep.observation
     return state, timestep.replace(extras=extras)  # type: ignore
 
 
@@ -386,7 +386,7 @@ class AutoResetWrapper(Wrapper):
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
     The reward, discount, and extras retrieved from the transition to the terminal state.
-    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["real_next_obs"].
+    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     WARNING: do not `jax.vmap` the wrapped environment (e.g. do not use with the `VmapWrapper`),
     which would lead to inefficient computation due to both the `step` and `reset` functions
     being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
@@ -447,7 +447,7 @@ class VmapAutoResetWrapper(Wrapper):
     - Homogeneous computation: call step function on all environments in the batch.
     - Heterogeneous computation: conditional auto-reset (call reset function for some environments
         within the batch because they have terminated).
-    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["real_next_obs"].
+    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
