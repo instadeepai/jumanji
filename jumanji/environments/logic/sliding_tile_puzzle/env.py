@@ -32,7 +32,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     SolvableSTPGenerator,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.reward import (
-    DenseRewardFn,
+    SparseRewardFn,
     RewardFn,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, State
