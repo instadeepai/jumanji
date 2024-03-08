@@ -147,20 +147,10 @@ class SolvableSTPGenerator(Generator):
         new_positions = empty_tile_position + MOVES
 
         # Determine valid moves (known-size boolean array)
-        valid_moves_mask = (new_positions >= 0) & (new_positions < self._grid_size)
-        valid_moves_mask = jnp.all(valid_moves_mask, axis=-1)
-
-        # Pre-allocated array of all move indices
-        all_move_indices = jnp.arange(len(MOVES))
-
-        # Use valid_moves_mask to filter valid indices
-        valid_move_indices = all_move_indices[valid_moves_mask]
-
-        # Randomly select a move from the valid indices
-        move_index = jax.random.choice(subkey, valid_move_indices, shape=())
-
-        # Apply the chosen move
-        move = MOVES[move_index]
+        valid_moves_mask = jnp.all(
+            (new_positions >= 0) & (new_positions < self._grid_size), axis=-1
+        )
+        move = jax.random.choice(key, MOVES, shape=(), p=valid_moves_mask)
         new_empty_tile_position = empty_tile_position + move
         # Swap the empty tile with the tile at the new position using _swap_tiles
         updated_puzzle = self._swap_tiles(
