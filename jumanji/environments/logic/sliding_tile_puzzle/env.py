@@ -29,7 +29,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.constants import (
 )
 from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
-    RandomGenerator,
+    SolvableSTPGenerator,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.reward import (
     DenseRewardFn,
@@ -94,16 +94,16 @@ class SlidingTilePuzzle(Environment[State]):
             time_limit: maximum number of steps before the episode is terminated.
             viewer: environment viewer for rendering.
         """
-        self.generator = generator or RandomGenerator(grid_size=5)
+        self.generator = generator or SolvableSTPGenerator(grid_size=2)
         self.reward_fn = reward_fn or DenseRewardFn()
 
         self.time_limit = time_limit
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
-        self.solved_puzzle = jnp.arange(self.generator.grid_size**2).reshape(
-            (self.generator.grid_size, self.generator.grid_size)
-        )
+        self.solved_puzzle = jnp.append(
+            jnp.arange(1, self.generator.grid_size**2), 0
+        ).reshape((self.generator.grid_size, self.generator.grid_size))
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state."""

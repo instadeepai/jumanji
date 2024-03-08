@@ -116,7 +116,7 @@ class SolvableSTPGenerator(Generator):
             indicating the position of the empty tile.
         """
         # Start with a solved puzzle
-        puzzle = jnp.arange(self._grid_size**2).reshape(
+        puzzle = jnp.append(jnp.arange(1, self._grid_size**2), EMPTY_TILE).reshape(
             (self._grid_size, self._grid_size)
         )
         empty_tile_position = jnp.array([self._grid_size - 1, self._grid_size - 1])
@@ -131,28 +131,37 @@ class SolvableSTPGenerator(Generator):
         return puzzle, empty_tile_position
 
     def _swap_tiles(
-        self, tiles: chex.Array, pos1: chex.Array, pos2: chex.Array
+        self, puzzle: chex.Array, pos1: chex.Array, pos2: chex.Array
     ) -> chex.Array:
         """Swaps the tiles at the given positions."""
-        flattened_pos1 = pos1[0] * self.grid_size + pos1[1]
-        flattened_pos2 = pos2[0] * self.grid_size + pos2[1]
-
-        tiles = tiles.at[flattened_pos1].set(tiles[flattened_pos2])
-        tiles = tiles.at[flattened_pos2].set(EMPTY_TILE)
-
-        return tiles
+        temp = puzzle[tuple(pos1)]
+        puzzle = puzzle.at[tuple(pos1)].set(puzzle[tuple(pos2)])
+        puzzle = puzzle.at[tuple(pos2)].set(temp)
+        return puzzle
 
     def _make_random_move(
         self, key: chex.PRNGKey, puzzle: chex.Array, empty_tile_position: chex.Array
     ) -> Tuple[chex.Array, chex.Array]:
         """Makes a random valid move."""
+        key, subkey = jax.random.split(key)
         new_positions = empty_tile_position + MOVES
-        valid_moves = jnp.all(
-            (new_positions >= 0) & (new_positions < self._grid_size), axis=-1
-        )
-        move = jax.random.choice(key, jnp.array(valid_moves, dtype=jnp.int32))
-        new_empty_tile_position = empty_tile_position + MOVES[move]
 
+        # Determine valid moves (known-size boolean array)
+        valid_moves_mask = (new_positions >= 0) & (new_positions < self._grid_size)
+        valid_moves_mask = jnp.all(valid_moves_mask, axis=-1)
+
+        # Pre-allocated array of all move indices
+        all_move_indices = jnp.arange(len(MOVES))
+
+        # Use valid_moves_mask to filter valid indices
+        valid_move_indices = all_move_indices[valid_moves_mask]
+
+        # Randomly select a move from the valid indices
+        move_index = jax.random.choice(subkey, valid_move_indices, shape=())
+
+        # Apply the chosen move
+        move = MOVES[move_index]
+        new_empty_tile_position = empty_tile_position + move
         # Swap the empty tile with the tile at the new position using _swap_tiles
         updated_puzzle = self._swap_tiles(
             puzzle, empty_tile_position, new_empty_tile_position
