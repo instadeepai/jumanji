@@ -101,9 +101,12 @@ class SlidingTilePuzzle(Environment[State]):
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
-        self.solved_puzzle = jnp.append(
-            jnp.arange(1, self.generator.grid_size**2), 0
-        ).reshape((self.generator.grid_size, self.generator.grid_size))
+        self.solved_puzzle = (
+            jnp.arange(1, self.generator.grid_size**2 + 1)
+            .at[-1]
+            .set(0)
+            .reshape((self.generator.grid_size, self.generator.grid_size))
+        )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state."""

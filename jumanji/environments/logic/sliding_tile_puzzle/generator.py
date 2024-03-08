@@ -116,9 +116,13 @@ class SolvableSTPGenerator(Generator):
             indicating the position of the empty tile.
         """
         # Start with a solved puzzle
-        puzzle = jnp.append(jnp.arange(1, self._grid_size**2), EMPTY_TILE).reshape(
-            (self._grid_size, self._grid_size)
+        puzzle = (
+            jnp.arange(1, self._grid_size**2 + 1)
+            .at[-1]
+            .set(0)
+            .reshape((self._grid_size, self._grid_size))
         )
+
         empty_tile_position = jnp.array([self._grid_size - 1, self._grid_size - 1])
 
         # Perform a number of shuffle moves
