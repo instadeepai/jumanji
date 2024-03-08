@@ -136,6 +136,7 @@ class TerminalLogger(Logger):
             f"{key.replace('_', ' ').title()}: "
             f"{(f'{value:.3f}' if isinstance(value, (float, jnp.ndarray)) else f'{value:,}')}"
             for key, value in sorted(data.items())
+            if isinstance(value, (float, int, jnp.ndarray))
         )
 
     def write(
@@ -166,7 +167,8 @@ class ListLogger(Logger):
         env_steps: Optional[int] = None,
     ) -> None:
         for key, value in data.items():
-            self.history[key].append(value)
+            if isinstance(value, (float, int, jnp.ndarray)):
+                self.history[key].append(value)
 
 
 class TensorboardLogger(Logger):
@@ -191,6 +193,8 @@ class TensorboardLogger(Logger):
             self._env_steps = env_steps
         prefix = label and f"{label}/"
         for key, metric in data.items():
+            if not isinstance(metric, (float, int, jnp.ndarray)):
+                return  # Skip non-numeric values.
             if np.ndim(metric) == 0:
                 if not np.isnan(metric):
                     self.writer.add_scalar(
@@ -232,6 +236,8 @@ class NeptuneLogger(Logger):
             self._env_steps = env_steps
         prefix = label and f"{label}/"
         for key, metric in data.items():
+            if not isinstance(metric, (float, int, jnp.ndarray)):
+                return  # Skip non-numeric values.
             if np.ndim(metric) == 0:
                 if not np.isnan(metric):
                     self.run[f"{prefix}/{key}"].log(
