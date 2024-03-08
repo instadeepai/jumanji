@@ -2303,7 +2303,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7fd62457a790</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7fd62457af70</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f2d8d729790</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f2d8d729f70</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2337,14 +2337,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x7fd62457a790&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f2d8d729790&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x7fd62457af70&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f2d8d729f70&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -2712,6 +2712,7 @@ AutoResetWrapper            (<a class="autorefs autorefs-internal" title="jumanj
 the state, observation, and step_type are reset. The observation and step_type of the
 terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
 The reward, discount, and extras retrieved from the transition to the terminal state.
+NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
 WARNING: do not <code>jax.vmap</code> the wrapped environment (e.g. do not use with the <code>VmapWrapper</code>),
 which would lead to inefficient computation due to both the <code>step</code> and <code>reset</code> functions
 being processed each time <code>step</code> is called. Please use the <code>VmapAutoResetWrapper</code> instead.</p>
@@ -2726,6 +2727,61 @@ being processed each time <code>step</code> is called. Please use the <code>Vmap
 
 
 
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="jumanji.wrappers.AutoResetWrapper.reset" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
+
+
+<a href="#jumanji.wrappers.AutoResetWrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Resets the environment to an initial state.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>key</code></td>
+        <td><code>chex.PRNGKey</code></td>
+        <td><p>random key used to reset the environment.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>state</code></td>
+      <td><p>State object corresponding to the new state of the environment,
+timestep: TimeStep object corresponding the first timestep returned by the environment,</p></td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+  </div>
 
 
 
@@ -3153,7 +3209,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2024-03-05
+      2024-03-08
     
   </small>
 </div>
