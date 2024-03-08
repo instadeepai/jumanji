@@ -94,8 +94,8 @@ class SlidingTilePuzzle(Environment[State]):
             time_limit: maximum number of steps before the episode is terminated.
             viewer: environment viewer for rendering.
         """
-        self.generator = generator or SolvableSTPGenerator(grid_size=2)
-        self.reward_fn = reward_fn or DenseRewardFn()
+        self.generator = generator or SolvableSTPGenerator(grid_size=3, num_shuffle_moves=100)
+        self.reward_fn = reward_fn or SparseRewardFn()
 
         self.time_limit = time_limit
 

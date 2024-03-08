@@ -126,11 +126,12 @@ class SolvableSTPGenerator(Generator):
         empty_tile_position = jnp.array([self._grid_size - 1, self._grid_size - 1])
 
         # Perform a number of shuffle moves
-        for _ in range(self.num_shuffle_moves):
-            key, subkey = jax.random.split(key)
-            empty_tile_position, puzzle = self._make_random_move(
-                subkey, puzzle, empty_tile_position
-            )
+        keys = jax.random.split(key, self.num_shuffle_moves)
+        (puzzle, empty_tile_position), _ = jax.lax.scan(
+            lambda carry, key: (self._make_random_move(key, *carry), None),
+            (puzzle, empty_tile_position),
+            keys,
+        )
 
         return puzzle, empty_tile_position
 
@@ -147,7 +148,6 @@ class SolvableSTPGenerator(Generator):
         self, key: chex.PRNGKey, puzzle: chex.Array, empty_tile_position: chex.Array
     ) -> Tuple[chex.Array, chex.Array]:
         """Makes a random valid move."""
-        key, subkey = jax.random.split(key)
         new_positions = empty_tile_position + MOVES
 
         # Determine valid moves (known-size boolean array)
@@ -161,4 +161,4 @@ class SolvableSTPGenerator(Generator):
             puzzle, empty_tile_position, new_empty_tile_position
         )
 
-        return new_empty_tile_position, updated_puzzle
+        return updated_puzzle, new_empty_tile_position

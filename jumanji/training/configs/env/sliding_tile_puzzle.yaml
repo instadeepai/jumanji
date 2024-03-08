@@ -7,10 +7,10 @@ network:
     value_layers: [256, 256]
 
 training:
-    num_epochs: 100
-    num_learner_steps_per_epoch: 600
-    n_steps: 50
-    total_batch_size: 32
+    num_epochs: 500
+    num_learner_steps_per_epoch: 100
+    n_steps: 30
+    total_batch_size: 64
 
 evaluation:
     eval_total_batch_size: 500
