@@ -462,6 +462,7 @@ class VmapAutoResetWrapper(Wrapper):
         within the batch because they have terminated).
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
+
     def __init__(self, env: Environment, next_obs_in_extras: bool = False):
         """Wrap an environment to vmap it and automatically reset it when the episode terminates.
 
@@ -476,7 +477,6 @@ class VmapAutoResetWrapper(Wrapper):
             self._maybe_add_obs_to_extras = add_obs_to_extras
         else:
             self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
-    
 
     def __init__(self, env: Environment, next_obs_in_extras: bool = False):
         """Wrap an environment to vmap it and automatically reset it when the episode terminates.
