@@ -445,7 +445,7 @@ class AutoResetWrapper(Wrapper):
         state, timestep = jax.lax.cond(
             timestep.last(),
             self._auto_reset,
-            lambda s, t: (s, self._maybe_obs_in_extras(t)),
+            lambda s, t: (s, self._maybe_add_obs_to_extras(t)),
             state,
             timestep,
         )
