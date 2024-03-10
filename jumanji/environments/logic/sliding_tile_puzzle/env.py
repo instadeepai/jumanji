@@ -23,17 +23,15 @@ from numpy.typing import NDArray
 
 from jumanji import specs
 from jumanji.env import Environment
-from jumanji.environments.logic.sliding_tile_puzzle.constants import (
-    INITIAL_STEP_COUNT,
-    MOVES,
-)
+from jumanji.environments.logic.sliding_tile_puzzle.constants import MOVES
 from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     Generator,
-    SolvableSTPGenerator,
+    RandomWalkGenerator,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.reward import (
-    SparseRewardFn,
     RewardFn,
+    SparseRewardFn,
+    DenseRewardFn,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, State
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
@@ -84,46 +82,37 @@ class SlidingTilePuzzle(Environment[State]):
 
         Args:
             generator: callable to instantiate environment instances.
-                Defaults to `RandomGenerator` which generates puzzles with
+                Defaults to `RandomWalkGenerator` which generates shuffled puzzles with
                 a size of 5x5.
             reward_fn: RewardFn whose `__call__` method computes the reward of an environment
                 transition. The function must compute the reward based on the current state,
                 the chosen action and the next state.
                 Implemented options are [`DenseRewardFn`, `SparseRewardFn`].
                 Defaults to `DenseRewardFn`.
-            time_limit: maximum number of steps before the episode is terminated.
+            time_limit: maximum number of steps before the episode is terminated, default to 500.
             viewer: environment viewer for rendering.
         """
-        self.generator = generator or SolvableSTPGenerator(grid_size=3, num_shuffle_moves=100)
-        self.reward_fn = reward_fn or SparseRewardFn()
+        self.generator = generator or RandomWalkGenerator(
+            grid_size=3, num_random_moves=100
+        )
+        self.reward_fn = reward_fn or DenseRewardFn()
 
         self.time_limit = time_limit
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
-        self.solved_puzzle = (
-            jnp.arange(1, self.generator.grid_size**2 + 1)
-            .at[-1]
-            .set(0)
-            .reshape((self.generator.grid_size, self.generator.grid_size))
-        )
+        self.solved_puzzle = self.generator.make_solved_puzzle()
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state."""
         key, subkey = jax.random.split(key)
-        puzzle, empty_tile_position = self.generator(subkey)
-        state = State(
-            puzzle=puzzle,
-            empty_tile_position=empty_tile_position,
-            key=key,
-            step_count=0,
-        )
-        action_mask = self._get_valid_actions(empty_tile_position)
+        state = self.generator(subkey)
+        action_mask = self._get_valid_actions(state.empty_tile_position)
         obs = Observation(
-            puzzle=puzzle,
-            empty_tile_position=empty_tile_position,
+            puzzle=state.puzzle,
+            empty_tile_position=state.empty_tile_position,
             action_mask=action_mask,
-            step_count=INITIAL_STEP_COUNT,
+            step_count=state.step_count,
         )
         timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
@@ -190,20 +179,17 @@ class SlidingTilePuzzle(Environment[State]):
             & (new_empty_tile_position < self.generator.grid_size)
         )
 
-        def valid_move(puzzle: chex.Array) -> Tuple[chex.Array, Tuple[int, int]]:
-            # Swap the empty tile and the tile at the new position
-            updated_puzzle = puzzle.at[tuple(empty_tile_position)].set(
-                puzzle[tuple(new_empty_tile_position)]
-            )
-            updated_puzzle = updated_puzzle.at[tuple(new_empty_tile_position)].set(0)
+        # Swap the empty tile and the tile at the new position
+        updated_puzzle = puzzle.at[tuple(empty_tile_position)].set(
+            puzzle[tuple(new_empty_tile_position)]
+        )
+        updated_puzzle = updated_puzzle.at[tuple(new_empty_tile_position)].set(0)
 
-            return updated_puzzle, new_empty_tile_position
-
-        def invalid_move(puzzle: chex.Array) -> Tuple[chex.Array, Tuple[int, int]]:
-            # If the move is not valid, return the original puzzle
-            return puzzle, empty_tile_position
-
-        return lax.cond(is_valid_move, valid_move, invalid_move, puzzle)
+        return lax.cond(
+            is_valid_move,
+            lambda: (updated_puzzle, new_empty_tile_position),
+            lambda: (puzzle, empty_tile_position),
+        )
 
     def _get_valid_actions(self, empty_tile_position: chex.Array) -> chex.Array:
         # Compute the new positions if these movements are applied
@@ -217,27 +203,27 @@ class SlidingTilePuzzle(Environment[State]):
         return valid_moves_mask
 
     def _get_extras(self, state: State) -> Dict[str, chex.Array]:
-        n_correctly_placed = jnp.sum(self.solved_puzzle == state.puzzle)
-        return {"percent_solved": n_correctly_placed / state.puzzle.size}
+        num_correct_tiles = jnp.sum(self.solved_puzzle == state.puzzle)
+        return {"prop_correctly_placed": num_correct_tiles / state.puzzle.size}
 
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
-        n = self.generator.grid_size
+        grid_size = self.generator.grid_size
         return specs.Spec(
             Observation,
             "ObservationSpec",
             puzzle=specs.BoundedArray(
-                shape=(n, n),
+                shape=(grid_size, grid_size),
                 dtype=jnp.int32,
                 minimum=0,
-                maximum=n * n - 1,
+                maximum=grid_size * grid_size - 1,
                 name="puzzle",
             ),
             empty_tile_position=specs.BoundedArray(
                 shape=(2,),
                 dtype=jnp.int32,
                 minimum=0,
-                maximum=n - 1,
+                maximum=grid_size - 1,
                 name="empty_tile_position",
             ),
             action_mask=specs.BoundedArray(

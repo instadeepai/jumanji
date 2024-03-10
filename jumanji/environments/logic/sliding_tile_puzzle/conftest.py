@@ -17,14 +17,14 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.logic.sliding_tile_puzzle import SlidingTilePuzzle
-from jumanji.environments.logic.sliding_tile_puzzle.generator import RandomGenerator
+from jumanji.environments.logic.sliding_tile_puzzle.generator import RandomWalkGenerator
 from jumanji.environments.logic.sliding_tile_puzzle.types import State
 
 
 @pytest.fixture
 def sliding_tile_puzzle() -> SlidingTilePuzzle:
     """Instantiates a default SlidingTilePuzzle environment."""
-    generator = RandomGenerator(grid_size=3)
+    generator = RandomWalkGenerator(grid_size=3)
     return SlidingTilePuzzle(generator=generator)
 
 

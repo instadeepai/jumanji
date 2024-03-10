@@ -33,46 +33,6 @@ class RewardFn(abc.ABC):
         and the solved puzzle state."""
 
 
-class DenseRewardFn(RewardFn):
-    """Reward function that returns a dense reward based on
-    the number of correctly placed tiles."""
-
-    def __call__(
-        self,
-        state: State,
-        action: chex.Numeric,
-        next_state: State,
-        solved_puzzle: chex.Array,
-    ) -> chex.Numeric:
-        """
-        Calculates the reward for the given state and action.
-
-        Args:
-            state: The current state.
-            action: The chosen action.
-            next_state: The state resulting from the chosen action.
-            solved_puzzle: What the solved puzzle looks like.
-
-        Returns:
-            The calculated reward.
-        """
-        # get the indexes of where each element in the puzzle should be
-        inds_of_puzzle_pieces = jnp.array(
-            jnp.divmod(next_state.puzzle, next_state.puzzle.shape[-1])
-        )
-        # get the indexes of where each element in the solved puzzle should be
-        inds_of_solved_puzzle_pieces = jnp.indices(solved_puzzle.shape)
-        # calculate the Manhattan distance between the puzzle pieces and the solved puzzle pieces.
-        distance_to_solved = jnp.linalg.norm(
-            inds_of_puzzle_pieces - inds_of_solved_puzzle_pieces, ord=1, axis=0
-        )
-        # max distance a single puzzle piece can be from its solved position
-        max_dist_piece = jnp.sum(jnp.asarray(next_state.puzzle.shape[-2:])) - 2
-        max_dist_all = max_dist_piece * solved_puzzle.size
-
-        return jnp.sum(1 - distance_to_solved / (max_dist_all)).astype(float)
-
-
 class SparseRewardFn(RewardFn):
     """Reward function that provides a sparse reward, only rewarding when the puzzle is solved."""
 
@@ -99,7 +59,7 @@ class SparseRewardFn(RewardFn):
         return jnp.array_equal(next_state.puzzle, solved_puzzle).astype(float)
 
 
-class ImprovedDenseRewardFn(RewardFn):
+class DenseRewardFn(RewardFn):
     """Reward function that provides a dense reward based on
     the difference of correctly placed tiles between states."""
 

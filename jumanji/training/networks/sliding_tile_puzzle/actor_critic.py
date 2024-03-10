@@ -72,10 +72,10 @@ def make_mlp_network(
             [
                 hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
                 jax.nn.relu,
-                # hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
-                # jax.nn.relu,
-                # hk.Conv2D(conv_n_channels, (3, 3)),
-                # jax.nn.relu,
+                hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
+                jax.nn.relu,
+                hk.Conv2D(conv_n_channels, (3, 3), padding="SAME"),
+                jax.nn.relu,
                 hk.Flatten(),
             ]
         )

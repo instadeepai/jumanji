@@ -20,129 +20,89 @@ import jax
 from jax import numpy as jnp
 
 from jumanji.environments.logic.sliding_tile_puzzle.constants import EMPTY_TILE, MOVES
+from jumanji.environments.logic.sliding_tile_puzzle.types import State
 
 
 class Generator(abc.ABC):
+    def __init__(self, grid_size: int):
+        self._grid_size = grid_size
+
     @property
-    @abc.abstractmethod
     def grid_size(self) -> int:
         """Size of the puzzle (n x n grid)."""
+        return self._grid_size
+
+    def make_solved_puzzle(self) -> chex.Array:
+        """Creates a solved Sliding Tile Puzzle.
+
+        Returns:
+            A solved puzzle.
+        """
+        return (
+            jnp.arange(1, self.grid_size**2 + 1)
+            .at[-1]
+            .set(EMPTY_TILE)
+            .reshape((self.grid_size, self.grid_size))
+        )
 
     @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey) -> Tuple[chex.Array, Tuple[int, int]]:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Generate a problem instance.
 
         Args:
             key: jax random key for any stochasticity used in the instance generation process.
 
         Returns:
-            A tuple of a 2D array representing a problem instance and a tuple
-            indicating the position of the empty tile.
+            State of the problem instance.
         """
 
 
-class RandomGenerator(Generator):
-    """A generator for random Sliding Tile Puzzle configurations."""
-
-    def __init__(self, grid_size: int):
-        """Initialize the RandomGenerator.
-
-        Args:
-            grid_size: The size of the puzzle (n x n grid).
-        """
-        self._grid_size = grid_size
-
-    @property
-    def grid_size(self) -> int:
-        return self._grid_size
-
-    def __call__(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
-        """Generate a random Sliding Tile Puzzle configuration.
-
-        Args:
-            key: PRNGKey used for stochasticity in the generation process.
-
-        Returns:
-            A tuple of a 2D array representing a problem instance and a tuple
-            indicating the position of the empty tile.
-        """
-        # Create a list of all tiles
-        tiles = jnp.arange(self._grid_size * self._grid_size)
-
-        # Shuffle the tiles
-        key, subkey = jax.random.split(key)
-        shuffled_tiles = jax.random.permutation(subkey, tiles)
-
-        # Reshape the tiles into a 2D array
-        puzzle = jnp.reshape(shuffled_tiles, (self._grid_size, self._grid_size))
-
-        # Find the position of the empty tile
-        empty_tile_position = jnp.stack(
-            jnp.unravel_index(jnp.argmax(puzzle == EMPTY_TILE), puzzle.shape)
-        )
-
-        return puzzle, empty_tile_position
-
-
-class SolvableSTPGenerator(Generator):
-    """A generator for solvable Sliding Tile Puzzle configurations.
+class RandomWalkGenerator(Generator):
+    """A Sliding Tile Puzzle generator that samples solvable puzzles using a random walk
+    starting from the solved board.
 
     This generator creates puzzle configurations that are guaranteed to be solvable.
-    It starts with a solved configuration
-    and makes a series of valid random moves to shuffle the tiles.
+    It starts with a solved configuration and makes a series of valid random moves to shuffle
+    the tiles.
 
     Args:
         grid_size: The size of the puzzle (n x n grid).
-        num_shuffle_moves: The number of shuffle moves to perform from the solved state.
+        num_random_moves: The number of moves to perform from the solved state.
     """
 
-    def __init__(self, grid_size: int, num_shuffle_moves: int = 100):
-        self._grid_size = grid_size
-        self.num_shuffle_moves = num_shuffle_moves
+    def __init__(self, grid_size: int, num_random_moves: int = 100):
+        super().__init__(grid_size)
+        self.num_random_moves = num_random_moves
+        self._solved_puzzle = self.make_solved_puzzle()
 
-    @property
-    def grid_size(self) -> int:
-        """Returns the size of the puzzle (n x n grid)."""
-        return self._grid_size
-
-    def __call__(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
+    def __call__(self, key: chex.PRNGKey) -> State:
         """Generate a random Sliding Tile Puzzle configuration.
 
         Args:
-            key: PRNGKey used for stochasticity in the generation process.
+            key: PRNGKey used for sampling random actions in the generation process.
 
         Returns:
-            A tuple of a 2D array representing a problem instance and a tuple
-            indicating the position of the empty tile.
+            State of the problem instance.
         """
-        # Start with a solved puzzle
-        puzzle = (
-            jnp.arange(1, self._grid_size**2 + 1)
-            .at[-1]
-            .set(0)
-            .reshape((self._grid_size, self._grid_size))
-        )
-
+        # Start with the solved puzzle
+        puzzle = self._solved_puzzle
         empty_tile_position = jnp.array([self._grid_size - 1, self._grid_size - 1])
 
         # Perform a number of shuffle moves
-        keys = jax.random.split(key, self.num_shuffle_moves)
+        key, moves_key = jax.random.split(key)
+        keys = jax.random.split(moves_key, self.num_random_moves)
         (puzzle, empty_tile_position), _ = jax.lax.scan(
             lambda carry, key: (self._make_random_move(key, *carry), None),
             (puzzle, empty_tile_position),
             keys,
         )
-
-        return puzzle, empty_tile_position
-
-    def _swap_tiles(
-        self, puzzle: chex.Array, pos1: chex.Array, pos2: chex.Array
-    ) -> chex.Array:
-        """Swaps the tiles at the given positions."""
-        temp = puzzle[tuple(pos1)]
-        puzzle = puzzle.at[tuple(pos1)].set(puzzle[tuple(pos2)])
-        puzzle = puzzle.at[tuple(pos2)].set(temp)
-        return puzzle
+        state = State(
+            puzzle=puzzle,
+            empty_tile_position=empty_tile_position,
+            key=key,
+            step_count=jnp.zeros((), jnp.int32),
+        )
+        return state
 
     def _make_random_move(
         self, key: chex.PRNGKey, puzzle: chex.Array, empty_tile_position: chex.Array
@@ -162,3 +122,12 @@ class SolvableSTPGenerator(Generator):
         )
 
         return updated_puzzle, new_empty_tile_position
+
+    def _swap_tiles(
+        self, puzzle: chex.Array, pos1: chex.Array, pos2: chex.Array
+    ) -> chex.Array:
+        """Swaps the tiles at the given positions."""
+        temp = puzzle[tuple(pos1)]
+        puzzle = puzzle.at[tuple(pos1)].set(puzzle[tuple(pos2)])
+        puzzle = puzzle.at[tuple(pos2)].set(temp)
+        return puzzle
