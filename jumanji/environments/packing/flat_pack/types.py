@@ -34,7 +34,7 @@ class Observation(NamedTuple):
 
     current_grid: chex.Array  # (num_rows, num_cols)
     blocks: chex.Array  # (num_blocks, 3, 3)
-    action_mask: chex.Array  # (num_blocks,)
+    action_mask: chex.Array  # (num_blocks, num_rotations, num_rows-3, num_cols-3)
 
 
 @dataclass
