@@ -456,7 +456,7 @@ class FlatPack(Environment[State]):
         )
 
         all_possible_blocks = blocks[block_idxs]
-        rotated_blocks = jax.vmap(rotate_block, in_axes=(0, 0))(
+        rotated_blocks = jax.vmap(rotate_block)(
             all_possible_blocks, rotations
         )
         grids = batch_expand_block_to_board(rotated_blocks, row_coords, col_coords)
