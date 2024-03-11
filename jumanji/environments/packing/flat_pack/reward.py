@@ -80,10 +80,10 @@ class BlockDenseReward(RewardFn):
     """Reward function for the dense reward setting.
 
     This reward will give a normalised reward for each block placed on the grid
-        with each block being equally weighted. This implies that each placed block
-        will have a reward of `1 / num_blocks` and the maximum possible episode return
-        is 1. That is to say that, in the case of this reward, an agent will optimise
-        for placing as many blocks as possible on the grid.
+    with each block being equally weighted. This implies that each placed block
+    will have a reward of `1 / num_blocks` and the maximum possible episode return
+    is 1. That is to say that, in the case of this reward, an agent will optimise
+    for placing as many blocks as possible on the grid.
     """
 
     def __call__(
