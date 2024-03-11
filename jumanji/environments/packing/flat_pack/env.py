@@ -317,10 +317,10 @@ class FlatPack(Environment[State]):
         Returns:
             MultiDiscreteArray (int32) of shape (num_blocks, num_rotations,
             num_rows-2, num_cols-2).
-            - num_blocks: int between 0 and num_blocks - 1 (included).
-            - num_rotations: int between 0 and 3 (included).
-            - max_row_position: int between 0 and num_rows - 3 (included).
-            - max_col_position: int between 0 and num_cols - 3 (included).
+            - num_blocks: int between 0 and num_blocks - 1 (inclusive).
+            - num_rotations: int between 0 and 3 (inclusive).
+            - max_row_position: int between 0 and num_rows - 3 (inclusive).
+            - max_col_position: int between 0 and num_cols - 3 (inclusive).
         """
 
         max_row_position = self.num_rows - 2
