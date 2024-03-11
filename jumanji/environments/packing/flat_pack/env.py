@@ -401,6 +401,7 @@ class FlatPack(Environment[State]):
             Grid of zeroes with values where the block is placed.
         """
 
+        # Make an empty grid for placing the block on.
         grid_with_block = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.float32)
         place_location = (row_coord, col_coord)
 
