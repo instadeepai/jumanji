@@ -361,10 +361,7 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
     """
 
     def __init__(self) -> None:
-        super().__init__(
-            num_row_blocks=2,
-            num_col_blocks=2,
-        )
+        super().__init__(num_row_blocks=2, num_col_blocks=2)
 
     def __call__(self, key: chex.PRNGKey) -> State:
 
