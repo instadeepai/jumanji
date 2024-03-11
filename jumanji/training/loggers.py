@@ -57,6 +57,14 @@ class Logger(AbstractContextManager):
     def upload_checkpoint(self) -> None:
         """Uploads a checkpoint when exiting the logger."""
 
+    def is_loggable(self, value: Any) -> bool:
+        """Returns True if the value is loggable."""
+        if isinstance(value, (float, int)):
+            return True
+        if isinstance(value, (jnp.ndarray, np.ndarray)):
+            return bool(value.ndim == 0)
+        return False
+
     def __enter__(self) -> Logger:
         logging.info("Starting logger.")
         self._variables_enter = self._get_variables()
@@ -134,9 +142,9 @@ class TerminalLogger(Logger):
     def _format_values(self, data: Dict[str, Any]) -> str:
         return " | ".join(
             f"{key.replace('_', ' ').title()}: "
-            f"{(f'{value:.3f}' if isinstance(value, (float, jnp.ndarray)) else f'{value:,}')}"
+            f"{(f'{value:,}' if isinstance(value, int) else f'{value:.3f}')}"
             for key, value in sorted(data.items())
-            if isinstance(value, (float, int, jnp.ndarray))
+            if self.is_loggable(value)
         )
 
     def write(
@@ -167,7 +175,7 @@ class ListLogger(Logger):
         env_steps: Optional[int] = None,
     ) -> None:
         for key, value in data.items():
-            if isinstance(value, (float, int, jnp.ndarray)):
+            if self.is_loggable(value):
                 self.history[key].append(value)
 
 
@@ -193,17 +201,12 @@ class TensorboardLogger(Logger):
             self._env_steps = env_steps
         prefix = label and f"{label}/"
         for key, metric in data.items():
-            if not isinstance(metric, (float, int, jnp.ndarray)):
-                return  # Skip non-numeric values.
-            if np.ndim(metric) == 0:
-                if not np.isnan(metric):
-                    self.writer.add_scalar(
-                        tag=f"{prefix}/{key}",
-                        scalar_value=metric,
-                        global_step=int(self._env_steps),
-                    )
-            else:
-                raise ValueError(f"Expected metric {key} to be a scalar, got {metric}.")
+            if self.is_loggable(metric) and not np.isnan(metric):
+                self.writer.add_scalar(
+                    tag=f"{prefix}/{key}",
+                    scalar_value=metric,
+                    global_step=int(self._env_steps),
+                )
 
     def close(self) -> None:
         self.writer.close()
@@ -236,17 +239,12 @@ class NeptuneLogger(Logger):
             self._env_steps = env_steps
         prefix = label and f"{label}/"
         for key, metric in data.items():
-            if not isinstance(metric, (float, int, jnp.ndarray)):
-                return  # Skip non-numeric values.
-            if np.ndim(metric) == 0:
-                if not np.isnan(metric):
-                    self.run[f"{prefix}/{key}"].log(
-                        float(metric),
-                        step=int(self._env_steps),
-                        wait=True,
-                    )
-            else:
-                raise ValueError(f"Expected metric {key} to be a scalar, got {metric}.")
+            if self.is_loggable(metric) and not np.isnan(metric):
+                self.run[f"{prefix}/{key}"].log(
+                    float(metric),
+                    step=int(self._env_steps),
+                    wait=True,
+                )
 
     def close(self) -> None:
         self.run.stop()
