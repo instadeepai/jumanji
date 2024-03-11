@@ -356,8 +356,8 @@ class FlatPack(Environment[State]):
         grid_mask_block: chex.Array,
     ) -> bool:
         """Checks if the action is legal by considering the action mask and the
-            current grid. An action is legal if the action mask is True for that action
-            and the there is no overlap with blocks already placed.
+        current grid. An action is legal if the action mask is True for that action
+        and the there is no overlap with blocks already placed.
 
         Args:
             action: action taken.
