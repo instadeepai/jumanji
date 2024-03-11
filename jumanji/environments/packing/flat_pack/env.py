@@ -335,7 +335,7 @@ class FlatPack(Environment[State]):
 
     def _is_done(self, state: State) -> bool:
         """Checks if the environment is done by checking whether the number of
-            steps is equal to the number of blocks.
+        steps is equal to the number of blocks.
 
         Args:
             state: current state of the environment.
