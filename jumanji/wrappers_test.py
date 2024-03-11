@@ -511,7 +511,7 @@ class TestAutoResetWrapper:
     def fake_auto_reset_environment(
         self, fake_environment: Environment
     ) -> AutoResetWrapper:
-        return AutoResetWrapper(fake_environment)
+        return AutoResetWrapper(fake_environment, next_obs_in_extras=True)
 
     @pytest.fixture
     def fake_state_and_timestep(
@@ -602,7 +602,7 @@ class TestVmapAutoResetWrapper:
     def fake_vmap_auto_reset_environment(
         self, fake_environment: FakeEnvironment
     ) -> VmapAutoResetWrapper:
-        return VmapAutoResetWrapper(fake_environment)
+        return VmapAutoResetWrapper(fake_environment, next_obs_in_extras=True)
 
     @pytest.fixture
     def action(
