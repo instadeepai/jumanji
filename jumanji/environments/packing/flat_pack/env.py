@@ -36,9 +36,10 @@ from jumanji.viewer import Viewer
 
 class FlatPack(Environment[State]):
 
-    """A FlatPack solving environment with a configurable number of row and column blocks.
-        Here the goal of an agent is to completely fill an empty grid by placing all
-        available blocks.
+    """The FlatPack environment with a configurable number of row and column blocks.
+    Here the goal of an agent is to completely fill an empty grid by placing all
+    available blocks. It can be thought of as 2D version of the `BinPack` 
+    environment.
 
     - observation: `Observation`
         - current_grid: jax array (float) of shape (num_rows, num_cols) with the
