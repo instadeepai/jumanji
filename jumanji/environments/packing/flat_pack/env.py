@@ -452,7 +452,7 @@ class FlatPack(Environment[State]):
         """
 
         batch_expand_block_to_board = jax.vmap(
-            self._expand_block_to_grid, in_axes=(0, 0, 0)
+            self._expand_block_to_grid
         )
 
         all_possible_blocks = blocks[block_idxs]
