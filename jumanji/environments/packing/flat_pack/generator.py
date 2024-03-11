@@ -62,19 +62,6 @@ class InstanceGenerator(abc.ABC):
 class RandomFlatPackGenerator(InstanceGenerator):
     """Random flat_pack generator. This generator will generate a random flat_pack grid."""
 
-    def __init__(
-        self,
-        num_row_blocks: int,
-        num_col_blocks: int,
-    ):
-        """Initialises a random flat_pack generator.
-        Args:
-
-            num_row_blocks: Number of row blocks in flat_pack grid.
-            num_col_blocks: Number of column blocks in flat_pack grid.
-        """
-        super().__init__(num_row_blocks, num_col_blocks)
-
     def _fill_grid_columns(
         self, carry: Tuple[chex.Array, int], arr_value: int
     ) -> Tuple[Tuple[chex.Array, int], int]:
