@@ -238,8 +238,8 @@ class RandomFlatPackGenerator(InstanceGenerator):
         grid_col_dim = compute_grid_dim(self.num_col_blocks)
 
         # Get indices of grid where interlocks will be.
-        row_nibs_idxs = get_significant_idxs(grid_row_dim)
-        col_nibs_idxs = get_significant_idxs(grid_col_dim)
+        row_interlock_idxs = get_significant_idxs(grid_row_dim)
+        col_interlock_idxs = get_significant_idxs(grid_col_dim)
 
         # Create an empty grid.
         grid = jnp.ones((grid_row_dim, grid_col_dim))
@@ -248,7 +248,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
         (grid, _), _ = jax.lax.scan(
             f=self._fill_grid_columns,
             init=(grid, 1),
-            xs=col_nibs_idxs,
+            xs=col_interlock_idxs,
         )
 
         # Fill grid rows with block numbers
@@ -259,16 +259,16 @@ class RandomFlatPackGenerator(InstanceGenerator):
                 self.num_col_blocks,
                 self.num_col_blocks,
             ),
-            xs=row_nibs_idxs,
+            xs=row_interlock_idxs,
         )
 
         # Create block interlocks at relevant rows and columns.
         (grid, key), _ = jax.lax.scan(
-            f=self._select_col_interlocks, init=(grid, key), xs=col_nibs_idxs
+            f=self._select_col_interlocks, init=(grid, key), xs=col_interlock_idxs
         )
 
         (solved_grid, key), _ = jax.lax.scan(
-            f=self._select_row_interlocks, init=(grid, key), xs=row_nibs_idxs
+            f=self._select_row_interlocks, init=(grid, key), xs=row_interlock_idxs
         )
 
         # Extract blocks from the filled grid
