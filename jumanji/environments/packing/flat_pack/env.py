@@ -378,15 +378,9 @@ class FlatPack(Environment[State]):
         return legal
 
     def _get_ones_like_expanded_block(self, grid_block: chex.Array) -> chex.Array:
-        """Makes a grid of zeroes with ones where the block is placed.
+        """Makes a grid of zeroes with ones where the block is placed."""
 
-        Args:
-            grid_with_ones: block placed on a grid of zeroes.
-        """
-
-        grid_with_ones = jnp.where(grid_block != 0, 1, 0)
-
-        return grid_with_ones
+        return (grid_block != 0).astype(jnp.int32)
 
     def _expand_block_to_grid(
         self,
