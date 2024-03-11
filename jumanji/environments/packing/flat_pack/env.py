@@ -38,11 +38,11 @@ class FlatPack(Environment[State]):
 
     """The FlatPack environment with a configurable number of row and column blocks.
     Here the goal of an agent is to completely fill an empty grid by placing all
-    available blocks. It can be thought of as 2D version of the `BinPack` 
+    available blocks. It can be thought of as 2D version of the `BinPack`
     environment.
 
     - observation: `Observation`
-        - current_grid: jax array (float) of shape (num_rows, num_cols) with the
+        - grid: jax array (float) of shape (num_rows, num_cols) with the
             current state of the grid.
         - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
             be placed on the grid. Here each block is a 2D array with shape (3, 3).
@@ -78,7 +78,7 @@ class FlatPack(Environment[State]):
             for each block on the grid.
         - placed_blocks: jax array (bool) of shape (num_blocks,) showing which blocks
             have been placed on the grid.
-        - current_grid: jax array (float) of shape (num_rows, num_cols) with the
+        - grid: jax array (float) of shape (num_rows, num_cols) with the
             current state of the grid.
         - step_count: jax array (float) of shape () with the number of steps taken
             in the environment.
@@ -182,14 +182,14 @@ class FlatPack(Environment[State]):
         grid_mask_block = self._get_ones_like_expanded_block(grid_block=grid_block)
 
         action_is_legal = self._is_legal_action(
-            action, state.current_grid, state.placed_blocks, grid_mask_block
+            action, state.grid, state.placed_blocks, grid_mask_block
         )
 
         # If the action is legal create a new grid and update the placed blocks array
         new_grid = jax.lax.cond(
             action_is_legal,
-            lambda: state.current_grid + grid_block,
-            lambda: state.current_grid,
+            lambda: state.grid + grid_block,
+            lambda: state.grid,
         )
         placed_blocks = jax.lax.cond(
             action_is_legal,
@@ -200,7 +200,7 @@ class FlatPack(Environment[State]):
         new_action_mask = self._make_action_mask(new_grid, state.blocks, placed_blocks)
 
         next_state = State(
-            current_grid=new_grid,
+            grid=new_grid,
             blocks=state.blocks,
             action_mask=new_action_mask,
             num_blocks=state.num_blocks,
@@ -268,18 +268,18 @@ class FlatPack(Environment[State]):
 
         Returns:
             Spec for each filed in the observation:
-            - current_grid: BoundedArray (float) of shape (num_rows, num_cols).
+            - grid: BoundedArray (float) of shape (num_rows, num_cols).
             - blocks: BoundedArray (float) of shape (num_blocks, 3, 3).
             - action_mask: BoundedArray (bool) of shape
                 (num_blocks, 4, num_rows-2, num_cols-2).
         """
 
-        current_grid = specs.BoundedArray(
+        grid = specs.BoundedArray(
             shape=(self.num_rows, self.num_cols),
             minimum=0,
             maximum=self.num_blocks,
             dtype=jnp.float32,
-            name="current_grid",
+            name="grid",
         )
 
         blocks = specs.BoundedArray(
@@ -306,7 +306,7 @@ class FlatPack(Environment[State]):
         return specs.Spec(
             Observation,
             "ObservationSpec",
-            current_grid=current_grid,
+            grid=grid,
             blocks=blocks,
             action_mask=action_mask,
         )
@@ -351,7 +351,7 @@ class FlatPack(Environment[State]):
     def _is_legal_action(
         self,
         action: chex.Numeric,
-        current_grid: chex.Array,
+        grid: chex.Array,
         placed_blocks: chex.Array,
         grid_mask_block: chex.Array,
     ) -> bool:
@@ -361,7 +361,7 @@ class FlatPack(Environment[State]):
 
         Args:
             action: action taken.
-            current_grid: current state of the grid.
+            grid: current state of the grid.
             placed_blocks: array indicating which blocks have been placed.
             grid_mask_block: grid with ones where current block should be placed.
 
@@ -371,7 +371,7 @@ class FlatPack(Environment[State]):
 
         block_idx, _, _, _ = action
 
-        placed_mask = (current_grid > 0.0) + grid_mask_block
+        placed_mask = (grid > 0.0) + grid_mask_block
 
         legal: bool = (~placed_blocks[block_idx]) & (jnp.max(placed_mask) <= 1)
 
@@ -427,7 +427,7 @@ class FlatPack(Environment[State]):
         """
 
         return Observation(
-            current_grid=state.current_grid,
+            grid=state.grid,
             action_mask=state.action_mask,
             blocks=state.blocks,
         )
@@ -451,14 +451,10 @@ class FlatPack(Environment[State]):
             col_coords: array of column coordinates.
         """
 
-        batch_expand_block_to_board = jax.vmap(
-            self._expand_block_to_grid
-        )
+        batch_expand_block_to_board = jax.vmap(self._expand_block_to_grid)
 
         all_possible_blocks = blocks[block_idxs]
-        rotated_blocks = jax.vmap(rotate_block)(
-            all_possible_blocks, rotations
-        )
+        rotated_blocks = jax.vmap(rotate_block)(all_possible_blocks, rotations)
         grids = batch_expand_block_to_board(rotated_blocks, row_coords, col_coords)
 
         batch_get_ones_like_expanded_block = jax.vmap(
@@ -468,12 +464,12 @@ class FlatPack(Environment[State]):
         return grids
 
     def _make_action_mask(
-        self, current_grid: chex.Array, blocks: chex.Array, placed_blocks: chex.Array
+        self, grid: chex.Array, blocks: chex.Array, placed_blocks: chex.Array
     ) -> chex.Array:
         """Create a mask of possible actions based on the current state of the grid.
 
         Args:
-            current_grid: current state of the grid.
+            grid: current state of the grid.
             blocks: array of all blocks.
             placed_blocks: array of blocks that have already been placed.
         """
@@ -511,7 +507,7 @@ class FlatPack(Environment[State]):
 
         legal_actions = batch_is_legal_action(
             all_actions,
-            current_grid,
+            grid,
             placed_blocks,
             grid_mask_pieces,
         )

@@ -51,7 +51,7 @@ def state_with_no_blocks_placed(
         blocks=blocks,
         action_mask=jnp.ones((4, 4, 2, 2), dtype=bool),
         placed_blocks=jnp.zeros(4, dtype=bool),
-        current_grid=jnp.zeros_like(solved_grid),
+        grid=jnp.zeros_like(solved_grid),
         step_count=0,
         key=key,
     )
@@ -78,7 +78,7 @@ def state_with_block_one_placed(
                 False,
             ]
         ),
-        current_grid=grid_with_block_one_placed,
+        grid=grid_with_block_one_placed,
         step_count=0,
         key=new_key,
         blocks=blocks,
@@ -97,7 +97,7 @@ def state_needing_only_block_one(
 
     key, new_key = jax.random.split(key)
 
-    current_grid = solved_grid - grid_with_block_one_placed
+    grid = solved_grid - grid_with_block_one_placed
 
     return State(
         num_blocks=4,
@@ -110,7 +110,7 @@ def state_needing_only_block_one(
                 False,
             ]
         ),
-        current_grid=current_grid,
+        grid=grid,
         step_count=3,
         blocks=blocks,
         key=new_key,
@@ -138,7 +138,7 @@ def solved_state(
                 True,
             ]
         ),
-        current_grid=solved_grid,
+        grid=solved_grid,
         step_count=4,
         blocks=blocks,
         key=new_key,

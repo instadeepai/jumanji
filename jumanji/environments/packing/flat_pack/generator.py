@@ -304,7 +304,7 @@ class RandomFlatPackGenerator(InstanceGenerator):
             action_mask=jnp.ones(
                 (num_blocks, 4, grid_row_dim - 2, grid_col_dim - 2), dtype=bool
             ),
-            current_grid=jnp.zeros_like(solved_grid),
+            grid=jnp.zeros_like(solved_grid),
             step_count=0,
             key=key,
             placed_blocks=jnp.zeros(num_blocks, dtype=bool),
@@ -346,7 +346,7 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
 
         return State(
             blocks=blocks,
-            current_grid=jnp.zeros_like(solved_grid),
+            grid=jnp.zeros_like(solved_grid),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
             num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
@@ -393,7 +393,7 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
             num_blocks=jnp.int32(4),
             key=jax.random.PRNGKey(0),
             action_mask=jnp.ones((4, 4, 3, 3), dtype=bool),
-            current_grid=jnp.zeros_like(solved_grid),
+            grid=jnp.zeros_like(solved_grid),
             step_count=0,
             placed_blocks=jnp.zeros(4, dtype=bool),
         )

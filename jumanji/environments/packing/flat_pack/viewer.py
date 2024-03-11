@@ -74,7 +74,7 @@ class FlatPackViewer(Viewer):
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
-        self._add_grid_image(state.current_grid, ax)
+        self._add_grid_image(state.grid, ax)
         return self._display(fig)
 
     def animate(
@@ -102,7 +102,7 @@ class FlatPackViewer(Viewer):
         def make_frame(state_index: int) -> None:
             ax.clear()
             state = states[state_index]
-            self._add_grid_image(state.current_grid, ax)
+            self._add_grid_image(state.grid, ax)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(

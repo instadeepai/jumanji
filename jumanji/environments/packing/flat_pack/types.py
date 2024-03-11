@@ -24,7 +24,7 @@ else:
 
 class Observation(NamedTuple):
     """
-    current_grid: 2D array with the current state of grid.
+    grid: 2D array with the current state of grid.
     blocks: 3D array with the blocks to be placed on the board. Here each block is a
         2D array with shape (3, 3).
     action_mask: 4D array showing where blocks can be placed on the grid.
@@ -32,7 +32,7 @@ class Observation(NamedTuple):
         for each block on the grid.
     """
 
-    current_grid: chex.Array  # (num_rows, num_cols)
+    grid: chex.Array  # (num_rows, num_cols)
     blocks: chex.Array  # (num_blocks, 3, 3)
     action_mask: chex.Array  # (num_blocks, num_rotations, num_rows-3, num_cols-3)
 
@@ -40,6 +40,7 @@ class Observation(NamedTuple):
 @dataclass
 class State:
     """
+    grid: 2D array with the current state of grid.
     num_blocks: number of blocks in the full grid.
     blocks: 3D array with the blocks to be placed on the board. Here each block is a
         2D array with shape (3, 3).
@@ -47,15 +48,14 @@ class State:
         this mask includes all possible rotations and possible placement locations
         for each block on the grid.
     placed_blocks: 1D boolean array showing which blocks have been placed on the board.
-    current_grid: 2D array with the current state of grid.
     step_count: number of steps taken in the environment.
     key: random key used for board generation.
     """
 
+    grid: chex.Array  # (num_rows, num_cols)
     num_blocks: chex.Numeric  # ()
     blocks: chex.Array  # (num_blocks, 3, 3)
     action_mask: chex.Array  # (num_blocks, num_rotations, num_rows-3, num_cols-3)
     placed_blocks: chex.Array  # (num_blocks,)
-    current_grid: chex.Array  # (num_rows, num_cols)
     step_count: chex.Numeric  # ()
     key: chex.PRNGKey  # (2,)

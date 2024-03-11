@@ -154,7 +154,7 @@ def test_flat_pack__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     state_1, timestep_1 = step_fn(state_0, action_0)
 
     # Check that the state has changed and that the step has incremented.
-    assert not jnp.array_equal(state_1.current_grid, state_0.current_grid)
+    assert not jnp.array_equal(state_1.grid, state_0.grid)
     assert state_1.step_count == state_0.step_count + 1
     assert isinstance(timestep_1, TimeStep)
 
@@ -169,7 +169,7 @@ def test_flat_pack__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     assert_is_jax_array_tree(state_2)
 
     # Check that the state has changed and that the step has incremented.
-    assert not jnp.array_equal(state_2.current_grid, state_1.current_grid)
+    assert not jnp.array_equal(state_2.grid, state_1.grid)
     assert state_2.step_count == state_1.step_count + 1
     assert isinstance(timestep_2, TimeStep)
 
@@ -242,34 +242,34 @@ def test_flat_pack__completed_episode_with_dense_reward(
     assert timestep.step_type == StepType.FIRST
 
     # Check that the reset board contains only zeros
-    assert jnp.all(state.current_grid == 0)
+    assert jnp.all(state.grid == 0)
     assert jnp.all(state.action_mask)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([0, 0, 0, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_grid == simple_env_grid_state_1)
+    assert jnp.all(state.grid == simple_env_grid_state_1)
     assert timestep.reward == 6.0 / 25.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 0, 0, 2]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_grid == simple_env_grid_state_2)
+    assert jnp.all(state.grid == simple_env_grid_state_2)
     assert timestep.reward == 6.0 / 25.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 0, 2, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_grid == simple_env_grid_state_3)
+    assert jnp.all(state.grid == simple_env_grid_state_3)
     assert timestep.reward == 6.0 / 25.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
-    assert jnp.all(state.current_grid == simple_env_grid_state_4)
+    assert jnp.all(state.grid == simple_env_grid_state_4)
     assert timestep.reward == 7.0 / 25.0
     assert jnp.all(~state.action_mask)
 
@@ -304,13 +304,13 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     assert timestep.step_type == StepType.FIRST
 
     # Check that the reset board contains only zeros
-    assert jnp.all(state.current_grid == 0)
+    assert jnp.all(state.grid == 0)
     assert jnp.all(state.action_mask)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([0, 2, 0, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_grid == simple_env_grid_state_1)
+    assert jnp.all(state.grid == simple_env_grid_state_1)
     assert timestep.reward == 0.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
@@ -318,20 +318,20 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     state, timestep = step_fn(state, jnp.array([1, 2, 0, 2]))
     assert timestep.step_type == StepType.MID
 
-    assert jnp.all(state.current_grid == simple_env_grid_state_2)
+    assert jnp.all(state.grid == simple_env_grid_state_2)
     assert timestep.reward == 0.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 1, 2, 0]))
     assert timestep.step_type == StepType.MID
-    assert jnp.all(state.current_grid == simple_env_grid_state_3)
+    assert jnp.all(state.grid == simple_env_grid_state_3)
     assert timestep.reward == 0.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
-    assert jnp.all(state.current_grid == simple_env_grid_state_4)
+    assert jnp.all(state.grid == simple_env_grid_state_4)
     assert timestep.reward == 1.0
     assert jnp.all(~state.action_mask)

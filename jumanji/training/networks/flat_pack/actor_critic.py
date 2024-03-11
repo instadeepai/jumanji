@@ -152,7 +152,7 @@ class FlatPackTorso(hk.Module):
 
     def __call__(self, observation: Observation) -> Tuple[chex.Array, chex.Array]:
         # observation.blocks (B, num_blocks, 3, 3)
-        # observation.current_grid (B, num_rows, num_cols)
+        # observation.grid (B, num_rows, num_cols)
 
         # Flatten the blocks
         flattened_blocks = jnp.reshape(
@@ -167,7 +167,7 @@ class FlatPackTorso(hk.Module):
 
         unet = UNet(hidden_size=self.hidden_size, model_size=self.model_size)
         grid_conv_encoding, grid_encoding = unet(
-            observation.current_grid
+            observation.grid
         )  # (B, model_size), (B, num_rows-2, num_cols-2, hidden_size)
 
         for block_id in range(self.num_transformer_layers):

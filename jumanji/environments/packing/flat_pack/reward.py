@@ -142,9 +142,7 @@ class SparseReward(RewardFn):
         del action
         del state
 
-        completed_correctly = (
-            is_done & jnp.all(next_state.current_grid != 0.0) & is_valid
-        )
+        completed_correctly = is_done & jnp.all(next_state.grid != 0.0) & is_valid
 
         reward = jax.lax.cond(
             completed_correctly,
