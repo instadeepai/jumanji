@@ -29,9 +29,8 @@ from jumanji.environments.logic.sliding_tile_puzzle.generator import (
     RandomWalkGenerator,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.reward import (
-    RewardFn,
-    SparseRewardFn,
     DenseRewardFn,
+    RewardFn,
 )
 from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, State
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
@@ -93,7 +92,7 @@ class SlidingTilePuzzle(Environment[State]):
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomWalkGenerator(
-            grid_size=3, num_random_moves=100
+            grid_size=5, num_random_moves=300
         )
         self.reward_fn = reward_fn or DenseRewardFn()
 
