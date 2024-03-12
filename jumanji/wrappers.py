@@ -404,6 +404,7 @@ class AutoResetWrapper(Wrapper):
             self._maybe_add_obs_to_extras = add_obs_to_extras
         else:
             self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
+
     def _auto_reset(
         self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
@@ -433,6 +434,7 @@ class AutoResetWrapper(Wrapper):
         state, timestep = super().reset(key)
         timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
+
     def step(
         self, state: State, action: chex.Array
     ) -> Tuple[State, TimeStep[Observation]]:
@@ -462,21 +464,6 @@ class VmapAutoResetWrapper(Wrapper):
         within the batch because they have terminated).
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
-
-    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
-        """Wrap an environment to vmap it and automatically reset it when the episode terminates.
-
-        Args:
-            env: the environment to wrap.
-            next_obs_in_extras: whether to store the next observation in the extras of the
-                terminal timestep. This is useful for e.g. truncation.
-        """
-        super().__init__(env)
-        self.next_obs_in_extras = next_obs_in_extras
-        if next_obs_in_extras:
-            self._maybe_add_obs_to_extras = add_obs_to_extras
-        else:
-            self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
 
     def __init__(self, env: Environment, next_obs_in_extras: bool = False):
         """Wrap an environment to vmap it and automatically reset it when the episode terminates.

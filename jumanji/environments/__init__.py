@@ -14,7 +14,14 @@
 
 import sys
 
-from jumanji.environments.logic import game_2048, graph_coloring, minesweeper, rubiks_cube, sliding_tile_puzzle, sudoku
+from jumanji.environments.logic import (
+    game_2048,
+    graph_coloring,
+    minesweeper,
+    rubiks_cube,
+    sliding_tile_puzzle,
+    sudoku,
+)
 from jumanji.environments.logic.game_2048.env import Game2048
 from jumanji.environments.logic.graph_coloring.env import GraphColoring
 from jumanji.environments.logic.minesweeper.env import Minesweeper
