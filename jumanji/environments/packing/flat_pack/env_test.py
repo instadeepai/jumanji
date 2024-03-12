@@ -215,7 +215,7 @@ def test_flat_pack__expand_block_to_grid(
     assert jnp.array_equal(expanded_grid_with_block, expected_expanded_grid)
 
 
-def test_flat_pack__completed_episode_with_dense_reward(
+def test_flat_pack__completed_episode_with_cell_dense_reward(
     key: chex.PRNGKey,
     simple_env_grid_state_1: chex.Array,
     simple_env_grid_state_2: chex.Array,
@@ -226,7 +226,7 @@ def test_flat_pack__completed_episode_with_dense_reward(
     simple_env_placed_blocks_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the FlatPack environment
-    with a dense reward until completion. It will check that the reward is
+    with a cell dense reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
     done.
     """
@@ -277,7 +277,7 @@ def test_flat_pack__completed_episode_with_dense_reward(
     assert jnp.all(~state.action_mask)
 
 
-def test_flat_pack__completed_episode_with_sparse_reward(
+def test_flat_pack__completed_episode_with_sparse_block_dense_reward(
     key: chex.PRNGKey,
     simple_env_grid_state_1: chex.Array,
     simple_env_grid_state_2: chex.Array,
@@ -288,7 +288,7 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     simple_env_placed_blocks_3: chex.Array,
 ) -> None:
     """This test will step a simplified version of the FlatPack environment
-    with a sparse reward until completion. It will check that the reward is
+    with a block dense reward until completion. It will check that the reward is
     correctly computed and that the environment transitions as expected until
     done.
     """
