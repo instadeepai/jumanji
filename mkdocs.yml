@@ -25,6 +25,7 @@ nav:
           - Sudoku: environments/sudoku.md
       - Packing:
           - BinPack: environments/bin_pack.md
+          - FlatPack: environments/flat_pack.md
           - JobShop: environments/job_shop.md
           - Knapsack: environments/knapsack.md
           - Tetris: environments/tetris.md
@@ -56,6 +57,7 @@ nav:
               - Sudoku: api/environments/sudoku.md
           - Packing:
               - BinPack: api/environments/bin_pack.md
+              - FlatPack: api/environments/flat_pack.md
               - JobShop: api/environments/job_shop.md
               - Knapsack: api/environments/knapsack.md
               - Tetris: api/environments/tetris.md
