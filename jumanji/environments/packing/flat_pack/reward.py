@@ -26,7 +26,7 @@ class RewardFn(abc.ABC):
     def __call__(
         self,
         state: State,
-        action: chex.Numeric,
+        placed_block: chex.Numeric,
         next_state: State,
         is_valid: bool,
         is_done: bool,
@@ -48,28 +48,25 @@ class CellDenseReward(RewardFn):
     def __call__(
         self,
         state: State,
-        action: chex.Numeric,
+        placed_block: chex.Numeric,
         next_state: State,
         is_valid: bool,
         is_done: bool,
     ) -> chex.Numeric:
         """Compute the reward based on the current state, the chosen action,
         whether the action is valid and whether the episode is terminated.
-
-        Note here, that the action taken is not the raw action received from the
-        agent, but the block the agent opted to place on the grid.
         """
 
         del is_done
         del next_state
         del state
 
-        action_ones = action != 0.0
-        num_rows, num_cols = action_ones.shape
+        num_rows, num_cols = placed_block.shape
 
         reward = jax.lax.cond(
             is_valid,
-            lambda: jnp.sum(action_ones, dtype=jnp.float32) / (num_rows * num_cols),
+            lambda: jnp.sum(placed_block != 0.0, dtype=jnp.float32)
+            / (num_rows * num_cols),
             lambda: jnp.float32(0.0),
         )
 
@@ -89,21 +86,18 @@ class BlockDenseReward(RewardFn):
     def __call__(
         self,
         state: State,
-        action: chex.Numeric,
+        placed_block: chex.Numeric,
         next_state: State,
         is_valid: bool,
         is_done: bool,
     ) -> chex.Numeric:
         """Compute the reward based on the current state, the chosen action,
         whether the action is valid and whether the episode is terminated.
-
-        Note here, that the action taken is not the raw action received from the
-        agent, but the block the agent opted to place on the grid.
         """
 
         del is_done
         del next_state
-        del action
+        del placed_block
 
         num_blocks = state.num_blocks
         del state

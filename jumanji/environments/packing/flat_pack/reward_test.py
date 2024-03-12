@@ -170,7 +170,7 @@ def test_cell_dense_reward(
     # Test placing block one completely correctly
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
+        placed_block=block_one_placed_at_0_0,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -180,7 +180,7 @@ def test_cell_dense_reward(
     # Test placing block one partially correct
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_1_1,
+        placed_block=block_one_placed_at_1_1,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -190,7 +190,7 @@ def test_cell_dense_reward(
     # Test placing a completely incorrect block
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_2_2,
+        placed_block=block_one_placed_at_2_2,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -200,7 +200,7 @@ def test_cell_dense_reward(
     # Test invalid action returns 0 reward.
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
+        placed_block=block_one_placed_at_0_0,
         is_valid=False,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -221,7 +221,7 @@ def test_block_dense_reward(
     # Test placing block one completely correctly
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
+        placed_block=block_one_placed_at_0_0,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -231,7 +231,7 @@ def test_block_dense_reward(
     # Test placing block one partially correct
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_1_1,
+        placed_block=block_one_placed_at_1_1,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -241,7 +241,7 @@ def test_block_dense_reward(
     # Test placing a completely incorrect block
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_2_2,
+        placed_block=block_one_placed_at_2_2,
         is_valid=True,
         is_done=False,
         next_state=state_with_block_one_placed,
@@ -251,7 +251,7 @@ def test_block_dense_reward(
     # Test invalid action returns 0 reward.
     reward = dense_reward(
         state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
+        placed_block=block_one_placed_at_0_0,
         is_valid=False,
         is_done=False,
         next_state=state_with_block_one_placed,
