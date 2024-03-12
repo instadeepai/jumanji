@@ -30,6 +30,8 @@ The observation in the Sliding Tile Puzzle game includes information about the p
 
 - `action_mask`: jax array (bool) of shape `(4,)`, indicating which actions are valid in the current state of the environment. The actions include moving the empty tile up, right, down, or left. For example, an action mask `[True, False, True, False]` means that the valid actions are to move the empty tile upward or downward.
 
+- `step_count`: jax array (int32) of shape `()`, current number of steps in the episode.
+
 ## Action
 
 The action space is a `DiscreteArray` of integer values in `[0, 1, 2, 3]`. Specifically, these four actions correspond to moving the empty tile: up (0), right (1), down (2), or left (3).
