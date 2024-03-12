@@ -23,7 +23,10 @@ from jumanji.environments.packing.flat_pack.generator import (
     ToyFlatPackGeneratorNoRotation,
     ToyFlatPackGeneratorWithRotation,
 )
-from jumanji.environments.packing.flat_pack.reward import CellDenseReward, SparseReward
+from jumanji.environments.packing.flat_pack.reward import (
+    BlockDenseReward,
+    CellDenseReward,
+)
 from jumanji.environments.packing.flat_pack.types import State
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke
 from jumanji.testing.pytrees import assert_is_jax_array_tree
@@ -292,7 +295,7 @@ def test_flat_pack__completed_episode_with_sparse_reward(
 
     simple_env = FlatPack(
         generator=ToyFlatPackGeneratorWithRotation(),
-        reward_fn=SparseReward(),
+        reward_fn=BlockDenseReward(),
     )
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(simple_env.step, n=1))
@@ -311,7 +314,7 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     state, timestep = step_fn(state, jnp.array([0, 2, 0, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_1)
-    assert timestep.reward == 0.0
+    assert timestep.reward == 1.0 / 4.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
@@ -319,19 +322,19 @@ def test_flat_pack__completed_episode_with_sparse_reward(
     assert timestep.step_type == StepType.MID
 
     assert jnp.all(state.grid == simple_env_grid_state_2)
-    assert timestep.reward == 0.0
+    assert timestep.reward == 1.0 / 4.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 1, 2, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_3)
-    assert timestep.reward == 0.0
+    assert timestep.reward == 1.0 / 4.0
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
     assert jnp.all(state.grid == simple_env_grid_state_4)
-    assert timestep.reward == 1.0
+    assert timestep.reward == 1.0 / 4.0
     assert jnp.all(~state.action_mask)

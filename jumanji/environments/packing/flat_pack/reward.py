@@ -115,39 +115,3 @@ class BlockDenseReward(RewardFn):
         )
 
         return reward
-
-
-class SparseReward(RewardFn):
-    """Reward function for the sparse reward setting.
-
-    This reward will return 0 at each timestep except for when all possible blocks have been
-        placed on the grid in which case it will return 1.
-    """
-
-    def __call__(
-        self,
-        state: State,
-        action: chex.Numeric,
-        next_state: State,
-        is_valid: bool,
-        is_done: bool,
-    ) -> chex.Numeric:
-        """Compute the reward based on the current state, the chosen action,
-        the next state, whether the action is valid and whether the episode is terminated.
-
-        Note here, that the action taken is not the raw action received from the
-        agent, but the block the agent opted to place on the grid.
-        """
-
-        del action
-        del state
-
-        completed_correctly = is_done & jnp.all(next_state.grid != 0.0) & is_valid
-
-        reward = jax.lax.cond(
-            completed_correctly,
-            lambda: jnp.float32(1.0),
-            lambda: jnp.float32(0.0),
-        )
-
-        return reward

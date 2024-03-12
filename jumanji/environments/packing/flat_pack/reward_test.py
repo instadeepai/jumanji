@@ -20,7 +20,6 @@ import pytest
 from jumanji.environments.packing.flat_pack.reward import (
     BlockDenseReward,
     CellDenseReward,
-    SparseReward,
 )
 from jumanji.environments.packing.flat_pack.types import State
 
@@ -258,45 +257,3 @@ def test_block_dense_reward(
         next_state=state_with_block_one_placed,
     )
     assert reward == 0.0
-
-
-def test_sparse_reward(
-    state_with_no_blocks_placed: State,
-    state_with_block_one_placed: State,
-    solved_state: State,
-    state_needing_only_block_one: State,
-    block_one_placed_at_0_0: chex.Array,
-) -> None:
-
-    sparse_reward = jax.jit(SparseReward())
-
-    # Test that a intermediate step returns 0 reward
-    reward = sparse_reward(
-        state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
-        next_state=state_with_block_one_placed,
-        is_valid=True,
-        is_done=False,
-    )
-    assert reward == 0.0
-
-    # Test that having `is_done` set to true does not automatically
-    # give a reward of 1.
-    reward = sparse_reward(
-        state=state_with_no_blocks_placed,
-        action=block_one_placed_at_0_0,
-        next_state=state_with_block_one_placed,
-        is_valid=True,
-        is_done=True,
-    )
-    assert reward == 0.0
-
-    # Test that a final correctly placed block gives 1 reward.
-    reward = sparse_reward(
-        state=state_needing_only_block_one,
-        action=block_one_placed_at_0_0,
-        next_state=solved_state,
-        is_valid=True,
-        is_done=True,
-    )
-    assert reward == 1.0
