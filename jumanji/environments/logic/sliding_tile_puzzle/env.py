@@ -92,7 +92,7 @@ class SlidingTilePuzzle(Environment[State]):
             viewer: environment viewer for rendering.
         """
         self.generator = generator or RandomWalkGenerator(
-            grid_size=5, num_random_moves=300
+            grid_size=5, num_random_moves=200
         )
         self.reward_fn = reward_fn or DenseRewardFn()
 

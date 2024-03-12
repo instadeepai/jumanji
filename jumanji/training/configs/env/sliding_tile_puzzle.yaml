@@ -2,15 +2,15 @@ name: sliding_tile_puzzle
 registered_version: SlidingTilePuzzle-v0
 
 network:
-    num_channels: 16
-    policy_layers: [64, 64]
-    value_layers: [128, 128]
+    num_channels: 32
+    policy_layers: [128, 128]
+    value_layers: [256, 256]
 
 training:
-    num_epochs: 500
+    num_epochs: 400
     num_learner_steps_per_epoch: 100
     n_steps: 30
-    total_batch_size: 64
+    total_batch_size: 256
 
 evaluation:
     eval_total_batch_size: 512
