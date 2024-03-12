@@ -179,11 +179,8 @@ class FlatPack(Environment[State]):
         chosen_block = rotate_block(chosen_block, rotation)
 
         grid_block = self._expand_block_to_grid(chosen_block, row_idx, col_idx)
-        grid_mask_block = self._get_ones_like_expanded_block(grid_block=grid_block)
 
-        action_is_legal = self._is_legal_action(
-            action, state.grid, state.placed_blocks, grid_mask_block
-        )
+        action_is_legal = state.action_mask[block_idx, rotation, row_idx, col_idx]
 
         # If the action is legal create a new grid and update the placed blocks array
         new_grid = jax.lax.cond(
