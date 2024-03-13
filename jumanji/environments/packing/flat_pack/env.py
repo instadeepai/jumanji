@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -34,7 +35,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class FlatPack(Environment[State]):
+class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
     """The FlatPack environment with a configurable number of row and column blocks.
     Here the goal of an agent is to completely fill an empty grid by placing all
@@ -129,6 +130,7 @@ class FlatPack(Environment[State]):
         self.viewer = viewer or FlatPackViewer(
             "FlatPack", self.num_blocks, render_mode="human"
         )
+        super().__init__()
 
     def __repr__(self) -> str:
         return (
@@ -141,7 +143,6 @@ class FlatPack(Environment[State]):
         self,
         key: chex.PRNGKey,
     ) -> Tuple[State, TimeStep[Observation]]:
-
         """Resets the environment.
 
         Args:
@@ -259,6 +260,7 @@ class FlatPack(Environment[State]):
 
         self.viewer.close()
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec of the environment.
 
@@ -307,6 +309,7 @@ class FlatPack(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `FlatPack` environment.
 

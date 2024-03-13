@@ -26,7 +26,10 @@ from jumanji.environments.routing.sokoban.generator import (
     SimpleSolveGenerator,
 )
 from jumanji.environments.routing.sokoban.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.types import TimeStep
 
 
@@ -215,3 +218,8 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
 def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(sokoban)
+
+
+def test_sokoban__specs_does_not_smoke(sokoban: Sokoban) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(sokoban)
