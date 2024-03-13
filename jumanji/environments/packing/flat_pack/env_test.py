@@ -50,11 +50,11 @@ def simple_env_grid_state_1() -> chex.Array:
     # fmt: off
     return jnp.array(
         [
-            [1.0, 1.0, 1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [1, 1, 1, 0, 0],
+            [1, 1, 0, 0, 0],
+            [0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
         ]
     )
     # fmt: on
@@ -66,11 +66,11 @@ def simple_env_grid_state_2() -> chex.Array:
     # fmt: off
     return jnp.array(
         [
-            [1.0, 1.0, 1.0, 2.0, 2.0],
-            [1.0, 1.0, 2.0, 2.0, 2.0],
-            [0.0, 1.0, 0.0, 0.0, 2.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [1, 1, 1, 2, 2],
+            [1, 1, 2, 2, 2],
+            [0, 1, 0, 0, 2],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
         ]
     )
     # fmt: on
@@ -82,11 +82,11 @@ def simple_env_grid_state_3() -> chex.Array:
     # fmt: off
     return jnp.array(
         [
-            [1.0, 1.0, 1.0, 2.0, 2.0],
-            [1.0, 1.0, 2.0, 2.0, 2.0],
-            [3.0, 1.0, 0.0, 0.0, 2.0],
-            [3.0, 3.0, 0.0, 0.0, 0.0],
-            [3.0, 3.0, 3.0, 0.0, 0.0],
+            [1, 1, 1, 2, 2],
+            [1, 1, 2, 2, 2],
+            [3, 1, 0, 0, 2],
+            [3, 3, 0, 0, 0],
+            [3, 3, 3, 0, 0],
         ]
     )
     # fmt: on
@@ -98,11 +98,11 @@ def simple_env_grid_state_4() -> chex.Array:
     # fmt: off
     return jnp.array(
         [
-            [1.0, 1.0, 1.0, 2.0, 2.0],
-            [1.0, 1.0, 2.0, 2.0, 2.0],
-            [3.0, 1.0, 4.0, 4.0, 2.0],
-            [3.0, 3.0, 4.0, 4.0, 4.0],
-            [3.0, 3.0, 3.0, 4.0, 4.0],
+            [1, 1, 1, 2, 2],
+            [1, 1, 2, 2, 2],
+            [3, 1, 4, 4, 2],
+            [3, 3, 4, 4, 4],
+            [3, 3, 3, 4, 4],
         ]
     )
     # fmt: on
@@ -202,13 +202,13 @@ def test_flat_pack__expand_block_to_grid(
     # fmt: off
     expected_expanded_grid = jnp.array(
         [
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
         ]
     )
     # fmt: on
@@ -252,28 +252,28 @@ def test_flat_pack__completed_episode_with_cell_dense_reward(
     state, timestep = step_fn(state, jnp.array([0, 0, 0, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_1)
-    assert timestep.reward == 6.0 / 25.0
+    assert timestep.reward == 6 / 25
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([1, 0, 0, 2]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_2)
-    assert timestep.reward == 6.0 / 25.0
+    assert timestep.reward == 6 / 25
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 0, 2, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_3)
-    assert timestep.reward == 6.0 / 25.0
+    assert timestep.reward == 6 / 25
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
     assert jnp.all(state.grid == simple_env_grid_state_4)
-    assert timestep.reward == 7.0 / 25.0
+    assert timestep.reward == 7 / 25
     assert jnp.all(~state.action_mask)
 
 
@@ -314,7 +314,7 @@ def test_flat_pack__completed_episode_with_sparse_block_dense_reward(
     state, timestep = step_fn(state, jnp.array([0, 2, 0, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_1)
-    assert timestep.reward == 1.0 / 4.0
+    assert timestep.reward == 1 / 4
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_1)
 
     # Step the environment
@@ -322,19 +322,19 @@ def test_flat_pack__completed_episode_with_sparse_block_dense_reward(
     assert timestep.step_type == StepType.MID
 
     assert jnp.all(state.grid == simple_env_grid_state_2)
-    assert timestep.reward == 1.0 / 4.0
+    assert timestep.reward == 1 / 4
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_2)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([2, 1, 2, 0]))
     assert timestep.step_type == StepType.MID
     assert jnp.all(state.grid == simple_env_grid_state_3)
-    assert timestep.reward == 1.0 / 4.0
+    assert timestep.reward == 1 / 4
     assert jnp.all(state.placed_blocks == simple_env_placed_blocks_3)
 
     # Step the environment
     state, timestep = step_fn(state, jnp.array([3, 0, 2, 2]))
     assert timestep.step_type == StepType.LAST
     assert jnp.all(state.grid == simple_env_grid_state_4)
-    assert timestep.reward == 1.0 / 4.0
+    assert timestep.reward == 1 / 4
     assert jnp.all(~state.action_mask)

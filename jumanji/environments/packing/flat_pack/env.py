@@ -42,9 +42,9 @@ class FlatPack(Environment[State]):
     environment.
 
     - observation: `Observation`
-        - grid: jax array (float) of shape (num_rows, num_cols) with the
+        - grid: jax array (int) of shape (num_rows, num_cols) with the
             current state of the grid.
-        - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
+        - blocks: jax array (int) of shape (num_blocks, 3, 3) with the blocks to
             be placed on the grid. Here each block is a 2D array with shape (3, 3).
         - action_mask: jax array (bool) showing where which blocks can be placed on the grid.
             this mask includes all possible rotations and possible placement locations
@@ -208,9 +208,7 @@ class FlatPack(Environment[State]):
         )
 
         done = self._is_done(next_state)
-
         next_obs = self._observation_from_state(next_state)
-
         reward = self.reward_fn(state, grid_block, next_state, action_is_legal, done)
 
         timestep = jax.lax.cond(
@@ -266,8 +264,8 @@ class FlatPack(Environment[State]):
 
         Returns:
             Spec for each filed in the observation:
-            - grid: BoundedArray (float) of shape (num_rows, num_cols).
-            - blocks: BoundedArray (float) of shape (num_blocks, 3, 3).
+            - grid: BoundedArray (int) of shape (num_rows, num_cols).
+            - blocks: BoundedArray (int) of shape (num_blocks, 3, 3).
             - action_mask: BoundedArray (bool) of shape
                 (num_blocks, 4, num_rows-2, num_cols-2).
         """
@@ -400,7 +398,7 @@ class FlatPack(Environment[State]):
         """
 
         # Make an empty grid for placing the block on.
-        grid_with_block = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.float32)
+        grid_with_block = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.int32)
         place_location = (row_coord, col_coord)
 
         grid_with_block = jax.lax.dynamic_update_slice(
