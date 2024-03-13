@@ -396,7 +396,11 @@ class AutoResetWrapper(
     being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
-    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        next_obs_in_extras: bool = False,
+    ):
         """Wrap an environment to automatically reset it when the episode terminates.
 
         Args:
@@ -473,7 +477,11 @@ class VmapAutoResetWrapper(
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
 
-    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        next_obs_in_extras: bool = False,
+    ):
         """Wrap an environment to vmap it and automatically reset it when the episode terminates.
 
         Args:
