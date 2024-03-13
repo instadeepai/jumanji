@@ -364,6 +364,25 @@ class VmapWrapper(
         return super().render(state_0)
 
 
+NEXT_OBS_KEY_IN_EXTRAS = "next_obs"
+
+
+def add_obs_to_extras(timestep: TimeStep[Observation]) -> TimeStep[Observation]:
+    """Place the observation in timestep.extras[NEXT_OBS_KEY_IN_EXTRAS].
+    Used when auto-resetting to store the observation from the terminal TimeStep (useful for
+    e.g. truncation).
+
+    Args:
+        timestep: TimeStep object containing the timestep returned by the environment.
+
+    Returns:
+        timestep where the observation is placed in timestep.extras["next_obs"].
+    """
+    extras = timestep.extras
+    extras[NEXT_OBS_KEY_IN_EXTRAS] = timestep.observation
+    return timestep.replace(extras=extras)  # type: ignore
+
+
 class AutoResetWrapper(
     Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
 ):
@@ -371,13 +390,29 @@ class AutoResetWrapper(
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
     The reward, discount, and extras retrieved from the transition to the terminal state.
+    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     WARNING: do not `jax.vmap` the wrapped environment (e.g. do not use with the `VmapWrapper`),
     which would lead to inefficient computation due to both the `step` and `reset` functions
     being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
+    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+        """Wrap an environment to automatically reset it when the episode terminates.
+
+        Args:
+            env: the environment to wrap.
+            next_obs_in_extras: whether to store the next observation in the extras of the
+                terminal timestep. This is useful for e.g. truncation.
+        """
+        super().__init__(env)
+        self.next_obs_in_extras = next_obs_in_extras
+        if next_obs_in_extras:
+            self._maybe_add_obs_to_extras = add_obs_to_extras
+        else:
+            self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
+
     def _auto_reset(
-        self, state: State, timestep: TimeStep
+        self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
@@ -393,11 +428,17 @@ class AutoResetWrapper(
         key, _ = jax.random.split(state.key)  # type: ignore
         state, reset_timestep = self._env.reset(key)
 
-        # Replace observation with reset observation.
-        timestep = timestep.replace(  # type: ignore
-            observation=reset_timestep.observation
-        )
+        # Place original observation in extras.
+        timestep = self._maybe_add_obs_to_extras(timestep)
 
+        # Replace observation with reset observation.
+        timestep = timestep.replace(observation=reset_timestep.observation)  # type: ignore
+
+        return state, timestep
+
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
+        state, timestep = super().reset(key)
+        timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
 
     def step(
@@ -410,7 +451,7 @@ class AutoResetWrapper(
         state, timestep = jax.lax.cond(
             timestep.last(),
             self._auto_reset,
-            lambda *x: x,
+            lambda s, t: (s, self._maybe_add_obs_to_extras(t)),
             state,
             timestep,
         )
@@ -429,7 +470,23 @@ class VmapAutoResetWrapper(
     - Homogeneous computation: call step function on all environments in the batch.
     - Heterogeneous computation: conditional auto-reset (call reset function for some environments
         within the batch because they have terminated).
+    NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
+
+    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+        """Wrap an environment to vmap it and automatically reset it when the episode terminates.
+
+        Args:
+            env: the environment to wrap.
+            next_obs_in_extras: whether to store the next observation in the extras of the
+                terminal timestep. This is useful for e.g. truncation.
+        """
+        super().__init__(env)
+        self.next_obs_in_extras = next_obs_in_extras
+        if next_obs_in_extras:
+            self._maybe_add_obs_to_extras = add_obs_to_extras
+        else:
+            self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets a batch of environments to initial states.
@@ -449,6 +506,7 @@ class VmapAutoResetWrapper(
                 environments,
         """
         state, timestep = jax.vmap(self._env.reset)(key)
+        timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
 
     def step(
@@ -495,6 +553,9 @@ class VmapAutoResetWrapper(
         key, _ = jax.random.split(state.key)
         state, reset_timestep = self._env.reset(key)
 
+        # Place original observation in extras.
+        timestep = self._maybe_add_obs_to_extras(timestep)
+
         # Replace observation with reset observation.
         timestep = timestep.replace(  # type: ignore
             observation=reset_timestep.observation
@@ -509,7 +570,7 @@ class VmapAutoResetWrapper(
         state, timestep = jax.lax.cond(
             timestep.last(),
             self._auto_reset,
-            lambda *x: x,
+            lambda s, t: (s, self._maybe_add_obs_to_extras(t)),
             state,
             timestep,
         )

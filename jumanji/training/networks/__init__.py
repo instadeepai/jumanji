@@ -78,6 +78,10 @@ from jumanji.training.networks.snake.actor_critic import (
     make_actor_critic_networks_snake,
 )
 from jumanji.training.networks.snake.random import make_random_policy_snake
+from jumanji.training.networks.sokoban.actor_critic import (
+    make_actor_critic_networks_sokoban,
+)
+from jumanji.training.networks.sokoban.random import make_random_policy_sokoban
 from jumanji.training.networks.sudoku.actor_critic import (
     make_cnn_actor_critic_networks_sudoku,
     make_equivariant_actor_critic_networks_sudoku,

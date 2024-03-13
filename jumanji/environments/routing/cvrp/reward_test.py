@@ -46,10 +46,10 @@ def test_sparse_reward__compute_tour_length() -> None:
     assert jnp.isclose(tour_length, 6.8649917)
 
     trajectory = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6])
-    assert compute_tour_length(coordinates, trajectory) == 6.8649917
+    assert jnp.isclose(compute_tour_length(coordinates, trajectory), 6.8649917)
 
     trajectory = jnp.array([0, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 0, 6, 0])
-    assert compute_tour_length(coordinates, trajectory) == 6.8649917
+    assert jnp.isclose(compute_tour_length(coordinates, trajectory), 6.8649917)
 
 
 def test_dense_reward(cvrp_dense_reward: CVRP, dense_reward: DenseReward) -> None:
