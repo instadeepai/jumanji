@@ -71,7 +71,9 @@ class DenseRewardFn(RewardFn):
         solved_puzzle: chex.Array,
     ) -> chex.Numeric:
         """
-        Calculates the reward for the given state and action.
+        Calculates a dense reward for the given state and action. This dense
+        reward is positive for each newly correctly placed tile and negative
+        for each newly incorrectly placed tile.
 
         Args:
             state: The current state.
@@ -80,10 +82,8 @@ class DenseRewardFn(RewardFn):
             solved_puzzle: What the solved puzzle looks like.
 
         Returns:
-            The calculated reward.
+            The calculated dense reward.
         """
-        # The improved dense reward is positive for each newly correctly placed tile
-        # and negative for each newly incorrectly placed tile.
         new_correct_tiles = jnp.sum(
             (next_state.puzzle == solved_puzzle) & (state.puzzle != solved_puzzle)
         )

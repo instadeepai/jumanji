@@ -40,12 +40,10 @@ The action space is a `DiscreteArray` of integer values in `[0, 1, 2, 3]`. Speci
 
 The reward could be either:
 
-- **DenseRewardFn**: This reward function returns a dense reward based on the number of incorrectly placed tiles. Specifically, it returns the negative of the number of incorrectly placed tiles.
+- **DenseRewardFn**: This reward function provides a dense reward based on the difference of correctly placed tiles between the current state and the next state. The reward is positive for each newly correctly placed tile and negative for each newly incorrectly placed tile.
 
 - **SparseRewardFn**: This reward function provides a sparse reward, only rewarding when the puzzle is solved.
 The reward is 1 if the puzzle is solved, and 0 otherwise.
-
-- **ImprovedDenseRewardFn**: This reward function provides a dense reward based on the difference of correctly placed tiles between the current state and the next state. The reward is positive for each newly correctly placed tile and negative for each newly incorrectly placed tile.
 
 The goal in all cases is to solve the puzzle in a way that maximizes the reward.
 
