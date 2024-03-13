@@ -36,7 +36,7 @@ def make_actor_critic_networks_sokoban(
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Sokoban` environment."""
-    num_actions = sokoban.action_spec().num_values
+    num_actions = sokoban.action_spec.num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )
@@ -68,7 +68,6 @@ def make_sokoban_cnn(
     time_limit: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
-
         # Iterate over the channels sequence to create convolutional layers
         layers = []
         for i, conv_n_channels in enumerate(channels):
@@ -101,7 +100,6 @@ def make_sokoban_cnn(
 def preprocess_input(
     input_array: chex.Array,
 ) -> chex.Array:
-
     one_hot_array_fixed = jnp.equal(input_array[..., 0:1], jnp.array([3, 4])).astype(
         jnp.float32
     )

@@ -45,7 +45,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Sokoban(Environment[State]):
+class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
     """A JAX implementation of the 'Sokoban' game from deepmind.
 
     - observation: `Observation`
@@ -135,6 +135,8 @@ class Sokoban(Environment[State]):
         self.num_cols = GRID_SIZE
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit
+
+        super().__init__()
 
         self.generator = generator or HuggingFaceDeepMindGenerator(
             "unfiltered-train",
@@ -256,7 +258,7 @@ class Sokoban(Environment[State]):
 
         return next_state, timestep
 
-    def observation_spec(self) -> specs.Spec[Observation]:
+    def _make_observation_spec(self) -> specs.Spec[Observation]:
         """
         Returns the specifications of the observation of the `Sokoban`
         environment.
@@ -279,7 +281,7 @@ class Sokoban(Environment[State]):
             step_count=step_count,
         )
 
-    def action_spec(self) -> specs.DiscreteArray:
+    def _make_action_spec(self) -> specs.DiscreteArray:
         """
         Returns the action specification for the Sokoban environment.
         There are 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
