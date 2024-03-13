@@ -68,6 +68,7 @@ def make_sokoban_cnn(
     time_limit: int,
 ) -> FeedForwardNetwork:
     def network_fn(observation: Observation) -> chex.Array:
+
         # Iterate over the channels sequence to create convolutional layers
         layers = []
         for i, conv_n_channels in enumerate(channels):
@@ -100,6 +101,7 @@ def make_sokoban_cnn(
 def preprocess_input(
     input_array: chex.Array,
 ) -> chex.Array:
+
     one_hot_array_fixed = jnp.equal(input_array[..., 0:1], jnp.array([3, 4])).astype(
         jnp.float32
     )
