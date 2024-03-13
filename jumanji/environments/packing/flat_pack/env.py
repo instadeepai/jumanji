@@ -38,7 +38,7 @@ class FlatPack(Environment[State]):
 
     """The FlatPack environment with a configurable number of row and column blocks.
     Here the goal of an agent is to completely fill an empty grid by placing all
-    available blocks. It can be thought of as 2D version of the `BinPack`
+    available blocks. It can be thought of as a discrete 2D version of the `BinPack`
     environment.
 
     - observation: `Observation`
@@ -46,7 +46,7 @@ class FlatPack(Environment[State]):
             current state of the grid.
         - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
             be placed on the grid. Here each block is a 2D array with shape (3, 3).
-        - action_mask: jax array (float) showing where which blocks can be placed on the grid.
+        - action_mask: jax array (bool) showing where which blocks can be placed on the grid.
             this mask includes all possible rotations and possible placement locations
             for each block on the grid.
 
@@ -69,26 +69,26 @@ class FlatPack(Environment[State]):
         - if the agent has taken `num_blocks` steps in the environment.
 
     - state: `State`
-        - num_blocks: jax array (float) of shape () with the
+        - num_blocks: jax array (int32) of shape () with the
             number of blocks in the environment.
-        - blocks: jax array (float) of shape (num_blocks, 3, 3) with the blocks to
+        - blocks: jax array (int32) of shape (num_blocks, 3, 3) with the blocks to
             be placed on the grid. Here each block is a 2D array with shape (3, 3).
-        - action_mask: jax array (float) showing where which blocks can be placed on the grid.
+        - action_mask: jax array (bool) showing where which blocks can be placed on the grid.
             this mask includes all possible rotations and possible placement locations
             for each block on the grid.
         - placed_blocks: jax array (bool) of shape (num_blocks,) showing which blocks
             have been placed on the grid.
-        - grid: jax array (float) of shape (num_rows, num_cols) with the
+        - grid: jax array (int32) of shape (num_rows, num_cols) with the
             current state of the grid.
-        - step_count: jax array (float) of shape () with the number of steps taken
+        - step_count: jax array (int32) of shape () with the number of steps taken
             in the environment.
-        - key: jax array (float) of shape (2,) with the random key used for board
+        - key: jax array of shape (2,) with the random key used for board
             generation.
 
     ```python
     from jumanji.environments import FlatPack
     env = FlatPack()
-    key = jax.random.key(0)
+    key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec().generate_value()
@@ -103,11 +103,12 @@ class FlatPack(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
-        """Initializes the environment.
+        """Initializes the FlatPack environment.
 
         Args:
-            generator: Instance generator for the environment.
-            reward_fn: Reward function for the environment.
+            generator: Instance generator for the environment, default to `RandomFlatPackGenerator`
+                with a grid of 5 blocks per row and column.
+            reward_fn: Reward function for the environment, default to `CellDenseReward`.
             viewer: Viewer for rendering the environment.
         """
 
@@ -275,7 +276,7 @@ class FlatPack(Environment[State]):
             shape=(self.num_rows, self.num_cols),
             minimum=0,
             maximum=self.num_blocks,
-            dtype=jnp.float32,
+            dtype=jnp.int32,
             name="grid",
         )
 
@@ -283,7 +284,7 @@ class FlatPack(Environment[State]):
             shape=(self.num_blocks, 3, 3),
             minimum=0,
             maximum=self.num_blocks,
-            dtype=jnp.float32,
+            dtype=jnp.int32,
             name="blocks",
         )
 

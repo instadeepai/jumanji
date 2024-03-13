@@ -31,7 +31,7 @@ all blocks that can be placed.
 
 
 ## Action
-The action space is a `MultiDiscreteArray`, specifically a tuple of an index between 0 and `num_blocks`,
+The action space is a `MultiDiscreteArray`, specifically a tuple of an index between 0 and `num_blocks - 1`,
 an index between 0 and 4 (since there are 4 possible rotations), an index between 0 and `num_rows-2`
 (the possible row coordinates for placing a block) and an index between 0 and `num_cols-2`
 (the possible column coordinates for placing a block). An action thus consists of four pieces of
