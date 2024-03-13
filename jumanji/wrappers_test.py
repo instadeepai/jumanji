@@ -109,39 +109,39 @@ class TestBaseWrapper:
 
         mock_reset.assert_called_once_with(mock_key)
 
-    def test_wrapper__make_observation_spec(
+    def test_wrapper__observation_spec(
         self,
         mocker: pytest_mock.MockerFixture,
-        wrapped_fake_environment: FakeWrapper,
+        mock_wrapper_class: Type[FakeWrapper],
         fake_environment: FakeEnvironment,
     ) -> None:
-        """Checks `Wrapper._make_observation_spec` calls the _make_observation_spec function of
-        the underlying env.
-        """
-        mock_make_obs_spec = mocker.patch.object(
-            fake_environment, "_make_observation_spec", autospec=True
+        """Checks `Wrapper.__init__` calls the observation_spec function of the underlying env."""
+        mock_obs_spec = mocker.patch.object(
+            FakeEnvironment, "observation_spec", new_callable=mocker.PropertyMock
         )
 
-        wrapped_fake_environment._make_observation_spec()
+        wrapped_fake_environment = mock_wrapper_class(fake_environment)
+        mock_obs_spec.assert_called_once()
 
-        mock_make_obs_spec.assert_called_once()
+        wrapped_fake_environment.observation_spec
+        mock_obs_spec.assert_called_once()
 
-    def test_wrapper__make_action_spec(
+    def test_wrapper__action_spec(
         self,
         mocker: pytest_mock.MockerFixture,
-        wrapped_fake_environment: FakeWrapper,
+        mock_wrapper_class: Type[FakeWrapper],
         fake_environment: FakeEnvironment,
     ) -> None:
-        """Checks `Wrapper._make_action_spec` calls the _make_action_spec function of the underlying
-        env.
-        """
-        mock_make_action_spec = mocker.patch.object(
-            fake_environment, "_make_action_spec", autospec=True
+        """Checks `Wrapper.__init__` calls the action_spec function of the underlying env."""
+        mock_action_spec = mocker.patch.object(
+            FakeEnvironment, "action_spec", new_callable=mocker.PropertyMock
         )
 
-        wrapped_fake_environment._make_action_spec()
+        wrapped_fake_environment = mock_wrapper_class(fake_environment)
+        mock_action_spec.assert_called_once()
 
-        mock_make_action_spec.assert_called_once()
+        wrapped_fake_environment.action_spec
+        mock_action_spec.assert_called_once()
 
     def test_wrapper__repr(self, wrapped_fake_environment: FakeWrapper) -> None:
         """Checks `Wrapper.__repr__` returns the expected representation string."""

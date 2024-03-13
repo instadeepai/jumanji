@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -189,9 +190,10 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
 
         return new_state, timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """
-        Returns new observation spec.
+        Returns the observation spec.
 
         Returns:
             observation_spec: a Tuple containing the spec for each of the constituent fields of an
@@ -318,9 +320,10 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _make_action_spec(self) -> specs.BoundedArray:
+    @cached_property
+    def action_spec(self) -> specs.BoundedArray:
         """
-        Returns new action spec.
+        Returns the action spec.
 
         Returns:
             action_spec: a `specs.BoundedArray` spec.

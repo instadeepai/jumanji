@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import itertools
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -172,7 +173,8 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             ]
         )
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `BinPack` environment.
 
         Returns:
@@ -249,7 +251,8 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action expected by the `BinPack` environment.
 
         Returns:

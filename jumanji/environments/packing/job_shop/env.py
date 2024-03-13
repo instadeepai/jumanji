@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -357,7 +358,8 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `JobShop` environment.
 
         Returns:
@@ -422,7 +424,8 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action in the `JobShop` environment. The action gives each
         machine a job id ranging from 0, 1, ..., num_jobs where the last value corresponds
         to a no-op.

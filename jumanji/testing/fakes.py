@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
@@ -59,8 +60,9 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         super().__init__()
         self._example_action = self.action_spec.generate_value()
 
-    def _make_observation_spec(self) -> specs.Array:
-        """Returns new observation spec.
+    @cached_property
+    def observation_spec(self) -> specs.Array:
+        """Returns the observation spec.
 
         Returns:
             observation_spec: a `specs.Array` spec.
@@ -70,8 +72,9 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
-    def _make_action_spec(self) -> specs.BoundedArray:
-        """Returns new action spec.
+    @cached_property
+    def action_spec(self) -> specs.BoundedArray:
+        """Returns the action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.
@@ -177,8 +180,9 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
         ), f"""a leading dimension of size 'num_agents': {num_agents} is expected
             for the observation, got shape: {observation_shape}."""
 
-    def _make_observation_spec(self) -> specs.Array:
-        """Returns new observation spec.
+    @cached_property
+    def observation_spec(self) -> specs.Array:
+        """Returns the observation spec.
 
         Returns:
             observation_spec: a `specs.Array` spec.
@@ -188,8 +192,9 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
-    def _make_action_spec(self) -> specs.BoundedArray:
-        """Returns new action spec.
+    @cached_property
+    def action_spec(self) -> specs.BoundedArray:
+        """Returns the action spec.
 
         Returns:
             action_spec: a `specs.Array` spec.
@@ -199,15 +204,17 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             (self.num_agents,), int, 0, self.num_action_values - 1
         )
 
-    def _make_reward_spec(self) -> specs.Array:
-        """Returns new reward spec.
+    @cached_property
+    def reward_spec(self) -> specs.Array:
+        """Returns the reward spec.
 
         Returns:
             reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
-    def _make_discount_spec(self) -> specs.BoundedArray:
+    @cached_property
+    def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
 
         Returns:

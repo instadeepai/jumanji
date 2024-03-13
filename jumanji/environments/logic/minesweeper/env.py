@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -183,7 +184,8 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
         return next_state, next_timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Minesweeper` environment.
 
         Returns:
@@ -230,8 +232,9 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=step_count,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec.
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec.
         An action consists of the height and width of the square to be explored.
 
         Returns:

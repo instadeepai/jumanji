@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -130,8 +131,9 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return next_state, timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
-        """Returns new observation spec containing the board and action_mask arrays.
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
+        """Returns the observation spec containing the board and action_mask arrays.
 
         Returns:
             Spec containing all the specifications for all the `Observation` fields:
@@ -159,8 +161,9 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
             Observation, "ObservationSpec", board=board, action_mask=action_mask
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec. An action is composed of 3 integers: the row index,
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec. An action is composed of 3 integers: the row index,
         the column index and the value to be placed in the cell.
 
         Returns:

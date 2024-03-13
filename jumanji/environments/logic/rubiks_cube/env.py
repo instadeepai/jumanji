@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -174,7 +175,8 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
         return next_state, next_timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `RubiksCube` environment.
 
         Returns:
@@ -203,8 +205,9 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=step_count,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec. An action is composed of 3 elements that range in: 6 faces, each
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec. An action is composed of 3 elements that range in: 6 faces, each
         with cube_size//2 possible depths, and 3 possible directions.
 
         Returns:

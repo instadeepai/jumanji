@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -319,7 +320,8 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         self._viewer.close()
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
 
         Returns:
@@ -357,8 +359,9 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=step_count,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec for the Connector environment.
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec for the Connector environment.
 
         5 actions: [0,1,2,3,4] -> [No Op, Up, Right, Down, Left]. Since this is an environment with
         a multi-dimensional action space, it expects an array of actions of shape (num_agents,).

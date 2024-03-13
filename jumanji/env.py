@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import abc
+from functools import cached_property
 from typing import Any, Generic, Tuple, TypeVar
 
 import chex
@@ -48,10 +49,10 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
 
     def __init__(self) -> None:
         """Initialize environment."""
-        self._observation_spec = self._make_observation_spec()
-        self._action_spec = self._make_action_spec()
-        self._reward_spec = self._make_reward_spec()
-        self._discount_spec = self._make_discount_spec()
+        self.observation_spec
+        self.action_spec
+        self.reward_spec
+        self.discount_spec
 
     @abc.abstractmethod
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -80,68 +81,36 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
 
-    @property
+    @abc.abstractmethod
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:
             observation_spec: a potentially nested `Spec` structure representing the observation.
         """
-        return self._observation_spec
 
     @abc.abstractmethod
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
-        """Returns new observation spec.
-
-        Returns:
-            observation_spec: a potentially nested `Spec` structure representing the observation.
-        """
-
-    @property
+    @cached_property
     def action_spec(self) -> ActionSpec:
         """Returns the action spec.
 
         Returns:
             action_spec: a potentially nested `Spec` structure representing the action.
         """
-        return self._action_spec
 
-    @abc.abstractmethod
-    def _make_action_spec(self) -> ActionSpec:
-        """Returns new action spec.
-
-        Returns:
-            action_spec: a potentially nested `Spec` structure representing the action.
-        """
-
-    @property
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns the reward spec. By default, this is assumed to be a single float.
 
         Returns:
             reward_spec: a `specs.Array` spec.
         """
-        return self._reward_spec
-
-    def _make_reward_spec(self) -> specs.Array:
-        """Returns new reward spec. By default, this is assumed to be a single float.
-
-        Returns:
-            reward_spec: a `specs.Array` spec.
-        """
         return specs.Array(shape=(), dtype=float, name="reward")
 
-    @property
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Returns the discount spec. By default, this is assumed to be a single float between 0 and 1.
-
-        Returns:
-            discount_spec: a `specs.BoundedArray` spec.
-        """
-        return self._discount_spec
-
-    def _make_discount_spec(self) -> specs.BoundedArray:
-        """Returns new discount spec. By default, this is assumed to be a single float between 0 and 1.
 
         Returns:
             discount_spec: a `specs.BoundedArray` spec.

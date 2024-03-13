@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -247,7 +248,8 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         return self._viewer.render(state)
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Tetris` environment.
 
         Returns:
@@ -286,8 +288,9 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
             ),
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec. An action consists of two pieces of information:
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec. An action consists of two pieces of information:
         the amount of rotation (number of 90-degree rotations) and the x-position of
         the leftmost part of the tetromino.
 

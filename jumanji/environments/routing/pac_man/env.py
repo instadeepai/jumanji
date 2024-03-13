@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -133,7 +134,8 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
         self.time_limit = 1000 or time_limit
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `PacMan` environment.
 
         Returns:
@@ -200,7 +202,8 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             score=score,
         )
 
-    def _make_action_spec(self) -> specs.DiscreteArray:
+    @cached_property
+    def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 
         5 actions: [0,1,2,3,4] -> [Up, Right, Down, Left, No-op].

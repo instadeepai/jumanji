@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
@@ -284,8 +285,9 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         state, timestep = self._state_to_timestep(state, action)
         return state, timestep
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
-        """Returns new action spec.
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
+        """Returns the action spec.
 
         Returns:
             action_spec: a `specs.MultiDiscreteArray` spec.
@@ -295,8 +297,9 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             name="action",
         )
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
-        """Returns new observation spec.
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
+        """Returns the observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:

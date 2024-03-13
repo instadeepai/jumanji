@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -196,8 +197,9 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
         )
         return next_state, timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
-        """Returns new observation spec.
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
+        """Returns the observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:
@@ -262,8 +264,9 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _make_action_spec(self) -> specs.DiscreteArray:
-        """Returns new action spec.
+    @cached_property
+    def action_spec(self) -> specs.DiscreteArray:
+        """Returns the action spec.
 
         Returns:
             action_spec: a `specs.DiscreteArray` spec.

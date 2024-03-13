@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -207,8 +208,9 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         )
         return next_state, timestep
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
-        """Returns new observation spec.
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
+        """Returns the observation spec.
 
         Returns:
             Spec for the `Observation` whose fields are:
@@ -254,7 +256,8 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
             ),
         )
 
-    def _make_action_spec(self) -> specs.DiscreteArray:
+    @cached_property
+    def action_spec(self) -> specs.DiscreteArray:
         """Specification of the action for the `GraphColoring` environment.
 
         Returns:

@@ -13,6 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+from functools import cached_property
 from typing import Any, Callable, ClassVar, Dict, Generic, Optional, Tuple, Union
 
 import chex
@@ -81,21 +82,25 @@ class Wrapper(
         """
         return self._env.step(state, action)
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
-        return self._env._make_observation_spec()
+        return self._env.observation_spec
 
-    def _make_action_spec(self) -> ActionSpec:
+    @cached_property
+    def action_spec(self) -> ActionSpec:
         """Returns the action spec."""
-        return self._env._make_action_spec()
+        return self._env.action_spec
 
-    def _make_reward_spec(self) -> specs.Array:
+    @cached_property
+    def reward_spec(self) -> specs.Array:
         """Returns the reward spec."""
-        return self._env._make_reward_spec()
+        return self._env.reward_spec
 
-    def _make_discount_spec(self) -> specs.BoundedArray:
+    @cached_property
+    def discount_spec(self) -> specs.BoundedArray:
         """Returns the discount spec."""
-        return self._env._make_discount_spec()
+        return self._env.discount_spec
 
     def render(self, state: State) -> Any:
         """Compute render frames during initialisation of the environment.

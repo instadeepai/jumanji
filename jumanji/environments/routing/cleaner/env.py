@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
@@ -123,7 +124,8 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             ")"
         )
 
-    def _make_observation_spec(self) -> specs.Spec[Observation]:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Specification of the observation of the `Cleaner` environment.
 
         Returns:
@@ -153,7 +155,8 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=step_count,
         )
 
-    def _make_action_spec(self) -> specs.MultiDiscreteArray:
+    @cached_property
+    def action_spec(self) -> specs.MultiDiscreteArray:
         """Specification of the action for the `Cleaner` environment.
 
         Returns:
