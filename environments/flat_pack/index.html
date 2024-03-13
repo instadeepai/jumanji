@@ -12,14 +12,14 @@
         <meta name="author" content="InstaDeep Research">
       
       
-        <link rel="canonical" href="https://instadeepai.github.io/jumanji/environments/multi_cvrp/">
+        <link rel="canonical" href="https://instadeepai.github.io/jumanji/environments/flat_pack/">
       
       <link rel="icon" href="../../img/instadeep_logo.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
     
     
       
-        <title>MultiCVRP - Jumanji</title>
+        <title>FlatPack - Jumanji</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#multi-agent-capacitated-vehicle-routing-problem-multicvrp-environment" class="md-skip">
+        <a href="#flatpack-environment" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MultiCVRP
+              FlatPack
             
           </span>
         </div>
@@ -503,14 +503,16 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" checked>
       
       
       
@@ -557,11 +559,73 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../flat_pack/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          FlatPack
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         FlatPack
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#observation" class="md-nav__link">
+    Observation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action" class="md-nav__link">
+    Action
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward" class="md-nav__link">
+    Reward
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registered-versions" class="md-nav__link">
+    Registered Versions 📖
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -620,16 +684,14 @@
               
   
   
-    
-  
   
     
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
       
       
       
@@ -744,73 +806,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          MultiCVRP
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../multi_cvrp/" class="md-nav__link">
         MultiCVRP
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#observation" class="md-nav__link">
-    Observation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#action" class="md-nav__link">
-    Action
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reward" class="md-nav__link">
-    Reward
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#registered-versions" class="md-nav__link">
-    Registered Versions 📖
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1581,55 +1581,73 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/environments/multi_cvrp.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/environments/flat_pack.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="multi-agent-capacitated-vehicle-routing-problem-multicvrp-environment">Multi Agent Capacitated Vehicle Routing Problem - <code>MultiCVRP</code> Environment<a class="headerlink" href="#multi-agent-capacitated-vehicle-routing-problem-multicvrp-environment" title="Permanent link">#</a></h1>
+<h1 id="flatpack-environment">FlatPack Environment<a class="headerlink" href="#flatpack-environment" title="Permanent link">#</a></h1>
 <p align="center">
-        <img src="../../env_anim/multi_cvrp.gif" width="500"/>
+        <img src="../../env_anim/flat_pack.gif" width="500"/>
 </p>
 
-<p>We provide here a Jax JIT-able implementation of the multi-agent capacitated vehicle routing problem
-(MultiCVRP) which is specified in <a href="https://arxiv.org/abs/2002.05513">MVRPSTW</a>.</p>
-<p>This environment introduces the problem of routing multiple agents in a coordinated manner, specifically in the context of collecting items from various locations. Each agent controls one vehicle. The problem, called the multi-agent capacitated vehicle routing problem (MultiCVRP), entails directing a group of agents to different locations on a map. They need to collectively go to each node and return items to the depot location. To make the problem a bit more realistic we consider the multi-vehicle routing problem with soft time windows (MVRPSTW). In this formulation, each location on the map also has a soft time window in which the items must be collected. If the items are collected outside this window a penalty is provided to the agents.</p>
-<p>A new problem instance is generated by resetting the environment. The problem instance contains
-coordinates for each node sampled from a uniform distribution inside the map boundries, and each node
-(except for depot) has a specific demand which is an integer value sampled from a uniform
-distribution between 1 and the maximum demand.
-The number of nodes with demand is a parameter of the environment.</p>
+<p>We provide here a Jax JIT-able implementation of a packing environment named <em>flat pack</em>. The goal of
+the agent is to place all the available blocks on an empty 2D grid.
+Each time an episode resets a new set of blocks is created and the grid is emptied. Blocks are randomly
+shuffled and rotated and all have shape (3, 3).</p>
 <h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>Each agent receives information on the coordinates, demands, time windows and penalty coefficients of all the customer nodes. Futhermore the agents receive positions, local times and vehicle capacity information on all vehicles. Lastly an action mask is also provided to each agent.</p>
+<p>The observation given to the agent gives a view of the current state of the grid as well as
+all blocks that can be placed.</p>
 <ul>
-<li><code>node_coordinates</code>: jax array (float32) of shape <code>(num_vehicles, num_customers + 1, 2)</code>, shows an array of the coordinates of each customer node
-and the depot node.</li>
-<li><code>node_demands</code>: jax array (int16) of shape <code>(num_vehicles, num_customers + 1,)</code>, shows an array of the demands of each city node
-(and depot node where the demand is set to 0).</li>
-<li><code>node_time_windows</code>: jax array (float32) of shape <code>(num_vehicles, num_customers + 1, 2)</code>, shows an array of the early and late time cutoffs for each customer.</li>
-<li><code>node_penalty_coefs</code>: jax array (float32) of shape <code>(num_vehicles, num_customers + 1, 2)</code>, shows the early and late penalty coefficients for arriving early or late at a customer's location.</li>
-<li><code>other_vehicles_position</code>: jax array (int16) of shape <code>(num_vehicles, num_vehicles - 1)</code>, shows the positions of all other vehicles.</li>
-<li><code>other_vehicles_local_times</code>: jax array (float32) of shape <code>(num_vehicles, num_vehicles - 1)</code>, shows the local times of all other vehicles.</li>
-<li><code>other_vehicles_capacities</code>: jax array (int16) of shape <code>(num_vehicles, num_vehicles - 1)</code>, shows the capacities of all other vehicles.</li>
-<li><code>vehicle_position</code>: jax array (int16) of shape <code>(num_vehicles)</code>, shows the positions of the vehicles controlled by the agents.</li>
-<li><code>vehicle_local_time</code>: jax array (float32) of shape <code>(num_vehicles)</code>, shows the local times of the vehicles controlled by the agents.</li>
-<li><code>vehicle_capacity</code>: jax array (int16) of shape <code>(num_vehicles)</code>, shows the capacity of the vehicles controlled by the agents.</li>
-<li><code>action_mask</code>: jax array (bool) of shape <code>(num_vehicles, num_customers + 1,)</code>, denoting which actions are possible (True) and
-which are not (False).</li>
+<li>
+<p><code>current_grid</code>: jax array (float32) of shape <code>(num_rows, num_cols)</code> with values in the range
+    <code>[0, num_blocks]</code> (corresponding to the number of each block). This grid will have zeros
+    where no blocks have been placed and numbers corresponding to each block where that particular
+    block has been placed.</p>
+</li>
+<li>
+<p><code>blocks</code>: jax array (float32) of shape <code>(num_blocks, 3, 3)</code> of all possible blocks in
+    that can fit in the current grid. These blocks are shuffled, rotated and will always have shape <code>(3, 3)</code>.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(num_blocks, 4, num_rows-2, num_cols-2)</code>, representing
+    which actions are possible given the current state of the grid. The first index indicates the
+    number of blocks associated with a given grid. The second index indicates the number of times a block may be rotated.
+    The third and fourth indices indicate the row and column coordinate of where a blocks top left-most corner may be placed
+    respectively. Blocks are placed by an agent by specifying the row and column coordinate on the grid where the top left corner
+    of the selected block should be placed. These values will always be <code>num_rows-2</code> and <code>num_cols-2</code>
+    respectively to make it impossible for an agent to place a block outside the current grid.</p>
+</li>
 </ul>
 <h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
-<p>Each agent's action space is a <code>BoundedArray</code> of integer values in the range of <code>[0, num_customers]</code>. An action is the index of the
-next node to visit, and an action value of 0 corresponds to visiting the depot.</p>
-<h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
+<p>The action space is a <code>MultiDiscreteArray</code>, specifically a tuple of an index between 0 and <code>num_blocks - 1</code>,
+an index between 0 and 4 (since there are 4 possible rotations), an index between 0 and <code>num_rows-2</code>
+(the possible row coordinates for placing a block) and an index between 0 and <code>num_cols-2</code>
+(the possible column coordinates for placing a block). An action thus consists of four pieces of
+information:</p>
 <ul>
-<li><strong>Dense</strong>: The reward is equal to the sum of negative distances of the current location and next location of all the vehicles. Time penalities are added if the agents arrived early or late to specific customers. If the max step limit is reached, the episode ends with a large negative reward which is equal to the maximum negative distance reward that can be incurred.</li>
-<li><strong>Sparse</strong>: The reward is 0 at every step but the last, where the reward is
-the negative of the length of the path chosen by all the agents combined. Time penalities are added if the agents arrived early or late to specific customers. If the max step limit is reached, the episode ends with a large negative reward which is equal to the maximum negative distance reward that can be incurred.</li>
+<li>
+<p>Block to place,</p>
+</li>
+<li>
+<p>Number of 90 degree rotations to make to a chosen block ({0, 90, 180, 270} degrees),</p>
+</li>
+<li>
+<p>Row coordinate for placing the rotated block's top left corner,</p>
+</li>
+<li>
+<p>Column coordinate for placing the rotated block's top left corner.</p>
+</li>
 </ul>
+<h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
+<p>The reward function is configurable, but by default is a fully dense reward giving the sum of the number of non-zero
+cells in a placed block normalised by the total number of cells in the grid at each timestep. The episode
+terminates if either the grid is filled or <code>num_blocks</code> steps have been taken by an agent.</p>
 <h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
 <ul>
-<li><code>MultiCVRP-v0</code>: MultiCVRP problem with 20 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 with two vehicles.</li>
+<li><code>FlatPack-v0</code>, a flat pack environment grid with 11 rows and 11 columns containing 5 row blocks and 5 column blocks
+    for a total of 25 blocks that can be placed on the grid. This version has a dense reward.</li>
 </ul>
 
   <hr>
@@ -1659,7 +1677,7 @@ the negative of the length of the path chosen by all the agents combined. Time p
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../mmst/" class="md-footer__link md-footer__link--prev" aria-label="Previous: MMST" rel="prev">
+        <a href="../bin_pack/" class="md-footer__link md-footer__link--prev" aria-label="Previous: BinPack" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1668,20 +1686,20 @@ the negative of the length of the path chosen by all the agents combined. Time p
               <span class="md-footer__direction">
                 Previous
               </span>
-              MMST
+              BinPack
             </div>
           </div>
         </a>
       
       
         
-        <a href="../robot_warehouse/" class="md-footer__link md-footer__link--next" aria-label="Next: RobotWarehouse" rel="next">
+        <a href="../job_shop/" class="md-footer__link md-footer__link--next" aria-label="Next: JobShop" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              RobotWarehouse
+              JobShop
             </div>
           </div>
           <div class="md-footer__button md-icon">
