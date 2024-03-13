@@ -26,8 +26,8 @@ from jumanji.environments.logic.game_2048.env import Game2048
 from jumanji.environments.logic.graph_coloring.env import GraphColoring
 from jumanji.environments.logic.minesweeper.env import Minesweeper
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
-from jumanji.environments.logic.sudoku.env import Sudoku
 from jumanji.environments.logic.sliding_tile_puzzle.env import SlidingTilePuzzle
+from jumanji.environments.logic.sudoku.env import Sudoku
 from jumanji.environments.packing import bin_pack, flat_pack, job_shop, knapsack, tetris
 from jumanji.environments.packing.bin_pack.env import BinPack
 from jumanji.environments.packing.flat_pack.env import FlatPack
