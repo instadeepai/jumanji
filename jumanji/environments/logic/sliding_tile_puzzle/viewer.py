@@ -86,7 +86,7 @@ class SlidingTilePuzzleViewer(Viewer):
 
         def make_frame(state_index: int) -> None:
             state = states[state_index]
-            self.draw_puzzle(ax, state.puzzle)
+            self.draw_puzzle(ax, state)
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
