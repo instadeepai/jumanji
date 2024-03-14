@@ -1,0 +1,26 @@
+name: sliding_tile_puzzle
+registered_version: SlidingTilePuzzle-v0
+
+network:
+    num_channels: 32
+    policy_layers: [128, 128]
+    value_layers: [256, 256]
+
+training:
+    num_epochs: 400
+    num_learner_steps_per_epoch: 100
+    n_steps: 30
+    total_batch_size: 256
+
+evaluation:
+    eval_total_batch_size: 512
+    greedy_eval_total_batch_size: 512
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.99
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 2e-4
