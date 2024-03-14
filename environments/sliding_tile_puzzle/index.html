@@ -12,21 +12,21 @@
         <meta name="author" content="InstaDeep Research">
       
       
-        <link rel="canonical" href="https://instadeepai.github.io/jumanji/api/environments/mmst/">
+        <link rel="canonical" href="https://instadeepai.github.io/jumanji/environments/sliding_tile_puzzle/">
       
-      <link rel="icon" href="../../../img/instadeep_logo.png">
+      <link rel="icon" href="../../img/instadeep_logo.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
     
     
       
-        <title>MMST - Jumanji</title>
+        <title>SlidingTilePuzzle - Jumanji</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.9d5733d3.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.9d5733d3.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -41,15 +41,15 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../_static/custom.css">
+      <link rel="stylesheet" href="../../_static/custom.css">
     
-      <link rel="stylesheet" href="../../../css/ansi-colours.css">
+      <link rel="stylesheet" href="../../css/ansi-colours.css">
     
-      <link rel="stylesheet" href="../../../css/pandas-dataframe.css">
+      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jumanji.environments.routing.mmst.env.MMST" class="md-skip">
+        <a href="#sliding-tile-puzzle-environment" class="md-skip">
           Skip to content
         </a>
       
@@ -93,9 +93,9 @@
 
 <header class="md-header md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Jumanji" class="md-header__button md-logo" aria-label="Jumanji" data-md-component="logo">
+    <a href="../.." title="Jumanji" class="md-header__button md-logo" aria-label="Jumanji" data-md-component="logo">
       
-  <img src="../../../img/instadeep_logo.png" alt="logo">
+  <img src="../../img/instadeep_logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MMST
+              SlidingTilePuzzle
             
           </span>
         </div>
@@ -208,7 +208,7 @@
 
 
   <li class="md-tabs__item">
-    <a href="../../.." class="md-tabs__link">
+    <a href="../.." class="md-tabs__link">
       Home
     </a>
   </li>
@@ -216,6 +216,8 @@
       
         
   
+  
+    
   
 
 
@@ -228,7 +230,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../environments/game_2048/" class="md-tabs__link">
+      <a href="../game_2048/" class="md-tabs__link md-tabs__link--active">
         Environments
       </a>
     </li>
@@ -246,7 +248,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../guides/advanced_usage/" class="md-tabs__link">
+      <a href="../../guides/advanced_usage/" class="md-tabs__link">
         User Guides
       </a>
     </li>
@@ -255,8 +257,6 @@
       
         
   
-  
-    
   
 
 
@@ -269,7 +269,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../env/" class="md-tabs__link md-tabs__link--active">
+      <a href="../../api/env/" class="md-tabs__link">
         API Reference
       </a>
     </li>
@@ -307,9 +307,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Jumanji" class="md-nav__button md-logo" aria-label="Jumanji" data-md-component="logo">
+    <a href="../.." title="Jumanji" class="md-nav__button md-logo" aria-label="Jumanji" data-md-component="logo">
       
-  <img src="../../../img/instadeep_logo.png" alt="logo">
+  <img src="../../img/instadeep_logo.png" alt="logo">
 
     </a>
     Jumanji
@@ -337,7 +337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         Home
       </a>
     </li>
@@ -350,12 +350,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -384,14 +386,16 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" checked>
       
       
       
@@ -417,665 +421,6 @@
       
       <nav class="md-nav" aria-label="Logic" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_1">
-          <span class="md-nav__icon md-icon"></span>
-          Logic
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/game_2048/" class="md-nav__link">
-        Game2048
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/graph_coloring/" class="md-nav__link">
-        GraphColoring
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/minesweeper/" class="md-nav__link">
-        Minesweeper
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/rubiks_cube/" class="md-nav__link">
-        RubiksCube
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/sliding_tile_puzzle/" class="md-nav__link">
-        SlidingTilePuzzle
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/sudoku/" class="md-nav__link">
-        Sudoku
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_2_2">
-          Packing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Packing" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_2">
-          <span class="md-nav__icon md-icon"></span>
-          Packing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/bin_pack/" class="md-nav__link">
-        BinPack
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/flat_pack/" class="md-nav__link">
-        FlatPack
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/job_shop/" class="md-nav__link">
-        JobShop
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/knapsack/" class="md-nav__link">
-        Knapsack
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/tetris/" class="md-nav__link">
-        Tetris
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_2_3">
-          Routing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Routing" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_3">
-          <span class="md-nav__icon md-icon"></span>
-          Routing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/cleaner/" class="md-nav__link">
-        Cleaner
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/connector/" class="md-nav__link">
-        Connector
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/cvrp/" class="md-nav__link">
-        CVRP
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/maze/" class="md-nav__link">
-        Maze
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/mmst/" class="md-nav__link">
-        MMST
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/multi_cvrp/" class="md-nav__link">
-        MultiCVRP
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/robot_warehouse/" class="md-nav__link">
-        RobotWarehouse
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/snake/" class="md-nav__link">
-        Snake
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/tsp/" class="md-nav__link">
-        TSP
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/sokoban/" class="md-nav__link">
-        Sokoban
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../environments/pac_man/" class="md-nav__link">
-        PacMan
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_3">
-          User Guides
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="User Guides" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          User Guides
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../guides/advanced_usage/" class="md-nav__link">
-        Advanced Usage
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../guides/registration/" class="md-nav__link">
-        Registration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../guides/training/" class="md-nav__link">
-        Training
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../guides/wrappers/" class="md-nav__link">
-        Wrapper
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
-      
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
-          API Reference
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
-          <span class="md-nav__icon md-icon"></span>
-          API Reference
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-    
-  
-  
-    
-      
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4_1">
-          Environments
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Environments" data-md-level="2">
-        <label class="md-nav__title" for="__nav_4_1">
-          <span class="md-nav__icon md-icon"></span>
-          Environments
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../env/" class="md-nav__link">
-        Base
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_2" type="checkbox" id="__nav_4_1_2" >
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4_1_2">
-          Logic
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Logic" data-md-level="3">
-        <label class="md-nav__title" for="__nav_4_1_2">
           <span class="md-nav__icon md-icon"></span>
           Logic
         </label>
@@ -1141,11 +486,73 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../sliding_tile_puzzle/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          SlidingTilePuzzle
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         SlidingTilePuzzle
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#observation" class="md-nav__link">
+    Observation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action" class="md-nav__link">
+    Action
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward" class="md-nav__link">
+    Reward
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registered-versions" class="md-nav__link">
+    Registered Versions 📖
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1178,10 +585,12 @@
   
   
     
-    <li class="md-nav__item md-nav__item--nested">
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_3" type="checkbox" id="__nav_4_1_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
       
       
       
@@ -1198,13 +607,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_4_1_3">
+        <label class="md-nav__link" for="__nav_2_2">
           Packing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Packing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_4_1_3">
+      <nav class="md-nav" aria-label="Packing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
           <span class="md-nav__icon md-icon"></span>
           Packing
         </label>
@@ -1291,14 +700,14 @@
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_4" type="checkbox" id="__nav_4_1_4" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
       
       
       
@@ -1327,13 +736,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_4_1_4">
+        <label class="md-nav__link" for="__nav_2_3">
           Routing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Routing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_4_1_4">
+      <nav class="md-nav" aria-label="Routing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
           <span class="md-nav__icon md-icon"></span>
           Routing
         </label>
@@ -1399,96 +808,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          MMST
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../mmst/" class="md-nav__link">
         MMST
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST" class="md-nav__link">
-    MMST
-  </a>
-  
-    <nav class="md-nav" aria-label="MMST">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.__init__" class="md-nav__link">
-    __init__()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.reset" class="md-nav__link">
-    reset()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.step" class="md-nav__link">
-    step()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.action_spec" class="md-nav__link">
-    action_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.observation_spec" class="md-nav__link">
-    observation_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.mmst.env.MMST.render" class="md-nav__link">
-    render()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1500,7 +824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../multi_cvrp.md" class="md-nav__link">
+      <a href="../multi_cvrp/" class="md-nav__link">
         MultiCVRP
       </a>
     </li>
@@ -1514,7 +838,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../robot_warehouse.md" class="md-nav__link">
+      <a href="../robot_warehouse/" class="md-nav__link">
         RobotWarehouse
       </a>
     </li>
@@ -1585,13 +909,664 @@
 
             
           
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
             
               
   
   
   
     <li class="md-nav__item">
-      <a href="../../wrappers/" class="md-nav__link">
+      <a href="../../guides/advanced_usage/" class="md-nav__link">
+        Advanced Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/registration/" class="md-nav__link">
+        Registration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        Training
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/wrappers/" class="md-nav__link">
+        Wrapper
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4_1">
+          Environments
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Environments" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_1">
+          <span class="md-nav__icon md-icon"></span>
+          Environments
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/env/" class="md-nav__link">
+        Base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_2" type="checkbox" id="__nav_4_1_2" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4_1_2">
+          Logic
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Logic" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Logic
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/game_2048/" class="md-nav__link">
+        Game2048
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/graph_coloring/" class="md-nav__link">
+        GraphColoring
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/minesweeper/" class="md-nav__link">
+        Minesweeper
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/rubiks_cube/" class="md-nav__link">
+        RubiksCube
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/sliding_tile_puzzle/" class="md-nav__link">
+        SlidingTilePuzzle
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/sudoku/" class="md-nav__link">
+        Sudoku
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_3" type="checkbox" id="__nav_4_1_3" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4_1_3">
+          Packing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Packing" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_1_3">
+          <span class="md-nav__icon md-icon"></span>
+          Packing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/bin_pack/" class="md-nav__link">
+        BinPack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/flat_pack/" class="md-nav__link">
+        FlatPack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/job_shop/" class="md-nav__link">
+        JobShop
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/knapsack/" class="md-nav__link">
+        Knapsack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/tetris/" class="md-nav__link">
+        Tetris
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_1_4" type="checkbox" id="__nav_4_1_4" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4_1_4">
+          Routing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Routing" data-md-level="3">
+        <label class="md-nav__title" for="__nav_4_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Routing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/cleaner/" class="md-nav__link">
+        Cleaner
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/connector/" class="md-nav__link">
+        Connector
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/cvrp/" class="md-nav__link">
+        CVRP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/maze/" class="md-nav__link">
+        Maze
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/mmst/" class="md-nav__link">
+        MMST
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/multi_cvrp.md" class="md-nav__link">
+        MultiCVRP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/robot_warehouse.md" class="md-nav__link">
+        RobotWarehouse
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/snake/" class="md-nav__link">
+        Snake
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/tsp/" class="md-nav__link">
+        TSP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/sokoban/" class="md-nav__link">
+        Sokoban
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/environments/pac_man/" class="md-nav__link">
+        PacMan
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/wrappers/" class="md-nav__link">
         Wrappers
       </a>
     </li>
@@ -1605,7 +1580,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../types/" class="md-nav__link">
+      <a href="../../api/types/" class="md-nav__link">
         Types
       </a>
     </li>
@@ -1638,456 +1613,72 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/api/environments/mmst.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/instadeepai/jumanji/edit/develop/docs/environments/sliding_tile_puzzle.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-  <h1>MMST</h1>
+<h1 id="sliding-tile-puzzle-environment">Sliding Tile Puzzle Environment<a class="headerlink" href="#sliding-tile-puzzle-environment" title="Permanent link">#</a></h1>
+<p align="center">
+    <img src="../../env_anim/sliding_tile_puzzle.gif" width="500"/>
+</p>
 
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="jumanji.environments.routing.mmst.env.MMST" class="doc doc-heading">
-        <code>
-MMST            (<a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../../env/#jumanji.env.Environment">Environment</a>)
-        </code>
-
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST" class="headerlink" title="Permanent link">#</a></h2>
-
-    <div class="doc doc-contents first">
-
-      <p>The <code>MMST</code> (Multi Minimum Spanning Tree) environment
-consists of a random connected graph
-with groups of nodes (same node types) that needs to be connected.
-The goal of the environment is to connect all nodes of the same type together
-without using the same utility nodes (nodes that do not belong to any group of nodes).</p>
-<p>Note: routing problems are randomly generated and may not be solvable!</p>
-<p>Requirements: The total number of nodes should be at least 20% more than
-the number of nodes we want to connect to guarantee we have enough remaining
-nodes to create a path with all the nodes we want to connect.
-An exception will be raised if the number of nodes is not greater
-than (0.8 x num_agents x num_nodes_per_agent).</p>
+<p>This is a Jax JIT-able implementation of the classic <a href="https://en.wikipedia.org/wiki/Sliding_puzzle">Sliding Tile Puzzle game</a>.</p>
+<p>The Sliding Tile Puzzle game is a classic puzzle that challenges a player to slide (typically flat) pieces along certain routes (usually on a board) to establish a certain end-configuration. The pieces to be moved may consist of simple shapes, or they may be imprinted with colors, patterns, sections of a larger picture (like a jigsaw puzzle), numbers, or letters.</p>
+<p>The puzzle is often 3×3, 4×4 or 5×5 in size and made up of square tiles that are slid into a square base, larger than the tiles by one tile space, in a specific large configuration. Tiles are moved/arranged by sliding an adjacent tile into a position occupied by the missing tile, which creates a new space. The sliding puzzle is mechanical and requires the use of no other equipment or tools.</p>
+<h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
+<p>The observation in the Sliding Tile Puzzle game includes information about the puzzle, the position of the empty tile, and the action mask.</p>
 <ul>
 <li>
-<p>observation: Observation</p>
-<ul>
-<li>node_types: jax array (int) of shape (num_nodes):
-    the component type of each node (-1 represents utility nodes).</li>
-<li>adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
-    adjacency matrix of the graph.</li>
-<li>positions: jax array (int) of shape (num_agents,):
-    the index of the last visited node.</li>
-<li>step_count: jax array (int) of shape ():
-    integer to keep track of the number of steps.</li>
-<li>action_mask: jax array (bool) of shape (num_agent, num_nodes):
-    binary mask (False/True &lt;--&gt; invalid/valid action).</li>
-</ul>
+<p><code>puzzle</code>: jax array (int32) of shape <code>(grid_size, grid_size)</code>, representing the current game state. Each element in the array corresponds to a puzzle tile. The tile represented by 0 is the empty tile.</p>
 </li>
 <li>
-<p>reward: float</p>
-</li>
-<li>
-<p>action: jax array (int) of shape (num_agents,): [0,1,..., num_nodes-1]
-    Each agent selects the next node to which it wants to connect.</p>
-</li>
-<li>
-<p>state: State</p>
-<ul>
-<li>node_type: jax array (int) of shape (num_nodes,).
-    the component type of each node (-1 represents utility nodes).</li>
-<li>adj_matrix: jax array (bool) of shape (num_nodes, num_nodes):
-    adjacency matrix of the graph.</li>
-<li>connected_nodes: jax array (int) of shape (num_agents, time_limit).
-    we only count each node visit once.</li>
-<li>connected_nodes_index: jax array (int) of shape (num_agents, num_nodes).</li>
-<li>position_index: jax array (int) of shape (num_agents,).</li>
-<li>node_edges: jax array (int) of shape (num_agents, num_nodes, num_nodes).</li>
-<li>positions: jax array (int) of shape (num_agents,).
-    the index of the last visited node.</li>
-<li>action_mask: jax array (bool) of shape (num_agent, num_nodes).
-    binary mask (False/True &lt;--&gt; invalid/valid action).</li>
-<li>finished_agents: jax array (bool) of shape (num_agent,).</li>
-<li>nodes_to_connect: jax array (int) of shape (num_agents, num_nodes_per_agent).</li>
-<li>step_count: step counter.</li>
-<li>time_limit: the number of steps allowed before an episode terminates.</li>
-<li>key: PRNG key for random sample.</li>
-</ul>
-</li>
-<li>
-<p>constants definitions:</p>
-<ul>
-<li>
-<p>Nodes</p>
-<ul>
-<li>INVALID_NODE = -1: used to check if an agent selects an invalid node.
-    A node may be invalid if its has no edge with the current node or if it is a
-    utility node already selected by another agent.</li>
-<li>UTILITY_NODE = -1: utility node (belongs to no agent).</li>
-<li>EMPTY_NODE = -1: used for padding.
-    state.connected_nodes stores the path (all the nodes) visited by an agent. Hence
-    it has size equal to the step limit. We use this constant to initialise this array
-    since 0 represents the first node.</li>
-<li>DUMMY_NODE = -10: used for tie-breaking if multiple agents select the same node.</li>
-</ul>
-</li>
-<li>
-<p>Edges</p>
-<ul>
-<li>EMPTY_EDGE = -1: used for masking edges array.
-   state.node_edges is the graph's adjacency matrix, but we don't represent it
-   using 0s and 1s, we use the node values instead, i.e <code>A_ij = j</code> or <code>A_ij = -1</code>.
-   Also edges are masked when utility nodes
-   are selected by an agent to make it unaccessible by other agents.</li>
-</ul>
-</li>
-<li>
-<p>Actions encoding</p>
-<ul>
-<li>INVALID_CHOICE = -1</li>
-<li>INVALID_TIE_BREAK = -2</li>
-<li>INVALID_ALREADY_TRAVERSED = -3</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
+<p>Here is an example of a random observation of the game board:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">jumanji.environments</span> <span class="kn">import</span> <span class="n">MMST</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">MMST</span><span class="p">()</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
-<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
-<span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
-<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>```
+[[ 1 2 3 4]
+ [ 5 6 7 8]
+ [ 9 10 0 12]
+ [ 13 14 15 11]]
+```
 </code></pre></div></td></tr></table></div>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">reward</span><span class="o">.</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">Viewer</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-special"><code>special</code></small>
-  </span>
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.__init__" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Create the <code>MMST</code> environment.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>generator</code></td>
-        <td><code>Optional[jumanji.environments.routing.mmst.generator.Generator]</code></td>
-        <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment instance.
-Implemented options are [<code>SplitRandomGenerator</code>].
-Defaults to <code>SplitRandomGenerator(num_nodes=36, num_edges=72, max_degree=5,
-num_agents=3, num_nodes_per_agent=4, max_step=time_limit)</code>.</p></td>
-        <td><code>None</code></td>
-      </tr>
-      <tr>
-        <td><code>reward_fn</code></td>
-        <td><code>Optional[jumanji.environments.routing.mmst.reward.RewardFn]</code></td>
-        <td><p>class of type <code>RewardFn</code>, whose <code>__call__</code> is used as a reward function.
-Implemented options are [<code>DenseRewardFn</code>].
-Defaults to <code>DenseRewardFn(reward_values=(10.0, -1.0, -1.0))</code>.</p></td>
-        <td><code>None</code></td>
-      </tr>
-      <tr>
-        <td><code>time_limit</code></td>
-        <td><code>int</code></td>
-        <td><p>the number of steps allowed before an episode terminates. Defaults to 70.</p></td>
-        <td><code>70</code></td>
-      </tr>
-      <tr>
-        <td><code>viewer</code></td>
-        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.routing.mmst.types.State]]</code></td>
-        <td><p><code>Viewer</code> used for rendering. Defaults to <code>MMSTViewer</code></p></td>
-        <td><code>None</code></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKeyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.reset" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Resets the environment.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>key</code></td>
-        <td><code>PRNGKeyArray</code></td>
-        <td><p>used to randomly generate the problem and the different start nodes.</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>state</code></td>
-      <td><p>State object corresponding to the new state of the environment.
-timestep: TimeStep object corresponding to the first timestep returned by the
-   environment.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">,</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]]</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.step" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Run one timestep of the environment's dynamics.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>state</code></td>
-        <td><code>State</code></td>
-        <td><p>State object containing the dynamics of the environment.</p></td>
-        <td><em>required</em></td>
-      </tr>
-      <tr>
-        <td><code>action</code></td>
-        <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
-        <td><p>Array containing the index of the next node to visit.</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>state, timestep</code></td>
-      <td><p>Tuple[State, TimeStep] containing the next state of the
-   environment, as well as the timestep to be observed.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p>a <code>specs.MultiDiscreteArray</code> spec.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">mmst</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the observation spec.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Spec for the `Observation` whose fields are</code></td>
-      <td><ul>
-<li>node_types: BoundedArray (int32) of shape (num_nodes,).</li>
-<li>adj_matrix: BoundedArray (int) of shape (num_nodes, num_nodes).
-    Represents the adjacency matrix of the graph.</li>
-<li>positions: BoundedArray (int32) of shape (num_agents).
-    Current node position of agent.</li>
-<li>action_mask: BoundedArray (bool) of shape (num_agents, num_nodes,).
-    Represents the valid actions in the current state.</li>
-</ul></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.mmst.env.MMST.render" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.routing.mmst.env.MMST.render" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Render the environment for a given state.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Union[jax.Array, numpy.ndarray, numpy.bool_, numpy.number]</code></td>
-      <td><p>Array of rgb pixel values in the shape (width, height, rgb).</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
+<ul>
+<li>In this array, the tile represented by 0 is the empty tile that can be moved.</li>
+</ul>
+</li>
+<li>
+<p><code>empty_tile_position</code>: a tuple (int32) of shape <code>(2,)</code> representing the position of the empty tile in the grid. For example, (2, 2) would represent the third row and the third column in a zero-indexed grid.</p>
+</li>
+<li>
+<p><code>action_mask</code>: jax array (bool) of shape <code>(4,)</code>, indicating which actions are valid in the current state of the environment. The actions include moving the empty tile up, right, down, or left. For example, an action mask <code>[True, False, True, False]</code> means that the valid actions are to move the empty tile upward or downward.</p>
+</li>
+<li>
+<p><code>step_count</code>: jax array (int32) of shape <code>()</code>, current number of steps in the episode.</p>
+</li>
+</ul>
+<h2 id="action">Action<a class="headerlink" href="#action" title="Permanent link">#</a></h2>
+<p>The action space is a <code>DiscreteArray</code> of integer values in <code>[0, 1, 2, 3]</code>. Specifically, these four actions correspond to moving the empty tile: up (0), right (1), down (2), or left (3).</p>
+<h2 id="reward">Reward<a class="headerlink" href="#reward" title="Permanent link">#</a></h2>
+<p>The reward could be either:</p>
+<ul>
+<li>
+<p><strong>DenseRewardFn</strong>: This reward function provides a dense reward based on the difference of correctly placed tiles between the current state and the next state. The reward is positive for each newly correctly placed tile and negative for each newly incorrectly placed tile.</p>
+</li>
+<li>
+<p><strong>SparseRewardFn</strong>: This reward function provides a sparse reward, only rewarding when the puzzle is solved.
+The reward is 1 if the puzzle is solved, and 0 otherwise.</p>
+</li>
+</ul>
+<p>The goal in all cases is to solve the puzzle in a way that maximizes the reward.</p>
+<h2 id="registered-versions">Registered Versions 📖<a class="headerlink" href="#registered-versions" title="Permanent link">#</a></h2>
+<ul>
+<li><code>SlidingTilePuzzle-v0</code>, the Sliding Tile Puzzle with a grid size of 5x5.</li>
+</ul>
 
   <hr>
 <div class="md-source-file">
@@ -2116,7 +1707,7 @@ timestep: TimeStep object corresponding to the first timestep returned by the
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../maze/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Maze" rel="prev">
+        <a href="../rubiks_cube/" class="md-footer__link md-footer__link--prev" aria-label="Previous: RubiksCube" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -2125,20 +1716,20 @@ timestep: TimeStep object corresponding to the first timestep returned by the
               <span class="md-footer__direction">
                 Previous
               </span>
-              Maze
+              RubiksCube
             </div>
           </div>
         </a>
       
       
         
-        <a href="../snake/" class="md-footer__link md-footer__link--next" aria-label="Next: Snake" rel="next">
+        <a href="../sudoku/" class="md-footer__link md-footer__link--next" aria-label="Next: Sudoku" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Snake
+              Sudoku
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -2172,10 +1763,10 @@ timestep: TimeStep object corresponding to the first timestep returned by the
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tracking", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "search.highlight", "search.share", "search.suggest", "toc.integrate", "toc.follow", "content.code.annotate", "navigation.tabs", "navigation.top"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../assets/javascripts/workers/search.5e67fbfe.min.js"}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "search.highlight", "search.share", "search.suggest", "toc.integrate", "toc.follow", "content.code.annotate", "navigation.tabs", "navigation.top"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.5e67fbfe.min.js"}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e87a5f81.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e87a5f81.min.js"></script>
       
     
   </body>
