@@ -39,7 +39,7 @@ setup(
     name="jumanji",
     version=_get_version(),
     author="InstaDeep",
-    author_email="c.bonnet@instadeep.com",
+    author_email="clement.bonnet16@gmail.com",
     description="A diverse suite of scalable reinforcement learning environments in JAX",
     license="Apache 2.0",
     url="https://github.com/instadeepai/jumanji/",
