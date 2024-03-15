@@ -65,13 +65,14 @@ class Evaluator:
         policy = self.agent.make_policy(
             policy_params=policy_params, stochastic=self.stochastic
         )
-        if isinstance(self.agent, RandomAgent):
-            acting_policy = policy
-        else:
+        if isinstance(self.agent, A2CAgent):
 
             def acting_policy(observation: Any, key: chex.PRNGKey) -> chex.Array:
                 action, _ = policy(observation, key)
                 return action
+
+        else:
+            acting_policy = policy
 
         def cond_fun(carry: Tuple[ActingState, float]) -> jnp.bool_:
             acting_state, _ = carry
@@ -129,10 +130,12 @@ class Evaluator:
         key: chex.PRNGKey,
         eval_batch_size: int,
     ) -> Dict:
-        if isinstance(self.agent, RandomAgent):
+        if isinstance(self.agent, A2CAgent):
+            policy_params = params_state.params.actor
+        elif isinstance(self.agent, RandomAgent):
             policy_params = None
         else:
-            policy_params = params_state.params.actor
+            raise ValueError
         keys = jax.random.split(key, eval_batch_size)
         eval_metrics = jax.vmap(self._eval_one_episode, in_axes=(None, 0))(
             policy_params,
