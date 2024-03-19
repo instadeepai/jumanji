@@ -118,7 +118,7 @@ problems.
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
-| ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
+| ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pac_man/)      | [doc](https://instadeepai.github.io/jumanji/environments/pac_man/)
 | 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
 
 <h2 name="install" id="install">Installation 🎬</h2>
@@ -126,7 +126,7 @@ problems.
 You can install the latest release of Jumanji from PyPI:
 
 ```bash
-pip install jumanji
+pip install -U jumanji
 ```
 
 Alternatively, you can install the latest development version directly from GitHub:
