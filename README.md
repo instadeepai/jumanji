@@ -53,14 +53,17 @@
   </div>
 </div>
 
+## Jumanji @ ICLR 2024
+
+Jumanji has been accepted at [ICLR 2024](https://iclr.cc/), check out our [research paper](https://arxiv.org/abs/2306.09884).
 
 ## Welcome to the Jungle! 🌴
 
-Jumanji is a diverse suite of scalable reinforcement learning environments written in JAX.
+Jumanji is a diverse suite of scalable reinforcement learning environments written in JAX. It now features 22 environments!
 
 Jumanji is helping pioneer a new wave of hardware-accelerated research and development in the
 field of RL. Jumanji's high-speed environments enable faster iteration and large-scale
-experimentation while simultaneously reducing complexity. Originating in the Research Team at
+experimentation while simultaneously reducing complexity. Originating in the research team at
 [InstaDeep](https://www.instadeep.com/), Jumanji is now developed jointly with the open-source
 community. To join us in these efforts, reach out, raise issues and read our
 [contribution guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) or just
@@ -231,17 +234,10 @@ details on how to submit pull requests, our Contributor License Agreement, and c
 If you use Jumanji in your work, please cite the library using:
 
 ```
-@misc{bonnet2023jumanji,
-    title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX},
-    author={
-        Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Vincent Coyette and
-        Paul Duckworth and Laurence I. Midgley and Tristan Kalloniatis and Sasha Abramowitz and
-        Cemlyn N. Waters and Andries P. Smit and Nathan Grinsztajn and Ulrich A. Mbou Sob and
-        Omayma Mahjoub and Elshadai Tegegn and Mohamed A. Mimouni and Raphael Boige and
-        Ruan de Kock and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and
-        Alexandre Laterre
-    },
-    year={2023},
+@misc{bonnet2024jumanji,
+    title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX}, 
+    author={Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Sasha Abramowitz and Paul Duckworth and Vincent Coyette and Laurence I. Midgley and Elshadai Tegegn and Tristan Kalloniatis and Omayma Mahjoub and Matthew Macfarlane and Andries P. Smit and Nathan Grinsztajn and Raphael Boige and Cemlyn N. Waters and Mohamed A. Mimouni and Ulrich A. Mbou Sob and Ruan de Kock and Siddarth Singh and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and Alexandre Laterre},
+    year={2024},
     eprint={2306.09884},
     url={https://arxiv.org/abs/2306.09884},
     archivePrefix={arXiv},
