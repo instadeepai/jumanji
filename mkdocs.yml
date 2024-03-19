@@ -37,11 +37,11 @@ nav:
           - Maze: environments/maze.md
           - MMST: environments/mmst.md
           - MultiCVRP: environments/multi_cvrp.md
+          - PacMan: environments/pac_man.md
           - RobotWarehouse: environments/robot_warehouse.md
+          - Sokoban: environments/sokoban.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
-          - Sokoban: environments/sokoban.md
-          - PacMan: environments/pac_man.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
@@ -70,11 +70,11 @@ nav:
               - Maze: api/environments/maze.md
               - MMST: api/environments/mmst.md
               - MultiCVRP: api/environments/multi_cvrp.md
+              - PacMan: api/environments/pac_man.md
               - RobotWarehouse: api/environments/robot_warehouse.md
+              - Sokoban: api/environments/sokoban.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
-              - Sokoban: api/environments/sokoban.md
-              - PacMan: api/environments/pac_man.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
