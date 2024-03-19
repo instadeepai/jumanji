@@ -26,28 +26,30 @@
     <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="16%">
     <img src="docs/env_anim/connector.gif" alt="Connector" width="16%">
     <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="16%">
+    <img src="docs/env_anim/flat_pack.gif" alt="FlatPack" width="16%">
     <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="16%">
-    <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="16%">
   </div>
   <div class="row" align="center">
+    <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="16%">
     <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="16%">
     <img src="docs/env_anim/knapsack.gif" alt="Knapsack" width="16%">
     <img src="docs/env_anim/maze.gif" alt="Maze" width="16%">
     <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="16%">
     <img src="docs/env_anim/mmst.gif" alt="MMST" width="16%">
-    <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
   </div>
   <div class="row" align="center">
+    <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
+    <img src="docs/env_anim/pac_man.gif" alt="PacMan" width="16%">
     <img src="docs/env_anim/robot_warehouse.gif" alt="RobotWarehouse" width="16%">
     <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="16%">
+    <img src="docs/env_anim/sliding_tile_puzzle.gif" alt="SlidingTilePuzzle" width="16%">
     <img src="docs/env_anim/snake.gif" alt="Snake" width="16%">
+  </div>
+    <div class="row" align="center">
+    <img src="docs/env_anim/sokoban.gif" alt="RobotWarehouse" width="16%">
     <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="16%">
     <img src="docs/env_anim/tetris.gif" alt="Tetris" width="16%">
     <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
-  </div>
-    <div class="row" align="center">
-    <img src="docs/env_anim/pac_man.gif" alt="RobotWarehouse" width="16%">
-    <img src="docs/env_anim/sokoban.gif" alt="RobotWarehouse" width="16%">
   </div>
 </div>
 
