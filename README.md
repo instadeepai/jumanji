@@ -236,7 +236,7 @@ If you use Jumanji in your work, please cite the library using:
 
 ```
 @misc{bonnet2024jumanji,
-    title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX}, 
+    title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX},
     author={Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Sasha Abramowitz and Paul Duckworth and Vincent Coyette and Laurence I. Midgley and Elshadai Tegegn and Tristan Kalloniatis and Omayma Mahjoub and Matthew Macfarlane and Andries P. Smit and Nathan Grinsztajn and Raphael Boige and Cemlyn N. Waters and Mohamed A. Mimouni and Ulrich A. Mbou Sob and Ruan de Kock and Siddarth Singh and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and Alexandre Laterre},
     year={2024},
     eprint={2306.09884},
