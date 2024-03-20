@@ -12,4 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "1.0.0"
+from jumanji.training.networks.masked_categorical_random import (
+    masked_categorical_random,
+)
+from jumanji.training.networks.protocols import RandomPolicy
+
+
+def make_random_policy_sliding_tile_puzzle() -> RandomPolicy:
+    """Make random policy for SlidingTilePuzzle."""
+    return masked_categorical_random

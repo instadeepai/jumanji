@@ -88,7 +88,7 @@ class UNet(hk.Module):
         # Grid observation is of shape (B, num_rows, num_cols)
 
         # Add a channel dimension
-        grid_observation = grid_observation[..., jnp.newaxis]
+        grid_observation = grid_observation[..., jnp.newaxis].astype(float)
 
         # Down colvolve with strided convolutions
         down_1 = hk.Conv2D(32, kernel_shape=3, stride=2, padding="SAME")(
@@ -155,9 +155,10 @@ class FlatPackTorso(hk.Module):
         # observation.grid (B, num_rows, num_cols)
 
         # Flatten the blocks
+        # (B, num_blocks, 9)
         flattened_blocks = jnp.reshape(
             observation.blocks, (-1, self.num_blocks, 9)
-        )  # (B, num_blocks, 9)
+        ).astype(float)
 
         # Encode the blocks with an MLP
         block_encoder = hk.nets.MLP(output_sizes=[self.model_size])

@@ -22,7 +22,7 @@ import pytest
 from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, WALL
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.sokoban.generator import (
-    DeepMindGenerator,
+    HuggingFaceDeepMindGenerator,
     SimpleSolveGenerator,
 )
 from jumanji.environments.routing.sokoban.types import State
@@ -36,10 +36,9 @@ from jumanji.types import TimeStep
 @pytest.fixture(scope="session")
 def sokoban() -> Sokoban:
     env = Sokoban(
-        generator=DeepMindGenerator(
-            difficulty="unfiltered",
-            split="train",
-            proportion_of_files=0.005,
+        generator=HuggingFaceDeepMindGenerator(
+            "unfiltered-train",
+            proportion_of_files=0.01,
         )
     )
     return env
