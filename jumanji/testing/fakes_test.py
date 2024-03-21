@@ -31,7 +31,7 @@ def test_fake_environment__reset(fake_environment: fakes.FakeEnvironment) -> Non
 def test_fake_environment__step(fake_environment: fakes.FakeEnvironment) -> None:
     """Validates the step function of the fake environment."""
     state, timestep = fake_environment.reset(random.PRNGKey(0))
-    action = fake_environment.action_spec().generate_value()
+    action = fake_environment.action_spec.generate_value()
     next_state, timestep = fake_environment.step(state, action)
     # Check that the step value is now different
     assert state.step != next_state.step
@@ -43,7 +43,7 @@ def test_fake_environment__does_not_smoke(
 ) -> None:
     """Validates the run of an episode in the fake environment. Check that it does not smoke."""
     state, timestep = fake_environment.reset(random.PRNGKey(0))
-    action = fake_environment.action_spec().generate_value()
+    action = fake_environment.action_spec.generate_value()
     while not timestep.last():
         state, timestep = fake_environment.step(state, action)
 
@@ -67,7 +67,7 @@ def test_fake_multi_environment__step(
 ) -> None:
     """Validates the step function of the fake multi agent environment."""
     state, timestep = fake_multi_environment.reset(random.PRNGKey(0))
-    action = fake_multi_environment.action_spec().generate_value()
+    action = fake_multi_environment.action_spec.generate_value()
     assert action.shape[0] == fake_multi_environment.num_agents
 
     next_state, timestep = fake_multi_environment.step(state, action)
@@ -85,7 +85,7 @@ def test_fake_multi_environment__does_not_smoke(
     """Validates the run of an episode in the fake multi agent environment.
     Check that it does not smoke."""
     state, timestep = fake_multi_environment.reset(random.PRNGKey(0))
-    action = fake_multi_environment.action_spec().generate_value()
+    action = fake_multi_environment.action_spec.generate_value()
     assert action.shape[0] == fake_multi_environment.num_agents
     while not timestep.last():
         state, timestep = fake_multi_environment.step(state, action)

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -40,7 +41,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class SlidingTilePuzzle(Environment[State]):
+class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
     """Environment for the Sliding Tile Puzzle problem.
 
     The problem is a combinatorial optimization task where the goal is
@@ -95,8 +96,8 @@ class SlidingTilePuzzle(Environment[State]):
             grid_size=5, num_random_moves=200
         )
         self.reward_fn = reward_fn or DenseRewardFn()
-
         self.time_limit = time_limit
+        super().__init__()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or SlidingTilePuzzleViewer(name="SlidingTilePuzzle")
@@ -205,6 +206,7 @@ class SlidingTilePuzzle(Environment[State]):
         num_correct_tiles = jnp.sum(self.solved_puzzle == state.puzzle)
         return {"prop_correctly_placed": num_correct_tiles / state.puzzle.size}
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
         grid_size = self.generator.grid_size
@@ -241,6 +243,7 @@ class SlidingTilePuzzle(Environment[State]):
             ),
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec."""
         # Up, Right, Down, Left

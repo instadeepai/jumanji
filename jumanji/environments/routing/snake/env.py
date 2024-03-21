@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -29,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Snake(Environment[State]):
+class Snake(Environment[State, specs.DiscreteArray, Observation]):
     """A JAX implementation of the 'Snake' game.
 
     - observation: `Observation`
@@ -84,7 +85,7 @@ class Snake(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -108,11 +109,11 @@ class Snake(Environment[State]):
                 the episode ends. Defaults to 4000.
             viewer: `Viewer` used for rendering. Defaults to `SnakeViewer`.
         """
-        super().__init__()
         self.num_rows = num_rows
         self.num_cols = num_cols
         self.board_shape = (num_rows, num_cols)
         self.time_limit = time_limit
+        super().__init__()
         self._viewer = viewer or SnakeViewer()
 
     def __repr__(self) -> str:
@@ -235,6 +236,7 @@ class Snake(Environment[State]):
         )
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
@@ -269,6 +271,7 @@ class Snake(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 

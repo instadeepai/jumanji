@@ -25,5 +25,5 @@ pytype
 scipy>=1.7.3
 testfixtures
 types-Pillow
-types-requests
+types-requests<1.27
 types-setuptools

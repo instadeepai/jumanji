@@ -19,7 +19,10 @@ from jax import numpy as jnp
 from jumanji.environments.routing.cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.cvrp.env import CVRP
 from jumanji.environments.routing.cvrp.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -94,6 +97,10 @@ class TestSparseCVRP:
     def test_cvrp_sparse__does_not_smoke(self, cvrp_sparse_reward: CVRP) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(cvrp_sparse_reward)
+
+    def test_cvrp_sparse__specs_does_not_smoke(self, cvrp_sparse_reward: CVRP) -> None:
+        """Test that we can access specs without any errors."""
+        check_env_specs_does_not_smoke(cvrp_sparse_reward)
 
     def test_cvrp_sparse__trajectory_action(self, cvrp_sparse_reward: CVRP) -> None:
         """Tests a trajectory by visiting nodes in increasing and cyclic order, visiting the depot

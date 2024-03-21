@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import functools
+from functools import cached_property
 from typing import List, Optional, Sequence, Tuple
 
 import chex
@@ -48,7 +49,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class RobotWarehouse(Environment[State]):
+class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the 'Robotic warehouse' environment:
     https://github.com/semitable/robotic-warehouse
     which is described in the paper [1].
@@ -127,7 +128,7 @@ class RobotWarehouse(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -182,6 +183,7 @@ class RobotWarehouse(Environment[State]):
         )
         self.goals = self._generator.goals
         self.time_limit = time_limit
+        super().__init__()
 
         # create viewer for rendering environment
         self._viewer = viewer or RobotWarehouseViewer(
@@ -334,6 +336,7 @@ class RobotWarehouse(Environment[State]):
         )
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specification of the observation of the `RobotWarehouse` environment.
         Returns:
@@ -357,6 +360,7 @@ class RobotWarehouse(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. 5 actions: [0,1,2,3,4] -> [No Op, Forward, Left, Right, Toggle_load].
         Since this is a multi-agent environment, the environment expects an array of actions.

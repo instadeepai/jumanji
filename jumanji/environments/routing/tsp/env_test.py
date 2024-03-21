@@ -19,7 +19,10 @@ import pytest
 
 from jumanji.environments.routing.tsp.env import TSP
 from jumanji.environments.routing.tsp.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
 
@@ -197,6 +200,12 @@ class TestSparseTSP:
     ) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(tsp_sparse_reward)
+
+    def test_tsp_sparse__specs_does_not_smoke(
+        self, tsp_sparse_reward: TSP, capsys: pytest.CaptureFixture
+    ) -> None:
+        """Test that we can access specs without any errors."""
+        check_env_specs_does_not_smoke(tsp_sparse_reward)
 
     def test_tsp_sparse__trajectory_action(self, tsp_sparse_reward: TSP) -> None:
         """Checks that the agent stops when there are no more cities to be selected and that the

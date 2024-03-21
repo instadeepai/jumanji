@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -30,7 +31,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Knapsack(Environment[State]):
+class Knapsack(Environment[State, specs.DiscreteArray, Observation]):
     """Knapsack environment as described in [1].
 
     - observation: Observation
@@ -76,7 +77,7 @@ class Knapsack(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -107,6 +108,7 @@ class Knapsack(Environment[State]):
             total_budget=12.5,
         )
         self.num_items = self.generator.num_items
+        super().__init__()
         self.total_budget = self.generator.total_budget
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or KnapsackViewer(
@@ -176,6 +178,7 @@ class Knapsack(Environment[State]):
 
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
@@ -223,6 +226,7 @@ class Knapsack(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 

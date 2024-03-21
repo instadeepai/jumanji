@@ -40,7 +40,7 @@ def make_cnn_actor_critic_networks_sudoku(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Sudoku` environment. Uses the
     CNN network architecture."""
-    num_actions = sudoku.action_spec().num_values
+    num_actions = sudoku.action_spec.num_values
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=np.asarray(num_actions)
     )
@@ -71,7 +71,7 @@ def make_equivariant_actor_critic_networks_sudoku(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Sudoku` environment. Uses the
     digits-permutation equivariant network architecture."""
-    num_actions = sudoku.action_spec().num_values
+    num_actions = sudoku.action_spec.num_values
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=np.asarray(num_actions)
     )

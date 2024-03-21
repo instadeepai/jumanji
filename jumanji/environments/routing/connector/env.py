@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -46,7 +47,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Connector(Environment[State]):
+class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
     must be connected without overlapping the paths taken by any other set. This is achieved
     by allowing certain points to move to an adjacent cell at each step. However, each time a
@@ -88,7 +89,7 @@ class Connector(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_specc.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -118,6 +119,7 @@ class Connector(Environment[State]):
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
+        super().__init__()
         self._agent_ids = jnp.arange(self.num_agents)
         self._viewer = viewer or ConnectorViewer(
             "Connector", self.num_agents, render_mode="human"
@@ -318,6 +320,7 @@ class Connector(Environment[State]):
         """
         self._viewer.close()
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
 
@@ -356,6 +359,7 @@ class Connector(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec for the Connector environment.
 

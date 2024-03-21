@@ -40,7 +40,7 @@ def make_actor_critic_networks_flat_pack(
     hidden_size: int,
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `FlatPack` environment."""
-    num_values = np.asarray(flat_pack.action_spec().num_values)
+    num_values = np.asarray(flat_pack.action_spec.num_values)
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=num_values
     )
@@ -172,7 +172,6 @@ class FlatPackTorso(hk.Module):
         )  # (B, model_size), (B, num_rows-2, num_cols-2, hidden_size)
 
         for block_id in range(self.num_transformer_layers):
-
             (
                 self_attention_mask,  # (B, 1, num_blocks, num_blocks)
                 cross_attention_mask,  # (B, 1, num_blocks, 1)

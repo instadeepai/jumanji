@@ -13,17 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Generic,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from functools import cached_property
+from typing import Any, Callable, ClassVar, Dict, Generic, Optional, Tuple, Union
 
 import chex
 import dm_env.specs
@@ -33,23 +24,23 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji import specs, tree_utils
-from jumanji.env import Environment, State
+from jumanji.env import ActionSpec, Environment, Observation, State
 from jumanji.types import TimeStep
-
-Observation = TypeVar("Observation")
 
 # Type alias that corresponds to ObsType in the Gym API
 GymObservation = Any
 
 
-class Wrapper(Environment[State], Generic[State]):
+class Wrapper(
+    Environment[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Wraps the environment to allow modular transformations.
     Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
     """
 
-    def __init__(self, env: Environment):
-        super().__init__()
+    def __init__(self, env: Environment[State, ActionSpec, Observation]):
         self._env = env
+        super().__init__()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({repr(self._env)})"
@@ -60,11 +51,11 @@ class Wrapper(Environment[State], Generic[State]):
         return getattr(self._env, name)
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         """Returns the wrapped env."""
         return self._env.unwrapped
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -76,7 +67,9 @@ class Wrapper(Environment[State], Generic[State]):
         """
         return self._env.reset(key)
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -89,21 +82,25 @@ class Wrapper(Environment[State], Generic[State]):
         """
         return self._env.step(state, action)
 
-    def observation_spec(self) -> specs.Spec:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
-        return self._env.observation_spec()
+        return self._env.observation_spec
 
-    def action_spec(self) -> specs.Spec:
+    @cached_property
+    def action_spec(self) -> ActionSpec:
         """Returns the action spec."""
-        return self._env.action_spec()
+        return self._env.action_spec
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns the reward spec."""
-        return self._env.reward_spec()
+        return self._env.reward_spec
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Returns the discount spec."""
-        return self._env.discount_spec()
+        return self._env.discount_spec
 
     def render(self, state: State) -> Any:
         """Compute render frames during initialisation of the environment.
@@ -128,10 +125,16 @@ class Wrapper(Environment[State], Generic[State]):
         self.close()
 
 
-class JumanjiToDMEnvWrapper(dm_env.Environment):
+class JumanjiToDMEnvWrapper(
+    dm_env.Environment, Generic[State, ActionSpec, Observation]
+):
     """A wrapper that converts Environment to dm_env.Environment."""
 
-    def __init__(self, env: Environment, key: Optional[chex.PRNGKey] = None):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        key: Optional[chex.PRNGKey] = None,
+    ):
         """Create the wrapped environment.
 
         Args:
@@ -165,7 +168,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
                 - observation: A NumPy array, or a nested dict, list or tuple of arrays.
                     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
                     are also valid in place of a scalar array. Must conform to the
-                    specification returned by `observation_spec()`.
+                    specification returned by `observation_spec`.
         """
         reset_key, self._key = jax.random.split(self._key)
         self._state, timestep = self._jitted_reset(reset_key)
@@ -184,21 +187,21 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
 
         Args:
             action: A NumPy array, or a nested dict, list or tuple of arrays
-                corresponding to `action_spec()`.
+                corresponding to `action_spec`.
 
         Returns:
             A `TimeStep` namedtuple containing:
                 - step_type: A `StepType` value.
                 - reward: Reward at this timestep, or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
-                    `reward_spec()`.
+                    `reward_spec`.
                 - discount: A discount in the range [0, 1], or None if step_type is
                     `StepType.FIRST`. Must conform to the specification returned by
-                    `discount_spec()`.
+                    `discount_spec`.
                 - observation: A NumPy array, or a nested dict, list or tuple of arrays.
                     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
                     are also valid in place of a scalar array. Must conform to the
-                    specification returned by `observation_spec()`.
+                    specification returned by `observation_spec`.
         """
         self._state, timestep = self._jitted_step(self._state, action)
         return dm_env.TimeStep(
@@ -210,23 +213,25 @@ class JumanjiToDMEnvWrapper(dm_env.Environment):
 
     def observation_spec(self) -> dm_env.specs.Array:
         """Returns the dm_env observation spec."""
-        return specs.jumanji_specs_to_dm_env_specs(self._env.observation_spec())
+        return specs.jumanji_specs_to_dm_env_specs(self._env.observation_spec)
 
     def action_spec(self) -> dm_env.specs.Array:
         """Returns the dm_env action spec."""
-        return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec())
+        return specs.jumanji_specs_to_dm_env_specs(self._env.action_spec)
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self._env
 
 
-class MultiToSingleWrapper(Wrapper):
+class MultiToSingleWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """A wrapper that converts a multi-agent Environment to a single-agent Environment."""
 
     def __init__(
         self,
-        env: Environment,
+        env: Environment[State, ActionSpec, Observation],
         reward_aggregator: Callable = jnp.sum,
         discount_aggregator: Callable = jnp.max,
     ):
@@ -243,7 +248,9 @@ class MultiToSingleWrapper(Wrapper):
         self._reward_aggregator = reward_aggregator
         self._discount_aggregator = discount_aggregator
 
-    def _aggregate_timestep(self, timestep: TimeStep) -> TimeStep:
+    def _aggregate_timestep(
+        self, timestep: TimeStep[Observation]
+    ) -> TimeStep[Observation]:
         """Apply the reward and discount aggregator to a multi-agent
             timestep object to create a new timestep object that consists
             of a scalar reward and discount value.
@@ -298,7 +305,9 @@ class MultiToSingleWrapper(Wrapper):
         return state, timestep
 
 
-class VmapWrapper(Wrapper):
+class VmapWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Vectorized Jax env.
     Please note that all methods that return arrays do not return a batch dimension because the
     batch size is not known to the VmapWrapper. Methods that omit the batch dimension include:
@@ -379,7 +388,9 @@ def add_obs_to_extras(timestep: TimeStep[Observation]) -> TimeStep[Observation]:
     return timestep.replace(extras=extras)  # type: ignore
 
 
-class AutoResetWrapper(Wrapper):
+class AutoResetWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Automatically resets environments that are done. Once the terminal state is reached,
     the state, observation, and step_type are reset. The observation and step_type of the
     terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
@@ -390,7 +401,11 @@ class AutoResetWrapper(Wrapper):
     being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
-    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        next_obs_in_extras: bool = False,
+    ):
         """Wrap an environment to automatically reset it when the episode terminates.
 
         Args:
@@ -453,7 +468,9 @@ class AutoResetWrapper(Wrapper):
         return state, timestep
 
 
-class VmapAutoResetWrapper(Wrapper):
+class VmapAutoResetWrapper(
+    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+):
     """Efficient combination of VmapWrapper and AutoResetWrapper, to be used as a replacement of
     the combination of both wrappers.
     `env = VmapAutoResetWrapper(env)` is equivalent to `env = VmapWrapper(AutoResetWrapper(env))`
@@ -465,7 +482,11 @@ class VmapAutoResetWrapper(Wrapper):
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
 
-    def __init__(self, env: Environment, next_obs_in_extras: bool = False):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        next_obs_in_extras: bool = False,
+    ):
         """Wrap an environment to vmap it and automatically reset it when the episode terminates.
 
         Args:
@@ -529,7 +550,7 @@ class VmapAutoResetWrapper(Wrapper):
         return state, timestep
 
     def _auto_reset(
-        self, state: State, timestep: TimeStep
+        self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
         """Reset the state and overwrite `timestep.observation` with the reset observation
         if the episode has terminated.
@@ -556,7 +577,7 @@ class VmapAutoResetWrapper(Wrapper):
         return state, timestep
 
     def _maybe_reset(
-        self, state: State, timestep: TimeStep
+        self, state: State, timestep: TimeStep[Observation]
     ) -> Tuple[State, TimeStep[Observation]]:
         """Overwrite the state and timestep appropriately if the episode terminates."""
         state, timestep = jax.lax.cond(
@@ -580,14 +601,19 @@ class VmapAutoResetWrapper(Wrapper):
         return super().render(state_0)
 
 
-class JumanjiToGymWrapper(gym.Env):
+class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
     """A wrapper that converts a Jumanji `Environment` to one that follows the `gym.Env` API."""
 
     # Flag that prevents `gym.register` from misinterpreting the `_step` and
     # `_reset` as signs of a deprecated gym Env API.
     _gym_disable_underscore_compat: ClassVar[bool] = True
 
-    def __init__(self, env: Environment, seed: int = 0, backend: Optional[str] = None):
+    def __init__(
+        self,
+        env: Environment[State, ActionSpec, Observation],
+        seed: int = 0,
+        backend: Optional[str] = None,
+    ):
         """Create the Gym environment.
 
         Args:
@@ -601,9 +627,9 @@ class JumanjiToGymWrapper(gym.Env):
         self.backend = backend
         self._state = None
         self.observation_space = specs.jumanji_specs_to_gym_spaces(
-            self._env.observation_spec()
+            self._env.observation_spec
         )
-        self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec())
+        self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec)
 
         def reset(key: chex.PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
             """Reset function of a Jumanji environment to be jitted."""
@@ -691,6 +717,8 @@ class JumanjiToGymWrapper(gym.Env):
             mode: currently not used since Jumanji does not currently support modes.
         """
         del mode
+        if self._state is None:
+            raise ValueError("Cannot render when _state is None.")
         return self._env.render(self._state)
 
     def close(self) -> None:
@@ -698,7 +726,7 @@ class JumanjiToGymWrapper(gym.Env):
         self._env.close()
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self._env
 
 

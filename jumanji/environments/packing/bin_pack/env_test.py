@@ -33,14 +33,18 @@ from jumanji.environments.packing.bin_pack.types import (
     item_from_space,
     location_from_space,
 )
-from jumanji.testing.env_not_smoke import SelectActionFn, check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    SelectActionFn,
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
 
 @pytest.fixture
 def bin_pack_random_select_action(bin_pack: BinPack) -> SelectActionFn:
-    num_ems, num_items = np.asarray(bin_pack.action_spec().num_values)
+    num_ems, num_items = np.asarray(bin_pack.action_spec.num_values)
 
     def select_action(key: chex.PRNGKey, observation: Observation) -> chex.Array:
         """Randomly sample valid actions, as determined by `observation.action_mask`."""
@@ -148,7 +152,7 @@ def test_bin_pack_step__jit(bin_pack: BinPack) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = bin_pack.reset(key)
 
-    action = bin_pack.action_spec().generate_value()
+    action = bin_pack.action_spec.generate_value()
     _ = step_fn(state, action)
     # Call again to check it does not compile twice.
     state, timestep = step_fn(state, action)
@@ -166,6 +170,11 @@ def test_bin_pack__does_not_smoke(
 ) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(bin_pack, bin_pack_random_select_action)
+
+
+def test_bin_pack__specs_does_not_smoke(bin_pack: BinPack) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(bin_pack)
 
 
 def test_bin_pack__pack_all_items_dummy_instance(

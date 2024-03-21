@@ -18,7 +18,10 @@ import jax.numpy as jnp
 
 from jumanji.environments.logic.graph_coloring import GraphColoring
 from jumanji.environments.logic.graph_coloring.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -90,3 +93,8 @@ def test_graph_coloring_get_action_mask(graph_coloring: GraphColoring) -> None:
 def test_graph_coloring_does_not_smoke(graph_coloring: GraphColoring) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(graph_coloring)
+
+
+def test_graph_coloring_specs_does_not_smoke(graph_coloring: GraphColoring) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(graph_coloring)

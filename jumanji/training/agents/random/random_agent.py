@@ -33,7 +33,7 @@ class RandomAgent(Agent):
     ) -> None:
         super().__init__(total_batch_size=total_batch_size)
         self.env = env
-        self.observation_spec = env.observation_spec()
+        self.observation_spec = env.observation_spec
         self.n_steps = n_steps
         self.random_policy = random_policy
 
