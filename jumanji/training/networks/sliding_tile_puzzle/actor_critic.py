@@ -40,7 +40,7 @@ def make_actor_critic_networks_sliding_tile_puzzle(
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `SlidingTilePuzzle` environment."""
-    num_actions = sliding_tile_puzzle.action_spec().num_values
+    num_actions = sliding_tile_puzzle.action_spec.num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )

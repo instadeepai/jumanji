@@ -104,7 +104,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
     key_train = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env_train.reset)(key_train)
     env_train.render(state)
-    action = env_train.action_spec().generate_value()
+    action = env_train.action_spec.generate_value()
     state, timestep = jax.jit(env_train.step)(state, action)
     env_train.render(state)
     ```

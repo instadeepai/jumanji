@@ -18,7 +18,10 @@ import jax.numpy as jnp
 
 from jumanji.environments.logic.sliding_tile_puzzle import SlidingTilePuzzle
 from jumanji.environments.logic.sliding_tile_puzzle.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -86,6 +89,13 @@ def test_sliding_tile_puzzle_does_not_smoke(
 ) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(sliding_tile_puzzle)
+
+
+def test_sliding_tile_puzzle_specs_does_not_smoke(
+    sliding_tile_puzzle: SlidingTilePuzzle,
+) -> None:
+    """Test that we access specs without any errors."""
+    check_env_specs_does_not_smoke(sliding_tile_puzzle)
 
 
 def test_env_one_move_to_solve(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
