@@ -1155,6 +1155,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="md-nav__link">
+    observation_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="md-nav__link">
+    action_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.__init__" class="md-nav__link">
     __init__()
   </a>
@@ -1171,20 +1185,6 @@
           <li class="md-nav__item">
   <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.step" class="md-nav__link">
     step()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="md-nav__link">
-    observation_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="md-nav__link">
-    action_spec()
   </a>
   
 </li>
@@ -1714,7 +1714,7 @@ Minesweeper            (<a class="autorefs autorefs-internal" title="jumanji.env
 <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1726,6 +1726,90 @@ Minesweeper            (<a class="autorefs autorefs-internal" title="jumanji.env
 
 
 
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">:</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Specifications of the observation of the <code>Minesweeper</code> environment.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Spec for the `Observation` whose fields are</code></td>
+      <td><ul>
+<li>board: BoundedArray (int32) of shape (num_rows, num_cols).</li>
+<li>action_mask: BoundedArray (bool) of shape (num_rows, num_cols).</li>
+<li>num_mines: BoundedArray (int32) of shape ().</li>
+<li>step_count: BoundedArray (int32) of shape ().</li>
+</ul></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">:</span> <span class="n">MultiDiscreteArray</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the action spec.
+An action consists of the height and width of the square to be explored.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action_spec</code></td>
+      <td><p><code>specs.MultiDiscreteArray</code> object.</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
 
 
 
@@ -1922,82 +2006,6 @@ next_timestep: <code>TimeStep</code> corresponding to the timestep returned by t
 
 
 
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">minesweeper</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Specifications of the observation of the <code>Minesweeper</code> environment.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Spec for the `Observation` whose fields are</code></td>
-      <td><ul>
-<li>board: BoundedArray (int32) of shape (num_rows, num_cols).</li>
-<li>action_mask: BoundedArray (bool) of shape (num_rows, num_cols).</li>
-<li>num_mines: BoundedArray (int32) of shape ().</li>
-<li>step_count: BoundedArray (int32) of shape ().</li>
-</ul></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.logic.minesweeper.env.Minesweeper.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec.
-An action consists of the height and width of the square to be explored.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p><code>specs.MultiDiscreteArray</code> object.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
 
 
   </div>
@@ -2011,7 +2019,7 @@ An action consists of the height and width of the square to be explored.</p>
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

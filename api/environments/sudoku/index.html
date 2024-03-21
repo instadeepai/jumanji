@@ -1197,6 +1197,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="md-nav__link">
+    observation_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="md-nav__link">
+    action_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jumanji.environments.logic.sudoku.env.Sudoku.__init__" class="md-nav__link">
     __init__()
   </a>
@@ -1213,20 +1227,6 @@
           <li class="md-nav__item">
   <a href="#jumanji.environments.logic.sudoku.env.Sudoku.step" class="md-nav__link">
     step()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="md-nav__link">
-    observation_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="md-nav__link">
-    action_spec()
   </a>
   
 </li>
@@ -1705,7 +1705,7 @@ Sudoku            (<a class="autorefs autorefs-internal" title="jumanji.env.Envi
 <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1717,6 +1717,88 @@ Sudoku            (<a class="autorefs autorefs-internal" title="jumanji.env.Envi
 
 
 
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">:</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">sudoku</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the observation spec containing the board and action_mask arrays.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Spec containing all the specifications for all the `Observation` fields</code></td>
+      <td><ul>
+<li>board: BoundedArray (jnp.int8) of shape (9,9).</li>
+<li>action_mask: BoundedArray (bool) of shape (9,9,9).</li>
+</ul></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">:</span> <span class="n">MultiDiscreteArray</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the action spec. An action is composed of 3 integers: the row index,
+the column index and the value to be placed in the cell.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action_spec</code></td>
+      <td><p><code>MultiDiscreteArray</code> object.</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
 
 
 
@@ -1861,80 +1943,6 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 
 
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">logic</span><span class="o">.</span><span class="n">sudoku</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.logic.sudoku.env.Sudoku.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the observation spec containing the board and action_mask arrays.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Spec containing all the specifications for all the `Observation` fields</code></td>
-      <td><ul>
-<li>board: BoundedArray (jnp.int8) of shape (9,9).</li>
-<li>action_mask: BoundedArray (bool) of shape (9,9,9).</li>
-</ul></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.logic.sudoku.env.Sudoku.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec. An action is composed of 3 integers: the row index,
-the column index and the value to be placed in the cell.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p><code>MultiDiscreteArray</code> object.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
 
 
   </div>
@@ -1948,7 +1956,7 @@ the column index and the value to be placed in the cell.</p>
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

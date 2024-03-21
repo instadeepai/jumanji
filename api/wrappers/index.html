@@ -1708,7 +1708,7 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
 
 
 <h4 id="jumanji.wrappers.Wrapper.unwrapped" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span></code>
+<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">]</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-property"><code>property</code></small>
@@ -1726,6 +1726,102 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
 
 
 
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jumanji.wrappers.Wrapper.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">:</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">Observation</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.wrappers.Wrapper.observation_spec" class="headerlink" title="Permanent link">#</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the observation spec.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jumanji.wrappers.Wrapper.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">:</span> <span class="n">ActionSpec</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.wrappers.Wrapper.action_spec" class="headerlink" title="Permanent link">#</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the action spec.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jumanji.wrappers.Wrapper.reward_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">:</span> <span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.wrappers.Wrapper.reward_spec" class="headerlink" title="Permanent link">#</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the reward spec.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jumanji.wrappers.Wrapper.discount_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">:</span> <span class="n">specs</span><span class="o">.</span><span class="n">BoundedArray</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.wrappers.Wrapper.discount_spec" class="headerlink" title="Permanent link">#</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the discount spec.</p>
+    </div>
+
+  </div>
+
+
+
 
 
 
@@ -1734,7 +1830,7 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
 
 
 <h4 id="jumanji.wrappers.Wrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">])</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1756,7 +1852,7 @@ Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72</p>
 
 
 <h4 id="jumanji.wrappers.Wrapper.reset" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.reset" class="headerlink" title="Permanent link">#</a></h4>
@@ -1811,7 +1907,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 
 <h4 id="jumanji.wrappers.Wrapper.step" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]</span></code>
+<code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]</span></code>
 
 
 <a href="#jumanji.wrappers.Wrapper.step" class="headerlink" title="Permanent link">#</a></h4>
@@ -1861,86 +1957,6 @@ timestep: TimeStep object corresponding the timestep returned by the environment
     </tr>
   </tbody>
 </table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.Wrapper.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
-
-
-<a href="#jumanji.wrappers.Wrapper.observation_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the observation spec.</p>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.Wrapper.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Spec</span></code>
-
-
-<a href="#jumanji.wrappers.Wrapper.action_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action spec.</p>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.Wrapper.reward_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">reward_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">Array</span></code>
-
-
-<a href="#jumanji.wrappers.Wrapper.reward_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the reward spec.</p>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h4 id="jumanji.wrappers.Wrapper.discount_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">discount_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">specs</span><span class="o">.</span><span class="n">BoundedArray</span></code>
-
-
-<a href="#jumanji.wrappers.Wrapper.discount_spec" class="headerlink" title="Permanent link">#</a></h4>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the discount spec.</p>
-
     </div>
 
   </div>
@@ -2068,7 +2084,7 @@ garbage collected or when the program exits.</p>
 
 <h3 id="jumanji.wrappers.JumanjiToDMEnvWrapper" class="doc doc-heading">
         <code>
-JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">Environment</span>)
+JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">Environment</span>, <span title="typing.Generic">Generic</span>)
         </code>
 
 
@@ -2094,7 +2110,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.unwrapped" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span></code>
+<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">]</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-property"><code>property</code></small>
@@ -2119,7 +2135,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 
 
 <h4 id="jumanji.wrappers.JumanjiToDMEnvWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2144,7 +2160,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
   <tbody>
       <tr>
         <td><code>env</code></td>
-        <td><code>Environment</code></td>
+        <td><code>Environment[State, ActionSpec, Observation]</code></td>
         <td><p><code>Environment</code>to wrap to a <code>dm_env.Environment</code>.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2194,7 +2210,7 @@ JumanjiToDMEnvWrapper            (<span title="dm_env._environment.Environment">
 <li>observation: A NumPy array, or a nested dict, list or tuple of arrays.
     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
     are also valid in place of a scalar array. Must conform to the
-    specification returned by <code>observation_spec()</code>.</li>
+    specification returned by <code>observation_spec</code>.</li>
 </ul>
 </li>
 </ul></td>
@@ -2242,7 +2258,7 @@ has been constructed and <code>reset</code> has not been called. Again, in this 
         <td><code>action</code></td>
         <td><code>chex.ArrayNumpy</code></td>
         <td><p>A NumPy array, or a nested dict, list or tuple of arrays
-corresponding to <code>action_spec()</code>.</p></td>
+corresponding to <code>action_spec</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2262,14 +2278,14 @@ corresponding to <code>action_spec()</code>.</p></td>
 <li>step_type: A <code>StepType</code> value.<ul>
 <li>reward: Reward at this timestep, or None if step_type is
     <code>StepType.FIRST</code>. Must conform to the specification returned by
-    <code>reward_spec()</code>.</li>
+    <code>reward_spec</code>.</li>
 <li>discount: A discount in the range [0, 1], or None if step_type is
     <code>StepType.FIRST</code>. Must conform to the specification returned by
-    <code>discount_spec()</code>.</li>
+    <code>discount_spec</code>.</li>
 <li>observation: A NumPy array, or a nested dict, list or tuple of arrays.
     Scalar values that can be cast to NumPy arrays (e.g. Python floats)
     are also valid in place of a scalar array. Must conform to the
-    specification returned by <code>observation_spec()</code>.</li>
+    specification returned by <code>observation_spec</code>.</li>
 </ul>
 </li>
 </ul></td>
@@ -2338,7 +2354,7 @@ corresponding to <code>action_spec()</code>.</p></td>
 
 <h3 id="jumanji.wrappers.MultiToSingleWrapper" class="doc doc-heading">
         <code>
-MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>)
+MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>, <span title="typing.Generic">Generic</span>)
         </code>
 
 
@@ -2367,7 +2383,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
 
 
 <h4 id="jumanji.wrappers.MultiToSingleWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x73633d1f3b80</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x73633d1ff3a0</span><span class="o">&gt;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">],</span> <span class="n">reward_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="nb">sum</span> <span class="n">at</span> <span class="mh">0x7f5b882cab80</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">discount_aggregator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">amax</span> <span class="n">at</span> <span class="mh">0x7f5b882d53a0</span><span class="o">&gt;</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2392,7 +2408,7 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
   <tbody>
       <tr>
         <td><code>env</code></td>
-        <td><code>Environment</code></td>
+        <td><code>Environment[State, ActionSpec, Observation]</code></td>
         <td><p><code>Environment</code> to wrap to a <code>dm_env.Environment</code>.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2401,14 +2417,14 @@ MultiToSingleWrapper            (<a class="autorefs autorefs-internal" title="ju
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents rewards into a single scalar
 value, e.g. sum.</p></td>
-        <td><code>&lt;function sum at 0x73633d1f3b80&gt;</code></td>
+        <td><code>&lt;function sum at 0x7f5b882cab80&gt;</code></td>
       </tr>
       <tr>
         <td><code>discount_aggregator</code></td>
         <td><code>Callable</code></td>
         <td><p>a function to aggregate all agents discounts into a single
 scalar value, e.g. max.</p></td>
-        <td><code>&lt;function amax at 0x73633d1ff3a0&gt;</code></td>
+        <td><code>&lt;function amax at 0x7f5b882d53a0&gt;</code></td>
       </tr>
   </tbody>
 </table>
@@ -2553,7 +2569,7 @@ timestep: TimeStep object corresponding the timestep returned by the environment
 
 <h3 id="jumanji.wrappers.VmapWrapper" class="doc doc-heading">
         <code>
-VmapWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>)
+VmapWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>, <span title="typing.Generic">Generic</span>)
         </code>
 
 
@@ -2763,7 +2779,7 @@ The remaining elements of the batched state are ignored.</p>
 
 <h3 id="jumanji.wrappers.AutoResetWrapper" class="doc doc-heading">
         <code>
-AutoResetWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>)
+AutoResetWrapper            (<a class="autorefs autorefs-internal" title="jumanji.wrappers.Wrapper" href="#jumanji.wrappers.Wrapper">Wrapper</a>, <span title="typing.Generic">Generic</span>)
         </code>
 
 
@@ -2799,7 +2815,7 @@ being processed each time <code>step</code> is called. Please use the <code>Vmap
 
 
 <h4 id="jumanji.wrappers.AutoResetWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">next_obs_in_extras</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">],</span> <span class="n">next_obs_in_extras</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -2824,7 +2840,7 @@ being processed each time <code>step</code> is called. Please use the <code>Vmap
   <tbody>
       <tr>
         <td><code>env</code></td>
-        <td><code>Environment</code></td>
+        <td><code>Environment[State, ActionSpec, Observation]</code></td>
         <td><p>the environment to wrap.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2934,7 +2950,7 @@ timestep: TimeStep object corresponding the first timestep returned by the envir
 
 <h3 id="jumanji.wrappers.JumanjiToGymWrapper" class="doc doc-heading">
         <code>
-JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>)
+JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>, <span title="typing.Generic">Generic</span>)
         </code>
 
 
@@ -2960,7 +2976,7 @@ JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>)
 
 
 <h4 id="jumanji.wrappers.JumanjiToGymWrapper.unwrapped" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span></code>
+<code class="highlight language-python"><span class="n">unwrapped</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">]</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-property"><code>property</code></small>
@@ -3001,7 +3017,7 @@ JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>)
 
 
 <h4 id="jumanji.wrappers.JumanjiToGymWrapper.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">ActionSpec</span><span class="p">,</span> <span class="n">Observation</span><span class="p">],</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -3026,7 +3042,7 @@ JumanjiToGymWrapper            (<span title="gym.core.Env">Env</span>)
   <tbody>
       <tr>
         <td><code>env</code></td>
-        <td><code>Environment</code></td>
+        <td><code>Environment[State, ActionSpec, Observation]</code></td>
         <td><p><code>Environment</code> to wrap to a <code>gym.Env</code>.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -3322,7 +3338,7 @@ either have the <code>__dict__</code> or <code>_asdict</code> methods implemente
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

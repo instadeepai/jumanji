@@ -1383,6 +1383,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="md-nav__link">
+    observation_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="md-nav__link">
+    action_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jumanji.environments.routing.cleaner.env.Cleaner.__init__" class="md-nav__link">
     __init__()
   </a>
@@ -1392,20 +1406,6 @@
           <li class="md-nav__item">
   <a href="#jumanji.environments.routing.cleaner.env.Cleaner.__repr__" class="md-nav__link">
     __repr__()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="md-nav__link">
-    observation_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="md-nav__link">
-    action_spec()
   </a>
   
 </li>
@@ -1743,7 +1743,7 @@ a maze.</p>
 <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1755,6 +1755,94 @@ a maze.</p>
 
 
 
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">:</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Specification of the observation of the <code>Cleaner</code> environment.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Spec for the `Observation`, consisting of the fields</code></td>
+      <td><ul>
+<li>grid: BoundedArray (int8) of shape (num_rows, num_cols). Values
+        are between 0 and 2 (inclusive).<ul>
+<li>agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
+    Maximum value for the first column is num_rows, and maximum value
+    for the second is num_cols.</li>
+<li>action_mask: BoundedArray (bool) of shape (num_agent, 4).</li>
+<li>step_count: BoundedArray (int32) of shape ().</li>
+</ul>
+</li>
+</ul></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">:</span> <span class="n">MultiDiscreteArray</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Specification of the action for the <code>Cleaner</code> environment.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action_spec</code></td>
+      <td><p>a <code>specs.MultiDiscreteArray</code> spec.</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
 
 
 
@@ -1846,86 +1934,6 @@ mode.</p></td>
     <div class="doc doc-contents ">
 
 
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.routing.cleaner.env.Cleaner.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Specification of the observation of the <code>Cleaner</code> environment.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Spec for the `Observation`, consisting of the fields</code></td>
-      <td><ul>
-<li>grid: BoundedArray (int8) of shape (num_rows, num_cols). Values
-        are between 0 and 2 (inclusive).<ul>
-<li>agent_locations_spec: BoundedArray (int32) of shape (num_agents, 2).
-    Maximum value for the first column is num_rows, and maximum value
-    for the second is num_cols.</li>
-<li>action_mask: BoundedArray (bool) of shape (num_agent, 4).</li>
-<li>step_count: BoundedArray (int32) of shape ().</li>
-</ul>
-</li>
-</ul></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiDiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.routing.cleaner.env.Cleaner.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Specification of the action for the <code>Cleaner</code> environment.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>action_spec</code></td>
-      <td><p>a <code>specs.MultiDiscreteArray</code> spec.</p></td>
-    </tr>
-  </tbody>
-</table>
     </div>
 
   </div>
@@ -2195,7 +2203,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

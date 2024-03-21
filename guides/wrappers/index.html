@@ -1630,7 +1630,7 @@ DeepMind or Gym environment.</p>
 <span class="n">dm_env</span> <span class="o">=</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">wrappers</span><span class="o">.</span><span class="n">JumanjiToDMEnvWrapper</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
 
 <span class="n">timestep</span> <span class="o">=</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>
 <span class="n">next_timestep</span> <span class="o">=</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
 <span class="o">...</span>
 </code></pre></div></td></tr></table></div></p>
@@ -1685,7 +1685,7 @@ been reached.</p>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New episode&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-    <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>  <span class="c1"># Returns jnp.array(0) when using Snake.</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>  <span class="c1"># Returns jnp.array(0) when using Snake.</span>
     <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">timestep</span><span class="o">.</span><span class="n">first</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New episode&quot;</span><span class="p">)</span>
@@ -1696,7 +1696,7 @@ been reached.</p>
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

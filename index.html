@@ -1973,7 +1973,7 @@ DeepMind Environment.</p>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
 <span class="c1"># Interact with the (jit-able) environment</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">()</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>          <span class="c1"># Action selection (dummy value here)</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="o">.</span><span class="n">generate_value</span><span class="p">()</span>          <span class="c1"># Action selection (dummy value here)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>   <span class="c1"># Take a step and observe the next state and time step</span>
 </code></pre></div></td></tr></table></div>
 <ul>
@@ -2068,7 +2068,7 @@ from Google's <a href="https://sites.research.google/trc/about/">TPU Research Cl
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>

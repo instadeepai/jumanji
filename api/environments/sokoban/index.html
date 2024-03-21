@@ -1495,6 +1495,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="md-nav__link">
+    observation_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="md-nav__link">
+    action_spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jumanji.environments.routing.sokoban.env.Sokoban.__init__" class="md-nav__link">
     __init__()
   </a>
@@ -1511,20 +1525,6 @@
           <li class="md-nav__item">
   <a href="#jumanji.environments.routing.sokoban.env.Sokoban.step" class="md-nav__link">
     step()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="md-nav__link">
-    observation_spec()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="md-nav__link">
-    action_spec()
   </a>
   
 </li>
@@ -1746,7 +1746,7 @@ Sokoban            (<a class="autorefs autorefs-internal" title="jumanji.env.Env
 key_train = jax.random.PRNGKey(0)
 state, timestep = jax.jit(env_train.reset)(key_train)
 env_train.render(state)
-action = env_train.action_spec().generate_value()
+action = env_train.action_spec.generate_value()
 state, timestep = jax.jit(env_train.step)(state, action)
 env_train.render(state)
 ```</p>
@@ -1758,6 +1758,86 @@ env_train.render(state)
 
 
 
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">:</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">sokoban</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the specifications of the observation of the <code>Sokoban</code>
+environment.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>specs.Spec[Observation]</code></td>
+      <td><p>The specifications of the observations.</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">action_spec</span><span class="p">:</span> <span class="n">DiscreteArray</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-cached"><code>cached</code></small>
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+<a href="#jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="headerlink" title="Permanent link">#</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the action specification for the Sokoban environment.
+There are 4 actions: [0,1,2,3] -&gt; [Up, Right, Down, Left].</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>specs.DiscreteArray</code></td>
+      <td><p>Discrete action specifications.</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
 
 
 
@@ -1950,78 +2030,6 @@ observed.</p></td>
 
 
 
-<h3 id="jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">observation_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jumanji</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">Spec</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">sokoban</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">Observation</span><span class="p">]</span></code>
-
-
-<a href="#jumanji.environments.routing.sokoban.env.Sokoban.observation_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the specifications of the observation of the <code>Sokoban</code>
-environment.</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>specs.Spec[Observation]</code></td>
-      <td><p>The specifications of the observations.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">action_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DiscreteArray</span></code>
-
-
-<a href="#jumanji.environments.routing.sokoban.env.Sokoban.action_spec" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Returns the action specification for the Sokoban environment.
-There are 4 actions: [0,1,2,3] -&gt; [Up, Right, Down, Left].</p>
-
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>specs.DiscreteArray</code></td>
-      <td><p>Discrete action specifications.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
 <h3 id="jumanji.environments.routing.sokoban.env.Sokoban.render" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
@@ -2070,7 +2078,7 @@ There are 4 actions: [0,1,2,3] -&gt; [Up, Right, Down, Left].</p>
   <small>
     
       Last update:
-      2024-03-19
+      2024-03-21
     
   </small>
 </div>
