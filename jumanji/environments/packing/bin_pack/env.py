@@ -1061,6 +1061,7 @@ class ExtendedBinPack(BinPack):
         viewer: Optional[Viewer[State]] = None,
         mean_item_value: Optional[float] = None,
         std_item_value: Optional[float] = None,
+        full_support: Optional[bool] = False,
     ):
         generator = generator or ExtendedRandomGenerator(
             is_rotation_allowed=is_rotation_allowed,
@@ -1076,7 +1077,13 @@ class ExtendedBinPack(BinPack):
             render_mode="human",
         )
         super().__init__(
-            generator, obs_num_ems, reward_fn, normalize_dimensions, debug, viewer
+            generator,
+            obs_num_ems,
+            reward_fn,
+            normalize_dimensions,
+            debug,
+            viewer,
+            full_support,
         )
         self.is_value_based = is_value_based
         self.is_rotation_allowed = is_rotation_allowed
@@ -1585,4 +1592,7 @@ class ExtendedBinPack(BinPack):
 
         state.ems = new_ems
         state.ems_mask = new_ems_mask
+        if self.full_support:
+            self.merge_same_height_ems(state)
+
         return state
