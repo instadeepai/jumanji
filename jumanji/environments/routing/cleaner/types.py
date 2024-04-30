@@ -39,7 +39,7 @@ class State:
     grid: chex.Array  # (num_rows, num_cols)
     agents_locations: chex.Array  # (num_agents, 2)
     action_mask: Optional[chex.Array]  # (num_agents, 4)
-    step_count: jnp.int32  # ()
+    step_count: int  # ()
     key: chex.PRNGKey  # (2,)
 
 

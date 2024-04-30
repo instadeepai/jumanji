@@ -137,12 +137,12 @@ class Cleaner(Environment[State]):
         """
         grid = specs.BoundedArray(self.grid_shape, jnp.int8, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
-            (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
+            (self.num_agents, 2), int, [0, 0], self.grid_shape, "agents_locations"
         )
         action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
         )
-        step_count = specs.BoundedArray((), jnp.int32, 0, self.time_limit, "step_count")
+        step_count = specs.BoundedArray((), int, 0, self.time_limit, "step_count")
         return specs.Spec(
             Observation,
             "ObservationSpec",
@@ -159,8 +159,8 @@ class Cleaner(Environment[State]):
             action_spec: a `specs.MultiDiscreteArray` spec.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.full(self.num_agents, 4, jnp.int32),
-            dtype=jnp.int32,
+            num_values=jnp.full(self.num_agents, 4, int),
+            dtype=int,
             name="action_spec",
         )
 

@@ -75,7 +75,7 @@ class RandomGenerator(Generator):
         grid = self._adapt_values(maze)
 
         # Agents start in upper left corner
-        agents_locations = jnp.zeros((self.num_agents, 2), jnp.int32)
+        agents_locations = jnp.zeros((self.num_agents, 2), int)
 
         # Clean the tile in upper left corner
         grid = grid.at[0, 0].set(CLEAN)
@@ -84,7 +84,7 @@ class RandomGenerator(Generator):
             grid=grid,
             agents_locations=agents_locations,
             action_mask=None,
-            step_count=jnp.array(0, jnp.int32),
+            step_count=jnp.array(0, int),
             key=state_key,
         )
 
