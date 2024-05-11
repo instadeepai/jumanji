@@ -325,7 +325,7 @@ def check_ghost_wall_collisions(
     # Get distances of valid locations
     valid_no_back_d = valid_no_back * ghost_dist
     invert_mask = valid_no_back != 1
-    invert_mask = invert_mask * jnp.inf
+    invert_mask = jnp.where(invert_mask, jnp.inf, invert_mask)
     # Set distance of all invalid areas to infinity
     valid_no_back_d = valid_no_back_d + invert_mask
     masked_dist = valid_no_back_d
