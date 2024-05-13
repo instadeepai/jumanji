@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 import chex
 import jax.numpy as jnp
@@ -122,7 +122,9 @@ class Space:
             & (self.z2 <= space.z2)
         )
 
-    def hyperplane(self, axis: str, direction: str) -> Space:
+    def hyperplane(
+        self, axis: str, direction: str, full_support: Optional[bool] = False
+    ) -> "Space":
         """Returns the hyperplane (e.g. lower hyperplane on the x axis) for EMS creation when
         packing an item.
 
@@ -135,6 +137,13 @@ class Space:
         """
         inf_ = jnp.inf
         axis_direction = f"{axis}_{direction}"
+        # Can set supporting item to self because this method is only ever called by item spaces.
+        if full_support:
+            supporting_item_space = self
+        else:
+            supporting_item_space = Space(
+                x1=-inf_, x2=inf_, y1=-inf_, y2=inf_, z1=-inf_, z2=inf_
+            )
         if axis_direction == "x_lower":
             return Space(x1=-inf_, x2=self.x1, y1=-inf_, y2=inf_, z1=-inf_, z2=inf_)
         elif axis_direction == "x_upper":
@@ -146,7 +155,14 @@ class Space:
         elif axis_direction == "z_lower":
             return Space(x1=-inf_, x2=inf_, y1=-inf_, y2=inf_, z1=-inf_, z2=self.z1)
         elif axis_direction == "z_upper":
-            return Space(x1=-inf_, x2=inf_, y1=-inf_, y2=inf_, z1=self.z2, z2=inf_)
+            return Space(
+                x1=supporting_item_space.x1,
+                x2=supporting_item_space.x2,
+                y1=supporting_item_space.y1,
+                y2=supporting_item_space.y2,
+                z1=self.z2,
+                z2=inf_,
+            )
         else:
             raise ValueError(
                 f"arguments not valid, got axis: {axis} and direction: {direction}."

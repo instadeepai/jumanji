@@ -274,3 +274,103 @@ class BinPackViewer(Viewer):
             if placed
         )
         return used_volume
+
+
+class ExtendedBinPackViewer(BinPackViewer):
+    def __init__(
+        self, name: str, is_rotation_allowed: bool, render_mode: str = "human"
+    ) -> None:
+        """
+        This class defines a viewer for the ExtendedBinPack environment.
+        It inherits from the BinPackViewer class and redefines the methods
+        _add_overlay, _create_entities and _get_used_volume. This overriding
+        is necessary because the shape of the items array, items_placed array and item_mask
+        array have changed in this environment.
+        """
+        super().__init__(name, render_mode)
+        self.is_rotation_allowed = is_rotation_allowed
+
+    def _add_overlay(self, fig: plt.Figure, ax: plt.Axes, state: State) -> None:
+        """Sets the bounds of the scene and displays text about the scene.
+
+        Args:
+            state: `State` of the environment
+        """
+        eps = 0.05
+        container = item_from_space(state.container)
+        ax.set(
+            xlim=(-container.x_len * eps, container.x_len * (1 + eps)),
+            ylim=(-container.y_len * eps, container.y_len * (1 + eps)),
+            zlim=(-container.z_len * eps, container.z_len * (1 + eps)),
+        )
+        ax.set_xlabel("x", font=self.FONT_STYLE)
+        ax.set_ylabel("y", font=self.FONT_STYLE)
+        ax.set_zlabel("z", font=self.FONT_STYLE)
+        if self.is_rotation_allowed:
+            n_items = state.items_mask.shape[1]
+        else:
+            n_items = state.items_mask.shape[0]
+        placed_items: np.ndarray = np.sum(state.items_placed)
+        container_volume = (
+            float(container.x_len) * float(container.y_len) * float(container.z_len)
+        )
+        used_volume = self._get_used_volume(state)
+
+        metrics = [
+            ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
+            ("Used Volume", f"{used_volume / container_volume:6.1%}"),
+        ]
+        title = " | ".join(key + ": " + value for key, value in metrics)
+        fig.suptitle(title, font=self.FONT_STYLE)
+
+    def _create_entities(  # noqa: CCR001
+        self, state: State
+    ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
+        entities = []
+        if self.is_rotation_allowed:
+            n_items = state.items_mask.shape[1]
+            cmap = plt.cm.get_cmap("hsv", n_items)
+            for i in range(6):
+                for j in range(n_items):
+                    if state.items_placed[i, j]:
+                        box = self._create_box(
+                            (
+                                state.items_location.x[j],
+                                state.items_location.y[j],
+                                state.items_location.z[j],
+                            ),
+                            (
+                                state.items.x_len[i, j],
+                                state.items.y_len[i, j],
+                                state.items.z_len[i, j],
+                            ),
+                            cmap(j),
+                            0.3,
+                        )
+                        entities.append(box)
+
+            container = item_from_space(state.container)
+            box = self._create_box(
+                (0.0, 0.0, 0.0),
+                (container.x_len, container.y_len, container.z_len),
+                "cyan",
+                0.05,
+            )
+            entities.append(box)
+            return entities
+        else:
+            return super()._create_entities(state)
+
+    def _get_used_volume(self, state: State) -> float:
+        if self.is_rotation_allowed:
+            used_volume = sum(
+                float(state.items.x_len[i, j])
+                * float(state.items.y_len[i, j])
+                * float(state.items.z_len[i, j])
+                for i in range(6)
+                for j, placed in enumerate(state.items_placed[i])
+                if placed
+            )
+            return used_volume
+        else:
+            return super()._get_used_volume(state)

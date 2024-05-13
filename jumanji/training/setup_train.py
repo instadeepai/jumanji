@@ -30,6 +30,7 @@ from jumanji.environments import (
     Cleaner,
     Connector,
     FlatPack,
+    ExtendedBinPack,
     Game2048,
     GraphColoring,
     JobShop,
@@ -91,8 +92,36 @@ def setup_logger(cfg: DictConfig) -> Logger:
     return logger
 
 
-def _make_raw_env(cfg: DictConfig) -> Environment:
-    return jumanji.make(cfg.env.registered_version)
+def _make_raw_env(cfg: DictConfig, eval: bool = False) -> Environment:
+    try:
+        env = jumanji.make(cfg.env.registered_version)
+    except ValueError as error:
+        if (
+            "Unregistered environment" in str(error)
+            and cfg.env.name != "extended_bin_pack"
+        ):
+            raise ValueError(
+                "Unregistered environment setup not possible for any other argument"
+                f"other than bin_pack, env requested is {cfg.env.name}."
+            )
+        env_settings_dict = getattr(cfg.env, "env_settings", {})
+        reward_string = cfg.env.env_settings.reward_fn
+        reward_fn = getattr(jumanji.environments.packing.bin_pack.reward, reward_string)
+        generator_string = cfg.env.env_settings.generator
+        generator_settings = cfg.env.generator_settings
+        if eval:
+            generator_settings = dict(generator_settings)
+            generator_settings["is_evaluation"] = True
+        generator = getattr(
+            jumanji.environments.packing.bin_pack.generator, generator_string
+        )
+        env_settings_dict = {
+            **cfg.env.env_settings,
+            "generator": generator(**generator_settings),
+            "reward_fn": reward_fn(),
+        }
+        env = ExtendedBinPack(**env_settings_dict)
+    return env
 
 
 def setup_env(cfg: DictConfig) -> Environment:
@@ -138,7 +167,7 @@ def _setup_random_policy(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> RandomPolicy:
     assert cfg.agent == "random"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "extended_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         random_policy = networks.make_random_policy_bin_pack(bin_pack=env.unwrapped)
     elif cfg.env.name == "snake":
@@ -219,7 +248,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
     cfg: DictConfig, env: Environment
 ) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
-    if cfg.env.name == "bin_pack":
+    if cfg.env.name == "bin_pack" or cfg.env.name == "extended_bin_pack":
         assert isinstance(env.unwrapped, BinPack)
         actor_critic_networks = networks.make_actor_critic_networks_bin_pack(
             bin_pack=env.unwrapped,
@@ -424,7 +453,7 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
 
 
 def setup_evaluators(cfg: DictConfig, agent: Agent) -> Tuple[Evaluator, Evaluator]:
-    env = _make_raw_env(cfg)
+    env = _make_raw_env(cfg, eval=True)
     stochastic_eval = Evaluator(
         eval_env=env,
         agent=agent,

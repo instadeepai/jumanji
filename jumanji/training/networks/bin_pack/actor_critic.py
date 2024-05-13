@@ -21,7 +21,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from jumanji.environments.packing.bin_pack import BinPack, Observation
-from jumanji.environments.packing.bin_pack.types import EMS, Item
+from jumanji.environments.packing.bin_pack.types import EMS, ItemType
 from jumanji.training.networks.actor_critic import (
     ActorCriticNetworks,
     FeedForwardNetwork,
@@ -146,7 +146,7 @@ class BinPackTorso(hk.Module):
         embeddings = hk.Linear(self.model_size, name="ems_projection")(ems_leaves)
         return embeddings
 
-    def embed_items(self, items: Item) -> chex.Array:
+    def embed_items(self, items: ItemType) -> chex.Array:
         # Stack the 3 items attributes into a single vector [x_len, y_len, z_len].
         items_leaves = jnp.stack(jax.tree_util.tree_leaves(items), axis=-1)
         # Projection of the EMSs.

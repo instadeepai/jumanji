@@ -84,6 +84,7 @@ def train(cfg: omegaconf.DictConfig, log_compiles: bool = False) -> None:
                     training_state.params_state, stochastic_eval_key
                 )
                 jax.block_until_ready(metrics)
+            print(utils.first_from_device(metrics))
             logger.write(
                 data=utils.first_from_device(metrics),
                 label="eval_stochastic",

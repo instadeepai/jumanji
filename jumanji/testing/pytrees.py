@@ -46,6 +46,23 @@ def is_equal_pytree(tree1: MixedTypeTree, tree2: MixedTypeTree) -> bool:
     return bool(is_equal)
 
 
+def is_close_pytree(tree1: MixedTypeTree, tree2: MixedTypeTree) -> bool:
+    """Returns true if all leaves in `tree1` and `tree2` are equal. Requires that `tree1` and
+    `tree2` share the same structure, and that `np.asarray(leaf)` is valid for all leaves of the
+    trees.
+
+    Note that this function will block gradients between the input and output, and is
+    created for use in the context of testing rather than for direct use inside RL algorithms."""
+    is_equal_func = lambda leaf1, leaf2: np.isclose(
+        np.asarray(leaf1), np.asarray(leaf2)
+    )
+    is_equal_leaves = tree_lib.flatten(
+        tree_lib.map_structure(is_equal_func, tree1, tree2)
+    )
+    is_equal = np.all(is_equal_leaves)
+    return bool(is_equal)
+
+
 def assert_trees_are_different(tree1: MixedTypeTree, tree2: MixedTypeTree) -> None:
     """Checks whether `tree1` and `tree2` have at least one leaf where they differ. Requires that
     `tree1` and `tree2` share the same structure, and that `np.asarray(leaf)` is valid for all
@@ -66,6 +83,15 @@ def assert_trees_are_equal(tree1: MixedTypeTree, tree2: MixedTypeTree) -> None:
     This is useful for basic sanity checks, for example checking if a checkpoint correctly
     restores a Learner's state."""
     assert is_equal_pytree(
+        tree1, tree2
+    ), "The trees differ in at least one leaf's value(s)."
+
+
+def assert_trees_are_close(tree1: MixedTypeTree, tree2: MixedTypeTree) -> None:
+    """Checks if all leaves in a `tree1` and `tree2` are close (equal if ints, and equal to within
+    a tolerance if not). Requires that `tree1` and `tree2` share the same structure, and that
+    `np.asarray(leaf)` is valid for all leaves of the trees."""
+    assert is_close_pytree(
         tree1, tree2
     ), "The trees differ in at least one leaf's value(s)."
 
