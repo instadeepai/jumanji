@@ -113,7 +113,7 @@ class LevelBasedForaging(Environment[State]):
         self,
         generator: Optional[RandomGenerator] = None,
         viewer: Optional[Viewer[State]] = None,
-        time_limit: int = 200,
+        time_limit: int = 100,
         grid_observation: bool = False,
         normalize_reward: bool = True,
         penalty: float = 0.0,
