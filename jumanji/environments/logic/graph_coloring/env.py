@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -33,7 +34,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class GraphColoring(Environment[State]):
+class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
     """Environment for the GraphColoring problem.
     The problem is a combinatorial optimization task where the goal is
       to assign a color to each vertex of a graph
@@ -76,7 +77,7 @@ class GraphColoring(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -100,6 +101,7 @@ class GraphColoring(Environment[State]):
             num_nodes=20, edge_probability=0.8
         )
         self.num_nodes = self.generator.num_nodes
+        super().__init__()
 
         # Create viewer used for rendering
         self._env_viewer = viewer or GraphColoringViewer(name="GraphColoring")
@@ -206,6 +208,7 @@ class GraphColoring(Environment[State]):
         )
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
@@ -253,6 +256,7 @@ class GraphColoring(Environment[State]):
             ),
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Specification of the action for the `GraphColoring` environment.
 

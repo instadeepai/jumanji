@@ -22,21 +22,23 @@ import pytest
 from jumanji.environments.routing.sokoban.constants import AGENT, BOX, TARGET, WALL
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.sokoban.generator import (
-    DeepMindGenerator,
+    HuggingFaceDeepMindGenerator,
     SimpleSolveGenerator,
 )
 from jumanji.environments.routing.sokoban.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.types import TimeStep
 
 
 @pytest.fixture(scope="session")
 def sokoban() -> Sokoban:
     env = Sokoban(
-        generator=DeepMindGenerator(
-            difficulty="unfiltered",
-            split="train",
-            proportion_of_files=0.005,
+        generator=HuggingFaceDeepMindGenerator(
+            "unfiltered-train",
+            proportion_of_files=0.01,
         )
     )
     return env
@@ -215,3 +217,8 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
 def test_sokoban__does_not_smoke(sokoban: Sokoban) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(sokoban)
+
+
+def test_sokoban__specs_does_not_smoke(sokoban: Sokoban) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(sokoban)

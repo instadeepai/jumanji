@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ class FakeState:
     step: jnp.int32
 
 
-class FakeEnvironment(Environment[FakeState]):
+class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
     """
     A fake environment that inherits from Environment, for testing purposes.
     The observation is an array full of `state.step` of shape `(self.observation_shape,)`
@@ -56,8 +57,10 @@ class FakeEnvironment(Environment[FakeState]):
         self.time_limit = time_limit
         self.observation_shape = observation_shape
         self.action_shape = action_shape
-        self._example_action = self.action_spec().generate_value()
+        super().__init__()
+        self._example_action = self.action_spec.generate_value()
 
+    @cached_property
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
 
@@ -69,6 +72,7 @@ class FakeEnvironment(Environment[FakeState]):
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
+    @cached_property
     def action_spec(self) -> specs.BoundedArray:
         """Returns the action spec.
 
@@ -142,7 +146,7 @@ class FakeEnvironment(Environment[FakeState]):
         return state.step * jnp.ones(self.observation_shape, float)
 
 
-class FakeMultiEnvironment(Environment[FakeState]):
+class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
     """
     A fake multi agent environment that inherits from Environment, for testing purposes.
     """
@@ -169,12 +173,14 @@ class FakeMultiEnvironment(Environment[FakeState]):
         self.observation_shape = observation_shape
         self.num_action_values = num_action_values
         self.num_agents = num_agents
+        super().__init__()
         self.reward_per_step = reward_per_step
         assert (
             observation_shape[0] == num_agents
         ), f"""a leading dimension of size 'num_agents': {num_agents} is expected
             for the observation, got shape: {observation_shape}."""
 
+    @cached_property
     def observation_spec(self) -> specs.Array:
         """Returns the observation spec.
 
@@ -186,6 +192,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
             shape=self.observation_shape, dtype=float, name="observation"
         )
 
+    @cached_property
     def action_spec(self) -> specs.BoundedArray:
         """Returns the action spec.
 
@@ -197,6 +204,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
             (self.num_agents,), int, 0, self.num_action_values - 1
         )
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns the reward spec.
 
@@ -205,6 +213,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
         return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
 
@@ -231,7 +240,7 @@ class FakeMultiEnvironment(Environment[FakeState]):
         """
 
         state = FakeState(key=key, step=0)
-        observation = self.observation_spec().generate_value()
+        observation = self.observation_spec.generate_value()
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 

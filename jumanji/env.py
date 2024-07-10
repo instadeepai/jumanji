@@ -17,13 +17,14 @@
 from __future__ import annotations
 
 import abc
+from functools import cached_property
 from typing import Any, Generic, Tuple, TypeVar
 
 import chex
 from typing_extensions import Protocol
 
 from jumanji import specs
-from jumanji.types import TimeStep
+from jumanji.types import Observation, TimeStep
 
 
 class StateProtocol(Protocol):
@@ -33,9 +34,10 @@ class StateProtocol(Protocol):
 
 
 State = TypeVar("State", bound="StateProtocol")
+ActionSpec = TypeVar("ActionSpec", bound=specs.Array)
 
 
-class Environment(abc.ABC, Generic[State]):
+class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
     """Environment written in Jax that differs from the gym API to make the step and
     reset functions jittable. The state contains all the dynamics and data needed to step
     the environment, no computation stored in attributes of self.
@@ -45,8 +47,15 @@ class Environment(abc.ABC, Generic[State]):
     def __repr__(self) -> str:
         return "Environment."
 
+    def __init__(self) -> None:
+        """Initialize environment."""
+        self.observation_spec
+        self.action_spec
+        self.reward_spec
+        self.discount_spec
+
     @abc.abstractmethod
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep]:
+    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment to an initial state.
 
         Args:
@@ -58,7 +67,9 @@ class Environment(abc.ABC, Generic[State]):
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, action: chex.Array
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -71,33 +82,35 @@ class Environment(abc.ABC, Generic[State]):
         """
 
     @abc.abstractmethod
-    def observation_spec(self) -> specs.Spec:
+    @cached_property
+    def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
         Returns:
-            observation_spec: a NestedSpec tree of spec.
+            observation_spec: a potentially nested `Spec` structure representing the observation.
         """
 
     @abc.abstractmethod
-    def action_spec(self) -> specs.Spec:
+    @cached_property
+    def action_spec(self) -> ActionSpec:
         """Returns the action spec.
 
         Returns:
-            action_spec: a NestedSpec tree of spec.
+            action_spec: a potentially nested `Spec` structure representing the action.
         """
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
-        """Describes the reward returned by the environment. By default, this is assumed to be a
-        single float.
+        """Returns the reward spec. By default, this is assumed to be a single float.
 
         Returns:
             reward_spec: a `specs.Array` spec.
         """
         return specs.Array(shape=(), dtype=float, name="reward")
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
-        """Describes the discount returned by the environment. By default, this is assumed to be a
-        single float between 0 and 1.
+        """Returns the discount spec. By default, this is assumed to be a single float between 0 and 1.
 
         Returns:
             discount_spec: a `specs.BoundedArray` spec.
@@ -107,7 +120,7 @@ class Environment(abc.ABC, Generic[State]):
         )
 
     @property
-    def unwrapped(self) -> Environment:
+    def unwrapped(self) -> Environment[State, ActionSpec, Observation]:
         return self
 
     def render(self, state: State) -> Any:

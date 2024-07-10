@@ -40,7 +40,7 @@ def make_actor_critic_networks_bin_pack(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `BinPack` environment."""
-    num_values = np.asarray(bin_pack.action_spec().num_values)
+    num_values = np.asarray(bin_pack.action_spec.num_values)
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
         action_spec_num_values=num_values
     )

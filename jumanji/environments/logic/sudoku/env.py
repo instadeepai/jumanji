@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -32,7 +33,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Sudoku(Environment[State]):
+class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the sudoku game.
 
     - observation: `Observation`
@@ -66,7 +67,7 @@ class Sudoku(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -78,6 +79,7 @@ class Sudoku(Environment[State]):
         reward_fn: Optional[RewardFn] = None,
         viewer: Optional[Viewer[State]] = None,
     ):
+        super().__init__()
         if generator is None:
             file_path = os.path.dirname(os.path.abspath(__file__))
             database_file = DATABASES["mixed"]
@@ -129,6 +131,7 @@ class Sudoku(Environment[State]):
 
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec containing the board and action_mask arrays.
 
@@ -158,6 +161,7 @@ class Sudoku(Environment[State]):
             Observation, "ObservationSpec", board=board, action_mask=action_mask
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. An action is composed of 3 integers: the row index,
         the column index and the value to be placed in the cell.

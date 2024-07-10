@@ -19,7 +19,10 @@ import pytest
 
 from jumanji.environments.routing.pac_man.env import PacMan
 from jumanji.environments.routing.pac_man.types import Position, State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -96,12 +99,15 @@ def test_pac_man_step_invalid(pac_man: PacMan) -> None:
 
 
 def test_pac_man_does_not_smoke(pac_man: PacMan) -> None:
-
     check_env_does_not_smoke(pac_man)
 
 
-def test_power_pellet(pac_man: PacMan) -> None:
+def test_env_pac_man_specs_does_not_smoke(pac_man: PacMan) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(pac_man)
 
+
+def test_power_pellet(pac_man: PacMan) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = pac_man.reset(key)
 

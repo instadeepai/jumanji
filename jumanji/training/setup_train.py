@@ -29,6 +29,7 @@ from jumanji.environments import (
     BinPack,
     Cleaner,
     Connector,
+    FlatPack,
     Game2048,
     GraphColoring,
     JobShop,
@@ -40,6 +41,7 @@ from jumanji.environments import (
     PacMan,
     RobotWarehouse,
     RubiksCube,
+    SlidingTilePuzzle,
     Snake,
     Sokoban,
     Sudoku,
@@ -147,6 +149,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "snake":
         assert isinstance(env.unwrapped, Snake)
         random_policy = networks.make_random_policy_snake()
+    elif cfg.env.name == "sliding_tile_puzzle":
+        assert isinstance(env.unwrapped, SlidingTilePuzzle)
+        random_policy = networks.make_random_policy_sliding_tile_puzzle()
     elif cfg.env.name == "tsp":
         assert isinstance(env.unwrapped, TSP)
         random_policy = networks.make_random_policy_tsp()
@@ -202,6 +207,11 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
         random_policy = networks.make_random_policy_graph_coloring()
+    elif cfg.env.name == "flat_pack":
+        assert isinstance(env.unwrapped, FlatPack)
+        random_policy = networks.make_random_policy_flat_pack(
+            flat_pack=env.unwrapped,
+        )
     elif cfg.env.name == "pac_man":
         assert isinstance(env.unwrapped, PacMan)
         random_policy = networks.make_random_policy_pacman()
@@ -253,6 +263,16 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
+    elif cfg.env.name == "flat_pack":
+        assert isinstance(env.unwrapped, FlatPack)
+        actor_critic_networks = networks.make_actor_critic_networks_flat_pack(
+            flat_pack=env.unwrapped,
+            num_transformer_layers=cfg.env.network.num_transformer_layers,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
+            hidden_size=cfg.env.network.hidden_size,
+        )
     elif cfg.env.name == "job_shop":
         assert isinstance(env.unwrapped, JobShop)
         actor_critic_networks = networks.make_actor_critic_networks_job_shop(
@@ -290,6 +310,14 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
         assert isinstance(env.unwrapped, Game2048)
         actor_critic_networks = networks.make_actor_critic_networks_game_2048(
             game_2048=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "sliding_tile_puzzle":
+        assert isinstance(env.unwrapped, SlidingTilePuzzle)
+        actor_critic_networks = networks.make_actor_critic_networks_sliding_tile_puzzle(
+            sliding_tile_puzzle=env.unwrapped,
             num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
@@ -390,7 +418,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
-
     elif cfg.env.name == "pac_man":
         assert isinstance(env.unwrapped, PacMan)
         actor_critic_networks = networks.make_actor_critic_networks_pacman(

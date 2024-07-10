@@ -39,7 +39,7 @@ def make_actor_critic_networks_tetris(
     """Make actor-critic networks for the `Tetris` environment."""
 
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
-        action_spec_num_values=np.asarray(tetris.action_spec().num_values)
+        action_spec_num_values=np.asarray(tetris.action_spec.num_values)
     )
     policy_network = make_network_cnn(
         conv_num_channels=conv_num_channels,

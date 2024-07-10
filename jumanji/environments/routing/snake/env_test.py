@@ -22,7 +22,10 @@ import pytest
 
 from jumanji.environments.routing.snake.env import Snake, State
 from jumanji.environments.routing.snake.types import Position
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -60,7 +63,7 @@ def test_snake__step(snake: Snake) -> None:
     # Sample two different actions
     action1, action2 = jax.random.choice(
         action_key,
-        jnp.arange(snake.action_spec()._num_values),
+        jnp.arange(snake.action_spec._num_values),
         shape=(2,),
         replace=False,
     )
@@ -92,6 +95,11 @@ def test_snake__step(snake: Snake) -> None:
 def test_snake__does_not_smoke(snake: Snake) -> None:
     """Test that we can run an episode without any errors."""
     check_env_does_not_smoke(snake)
+
+
+def test_snake__specs_does_not_smoke(snake: Snake) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(snake)
 
 
 def test_update_head_position(snake: Snake) -> None:
@@ -140,7 +148,7 @@ def test_snake__render(monkeypatch: pytest.MonkeyPatch, snake: Snake) -> None:
     monkeypatch.setattr(plt, "show", lambda fig: None)
     step_fn = jax.jit(snake.step)
     state, timestep = snake.reset(jax.random.PRNGKey(0))
-    action = snake.action_spec().generate_value()
+    action = snake.action_spec.generate_value()
     state, timestep = step_fn(state, action)
     snake.render(state)
     snake.close()
@@ -151,7 +159,7 @@ def test_snake__animation(snake: Snake, tmpdir: py.path.local) -> None:
     step_fn = jax.jit(snake.step)
     state, _ = snake.reset(jax.random.PRNGKey(0))
     states = [state]
-    action = snake.action_spec().generate_value()
+    action = snake.action_spec.generate_value()
     state, _ = step_fn(state, action)
     states.append(state)
     animation = snake.animate(states)

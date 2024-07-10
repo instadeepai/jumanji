@@ -42,7 +42,7 @@ def make_actor_critic_networks_job_shop(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Create an actor-critic network for the `JobShop` environment."""
-    num_values = np.asarray(job_shop.action_spec().num_values)
+    num_values = np.asarray(job_shop.action_spec.num_values)
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )

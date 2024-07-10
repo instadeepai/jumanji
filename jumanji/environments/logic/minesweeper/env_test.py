@@ -24,7 +24,10 @@ from jax import numpy as jnp
 
 from jumanji.environments.logic.minesweeper.env import Minesweeper
 from jumanji.environments.logic.minesweeper.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import StepType, TimeStep
 
@@ -123,7 +126,7 @@ def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(minesweeper_env.reset)(key)
     # For this board, this action will be a non-mined square
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -154,6 +157,11 @@ def test_minesweeper__does_not_smoke(minesweeper_env: Minesweeper) -> None:
     check_env_does_not_smoke(env=minesweeper_env)
 
 
+def test_minesweeper__specs_does_not_smoke(minesweeper_env: Minesweeper) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(minesweeper_env)
+
+
 def test_minesweeper__render(
     monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper
 ) -> None:
@@ -162,7 +170,7 @@ def test_minesweeper__render(
     state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     minesweeper_env.render(state)
     minesweeper_env.close()
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     state, timestep = jax.jit(minesweeper_env.step)(state, action)
     minesweeper_env.render(state)
     minesweeper_env.close()
@@ -171,7 +179,7 @@ def test_minesweeper__render(
 def test_minesweeper__done_invalid_action(minesweeper_env: Minesweeper) -> None:
     """Test that the strict done signal is sent correctly"""
     # Note that this action corresponds to not stepping on a mine
-    action = minesweeper_env.action_spec().generate_value()
+    action = minesweeper_env.action_spec.generate_value()
     *_, episode_length = play_and_get_episode_stats(
         env=minesweeper_env, actions=[action for _ in range(10)], time_limit=10
     )

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
@@ -42,7 +43,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MMST(Environment[State]):
+class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The `MMST` (Multi Minimum Spanning Tree) environment
     consists of a random connected graph
     with groups of nodes (same node types) that needs to be connected.
@@ -124,7 +125,7 @@ class MMST(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -168,6 +169,7 @@ class MMST(Environment[State]):
 
         self._env_viewer = viewer or MMSTViewer(num_agents=self.num_agents)
         self.time_limit = time_limit
+        super().__init__()
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -209,7 +211,6 @@ class MMST(Environment[State]):
             indices: chex.Array,
             agent_id: int,
         ) -> Tuple[chex.Array, ...]:
-
             is_invalid_choice = jnp.any(action == INVALID_CHOICE) | jnp.any(
                 action == INVALID_TIE_BREAK
             )
@@ -284,6 +285,7 @@ class MMST(Environment[State]):
         state, timestep = self._state_to_timestep(state, action)
         return state, timestep
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec.
 
@@ -295,6 +297,7 @@ class MMST(Environment[State]):
             name="action",
         )
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 

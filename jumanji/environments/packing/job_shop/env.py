@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -29,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class JobShop(Environment[State]):
+class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The Job Shop Scheduling Problem, as described in [1], is one of the best known
     combinatorial optimization problems. We are given `num_jobs` jobs, each consisting
     of at most `max_num_ops` ops, which need to be processed on `num_machines` machines.
@@ -83,7 +84,7 @@ class JobShop(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -113,6 +114,7 @@ class JobShop(Environment[State]):
         self.num_machines = self.generator.num_machines
         self.max_num_ops = self.generator.max_num_ops
         self.max_op_duration = self.generator.max_op_duration
+        super().__init__()
 
         # Define the "job id" of a no-op action as the number of jobs
         self.no_op_idx = self.num_jobs
@@ -356,6 +358,7 @@ class JobShop(Environment[State]):
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `JobShop` environment.
 
@@ -421,6 +424,7 @@ class JobShop(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specifications of the action in the `JobShop` environment. The action gives each
         machine a job id ranging from 0, 1, ..., num_jobs where the last value corresponds
