@@ -15,7 +15,6 @@
 from typing import TYPE_CHECKING, NamedTuple
 
 import chex
-import jax.numpy as jnp
 
 if TYPE_CHECKING:  # https://github.com/python/mypy/issues/6239
     from dataclasses import dataclass
@@ -49,7 +48,7 @@ class Agent(Entity):
     loading: whether the agent is currently loading food.
     """
 
-    loading: chex.Array = jnp.asarray(False)  # () - bool: is loading food
+    loading: chex.Array  # () - bool: is loading food
 
 
 @dataclass
@@ -63,7 +62,7 @@ class Food(Entity):
     eaten: whether the food has been eaten.
     """
 
-    eaten: chex.Array = jnp.asarray(False)  # () - bool: has been eaten
+    eaten: chex.Array  # () - bool: has been eaten
 
 
 @dataclass

@@ -240,11 +240,13 @@ class RandomGenerator:
             id=jnp.arange(self._num_agents),
             position=agent_positions,
             level=agent_levels,
+            loading=jnp.zeros((self._num_agents,), dtype=bool),
         )
         food_items = jax.vmap(Food)(
             id=jnp.arange(self._num_food),
             position=food_positions,
             level=food_levels,
+            eaten=jnp.zeros((self._num_food,), dtype=bool),
         )
         step_count = jnp.array(0, jnp.int32)
 

@@ -72,6 +72,7 @@ def food0() -> Food:
         id=jnp.asarray(0),
         position=jnp.array([2, 1]),
         level=jnp.asarray(4),
+        eaten=jnp.asarray(False),
     )
 
 
@@ -81,6 +82,7 @@ def food1() -> Food:
         id=jnp.asarray(1),
         position=jnp.array([2, 3]),
         level=jnp.asarray(4),
+        eaten=jnp.asarray(False),
     )
 
 
@@ -90,6 +92,7 @@ def food2() -> Food:
         id=jnp.asarray(1),
         position=jnp.array([4, 2]),
         level=jnp.asarray(3),
+        eaten=jnp.asarray(False),
     )
 
 
