@@ -1,4 +1,4 @@
-# RobotWarehouse Environment
+# # Level-Based Foraging Environment
 
 <p align="center">
         <img src="../env_anim/lbf_animation.gif" width="600"/>

@@ -35,34 +35,26 @@ def test_dense_reward(
 
     # Reward of moving between the same states should be 0.
     reward = dense_reward_fn(state, jnp.array([0, 0, 0]), state)
-    chex.assert_shape(reward, (3,))
-    assert jnp.all(reward == jnp.asarray([timestep_reward] * 3))
+    chex.assert_rank(reward, 0)
+    assert jnp.isclose(reward, jnp.asarray(timestep_reward * 3))
 
     # Reward for no agents finished to 2 agents finished.
     reward = dense_reward_fn(state, action1, state1)
-    chex.assert_shape(reward, (3,))
-    expected_reward = jnp.array(
-        [
-            connected_reward + timestep_reward,
-            timestep_reward,
-            connected_reward + timestep_reward,
-        ]
-    )
-    assert jnp.all(reward == expected_reward)
+    chex.assert_rank(reward, 0)
+    expected_reward = connected_reward * 2 + timestep_reward * 3
+    assert jnp.isclose(reward, expected_reward)
 
     # Reward for some agents finished to all agents finished.
     reward = dense_reward_fn(state1, action2, state2)
-    chex.assert_shape(reward, (3,))
-    expected_reward = jnp.array([0.0, connected_reward + timestep_reward, 0.0])
-    assert jnp.all(reward == expected_reward)
+    chex.assert_rank(reward, 0)
+    assert jnp.isclose(reward, jnp.array(connected_reward + timestep_reward))
 
     # Reward for none finished to all finished
     reward = dense_reward_fn(state, action1, state2)
-    chex.assert_shape(reward, (3,))
-    expected_reward = jnp.array([connected_reward + timestep_reward] * 3)
-    assert jnp.all(reward == expected_reward)
+    chex.assert_rank(reward, 0)
+    assert jnp.isclose(reward, jnp.array((connected_reward + timestep_reward) * 3))
 
     # Reward of all finished to all finished.
     reward = dense_reward_fn(state2, jnp.zeros(3), state2)
-    chex.assert_shape(reward, (3,))
-    assert jnp.all(reward == jnp.zeros(3))
+    chex.assert_rank(reward, 0)
+    assert jnp.isclose(reward, jnp.zeros(1))

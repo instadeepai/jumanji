@@ -202,12 +202,12 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "graph_coloring":
         assert isinstance(env.unwrapped, GraphColoring)
         random_policy = networks.make_random_policy_graph_coloring()
-    elif cfg.env.name == "lbf":
-        assert isinstance(env.unwrapped, LevelBasedForaging)
-        random_policy = networks.make_random_policy_lbf()
     elif cfg.env.name == "pac_man":
         assert isinstance(env.unwrapped, PacMan)
         random_policy = networks.make_random_policy_pacman()
+    elif cfg.env.name == "lbf":
+        assert isinstance(env.unwrapped, LevelBasedForaging)
+        random_policy = networks.make_random_policy_lbf()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -390,6 +390,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
+
+    elif cfg.env.name == "pac_man":
+        assert isinstance(env.unwrapped, PacMan)
+        actor_critic_networks = networks.make_actor_critic_networks_pacman(
+            pac_man=env.unwrapped,
+            num_channels=cfg.env.network.num_channels,
+            policy_layers=cfg.env.network.policy_layers,
+            value_layers=cfg.env.network.value_layers,
+        )
     elif cfg.env.name == "lbf":
         assert isinstance(env.unwrapped, LevelBasedForaging)
         actor_critic_networks = networks.make_actor_critic_networks_lbf(
@@ -398,14 +407,6 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             transformer_num_heads=cfg.env.network.transformer_num_heads,
             transformer_key_size=cfg.env.network.transformer_key_size,
             transformer_mlp_units=cfg.env.network.transformer_mlp_units,
-        )
-    elif cfg.env.name == "pac_man":
-        assert isinstance(env.unwrapped, PacMan)
-        actor_critic_networks = networks.make_actor_critic_networks_pacman(
-            pac_man=env.unwrapped,
-            num_channels=cfg.env.network.num_channels,
-            policy_layers=cfg.env.network.policy_layers,
-            value_layers=cfg.env.network.value_layers,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")

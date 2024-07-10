@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.routing.connector.env import Connector, MaConnector
+from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.types import Observation, State
