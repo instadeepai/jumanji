@@ -38,10 +38,7 @@ def test_lbf_environment_integration(
     assert jnp.isclose(
         timestep.reward, jnp.zeros(lbf_environment.num_agents, dtype=float)
     ).all()
-    assert timestep.extras == {
-        "num_eaten": jnp.float32(0),
-        "percent_eaten": jnp.float32(0),
-    }
+    assert timestep.extras == {"percent_eaten": jnp.float32(0)}
     # Test the step function
     action = jnp.array([NOOP] * lbf_environment.num_agents)
     next_state, timestep = lbf_environment.step(initial_state, action)

@@ -148,6 +148,8 @@ def fix_collisions(moved_agents: Agent, original_agents: Agent) -> Agent:
     """
     # Detect duplicate positions
     duplicates = flag_duplicates(moved_agents.position)
+    duplicates = duplicates.reshape((duplicates.shape[0], -1))
+
     # If there are duplicates, use the original agent position.
     new_positions = jnp.where(
         duplicates,
