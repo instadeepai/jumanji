@@ -13,7 +13,7 @@ env = jumanji.make("Snake-6x6-v0")
 dm_env = jumanji.wrappers.JumanjiToDMEnvWrapper(env)
 
 timestep = dm_env.reset()
-action = dm_env.action_spec().generate_value()
+action = dm_env.action_spec.generate_value()
 next_timestep = dm_env.step(action)
 ...
 ```
@@ -52,7 +52,7 @@ key = jax.random.PRNGKey(0)
 state, timestep = env.reset(key)
 print("New episode")
 for i in range(100):
-    action = env.action_spec().generate_value()  # Returns jnp.array(0) when using Snake.
+    action = env.action_spec.generate_value()  # Returns jnp.array(0) when using Snake.
     state, timestep = env.step(state, action)
     if timestep.first():
         print("New episode")
