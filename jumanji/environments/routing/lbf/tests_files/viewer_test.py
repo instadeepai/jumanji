@@ -46,9 +46,8 @@ def test_lbf_viewer_animate(
     state, _ = jax.jit(lbf_environment.reset)(key)
     grid_size = lbf_environment._generator.grid_size
 
-    num_steps = 5
     states = [state]
-    for _ in range(num_steps - 1):
+    for _ in range(5):
         key, _ = jax.random.split(key)
         action = lbf_environment.action_spec().generate_value()
         state, _ = jax.jit(lbf_environment.step)(state, action)
@@ -67,9 +66,8 @@ def test_lbf_viewer_save_animation(
     state, _ = jax.jit(lbf_environment.reset)(key)
     grid_size = lbf_environment._generator.grid_size
 
-    num_steps = 5
     states = [state]
-    for _ in range(num_steps - 1):
+    for _ in range(5):
         key, _ = jax.random.split(key)
         action = lbf_environment.action_spec().generate_value()
         state, _ = jax.jit(lbf_environment.step)(state, action)

@@ -113,7 +113,7 @@ class LevelBasedForaging(Environment[State]):
         self,
         generator: Optional[RandomGenerator] = None,
         viewer: Optional[Viewer[State]] = None,
-        time_limit: int = 200,
+        time_limit: int = 100,
         grid_observation: bool = False,
         normalize_reward: bool = True,
         penalty: float = 0.0,
@@ -127,68 +127,45 @@ class LevelBasedForaging(Environment[State]):
             num_food=2,
             force_coop=True,
         )
-        self._time_limit = time_limit
-        self._grid_size: int = self._generator.grid_size
-        self._num_agents: int = self._generator.num_agents
-        self._num_food: int = self._generator.num_food
-        self._normalize_reward = normalize_reward
-        self._penalty = penalty
+        self.time_limit = time_limit
+        self.grid_size: int = self._generator.grid_size
+        self.num_agents: int = self._generator.num_agents
+        self.num_food: int = self._generator.num_food
+        self.fov = self._generator.fov
+        self.normalize_reward = normalize_reward
+        self.penalty = penalty
         self.num_obs_features = utils.calculate_num_observation_features(
-            self._num_food, self._num_agents
+            self.num_food, self.num_agents
         )
+
         self._observer: Union[VectorObserver, GridObserver]
         if not grid_observation:
             self._observer = VectorObserver(
-                fov=self._generator.fov,
-                grid_size=self._grid_size,
-                num_agents=self._num_agents,
-                num_food=self._num_food,
+                fov=self.fov,
+                grid_size=self.grid_size,
+                num_agents=self.num_agents,
+                num_food=self.num_food,
             )
-
         else:
             self._observer = GridObserver(
-                fov=self._generator.fov,
-                grid_size=self._grid_size,
-                num_agents=self._num_agents,
-                num_food=self._num_food,
+                fov=self.fov,
+                grid_size=self.grid_size,
+                num_agents=self.num_agents,
+                num_food=self.num_food,
             )
 
         # create viewer for rendering environment
         self._viewer = viewer or LevelBasedForagingViewer(
-            self._grid_size, "LevelBasedForaging"
+            self.grid_size, "LevelBasedForaging"
         )
-
-    @property
-    def time_limit(self) -> int:
-        return self._time_limit
-
-    @property
-    def grid_size(self) -> int:
-        return self._grid_size
-
-    @property
-    def fov(self) -> int:
-        return self._generator.fov
-
-    @property
-    def num_agents(self) -> int:
-        return self._num_agents
-
-    @property
-    def num_food(self) -> int:
-        return self._num_food
-
-    @property
-    def max_agent_level(self) -> int:
-        return self._generator.max_agent_level
 
     def __repr__(self) -> str:
         return (
             "LevelBasedForaging(\n"
-            + f"\t grid_width={self._grid_size},\n"
-            + f"\t grid_height={self._grid_size},\n"
-            + f"\t num_agents={self._num_agents}, \n"
-            + f"\t num_food={self._num_food}, \n"
+            + f"\t grid_width={self.grid_size},\n"
+            + f"\t grid_height={self.grid_size},\n"
+            + f"\t num_agents={self.num_agents}, \n"
+            + f"\t num_food={self.num_food}, \n"
             + f"\t max_agent_level={self._generator.max_agent_level}\n"
             ")"
         )
@@ -205,7 +182,7 @@ class LevelBasedForaging(Environment[State]):
         """
         state = self._generator(key)
         observation = self._observer.state_to_observation(state)
-        timestep = restart(observation, shape=self._num_agents)
+        timestep = restart(observation, shape=self.num_agents)
         timestep.extras = self._get_extra_info(state, timestep)
 
         return state, timestep
@@ -223,7 +200,7 @@ class LevelBasedForaging(Environment[State]):
         """
         # Move agents, fix collisions that may happen and set loading status.
         moved_agents = utils.update_agent_positions(
-            state.agents, actions, state.food_items, self._grid_size
+            state.agents, actions, state.food_items, self.grid_size
         )
 
         # Eat the food
@@ -250,19 +227,19 @@ class LevelBasedForaging(Environment[State]):
             [
                 # !terminate !trunc
                 lambda rew, obs: transition(
-                    reward=rew, observation=obs, shape=self._num_agents
+                    reward=rew, observation=obs, shape=self.num_agents
                 ),
                 # terminate !truncate
                 lambda rew, obs: termination(
-                    reward=rew, observation=obs, shape=self._num_agents
+                    reward=rew, observation=obs, shape=self.num_agents
                 ),
                 # !terminate truncate
                 lambda rew, obs: truncation(
-                    reward=rew, observation=obs, shape=self._num_agents
+                    reward=rew, observation=obs, shape=self.num_agents
                 ),
                 # terminate truncate
                 lambda rew, obs: termination(
-                    reward=rew, observation=obs, shape=self._num_agents
+                    reward=rew, observation=obs, shape=self.num_agents
                 ),
             ],
             reward,
@@ -278,7 +255,7 @@ class LevelBasedForaging(Environment[State]):
             "eaten_food", jnp.float32(0)
         )
         percent_eaten = (n_eaten / self.num_food) * 100
-        return {"num_eaten": n_eaten, "percent_eaten": percent_eaten}
+        return {"percent_eaten": percent_eaten}
 
     def get_reward(
         self,
@@ -307,7 +284,7 @@ class LevelBasedForaging(Environment[State]):
             # Penalize agents for not being able to cooperate and eat food
             penalty = jnp.where(
                 (sum_agents_levels != 0) & (sum_agents_levels < food.level),
-                self._penalty,
+                self.penalty,
                 0,
             )
 
@@ -319,7 +296,7 @@ class LevelBasedForaging(Environment[State]):
             # jnp.nan_to_num: Used in the case where no agents are adjacent to the food
             normalizer = sum_agents_levels * total_food_level
             reward = jnp.where(
-                self._normalize_reward, jnp.nan_to_num(reward / normalizer), reward
+                self.normalize_reward, jnp.nan_to_num(reward / normalizer), reward
             )
 
             return reward
@@ -384,7 +361,7 @@ class LevelBasedForaging(Environment[State]):
             specs.Spec[Observation]: Spec for the `Observation` with fields grid,
             action_mask, and step_count.
         """
-        max_food_level = self._num_agents * self._generator.max_agent_level
+        max_food_level = self.num_agents * self._generator.max_agent_level
         return self._observer.observation_spec(
             self._generator.max_agent_level,
             max_food_level,
@@ -398,7 +375,7 @@ class LevelBasedForaging(Environment[State]):
             specs.MultiDiscreteArray: Action spec for the environment with shape (num_agents,).
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array([len(MOVES)] * self._num_agents),
+            num_values=jnp.array([len(MOVES)] * self.num_agents),
             dtype=jnp.int32,
             name="action",
         )
@@ -411,7 +388,7 @@ class LevelBasedForaging(Environment[State]):
         Returns:
             specs.Array: Reward specification, of shape (num_agents,) for the  environment.
         """
-        return specs.Array(shape=(self._num_agents,), dtype=float, name="reward")
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
     def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.

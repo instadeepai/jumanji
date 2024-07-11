@@ -146,6 +146,7 @@ def test_fix_collisions(agents: Agent) -> None:
         level=agents.level,
         # collision on agent 0 and 3
         position=jnp.array([[0, 1], [0, 1], [2, 1]]),
+        loading=jnp.array([0, 0, 0]),
     )
 
     # expected postions after collision fix:
@@ -154,6 +155,7 @@ def test_fix_collisions(agents: Agent) -> None:
         level=agents.level,
         # take orig agent for agent 0 and 3
         position=jnp.array([[0, 0], [1, 1], [2, 1]]),
+        loading=jnp.array([0, 0, 0]),
     )
 
     new_agents = utils.fix_collisions(moved_agents, agents)

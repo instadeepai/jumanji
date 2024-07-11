@@ -90,7 +90,12 @@ def simulate_agent_movement(
     )
 
     # Return the agent with the updated position
-    return Agent(id=agent.id, position=new_agent_position, level=agent.level)
+    return Agent(
+        id=agent.id,
+        position=new_agent_position,
+        level=agent.level,
+        loading=jnp.asarray(False),
+    )
 
 
 def update_agent_positions(
@@ -143,6 +148,8 @@ def fix_collisions(moved_agents: Agent, original_agents: Agent) -> Agent:
     """
     # Detect duplicate positions
     duplicates = flag_duplicates(moved_agents.position)
+    duplicates = duplicates.reshape((duplicates.shape[0], -1))
+
     # If there are duplicates, use the original agent position.
     new_positions = jnp.where(
         duplicates,
