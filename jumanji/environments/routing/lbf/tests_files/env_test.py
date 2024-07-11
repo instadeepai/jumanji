@@ -18,7 +18,10 @@ import jax.numpy as jnp
 from jumanji.environments.routing.lbf.constants import DOWN, LOAD, NOOP
 from jumanji.environments.routing.lbf.env import LevelBasedForaging
 from jumanji.environments.routing.lbf.types import Agent, Food, State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.types import StepType, TimeStep
 
 # General integration test
@@ -162,3 +165,10 @@ def test_env_does_not_smoke(
 ) -> None:
     check_env_does_not_smoke(lbf_environment)
     check_env_does_not_smoke(lbf_env_grid_obs)
+
+
+def test_lbf__specs_does_not_smoke(
+    lbf_environment: LevelBasedForaging,
+) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(lbf_environment)

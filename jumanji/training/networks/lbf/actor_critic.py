@@ -39,7 +39,7 @@ def make_actor_critic_networks_lbf(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `LevelBasedForaging` environment."""
-    num_values = np.asarray(lbf_env.action_spec().num_values)
+    num_values = np.asarray(lbf_env.action_spec.num_values)
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
