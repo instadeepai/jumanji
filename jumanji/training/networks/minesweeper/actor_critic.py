@@ -45,7 +45,7 @@ def make_actor_critic_networks_minesweeper(
     vocab_size = 1 + PATCH_SIZE**2  # unexplored, or 0, 1, ..., 8
 
     parametric_action_distribution = FactorisedActionSpaceParametricDistribution(
-        action_spec_num_values=np.asarray(minesweeper.action_spec().num_values)
+        action_spec_num_values=np.asarray(minesweeper.action_spec.num_values)
     )
     policy_network = make_network_cnn(
         vocab_size=vocab_size,

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -47,7 +48,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MaConnector(Environment[State]):
+class MaConnector(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
     must be connected without overlapping the paths taken by any other set. This is achieved
     by allowing certain points to move to an adjacent cell at each step. However, each time a
@@ -89,7 +90,7 @@ class MaConnector(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -119,6 +120,7 @@ class MaConnector(Environment[State]):
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
+        super().__init__()
         self._agent_ids = jnp.arange(self.num_agents)
         self._viewer = viewer or ConnectorViewer(
             "Connector", self.num_agents, render_mode="human"
@@ -330,6 +332,7 @@ class MaConnector(Environment[State]):
         """
         self._viewer.close()
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Connector` environment.
 
@@ -368,6 +371,7 @@ class MaConnector(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec for the Connector environment.
 
@@ -383,10 +387,12 @@ class MaConnector(Environment[State]):
             name="action",
         )
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns: a reward per agent."""
         return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Returns: discount per agent."""
         return specs.BoundedArray(
@@ -422,10 +428,12 @@ class Connector(MaConnector):
         state, timestep = super().step(state, action)
         return state, self.multi_to_single_agent_timestep(timestep)
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns: a single reward, summed for all agents."""
         return specs.Array(shape=(), dtype=float, name="reward")
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Returns: a single discount, one for all agents."""
         return specs.BoundedArray(

@@ -49,7 +49,7 @@ def test_lbf_viewer_animate(
     states = [state]
     for _ in range(5):
         key, _ = jax.random.split(key)
-        action = lbf_environment.action_spec().generate_value()
+        action = lbf_environment.action_spec.generate_value()
         state, _ = jax.jit(lbf_environment.step)(state, action)
         states.append(state)
 
@@ -69,7 +69,7 @@ def test_lbf_viewer_save_animation(
     states = [state]
     for _ in range(5):
         key, _ = jax.random.split(key)
-        action = lbf_environment.action_spec().generate_value()
+        action = lbf_environment.action_spec.generate_value()
         state, _ = jax.jit(lbf_environment.step)(state, action)
         states.append(state)
 

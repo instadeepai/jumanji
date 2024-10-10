@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -48,7 +49,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class MultiCVRP(Environment[State]):
+class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
     """
     Multi-Vehicle Routing Problems with Soft Time Windows (MVRPSTW) environment as described in [1].
     We simplfy the naming to multi-agent capacitated vehicle routing problem (MultiCVRP).
@@ -71,7 +72,7 @@ class MultiCVRP(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -138,6 +139,7 @@ class MultiCVRP(Environment[State]):
             max_single_vehicle_distance(self._map_max, self._num_customers)
             / self._speed
         )
+        super().__init__()
 
     def __repr__(self) -> str:
         return f"MultiCVRP(num_customers={self._num_customers}, num_vehicles={self._num_vehicles})"
@@ -188,6 +190,7 @@ class MultiCVRP(Environment[State]):
 
         return new_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """
         Returns the observation spec.
@@ -317,6 +320,7 @@ class MultiCVRP(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.BoundedArray:
         """
         Returns the action spec.

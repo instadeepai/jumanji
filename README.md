@@ -26,39 +26,44 @@
     <img src="docs/env_anim/cleaner.gif" alt="Cleaner" width="16%">
     <img src="docs/env_anim/connector.gif" alt="Connector" width="16%">
     <img src="docs/env_anim/cvrp.gif" alt="CVRP" width="16%">
+    <img src="docs/env_anim/flat_pack.gif" alt="FlatPack" width="16%">
     <img src="docs/env_anim/game_2048.gif" alt="Game2048" width="16%">
-    <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="16%">
   </div>
   <div class="row" align="center">
+    <img src="docs/env_anim/graph_coloring.gif" alt="GraphColoring" width="16%">
     <img src="docs/env_anim/job_shop.gif" alt="JobShop" width="16%">
     <img src="docs/env_anim/knapsack.gif" alt="Knapsack" width="16%">
     <img src="docs/env_anim/maze.gif" alt="Maze" width="16%">
     <img src="docs/env_anim/minesweeper.gif" alt="Minesweeper" width="16%">
     <img src="docs/env_anim/mmst.gif" alt="MMST" width="16%">
-    <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
   </div>
   <div class="row" align="center">
+    <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
+    <img src="docs/env_anim/pac_man.gif" alt="PacMan" width="16%">
     <img src="docs/env_anim/robot_warehouse.gif" alt="RobotWarehouse" width="16%">
     <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="16%">
+    <img src="docs/env_anim/sliding_tile_puzzle.gif" alt="SlidingTilePuzzle" width="16%">
     <img src="docs/env_anim/snake.gif" alt="Snake" width="16%">
+  </div>
+    <div class="row" align="center">
+    <img src="docs/env_anim/sokoban.gif" alt="RobotWarehouse" width="16%">
     <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="16%">
     <img src="docs/env_anim/tetris.gif" alt="Tetris" width="16%">
     <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
   </div>
-    <div class="row" align="center">
-    <img src="docs/env_anim/pac_man.gif" alt="RobotWarehouse" width="16%">
-    <img src="docs/env_anim/sokoban.gif" alt="RobotWarehouse" width="16%">
-  </div>
 </div>
 
+## Jumanji @ ICLR 2024
+
+Jumanji has been accepted at [ICLR 2024](https://iclr.cc/), check out our [research paper](https://arxiv.org/abs/2306.09884).
 
 ## Welcome to the Jungle! 🌴
 
-Jumanji is a diverse suite of scalable reinforcement learning environments written in JAX.
+Jumanji is a diverse suite of scalable reinforcement learning environments written in JAX. It now features 22 environments!
 
 Jumanji is helping pioneer a new wave of hardware-accelerated research and development in the
 field of RL. Jumanji's high-speed environments enable faster iteration and large-scale
-experimentation while simultaneously reducing complexity. Originating in the Research Team at
+experimentation while simultaneously reducing complexity. Originating in the research team at
 [InstaDeep](https://www.instadeep.com/), Jumanji is now developed jointly with the open-source
 community. To join us in these efforts, reach out, raise issues and read our
 [contribution guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) or just
@@ -98,8 +103,10 @@ problems.
 | 🎨 GraphColoring                              | Logic  | `GraphColoring-v0`                                   | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/graph_coloring/)   | [doc](https://instadeepai.github.io/jumanji/environments/graph_coloring/)   |
 | 💣 Minesweeper                           | Logic    | `Minesweeper-v0`                                     | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/minesweeper/) | [doc](https://instadeepai.github.io/jumanji/environments/minesweeper/) |
 | 🎲 RubiksCube                            | Logic    | `RubiksCube-v0`<br/>`RubiksCube-partly-scrambled-v0` | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/rubiks_cube/) | [doc](https://instadeepai.github.io/jumanji/environments/rubiks_cube/) |
-| ✏️ Sudoku                       | Logic    | `Sudoku-v0` <br/>`Sudoku-very-easy-v0`               | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/sudoku/) | [doc](https://instadeepai.github.io/jumanji/environments/sudoku/) |
-| 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v2`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
+| 🔀 SlidingTilePuzzle                       | Logic    | `SlidingTilePuzzle-v0` | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/sliding_tile_puzzle/) | [doc](https://instadeepai.github.io/jumanji/environments/sliding_tile_puzzle/) |
+| ✏️ Sudoku                       | Logic    | `Sudoku-v0` <br/>`Sudoku-very-easy-v0`| [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/logic/sudoku/) | [doc](https://instadeepai.github.io/jumanji/environments/sudoku/) |
+| 📦 BinPack (3D BinPacking Problem)       | Packing  | `BinPack-v1`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/bin_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/bin_pack/)    |
+| 🧩 FlatPack (2D Grid Filling Problem) | Packing  | `FlatPack-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/flat_pack/)  | [doc](https://instadeepai.github.io/jumanji/environments/flat_pack/)    |
 | 🏭 JobShop (Job Shop Scheduling Problem) | Packing  | `JobShop-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/job_shop/)  | [doc](https://instadeepai.github.io/jumanji/environments/job_shop/)    |
 | 🎒 Knapsack                              | Packing  | `Knapsack-v1`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/knapsack/)  | [doc](https://instadeepai.github.io/jumanji/environments/knapsack/)    |
 | ▒ Tetris                              | Packing  | `Tetris-v0`                                        | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/packing/tetris/)  | [doc](https://instadeepai.github.io/jumanji/environments/tetris/)    |
@@ -112,7 +119,7 @@ problems.
 | 🐍 Snake                                       | Routing  | `Snake-v1`                                           | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/snake/)     | [doc](https://instadeepai.github.io/jumanji/environments/snake/)       |
 | 📬 TSP (Travelling Salesman Problem)           | Routing  | `TSP-v1`                                             | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/tsp/)       | [doc](https://instadeepai.github.io/jumanji/environments/tsp/)         |
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
-| ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v0`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pacman/)      | [doc](https://instadeepai.github.io/jumanji/environments/pacman/)
+| ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pac_man/)      | [doc](https://instadeepai.github.io/jumanji/environments/pac_man/)
 | 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
 
 <h2 name="install" id="install">Installation 🎬</h2>
@@ -120,7 +127,7 @@ problems.
 You can install the latest release of Jumanji from PyPI:
 
 ```bash
-pip install jumanji
+pip install -U jumanji
 ```
 
 Alternatively, you can install the latest development version directly from GitHub:
@@ -165,7 +172,7 @@ state, timestep = jax.jit(env.reset)(key)
 env.render(state)
 
 # Interact with the (jit-able) environment
-action = env.action_spec().generate_value()          # Action selection (dummy value here)
+action = env.action_spec.generate_value()          # Action selection (dummy value here)
 state, timestep = jax.jit(env.step)(state, action)   # Take a step and observe the next state and time step
 ```
 
@@ -228,17 +235,10 @@ details on how to submit pull requests, our Contributor License Agreement, and c
 If you use Jumanji in your work, please cite the library using:
 
 ```
-@misc{bonnet2023jumanji,
+@misc{bonnet2024jumanji,
     title={Jumanji: a Diverse Suite of Scalable Reinforcement Learning Environments in JAX},
-    author={
-        Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Vincent Coyette and
-        Paul Duckworth and Laurence I. Midgley and Tristan Kalloniatis and Sasha Abramowitz and
-        Cemlyn N. Waters and Andries P. Smit and Nathan Grinsztajn and Ulrich A. Mbou Sob and
-        Omayma Mahjoub and Elshadai Tegegn and Mohamed A. Mimouni and Raphael Boige and
-        Ruan de Kock and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and
-        Alexandre Laterre
-    },
-    year={2023},
+    author={Clément Bonnet and Daniel Luo and Donal Byrne and Shikha Surana and Sasha Abramowitz and Paul Duckworth and Vincent Coyette and Laurence I. Midgley and Elshadai Tegegn and Tristan Kalloniatis and Omayma Mahjoub and Matthew Macfarlane and Andries P. Smit and Nathan Grinsztajn and Raphael Boige and Cemlyn N. Waters and Mohamed A. Mimouni and Ulrich A. Mbou Sob and Ruan de Kock and Siddarth Singh and Daniel Furelos-Blanco and Victor Le and Arnu Pretorius and Alexandre Laterre},
+    year={2024},
     eprint={2306.09884},
     url={https://arxiv.org/abs/2306.09884},
     archivePrefix={arXiv},

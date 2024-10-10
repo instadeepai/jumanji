@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
@@ -30,7 +31,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Cleaner(Environment[State]):
+class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the 'Cleaner' game where multiple agents have to clean all tiles of
     a maze.
 
@@ -74,7 +75,7 @@ class Cleaner(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -107,6 +108,7 @@ class Cleaner(Environment[State]):
         self.num_cols = self.generator.num_cols
         self.grid_shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit or (self.num_rows * self.num_cols)
+        super().__init__()
         self.penalty_per_timestep = penalty_per_timestep
 
         # Create viewer used for rendering
@@ -122,6 +124,7 @@ class Cleaner(Environment[State]):
             ")"
         )
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specification of the observation of the `Cleaner` environment.
 
@@ -137,12 +140,12 @@ class Cleaner(Environment[State]):
         """
         grid = specs.BoundedArray(self.grid_shape, jnp.int8, 0, 2, "grid")
         agents_locations = specs.BoundedArray(
-            (self.num_agents, 2), int, [0, 0], self.grid_shape, "agents_locations"
+            (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
         )
         action_mask = specs.BoundedArray(
             (self.num_agents, 4), bool, False, True, "action_mask"
         )
-        step_count = specs.BoundedArray((), int, 0, self.time_limit, "step_count")
+        step_count = specs.BoundedArray((), jnp.int32, 0, self.time_limit, "step_count")
         return specs.Spec(
             Observation,
             "ObservationSpec",
@@ -152,6 +155,7 @@ class Cleaner(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Specification of the action for the `Cleaner` environment.
 
@@ -159,8 +163,8 @@ class Cleaner(Environment[State]):
             action_spec: a `specs.MultiDiscreteArray` spec.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.full(self.num_agents, 4, int),
-            dtype=int,
+            num_values=jnp.full(self.num_agents, 4, jnp.int32),
+            dtype=jnp.int32,
             name="action_spec",
         )
 

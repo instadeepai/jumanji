@@ -69,7 +69,7 @@ def test_sparse_reward(  # noqa: CCR001
                     tour_length = jnp.linalg.norm(
                         sorted_cities - sorted_cities_rolled, axis=-1
                     ).sum()
-                    assert reward == -tour_length
+                    assert jnp.isclose(reward, -tour_length)
                 else:
                     # Check that the reward is 0 for every non-final valid action.
                     assert reward == 0

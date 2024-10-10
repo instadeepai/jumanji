@@ -23,7 +23,10 @@ from jax import numpy as jnp
 
 from jumanji.environments.logic.sudoku.env import Sudoku
 from jumanji.environments.logic.sudoku.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -53,7 +56,7 @@ def test_sudoku__step(sudoku_env: Sudoku) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(sudoku_env.reset)(key)
 
-    action = sudoku_env.action_spec().generate_value()
+    action = sudoku_env.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -75,13 +78,18 @@ def test_sudoku__does_not_smoke(sudoku_env: Sudoku) -> None:
     check_env_does_not_smoke(env=sudoku_env)
 
 
+def test_sudoku__specs_does_not_smoke(sudoku_env: Sudoku) -> None:
+    """Test that we can access specs without any errors."""
+    check_env_specs_does_not_smoke(env=sudoku_env)
+
+
 def test_sudoku__render(monkeypatch: pytest.MonkeyPatch, sudoku_env: Sudoku) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     state, timestep = jax.jit(sudoku_env.reset)(jax.random.PRNGKey(0))
     sudoku_env.render(state)
     sudoku_env.close()
-    action = sudoku_env.action_spec().generate_value()
+    action = sudoku_env.action_spec.generate_value()
     state, timestep = jax.jit(sudoku_env.step)(state, action)
     sudoku_env.render(state)
     sudoku_env.close()

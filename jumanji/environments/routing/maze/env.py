@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -30,7 +31,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Maze(Environment[State]):
+class Maze(Environment[State, specs.DiscreteArray, Observation]):
     """A JAX implementation of a 2D Maze. The goal is to navigate the maze to find the target
     position.
 
@@ -71,7 +72,7 @@ class Maze(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -100,6 +101,7 @@ class Maze(Environment[State]):
         self.generator = generator or RandomGenerator(num_rows=10, num_cols=10)
         self.num_rows = self.generator.num_rows
         self.num_cols = self.generator.num_cols
+        super().__init__()
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit or self.num_rows * self.num_cols
 
@@ -117,6 +119,7 @@ class Maze(Environment[State]):
             ]
         )
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Maze` environment.
 
@@ -159,6 +162,7 @@ class Maze(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec. 4 actions: [0,1,2,3] -> [Up, Right, Down, Left].
 

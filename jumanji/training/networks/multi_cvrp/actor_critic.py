@@ -46,7 +46,7 @@ def make_actor_critic_networks_multicvrp(
     # Add depot to the number of customers
     num_customers += 1
 
-    num_actions = MultiCVRP.action_spec().maximum
+    num_actions = MultiCVRP.action_spec.maximum
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=np.asarray(num_actions).reshape(1)
     )
@@ -161,7 +161,6 @@ class MultiCVRPTorso(hk.Module):
         o_customers: chex.Array,
         v_embedding: chex.Array,
     ) -> chex.Array:
-
         # Embed the depot differently
         # (B, C, D)
         depot_projection = hk.Linear(self.model_size, name="depot_projection")
@@ -211,7 +210,6 @@ class MultiCVRPTorso(hk.Module):
         v_embedding: chex.Array,
         c_embedding: chex.Array,
     ) -> chex.Array:
-
         # Projection of the operations
         embeddings = hk.Linear(self.model_size, name="o_vehicle_projections")(
             v_embedding

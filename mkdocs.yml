@@ -22,9 +22,11 @@ nav:
           - GraphColoring: environments/graph_coloring.md
           - Minesweeper: environments/minesweeper.md
           - RubiksCube: environments/rubiks_cube.md
+          - SlidingTilePuzzle: environments/sliding_tile_puzzle.md
           - Sudoku: environments/sudoku.md
       - Packing:
           - BinPack: environments/bin_pack.md
+          - FlatPack: environments/flat_pack.md
           - JobShop: environments/job_shop.md
           - Knapsack: environments/knapsack.md
           - Tetris: environments/tetris.md
@@ -35,11 +37,12 @@ nav:
           - Maze: environments/maze.md
           - MMST: environments/mmst.md
           - MultiCVRP: environments/multi_cvrp.md
+          - PacMan: environments/pac_man.md
           - RobotWarehouse: environments/robot_warehouse.md
+          - Level-Based Foraging: api/environments/lbf.md
+          - Sokoban: environments/sokoban.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
-          - Sokoban: environments/sokoban.md
-          - PacMan: environments/pac_man.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
@@ -53,9 +56,11 @@ nav:
               - GraphColoring: api/environments/graph_coloring.md
               - Minesweeper: api/environments/minesweeper.md
               - RubiksCube: api/environments/rubiks_cube.md
+              - SlidingTilePuzzle: api/environments/sliding_tile_puzzle.md
               - Sudoku: api/environments/sudoku.md
           - Packing:
               - BinPack: api/environments/bin_pack.md
+              - FlatPack: api/environments/flat_pack.md
               - JobShop: api/environments/job_shop.md
               - Knapsack: api/environments/knapsack.md
               - Tetris: api/environments/tetris.md
@@ -66,11 +71,12 @@ nav:
               - Maze: api/environments/maze.md
               - MMST: api/environments/mmst.md
               - MultiCVRP: api/environments/multi_cvrp.md
+              - PacMan: api/environments/pac_man.md
               - RobotWarehouse: api/environments/robot_warehouse.md
+              - Level-Based Foraging: api/environments/lbf.md
+              - Sokoban: api/environments/sokoban.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
-              - Sokoban: api/environments/sokoban.md
-              - PacMan: api/environments/pac_man.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 

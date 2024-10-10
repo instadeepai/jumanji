@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 import chex
@@ -32,7 +33,7 @@ from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
-class LevelBasedForaging(Environment[State]):
+class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observation]):
     """
     An implementation of the Level-Based Foraging environment where agents need to
     cooperate to collect food and split the reward.
@@ -88,7 +89,7 @@ class LevelBasedForaging(Environment[State]):
     key = jax.random.key(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -118,7 +119,6 @@ class LevelBasedForaging(Environment[State]):
         normalize_reward: bool = True,
         penalty: float = 0.0,
     ) -> None:
-        super().__init__()
 
         self._generator = generator or RandomGenerator(
             grid_size=8,
@@ -153,6 +153,8 @@ class LevelBasedForaging(Environment[State]):
                 num_agents=self.num_agents,
                 num_food=self.num_food,
             )
+
+        super().__init__()
 
         # create viewer for rendering environment
         self._viewer = viewer or LevelBasedForagingViewer(
@@ -345,6 +347,7 @@ class LevelBasedForaging(Environment[State]):
         """Perform any necessary cleanup."""
         self._viewer.close()
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the environment.
 
@@ -368,6 +371,7 @@ class LevelBasedForaging(Environment[State]):
             self.time_limit,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec for the Level Based Foraging environment.
 
@@ -380,6 +384,7 @@ class LevelBasedForaging(Environment[State]):
             name="action",
         )
 
+    @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns the reward specification for the `LevelBasedForaging` environment.
 
@@ -390,6 +395,7 @@ class LevelBasedForaging(Environment[State]):
         """
         return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
 
+    @cached_property
     def discount_spec(self) -> specs.BoundedArray:
         """Describes the discount returned by the environment.
 

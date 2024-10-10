@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -31,7 +32,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class TSP(Environment[State]):
+class TSP(Environment[State, specs.DiscreteArray, Observation]):
     """Traveling Salesman Problem (TSP) environment as described in [1].
 
     - observation: Observation
@@ -83,7 +84,7 @@ class TSP(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -112,6 +113,7 @@ class TSP(Environment[State]):
             num_cities=20,
         )
         self.num_cities = self.generator.num_cities
+        super().__init__()
         self.reward_fn = reward_fn or DenseReward()
         self._viewer = viewer or TSPViewer(name="TSP", render_mode="human")
 
@@ -169,6 +171,7 @@ class TSP(Environment[State]):
         )
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
@@ -212,6 +215,7 @@ class TSP(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 

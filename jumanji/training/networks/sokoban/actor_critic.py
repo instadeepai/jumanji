@@ -36,7 +36,7 @@ def make_actor_critic_networks_sokoban(
     value_layers: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Sokoban` environment."""
-    num_actions = sokoban.action_spec().num_values
+    num_actions = sokoban.action_spec.num_values
     parametric_action_distribution = CategoricalParametricDistribution(
         num_actions=num_actions
     )

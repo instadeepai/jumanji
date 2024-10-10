@@ -62,4 +62,4 @@ Eating a ghost when scatter mode is enabled also awards +200 points but, points 
 
 
 ## Registered Versions 📖
-- `PacMan-v0`, PacMan in a 31x28 map with simple grid observations.
+- `PacMan-v1`, PacMan in a 31x28 map with simple grid observations.

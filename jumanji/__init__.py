@@ -81,6 +81,10 @@ register(
 # given in the observation.
 register(id="BinPack-v2", entry_point="jumanji.environments:BinPack")
 
+# 2D grid filling problem with 25 blocks, an 11x11 grid and a random grid generator.
+# The grid must be filled in `num_blocks` steps.
+register(id="FlatPack-v0", entry_point="jumanji.environments:FlatPack")
+
 # Job-shop scheduling problem with 20 jobs, 10 machines, at most
 # 8 operations per job, and a max operation duration of 6 timesteps.
 register(id="JobShop-v0", entry_point="jumanji.environments:JobShop")
@@ -132,11 +136,16 @@ register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 # Sokoban with deepmind dataset generator
 register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
 
-# Pacman - minimal version of Atarti Pacman game
-register(id="PacMan-v0", entry_point="jumanji.environments:PacMan")
+# Pacman - minimal version of Atari Pacman game
+register(id="PacMan-v1", entry_point="jumanji.environments:PacMan")
+
+# SlidingTilePuzzle - A sliding tile puzzle environment with the default grid size of 5x5.
+register(
+    id="SlidingTilePuzzle-v0", entry_point="jumanji.environments:SlidingTilePuzzle"
+)
 
 # LevelBasedForaging  with a random generator with 8 grid size,
-# 2 agents and 2 foods and maximum agent's level is 2.
+# 2 agents and 2 food items and the maximum agent's level is 2.
 register(
     id="LevelBasedForaging-v0", entry_point="jumanji.environments:LevelBasedForaging"
 )

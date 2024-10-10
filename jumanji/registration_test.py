@@ -18,7 +18,7 @@ import pytest
 import pytest_mock
 
 import jumanji
-from jumanji import registration
+from jumanji import registration, specs
 from jumanji.testing.fakes import FakeEnvironment
 
 
@@ -91,10 +91,10 @@ def test_register__override_kwargs(mocker: pytest_mock.MockerFixture) -> None:
         id=env_id,
         entry_point="jumanji.testing.fakes:FakeEnvironment",
     )
-    env: FakeEnvironment = registration.make(  # type: ignore
+    obs_spec: specs.Array = registration.make(  # type: ignore
         env_id, observation_shape=obs_shape
-    )
-    assert env.observation_spec().shape == obs_shape
+    ).observation_spec
+    assert obs_spec.shape == obs_shape
 
 
 def test_registration__make() -> None:
