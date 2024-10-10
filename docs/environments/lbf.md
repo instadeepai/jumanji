@@ -16,7 +16,7 @@ To collect food, the cumulative level of participating agents must meet or excee
 The **observation** seen by the agent is a `NamedTuple` containing the following:
 
 - `agents_view`: jax array (int32) of shape `(num_agents, num_obs_features)`, array representing the agent's view of other agents
-    and foood.
+    and food.
 
 - `action_mask`: jax array (bool) of shape `(num_agents, 6)`, array specifying, for each agent,
     which action (noop, up, down, left, right, load) is legal.
@@ -26,7 +26,7 @@ The **observation** seen by the agent is a `NamedTuple` containing the following
 ## Action
 
 The action space is a `MultiDiscreteArray` containing an integer value in `[0, 1, 2, 3, 4, 5]` for each
-agent. Each agent can take one of five actions: noop (`0`), up (`1`), down (`2`), turn left (`3`), turn right (`4`), or load food (`5`).
+agent. Each agent can take one of five actions: noop (`0`), up (`1`), down (`2`), turn left (`3`), turn right (`4`), or pick up food (`5`).
 
 The episode terminates under the following conditions:
 
