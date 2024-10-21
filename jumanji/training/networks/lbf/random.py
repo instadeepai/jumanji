@@ -19,5 +19,5 @@ from jumanji.training.networks.protocols import RandomPolicy
 
 
 def make_random_policy_lbf() -> RandomPolicy:
-    """Make random policy for RobotWarehouse."""
+    """Make random policy for `Level-Based Foraging` environment."""
     return masked_categorical_random

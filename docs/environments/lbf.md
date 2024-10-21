@@ -1,7 +1,7 @@
 # # Level-Based Foraging Environment
 
 <p align="center">
-        <img src="../env_anim/lbf_animation.gif" width="600"/>
+        <img src="../env_anim/lbf.gif" width="600"/>
 </p>
 
 We provide a JAX jit-able implementation of the [Level-Based Foraging](https://github.com/semitable/lb-foraging/tree/master)
