@@ -19,7 +19,7 @@ import jax
 import jax.numpy as jnp
 
 from jumanji.environments.routing.lbf.constants import LOAD, MOVES
-from jumanji.environments.routing.lbf.types import Agent, Entity, Food
+from jumanji.environments.routing.lbf.types import Agent, Entity, Food, State
 
 
 def are_entities_adjacent(entity_a: Entity, entity_b: Entity) -> chex.Array:
@@ -200,34 +200,52 @@ def eat_food(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     return new_food, food_eaten_this_step, adj_loading_agents_levels
 
 
-def place_agent_on_grid(agent: Agent, grid: chex.Array) -> chex.Array:
-    """Return the grid with the agent placed on it."""
-    x, y = agent.position
-    return grid.at[x, y].set(agent.level)
-
-
-def place_food_on_grid(food: Food, grid: chex.Array) -> chex.Array:
-    """Return the grid with the food placed on it."""
-    x, y = food.position
-    return grid.at[x, y].set(food.level * ~food.eaten)  # 0 if eaten else level
-
-
-def slice_around(pos: chex.Array, fov: int) -> Tuple[chex.Array, chex.Array]:
-    """Return the start and length of a slice that when used to index a grid will
-    return a 2*fov+1 x 2*fov+1 sub-grid centered around pos.
-
-    Returns are meant to be used with a `jax.lax.dynamic_slice`
-    """
-    # Because we pad the grid by fov we need to shift the pos to the position
-    # it will be in the padded grid.
-    shifted_pos = pos + fov
-
-    start_x = shifted_pos[0] - fov
-    start_y = shifted_pos[1] - fov
-    return start_x, start_y
-
-
 def calculate_num_observation_features(num_food: int, num_agents: int) -> chex.Array:
     """Calculate the number of features in an agent view"""
     obs_features = 3 * (num_food + num_agents)
     return jnp.array(obs_features, jnp.int32)
+
+
+def compute_action_mask(agent: Agent, state: State, grid_size: int) -> chex.Array:
+    """
+    Calculate the action mask for a given agent based on the current state.
+
+    Args:
+        agent (Agent): The agent for which to calculate the action mask.
+        state (State): The current state of the environment.
+
+    Returns:
+        chex.Array: A boolean array representing the action mask for the given agent,
+            where `True` indicates a valid action, and `False` indicates an invalid action.
+    """
+    next_positions = agent.position + MOVES
+
+    def check_pos_fn(next_pos: Any, entities: Entity, condition: bool) -> Any:
+        return jnp.any(jnp.all(next_pos == entities.position, axis=-1) & condition)
+
+    # Check if any agent is in a next position.
+    agent_occupied = jax.vmap(check_pos_fn, (0, None, None))(
+        next_positions, state.agents, (state.agents.id != agent.id)
+    )
+
+    # Check if any food is in a next position (Food must be uneaten)
+    food_occupied = jax.vmap(check_pos_fn, (0, None, None))(
+        next_positions, state.food_items, ~state.food_items.eaten
+    )
+    # Check if the next position is out of bounds
+    out_of_bounds = jnp.any(
+        (next_positions < 0) | (next_positions >= grid_size), axis=-1
+    )
+
+    action_mask = ~(food_occupied | agent_occupied | out_of_bounds)
+
+    # Check if the agent can load food (if placed in the neighborhood)
+    num_adj_food = (
+        jax.vmap(are_entities_adjacent, (0, None))(state.food_items, agent)
+        & ~state.food_items.eaten
+    )
+    is_food_adj = jnp.sum(num_adj_food) > 0
+
+    action_mask = jnp.where(is_food_adj, action_mask, action_mask.at[-1].set(False))
+
+    return action_mask

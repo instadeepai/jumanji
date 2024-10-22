@@ -38,7 +38,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
     An implementation of the Level-Based Foraging environment where agents need to
     cooperate to collect food and split the reward.
 
-    Original implementation: https://github.com/semitable/lb-foraging/tree/master
+    Original implementation: https://github.com/semitable/lb-foraging
 
     - `observation`: `Observation`
         - `agent_views`: Depending on the `observer` passed to `__init__`, it can be a

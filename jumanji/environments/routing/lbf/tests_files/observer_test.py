@@ -163,11 +163,11 @@ def test_grid_observer(state: State) -> None:
                 [0, 0, 0, 4, 0],
             ],
             [
-                [1, 1, 1, 1, 1],
-                [1, 1, 1, 1, 1],
-                [1, 1, 1, 1, 1],
-                [1, 1, 1, 0, 1],
-                [1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1],
+                [0, 0, 1, 0, 1],
+                [0, 0, 1, 0, 0],
             ],
         ]
     )
@@ -189,11 +189,11 @@ def test_grid_observer(state: State) -> None:
                 [0, 0, 0, 0, 0],
             ],
             [
-                [1, 1, 1, 1, 1],
-                [1, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1],
-                [1, 1, 0, 0, 0],
-                [1, 1, 1, 1, 1],
+                [0, 0, 0, 0, 0],
+                [0, 0, 1, 1, 1],
+                [0, 1, 0, 1, 1],
+                [0, 1, 0, 0, 0],
+                [0, 1, 1, 1, 1],
             ],
         ]
     )
@@ -217,7 +217,7 @@ def test_grid_observer(state: State) -> None:
             [
                 [0, 1, 1, 1, 1],
                 [1, 0, 1, 1, 1],
-                [1, 0, 1, 0, 1],
+                [1, 0, 0, 0, 1],
                 [1, 1, 1, 1, 1],
                 [1, 1, 0, 1, 1],
             ],
@@ -226,7 +226,7 @@ def test_grid_observer(state: State) -> None:
 
     assert jnp.all(obs.agents_view[0, :] == expected_agent_0_view)
     assert jnp.all(
-        obs.action_mask[0, :] == jnp.array([True, True, True, True, True, True])
+        obs.action_mask[0, :] == jnp.array([True, False, True, False, True, False])
     )
     assert jnp.all(obs.agents_view[1, :] == expected_agent_1_view)
     assert jnp.all(

@@ -21,20 +21,6 @@ from jumanji.environments.routing.lbf.constants import DOWN, LEFT, LOAD, NOOP, R
 from jumanji.environments.routing.lbf.types import Agent, Food
 
 
-def test_place_entities_on_grid(
-    agent_grid: chex.Array, food_grid: chex.Array, food_items: Food, agents: Agent
-) -> None:
-    grid = jnp.zeros((6, 6), dtype=jnp.int32)
-
-    agent_grid_result = jax.vmap(utils.place_agent_on_grid, (0, None))(agents, grid)
-    agent_grid_result = jnp.sum(agent_grid_result, axis=0)
-    assert jnp.all(jnp.allclose(agent_grid_result, agent_grid))
-
-    food_grid_result = jax.vmap(utils.place_agent_on_grid, (0, None))(food_items, grid)
-    food_grid_result = jnp.sum(food_grid_result, axis=0)
-    assert jnp.all(jnp.allclose(food_grid_result, food_grid))
-
-
 def test_simulate_agent_movement(
     agent0: Agent, agent1: Agent, agent2: Agent, agents: Agent, food_items: Food
 ) -> None:
@@ -160,45 +146,6 @@ def test_fix_collisions(agents: Agent) -> None:
 
     new_agents = utils.fix_collisions(moved_agents, agents)
     chex.assert_trees_all_equal(new_agents, expected_agents)
-
-
-def test_slice_around() -> None:
-    pos = jnp.array([1, 1])
-    fov = 1
-
-    grid = jnp.arange(9).reshape(3, 3)
-    grid = jnp.pad(grid, 1, mode="constant", constant_values=-1)
-
-    # expected slice
-    expected_slice = jnp.array(
-        [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-        ]
-    )
-
-    # slice around pos
-    slice_coords = utils.slice_around(pos, fov)
-    view = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
-
-    assert jnp.all(view == expected_slice)
-
-    # slice around pos with fov=2
-    fov = 2
-    expected_slice = jnp.array(
-        [
-            [-1, -1, -1, -1, -1],
-            [-1, 0, 1, 2, -1],
-            [-1, 3, 4, 5, -1],
-            [-1, 6, 7, 8, -1],
-            [-1, -1, -1, -1, -1],
-        ]
-    )
-
-    slice_coords = utils.slice_around(pos, fov)
-    view = jax.lax.dynamic_slice(grid, slice_coords, (2 * fov + 1, 2 * fov + 1))
-    assert jnp.all(view == expected_slice)
 
 
 def test_calculate_num_observation_features() -> None:
