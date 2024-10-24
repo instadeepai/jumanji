@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Any, Optional, Sequence, Tuple
 
 import chex
@@ -35,7 +36,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class PacMan(Environment[State]):
+class PacMan(Environment[State, specs.DiscreteArray, Observation]):
     """A JAX implementation of the 'PacMan' game where a single agent must navigate a
     maze to collect pellets and avoid 4 heuristic agents. The game takes place on a 31x28
     grid where the player can move in 4 directions (left, right, up, down) and collect
@@ -103,7 +104,7 @@ class PacMan(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -129,9 +130,11 @@ class PacMan(Environment[State]):
         self.x_size = self.generator.x_size
         self.y_size = self.generator.y_size
         self.pellet_spaces = self.generator.pellet_spaces
+        super().__init__()
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
         self.time_limit = 1000 or time_limit
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `PacMan` environment.
 
@@ -199,6 +202,7 @@ class PacMan(Environment[State]):
             score=score,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 
@@ -210,7 +214,6 @@ class PacMan(Environment[State]):
         return specs.DiscreteArray(5, name="action")
 
     def __repr__(self) -> str:
-
         return (
             f"PacMan(\n"
             f"\tnum_rows={self.x_size!r},\n"
@@ -460,7 +463,6 @@ class PacMan(Environment[State]):
         return power_up_locations, eat, reward
 
     def check_wall_collisions(self, state: State, new_player_pos: Position) -> Any:
-
         """
         Check if the new player position collides with a wall.
 

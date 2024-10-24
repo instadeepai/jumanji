@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -34,7 +35,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Tetris(Environment[State]):
+class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
     """RL Environment for the game of Tetris.
     The environment has a grid where the player can place tetrominoes.
     The environment has the following characteristics:
@@ -69,7 +70,7 @@ class Tetris(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -106,6 +107,7 @@ class Tetris(Environment[State]):
         self.TETROMINOES_LIST = jnp.array(TETROMINOES_LIST, jnp.int32)
         self.reward_list = jnp.array(REWARD_LIST, float)
         self.time_limit = time_limit
+        super().__init__()
         self._viewer = viewer or TetrisViewer(
             num_rows=self.num_rows,
             num_cols=self.num_cols,
@@ -246,6 +248,7 @@ class Tetris(Environment[State]):
         """
         return self._viewer.render(state)
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Tetris` environment.
 
@@ -285,6 +288,7 @@ class Tetris(Environment[State]):
             ),
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. An action consists of two pieces of information:
         the amount of rotation (number of 90-degree rotations) and the x-position of

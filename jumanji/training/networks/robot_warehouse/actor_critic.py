@@ -39,7 +39,7 @@ def make_actor_critic_networks_robot_warehouse(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `RobotWarehouse` environment."""
-    num_values = np.asarray(robot_warehouse.action_spec().num_values)
+    num_values = np.asarray(robot_warehouse.action_spec.num_values)
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )

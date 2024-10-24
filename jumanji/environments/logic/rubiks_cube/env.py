@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -42,7 +43,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class RubiksCube(Environment[State]):
+class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
     """A JAX implementation of the Rubik's Cube with a configurable cube size (by default, 3) and
     number of scrambles at reset.
 
@@ -75,7 +76,7 @@ class RubiksCube(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -113,6 +114,7 @@ class RubiksCube(Environment[State]):
             cube_size=3,
             num_scrambles_on_reset=100,
         )
+        super().__init__()
         self._viewer = viewer or RubiksCubeViewer(
             sticker_colors=DEFAULT_STICKER_COLORS, cube_size=self.generator.cube_size
         )
@@ -173,6 +175,7 @@ class RubiksCube(Environment[State]):
         )
         return next_state, next_timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `RubiksCube` environment.
 
@@ -202,6 +205,7 @@ class RubiksCube(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
         """Returns the action spec. An action is composed of 3 elements that range in: 6 faces, each
         with cube_size//2 possible depths, and 3 possible directions.

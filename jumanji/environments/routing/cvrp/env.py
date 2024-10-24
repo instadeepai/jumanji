@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -30,7 +31,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class CVRP(Environment[State]):
+class CVRP(Environment[State, specs.DiscreteArray, Observation]):
     """Capacitated Vehicle Routing Problem (CVRP) environment as described in [1].
 
     - observation: `Observation`
@@ -89,7 +90,7 @@ class CVRP(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -121,6 +122,7 @@ class CVRP(Environment[State]):
             max_demand=10,
         )
         self.num_nodes = self.generator.num_nodes
+        super().__init__()
         self.max_capacity = self.generator.max_capacity
         self.max_demand = self.generator.max_demand
         if self.max_capacity < self.max_demand:
@@ -195,6 +197,7 @@ class CVRP(Environment[State]):
         )
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
@@ -261,6 +264,7 @@ class CVRP(Environment[State]):
             action_mask=action_mask,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 

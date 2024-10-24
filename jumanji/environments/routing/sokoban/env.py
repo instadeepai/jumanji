@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -45,7 +46,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Sokoban(Environment[State]):
+class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
     """A JAX implementation of the 'Sokoban' game from deepmind.
 
     - observation: `Observation`
@@ -103,7 +104,7 @@ class Sokoban(Environment[State]):
     key_train = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env_train.reset)(key_train)
     env_train.render(state)
-    action = env_train.action_spec().generate_value()
+    action = env_train.action_spec.generate_value()
     state, timestep = jax.jit(env_train.step)(state, action)
     env_train.render(state)
     ```
@@ -135,6 +136,8 @@ class Sokoban(Environment[State]):
         self.num_cols = GRID_SIZE
         self.shape = (self.num_rows, self.num_cols)
         self.time_limit = time_limit
+
+        super().__init__()
 
         self.generator = generator or HuggingFaceDeepMindGenerator(
             "unfiltered-train",
@@ -256,6 +259,7 @@ class Sokoban(Environment[State]):
 
         return next_state, timestep
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """
         Returns the specifications of the observation of the `Sokoban`
@@ -279,6 +283,7 @@ class Sokoban(Environment[State]):
             step_count=step_count,
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """
         Returns the action specification for the Sokoban environment.

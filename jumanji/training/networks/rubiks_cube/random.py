@@ -21,8 +21,8 @@ from jumanji.training.networks.protocols import RandomPolicy
 
 def make_random_policy_rubiks_cube(rubiks_cube: RubiksCube) -> RandomPolicy:
     """Make random policy for RubiksCube."""
-    action_minimum = rubiks_cube.action_spec().minimum
-    action_maximum = rubiks_cube.action_spec().maximum
+    action_minimum = rubiks_cube.action_spec.minimum
+    action_maximum = rubiks_cube.action_spec.maximum
 
     def random_policy(observation: Observation, key: chex.PRNGKey) -> chex.Array:
         batch_size = observation.cube.shape[0]

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -29,7 +30,7 @@ from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
 
 
-class Game2048(Environment[State]):
+class Game2048(Environment[State, specs.DiscreteArray, Observation]):
     """Environment for the game 2048. The game consists of a board of size board_size x board_size
     (4x4 by default) in which the player can take actions to move the tiles on the board up, down,
     left, or right. The goal of the game is to combine tiles with the same number to create a tile
@@ -69,7 +70,7 @@ class Game2048(Environment[State]):
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
     env.render(state)
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
@@ -85,6 +86,7 @@ class Game2048(Environment[State]):
             viewer: `Viewer` used for rendering. Defaults to `Game2048Viewer`.
         """
         self.board_size = board_size
+        super().__init__()
 
         # Create viewer used for rendering
         self._viewer = viewer or Game2048Viewer("2048", board_size)
@@ -97,6 +99,7 @@ class Game2048(Environment[State]):
         """
         return f"2048 Game(board_size={self.board_size})"
 
+    @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Specifications of the observation of the `Game2048` environment.
 
@@ -122,6 +125,7 @@ class Game2048(Environment[State]):
             ),
         )
 
+    @cached_property
     def action_spec(self) -> specs.DiscreteArray:
         """Returns the action spec.
 

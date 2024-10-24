@@ -23,7 +23,10 @@ import pytest_mock
 from jumanji.environments.logic.rubiks_cube.env import RubiksCube
 from jumanji.environments.logic.rubiks_cube.generator import ScramblingGenerator
 from jumanji.environments.logic.rubiks_cube.types import State
-from jumanji.testing.env_not_smoke import check_env_does_not_smoke
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
 
@@ -51,7 +54,7 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     step_fn = jax.jit(chex.assert_max_traces(rubiks_cube.step, n=1))
     key = jax.random.PRNGKey(0)
     state, timestep = rubiks_cube.reset(key)
-    action = rubiks_cube.action_spec().generate_value()
+    action = rubiks_cube.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
     # Check that the state has changed
@@ -84,6 +87,16 @@ def test_rubiks_cube__does_not_smoke(cube_size: int) -> None:
     check_env_does_not_smoke(env)
 
 
+@pytest.mark.parametrize("cube_size", [3, 4, 5])
+def test_rubiks_cube__specs_does_not_smoke(cube_size: int) -> None:
+    """Test that we can access specs without any errors."""
+    env = RubiksCube(
+        time_limit=10,
+        generator=ScramblingGenerator(cube_size=cube_size, num_scrambles_on_reset=5),
+    )
+    check_env_specs_does_not_smoke(env)
+
+
 def test_rubiks_cube__render(
     monkeypatch: pytest.MonkeyPatch, rubiks_cube: RubiksCube
 ) -> None:
@@ -92,7 +105,7 @@ def test_rubiks_cube__render(
     state, timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
     rubiks_cube.render(state)
     rubiks_cube.close()
-    action = rubiks_cube.action_spec().generate_value()
+    action = rubiks_cube.action_spec.generate_value()
     state, timestep = rubiks_cube.step(state, action)
     rubiks_cube.render(state)
     rubiks_cube.close()
@@ -103,7 +116,7 @@ def test_rubiks_cube__done(time_limit: int) -> None:
     """Test that the done signal is sent correctly."""
     env = RubiksCube(time_limit=time_limit)
     state, timestep = env.reset(jax.random.PRNGKey(0))
-    action = env.action_spec().generate_value()
+    action = env.action_spec.generate_value()
     episode_length = 0
     step_fn = jax.jit(env.step)
     while not timestep.last():

@@ -46,7 +46,7 @@ def make_actor_critic_networks_connector(
     conv_n_channels: int,
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Connector` environment."""
-    num_values = np.asarray(connector.action_spec().num_values)
+    num_values = np.asarray(connector.action_spec.num_values)
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )

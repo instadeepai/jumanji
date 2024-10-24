@@ -132,8 +132,10 @@ register(id="TSP-v1", entry_point="jumanji.environments:TSP")
 
 # Sokoban with deepmind dataset generator
 register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
-# Pacman - minimal version of Atarti Pacman game
-register(id="PacMan-v0", entry_point="jumanji.environments:PacMan")
+
+# Pacman - minimal version of Atari Pacman game
+register(id="PacMan-v1", entry_point="jumanji.environments:PacMan")
+
 # SlidingTilePuzzle - A sliding tile puzzle environment with the default grid size of 5x5.
 register(
     id="SlidingTilePuzzle-v0", entry_point="jumanji.environments:SlidingTilePuzzle"

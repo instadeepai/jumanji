@@ -38,7 +38,7 @@ def make_actor_critic_networks_mmst(
     transformer_mlp_units: Sequence[int],
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `MMST` environment."""
-    num_values = mmst.action_spec().num_values
+    num_values = mmst.action_spec.num_values
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=num_values
     )
@@ -96,12 +96,10 @@ class MMSTTorso(hk.Module):
         return embeddings
 
     def embed_agents(self, agents: chex.Array) -> chex.Array:
-
         embeddings = hk.Linear(self.model_size, name="agent_projection")(agents)
         return embeddings
 
     def __call__(self, observation: Observation) -> chex.Array:
-
         batch_size, num_nodes = observation.node_types.shape
         num_agents = observation.positions.shape[1]
         agents_used = jnp.arange(num_agents).reshape(-1, 1)
