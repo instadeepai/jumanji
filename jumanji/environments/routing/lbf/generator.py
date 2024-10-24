@@ -55,6 +55,16 @@ class RandomGenerator:
         assert num_food > 0, "Number of food items must be positive."
         assert max_agent_level >= 2, "Maximum agent level must be at least 2."
 
+        min_required_cells = num_agents + num_food * 3
+        assert (
+            grid_size**2 >= min_required_cells
+        ), "Grid is too small for this many agents and food items."
+        assert (
+            grid_size**2
+        ) * 0.6 >= min_required_cells, (
+            r"Make sure 40% of the grid is empty to allow agents move freely."
+        )
+
         self.grid_size = grid_size
         self.fov = grid_size if fov is None else fov
         self.num_agents = num_agents

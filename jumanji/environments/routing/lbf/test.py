@@ -19,24 +19,22 @@ from jumanji.environments.routing.lbf.generator import RandomGenerator
 
 
 def check_placement_feasibility(grid_size: int, num_agents: int, num_food: int) -> None:
-    total_cells = (
-        grid_size - 2
-    ) ** 2  # adjust grid_size to account for non-placable borders
-    required_cells = (num_agents + num_food) * 9
 
-    # Ensure the grid has enough cells to potentially place
-    # all agents and food without any overlap or adjacency
+    min_required_cells = num_agents + num_food * 3
     assert (
-        total_cells >= required_cells
-    ), "Grid is too small or too many agents/food items for successful placement."
+        grid_size**2 >= min_required_cells
+    ), "Grid is too small for this many agents and food items."
+    assert (
+        grid_size**2
+    ) * 0.6 >= min_required_cells, r"Make sure 40% of the grid is empty."
 
 
 # Example usage
-# check_placement_feasibility(8, 5, 2)  # Throws an error
+# check_placement_feasibility(8, 10, 15)  # Throws an error
 
 
 env = LevelBasedForaging(
-    generator=RandomGenerator(grid_size=8, num_agents=5, num_food=2, fov=8)
+    generator=RandomGenerator(grid_size=8, num_agents=10, num_food=15, fov=8)
 )
 key = jax.random.key(0)
 state, timestep = jax.jit(env.reset)(key)
