@@ -196,10 +196,10 @@ def lbf_env_grid_obs() -> LevelBasedForaging:
 
 
 @pytest.fixture
-def lbf_env_with_penalty() -> LevelBasedForaging:
+def lbf_with_penalty() -> LevelBasedForaging:
     return LevelBasedForaging(penalty=1.0)
 
 
 @pytest.fixture
-def lbf_env_no_norm_reward() -> LevelBasedForaging:
+def lbf_with_no_norm_reward() -> LevelBasedForaging:
     return LevelBasedForaging(normalize_reward=False)

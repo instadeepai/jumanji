@@ -64,6 +64,31 @@ def test_reset(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
     assert timestep.reward.shape == (num_agents,)
 
 
+def test_reset_grid_obs(
+    lbf_env_grid_obs: LevelBasedForaging, key: chex.PRNGKey
+) -> None:
+    num_agents = lbf_env_grid_obs.num_agents
+
+    state, timestep = lbf_env_grid_obs.reset(key)
+    assert len(state.agents.position) == num_agents
+    assert len(state.food_items.position) == lbf_env_grid_obs.num_food
+
+    expected_obs_shape = (
+        num_agents,
+        3,
+        2 * lbf_env_grid_obs.fov + 1,
+        2 * lbf_env_grid_obs.fov + 1,
+    )
+    assert timestep.observation.agents_view.shape == expected_obs_shape
+
+    assert jnp.all(timestep.discount == 1.0)
+    assert jnp.all(timestep.reward == 0.0)
+    assert timestep.step_type == StepType.FIRST
+
+    assert timestep.discount.shape == (num_agents,)
+    assert timestep.reward.shape == (num_agents,)
+
+
 def test_get_reward(
     lbf_environment: LevelBasedForaging, agents: Agent, food_items: Food
 ) -> None:
@@ -81,6 +106,53 @@ def test_get_reward(
     expected_reward_food1 = (adj_food1_level * food_items.level[1]) / (
         jnp.sum(food_items.level) * jnp.sum(adj_food1_level)
     )
+    expected_reward = expected_reward_food0 + expected_reward_food1
+    assert jnp.all(reward == expected_reward)
+
+
+def test_reward_with_penalty(
+    lbf_with_penalty: LevelBasedForaging, food_items: Food
+) -> None:
+    adj_food0_level = jnp.array([0.0, 1, 2])
+    adj_food1_level = jnp.array([0.0, 0.0, 4])
+    adj_food2_level = jnp.array([2, 0.0, 0.0])
+    adj_agent_levels = jnp.array([adj_food0_level, adj_food1_level, adj_food2_level])
+    eaten = jnp.array([True, True, True])
+
+    reward = lbf_with_penalty.get_reward(food_items, adj_agent_levels, eaten)
+    penalty = lbf_with_penalty.penalty
+
+    penalty_0 = jnp.where(jnp.sum(adj_food0_level) < food_items.level[0], penalty, 0)
+    expected_reward_food0 = (
+        adj_food0_level * eaten[0] * food_items.level[0] - penalty_0
+    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food0_level))
+    penalty_1 = jnp.where(jnp.sum(adj_food1_level) < food_items.level[1], penalty, 0)
+    expected_reward_food1 = (
+        adj_food1_level * eaten[1] * food_items.level[1] - penalty_1
+    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food1_level))
+    penalty_2 = jnp.where(jnp.sum(adj_food2_level) < food_items.level[2], penalty, 0)
+    expected_reward_food2 = (
+        adj_food2_level * eaten[1] * food_items.level[2] - penalty_2
+    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food2_level))
+    expected_reward = (
+        expected_reward_food0 + expected_reward_food1 + expected_reward_food2
+    )
+    assert jnp.all(reward == expected_reward)
+
+
+def test_reward_with_no_norm(
+    lbf_with_no_norm_reward: LevelBasedForaging, agents: Agent, food_items: Food
+) -> None:
+    adj_food0_level = jnp.array([0.0, agents.level[1], agents.level[2]])
+    adj_food1_level = jnp.array([0.0, 0.0, agents.level[2]])
+    adj_food2_level = jnp.array([0.0, 0.0, 0.0])
+    adj_agent_levels = jnp.array([adj_food0_level, adj_food1_level, adj_food2_level])
+    eaten = jnp.array([True, True, False])
+
+    reward = lbf_with_no_norm_reward.get_reward(food_items, adj_agent_levels, eaten)
+
+    expected_reward_food0 = adj_food0_level * food_items.level[0]
+    expected_reward_food1 = adj_food1_level * food_items.level[1]
     expected_reward = expected_reward_food0 + expected_reward_food1
     assert jnp.all(reward == expected_reward)
 

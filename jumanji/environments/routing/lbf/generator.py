@@ -50,7 +50,7 @@ class RandomGenerator:
             force_coop (bool): Whether to force cooperation among agents.
         """
         assert 5 <= grid_size, "Grid size must be greater than 5."
-        assert 2 <= fov <= grid_size, "Field of view must be between 2 and grid_size."
+        assert 1 <= fov <= grid_size, "Field of view must be between 1 and grid_size."
         assert num_agents > 0, "Number of agents must be positive."
         assert num_food > 0, "Number of food items must be positive."
         assert max_agent_level >= 2, "Maximum agent level must be at least 2."
