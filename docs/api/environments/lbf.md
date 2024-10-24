@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.robot_warehouse.env.LevelBasedForaging
+::: jumanji.environments.routing.lbf.env.LevelBasedForaging
     selection:
       members:
         - __init__
@@ -6,3 +6,4 @@
         - step
         - observation_spec
         - action_spec
+        - render

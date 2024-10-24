@@ -24,8 +24,6 @@ from jumanji.testing.env_not_smoke import (
 )
 from jumanji.types import StepType, TimeStep
 
-# General integration test
-
 
 def test_lbf_environment_integration(
     lbf_environment: LevelBasedForaging, key: chex.PRNGKey

@@ -34,7 +34,7 @@ def are_entities_adjacent(entity_a: Entity, entity_b: Entity) -> chex.Array:
         chex.Array: True if entities are adjacent, False otherwise.
     """
     distance = jnp.abs(entity_a.position - entity_b.position)
-    return jnp.where(jnp.sum(distance) == 1, True, False)
+    return jnp.sum(distance) == 1
 
 
 def flag_duplicates(a: chex.Array) -> chex.Array:
@@ -198,12 +198,6 @@ def eat_food(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     new_food = food.replace(eaten=food_eaten_this_step | food.eaten)  # type: ignore
 
     return new_food, food_eaten_this_step, adj_loading_agents_levels
-
-
-def calculate_num_observation_features(num_food: int, num_agents: int) -> chex.Array:
-    """Calculate the number of features in an agent view"""
-    obs_features = 3 * (num_food + num_agents)
-    return jnp.array(obs_features, jnp.int32)
 
 
 def compute_action_mask(agent: Agent, state: State, grid_size: int) -> chex.Array:

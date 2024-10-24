@@ -146,13 +146,3 @@ def test_fix_collisions(agents: Agent) -> None:
 
     new_agents = utils.fix_collisions(moved_agents, agents)
     chex.assert_trees_all_equal(new_agents, expected_agents)
-
-
-def test_calculate_num_observation_features() -> None:
-    num_food = 4
-    num_agents = 6
-    obs_features = jnp.array(3 * (num_agents + num_food), jnp.int32)
-    calculated_obs_features = utils.calculate_num_observation_features(
-        num_food=num_food, num_agents=num_agents
-    )
-    assert jnp.all(calculated_obs_features == obs_features)

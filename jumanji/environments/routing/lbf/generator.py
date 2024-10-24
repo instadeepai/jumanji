@@ -70,13 +70,17 @@ class RandomGenerator:
 
         # Create a mask to exclude edges
         mask = jnp.ones(flat_size, dtype=bool)
-        mask = mask.at[jnp.arange(self.grid_size)].set(False)  # top
+        mask = mask.at[jnp.arange(self.grid_size)].set(
+            False, indices_are_sorted=True, unique_indices=True
+        )  # top
         mask = mask.at[jnp.arange(flat_size - self.grid_size, flat_size)].set(
-            False
+            False, indices_are_sorted=True, unique_indices=True
         )  # bottom
-        mask = mask.at[jnp.arange(0, flat_size, self.grid_size)].set(False)  # left
+        mask = mask.at[jnp.arange(0, flat_size, self.grid_size)].set(
+            False, indices_are_sorted=True, unique_indices=True
+        )  # left
         mask = mask.at[jnp.arange(self.grid_size - 1, flat_size, self.grid_size)].set(
-            False
+            False, indices_are_sorted=True, unique_indices=True
         )  # right
 
         def take_positions(
@@ -95,7 +99,7 @@ class RandomGenerator:
                 ]
             )
 
-            return mask.at[adj_positions].set(False), food_flat_pos
+            return mask.at[adj_positions].set(False, unique_indices=True), food_flat_pos
 
         _, food_flat_positions = jax.lax.scan(take_positions, mask, pos_keys)
 
@@ -152,9 +156,8 @@ class RandomGenerator:
         agent_levels = self.sample_levels(
             self.max_agent_level, (self.num_agents,), key_agent_level
         )
-        max_food_level = jnp.sum(
-            jnp.sort(agent_levels)[:3]
-        )  # In the worst case, 3 agents are needed to eat a food item
+        # In the worst case, 3 agents are needed to eat a food item
+        max_food_level = jnp.sum(jnp.sort(agent_levels)[:3])
 
         # Determine food levels based on the maximum level of agents
         food_levels = jnp.where(

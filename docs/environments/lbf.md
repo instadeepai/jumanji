@@ -9,7 +9,7 @@ environment.
 
 The Level-Based Foraging (LBF) represents a mixed cooperative-competitive environment that emphasises coordination between agents. As illustrated above, agents are placed within a grid world and assigned different levels.
 
-To collect food, the cumulative level of participating agents must meet or exceed the food's designated level. Agents receive points equivalent to the level of the collected food and their own level.
+To collect food, agents must be adjacent to it and the cumulative level of participating agents must meet or exceed the food's designated level. Agents receive points based on the level of the collected food and their own level.
 
 ## Observation
 
@@ -36,8 +36,7 @@ The episode terminates under the following conditions:
 
 ## Reward
 
-The reward is global and shared among the agents. It is equal to the number of shelves which were
-delivered successfully during the time step (i.e., +1 for each shelf).
+ The reward is equal to the sum of the levels of collected food divided by the level of the agents that collected them.
 
 ## Registered Versions 📖
 

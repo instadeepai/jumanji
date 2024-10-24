@@ -134,9 +134,6 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
         self.fov = self._generator.fov
         self.normalize_reward = normalize_reward
         self.penalty = penalty
-        self.num_obs_features = utils.calculate_num_observation_features(
-            self.num_food, self.num_agents
-        )
 
         self._observer: Union[VectorObserver, GridObserver]
         if not grid_observation:
@@ -254,7 +251,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
     def _get_extra_info(self, state: State, timestep: TimeStep) -> Dict:
         """Computes extras metrics to be returned within the timestep."""
         n_eaten = state.food_items.eaten.sum() + timestep.extras.get(
-            "eaten_food", jnp.float32(0)
+            "eaten_food", jnp.int32(0)
         )
         percent_eaten = (n_eaten / self.num_food) * 100
         return {"percent_eaten": percent_eaten}
