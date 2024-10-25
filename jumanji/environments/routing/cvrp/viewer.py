@@ -18,6 +18,7 @@ from typing import Callable, Optional, Sequence, Tuple
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+import pkg_resources
 from chex import Array
 from numpy.typing import NDArray
 
@@ -146,7 +147,10 @@ class CVRPViewer(Viewer):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        map_img = plt.imread("docs/img/city_map.jpeg")
+        img_path = pkg_resources.resource_filename(
+            "jumanji", "environments/routing/cvrp/img/city_map.jpeg"
+        )
+        map_img = plt.imread(img_path)
         ax.imshow(map_img, extent=[0, 1, 0, 1])
 
     def _group_tour(self, tour: Array) -> list:
