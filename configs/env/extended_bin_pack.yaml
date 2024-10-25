@@ -1,0 +1,42 @@
+name: extended_bin_pack
+registered_version: ExtendedBinPack-v0
+
+env_settings:
+    reward_fn: ValueBasedDenseReward
+    generator: ExtendedTrainingGenerator
+    is_value_based: True
+    is_rotation_allowed: True
+    normalize_dimensions: True
+
+generator_settings:
+    max_num_items: 480
+    max_num_ems: 80
+    mean_item_value: 0
+    std_item_value: 1
+    min_target_volume: 2
+    max_target_volume: 30
+
+network:
+    num_transformer_layers: 2
+    transformer_num_heads: 8
+    transformer_key_size: 16
+    transformer_mlp_units: [512]
+
+training:
+    num_epochs: 550
+    num_learner_steps_per_epoch: 100
+    n_steps: 30
+    total_batch_size: 64
+
+evaluation:
+    eval_total_batch_size: 10000
+    greedy_eval_total_batch_size: 10000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 1.0
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.005
+    learning_rate: 1e-4

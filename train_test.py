@@ -12,5 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from jumanji.environments.packing.bin_pack.env import BinPack, ExtendedBinPack
-from jumanji.environments.packing.bin_pack.types import Observation, State
+import warnings
+
+from hydra import compose, initialize
+
+from jumanji.training.train import train
+
+warnings.filterwarnings("ignore")
+
+env = "extended_bin_pack"
+agent = "a2c"
+with initialize(version_base=None, config_path="configs"):
+    cfg = compose(
+        config_name="config.yaml",
+        overrides=[
+            f"env={env}",
+            f"agent={agent}",
+            "logger.type=terminal",
+            "logger.save_checkpoint=Trues",
+        ],
+    )
+train(cfg)

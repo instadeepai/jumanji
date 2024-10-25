@@ -16,8 +16,10 @@ import abc
 import collections
 import csv
 import functools
+import math
 import operator
-from typing import List, Tuple
+from random import randint
+from typing import List, Optional, Tuple, cast
 
 import chex
 import jax
@@ -29,9 +31,14 @@ from jumanji.environments.packing.bin_pack.types import (
     Item,
     Location,
     State,
+    ValuedItem,
     empty_ems,
     item_from_space,
+    item_volume,
     location_from_space,
+    rotated_items_from_space,
+    space_from_item_and_location,
+    valued_item_from_space_and_max_value,
 )
 from jumanji.tree_utils import tree_slice, tree_transpose
 
@@ -41,6 +48,14 @@ from jumanji.tree_utils import tree_slice, tree_transpose
 TWENTY_FOOT_DIMS = (5870, 2330, 2200)
 
 CSV_COLUMNS = ["Item_Name", "Length", "Width", "Height", "Quantity"]
+CSV_VALUE_PROBLEM_COLUMNS = [
+    "Item_Name",
+    "Length",
+    "Width",
+    "Height",
+    "Quantity",
+    "Value",
+]
 
 
 def make_container(container_dims: Tuple[int, int, int]) -> Container:
@@ -364,7 +379,11 @@ class ToyGenerator(Generator):
             items_location=items_location,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            # For non value based optimisation set these to dummy values by default
+            instance_max_item_value_magnitude=0.0,
+            instance_total_value=0.0,
             key=jax.random.PRNGKey(0),
+            nb_items=20,
         )
 
         return solution
@@ -467,7 +486,11 @@ class CSVGenerator(Generator):
             items_location=items_location,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            # For non value based optimisation set these to dummy values by default
+            instance_max_item_value_magnitude=0.0,
+            instance_total_value=0.0,
             key=jax.random.PRNGKey(0),
+            nb_items=num_items,
         )
 
         return reset_state
@@ -662,6 +685,7 @@ class RandomGenerator(Generator):
         items_spaces, items_mask = self._split_container_into_items_spaces(
             container, split_key
         )
+        nb_items = jnp.sum(items_mask)
         items = item_from_space(items_spaces)
         sorted_ems_indexes = jnp.arange(0, self.max_num_ems, dtype=jnp.int32)
 
@@ -676,23 +700,36 @@ class RandomGenerator(Generator):
             items_location=all_item_locations,
             action_mask=None,
             sorted_ems_indexes=sorted_ems_indexes,
+            # For non value based optimisation set these to dummy values by default
+            instance_max_item_value_magnitude=0.0,
+            instance_total_value=0.0,
             key=key,
+            nb_items=nb_items,
         )
         return solution
 
     def _split_container_into_items_spaces(
-        self, container: Container, key: chex.PRNGKey
+        self,
+        container: Container,
+        key: chex.PRNGKey,
+        input_max_items_generated: Optional[int] = None,
     ) -> Tuple[Space, chex.Array]:
         """Split one space (the container) into several sub-spaces that will be identified as
         items.
+
+        The output items_spaces and items_mask array will be self.max_num_items by default but can
+        be set to a custom value that is different from this (useful for
+        RandomValueProblemGenerator).
         """
+        max_items_generated = cast(int, input_max_items_generated) or self.max_num_items
+
         chex.assert_rank(list(container.__dict__.values()), 0)
 
         def cond_fun(val: Tuple[Space, chex.Array, chex.PRNGKey]) -> jnp.bool_:
             _, items_mask, _ = val
             num_placed_items = jnp.sum(items_mask)
             return (
-                num_placed_items < self.max_num_items - self._split_num_same_items + 1
+                num_placed_items < max_items_generated - self._split_num_same_items + 1
             )
 
         def body_fun(
@@ -708,10 +745,10 @@ class RandomGenerator(Generator):
 
         items_spaces = Space(
             **jax.tree_util.tree_map(
-                lambda x: x * jnp.ones(self.max_num_items, jnp.int32), container
+                lambda x: x * jnp.ones(max_items_generated, jnp.int32), container
             ).__dict__
         )
-        items_mask = jnp.zeros(self.max_num_items, bool).at[0].set(True)
+        items_mask = jnp.zeros(max_items_generated, bool).at[0].set(True)
         init_val = (items_spaces, items_mask, key)
         (items_spaces, items_mask, _) = jax.lax.while_loop(cond_fun, body_fun, init_val)
 
@@ -875,3 +912,807 @@ class RandomGenerator(Generator):
         )
 
         return items_spaces, items_mask
+
+
+class ValueProblemCSVGenerator(CSVGenerator):
+    """`Generator` that parses a CSV file to do active search on a single instance. It
+    always resets to the same instance defined by the CSV file. The generator can handle any
+    container dimensions but assumes a 20-ft container by default.
+
+    The CSV file is expected to have the following columns:
+    - Item_Name
+    - Length
+    - Width
+    - Height
+    - Quantity
+    - Value
+
+    Example with value:
+        Item_Name,Length,Width,Height,Quantity,Value
+        shape_1,1080,760,300,5,4.5
+        shape_2,1100,430,250,3,3.4
+    """
+
+    def __init__(
+        self,
+        csv_path: str,
+        max_num_ems: int,
+        container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
+    ):
+        """Instantiate a `CSVGenerator` that generates the same instance (active search)
+        defined by a CSV file.
+
+        Args:
+            csv_path: path to the CSV file defining the instance to reset to.
+            max_num_ems: maximum number of ems the environment will handle. This defines the shape
+                of the EMS buffer that is kept in the environment state. The good number heavily
+                depends on the number of items (given by the CSV file).
+            container_dims: (length, width, height) tuple of integers corresponding to the
+                dimensions of the container in millimeters. By default, assume a 20-ft container.
+        """
+        super().__init__(csv_path, max_num_ems, container_dims)
+
+    def _parse_csv_file(
+        self, csv_path: str, max_num_ems: int, container_dims: Tuple[int, int, int]
+    ) -> State:
+        """Create an instance by parsing a CSV file.
+
+        Args:
+            csv_path: path to the CSV file to parse that defines the instance to reset to.
+            max_num_ems: maximum number of ems the environment will handle. This defines the shape
+                of the EMS buffer that is kept in the environment state.
+            container_dims: (length, width, height) tuple of integers corresponding to the
+                dimensions of the container in millimeters.
+
+        Returns:
+            `BinPack` state that contains the instance defined in the CSV file.
+        """
+        container = make_container(container_dims)
+
+        # Initialize the EMSs
+        list_of_ems = [container] + (max_num_ems - 1) * [empty_ems()]
+        ems = tree_transpose(list_of_ems)
+        ems_mask = jnp.zeros(max_num_ems, bool).at[0].set(True)
+
+        # Parse the CSV file to generate the items
+        rows = self._read_valued_csv(csv_path)
+        list_of_items = self._generate_list_of_valued_items(rows)
+        items = tree_transpose(list_of_items)
+
+        # Initialize items mask and location
+        num_items = len(list_of_items)
+        items_mask = jnp.ones(num_items, bool)
+        items_placed = jnp.zeros(num_items, bool)
+        items_location = Location(*tuple(jnp.zeros((3, num_items), jnp.int32)))
+
+        sorted_ems_indexes = jnp.arange(0, max_num_ems, dtype=jnp.int32)
+
+        instance_total_value = jnp.sum(items.value * items_mask)
+        instance_max_item_value_magnitude = jnp.max(abs(items.value * items_mask))
+
+        reset_state = State(
+            container=container,
+            ems=ems,
+            ems_mask=ems_mask,
+            items=items,
+            nb_items=len(items.x_len),
+            items_mask=items_mask,
+            items_placed=items_placed,
+            items_location=items_location,
+            action_mask=None,
+            sorted_ems_indexes=sorted_ems_indexes,
+            instance_max_item_value_magnitude=instance_max_item_value_magnitude,
+            instance_total_value=instance_total_value,
+            key=jax.random.PRNGKey(0),
+        )
+
+        return reset_state
+
+    def _read_valued_csv(
+        self, csv_path: str
+    ) -> List[Tuple[str, int, int, int, int, float]]:
+        rows = []
+        with open(csv_path, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            for row_index, row in enumerate(reader):
+                if row_index == 0:
+                    if len(row) != len(CSV_VALUE_PROBLEM_COLUMNS):
+                        raise ValueError(
+                            "Got wrong number of columns, expected: "
+                            f"{', '.join(CSV_VALUE_PROBLEM_COLUMNS)}"
+                        )
+                    elif row != CSV_VALUE_PROBLEM_COLUMNS:
+                        raise ValueError("Columns in wrong order")
+                else:
+                    # Column order: Item_Name, Length, Width, Height, Quantity, Value.
+                    rows.append(
+                        (
+                            row[0],
+                            int(row[1]),
+                            int(row[2]),
+                            int(row[3]),
+                            int(row[4]),
+                            float(row[5]),
+                        )
+                    )
+        return rows
+
+    def _generate_list_of_valued_items(
+        self, rows: List[Tuple[str, int, int, int, int, float]]
+    ) -> List[ValuedItem]:
+        """Generate the list of items from a Pandas DataFrame.
+
+        Args:
+            rows: List[tuple] describing the items for the corresponding instance.
+
+        Returns:
+            List of `ValuedItem` flattened so that identical items (quantity > 1) are copied
+            according to their quantity.
+        """
+        list_of_items = []
+        for (_, x_len, y_len, z_len, quantity, value) in rows:
+            identical_items = quantity * [
+                ValuedItem(
+                    x_len=jnp.array(x_len, jnp.int32),
+                    y_len=jnp.array(y_len, jnp.int32),
+                    z_len=jnp.array(z_len, jnp.int32),
+                    value=jnp.array(value, jnp.float32),
+                )
+            ]
+            list_of_items.extend(identical_items)
+        return list_of_items
+
+
+class ExtendedToyGenerator(ToyGenerator):
+    def __init__(self) -> None:
+        super().__init__()
+        self.is_rotation_allowed = True
+        self.is_value_based = False
+
+    def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
+        solution = super()._generate_solved_instance(key)
+        x_len, y_len, z_len = (
+            solution.items.x_len,
+            solution.items.y_len,
+            solution.items.z_len,
+        )
+        solution.items = Item(
+            x_len=jnp.array([x_len, x_len, y_len, y_len, z_len, z_len]),
+            y_len=jnp.array([y_len, z_len, x_len, z_len, y_len, x_len]),
+            z_len=jnp.array([z_len, y_len, z_len, x_len, x_len, y_len]),
+        )
+
+        solution.items_mask = jnp.array(
+            [
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                # Since only the items
+                # 2, 12, 17 and 18 can be placed with their length along any of the container axes,
+                # we mask these orientations of the other items.
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+            ]
+        )
+        return solution
+
+    def _unpack_items(self, state: State) -> State:
+        state = super()._unpack_items(state)
+        state.items_placed = jnp.zeros((6, self.max_num_items), bool)
+        return state
+
+
+class ExtendedRandomGenerator(RandomGenerator):
+    def __init__(
+        self,
+        max_num_items: int,
+        max_num_ems: int,
+        is_rotation_allowed: bool,
+        is_value_based: bool,
+        split_eps: float = 0.3,
+        prob_split_one_item: float = 0.7,
+        split_num_same_items: int = 5,
+        container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
+        mean_item_value: Optional[float] = None,
+        std_item_value: Optional[float] = None,
+    ):
+        """
+        Args:
+            is_rotation_allowed: whether the generator has to generate instances where item
+                rotation is possible. Defaults to False.
+            is_value_based: whether the generator has to generator has to generate
+                instance with values. Defaults to False.
+            mean_item_value: The mean value of the normal distribution from which the item values
+                will be sampled.
+            std_item_value: The standard deviation of the normal distribution from which
+                the item values will be sampled.
+        Raises:
+            ValueError: When the generator has to generate value based instances but the mean and
+            std aren't provided.
+        """
+        super().__init__(
+            max_num_items,
+            max_num_ems,
+            split_eps,
+            prob_split_one_item,
+            split_num_same_items,
+            container_dims,
+        )
+        self.is_rotation_allowed = is_rotation_allowed
+        self.is_value_based = is_value_based
+        self.mean_item_value = mean_item_value
+        self.std_item_value = std_item_value
+        if self.is_value_based and (mean_item_value is None or std_item_value is None):
+            std_name = "std_item_value"
+            raise ValueError(
+                "Value Based generator not provided with"
+                + f"{'mean_item_value attribute' if mean_item_value is None else ''}"
+                + f"{f'{std_name} attribute' if std_item_value is None else ''}"
+            )
+
+    def _generate_value_based_solved_instance(  # type: ignore
+        self, key: chex.PRNGKey
+    ) -> State:
+        """Generate the random instance with half of all items correctly packed (the higher value
+        half). The other half of the generated items remain unpacked.
+
+        The first half of items are generated by splitting the container in the same way as the
+        inherited RandomGenerator class, but with less than half the max_num_items. Values are
+        randomly generated, and assigned to these items. These items are duplicated and assigned
+        values that are the value of the original items + the sum of the values of all the items of
+        the previous half . This means that the optimal solution is to fill one container perfectly
+        with the higher valued items. This method may lead to fewer than max_num_items being
+        generated in total, but the items tree will be of size max_num_items and the indexes that
+        don't correspond to the items of the instance are masked out with the state's items_mask.
+        """
+        key, split_key = jax.random.split(key)
+        container = make_container(self.container_dims)
+
+        list_of_ems = [container] + (self.max_num_ems - 1) * [empty_ems()]
+        ems = tree_transpose(list_of_ems)
+        ems_mask = jnp.zeros(self.max_num_ems, bool)
+
+        # Create less than half of max_num_items item spaces by splitting up a container. This
+        # will lead to nb_items_in_one_container items that fit perfectly into a single container.
+        nb_items_in_one_container = math.floor(0.5 * self.max_num_items)
+        # This will generate items_spaces and item_mask of size nb_items_in_one_container.
+        items_spaces, items_mask = self._split_container_into_items_spaces(
+            container, split_key, nb_items_in_one_container
+        )
+        # Randomly generate values that will then be increased by a value of
+        # total_value_of_generated_values to generate a "perfect instance" with a known optimal
+        # solution.
+        key, split_key = jax.random.split(key)
+        item_values = self.mean_item_value + (
+            self.std_item_value
+            * jax.random.normal(split_key, (len(items_mask),), jnp.float32)
+        )
+        total_value_of_generated_values = sum(item_values)
+        # Assign values to the items that are packed in the optimal solution. To ensure an optimal
+        # solution, the total value of the duplicated item values are added to the original
+        # generated item values.
+        optimal_items = valued_item_from_space_and_max_value(
+            items_spaces, item_values + total_value_of_generated_values
+        )
+        # Duplicate the above items and assign values to them that are half their counterparts
+        # above.
+        extra_items = valued_item_from_space_and_max_value(items_spaces, item_values)
+
+        # If self.max_num_items is an odd number, the concatenation of items and extra_items would
+        # result in a tree size of < self.max_num_items. In this case, we add padding.
+        padding_of_int_ones = jnp.ones(
+            self.max_num_items - 2 * len(items_mask), jnp.int32
+        )
+        padding_of_float_ones = jnp.ones(
+            self.max_num_items - 2 * len(items_mask), jnp.float32
+        )
+        padding_of_bool_zeros = jnp.zeros(
+            self.max_num_items - 2 * len(items_mask), bool
+        )
+        padding_items = ValuedItem(
+            padding_of_int_ones * container.x2,
+            padding_of_int_ones * container.y2,
+            padding_of_int_ones * container.z2,
+            padding_of_float_ones,
+        )
+
+        # Create the solution state by creating trees of size self.max_num_items for items,
+        # items_placable_at_beginning_mask and items_placed_mask.
+        items = jax.tree_map(
+            lambda x, y, z: jnp.concatenate((x, y, z)),
+            optimal_items,
+            extra_items,
+            padding_items,
+        )
+        items_placable_at_beginning_mask = jnp.concatenate(
+            (items_mask, items_mask, padding_of_bool_zeros)
+        )
+        zeros_of_size_nb_extra_items = jnp.zeros(items_mask.shape, bool)
+        items_placed_mask = jnp.concatenate(
+            (items_mask, zeros_of_size_nb_extra_items, padding_of_bool_zeros)
+        )
+
+        sorted_ems_indexes = jnp.arange(0, self.max_num_ems, dtype=jnp.int32)
+
+        # Create locations for placed, unplaced and padded items.
+        placed_items_locations = location_from_space(items_spaces)
+
+        remaining_items_locations = Location(
+            x=jnp.zeros(self.max_num_items - len(items_mask), jnp.int32),
+            y=jnp.zeros(self.max_num_items - len(items_mask), jnp.int32),
+            z=jnp.zeros(self.max_num_items - len(items_mask), jnp.int32),
+        )
+        all_item_locations = jax.tree_map(
+            lambda x, y: jnp.concatenate((x, y)),
+            placed_items_locations,
+            remaining_items_locations,
+        )
+        best_value_volume_ratio_item = jnp.argmax(items.value / item_volume(items))
+        normalization_value = jnp.min(
+            jnp.array(
+                jnp.max(
+                    jnp.array(
+                        (
+                            jnp.sum(items.value * jnp.array(items.value > 0)),
+                            -jnp.sum(items.value * jnp.array(items.value < 0)),
+                        )
+                    )
+                ),
+                items.value[best_value_volume_ratio_item]
+                * (
+                    container.volume()
+                    // item_volume(tree_slice(items, best_value_volume_ratio_item))
+                    + 1
+                ),
+            )
+        )
+        instance_max_item_value_magnitude = jnp.max(
+            abs(items.value * items_placable_at_beginning_mask)
+        )
+
+        solution = State(
+            container=container,
+            ems=ems,
+            ems_mask=ems_mask,
+            items=items,
+            nb_items=len(items.x_len),
+            items_mask=items_placable_at_beginning_mask,
+            items_placed=items_placed_mask,
+            items_location=all_item_locations,
+            action_mask=None,
+            sorted_ems_indexes=sorted_ems_indexes,
+            instance_max_item_value_magnitude=instance_max_item_value_magnitude,
+            instance_total_value=normalization_value,
+            key=key,
+        )
+        return solution
+
+    def _generate_rotated_solved_instance(self, key: chex.PRNGKey) -> State:
+        solved_instance = super()._generate_solved_instance(key)
+        solved_instance.items = rotated_items_from_space(
+            space_from_item_and_location(
+                solved_instance.items, solved_instance.items_location
+            )
+        )
+        tmp = jnp.zeros((6, solved_instance.items_placed.shape[0]), bool)
+        solved_instance.items_placed = tmp.at[0].set(solved_instance.items_placed)
+        solved_instance.items_mask = jnp.broadcast_to(
+            solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
+        )
+        return solved_instance
+
+    def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
+        if self.is_rotation_allowed and self.is_value_based:
+            solved_instance = self._generate_value_based_solved_instance(key)
+            solved_instance.items = cast(ValuedItem, solved_instance.items)
+            solved_instance.items = rotated_items_from_space(
+                space=space_from_item_and_location(
+                    solved_instance.items, solved_instance.items_location
+                ),
+                value=solved_instance.items.value,
+            )
+            tmp = jnp.zeros((6, solved_instance.items_placed.shape[0]), bool)
+            solved_instance.items_placed = tmp.at[0].set(solved_instance.items_placed)
+            solved_instance.items_mask = jnp.broadcast_to(
+                solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
+            )
+            return solved_instance
+        else:
+            if self.is_rotation_allowed:
+                return self._generate_rotated_solved_instance(key)
+            elif self.is_value_based:
+                return self._generate_value_based_solved_instance(key)
+            else:
+                return super()._generate_solved_instance(key)
+
+    def _unpack_items(self, state: State) -> State:
+        state = super()._unpack_items(state)
+        placed_item_arr_dims = (
+            (6, self.max_num_items) if self.is_rotation_allowed else self.max_num_items
+        )
+        state.items_placed = jnp.zeros(placed_item_arr_dims, bool)
+        return state
+
+
+class ExtendedTrainingGenerator(ExtendedRandomGenerator):
+    def __init__(
+        self,
+        max_num_items: int,
+        max_num_ems: int,
+        mean_item_value: float,
+        std_item_value: float,
+        min_target_volume: int,
+        max_target_volume: int,
+        split_eps: float = 0.3,
+        prob_split_one_item: float = 0.7,
+        split_num_same_items: int = 5,
+        container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
+        is_evaluation: Optional[bool] = False,
+    ):
+        """
+        Args:
+            min_target_volume: minimal volume of the items in an instance in terms of containers.
+            min_target_volume: maximum volume of the items in an instance in terms of containers.
+        Raises:
+            ValueError: When the generator has to generate value based instances but the mean and
+            std aren't provided.
+        """
+        super().__init__(
+            max_num_items,
+            max_num_ems,
+            True,
+            True,
+            split_eps,
+            prob_split_one_item,
+            split_num_same_items,
+            container_dims,
+            mean_item_value,
+            std_item_value,
+        )
+        self.generated_instance_optimal_value = jnp.inf
+        self.is_evaluation = is_evaluation
+        self.min_target_volume = min_target_volume
+        self.max_target_volume = max_target_volume
+
+    def _generate_value_based_solved_instance(  # type: ignore
+        self, key: chex.PRNGKey, target_volume: int
+    ) -> State:
+        """Generate the random instance with 1/target_volume of all items correctly packed. The
+        other part of the generated items remain unpacked.
+        """
+        key, split_key = jax.random.split(key)
+        container = make_container(self.container_dims)
+
+        list_of_ems = [container] + (self.max_num_ems - 1) * [empty_ems()]
+        ems = tree_transpose(list_of_ems)
+        ems_mask = jnp.zeros(self.max_num_ems, bool)
+
+        nb_items_in_one_container = math.floor(1 / target_volume * self.max_num_items)
+        first_items_spaces, first_items_mask = self._split_container_into_items_spaces(
+            container, split_key, nb_items_in_one_container
+        )
+        len_first_items_mask = len(first_items_mask)
+        final_items_mask = first_items_mask
+        all_items_spaces = first_items_spaces
+        for _ in range(1, target_volume):
+            tmp_items_spaces, tmp_items_mask = self._split_container_into_items_spaces(
+                container, split_key, nb_items_in_one_container
+            )
+            all_items_spaces = jax.tree_map(
+                lambda x, y: jnp.concatenate((x, y)),
+                all_items_spaces,
+                tmp_items_spaces,
+            )
+            final_items_mask = jnp.concatenate((final_items_mask, tmp_items_mask))
+
+        # In case nb_items_in_one_container * target_volume  < max_nb_items, add the difference as
+        # masked zero volume items.
+        nb_extra_items = self.max_num_items - len(final_items_mask)
+        extra_items_spaces = Space(
+            x1=jnp.zeros(nb_extra_items),
+            x2=jnp.zeros(nb_extra_items),
+            y1=jnp.zeros(nb_extra_items),
+            y2=jnp.zeros(nb_extra_items),
+            z1=jnp.zeros(nb_extra_items),
+            z2=jnp.zeros(nb_extra_items),
+        )
+        extra_items_mask = jnp.zeros(nb_extra_items, bool)
+        all_items_spaces = jax.tree_map(
+            lambda x, y: jnp.concatenate((x, y)),
+            all_items_spaces,
+            extra_items_spaces,
+        )
+        final_items_mask = jnp.concatenate((final_items_mask, extra_items_mask))
+        item_values = self.mean_item_value + (
+            self.std_item_value
+            * jax.random.normal(split_key, (self.max_num_items,), jnp.float32)
+        )
+        if self.is_evaluation:
+            total_instance_value = jnp.sum(item_values)
+            item_values, _ = jax.lax.scan(
+                lambda item_values, item_mask_ind: (
+                    item_values.at[item_mask_ind].set(
+                        (item_values[item_mask_ind] + total_instance_value)
+                        * first_items_mask[item_mask_ind]
+                    ),
+                    (item_values[item_mask_ind] + total_instance_value)
+                    * first_items_mask[item_mask_ind],
+                ),
+                item_values,
+                jnp.arange(len(first_items_mask)),
+            )
+            optimal_value = jnp.sum(_)
+            self.generated_instance_optimal_value = optimal_value
+        items = valued_item_from_space_and_max_value(all_items_spaces, item_values)
+
+        # Only the items of the first container are placed.
+        items_placed_mask = jnp.concatenate(
+            (
+                first_items_mask,
+                jnp.zeros(self.max_num_items - len_first_items_mask, bool),
+            )
+        )
+        sorted_ems_indexes = jnp.arange(0, self.max_num_ems, dtype=jnp.int32)
+
+        # Create locations for placed, unplaced and padded items.
+        placed_items_locations = location_from_space(first_items_spaces)
+
+        remaining_items_locations = Location(
+            x=jnp.zeros(self.max_num_items - len_first_items_mask, jnp.int32),
+            y=jnp.zeros(self.max_num_items - len_first_items_mask, jnp.int32),
+            z=jnp.zeros(self.max_num_items - len_first_items_mask, jnp.int32),
+        )
+        all_item_locations = jax.tree_map(
+            lambda x, y: jnp.concatenate((x, y)),
+            placed_items_locations,
+            remaining_items_locations,
+        )
+        best_value_volume_ratio_item = jnp.argmax(items.value / item_volume(items))
+        normalization_value = jnp.min(
+            jnp.array(
+                jnp.max(
+                    jnp.array(
+                        (
+                            jnp.sum(items.value * jnp.array(items.value > 0)),
+                            -jnp.sum(items.value * jnp.array(items.value < 0)),
+                        )
+                    )
+                ),
+                items.value[best_value_volume_ratio_item]
+                * (
+                    container.volume()
+                    // item_volume(tree_slice(items, best_value_volume_ratio_item))
+                    + 1
+                ),
+            )
+        )
+        instance_max_item_value_magnitude = jnp.max(abs(items.value * final_items_mask))
+
+        solution = State(
+            container=container,
+            ems=ems,
+            ems_mask=ems_mask,
+            items=items,
+            nb_items=len(items.x_len),
+            items_mask=final_items_mask,
+            items_placed=items_placed_mask,
+            items_location=all_item_locations,
+            action_mask=None,
+            sorted_ems_indexes=sorted_ems_indexes,
+            instance_max_item_value_magnitude=instance_max_item_value_magnitude,
+            instance_total_value=normalization_value,
+            key=key,
+        )
+        return solution
+
+    def _generate_solved_instance(self, key: chex.PRNGKey) -> State:
+        target_volume = randint(self.min_target_volume, self.max_target_volume)
+        solved_instance = self._generate_value_based_solved_instance(key, target_volume)
+        solved_instance.items = cast(ValuedItem, solved_instance.items)
+        solved_instance.items = rotated_items_from_space(
+            space=space_from_item_and_location(
+                solved_instance.items, solved_instance.items_location
+            ),
+            value=solved_instance.items.value,
+        )
+        tmp = jnp.zeros((6, solved_instance.items_placed.shape[0]), bool)
+        solved_instance.items_placed = tmp.at[0].set(solved_instance.items_placed)
+        solved_instance.items_mask = jnp.broadcast_to(
+            solved_instance.items_mask, (6, solved_instance.items_mask.shape[0])
+        )
+        return solved_instance
+
+
+class ExtendedCSVGenerator(CSVGenerator):
+    """`Generator` that parses a CSV file to do active search on a single instance. It
+    always resets to the same instance defined by the CSV file. The generator can handle any
+    container dimensions but assumes a 20-ft container by default.
+
+    The CSV file is expected to have the following columns:
+    - Item_Name
+    - Length
+    - Width
+    - Height
+    - Quantity
+    - Value
+
+    Example with value:
+        Item_Name,Length,Width,Height,Quantity,Value
+        shape_1,1080,760,300,5,4.5
+        shape_2,1100,430,250,3,3.4
+    """
+
+    def __init__(
+        self,
+        csv_path: str,
+        max_num_ems: int,
+        is_rotation_allowed: bool,
+        is_value_based: bool,
+        container_dims: Tuple[int, int, int] = TWENTY_FOOT_DIMS,
+    ):
+        """Instantiate a `CSVGenerator` that generates the same instance (active search)
+        defined by a CSV file.
+
+        Args:
+            csv_path: path to the CSV file defining the instance to reset to.
+            max_num_ems: maximum number of ems the environment will handle. This defines the shape
+                of the EMS buffer that is kept in the environment state. The good number heavily
+                depends on the number of items (given by the CSV file).
+            container_dims: (length, width, height) tuple of integers corresponding to the
+                dimensions of the container in millimeters. By default, assume a 20-ft container.
+        """
+        super().__init__(csv_path, max_num_ems, container_dims)
+        self.is_value_based = is_value_based
+        self.is_rotation_allowed = is_rotation_allowed
+
+    def _parse_csv_file(
+        self, csv_path: str, max_num_ems: int, container_dims: Tuple[int, int, int]
+    ) -> State:
+        """Create an instance by parsing a CSV file.
+
+        Args:
+            csv_path: path to the CSV file to parse that defines the instance to reset to.
+            max_num_ems: maximum number of ems the environment will handle. This defines the shape
+                of the EMS buffer that is kept in the environment state.
+            container_dims: (length, width, height) tuple of integers corresponding to the
+                dimensions of the container in millimeters.
+
+        Returns:
+            `BinPack` state that contains the instance defined in the CSV file.
+        """
+        if not (self.is_rotation_allowed or self.is_value_based):
+            return super()._parse_csv_file(csv_path, max_num_ems, container_dims)
+        if not self.is_rotation_allowed:
+            return self._generate_value_based_instance_from_csv(
+                csv_path, max_num_ems, container_dims
+            )
+
+        if not self.is_value_based:
+            reset_state = super()._parse_csv_file(csv_path, max_num_ems, container_dims)
+            reset_state.items = rotated_items_from_space(
+                space_from_item_and_location(
+                    reset_state.items, reset_state.items_location
+                )
+            )
+            tmp = jnp.zeros((6, reset_state.items_placed.shape[0]), bool)
+            reset_state.items_placed = tmp.at[0].set(reset_state.items_placed)
+            reset_state.items_mask = jnp.broadcast_to(
+                reset_state.items_mask, (6, reset_state.items_mask.shape[0])
+            )
+            return reset_state
+
+        reset_state = self._generate_value_based_instance_from_csv(
+            csv_path, max_num_ems, container_dims
+        )
+        reset_state.items = cast(ValuedItem, reset_state.items)
+        reset_state.items = rotated_items_from_space(
+            space=space_from_item_and_location(
+                reset_state.items, reset_state.items_location
+            ),
+            value=reset_state.items.value,
+        )
+        tmp = jnp.zeros((6, reset_state.items_placed.shape[0]), bool)
+        reset_state.items_placed = tmp.at[0].set(reset_state.items_placed)
+        reset_state.items_mask = jnp.broadcast_to(
+            reset_state.items_mask, (6, reset_state.items_mask.shape[0])
+        )
+        return reset_state
+
+    def _generate_value_based_instance_from_csv(
+        self, csv_path: str, max_num_ems: int, container_dims: Tuple[int, int, int]
+    ) -> State:
+        container = make_container(container_dims)
+
+        # Initialize the EMSs
+        list_of_ems = [container] + (max_num_ems - 1) * [empty_ems()]
+        ems = tree_transpose(list_of_ems)
+        ems_mask = jnp.zeros(max_num_ems, bool).at[0].set(True)
+
+        # Parse the CSV file to generate the items
+        rows = self._read_valued_csv(csv_path)
+        list_of_items = self._generate_list_of_valued_items(rows)
+        items = tree_transpose(list_of_items)
+
+        # Initialize items mask and location
+        num_items = len(list_of_items)
+        items_mask = jnp.ones(num_items, bool)
+        items_placed = jnp.zeros(num_items, bool)
+        items_location = Location(*tuple(jnp.zeros((3, num_items), jnp.int32)))
+
+        sorted_ems_indexes = jnp.arange(0, max_num_ems, dtype=jnp.int32)
+
+        instance_total_value = jnp.sum(items.value * items_mask)
+        instance_max_item_value_magnitude = jnp.max(abs(items.value * items_mask))
+
+        reset_state = State(
+            container=container,
+            ems=ems,
+            ems_mask=ems_mask,
+            items=items,
+            nb_items=len(items.x_len),
+            items_mask=items_mask,
+            items_placed=items_placed,
+            items_location=items_location,
+            action_mask=None,
+            sorted_ems_indexes=sorted_ems_indexes,
+            instance_max_item_value_magnitude=instance_max_item_value_magnitude,
+            instance_total_value=instance_total_value,
+            key=jax.random.PRNGKey(0),
+        )
+
+        return reset_state
+
+    def _read_valued_csv(
+        self, csv_path: str
+    ) -> List[Tuple[str, int, int, int, int, float]]:
+        rows = []
+        with open(csv_path, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            for row_index, row in enumerate(reader):
+                if row_index == 0:
+                    if len(row) != len(CSV_VALUE_PROBLEM_COLUMNS):
+                        raise ValueError(
+                            "Got wrong number of columns, expected: "
+                            f"{', '.join(CSV_VALUE_PROBLEM_COLUMNS)}"
+                        )
+                    elif row != CSV_VALUE_PROBLEM_COLUMNS:
+                        raise ValueError("Columns in wrong order")
+                else:
+                    # Column order: Item_Name, Length, Width, Height, Quantity, Value.
+                    rows.append(
+                        (
+                            row[0],
+                            int(row[1]),
+                            int(row[2]),
+                            int(row[3]),
+                            int(row[4]),
+                            float(row[5]),
+                        )
+                    )
+        return rows
+
+    def _generate_list_of_valued_items(
+        self, rows: List[Tuple[str, int, int, int, int, float]]
+    ) -> List[ValuedItem]:
+        """Generate the list of items from a Pandas DataFrame.
+
+        Args:
+            rows: List[tuple] describing the items for the corresponding instance.
+
+        Returns:
+            List of `ValuedItem` flattened so that identical items (quantity > 1) are copied
+            according to their quantity.
+        """
+        list_of_items = []
+        for (_, x_len, y_len, z_len, quantity, value) in rows:
+            identical_items = quantity * [
+                ValuedItem(
+                    x_len=jnp.array(x_len, jnp.int32),
+                    y_len=jnp.array(y_len, jnp.int32),
+                    z_len=jnp.array(z_len, jnp.int32),
+                    value=jnp.array(value, jnp.float32),
+                )
+            ]
+            list_of_items.extend(identical_items)
+        return list_of_items

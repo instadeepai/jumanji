@@ -29,7 +29,7 @@ from jumanji.environments.logic.rubiks_cube.env import RubiksCube
 from jumanji.environments.logic.sliding_tile_puzzle.env import SlidingTilePuzzle
 from jumanji.environments.logic.sudoku.env import Sudoku
 from jumanji.environments.packing import bin_pack, flat_pack, job_shop, knapsack, tetris
-from jumanji.environments.packing.bin_pack.env import BinPack
+from jumanji.environments.packing.bin_pack.env import BinPack, ExtendedBinPack
 from jumanji.environments.packing.flat_pack.env import FlatPack
 from jumanji.environments.packing.job_shop.env import JobShop
 from jumanji.environments.packing.knapsack.env import Knapsack
