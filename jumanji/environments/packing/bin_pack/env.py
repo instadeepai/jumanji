@@ -86,20 +86,18 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             already packed.
 
     - state: `State`
-        - coordinates: jax array (float) of shape (num_nodes + 1, 2)
-            the coordinates of each node and the depot.
-        - demands: jax array (int32) of shape (num_nodes + 1,)
-            the associated cost of each node and the depot (0.0 for the depot).
-        - position: jax array (int32)
-            the index of the last visited node.
-        - capacity: jax array (int32)
-            the current capacity of the vehicle.
-        - visited_mask: jax array (bool) of shape (num_nodes + 1,)
-            binary mask (False/True <--> not visited/visited).
-        - trajectory: jax array (int32) of shape (2 * num_nodes,)
-            identifiers of the nodes that have been visited (set to DEPOT_IDX if not filled yet).
-        - num_visits: int32
-            number of actions that have been taken (i.e., unique visits).
+        - container: space defined by 2 points, i.e. 6 coordinates.
+        - ems: empty maximal spaces (EMSs) in the container, each defined by 2 points
+            (6 coordinates).
+        - ems_mask: array of booleans that indicate the EMSs that are valid.
+        - items: defined by 3 attributes (x, y, z).
+        - items_mask: array of booleans that indicate the items that can be packed.
+        - items_placed: array of booleans that indicate the items that have been placed so far.
+        - items_location: locations of items in the container, defined by 3 coordinates (x, y, x).
+        - action_mask: array of booleans that indicate the valid actions,
+            i.e. EMSs and items that can be chosen.
+        - sorted_ems_indexes: EMS indexes that are sorted by decreasing volume order.
+        - key: random key used for auto-reset.
 
     ```python
     from jumanji.environments import BinPack
