@@ -91,14 +91,13 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
         """Instantiates a `Cleaner` environment.
 
         Args:
-            num_agents: number of agents. Defaults to 3.
-            time_limit: max number of steps in an episode. Defaults to `num_rows * num_cols`.
             generator: `Generator` whose `__call__` instantiates an environment instance.
                 Implemented options are [`RandomGenerator`]. Defaults to `RandomGenerator` with
                 `num_rows=10`, `num_cols=10` and `num_agents=3`.
+            time_limit: max number of steps in an episode. Defaults to `num_rows * num_cols`.
+            penalty_per_timestep: the penalty returned at each timestep in the reward.
             viewer: `Viewer` used for rendering. Defaults to `CleanerViewer` with "human" render
                 mode.
-            penalty_per_timestep: the penalty returned at each timestep in the reward.
         """
         self.generator = generator or RandomGenerator(
             num_rows=10, num_cols=10, num_agents=3
