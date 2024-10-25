@@ -1,7 +1,7 @@
 ::: jumanji.environments.routing.connector.env.Connector
     selection:
       members:
-        - init
+        - __init__
         - observation_spec
         - action_spec
         - reset
