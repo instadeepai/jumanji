@@ -39,7 +39,7 @@
   </div>
   <div class="row" align="center">
     <img src="docs/env_anim/multi_cvrp.gif" alt="MultiCVRP" width="16%">
-    <img src="docs/env_anim/pac_man.gif" alt="PacMan" width="16%">
+    <img src="docs/env_anim/pac_man.gif" alt="PacMan" width="12.9%">
     <img src="docs/env_anim/robot_warehouse.gif" alt="RobotWarehouse" width="16%">
     <img src="docs/env_anim/rubiks_cube.gif" alt="RubiksCube" width="16%">
     <img src="docs/env_anim/sliding_tile_puzzle.gif" alt="SlidingTilePuzzle" width="16%">
@@ -50,6 +50,7 @@
     <img src="docs/env_anim/sudoku.gif" alt="Sudoku" width="16%">
     <img src="docs/env_anim/tetris.gif" alt="Tetris" width="16%">
     <img src="docs/env_anim/tsp.gif" alt="Tetris" width="16%">
+    <img src="docs/env_anim/lbf.gif" alt="Level-Based Foraging" width="16%">
   </div>
 </div>
 
@@ -121,6 +122,7 @@ problems.
 | Multi Minimum Spanning Tree Problem | Routing  | `MMST-v0`                                | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/mmst)    | [doc](https://instadeepai.github.io/jumanji/environments/mmst/)    |
 | ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pac_man/)      | [doc](https://instadeepai.github.io/jumanji/environments/pac_man/)
 | 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
+| 🍎 Level-Based Foraging                                                     | Routing  | `LevelBasedForaging-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/lbf/)          | [doc](https://instadeepai.github.io/jumanji/environments/lbf/)         |
 
 <h2 name="install" id="install">Installation 🎬</h2>
 

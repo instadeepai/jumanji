@@ -34,6 +34,7 @@ from jumanji.environments import (
     GraphColoring,
     JobShop,
     Knapsack,
+    LevelBasedForaging,
     Maze,
     Minesweeper,
     MultiCVRP,
@@ -61,7 +62,7 @@ from jumanji.training.loggers import (
 from jumanji.training.networks.actor_critic import ActorCriticNetworks
 from jumanji.training.networks.protocols import RandomPolicy
 from jumanji.training.types import ActingState, TrainingState
-from jumanji.wrappers import VmapAutoResetWrapper
+from jumanji.wrappers import MultiToSingleWrapper, VmapAutoResetWrapper
 
 
 def setup_logger(cfg: DictConfig) -> Logger:
@@ -92,7 +93,11 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
-    return jumanji.make(cfg.env.registered_version)
+    env = jumanji.make(cfg.env.registered_version)
+    if cfg.env.name in {"lbf"}:
+        # Convert a multi-agent environment to a single-agent environment
+        env = MultiToSingleWrapper(env)
+    return env
 
 
 def setup_env(cfg: DictConfig) -> Environment:
@@ -210,6 +215,9 @@ def _setup_random_policy(  # noqa: CCR001
     elif cfg.env.name == "pac_man":
         assert isinstance(env.unwrapped, PacMan)
         random_policy = networks.make_random_policy_pacman()
+    elif cfg.env.name == "lbf":
+        assert isinstance(env.unwrapped, LevelBasedForaging)
+        random_policy = networks.make_random_policy_lbf()
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
     return random_policy
@@ -417,6 +425,15 @@ def _setup_actor_critic_neworks(  # noqa: CCR001
             num_channels=cfg.env.network.num_channels,
             policy_layers=cfg.env.network.policy_layers,
             value_layers=cfg.env.network.value_layers,
+        )
+    elif cfg.env.name == "lbf":
+        assert isinstance(env.unwrapped, LevelBasedForaging)
+        actor_critic_networks = networks.make_actor_critic_networks_lbf(
+            lbf_env=env.unwrapped,
+            transformer_num_blocks=cfg.env.network.transformer_num_blocks,
+            transformer_num_heads=cfg.env.network.transformer_num_heads,
+            transformer_key_size=cfg.env.network.transformer_key_size,
+            transformer_mlp_units=cfg.env.network.transformer_mlp_units,
         )
     else:
         raise ValueError(f"Environment name not found. Got {cfg.env.name}.")
