@@ -58,7 +58,7 @@ class RandomGenerator:
         min_required_cells = num_agents + num_food
         assert (
             grid_size**2
-        ) * 0.6 >= min_required_cells, r"""Ensure at least 40% of the grid cells remain unoccupied
+        ) * 0.6 >= min_required_cells, """Ensure at least 40% of the grid cells remain 'unoccupied'
         to facilitate smooth placement and movement of agents and food items."""
 
         self.grid_size = grid_size
