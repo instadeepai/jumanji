@@ -1404,13 +1404,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.__repr__" class="md-nav__link">
-    __repr__()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#jumanji.environments.routing.cleaner.env.Cleaner.reset" class="md-nav__link">
     reset()
   </a>
@@ -1427,20 +1420,6 @@
           <li class="md-nav__item">
   <a href="#jumanji.environments.routing.cleaner.env.Cleaner.render" class="md-nav__link">
     render()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.animate" class="md-nav__link">
-    animate()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jumanji.environments.routing.cleaner.env.Cleaner.close" class="md-nav__link">
-    close()
   </a>
   
 </li>
@@ -1878,18 +1857,6 @@ a maze.</p>
   </thead>
   <tbody>
       <tr>
-        <td><code>num_agents</code></td>
-        <td></td>
-        <td><p>number of agents. Defaults to 3.</p></td>
-        <td><em>required</em></td>
-      </tr>
-      <tr>
-        <td><code>time_limit</code></td>
-        <td><code>Optional[int]</code></td>
-        <td><p>max number of steps in an episode. Defaults to <code>num_rows * num_cols</code>.</p></td>
-        <td><code>None</code></td>
-      </tr>
-      <tr>
         <td><code>generator</code></td>
         <td><code>Optional[jumanji.environments.routing.cleaner.generator.Generator]</code></td>
         <td><p><code>Generator</code> whose <code>__call__</code> instantiates an environment instance.
@@ -1898,10 +1865,9 @@ Implemented options are [<code>RandomGenerator</code>]. Defaults to <code>Random
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>viewer</code></td>
-        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.routing.cleaner.types.State]]</code></td>
-        <td><p><code>Viewer</code> used for rendering. Defaults to <code>CleanerViewer</code> with "human" render
-mode.</p></td>
+        <td><code>time_limit</code></td>
+        <td><code>Optional[int]</code></td>
+        <td><p>max number of steps in an episode. Defaults to <code>num_rows * num_cols</code>.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -1910,30 +1876,15 @@ mode.</p></td>
         <td><p>the penalty returned at each timestep in the reward.</p></td>
         <td><code>0.5</code></td>
       </tr>
+      <tr>
+        <td><code>viewer</code></td>
+        <td><code>Optional[jumanji.viewer.Viewer[jumanji.environments.routing.cleaner.types.State]]</code></td>
+        <td><p><code>Viewer</code> used for rendering. Defaults to <code>CleanerViewer</code> with "human" render
+mode.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.__repr__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-special"><code>special</code></small>
-  </span>
-
-<a href="#jumanji.environments.routing.cleaner.env.Cleaner.__repr__" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-
     </div>
 
   </div>
@@ -2101,95 +2052,6 @@ timestep: <code>TimeStep</code> object corresponding to the timestep returned by
 
 
 
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.animate" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">animate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">jumanji</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">routing</span><span class="o">.</span><span class="n">cleaner</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">State</span><span class="p">],</span> <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FuncAnimation</span></code>
-
-
-<a href="#jumanji.environments.routing.cleaner.env.Cleaner.animate" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Creates an animated gif of the <code>Cleaner</code> environment based on the sequence of states.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>states</code></td>
-        <td><code>Sequence[jumanji.environments.routing.cleaner.types.State]</code></td>
-        <td><p>sequence of environment states corresponding to consecutive timesteps.</p></td>
-        <td><em>required</em></td>
-      </tr>
-      <tr>
-        <td><code>interval</code></td>
-        <td><code>int</code></td>
-        <td><p>delay between frames in milliseconds, default to 200.</p></td>
-        <td><code>200</code></td>
-      </tr>
-      <tr>
-        <td><code>save_path</code></td>
-        <td><code>Optional[str]</code></td>
-        <td><p>the path where the animation file should be saved. If it is None, the plot
-will not be saved.</p></td>
-        <td><code>None</code></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>animation.FuncAnimation</code></td>
-      <td><p>the animation object that was created.</p></td>
-    </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="jumanji.environments.routing.cleaner.env.Cleaner.close" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
-
-
-<a href="#jumanji.environments.routing.cleaner.env.Cleaner.close" class="headerlink" title="Permanent link">#</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Perform any necessary cleanup.</p>
-<p>Environments will automatically :meth:<code>close()</code> themselves when
-garbage collected or when the program exits.</p>
-
-    </div>
-
-  </div>
-
-
-
 
 
   </div>
@@ -2203,7 +2065,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2024-05-11
+      2024-10-25
     
   </small>
 </div>
