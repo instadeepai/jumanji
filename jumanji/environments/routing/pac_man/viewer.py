@@ -65,10 +65,7 @@ class PacManViewer(MazeViewer):
             RGB array if the render_mode is RenderMode.RGB_ARRAY.
         """
         self._clear_display()
-        (
-            fig,
-            ax,
-        ) = self._get_fig_ax()
+        fig, ax = self._get_fig_ax()
         ax.clear()
         fig.suptitle(f"PacMan    Score: {int(state.score)}", size=15)
         self._add_grid_image(state, ax)
@@ -350,6 +347,5 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
 
     obs = [layer_1, layer_2, layer_3]
     rgb = jnp.stack(obs, axis=-1)
-    expand_rgb
 
     return rgb
