@@ -225,21 +225,31 @@ class VectorObserver(LbfObserver):
         )
 
         # Assign the foods and agents infos.
-        agent_view = agent_view.at[jnp.arange(0, 3 * self.num_food, 3)].set(food_xs)
-        agent_view = agent_view.at[jnp.arange(1, 3 * self.num_food, 3)].set(food_ys)
-        agent_view = agent_view.at[jnp.arange(2, 3 * self.num_food, 3)].set(food_levels)
+        agent_view = agent_view.at[jnp.arange(0, 3 * self.num_food, 3)].set(
+            food_xs, indices_are_sorted=True, unique_indices=True
+        )
+        agent_view = agent_view.at[jnp.arange(1, 3 * self.num_food, 3)].set(
+            food_ys, indices_are_sorted=True, unique_indices=True
+        )
+        agent_view = agent_view.at[jnp.arange(2, 3 * self.num_food, 3)].set(
+            food_levels, indices_are_sorted=True, unique_indices=True
+        )
 
         # Always place the current agent's info first.
         agent_view = agent_view.at[
             jnp.arange(3 * self.num_food, 3 * self.num_food + 3)
-        ].set(agent_i_infos)
+        ].set(agent_i_infos, indices_are_sorted=True, unique_indices=True)
 
         start_idx = 3 * self.num_food + 3
         end_idx = start_idx + 3 * (self.num_agents - 1)
-        agent_view = agent_view.at[jnp.arange(start_idx, end_idx, 3)].set(agent_xs)
-        agent_view = agent_view.at[jnp.arange(start_idx + 1, end_idx, 3)].set(agent_ys)
+        agent_view = agent_view.at[jnp.arange(start_idx, end_idx, 3)].set(
+            agent_xs, indices_are_sorted=True, unique_indices=True
+        )
+        agent_view = agent_view.at[jnp.arange(start_idx + 1, end_idx, 3)].set(
+            agent_ys, indices_are_sorted=True, unique_indices=True
+        )
         agent_view = agent_view.at[jnp.arange(start_idx + 2, end_idx, 3)].set(
-            agent_levels
+            agent_levels, indices_are_sorted=True, unique_indices=True
         )
 
         return agent_view

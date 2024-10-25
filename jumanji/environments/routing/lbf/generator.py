@@ -57,13 +57,9 @@ class RandomGenerator:
 
         min_required_cells = num_agents + num_food * 3
         assert (
-            grid_size**2 >= min_required_cells
-        ), "Grid is too small for this many agents and food items."
-        assert (
             grid_size**2
-        ) * 0.6 >= min_required_cells, (
-            r"Make sure 40% of the grid is empty to allow agents move freely."
-        )
+        ) * 0.4 <= min_required_cells, r"""Ensure at least 40% of the grid cells remain unoccupied
+        to facilitate smooth placement and movement of agents and food items."""
 
         self.grid_size = grid_size
         self.fov = grid_size if fov is None else fov

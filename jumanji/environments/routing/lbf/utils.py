@@ -90,12 +90,7 @@ def simulate_agent_movement(
     )
 
     # Return the agent with the updated position
-    return Agent(
-        id=agent.id,
-        position=new_agent_position,
-        level=agent.level,
-        loading=jnp.asarray(False),
-    )
+    return agent.replace(position=new_agent_position)  # type: ignore
 
 
 def update_agent_positions(
