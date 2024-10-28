@@ -43,7 +43,7 @@ setup(
     description="A diverse suite of scalable reinforcement learning environments in JAX",
     license="Apache 2.0",
     url="https://github.com/instadeepai/jumanji/",
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="reinforcement-learning python jax",
     packages=setuptools.find_packages(),
