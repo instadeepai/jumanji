@@ -21,6 +21,7 @@ import matplotlib.animation as animation
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
+import pkg_resources
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from numpy.typing import NDArray
@@ -210,9 +211,10 @@ class LevelBasedForagingViewer(Viewer):
             cell_center = self._entity_position(agent)
 
             # Read the image file
-            img = mpimg.imread(
-                os.path.join(os.path.dirname(__file__), "icons/agent.png")
+            img_path = pkg_resources.resource_filename(
+                "jumanji", "environments/routing/lbf/imgs/agent.png"
             )
+            img = plt.imread(img_path)
 
             # Create an OffsetImage and add it to the axis
             imagebox = OffsetImage(img, zoom=self.icon_size / self.grid_size)
@@ -234,9 +236,10 @@ class LevelBasedForagingViewer(Viewer):
                 continue
 
             # Read the image file
-            img = mpimg.imread(
-                os.path.join(os.path.dirname(__file__), "icons/apple.png")
+            img_path = pkg_resources.resource_filename(
+                "jumanji", "environments/routing/lbf/imgs/apple.png"
             )
+            img = plt.imread(img_path)
             cell_center = self._entity_position(food)
             self.draw_badge(food.level, cell_center, ax)
 

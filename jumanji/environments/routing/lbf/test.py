@@ -13,25 +13,10 @@
 # limitations under the License.
 
 import jax
+from matplotlib import pyplot as plt
 
 from jumanji.environments import LevelBasedForaging
 from jumanji.environments.routing.lbf.generator import RandomGenerator
-
-
-def check_placement_feasibility(grid_size: int, num_agents: int, num_food: int) -> None:
-
-    min_required_cells = num_agents + num_food * 3
-    assert (
-        grid_size**2 >= min_required_cells
-    ), "Grid is too small for this many agents and food items."
-    assert (
-        grid_size**2
-    ) * 0.6 >= min_required_cells, r"Make sure 40% of the grid is empty."
-
-
-# Example usage
-# check_placement_feasibility(8, 10, 15)  # Throws an error
-
 
 env = LevelBasedForaging(
     generator=RandomGenerator(grid_size=8, num_agents=10, num_food=15, fov=8)
@@ -42,3 +27,4 @@ env.render(state)
 action = env.action_spec.generate_value()
 state, timestep = jax.jit(env.step)(state, action)
 env.render(state)
+plt.savefig("lbf.png")
