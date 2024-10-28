@@ -1727,20 +1727,18 @@ top-right corner.</li>
 <li>
 <p>state: <code>State</code></p>
 <ul>
-<li>coordinates: jax array (float) of shape (num_nodes + 1, 2)
-    the coordinates of each node and the depot.</li>
-<li>demands: jax array (int32) of shape (num_nodes + 1,)
-    the associated cost of each node and the depot (0.0 for the depot).</li>
-<li>position: jax array (int32)
-    the index of the last visited node.</li>
-<li>capacity: jax array (int32)
-    the current capacity of the vehicle.</li>
-<li>visited_mask: jax array (bool) of shape (num_nodes + 1,)
-    binary mask (False/True &lt;--&gt; not visited/visited).</li>
-<li>trajectory: jax array (int32) of shape (2 * num_nodes,)
-    identifiers of the nodes that have been visited (set to DEPOT_IDX if not filled yet).</li>
-<li>num_visits: int32
-    number of actions that have been taken (i.e., unique visits).</li>
+<li>container: space defined by 2 points, i.e. 6 coordinates.</li>
+<li>ems: empty maximal spaces (EMSs) in the container, each defined by 2 points
+    (6 coordinates).</li>
+<li>ems_mask: array of booleans that indicate the EMSs that are valid.</li>
+<li>items: defined by 3 attributes (x, y, z).</li>
+<li>items_mask: array of booleans that indicate the items that can be packed.</li>
+<li>items_placed: array of booleans that indicate the items that have been placed so far.</li>
+<li>items_location: locations of items in the container, defined by 3 coordinates (x, y, x).</li>
+<li>action_mask: array of booleans that indicate the valid actions,
+    i.e. EMSs and items that can be chosen.</li>
+<li>sorted_ems_indexes: EMS indexes that are sorted by decreasing volume order.</li>
+<li>key: random key used for auto-reset.</li>
 </ul>
 </li>
 </ul>
@@ -2170,7 +2168,7 @@ garbage collected or when the program exits.</p>
   <small>
     
       Last update:
-      2024-10-25
+      2024-10-28
     
   </small>
 </div>
