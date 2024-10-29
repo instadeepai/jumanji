@@ -22,9 +22,5 @@ pytest-cov
 pytest-mock
 pytest-parallel
 pytest-xdist
-pytype
 scipy>=1.7.3
 testfixtures
-types-Pillow
-types-requests<1.27
-types-setuptools
