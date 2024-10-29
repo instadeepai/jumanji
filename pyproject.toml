@@ -47,7 +47,7 @@ optional-dependencies.train={file=["requirements/requirements-train.txt"]}
 "Documentation"="https://instadeepai.github.io/jumanji"
 
 [tool.mypy]
-python_version = 3.10
+python_version = "3.10"
 namespace_packages = true
 incremental = false
 cache_dir = ""
