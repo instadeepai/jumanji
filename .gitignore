@@ -150,7 +150,7 @@ cython_debug/
 # MacBook Finder
 .DS_Store
 
-3.8/
+3.10/
 jumanji_env/
 **/outputs/
 *.xml

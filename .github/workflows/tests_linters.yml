@@ -1,6 +1,6 @@
 name: Tests and Linters 🧪
 
-on: [ push, pull_request ]
+on: [ pull_request ]
 
 jobs:
   tests-and-linters:
@@ -9,26 +9,43 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest]
 
     steps:
       - name: Install dependencies for viewer test
         run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Checkout jumanji 🐍
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+        uses: actions/checkout@v4
+
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.26"
+          enable-cache: true
+          cache-dependency-glob: "requirements/requirements**.txt"  # invalidate cache when requirements file changes
+
+      - uses: actions/setup-python@v5
         with:
             python-version: "${{ matrix.python-version }}"
+
       - name: Install python dependencies 🔧
-        run: pip install .[dev,train]
+        run: uv pip install .[dev,train]
+        env:
+          UV_SYSTEM_PYTHON: 1
+
       - name: Run linters 🖌️
         run: pre-commit run --all-files --verbose
+
       - name: Run tests 🧪
         run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
+
       - name: Run coverage
         run: |
           coverage html --directory=coverage_html_report
           coverage report --fail-under=0.97
+
       - name: Test build docs 📖
         run: mkdocs build --verbose --site-dir docs_public
