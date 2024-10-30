@@ -55,9 +55,13 @@ class RandomGenerator:
         assert num_food > 0, "Number of food items must be positive."
         assert max_agent_level >= 2, "Maximum agent level must be at least 2."
 
-        min_required_cells = num_agents + num_food
-        err = "Ensure at least 40% of the grid cells remain empty after food and agents placement."
-        assert grid_size**2 * 0.6 >= min_required_cells, err
+        # First assert:
+        min_cells_food = num_food * 5
+        err = (
+            "Ensure enough non-edge positions for food placement to avoid adjacency. "
+            "If not, food will be incorrectly placed due to JAX's silent error handling."
+        )
+        assert (grid_size - 2) ** 2 - num_agents > min_cells_food, err
 
         self.grid_size = grid_size
         self.fov = grid_size if fov is None else fov
