@@ -156,7 +156,7 @@ def random_generator() -> RandomGenerator:
 @pytest.fixture
 def lbf_environment() -> LevelBasedForaging:
     generator = RandomGenerator(
-        grid_size=6,
+        grid_size=8,
         fov=6,
         num_agents=3,
         num_food=3,
@@ -184,7 +184,7 @@ def lbf_env_2s() -> LevelBasedForaging:
 @pytest.fixture
 def lbf_env_grid_obs() -> LevelBasedForaging:
     generator = RandomGenerator(
-        grid_size=6,
+        grid_size=8,
         fov=6,
         num_agents=3,
         num_food=3,
