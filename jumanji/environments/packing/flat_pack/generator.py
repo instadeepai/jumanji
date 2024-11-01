@@ -28,8 +28,8 @@ from jumanji.environments.packing.flat_pack.utils import (
 
 
 class InstanceGenerator(abc.ABC):
-    """Base class for generators for the flat_pack environment. An `InstanceGenerator` is responsible
-    for generating a problem instance when the environment is reset.
+    """Base class for generators for the flat_pack environment. An `InstanceGenerator` is
+    responsible for generating a problem instance when the environment is reset.
     """
 
     def __init__(

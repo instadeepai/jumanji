@@ -71,7 +71,7 @@ class SlidingTilePuzzleViewer(Viewer):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> matplotlib.animation.FuncAnimation:
-        """Creates an animated gif of the sliding tiles puzzle game based on the sequence of game states.
+        """Creates an animated gif of the sliding tiles puzzle game based on a sequence of states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.
@@ -101,7 +101,7 @@ class SlidingTilePuzzleViewer(Viewer):
         return self._animation
 
     def get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        """This function returns a `Matplotlib` figure and axes object for displaying the game puzzle.
+        """This function returns a `Matplotlib` figure and axes for displaying the puzzle.
 
         Returns:
             A tuple containing the figure and axes objects.

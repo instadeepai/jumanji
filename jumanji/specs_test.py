@@ -589,7 +589,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         converted_spec: dm_env.specs.Array = specs.jumanji_specs_to_dm_env_specs(
             jumanji_spec
         )
-        assert type(converted_spec) == type(dm_env_spec)
+        assert type(converted_spec) is type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
@@ -602,7 +602,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         converted_spec: dm_env.specs.BoundedArray = specs.jumanji_specs_to_dm_env_specs(
             jumanji_spec
         )
-        assert type(converted_spec) == type(dm_env_spec)
+        assert type(converted_spec) is type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
@@ -615,7 +615,7 @@ class TestJumanjiSpecsToDmEnvSpecs:
         converted_spec: dm_env.specs.DiscreteArray = (
             specs.jumanji_specs_to_dm_env_specs(jumanji_spec)
         )
-        assert type(converted_spec) == type(dm_env_spec)
+        assert type(converted_spec) is type(dm_env_spec)
         assert converted_spec.shape == dm_env_spec.shape
         assert converted_spec.dtype == dm_env_spec.dtype
         assert converted_spec.name == dm_env_spec.name
@@ -675,7 +675,7 @@ class TestJumanjiSpecsToGymSpaces:
         jumanji_spec = specs.Array((1, 2), jnp.int32)
         gym_space = gym.spaces.Box(-np.inf, np.inf, (1, 2), jnp.int32)
         converted_spec = specs.jumanji_specs_to_gym_spaces(jumanji_spec)
-        assert type(converted_spec) == type(gym_space)
+        assert type(converted_spec) is type(gym_space)
         assert_trees_all_equal(converted_spec.low, gym_space.low)
         assert_trees_all_equal(converted_spec.high, gym_space.high)
         assert converted_spec.shape == gym_space.shape
@@ -687,7 +687,7 @@ class TestJumanjiSpecsToGymSpaces:
         )
         gym_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1, 2), dtype=jnp.float32)
         converted_spec = specs.jumanji_specs_to_gym_spaces(jumanji_spec)
-        assert type(converted_spec) == type(gym_space)
+        assert type(converted_spec) is type(gym_space)
         assert converted_spec.shape == gym_space.shape
         assert converted_spec.dtype == gym_space.dtype
         assert_trees_all_equal(converted_spec.low, gym_space.low)
@@ -697,7 +697,7 @@ class TestJumanjiSpecsToGymSpaces:
         jumanji_spec = specs.DiscreteArray(num_values=5, dtype=jnp.int32)
         gym_space = gym.spaces.Discrete(n=5)
         converted_spec = specs.jumanji_specs_to_gym_spaces(jumanji_spec)
-        assert type(converted_spec) == type(gym_space)
+        assert type(converted_spec) is type(gym_space)
         assert converted_spec.shape == gym_space.shape
         assert converted_spec.dtype == gym_space.dtype
         assert converted_spec.n == gym_space.n
@@ -708,7 +708,7 @@ class TestJumanjiSpecsToGymSpaces:
         )
         gym_space = gym.spaces.MultiDiscrete(nvec=[5, 6])
         converted_spec = specs.jumanji_specs_to_gym_spaces(jumanji_spec)
-        assert type(converted_spec) == type(gym_space)
+        assert type(converted_spec) is type(gym_space)
         assert converted_spec.shape == gym_space.shape
         assert converted_spec.dtype == gym_space.dtype
         assert jnp.array_equal(converted_spec.nvec, gym_space.nvec)

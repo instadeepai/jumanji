@@ -397,9 +397,9 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
     def _make_observation_and_extras(
         self, state: State
     ) -> Tuple[State, Observation, Dict]:
-        """Computes the observation and the environment metrics to include in `timestep.extras`. Also
-        updates the `action_mask` and `sorted_ems_indexes` in the state. The observation is obtained
-        by selecting a subset of all EMSs, namely the `obs_num_ems` largest ones.
+        """Computes the observation and the environment metrics to include in `timestep.extras`.
+        Also updates the `action_mask` and `sorted_ems_indexes` in the state. The observation is
+        obtained by selecting a subset of all EMSs, namely the `obs_num_ems` largest ones.
         """
         obs_ems, obs_ems_mask, sorted_ems_indexes = self._get_set_of_largest_ems(
             state.ems, state.ems_mask

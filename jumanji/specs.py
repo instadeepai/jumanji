@@ -44,9 +44,9 @@ T = TypeVar("T")
 
 
 class Spec(abc.ABC, Generic[T]):
-    """Adapted from `dm_env.spec.Array`. This is an augmentation of the `Array` spec to allow for nested
-    specs. `self.name`, `self.generate_value` and `self.validate` methods are adapted from the
-    `dm_env` object."""
+    """Adapted from `dm_env.spec.Array`. This is an augmentation of the `Array` spec to allow for
+    nested specs. `self.name`, `self.generate_value` and `self.validate` methods are adapted from
+    the `dm_env` object."""
 
     def __init__(
         self,
@@ -139,7 +139,7 @@ class Spec(abc.ABC, Generic[T]):
 
 
 class Array(Spec[chex.Array]):
-    """Describes a jax array spec. This is adapted from `dm_env.specs.Array` to suit Jax environments.
+    """Describes a jax array spec. This is adapted from `dm_env.specs.Array` for Jax environments.
 
     An `Array` spec allows an API to describe the arrays that it accepts or returns, before that
     array exists.

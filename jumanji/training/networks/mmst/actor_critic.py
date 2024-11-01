@@ -207,7 +207,7 @@ class MMSTTorso(hk.Module):
             mlp_units=self.transformer_mlp_units,
             w_init_scale=2 / self.num_transformer_layers,
             model_size=self.model_size,
-            name=f"cross_attention_agent_node_block_{block_id+1}",
+            name=f"cross_attention_agent_node_block_{block_id + 1}",
         )(agents_embeddings, current_node_embeddings, current_node_embeddings)
 
         return new_embedding
