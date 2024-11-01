@@ -39,6 +39,7 @@ nav:
           - MultiCVRP: environments/multi_cvrp.md
           - PacMan: environments/pac_man.md
           - RobotWarehouse: environments/robot_warehouse.md
+          - Level-Based Foraging: environments/lbf.md
           - Sokoban: environments/sokoban.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
@@ -72,6 +73,7 @@ nav:
               - MultiCVRP: api/environments/multi_cvrp.md
               - PacMan: api/environments/pac_man.md
               - RobotWarehouse: api/environments/robot_warehouse.md
+              - Level-Based Foraging: api/environments/lbf.md
               - Sokoban: api/environments/sokoban.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
