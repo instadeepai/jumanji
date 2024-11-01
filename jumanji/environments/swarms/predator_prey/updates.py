@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Union
 
 import chex
 import esquilax
@@ -36,12 +36,17 @@ def distance_prey_rewards(
     predator: types.AgentState,
     *,
     i_range: float,
-) -> float:
+) -> Union[float, chex.Array]:
     d = esquilax.utils.shortest_distance(prey.pos, predator.pos) / i_range
     return penalty * (d - 1.0)
 
 
-def sparse_predator_rewards(_k: chex.PRNGKey, reward: float, _a, _b) -> float:
+def sparse_predator_rewards(
+    _k: chex.PRNGKey,
+    reward: float,
+    _a: Optional[types.AgentState],
+    _b: Optional[types.AgentState],
+) -> float:
     return reward
 
 
@@ -52,6 +57,6 @@ def distance_predator_rewards(
     prey: types.AgentState,
     *,
     i_range: float,
-) -> float:
+) -> Union[float, chex.Array]:
     d = esquilax.utils.shortest_distance(predator.pos, prey.pos) / i_range
     return reward * (1.0 - d)

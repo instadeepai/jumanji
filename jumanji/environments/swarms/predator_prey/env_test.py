@@ -75,6 +75,7 @@ def test_env_init(env: PredatorPrey) -> None:
 
 def test_env_step(env: PredatorPrey) -> None:
     key = jax.random.PRNGKey(101)
+    n_steps = 11
 
     def step(
         carry: Tuple[chex.PRNGKey, State], _: None
@@ -92,30 +93,35 @@ def test_env_step(env: PredatorPrey) -> None:
 
     init_state, _ = env.reset(key)
     (_, final_state), (state_history, timesteps) = jax.lax.scan(
-        step, (key, init_state), length=11
+        step, (key, init_state), length=n_steps
     )
 
     assert isinstance(state_history, State)
+
+    assert state_history.predators.pos.shape == (n_steps, env.num_predators, 2)
     assert jnp.all(
         (0.0 <= state_history.predators.pos) & (state_history.predators.pos <= 1.0)
     )
+    assert state_history.predators.speed.shape == (n_steps, env.num_predators)
     assert jnp.all(
         (env.predator_params.min_speed <= state_history.predators.speed)
         & (state_history.predators.speed <= env.predator_params.max_speed)
     )
+    assert state_history.prey.speed.shape == (n_steps, env.num_predators)
     assert jnp.all(
         (0.0 <= state_history.predators.heading)
         & (state_history.predators.heading <= 2.0 * jnp.pi)
     )
-    assert jnp.all((0.0 <= state_history.prey.pos) & (state_history.prey.pos <= 1.0))
 
+    assert state_history.prey.pos.shape == (n_steps, env.num_prey, 2)
     assert jnp.all((0.0 <= state_history.prey.pos) & (state_history.prey.pos <= 1.0))
+    assert state_history.prey.speed.shape == (n_steps, env.num_prey)
     assert jnp.all(
         (env.predator_params.min_speed <= state_history.prey.speed)
         & (state_history.prey.speed <= env.predator_params.max_speed)
     )
+    assert state_history.prey.heading.shape == (n_steps, env.num_prey)
     assert jnp.all(
         (0.0 <= state_history.prey.heading)
         & (state_history.prey.heading <= 2.0 * jnp.pi)
     )
-    assert jnp.all((0.0 <= state_history.prey.pos) & (state_history.prey.pos <= 1.0))

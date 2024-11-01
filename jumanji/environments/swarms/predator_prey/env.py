@@ -351,7 +351,7 @@ class PredatorPrey(Environment):
         )
 
     @cached_property
-    def reward_spec(self) -> specs.Spec[Rewards]:
+    def reward_spec(self) -> specs.Spec[Rewards]:  # type: ignore[override]
         """Returns the reward spec. By default, this is assumed to be a single float.
 
         Returns:
