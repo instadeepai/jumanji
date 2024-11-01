@@ -33,5 +33,5 @@ class AgentParams:
 @dataclass
 class AgentState:
     pos: chex.Array
-    heading: float
-    speed: float
+    heading: chex.Array
+    speed: chex.Array
