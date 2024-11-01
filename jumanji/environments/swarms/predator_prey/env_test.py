@@ -107,7 +107,7 @@ def test_env_step(env: PredatorPrey) -> None:
         (env.predator_params.min_speed <= state_history.predators.speed)
         & (state_history.predators.speed <= env.predator_params.max_speed)
     )
-    assert state_history.prey.speed.shape == (n_steps, env.num_predators)
+    assert state_history.predators.speed.shape == (n_steps, env.num_predators)
     assert jnp.all(
         (0.0 <= state_history.predators.heading)
         & (state_history.predators.heading <= 2.0 * jnp.pi)

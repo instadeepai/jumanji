@@ -26,6 +26,22 @@ def sparse_prey_rewards(
     _prey: Optional[types.AgentState],
     _predator: Optional[types.AgentState],
 ) -> float:
+    """
+    Penalise a prey agent if contacted by a predator agent
+
+    Apply a negative penalty to prey agents that are
+    "touched" by a prey agent. This function is
+    applied using an Esquilax spatial interaction.
+
+    Args:
+        _k: Dummy JAX random key.
+        penalty: Penalty value.
+        _prey: Optional unused prey agent-state.
+        _predator: Optional unused predator agent-state.
+
+    Returns:
+        float: Negative penalty applied to prey agent.
+    """
     return -penalty
 
 
@@ -37,6 +53,23 @@ def distance_prey_rewards(
     *,
     i_range: float,
 ) -> Union[float, chex.Array]:
+    """
+    Penalise a prey agent based on distance from a predator agent
+
+    Apply a negative penalty based on a distance between
+    agents. The penalty is a linear function of distance,
+    0 at max distance up to `-penalty` at 0 distance.
+
+    Args:
+        _k: Dummy JAX random key.
+        penalty: Maximum penalty applied.
+        prey: Prey agent-state.
+        predator: Predator agent-state.
+        i_range: Static interaction range.
+
+    Returns:
+        float: Agent rewards.
+    """
     d = esquilax.utils.shortest_distance(prey.pos, predator.pos) / i_range
     return penalty * (d - 1.0)
 
@@ -44,9 +77,26 @@ def distance_prey_rewards(
 def sparse_predator_rewards(
     _k: chex.PRNGKey,
     reward: float,
-    _a: Optional[types.AgentState],
-    _b: Optional[types.AgentState],
+    _predator: Optional[types.AgentState],
+    _prey: Optional[types.AgentState],
 ) -> float:
+    """
+    Reward a predator agent if it within range of a prey agent
+
+    Apply a fixed positive reward if a predator agent is within
+    a fixed range of a prey-agent. This function can
+    be used with an Esquilax spatial interaction to
+    apply rewards to agents in range.
+
+    Args:
+        _k: Dummy JAX random key.
+        reward: Reward value to apply.
+        _predator: Optional unused agent-state.
+        _prey: Optional unused agent-state.
+
+    Returns:
+        float: Predator agent reward.
+    """
     return reward
 
 
@@ -58,5 +108,24 @@ def distance_predator_rewards(
     *,
     i_range: float,
 ) -> Union[float, chex.Array]:
+    """
+    Reward a predator agent based on distance from a prey agent.
+
+    Apply a positive reward based on the linear distance between
+    a predator and prey agent. Rewards are zero at the max
+    interaction distance, and maximal at 0 range. This function
+    can be used with an Esquilax spatial interaction to apply
+    rewards between agents.
+
+    Args:
+        _k: Dummy JAX random key.
+        reward: Maximum reward value.
+        predator: Predator agent-state.
+        prey: Prey agent-state.
+        i_range: Static interaction range.
+
+    Returns:
+        float@ Predator agent reward.
+    """
     d = esquilax.utils.shortest_distance(predator.pos, prey.pos) / i_range
     return reward * (1.0 - d)

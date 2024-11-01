@@ -25,10 +25,22 @@ from .types import AgentParams
 
 @esquilax.transforms.amap
 def update_velocity(
-    _k: chex.PRNGKey,
+    _: chex.PRNGKey,
     params: types.AgentParams,
     x: Tuple[chex.Array, types.AgentState],
 ) -> Tuple[float, float]:
+    """
+    Get the updated agent heading and speeds from actions
+
+    Args:
+        _: Dummy JAX random key.
+        params: Agent parameters.
+        x: Agent rotation and acceleration actions.
+
+    Returns:
+        float: New agent heading.
+        float: New agent speed.
+    """
     actions, boid = x
     rotation = actions[0] * params.max_rotate * jnp.pi
     acceleration = actions[1] * params.max_accelerate
@@ -45,8 +57,19 @@ def update_velocity(
 
 @esquilax.transforms.amap
 def move(
-    _key: chex.PRNGKey, _params: types.AgentParams, x: Tuple[chex.Array, float, float]
+    _: chex.PRNGKey, _params: None, x: Tuple[chex.Array, float, float]
 ) -> chex.Array:
+    """
+    Get updated agent positions from current speed and heading
+
+    Args:
+        _: Dummy JAX random key.
+        _params: unused parameters.
+        x: Tuple containing current agent position, heading and speed.
+
+    Returns:
+        jax array (float32): Updated agent position
+    """
     pos, heading, speed = x
     d_pos = jnp.array([speed * jnp.cos(heading), speed * jnp.sin(heading)])
     return (pos + d_pos) % 1.0
@@ -55,6 +78,17 @@ def move(
 def init_state(
     n: int, params: types.AgentParams, key: chex.PRNGKey
 ) -> types.AgentState:
+    """
+    Randomly initialise state of a group of agents
+
+    Args:
+        n: Number of agents to initialise.
+        params: Agent parameters.
+        key: JAX random key.
+
+    Returns:
+        AgentState: Random agent states (i.e. position, headings, and speeds)
+    """
     k1, k2, k3 = jax.random.split(key, 3)
 
     positions = jax.random.uniform(k1, (n, 2))
@@ -73,9 +107,22 @@ def init_state(
 def update_state(
     key: chex.PRNGKey, params: AgentParams, state: types.AgentState, actions: chex.Array
 ) -> types.AgentState:
+    """
+    Update the state of a group of agents from a sample of actions
+
+    Args:
+        key: Dummy JAX random key.
+        params: Agent parameters.
+        state: Current agent states.
+        actions: Agent actions, i.e. a 2D array of action for each agent.
+
+    Returns:
+        AgentState: Updated state of the agents after applying actions
+            and updating positions.
+    """
     actions = jax.numpy.clip(actions, min=-1.0, max=1.0)
     headings, speeds = update_velocity(key, params, (actions, state))
-    positions = move(key, params, (state.pos, headings, speeds))
+    positions = move(key, None, (state.pos, headings, speeds))
 
     return types.AgentState(
         pos=positions,
@@ -85,7 +132,7 @@ def update_state(
 
 
 def view(
-    _k: chex.PRNGKey,
+    _: chex.PRNGKey,
     params: Tuple[float, float],
     a: types.AgentState,
     b: types.AgentState,
@@ -93,6 +140,29 @@ def view(
     n_view: int,
     i_range: float,
 ) -> chex.Array:
+    """
+    Simple agent view model
+
+    Simple view model where the agents view angle is subdivided
+    into an array of values representing the distance from
+    the agent along a rays from the agent, covering the agents
+    view angle. The limit of vision is set at 1.0, which is
+    also the default value is no object is within range.
+    Currently, this model assumes the viewed objects are circular.
+
+    Args:
+        _: Dummy JAX random key.
+        params: Tuple containing agent view angle and view-radius.
+        a: Viewing agent state.
+        b: State of agent being viewed.
+        n_view: Static number of view subdivisions (i.e. how
+            many cells the resulting array contains).
+        i_range: Static agent view/interaction range.
+
+    Returns:
+        jax array (float32): 1D array representing the distance
+            along a ray from the agent to another agent.
+    """
     view_angle, radius = params
     rays = jnp.linspace(
         -view_angle * jnp.pi,

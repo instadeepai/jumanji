@@ -23,6 +23,14 @@ import chex
 
 @dataclass
 class AgentParams:
+    """
+    max_rotate: Max angle an agent can rotate during a step (a fraction of pi)
+    max_accelerate: Max change in speed during a step
+    min_speed: Minimum agent speed
+    max_speed: Maximum agent speed
+    view_angle: Agent view angle, as a fraction of pi either side of its heading
+    """
+
     max_rotate: float
     max_accelerate: float
     min_speed: float
@@ -32,6 +40,14 @@ class AgentParams:
 
 @dataclass
 class AgentState:
+    """
+    State of multiple agents of a single type
+
+    pos: 2d position of the (centre of the) agents
+    heading: Heading of the agents (in radians)
+    speed: Speed of the agents
+    """
+
     pos: chex.Array
     heading: chex.Array
     speed: chex.Array

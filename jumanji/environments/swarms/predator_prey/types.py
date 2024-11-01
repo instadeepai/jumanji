@@ -25,6 +25,12 @@ from jumanji.environments.swarms.common.types import AgentState
 
 @dataclass
 class State:
+    """
+    predators: Predator agent states.
+    prey: Prey agent states.
+    key: JAX random key.
+    """
+
     predators: AgentState
     prey: AgentState
     key: chex.PRNGKey
@@ -32,17 +38,32 @@ class State:
 
 @dataclass
 class Observation:
+    """
+    predators: Local view of predator agents.
+    prey: Local view of prey agents.
+    """
+
     predators: chex.Array
     prey: chex.Array
 
 
 @dataclass
 class Actions:
+    """
+    predators: Array of actions for predator agents.
+    prey: Array of actions for prey agents.
+    """
+
     predators: chex.Array
     prey: chex.Array
 
 
 @dataclass
 class Rewards:
+    """
+    predators: Array of individual rewards for predator agents.
+    prey: Array of individual rewards for prey agents.
+    """
+
     predators: chex.Array
     prey: chex.Array
