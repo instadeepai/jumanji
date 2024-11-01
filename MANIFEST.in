@@ -2,6 +2,7 @@ include LICENSE
 include requirements/*
 recursive-include * *.npy
 recursive-include jumanji *.png
+recursive-include jumanji *.jpeg
 
 # remove the test specific files
 recursive-exclude * *_test.py
