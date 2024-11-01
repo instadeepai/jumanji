@@ -36,6 +36,90 @@ from .updates import (
 
 
 class PredatorPrey(Environment):
+    """
+    A predator and prey flock environment
+
+    Environment modelling two swarms of agent types, predators
+    who are rewarded for avoiding pre agents, and conversely
+    prey agent who are rewarded for touching/catching
+    prey agents. Both agent types can consist of a large
+    number of individual agents, each with individual (local)
+    observations, actions, and rewards. Agents interact
+    on a uniform space with wrapped boundaries.
+
+    - observation: `Observation`
+        Arrays representing each agent's local view of the environment.
+        Each cell of the array represent the distance from the agent
+        two the nearest other agents in the environment. Each agent type
+        is observed independently.
+
+        - predators: jax array (float) of shape (num_predators, 2 * num_vision)
+        - prey: jax array (float) of shape (num_prey, 2 * num_vision)
+
+    - action: `Actions`
+        Individual agent actions. Each agent's actions rotate and
+        accelerate/decelerate the agent as [rotation, acceleration] on the range
+        [-1, 1] which are then scaled to update agent velocities within
+        a given parameters.
+
+        - predators: jax array (float) of shape (num_predators, 2)
+        - prey: jax array (float) of shape (num_prey, 2)
+
+    - reward: `Rewards`
+        Individual agent rewards. Rewards can either be generated sparsely
+        when agent collide, or be generated based on distance
+        to other agents (hence they can be dependent on the
+        number and density of agents).
+
+        - predators: jax array (float) of shape (num_predators,)
+        - prey: jax array (float) of shape (num_prey,)
+
+    - state: `State`
+        - predators: `AgentState`
+            - pos: jax array (float) of shape (num_predators, 2) in the range [0, 1].
+            - heading: jax array (float) of shape (num_predators,) in
+                the range [0, 2pi].
+            - speed: jax array (float) of shape (num_predators,) in the
+                range [min_speed, max_speed].
+        - prey: `AgentState`
+            - pos: jax array (float) of shape (num_prey, 2) in the range [0, 1].
+            - heading: jax array (float) of shape (num_prey,) in
+                the range [0, 2pi].
+            - speed: jax array (float) of shape (num_prey,) in the
+                range [min_speed, max_speed].
+        - key: jax array (uint32) of shape (2,)
+
+
+    ```python
+    from jumanji.environments import PredatorPrey
+    env = PredatorPrey(
+        num_predators=2,
+        num_prey=10,
+        prey_vision_range=0.1,
+        predator_vision_range=0.1,
+        num_vision=10,
+        agent_radius=0.01,
+        sparse_rewards=True,
+        prey_penalty=0.1,
+        predator_rewards=0.2,
+        predator_max_rotate=0.1,
+        predator_max_accelerate=0.01,
+        predator_min_speed=0.01,
+        predator_max_speed=0.05,
+        predator_view_angle=0.5,
+        prey_max_rotate=0.1,
+        prey_max_accelerate=0.01,
+        prey_min_speed=0.01,
+        prey_max_speed=0.05,
+        prey_view_angle=0.5,
+    )
+    key = jax.random.PRNGKey(0)
+    state, timestep = jax.jit(env.reset)(key)
+    action = env.action_spec.generate_value()
+    state, timestep = jax.jit(env.step)(state, action)
+    ```
+    """
+
     def __init__(
         self,
         num_predators: int,
@@ -58,6 +142,61 @@ class PredatorPrey(Environment):
         prey_max_speed: float,
         prey_view_angle: float,
     ) -> None:
+        """
+        Instantiates a `PredatorPrey` environment
+
+        Note:
+            The environment has dimensions [1.0, 1.0]
+            and so values should be scaled appropriately,
+            Also not that performance is dependent
+            on agent vision and interaction ranges, where
+            larger values can lead to large number of
+            agent interactions.
+
+        Args:
+            num_predators: Number of predator agents.
+            num_prey: Number of prey agents.
+            prey_vision_range: Prey agent vision range.
+            predator_vision_range: Predator agent vision range.
+            num_vision: Number of cells/subdivisions in agent
+            view models. Larger numbers provide a more accurate
+                view, at the cost of the environment, at the cost
+                of performance and memory usage.
+            agent_radius: Radius of individual agents. This
+                effects both agent collision range and how
+                large they appear to other agents.
+            sparse_rewards: If `True` fix rewards will be applied
+                when agents are within a fixed collision range. If
+                `False` rewards are dependent on distance to
+                other agents with vision range.
+            prey_penalty: Penalty to apply to prey agents if
+                they interact with predator agents. This
+                value is negated when applied.
+            predator_rewards: Rewards provided to predator agents
+                when they interact with prey agents.
+            predator_max_rotate: Maximum rotation predator agents can
+                turn within a step. Should be a value from [0,1]
+                representing a fraction of pi radians.
+            predator_max_accelerate: Maximum acceleration/deceleration
+                a predator agent can apply within a step.
+            predator_min_speed: Minimum speed a predator agent can move at.
+            predator_max_speed: Maximum speed a predator agent can move at.
+            predator_view_angle: Predator agent local view angle. Should be
+                a value from [0,1] representing a fraction of pi radians.
+                The view cone pf an agent goes from +- of the view angle
+                relative to its heading.
+            prey_max_rotate: Maximum rotation prey agents can
+                turn within a step. Should be a value from [0,1]
+                representing a fraction of pi radians.
+            prey_max_accelerate: Maximum acceleration/deceleration
+                a prey agent can apply within a step.
+            prey_min_speed: Minimum speed a prey agent can move at.
+            prey_max_speed: Maximum speed a prey agent can move at.
+            prey_view_angle: Prey agent local view angle. Should be
+                a value from [0,1] representing a fraction of pi radians.
+                The view cone pf an agent goes from +- of the view angle
+                relative to its heading.
+        """
         self.num_predators = num_predators
         self.num_prey = num_prey
         self.prey_vision_range = prey_vision_range
@@ -100,14 +239,15 @@ class PredatorPrey(Environment):
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
-        """Resets the environment to an initial state.
+        """
+        Randomly initialise predator and prey positions and velocities.
 
         Args:
             key: random key used to reset the environment.
 
         Returns:
-            state: State object corresponding to the new state of the environment,
-            timestep: TimeStep object corresponding the first timestep returned by the environment,
+            state: Agent states.
+            timestep: TimeStep with individual agent local environment views.
         """
         key, predator_key, prey_key = jax.random.split(key, num=3)
         predator_state = init_state(
@@ -121,15 +261,16 @@ class PredatorPrey(Environment):
     def step(
         self, state: State, action: Actions
     ) -> Tuple[State, TimeStep[Observation]]:
-        """Run one timestep of the environment's dynamics.
+        """
+        Update agents velocities and consequently their positions
 
         Args:
-            state: State object containing the dynamics of the environment.
-            action: Array containing the action to take.
+            state: Agent states.
+            action: Predator and prey agent arrays of individual actions.
 
         Returns:
-            state: State object corresponding to the next state of the environment,
-            timestep: TimeStep object corresponding the timestep returned by the environment,
+            state: Updated agent positions and velocities.
+            timestep: Transition timestep with individual agent loacl observations.
         """
         predators = update_state(
             state.key, self.predator_params, state.predators, action.predators
@@ -143,9 +284,9 @@ class PredatorPrey(Environment):
         )
 
         if self.sparse_rewards:
-            rewards = self.state_to_sparse_rewards(state)
+            rewards = self._state_to_sparse_rewards(state)
         else:
-            rewards = self.state_to_distance_rewards(state)
+            rewards = self._state_to_distance_rewards(state)
 
         observation = self._state_to_observation(state)
         timestep = transition(rewards, observation)
@@ -224,7 +365,7 @@ class PredatorPrey(Environment):
             prey=prey_obs,
         )
 
-    def state_to_sparse_rewards(self, state: State) -> Rewards:
+    def _state_to_sparse_rewards(self, state: State) -> Rewards:
         prey_rewards = spatial(
             sparse_prey_rewards,
             reduction=jnp.add,
@@ -256,7 +397,7 @@ class PredatorPrey(Environment):
             prey=prey_rewards,
         )
 
-    def state_to_distance_rewards(self, state: State) -> Rewards:
+    def _state_to_distance_rewards(self, state: State) -> Rewards:
 
         prey_rewards = spatial(
             distance_prey_rewards,
@@ -298,8 +439,11 @@ class PredatorPrey(Environment):
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
 
+        Local predator and prey agent views representing
+        the distance to closest neighbours in the environment.
+
         Returns:
-            observation_spec: a potentially nested `Spec` structure representing the observation.
+            observation_spec: Predator-prey observation spec
         """
         predators = specs.BoundedArray(
             shape=(self.num_predators, 2 * self.num_vision),
@@ -326,8 +470,12 @@ class PredatorPrey(Environment):
     def action_spec(self) -> specs.Spec[Actions]:
         """Returns the action spec.
 
+        Arrays of individual agent actions. Each agents action is
+        an array representing [rotation, acceleration] in the range
+        [0, 1].
+
         Returns:
-            action_spec: a potentially nested `Spec` structure representing the action.
+            action_spec: Predator-prey action spec
         """
         predators = specs.BoundedArray(
             shape=(self.num_predators, 2),
@@ -352,10 +500,12 @@ class PredatorPrey(Environment):
 
     @cached_property
     def reward_spec(self) -> specs.Spec[Rewards]:  # type: ignore[override]
-        """Returns the reward spec. By default, this is assumed to be a single float.
+        """Returns the reward spec
+
+        Individual rewards for predator and prey types.
 
         Returns:
-            reward_spec: a `specs.Array` spec.
+            reward_spec: Predator-prey reward spec
         """
         predators = specs.Array(
             shape=(self.num_predators,),
@@ -375,13 +525,8 @@ class PredatorPrey(Environment):
         )
 
     def render(self, state: State) -> Any:
-        """Render frames of the environment for a given state.
-
-        Args:
-            state: State object containing the current dynamics of the environment.
-        """
+        """Not currently implemented for this environment"""
         raise NotImplementedError("Render method not implemented for this environment.")
 
     def close(self) -> None:
-        """Perform any necessary cleanup."""
         pass
