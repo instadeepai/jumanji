@@ -73,7 +73,9 @@ def test_env_init(env: PredatorPrey) -> None:
     assert timestep.step_type == StepType.FIRST
 
 
-def test_env_step(env: PredatorPrey) -> None:
+@pytest.mark.parametrize("sparse_rewards", [True, False])
+def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
+    env.sparse_rewards = sparse_rewards
     key = jax.random.PRNGKey(101)
     n_steps = 11
 
