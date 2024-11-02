@@ -21,6 +21,10 @@ import pytest
 from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.predator_prey import PredatorPrey
 from jumanji.environments.swarms.predator_prey.types import Actions, Observation, State
+from jumanji.testing.env_not_smoke import (
+    check_env_does_not_smoke,
+    check_env_specs_does_not_smoke,
+)
 from jumanji.types import StepType, TimeStep
 
 
@@ -127,3 +131,26 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
         (0.0 <= state_history.prey.heading)
         & (state_history.prey.heading <= 2.0 * jnp.pi)
     )
+
+
+@pytest.mark.parametrize("sparse_rewards", [True, False])
+def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
+    env.sparse_rewards = sparse_rewards
+    env.max_steps = 10
+
+    def select_action(action_key: chex.PRNGKey, _state: Observation) -> Actions:
+        predator_key, prey_key = jax.random.split(action_key)
+        return Actions(
+            predators=jax.random.uniform(
+                predator_key, (env.num_predators, 2), minval=-1.0, maxval=1.0
+            ),
+            prey=jax.random.uniform(
+                prey_key, (env.num_prey, 2), minval=-1.0, maxval=1.0
+            ),
+        )
+
+    check_env_does_not_smoke(env, select_action=select_action)
+
+
+def test_env_specs_do_not_smoke(env: PredatorPrey) -> None:
+    check_env_specs_does_not_smoke(env)

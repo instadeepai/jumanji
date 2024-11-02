@@ -24,7 +24,7 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
 from jumanji.environments.swarms.common.updates import init_state, update_state, view
-from jumanji.types import TimeStep, restart, transition
+from jumanji.types import TimeStep, restart, termination, transition
 
 from .types import Actions, Observation, Rewards, State
 from .updates import (
@@ -141,6 +141,7 @@ class PredatorPrey(Environment):
         prey_min_speed: float,
         prey_max_speed: float,
         prey_view_angle: float,
+        max_steps: int = 10_000,
     ) -> None:
         """
         Instantiates a `PredatorPrey` environment
@@ -196,6 +197,7 @@ class PredatorPrey(Environment):
                 a value from [0,1] representing a fraction of pi radians.
                 The view cone pf an agent goes from +- of the view angle
                 relative to its heading.
+            max_steps: Maximum number of environment steps before termination
         """
         self.num_predators = num_predators
         self.num_prey = num_prey
@@ -220,6 +222,7 @@ class PredatorPrey(Environment):
             max_speed=prey_max_speed,
             view_angle=prey_view_angle,
         )
+        self.max_steps = max_steps
         super().__init__()
 
     def __repr__(self) -> str:
@@ -278,9 +281,7 @@ class PredatorPrey(Environment):
         prey = update_state(state.key, self.prey_params, state.prey, action.prey)
 
         state = State(
-            predators=predators,
-            prey=prey,
-            key=state.key,
+            predators=predators, prey=prey, key=state.key, step=state.step + 1
         )
 
         if self.sparse_rewards:
@@ -289,7 +290,13 @@ class PredatorPrey(Environment):
             rewards = self._state_to_distance_rewards(state)
 
         observation = self._state_to_observation(state)
-        timestep = transition(rewards, observation)
+        timestep = jax.lax.cond(
+            state.step >= self.max_steps,
+            termination,
+            transition,
+            rewards,
+            observation,
+        )
         return state, timestep
 
     def _state_to_observation(self, state: State) -> Observation:

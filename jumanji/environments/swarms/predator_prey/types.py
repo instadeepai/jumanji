@@ -34,6 +34,7 @@ class State:
     predators: AgentState
     prey: AgentState
     key: chex.PRNGKey
+    step: int = 0
 
 
 @dataclass
