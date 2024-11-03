@@ -16,6 +16,9 @@ from typing import List, Tuple
 import chex
 import jax
 import jax.numpy as jnp
+import matplotlib
+import matplotlib.pyplot as plt
+import py
 import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
@@ -62,6 +65,10 @@ def env() -> PredatorPrey:
 
 
 def test_env_init(env: PredatorPrey) -> None:
+    """
+    Check newly initialised state has expected array shapes
+    and initial timestep.
+    """
     k = jax.random.PRNGKey(101)
     state, timestep = env.reset(k)
     assert isinstance(state, State)
@@ -87,9 +94,14 @@ def test_env_init(env: PredatorPrey) -> None:
 
 @pytest.mark.parametrize("sparse_rewards", [True, False])
 def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
+    """
+    Run several steps of the environment with random actions and
+    check states (i.e. positions, heading, speeds) all fall
+    inside expected ranges.
+    """
     env.sparse_rewards = sparse_rewards
     key = jax.random.PRNGKey(101)
-    n_steps = 11
+    n_steps = 22
 
     def step(
         carry: Tuple[chex.PRNGKey, State], _: None
@@ -143,6 +155,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
 
 @pytest.mark.parametrize("sparse_rewards", [True, False])
 def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
+    """Test that we can run an episode without any errors."""
     env.sparse_rewards = sparse_rewards
     env.max_steps = 10
 
@@ -161,6 +174,7 @@ def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
 
 
 def test_env_specs_do_not_smoke(env: PredatorPrey) -> None:
+    """Test that we can access specs without any errors."""
     check_env_specs_does_not_smoke(env)
 
 
@@ -211,6 +225,10 @@ def test_view_observations(
     prey_heading: List[float],
     prey_view: List[Tuple[int, int, float]],
 ) -> None:
+    """
+    Test view model generates expected array with different
+    configurations of agents.
+    """
 
     predator_pos = jnp.array(predator_pos)
     predator_heading = jnp.array(predator_heading)
@@ -270,6 +288,9 @@ def test_sparse_rewards(
     prey_pos: List[float],
     prey_reward: float,
 ) -> None:
+    """
+    Test sparse rewards are correctly assigned.
+    """
 
     state = State(
         predators=AgentState(
@@ -306,6 +327,9 @@ def test_distance_rewards(
     prey_pos: List[float],
     prey_reward: float,
 ) -> None:
+    """
+    Test rewards scaled with distance are correctly assigned.
+    """
 
     state = State(
         predators=AgentState(
@@ -325,3 +349,31 @@ def test_distance_rewards(
     assert isinstance(rewards, Rewards)
     assert jnp.isclose(rewards.predators[0], predator_reward)
     assert jnp.isclose(rewards.prey[0], prey_reward)
+
+
+def test_predator_prey_render(
+    monkeypatch: pytest.MonkeyPatch, env: PredatorPrey
+) -> None:
+    """Check that the render method builds the figure but does not display it."""
+    monkeypatch.setattr(plt, "show", lambda fig: None)
+    step_fn = jax.jit(env.step)
+    state, timestep = env.reset(jax.random.PRNGKey(0))
+    action = env.action_spec.generate_value()
+    state, timestep = step_fn(state, action)
+    env.render(state)
+    env.close()
+
+
+def test_snake__animation(env: PredatorPrey, tmpdir: py.path.local) -> None:
+    """Check that the animation method creates the animation correctly and can save to a gif."""
+    step_fn = jax.jit(env.step)
+    state, _ = env.reset(jax.random.PRNGKey(0))
+    states = [state]
+    action = env.action_spec.generate_value()
+    state, _ = step_fn(state, action)
+    states.append(state)
+    animation = env._viewer.animate(states, 200, None)
+    assert isinstance(animation, matplotlib.animation.Animation)
+
+    path = str(tmpdir.join("/anim.gif"))
+    animation.save(path, writer=matplotlib.animation.PillowWriter(fps=10), dpi=60)

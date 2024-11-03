@@ -17,6 +17,7 @@ from typing import Any, Optional, Sequence, Tuple
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
+from matplotlib.layout_engine import TightLayoutEngine
 
 import jumanji
 import jumanji.environments
@@ -129,7 +130,9 @@ class PredatorPreyViewer(Viewer):
             ax = fig.get_axes()[0]
         else:
             fig = plt.figure(self._figure_name, figsize=self._figure_size)
-            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
+            fig.set_layout_engine(
+                layout=TightLayoutEngine(pad=False, w_pad=0.0, h_pad=0.0)
+            )
             if not plt.isinteractive():
                 fig.show()
             ax = fig.add_subplot()
