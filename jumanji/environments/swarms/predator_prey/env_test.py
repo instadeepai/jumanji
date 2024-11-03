@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import List, Tuple
 
 import chex
 import jax
@@ -20,12 +20,20 @@ import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.predator_prey import PredatorPrey
-from jumanji.environments.swarms.predator_prey.types import Actions, Observation, State
+from jumanji.environments.swarms.predator_prey.types import (
+    Actions,
+    Observation,
+    Rewards,
+    State,
+)
 from jumanji.testing.env_not_smoke import (
     check_env_does_not_smoke,
     check_env_specs_does_not_smoke,
 )
 from jumanji.types import StepType, TimeStep
+
+PREDATOR_REWARD = 0.2
+PREY_PENALTY = 0.1
 
 
 @pytest.fixture
@@ -34,12 +42,12 @@ def env() -> PredatorPrey:
         num_predators=2,
         num_prey=10,
         prey_vision_range=0.1,
-        predator_vision_range=0.1,
-        num_vision=10,
-        agent_radius=0.01,
+        predator_vision_range=0.2,
+        num_vision=11,
+        agent_radius=0.05,
         sparse_rewards=True,
-        prey_penalty=0.1,
-        predator_rewards=0.2,
+        prey_penalty=PREY_PENALTY,
+        predator_rewards=PREDATOR_REWARD,
         predator_max_rotate=0.1,
         predator_max_accelerate=0.01,
         predator_min_speed=0.01,
@@ -154,3 +162,166 @@ def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
 
 def test_env_specs_do_not_smoke(env: PredatorPrey) -> None:
     check_env_specs_does_not_smoke(env)
+
+
+@pytest.mark.parametrize(
+    "predator_pos, predator_heading, predator_view, prey_pos, prey_heading, prey_view",
+    [
+        # Both out of view range
+        ([[0.8, 0.5]], [jnp.pi], [(0, 0, 1.0)], [[0.2, 0.5]], [0.0], [(0, 0, 1.0)]),
+        # In predator range but not prey
+        ([[0.35, 0.5]], [jnp.pi], [(0, 5, 0.75)], [[0.2, 0.5]], [0.0], [(0, 0, 1.0)]),
+        # Both view each other
+        ([[0.25, 0.5]], [jnp.pi], [(0, 5, 0.25)], [[0.2, 0.5]], [0.0], [(0, 5, 0.5)]),
+        # Prey facing wrong direction
+        (
+            [[0.25, 0.5]],
+            [jnp.pi],
+            [(0, 5, 0.25)],
+            [[0.2, 0.5]],
+            [jnp.pi],
+            [(0, 0, 1.0)],
+        ),
+        # Prey sees closest predator
+        (
+            [[0.35, 0.5], [0.25, 0.5]],
+            [jnp.pi, jnp.pi],
+            [(0, 5, 0.75), (0, 16, 0.5), (1, 5, 0.25)],
+            [[0.2, 0.5]],
+            [0.0],
+            [(0, 5, 0.5)],
+        ),
+        # Observed around wrapped edge
+        (
+            [[0.025, 0.5]],
+            [jnp.pi],
+            [(0, 5, 0.25)],
+            [[0.975, 0.5]],
+            [0.0],
+            [(0, 5, 0.5)],
+        ),
+    ],
+)
+def test_view_observations(
+    env: PredatorPrey,
+    predator_pos: List[List[float]],
+    predator_heading: List[float],
+    predator_view: List[Tuple[int, int, float]],
+    prey_pos: List[List[float]],
+    prey_heading: List[float],
+    prey_view: List[Tuple[int, int, float]],
+) -> None:
+
+    predator_pos = jnp.array(predator_pos)
+    predator_heading = jnp.array(predator_heading)
+    predator_speed = jnp.zeros(predator_heading.shape)
+
+    prey_pos = jnp.array(prey_pos)
+    prey_heading = jnp.array(prey_heading)
+    prey_speed = jnp.zeros(prey_heading.shape)
+
+    state = State(
+        predators=AgentState(
+            pos=predator_pos, heading=predator_heading, speed=predator_speed
+        ),
+        prey=AgentState(pos=prey_pos, heading=prey_heading, speed=prey_speed),
+        key=jax.random.PRNGKey(101),
+    )
+
+    obs = env._state_to_observation(state)
+
+    assert isinstance(obs, Observation)
+
+    predator_expected = jnp.ones(
+        (
+            predator_heading.shape[0],
+            2 * env.num_vision,
+        )
+    )
+    for i, idx, val in predator_view:
+        predator_expected = predator_expected.at[i, idx].set(val)
+
+    assert jnp.all(jnp.isclose(obs.predators, predator_expected))
+
+    prey_expected = jnp.ones(
+        (
+            prey_heading.shape[0],
+            2 * env.num_vision,
+        )
+    )
+    for i, idx, val in prey_view:
+        prey_expected = prey_expected.at[i, idx].set(val)
+
+    assert jnp.all(jnp.isclose(obs.prey[0], prey_expected))
+
+
+@pytest.mark.parametrize(
+    "predator_pos, predator_reward, prey_pos, prey_reward",
+    [
+        ([0.5, 0.5], 0.0, [0.8, 0.5], 0.0),
+        ([0.5, 0.5], PREDATOR_REWARD, [0.5999, 0.5], -PREY_PENALTY),
+        ([0.5, 0.5], PREDATOR_REWARD, [0.5001, 0.5], -PREY_PENALTY),
+    ],
+)
+def test_sparse_rewards(
+    env: PredatorPrey,
+    predator_pos: List[float],
+    predator_reward: float,
+    prey_pos: List[float],
+    prey_reward: float,
+) -> None:
+
+    state = State(
+        predators=AgentState(
+            pos=jnp.array([predator_pos]),
+            heading=jnp.zeros((1,)),
+            speed=jnp.zeros((1,)),
+        ),
+        prey=AgentState(
+            pos=jnp.array([prey_pos]),
+            heading=jnp.zeros((1,)),
+            speed=jnp.zeros((1,)),
+        ),
+        key=jax.random.PRNGKey(101),
+    )
+
+    rewards = env._state_to_sparse_rewards(state)
+    assert isinstance(rewards, Rewards)
+    assert rewards.predators[0] == predator_reward
+    assert rewards.prey[0] == prey_reward
+
+
+@pytest.mark.parametrize(
+    "predator_pos, predator_reward, prey_pos, prey_reward",
+    [
+        ([0.5, 0.5], 0.0, [0.8, 0.5], 0.0),
+        ([0.5, 0.5], 0.5 * PREDATOR_REWARD, [0.55, 0.5], -0.5 * PREY_PENALTY),
+        ([0.5, 0.5], PREDATOR_REWARD, [0.5 + 1e-10, 0.5], -PREY_PENALTY),
+    ],
+)
+def test_distance_rewards(
+    env: PredatorPrey,
+    predator_pos: List[float],
+    predator_reward: float,
+    prey_pos: List[float],
+    prey_reward: float,
+) -> None:
+
+    state = State(
+        predators=AgentState(
+            pos=jnp.array([predator_pos]),
+            heading=jnp.zeros((1,)),
+            speed=jnp.zeros((1,)),
+        ),
+        prey=AgentState(
+            pos=jnp.array([prey_pos]),
+            heading=jnp.zeros((1,)),
+            speed=jnp.zeros((1,)),
+        ),
+        key=jax.random.PRNGKey(101),
+    )
+
+    rewards = env._state_to_distance_rewards(state)
+    assert isinstance(rewards, Rewards)
+    assert jnp.isclose(rewards.predators[0], predator_reward)
+    assert jnp.isclose(rewards.prey[0], prey_reward)
