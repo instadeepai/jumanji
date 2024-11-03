@@ -90,6 +90,7 @@ class PredatorPrey(Environment):
             - speed: jax array (float) of shape (num_prey,) in the
                 range [min_speed, max_speed].
         - key: jax array (uint32) of shape (2,)
+        - step: int representing the current simulation step.
 
 
     ```python

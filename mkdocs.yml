@@ -42,6 +42,8 @@ nav:
           - Sokoban: environments/sokoban.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
+      - Swarms:
+          - PredatorPrey: environments/predator_prey.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
