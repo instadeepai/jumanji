@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import cached_property
-from typing import Any, Tuple
+from typing import Optional, Tuple
 
 import chex
 import jax
@@ -25,6 +25,7 @@ from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
 from jumanji.environments.swarms.common.updates import init_state, update_state, view
 from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 from .types import Actions, Observation, Rewards, State
 from .updates import (
@@ -33,6 +34,7 @@ from .updates import (
     sparse_predator_rewards,
     sparse_prey_rewards,
 )
+from .viewer import PredatorPreyViewer
 
 
 class PredatorPrey(Environment):
@@ -115,8 +117,10 @@ class PredatorPrey(Environment):
     )
     key = jax.random.PRNGKey(0)
     state, timestep = jax.jit(env.reset)(key)
+    env.render(state)
     action = env.action_spec.generate_value()
     state, timestep = jax.jit(env.step)(state, action)
+    env.render(state)
     ```
     """
 
@@ -142,6 +146,7 @@ class PredatorPrey(Environment):
         prey_max_speed: float,
         prey_view_angle: float,
         max_steps: int = 10_000,
+        viewer: Optional[Viewer[State]] = None,
     ) -> None:
         """
         Instantiates a `PredatorPrey` environment
@@ -198,6 +203,7 @@ class PredatorPrey(Environment):
                 The view cone pf an agent goes from +- of the view angle
                 relative to its heading.
             max_steps: Maximum number of environment steps before termination
+            viewer: `Viewer` used for rendering. Defaults to `PredatorPreyViewer`.
         """
         self.num_predators = num_predators
         self.num_prey = num_prey
@@ -224,6 +230,7 @@ class PredatorPrey(Environment):
         )
         self.max_steps = max_steps
         super().__init__()
+        self._viewer = viewer or PredatorPreyViewer()
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -531,9 +538,14 @@ class PredatorPrey(Environment):
             prey=prey,
         )
 
-    def render(self, state: State) -> Any:
-        """Not currently implemented for this environment"""
-        raise NotImplementedError("Render method not implemented for this environment.")
+    def render(self, state: State) -> None:
+        """
+        Render frames of the environment for a given state using matplotlib.
+
+        Args:
+            state: State object containing the current dynamics of the environment.
+        """
+        self._viewer.render(state)
 
     def close(self) -> None:
         pass
