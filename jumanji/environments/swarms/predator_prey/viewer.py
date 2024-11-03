@@ -17,13 +17,10 @@ from typing import Any, Optional, Sequence, Tuple
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.quiver import Quiver
 
 import jumanji
 import jumanji.environments
-from jumanji.environments.swarms.common.types import AgentState
+from jumanji.environments.swarms.common.viewer import draw_agents, format_plot
 from jumanji.environments.swarms.predator_prey.types import State
 from jumanji.viewer import Viewer
 
@@ -81,14 +78,13 @@ class PredatorPreyViewer(Viewer):
         fig, ax = plt.subplots(
             num=f"{self._figure_name}Anim", figsize=self._figure_size
         )
-        fig, ax = self._format_plot(fig, ax)
+        fig, ax = format_plot(fig, ax)
 
-        predators_quiver = self._draw_agents(
-            ax, states[0].predators, self.predator_color
-        )
-        prey_quiver = self._draw_agents(ax, states[0].prey, self.prey_color)
+        predators_quiver = draw_agents(ax, states[0].predators, self.predator_color)
+        prey_quiver = draw_agents(ax, states[0].prey, self.prey_color)
 
         def make_frame(state: State) -> Any:
+            # Rather than redraw just update the quivers properties
             predators_quiver.set_offsets(state.predators.pos)
             predators_quiver.set_UVC(
                 jnp.cos(state.predators.heading), jnp.sin(state.predators.heading)
@@ -99,7 +95,6 @@ class PredatorPreyViewer(Viewer):
             )
             return ((predators_quiver, prey_quiver),)
 
-        # Create the animation object.
         matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
@@ -109,7 +104,6 @@ class PredatorPreyViewer(Viewer):
             blit=False,
         )
 
-        # Save the animation as a gif.
         if save_path:
             self._animation.save(save_path)
 
@@ -125,21 +119,8 @@ class PredatorPreyViewer(Viewer):
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
-        self._draw_agents(ax, state.predators, self.predator_color)
-        self._draw_agents(ax, state.prey, self.prey_color)
-
-    def _draw_agents(
-        self, ax: plt.Axes, agent_states: AgentState, color: str
-    ) -> Quiver:
-        q = ax.quiver(
-            agent_states.pos[:, 0],
-            agent_states.pos[:, 1],
-            jnp.cos(agent_states.heading),
-            jnp.sin(agent_states.heading),
-            color=color,
-            pivot="middle",
-        )
-        return q
+        draw_agents(ax, state.predators, self.predator_color)
+        draw_agents(ax, state.prey, self.prey_color)
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         exists = plt.fignum_exists(self._figure_name)
@@ -153,24 +134,7 @@ class PredatorPreyViewer(Viewer):
                 fig.show()
             ax = fig.add_subplot()
 
-        fig, ax = self._format_plot(fig, ax)
-        return fig, ax
-
-    def _format_plot(self, fig: Figure, ax: Axes) -> Tuple[Figure, Axes]:
-        border = 0.01
-        fig.subplots_adjust(
-            top=1.0 - border,
-            bottom=border,
-            right=1.0 - border,
-            left=border,
-            hspace=0,
-            wspace=0,
-        )
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-
+        fig, ax = format_plot(fig, ax)
         return fig, ax
 
     def _update_display(self, fig: plt.Figure) -> None:
