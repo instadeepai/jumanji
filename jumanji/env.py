@@ -110,7 +110,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
 
     @cached_property
     def discount_spec(self) -> specs.BoundedArray:
-        """Returns the discount spec. By default, this is assumed to be a single float between 0 and 1.
+        """Returns the discount spec. By default, this is assumed to be a float between 0 and 1.
 
         Returns:
             discount_spec: a `specs.BoundedArray` spec.

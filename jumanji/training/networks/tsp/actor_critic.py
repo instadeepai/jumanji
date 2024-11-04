@@ -72,8 +72,8 @@ class TSPTorso(hk.Module):
         transformer_mlp_units: Sequence[int],
         name: Optional[str] = None,
     ):
-        """Linear embedding of all cities' coordinates followed by `transformer_num_blocks` blocks of self
-        attention.
+        """Linear embedding of all cities' coordinates followed by `transformer_num_blocks` blocks
+        of self attention.
         """
         super().__init__(name=name)
         self.transformer_num_blocks = transformer_num_blocks

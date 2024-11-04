@@ -123,7 +123,7 @@ class Game2048Viewer(Viewer):
         return self._animation
 
     def get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        """This function returns a `Matplotlib` figure and axes object for displaying the 2048 game board.
+        """This function returns a `Matplotlib` figure and axes for displaying the 2048 game board.
 
         Returns:
             A tuple containing the figure and axes objects.
