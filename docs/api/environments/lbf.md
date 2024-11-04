@@ -1,4 +1,4 @@
-::: jumanji.environments.routing.cleaner.env.Cleaner
+::: jumanji.environments.routing.lbf.env.LevelBasedForaging
     selection:
       members:
         - __init__
