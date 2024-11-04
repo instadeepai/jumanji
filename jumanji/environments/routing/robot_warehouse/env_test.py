@@ -73,19 +73,13 @@ def test_robot_warehouse__agent_observation(
     agent1_own_view = jnp.array([3, 4, 0, 0, 0, 1, 0, 1])
     agent1_other_agents_view = jnp.array(8 * [0, 0, 0, 0, 0])
     agent1_shelf_view = jnp.array(9 * [0, 0])
-    agent1_obs = jnp.hstack(
-        [agent1_own_view, agent1_other_agents_view, agent1_shelf_view]
-    )
+    agent1_obs = jnp.hstack([agent1_own_view, agent1_other_agents_view, agent1_shelf_view])
 
     # agent 2 obs
     agent2_own_view = jnp.array([1, 7, 0, 0, 0, 0, 1, 0])
     agent2_other_agents_view = jnp.array(8 * [0, 0, 0, 0, 0])
-    agent2_shelf_view = jnp.array(
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1]
-    )
-    agent2_obs = jnp.hstack(
-        [agent2_own_view, agent2_other_agents_view, agent2_shelf_view]
-    )
+    agent2_shelf_view = jnp.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1])
+    agent2_obs = jnp.hstack([agent2_own_view, agent2_other_agents_view, agent2_shelf_view])
 
     assert jnp.all(timestep.observation.agents_view[0] == agent1_obs)
     assert jnp.all(timestep.observation.agents_view[1] == agent2_obs)
@@ -150,7 +144,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
         (x - 1, y - 1, 0),  # move forward -> move up
     ]
 
-    for action, new_loc in zip(actions, new_locs):
+    for action, new_loc in zip(actions, new_locs, strict=False):
         state, timestep = step_fn(state, jnp.array([action, action]))
         agent1_info = tree_slice(state.agents, 1)
         agent1_loc = (

@@ -124,9 +124,7 @@ class RandomGenerator(Generator):
     the max.
     """
 
-    def __init__(
-        self, num_jobs: int, num_machines: int, max_num_ops: int, max_op_duration: int
-    ):
+    def __init__(self, num_jobs: int, num_machines: int, max_num_ops: int, max_op_duration: int):
         super().__init__(num_jobs, num_machines, max_num_ops, max_op_duration)
 
     def __call__(self, key: chex.PRNGKey) -> State:

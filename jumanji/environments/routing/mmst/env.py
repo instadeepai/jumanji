@@ -189,9 +189,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state), extras=extras)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -233,9 +231,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             return connected_nodes, conn_index, new_node, indices
 
         key, step_key = jax.random.split(state.key)
-        action, next_nodes = self._trim_duplicated_invalid_actions(
-            state, action, step_key
-        )
+        action, next_nodes = self._trim_duplicated_invalid_actions(state, action, step_key)
 
         connected_nodes = jnp.zeros_like(state.connected_nodes)
         connected_nodes_index = jnp.zeros_like(state.connected_nodes_index)
@@ -476,9 +472,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         added_nodes = jnp.ones((self.num_agents), dtype=jnp.int32) * DUMMY_NODE
 
-        agent_permutation = jax.random.permutation(
-            step_key, jnp.arange(self.num_agents)
-        )
+        agent_permutation = jax.random.permutation(step_key, jnp.arange(self.num_agents))
 
         def not_all_agents_actions_examined(arg: Any) -> Any:
             added_nodes, new_actions, action, nodes, agent_permutation, index = arg
@@ -530,9 +524,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             (added_nodes, new_actions, action, nodes, agent_permutation, 0),
         )
 
-        def mask_visited_nodes(
-            node_visited: jnp.int32, old_action: jnp.int32
-        ) -> jnp.int32:
+        def mask_visited_nodes(node_visited: jnp.int32, old_action: jnp.int32) -> jnp.int32:
             new_action = jax.lax.cond(  # type:ignore
                 node_visited != EMPTY_NODE,
                 lambda *_: INVALID_ALREADY_TRAVERSED,
@@ -586,9 +578,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             Array : array of boolean flags in the shape (number of agents, ).
         """
 
-        def done_fun(
-            nodes: chex.Array, connected_nodes: chex.Array, n_comps: int
-        ) -> jnp.bool_:
+        def done_fun(nodes: chex.Array, connected_nodes: chex.Array, n_comps: int) -> jnp.bool_:
             connects = jnp.isin(nodes, connected_nodes)
             return jnp.sum(connects) == n_comps
 

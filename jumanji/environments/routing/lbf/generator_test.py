@@ -21,9 +21,7 @@ from jumanji.environments.routing.lbf.generator import RandomGenerator
 from jumanji.environments.routing.lbf.types import State
 
 
-def test_random_generator_call(
-    random_generator: RandomGenerator, key: chex.PRNGKey
-) -> None:
+def test_random_generator_call(random_generator: RandomGenerator, key: chex.PRNGKey) -> None:
     state = random_generator(key)
     assert random_generator.grid_size >= 5
     assert 2 <= random_generator.fov <= random_generator.grid_size
@@ -48,9 +46,7 @@ def test_sample_food(random_generator: RandomGenerator, key: chex.PRNGKey) -> No
     food_positions = random_generator.sample_food(key)
 
     # Check if positions are within the grid bounds and no food on the edge of the grid
-    assert jnp.all(
-        (food_positions > 0) & (food_positions < random_generator.grid_size - 1)
-    )
+    assert jnp.all((food_positions > 0) & (food_positions < random_generator.grid_size - 1))
 
     # Check if no food positions overlap
     assert not jnp.any(
@@ -60,17 +56,13 @@ def test_sample_food(random_generator: RandomGenerator, key: chex.PRNGKey) -> No
 
 
 def test_sample_agents(random_generator: RandomGenerator, key: chex.PRNGKey) -> None:
-    mask = jnp.ones(
-        (random_generator.grid_size, random_generator.grid_size), dtype=bool
-    )
+    mask = jnp.ones((random_generator.grid_size, random_generator.grid_size), dtype=bool)
     mask = mask.ravel()
 
     agent_positions = random_generator.sample_agents(key, mask)
 
     # Check if positions are within the grid bounds
-    assert jnp.all(
-        (agent_positions >= 0) & (agent_positions < random_generator.grid_size)
-    )
+    assert jnp.all((agent_positions >= 0) & (agent_positions < random_generator.grid_size))
 
     # Check if no agent positions overlap
     assert not jnp.any(
@@ -85,9 +77,7 @@ def test_sample_levels(random_generator: RandomGenerator, key: chex.PRNGKey) -> 
     )
 
     # Check if levels are within the specified range
-    assert jnp.all(
-        (agent_levels >= 1) & (agent_levels <= random_generator.max_agent_level)
-    )
+    assert jnp.all((agent_levels >= 1) & (agent_levels <= random_generator.max_agent_level))
 
     # Check if levels are generated randomly
     key2 = jax.random.PRNGKey(43)

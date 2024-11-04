@@ -25,9 +25,7 @@ from jumanji.environments.logic.minesweeper.types import State
 @pytest.fixture
 def minesweeper_env() -> Minesweeper:
     """Fixture for a default minesweeper environment with 10 rows and columns, and 10 mines."""
-    return Minesweeper(
-        generator=UniformSamplingGenerator(num_rows=10, num_cols=10, num_mines=10)
-    )
+    return Minesweeper(generator=UniformSamplingGenerator(num_rows=10, num_cols=10, num_mines=10))
 
 
 @pytest.fixture

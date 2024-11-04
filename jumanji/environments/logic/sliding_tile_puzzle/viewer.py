@@ -50,9 +50,7 @@ class SlidingTilePuzzleViewer(Viewer):
         """
         self._name = name
         self._animation: Optional[matplotlib.animation.Animation] = None
-        self._color_map = mcolors.LinearSegmentedColormap.from_list(
-            "", ["white", "blue"]
-        )
+        self._color_map = mcolors.LinearSegmentedColormap.from_list("", ["white", "blue"])
 
     def render(self, state: State) -> None:
         """Renders the current state of the game puzzle.
@@ -137,9 +135,7 @@ class SlidingTilePuzzleViewer(Viewer):
                 tile_value = state.puzzle[row, col]
                 if tile_value == 0:
                     # Render the empty tile
-                    rect = plt.Rectangle(
-                        [col - 0.5, row - 0.5], 1, 1, color=self.EMPTY_TILE_COLOR
-                    )
+                    rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.EMPTY_TILE_COLOR)
                     ax.add_patch(rect)
                 else:
                     # Render the numbered tile

@@ -67,12 +67,8 @@ def test_timestep__jaxtype(done: bool) -> None:
         """Returns either a termination or transition TimeStep."""
         timestep_termination_transition: TimeStep = lax.cond(
             done,
-            lambda _: termination(
-                reward=jnp.zeros((), float), observation=jnp.zeros((), float)
-            ),
-            lambda _: transition(
-                reward=jnp.zeros((), float), observation=jnp.zeros((), float)
-            ),
+            lambda _: termination(reward=jnp.zeros((), float), observation=jnp.zeros((), float)),
+            lambda _: transition(reward=jnp.zeros((), float), observation=jnp.zeros((), float)),
             None,
         )
         return timestep_termination_transition
@@ -86,9 +82,7 @@ def test_timestep__jaxtype(done: bool) -> None:
         timestep_restart_truncation: TimeStep = lax.cond(
             done,
             lambda _: restart(observation=jnp.zeros((), float)),
-            lambda _: truncation(
-                reward=jnp.zeros((), float), observation=jnp.zeros((), float)
-            ),
+            lambda _: truncation(reward=jnp.zeros((), float), observation=jnp.zeros((), float)),
             None,
         )
         return timestep_restart_truncation

@@ -30,9 +30,7 @@ from jumanji.viewer import Viewer
 class TetrisViewer(Viewer):
     FIGURE_SIZE = (6.0, 10.0)
 
-    def __init__(
-        self, num_rows: int, num_cols: int, render_mode: str = "human"
-    ) -> None:
+    def __init__(self, num_rows: int, num_cols: int, render_mode: str = "human") -> None:
         """
         Viewer for a `Tetris` environment.
 
@@ -87,9 +85,7 @@ class TetrisViewer(Viewer):
         self._add_grid_image(ax, grid)
         return self._display(fig)
 
-    def _move_tetromino(
-        self, state: State, old_padded_grid: chex.Array
-    ) -> List[chex.Array]:
+    def _move_tetromino(self, state: State, old_padded_grid: chex.Array) -> List[chex.Array]:
         """Shifts the tetromino from center to the selected position.
 
         Args:
@@ -106,9 +102,7 @@ class TetrisViewer(Viewer):
         step = 1 if center_position < state.x_position else -1
         for xi in range(center_position, state.x_position + step, step):
             tetromino_zonne = jnp.zeros((4, state.grid_padded.shape[1]))
-            tetromino_zonne = tetromino_zonne.at[0:4, xi : xi + 4].add(
-                state.old_tetromino_rotated
-            )
+            tetromino_zonne = tetromino_zonne.at[0:4, xi : xi + 4].add(state.old_tetromino_rotated)
             # Delete the cols dedicated for the right padding
             tetromino_zonne = tetromino_zonne[:, : self.num_cols]
             # Stack the tetromino with grid position
@@ -116,9 +110,7 @@ class TetrisViewer(Viewer):
             grids.append(mixed_grid)
         return grids
 
-    def _crush_lines(
-        self, state: State, grid: chex.Array, n: int = 2
-    ) -> List[chex.Array]:
+    def _crush_lines(self, state: State, grid: chex.Array, n: int = 2) -> List[chex.Array]:
         """Creates animation when a line is crushed by toggling its value.
 
         Args:
@@ -133,9 +125,7 @@ class TetrisViewer(Viewer):
         for _i in range(n):
             animation_list.append(grid)
             # `State.full_lines` is a vector of booleans of shape num_rows+3.
-            full_lines = jnp.concatenate(
-                [jnp.full((4,), False), state.full_lines[: self.num_rows]]
-            )
+            full_lines = jnp.concatenate([jnp.full((4,), False), state.full_lines[: self.num_rows]])
             full_lines_reshaped = full_lines[:, jnp.newaxis]
             animation_list.append(
                 jnp.where(~full_lines_reshaped, grid, jnp.zeros((1, grid.shape[1])))
@@ -156,15 +146,11 @@ class TetrisViewer(Viewer):
         center_position = self.num_cols - 4
         tetromino_color_id = state.grid_padded.max() + 1
         colored_tetromino = state.new_tetromino * tetromino_color_id
-        tetromino = tetromino.at[0:4, center_position : center_position + 4].set(
-            colored_tetromino
-        )
+        tetromino = tetromino.at[0:4, center_position : center_position + 4].set(colored_tetromino)
         rendering_grid = jnp.vstack((tetromino, grid))
         return rendering_grid
 
-    def _drop_tetromino(
-        self, state: State, old_padded_grid: chex.Array
-    ) -> List[NDArray]:
+    def _drop_tetromino(self, state: State, old_padded_grid: chex.Array) -> List[NDArray]:
         """Creates animation while the tetromino is droping verticaly.
 
         Args:
@@ -179,15 +165,13 @@ class TetrisViewer(Viewer):
         # `y_position` may contain a value -1 if it bellongs to first tetromino.
         y_position = state.y_position if state.y_position != -1 else self.num_rows - 1
         # Stack the tetromino's rows on top of the grid.
-        rendering_grid = jnp.vstack(
-            (jnp.zeros((4, old_padded_grid.shape[1])), old_padded_grid)
-        )
+        rendering_grid = jnp.vstack((jnp.zeros((4, old_padded_grid.shape[1])), old_padded_grid))
         # the animation grid contains 4 rows at the top dedicated to show the tetromino.
         for yi in range(y_position + 4 + 1):
             # Place the tetromino.
-            grid = rendering_grid.at[
-                yi : yi + 4, state.x_position : state.x_position + 4
-            ].add(state.old_tetromino_rotated)
+            grid = rendering_grid.at[yi : yi + 4, state.x_position : state.x_position + 4].add(
+                state.old_tetromino_rotated
+            )
             # Crop the grid (delete the 3 rows and columns padding at the bottom and the right.)
             grid = grid[: self.num_rows + 4, : self.num_cols]
             grids.append(grid)
@@ -210,9 +194,7 @@ class TetrisViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE
-        )
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE)
         plt.close(fig)
 
         def make_frame(grid_index: int) -> None:
@@ -239,9 +221,7 @@ class TetrisViewer(Viewer):
                 grids.extend(x_shift_grids)
                 grids.extend(y_shift_grids)
                 score = state.score - state.reward
-                scores.extend(
-                    [score for i in range(len(x_shift_grids) + len(y_shift_grids))]
-                )
+                scores.extend([score for i in range(len(x_shift_grids) + len(y_shift_grids))])
                 if state.full_lines.sum() > 0:
                     grids += self._crush_lines(state, grids[-1])
                     scores.extend([score for i in range(len(grids) - len(scores))])
@@ -287,20 +267,14 @@ class TetrisViewer(Viewer):
             for col in range(cols):
                 self._draw_grid_cell(grid[row, col], row, col, ax)
 
-    def _draw_grid_cell(
-        self, cell_value: int, row: int, col: int, ax: plt.Axes
-    ) -> None:
+    def _draw_grid_cell(self, cell_value: int, row: int, col: int, ax: plt.Axes) -> None:
         is_padd = row < 4
-        cell = plt.Rectangle(
-            (col, row), 1, 1, **self._get_cell_attributes(cell_value, is_padd)
-        )
+        cell = plt.Rectangle((col, row), 1, 1, **self._get_cell_attributes(cell_value, is_padd))
         ax.add_patch(cell)
 
     def _get_cell_attributes(self, cell_value: int, is_padd: bool) -> Dict[str, Any]:
         cell_value = int(cell_value)
-        color_id = (
-            cell_value if cell_value == 0 else cell_value % (len(self.colors) - 1) + 1
-        )
+        color_id = cell_value if cell_value == 0 else cell_value % (len(self.colors) - 1) + 1
 
         color = self.colors[color_id]
         edge_color = self.edgecolors[is_padd]

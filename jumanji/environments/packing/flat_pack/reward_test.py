@@ -164,7 +164,6 @@ def test_cell_dense_reward(
     block_one_placed_at_1_1: chex.Array,
     block_one_placed_at_2_2: chex.Array,
 ) -> None:
-
     dense_reward = jax.jit(CellDenseReward())
 
     # Test placing block one completely correctly
@@ -215,7 +214,6 @@ def test_block_dense_reward(
     block_one_placed_at_1_1: chex.Array,
     block_one_placed_at_2_2: chex.Array,
 ) -> None:
-
     dense_reward = jax.jit(BlockDenseReward())
 
     # Test placing block one completely correctly

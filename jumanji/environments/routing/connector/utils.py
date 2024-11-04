@@ -79,14 +79,10 @@ def move_position(position: chex.Array, action: jnp.int32) -> chex.Array:
     move_right = lambda row, col: jnp.array([row, col + 1], jnp.int32)
     move_down = lambda row, col: jnp.array([row + 1, col], jnp.int32)
 
-    return jax.lax.switch(
-        action, [move_noop, move_up, move_right, move_down, move_left], row, col
-    )
+    return jax.lax.switch(action, [move_noop, move_up, move_right, move_down, move_left], row, col)
 
 
-def move_agent(
-    agent: Agent, grid: chex.Array, new_pos: chex.Array
-) -> Tuple[Agent, chex.Array]:
+def move_agent(agent: Agent, grid: chex.Array, new_pos: chex.Array) -> Tuple[Agent, chex.Array]:
     """Moves `agent` to `new_pos` on `grid`. Sets `agent`'s position to `new_pos`.
 
     Returns:
@@ -104,9 +100,7 @@ def move_agent(
     return new_agent, grid
 
 
-def is_valid_position(
-    grid: chex.Array, agent: Agent, position: chex.Array
-) -> chex.Array:
+def is_valid_position(grid: chex.Array, agent: Agent, position: chex.Array) -> chex.Array:
     """Checks to see if the specified agent can move to `position`.
 
     Args:

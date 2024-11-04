@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Inspired from https://stackoverflow.com/questions/51849395/how-can-we-associate-a-python-context-m
-# anager-to-the-variables-appearing-in-it#:~:text=also%20inspect%20the-,stack,-for%20locals()%20variables
+# anager-to-the-variables-appearing-in-it#:~:text=also%20inspect%20the-,stack,-for%20locals()%20variables  # noqa: E501
 from __future__ import annotations
 
 import inspect
@@ -56,16 +56,12 @@ class Timer(AbstractContextManager):
         self._variables_exit = self._get_variables()
         self.data = {"time": elapsed_time}
         if self.num_steps_per_timing is not None:
-            self.data.update(
-                steps_per_second=int(self.num_steps_per_timing / elapsed_time)
-            )
+            self.data.update(steps_per_second=int(self.num_steps_per_timing / elapsed_time))
         self._write_in_variable(self.data)
         return False
 
     def _write_in_variable(self, data: Dict[str, float]) -> None:
-        in_context_variables = dict(
-            set(self._variables_exit).difference(self._variables_enter)
-        )
+        in_context_variables = dict(set(self._variables_exit).difference(self._variables_enter))
         metrics_id = in_context_variables.get(self.out_var_name, None)
         if metrics_id is not None:
             self._variables_exit[("metrics", metrics_id)].update(data)

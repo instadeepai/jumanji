@@ -83,9 +83,7 @@ class TestRandomGenerator:
             max_op_duration=8,
         )
 
-    def test_random_generator__properties(
-        self, random_generator: RandomGenerator
-    ) -> None:
+    def test_random_generator__properties(self, random_generator: RandomGenerator) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert random_generator.num_jobs == 20
         assert random_generator.num_machines == 10

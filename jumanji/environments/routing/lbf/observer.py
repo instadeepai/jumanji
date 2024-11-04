@@ -114,9 +114,7 @@ class VectorObserver(LbfObserver):
     - num_food (int): The number of food items in the environment.
     """
 
-    def __init__(
-        self, fov: int, grid_size: int, num_agents: int, num_food: int
-    ) -> None:
+    def __init__(self, fov: int, grid_size: int, num_agents: int, num_food: int) -> None:
         super().__init__(fov, grid_size, num_agents, num_food)
 
     def transform_positions(self, agent: Agent, items: Entity) -> chex.Array:
@@ -185,9 +183,7 @@ class VectorObserver(LbfObserver):
             ]
         ).ravel()
 
-        other_agents_indices = jnp.where(
-            agent.id != all_agents.id, size=self.num_agents - 1
-        )
+        other_agents_indices = jnp.where(agent.id != all_agents.id, size=self.num_agents - 1)
         agent_xs = agent_xs[other_agents_indices]
         agent_ys = agent_ys[other_agents_indices]
         agent_levels = agent_levels[other_agents_indices]
@@ -236,9 +232,9 @@ class VectorObserver(LbfObserver):
         )
 
         # Always place the current agent's info first.
-        agent_view = agent_view.at[
-            jnp.arange(3 * self.num_food, 3 * self.num_food + 3)
-        ].set(agent_i_infos, indices_are_sorted=True, unique_indices=True)
+        agent_view = agent_view.at[jnp.arange(3 * self.num_food, 3 * self.num_food + 3)].set(
+            agent_i_infos, indices_are_sorted=True, unique_indices=True
+        )
 
         start_idx = 3 * self.num_food + 3
         end_idx = start_idx + 3 * (self.num_agents - 1)

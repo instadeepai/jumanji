@@ -83,16 +83,12 @@ def ghost_move(
             jnp.array_equal(valids, vert_col), jnp.array_equal(valids, hor_col)
         )
 
-        def is_tunnel(
-            inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
-        ) -> int:
+        def is_tunnel(inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]) -> int:
             """Repeat old action if in tunnel"""
             _, _, ghost_action, _, _ = inputs
             return ghost_action
 
-        def no_tunnel(
-            inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
-        ) -> Any:
+        def no_tunnel(inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]) -> Any:
             """Chose new action when at intersection"""
             logits, actions, _, ghost_tunnel_key, _ = inputs
             _, ghost_tunnel_key = jax.random.split(ghost_tunnel_key)
@@ -113,24 +109,18 @@ def ghost_move(
             ghost_num,
         )
 
-        def start_over(
-            inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
-        ) -> Any:
+        def start_over(inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]) -> Any:
             """If not in waiting mode then pick new action"""
 
             chosen_action = jax.lax.cond(is_in_tunnel, is_tunnel, no_tunnel, inputs)
             return jnp.squeeze(chosen_action)
 
-        def no_start(
-            inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]
-        ) -> int:
+        def no_start(inputs: Tuple[chex.Array, chex.Array, int, chex.PRNGKey, int]) -> int:
             """If in waiting mode then use no-op"""
             return 4
 
         position = ghost_pos
-        chosen_action = jax.lax.cond(
-            ghost_start < 0, start_over, no_start, inputs_no_tunnel
-        )
+        chosen_action = jax.lax.cond(ghost_start < 0, start_over, no_start, inputs_no_tunnel)
 
         # Use chosen action
         move_left = lambda position: (position[1], position[0] - 1)
@@ -179,7 +169,6 @@ def check_ghost_wall_collisions(
     x_size: int,
     y_size: int,
 ) -> Tuple[bool, chex.Array, chex.Array]:
-
     """
     Determine valid move for the ghost.
 
@@ -227,9 +216,7 @@ def check_ghost_wall_collisions(
         return distance_list, ghost_dist
 
     # For ghost 1: move 4 steps ahead of pacman
-    def pink_ghost(
-        pacman_pos: Position, steps: int = 4
-    ) -> Tuple[chex.Array, chex.Array]:
+    def pink_ghost(pacman_pos: Position, steps: int = 4) -> Tuple[chex.Array, chex.Array]:
         """
         Select targets for pink ghost as distance from the tile 4 steps ahead
         of the current position of pacman.
@@ -268,9 +255,7 @@ def check_ghost_wall_collisions(
 
         distance_list = jax.vmap(get_directions, in_axes=(None, 0))(pacman_pos, ghost_p)
 
-        _, ghost_dist = jax.lax.cond(
-            distance_pacman > 8, red_ghost, scared_behaviors, pacman_pos
-        )
+        _, ghost_dist = jax.lax.cond(distance_pacman > 8, red_ghost, scared_behaviors, pacman_pos)
 
         return distance_list, ghost_dist
 
@@ -283,9 +268,7 @@ def check_ghost_wall_collisions(
         inky = lambda pacman_pos: pink_ghost(pacman_pos)
         pinky = lambda pacman_pos: blue_ghost(pacman_pos)
         clyde = lambda pacman_pos: orange_ghost(pacman_pos)
-        _, ghost_dist = jax.lax.switch(
-            ghost_num, [blinky, inky, pinky, clyde], pacman_pos
-        )
+        _, ghost_dist = jax.lax.switch(ghost_num, [blinky, inky, pinky, clyde], pacman_pos)
         return _, ghost_dist
 
     def scared_behaviors(pacman_pos: Position) -> Tuple[chex.Array, chex.Array]:
@@ -296,9 +279,7 @@ def check_ghost_wall_collisions(
 
     def behaviors() -> Tuple[chex.Array, chex.Array]:
         """Select scatter or normal targets"""
-        _, ghost_dist = jax.lax.cond(
-            is_scared > 0, scared_behaviors, general_behaviors, pacman_pos
-        )
+        _, ghost_dist = jax.lax.cond(is_scared > 0, scared_behaviors, general_behaviors, pacman_pos)
         return _, ghost_dist
 
     def init_behaviors() -> Tuple[chex.Array, chex.Array]:
@@ -307,9 +288,7 @@ def check_ghost_wall_collisions(
         _, ghost_dist = red_ghost(pacman_pos=target)
         return _, ghost_dist
 
-    _, ghost_dist = jax.lax.cond(
-        ghost_init_steps[ghost_num] > 0, init_behaviors, behaviors
-    )
+    _, ghost_dist = jax.lax.cond(ghost_init_steps[ghost_num] > 0, init_behaviors, behaviors)
 
     def get_valid_positions(pos: chex.Array) -> Any:
         """Get values of surrounding positions"""
@@ -401,9 +380,7 @@ def check_ghost_collisions(
         def col_fn() -> Tuple[chex.Array, chex.Numeric, chex.Numeric, chex.Numeric]:
             reset_true = lambda: (jnp.array(og_pos), False, 200.0, False)
             reset_false = lambda: (ghost_pos, True, 0.0, edible)
-            path, done, col_reward, ghost_eaten = jax.lax.cond(
-                ghost_reset, reset_true, reset_false
-            )
+            path, done, col_reward, ghost_eaten = jax.lax.cond(ghost_reset, reset_true, reset_false)
             return path, done, col_reward, ghost_eaten
 
         # First check for collision
@@ -441,9 +418,7 @@ def get_directions(pacman_position: Position, ghost_position: chex.Array) -> che
     return direction
 
 
-def player_step(
-    state: State, action: int, x_size: int, y_size: int, steps: int = 1
-) -> Position:
+def player_step(state: State, action: int, x_size: int, y_size: int, steps: int = 1) -> Position:
     """
     Compute the new position of the player based on the given state and action.
 

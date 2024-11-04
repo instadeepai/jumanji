@@ -29,9 +29,7 @@ def pac_man() -> PacMan:
     return PacMan()
 
 
-def test_pacman_viewer__render(
-    pac_man: PacMan, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_pacman_viewer__render(pac_man: PacMan, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(plt, "show", lambda fig: None)
     key = jax.random.PRNGKey(0)
     state, _ = pac_man.reset(key)
@@ -57,9 +55,7 @@ def test_robot_warehouse_viewer__animate(pac_man: PacMan) -> None:
     viewer.close()
 
 
-def test_robot_warehouse_viewer__save_animation(
-    pac_man: PacMan, tmpdir: py.path.local
-) -> None:
+def test_robot_warehouse_viewer__save_animation(pac_man: PacMan, tmpdir: py.path.local) -> None:
     key = jax.random.PRNGKey(0)
     state, _ = jax.jit(pac_man.reset)(key)
 

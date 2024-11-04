@@ -77,6 +77,4 @@ def expected_scramble_result() -> chex.Array:
 @pytest.fixture
 def rubiks_cube() -> RubiksCube:
     """Instantiates a `RubiksCube` environment with 10 scrambles on reset."""
-    return RubiksCube(
-        generator=ScramblingGenerator(cube_size=3, num_scrambles_on_reset=10)
-    )
+    return RubiksCube(generator=ScramblingGenerator(cube_size=3, num_scrambles_on_reset=10))

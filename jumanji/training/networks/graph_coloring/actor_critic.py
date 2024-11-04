@@ -39,9 +39,7 @@ def make_actor_critic_networks_graph_coloring(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `GraphColoring` environment."""
     num_actions = graph_coloring.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_actor_network_graph_coloring(
         num_actions=num_actions,
         num_transformer_layers=num_transformer_layers,
@@ -210,9 +208,7 @@ class GraphColoringTorso(hk.Module):
 
             node_embeddings = new_node_embeddings
 
-        current_node_embeddings = jnp.take(
-            node_embeddings, observation.current_node_index, axis=1
-        )
+        current_node_embeddings = jnp.take(node_embeddings, observation.current_node_index, axis=1)
         new_embedding = TransformerBlock(
             num_heads=self.transformer_num_heads,
             key_size=self.transformer_key_size,
@@ -241,9 +237,7 @@ def make_actor_network_graph_coloring(
             name="policy_torso",
         )
         embeddings = torso(observation)  # (B, N, H)
-        logits = hk.nets.MLP((torso.model_size, 1), name="policy_head")(
-            embeddings
-        )  # (B, N, 1)
+        logits = hk.nets.MLP((torso.model_size, 1), name="policy_head")(embeddings)  # (B, N, 1)
         logits = jnp.squeeze(logits, axis=-1)  # (B, N)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits

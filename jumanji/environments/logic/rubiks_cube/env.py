@@ -135,9 +135,7 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -214,9 +212,7 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_spec: `MultiDiscreteArray` object.
         """
         return specs.MultiDiscreteArray(
-            num_values=jnp.array(
-                [len(Face), self.generator.cube_size // 2, 3], jnp.int32
-            ),
+            num_values=jnp.array([len(Face), self.generator.cube_size // 2, 3], jnp.int32),
             name="action",
             dtype=jnp.int32,
         )
@@ -249,9 +245,7 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

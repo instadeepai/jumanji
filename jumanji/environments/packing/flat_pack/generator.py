@@ -171,22 +171,16 @@ class RandomFlatPackGenerator(InstanceGenerator):
 
         return (grid, key), row
 
-    def _first_nonzero(
-        self, arr: chex.Array, axis: int, invalid_val: int = 1000
-    ) -> chex.Numeric:
+    def _first_nonzero(self, arr: chex.Array, axis: int, invalid_val: int = 1000) -> chex.Numeric:
         """Returns the index of the first non-zero value in an array."""
 
         mask = arr != 0
-        return jnp.min(
-            jnp.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
-        )
+        return jnp.min(jnp.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val))
 
     def _crop_nonzero(self, arr_: chex.Array) -> chex.Array:
         """Crops a block to be of shape (3, 3)."""
 
-        row_roll, col_roll = self._first_nonzero(arr_, axis=0), self._first_nonzero(
-            arr_, axis=1
-        )
+        row_roll, col_roll = self._first_nonzero(arr_, axis=0), self._first_nonzero(arr_, axis=1)
 
         arr_ = jnp.roll(arr_, -row_roll, axis=0)
         arr_ = jnp.roll(arr_, -col_roll, axis=1)
@@ -281,16 +275,12 @@ class RandomFlatPackGenerator(InstanceGenerator):
         # Finally shuffle the blocks along the leading dimension to
         # untangle a block's number from its position in the blocks array.
         key, shuffle_blocks_key = jax.random.split(key)
-        blocks = jax.random.permutation(
-            key=shuffle_blocks_key, x=blocks, axis=0, independent=False
-        )
+        blocks = jax.random.permutation(key=shuffle_blocks_key, x=blocks, axis=0, independent=False)
 
         return State(
             blocks=blocks,
             num_blocks=num_blocks,
-            action_mask=jnp.ones(
-                (num_blocks, 4, grid_row_dim - 2, grid_col_dim - 2), dtype=bool
-            ),
+            action_mask=jnp.ones((num_blocks, 4, grid_row_dim - 2, grid_col_dim - 2), dtype=bool),
             grid=jnp.zeros_like(solved_grid),
             step_count=0,
             key=key,
@@ -307,7 +297,6 @@ class ToyFlatPackGeneratorWithRotation(InstanceGenerator):
         super().__init__(num_row_blocks=2, num_col_blocks=2)
 
     def __call__(self, key: chex.PRNGKey) -> State:
-
         del key
 
         solved_grid = jnp.array(
@@ -351,7 +340,6 @@ class ToyFlatPackGeneratorNoRotation(InstanceGenerator):
         super().__init__(num_row_blocks=2, num_col_blocks=2)
 
     def __call__(self, key: chex.PRNGKey) -> State:
-
         del key
 
         solved_grid = jnp.array(

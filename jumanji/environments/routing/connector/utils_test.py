@@ -93,12 +93,8 @@ def test_move_agent_invalid(state: State) -> None:
 def test_is_valid_position(state: State) -> None:
     """Tests that the _is_valid_move method flags invalid moves."""
     agent1 = tree_slice(state.agents, 1)
-    valid_move = is_valid_position(
-        grid=state.grid, agent=agent1, position=jnp.array([2, 2])
-    )
-    move_into_path = is_valid_position(
-        grid=state.grid, agent=agent1, position=jnp.array([4, 2])
-    )
+    valid_move = is_valid_position(grid=state.grid, agent=agent1, position=jnp.array([2, 2]))
+    move_into_path = is_valid_position(grid=state.grid, agent=agent1, position=jnp.array([4, 2]))
 
     assert valid_move
     assert not move_into_path

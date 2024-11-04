@@ -40,9 +40,7 @@ def make_actor_critic_networks_cleaner(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Cleaner` environment."""
     num_values = np.asarray(cleaner.action_spec.num_values)
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     policy_network = make_actor_network(
         num_conv_channels=num_conv_channels,
         mlp_units=policy_layers,
@@ -93,9 +91,7 @@ def process_obs_for_critic(observation: Observation) -> chex.Array:
     wall_channel = jnp.where(grid == WALL, 1, 0)
     agents_channel = all_agents_channel(observation.agents_locations, grid)
 
-    return jnp.stack(
-        [dirty_channel, wall_channel, agents_channel], axis=-1, dtype=float
-    )
+    return jnp.stack([dirty_channel, wall_channel, agents_channel], axis=-1, dtype=float)
 
 
 def make_critic_network(
@@ -121,9 +117,7 @@ def make_critic_network(
         normalised_step_count = (
             jnp.expand_dims(observation.step_count, axis=-1) / time_limit
         )  # (B, 1)
-        output = jnp.concatenate(
-            [embedding, normalised_step_count], axis=-1
-        )  # (B, W*H+1)
+        output = jnp.concatenate([embedding, normalised_step_count], axis=-1)  # (B, W*H+1)
         values = hk.nets.MLP((*mlp_units, 1), activate_final=False)(output)  # (B, 1)
         return jnp.squeeze(values, axis=-1)  # (B,)
 
@@ -150,9 +144,7 @@ def process_obs_for_actor(observation: Observation) -> chex.Array:
     def create_channels_for_one_agent(agent_location: chex.Array) -> chex.Array:
         dirty_channel = jnp.where(grid == DIRTY, 1, 0)
         wall_channel = jnp.where(grid == WALL, 1, 0)
-        agent_channel = (
-            jnp.zeros_like(grid).at[agent_location[0], agent_location[1]].set(1)
-        )
+        agent_channel = jnp.zeros_like(grid).at[agent_location[0], agent_location[1]].set(1)
         agents_channel = all_agents_channel(agents_locations, grid)
         return jnp.stack(
             [dirty_channel, wall_channel, agent_channel, agents_channel],
@@ -189,9 +181,7 @@ def make_actor_network(
             num_agents,
             axis=1,
         )  # (B, N, 1)
-        output = jnp.concatenate(
-            [embedding, normalised_step_count], axis=-1
-        )  # (B, N, W*H+1)
+        output = jnp.concatenate([embedding, normalised_step_count], axis=-1)  # (B, N, W*H+1)
         head = hk.nets.MLP((*mlp_units, 4), activate_final=False)
         logits = head(output)  # (B, N, 4)
         return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)

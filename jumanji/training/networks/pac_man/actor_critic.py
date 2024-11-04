@@ -38,9 +38,7 @@ def make_actor_critic_networks_pacman(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `PacMan` environment."""
     num_actions = np.asarray(pac_man.action_spec.num_values)
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_network_pac_man(
         pac_man=pac_man,
         critic=False,
@@ -157,9 +155,7 @@ def make_network_pac_man(
         obs = rgb_observation.astype(float)
 
         # Get player position, scatter_time and ghost locations
-        player_pos = jnp.array(
-            [observation.player_locations.x, observation.player_locations.y]
-        )
+        player_pos = jnp.array([observation.player_locations.x, observation.player_locations.y])
         player_pos = jnp.stack(player_pos, axis=-1)
         scatter_time = observation.frightened_state_time / 60
         scatter_time = jnp.expand_dims(scatter_time, axis=-1)
@@ -181,9 +177,7 @@ def make_network_pac_man(
         else:
             head = hk.nets.MLP((*mlp_units, num_actions), activate_final=False)
             logits = head(output)
-            return jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

@@ -56,9 +56,7 @@ def check_valid_tetromino_placement(
     Returns:
         chex.array of shape ().
     """
-    crop = jax.lax.dynamic_slice(
-        grid, start_indices=(y_position, x_position), slice_sizes=(4, 4)
-    )
+    crop = jax.lax.dynamic_slice(grid, start_indices=(y_position, x_position), slice_sizes=(4, 4))
     crop = crop + tetromino
     return ~jnp.any(crop >= 2)
 
@@ -82,9 +80,7 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
         to all possible positions for one side of a tetromino in the `grid_padded`.
     """
     tetromino_mask = tetromino.at[1, :].set(tetromino[1, :] + tetromino[2, :])
-    tetromino_mask = tetromino_mask.at[0, :].set(
-        tetromino_mask[0, :] + tetromino_mask[1, :]
-    )
+    tetromino_mask = tetromino_mask.at[0, :].set(tetromino_mask[0, :] + tetromino_mask[1, :])
     tetromino_mask = jnp.clip(tetromino_mask, a_max=1)
     num_cols = grid_padded.shape[1] - 3
     # Check if tetromino can be placed at the top of the grid, if so it means
@@ -156,9 +152,7 @@ def place_tetromino(
     # Update the `grid_padded`.
     tetromino_color_id = grid_padded.max() + 1
     tetromino = tetromino * tetromino_color_id
-    new_grid_padded = jax.lax.dynamic_update_slice(
-        grid_padded, tetromino, (y_position, x_position)
-    )
+    new_grid_padded = jax.lax.dynamic_update_slice(grid_padded, tetromino, (y_position, x_position))
     # Get the max of the old and the new `grid_padded`.
     grid_padded = jnp.maximum(grid_padded, new_grid_padded)
     return grid_padded, y_position

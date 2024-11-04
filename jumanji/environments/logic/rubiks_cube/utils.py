@@ -160,9 +160,7 @@ def generate_up_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube],
     return up_move_function
 
 
-def generate_front_move(
-    amount: CubeMovementAmount, depth: int
-) -> Callable[[Cube], Cube]:
+def generate_front_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the front face.
 
     Args:
@@ -207,9 +205,7 @@ def generate_front_move(
     return front_move_function
 
 
-def generate_right_move(
-    amount: CubeMovementAmount, depth: int
-) -> Callable[[Cube], Cube]:
+def generate_right_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the right face.
 
     Args:
@@ -254,9 +250,7 @@ def generate_right_move(
     return right_move_function
 
 
-def generate_back_move(
-    amount: CubeMovementAmount, depth: int
-) -> Callable[[Cube], Cube]:
+def generate_back_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the back face.
 
     Args:
@@ -301,9 +295,7 @@ def generate_back_move(
     return back_move_function
 
 
-def generate_left_move(
-    amount: CubeMovementAmount, depth: int
-) -> Callable[[Cube], Cube]:
+def generate_left_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the left face.
 
     Args:
@@ -348,9 +340,7 @@ def generate_left_move(
     return left_move_function
 
 
-def generate_down_move(
-    amount: CubeMovementAmount, depth: int
-) -> Callable[[Cube], Cube]:
+def generate_down_move(amount: CubeMovementAmount, depth: int) -> Callable[[Cube], Cube]:
     """Generate the move corresponding to turning the down face.
 
     Args:
@@ -491,9 +481,7 @@ def flatten_action(unflattened_action: chex.Array, cube_size: int) -> chex.Array
     """
     face, depth, amount = unflattened_action
     return (
-        face * len(CubeMovementAmount) * (cube_size // 2)
-        + depth * len(CubeMovementAmount)
-        + amount
+        face * len(CubeMovementAmount) * (cube_size // 2) + depth * len(CubeMovementAmount) + amount
     )
 
 

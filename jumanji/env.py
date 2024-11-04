@@ -49,10 +49,10 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
 
     def __init__(self) -> None:
         """Initialize environment."""
-        self.observation_spec
-        self.action_spec
-        self.reward_spec
-        self.discount_spec
+        self.observation_spec  # noqa: B018
+        self.action_spec  # noqa: B018
+        self.reward_spec  # noqa: B018
+        self.discount_spec  # noqa: B018
 
     @abc.abstractmethod
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -67,9 +67,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
         """
 
     @abc.abstractmethod
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -115,9 +113,7 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
         Returns:
             discount_spec: a `specs.BoundedArray` spec.
         """
-        return specs.BoundedArray(
-            shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount"
-        )
+        return specs.BoundedArray(shape=(), dtype=float, minimum=0.0, maximum=1.0, name="discount")
 
     @property
     def unwrapped(self) -> Environment[State, ActionSpec, Observation]:

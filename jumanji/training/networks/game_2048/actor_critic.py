@@ -38,9 +38,7 @@ def make_actor_critic_networks_game_2048(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Game2048` environment."""
     num_actions = game_2048.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_network_cnn(
         num_outputs=num_actions,
         mlp_units=policy_layers,
@@ -82,9 +80,7 @@ def make_network_cnn(
             return jnp.squeeze(head(embedding), axis=-1)
         else:
             logits = head(embedding)
-            masked_logits = jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            masked_logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
             return masked_logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

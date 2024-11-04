@@ -36,6 +36,7 @@ will have an odd y coordinate. It also means that a passage (corresponding to an
 nodes) through a vertical wall must be at an even y coordinate while a passage through a horizontal
 wall must be at an even x coordinate.
 """
+
 from typing import NamedTuple, Tuple
 
 import chex
@@ -123,9 +124,7 @@ def create_chamber(chambers: Stack, x: int, y: int, width: int, height: int) -> 
     return new_stack
 
 
-def split_vertically(
-    state: MazeGenerationState, chamber: chex.Array
-) -> MazeGenerationState:
+def split_vertically(state: MazeGenerationState, chamber: chex.Array) -> MazeGenerationState:
     """Split the chamber vertically.
 
     Randomly draw a horizontal wall to split the chamber vertically. Randomly open a passage
@@ -215,8 +214,6 @@ def generate_maze(width: int, height: int, key: chex.PRNGKey) -> chex.Array:
 
     initial_state = MazeGenerationState(maze, chambers, key)
 
-    final_state = jax.lax.while_loop(
-        chambers_remaining, split_next_chamber, initial_state
-    )
+    final_state = jax.lax.while_loop(chambers_remaining, split_next_chamber, initial_state)
 
     return final_state.maze

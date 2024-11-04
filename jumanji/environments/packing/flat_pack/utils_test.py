@@ -53,7 +53,6 @@ def test_get_significant_idxs(grid_dim: int, expected_idxs: chex.Array) -> None:
 
 
 def test_rotate_block(block: chex.Array) -> None:
-
     # Test with no rotation.
     rotated_block = rotate_block(block, 0)
     assert jnp.array_equal(rotated_block, block)

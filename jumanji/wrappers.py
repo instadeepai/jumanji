@@ -31,9 +31,7 @@ from jumanji.types import TimeStep
 GymObservation = Any
 
 
-class Wrapper(
-    Environment[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
-):
+class Wrapper(Environment[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]):
     """Wraps the environment to allow modular transformations.
     Source: https://github.com/google/brax/blob/main/brax/envs/env.py#L72
     """
@@ -43,7 +41,7 @@ class Wrapper(
         super().__init__()
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({repr(self._env)})"
+        return f"{self.__class__.__name__}({self._env!r})"
 
     def __getattr__(self, name: str) -> Any:
         if name == "__setstate__":
@@ -67,9 +65,7 @@ class Wrapper(
         """
         return self._env.reset(key)
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -125,9 +121,7 @@ class Wrapper(
         self.close()
 
 
-class JumanjiToDMEnvWrapper(
-    dm_env.Environment, Generic[State, ActionSpec, Observation]
-):
+class JumanjiToDMEnvWrapper(dm_env.Environment, Generic[State, ActionSpec, Observation]):
     """A wrapper that converts Environment to dm_env.Environment."""
 
     def __init__(
@@ -150,9 +144,9 @@ class JumanjiToDMEnvWrapper(
         self._jitted_reset: Callable[[chex.PRNGKey], Tuple[State, TimeStep]] = jax.jit(
             self._env.reset
         )
-        self._jitted_step: Callable[
-            [State, chex.Array], Tuple[State, TimeStep]
-        ] = jax.jit(self._env.step)
+        self._jitted_step: Callable[[State, chex.Array], Tuple[State, TimeStep]] = jax.jit(
+            self._env.step
+        )
 
     def __repr__(self) -> str:
         return str(self._env.__repr__())
@@ -248,9 +242,7 @@ class MultiToSingleWrapper(
         self._reward_aggregator = reward_aggregator
         self._discount_aggregator = discount_aggregator
 
-    def _aggregate_timestep(
-        self, timestep: TimeStep[Observation]
-    ) -> TimeStep[Observation]:
+    def _aggregate_timestep(self, timestep: TimeStep[Observation]) -> TimeStep[Observation]:
         """Apply the reward and discount aggregator to a multi-agent
             timestep object to create a new timestep object that consists
             of a scalar reward and discount value.
@@ -283,9 +275,7 @@ class MultiToSingleWrapper(
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The rewards are aggregated into a single value based on the given reward aggregator.
@@ -305,9 +295,7 @@ class MultiToSingleWrapper(
         return state, timestep
 
 
-class VmapWrapper(
-    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
-):
+class VmapWrapper(Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]):
     """Vectorized Jax env.
     Please note that all methods that return arrays do not return a batch dimension because the
     batch size is not known to the VmapWrapper. Methods that omit the batch dimension include:
@@ -337,9 +325,7 @@ class VmapWrapper(
         state, timestep = jax.vmap(self._env.reset)(key)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The first dimension of the state will dictate the number of concurrent environments.
@@ -450,9 +436,7 @@ class AutoResetWrapper(
         timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Step the environment, with automatic resetting if the episode terminates."""
         state, timestep = self._env.step(state, action)
 
@@ -522,9 +506,7 @@ class VmapAutoResetWrapper(
         timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of all environments' dynamics. It automatically resets environment(s)
         in which episodes have terminated.
 
@@ -544,9 +526,7 @@ class VmapAutoResetWrapper(
         # Vmap homogeneous computation (parallelizable).
         state, timestep = jax.vmap(self._env.step)(state, action)
         # Map heterogeneous computation (non-parallelizable).
-        state, timestep = jax.lax.map(
-            lambda args: self._maybe_reset(*args), (state, timestep)
-        )
+        state, timestep = jax.lax.map(lambda args: self._maybe_reset(*args), (state, timestep))
         return state, timestep
 
     def _auto_reset(
@@ -626,9 +606,7 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
         self._key = jax.random.PRNGKey(seed)
         self.backend = backend
         self._state = None
-        self.observation_space = specs.jumanji_specs_to_gym_spaces(
-            self._env.observation_spec
-        )
+        self.observation_space = specs.jumanji_specs_to_gym_spaces(self._env.observation_spec)
         self.action_space = specs.jumanji_specs_to_gym_spaces(self._env.action_spec)
 
         def reset(key: chex.PRNGKey) -> Tuple[State, Observation, Optional[Dict]]:
@@ -676,9 +654,7 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
         else:
             return obs  # type: ignore
 
-    def step(
-        self, action: chex.ArrayNumpy
-    ) -> Tuple[GymObservation, float, bool, Optional[Any]]:
+    def step(self, action: chex.ArrayNumpy) -> Tuple[GymObservation, float, bool, Optional[Any]]:
         """Updates the environment according to the action and returns an `Observation`.
 
         Args:
@@ -744,9 +720,7 @@ def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
         return np.asarray(observation)
     elif hasattr(observation, "__dict__"):
         # Applies to various containers including `chex.dataclass`
-        return {
-            key: jumanji_to_gym_obs(value) for key, value in vars(observation).items()
-        }
+        return {key: jumanji_to_gym_obs(value) for key, value in vars(observation).items()}
     elif hasattr(observation, "_asdict"):
         # Applies to `NamedTuple` container.
         return {

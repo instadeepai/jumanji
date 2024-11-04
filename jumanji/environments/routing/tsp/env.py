@@ -135,9 +135,7 @@ class TSP(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Numeric
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -189,9 +187,7 @@ class TSP(Environment[State, specs.DiscreteArray, Observation]):
             dtype=float,
             name="coordinates",
         )
-        position = specs.DiscreteArray(
-            self.num_cities, dtype=jnp.int32, name="position"
-        )
+        position = specs.DiscreteArray(self.num_cities, dtype=jnp.int32, name="position")
         trajectory = specs.BoundedArray(
             shape=(self.num_cities,),
             dtype=jnp.int32,

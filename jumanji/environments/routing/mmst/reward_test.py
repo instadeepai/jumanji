@@ -27,9 +27,7 @@ from jumanji.environments.routing.mmst.types import State
 from jumanji.types import TimeStep
 
 
-def test__mmst_dense_rewards(
-    deterministic_mmst_env: Tuple[MMST, State, TimeStep]
-) -> None:
+def test__mmst_dense_rewards(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) -> None:
     """Test that the default dense reward function works correctly."""
 
     # Default reward values are (10.0, -1.0, -1.0)
@@ -39,9 +37,7 @@ def test__mmst_dense_rewards(
 
     action = jnp.array([4, 3])
 
-    new_action, next_nodes = env._trim_duplicated_invalid_actions(
-        state, action, state.key
-    )
+    new_action, next_nodes = env._trim_duplicated_invalid_actions(state, action, state.key)
 
     assert new_action[1] == INVALID_CHOICE
     assert next_nodes[1] == INVALID_NODE
@@ -52,9 +48,7 @@ def test__mmst_dense_rewards(
     assert jnp.array_equal(timestep.reward, expected)
 
     action = jnp.array([1, 7])
-    new_action, next_nodes = env._trim_duplicated_invalid_actions(
-        state, action, state.key
-    )
+    new_action, next_nodes = env._trim_duplicated_invalid_actions(state, action, state.key)
     state, timestep = step_fn(state, action)
 
     assert new_action[0] == INVALID_ALREADY_TRAVERSED

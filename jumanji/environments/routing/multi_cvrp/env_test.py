@@ -117,9 +117,7 @@ class TestEnvironmentSpec:
                 new_actions.append(node_i)
             node_i += 1
             if node_i >= multicvrp_env._num_customers:
-                raise ValueError(
-                    "There is not enough customer demand for a second action.."
-                )
+                raise ValueError("There is not enough customer demand for a second action..")
         new_actions = jax.numpy.array(new_actions, dtype=np.int16)
 
         # # Take the same actions again which should now be invalid.
@@ -142,9 +140,7 @@ class TestEnvironmentSpec:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
-        _update_state_fn = jax.jit(
-            chex.assert_max_traces(multicvrp_env._update_state, n=1)
-        )
+        _update_state_fn = jax.jit(chex.assert_max_traces(multicvrp_env._update_state, n=1))
 
         key = jax.random.PRNGKey(0)
         state, _ = multicvrp_env.reset(key)
@@ -176,9 +172,7 @@ class TestEnvironmentSpec:
         )
 
         # Check that the node coordinates remained the same
-        assert jax.numpy.array_equal(
-            state.nodes.coordinates, new_state.nodes.coordinates
-        )
+        assert jax.numpy.array_equal(state.nodes.coordinates, new_state.nodes.coordinates)
 
         new_actions = jax.numpy.array([0, 0], dtype=np.int16)
 
@@ -195,15 +189,11 @@ class TestEnvironmentSpec:
             state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16)
         )
 
-    def test_multicvrp__state_to_observation_timestep(
-        self, multicvrp_env: MultiCVRP
-    ) -> None:
+    def test_multicvrp__state_to_observation_timestep(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
-        update_state_fn = jax.jit(
-            chex.assert_max_traces(multicvrp_env._update_state, n=1)
-        )
+        update_state_fn = jax.jit(chex.assert_max_traces(multicvrp_env._update_state, n=1))
         state_to_observation_fn = jax.jit(
             chex.assert_max_traces(multicvrp_env._state_to_observation, n=1)
         )
@@ -211,9 +201,7 @@ class TestEnvironmentSpec:
             chex.assert_max_traces(multicvrp_env._state_to_timestep, n=1)
         )
 
-        reward_fn = jax.jit(
-            chex.assert_max_traces(multicvrp_env._reward_fn.__call__, n=1)
-        )
+        reward_fn = jax.jit(chex.assert_max_traces(multicvrp_env._reward_fn.__call__, n=1))
 
         key = jax.random.PRNGKey(0)
         state, _ = multicvrp_env.reset(key)
@@ -255,19 +243,13 @@ class TestEnvironmentSpec:
         assert timestep.mid()
 
         # Check that the reward and discount values are correct
-        assert np.array_equal(
-            timestep.reward, jax.numpy.array(0.0, dtype=jax.numpy.float32)
-        )
-        assert np.array_equal(
-            timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32)
-        )
+        assert np.array_equal(timestep.reward, jax.numpy.array(0.0, dtype=jax.numpy.float32))
+        assert np.array_equal(timestep.discount, jax.numpy.array(1.0, dtype=jax.numpy.float32))
 
     def test_env_multicvrp__does_not_smoke(self, multicvrp_env: MultiCVRP) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
             @jax.vmap  # map over the agents
-            def select_action(
-                key: chex.PRNGKey, agent_action_mask: chex.Array
-            ) -> chex.Array:
+            def select_action(key: chex.PRNGKey, agent_action_mask: chex.Array) -> chex.Array:
                 return jax.numpy.array(
                     jax.random.choice(
                         key,
@@ -282,8 +264,6 @@ class TestEnvironmentSpec:
 
         check_env_does_not_smoke(multicvrp_env, select_actions)
 
-    def test_env_multicvrp__specs_does_not_smoke(
-        self, multicvrp_env: MultiCVRP
-    ) -> None:
+    def test_env_multicvrp__specs_does_not_smoke(self, multicvrp_env: MultiCVRP) -> None:
         """Test that we can access specs without any errors."""
         check_env_specs_does_not_smoke(multicvrp_env)

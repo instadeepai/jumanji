@@ -27,8 +27,6 @@ def multicvrp_env() -> MultiCVRP:
     generator = UniformRandomGenerator(num_vehicles=2, num_customers=20)
 
     # Create the reward function
-    reward_fn = SparseReward(
-        generator._num_vehicles, generator._num_customers, generator._map_max
-    )
+    reward_fn = SparseReward(generator._num_vehicles, generator._num_customers, generator._map_max)
 
     return MultiCVRP(generator=generator, reward_fn=reward_fn)

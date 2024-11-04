@@ -47,9 +47,7 @@ def make_actor_critic_networks_connector(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Connector` environment."""
     num_values = np.asarray(connector.action_spec.num_values)
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     # num_values is of shape (num_agents,) and contains num_actions everywhere.
     num_agents = num_values.shape[0]
     num_actions = num_values[0]
@@ -89,9 +87,7 @@ def process_grid(grid: chex.Array, num_agents: jnp.int32) -> chex.Array:
         agent_pos = get_position(agent_id)
         agent_grid = jnp.expand_dims(agent_grid, -1)
         agent_mask = (
-            (agent_grid == agent_path)
-            | (agent_grid == agent_target)
-            | (agent_grid == agent_pos)
+            (agent_grid == agent_path) | (agent_grid == agent_target) | (agent_grid == agent_pos)
         )
         # Only current agent's info as values: 1, 2 or 3
         # [G, G, 1]
@@ -217,9 +213,7 @@ def make_actor_network_connector(
             num_agents=num_agents,
         )
         embeddings = torso(observation)
-        logits = hk.nets.MLP((*transformer_mlp_units, num_actions), name="policy_head")(
-            embeddings
-        )
+        logits = hk.nets.MLP((*transformer_mlp_units, num_actions), name="policy_head")(embeddings)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 

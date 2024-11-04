@@ -91,5 +91,22 @@ module = [
 ]
 ignore_missing_imports = true
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["A", "B", "E", "F",  "I", "N", "W", "RUF", "ANN"]
+ignore = [
+    "E731",    # Allow lambdas to be assigned to variables.
+    "ANN101",  # no need to type self
+    "ANN102",  # no need to type cls
+    "ANN204",  # no need for return type for special methods
+    "ANN401",  # can use Any type
+    "A002",    # Argument shadowing a Python builtin.
+    "A003",    # Class attribute shadowing a Python builtin.
+    "A005",    # Module shadowing a Python builtin.
+    "B017",    # assertRaises(Exception): or pytest.raises(Exception) should be considered evil.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore `F401` (import violations) in all `__init__.py` files.

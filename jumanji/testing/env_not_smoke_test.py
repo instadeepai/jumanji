@@ -41,9 +41,7 @@ def invalid_select_action_fn() -> SelectActionFn:
     return select_action
 
 
-def test_env_not_smoke(
-    fake_env: FakeEnvironment, invalid_select_action_fn: SelectActionFn
-) -> None:
+def test_env_not_smoke(fake_env: FakeEnvironment, invalid_select_action_fn: SelectActionFn) -> None:
     """Test that the test_env_not_smoke function raises not errors for a valid environment, and
     raises errors for an invalid environment."""
     check_env_does_not_smoke(fake_env)

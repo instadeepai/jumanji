@@ -26,9 +26,7 @@ from jumanji.environments.logic.minesweeper.utils import (
 
 class DoneFn(abc.ABC):
     @abc.abstractmethod
-    def __call__(
-        self, state: State, next_state: State, action: chex.Array
-    ) -> chex.Array:
+    def __call__(self, state: State, next_state: State, action: chex.Array) -> chex.Array:
         """Call method for computing the done signal given the current and next state,
         and the action taken.
         """
@@ -39,9 +37,7 @@ class DefaultDoneFn(DoneFn):
     or the board is solved.
     """
 
-    def __call__(
-        self, state: State, next_state: State, action: chex.Array
-    ) -> chex.Array:
+    def __call__(self, state: State, next_state: State, action: chex.Array) -> chex.Array:
         return (
             ~is_valid_action(state=state, action=action)
             | explored_mine(state=state, action=action)

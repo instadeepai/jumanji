@@ -65,8 +65,7 @@ class CellDenseReward(RewardFn):
 
         reward = jax.lax.cond(
             is_valid,
-            lambda: jnp.sum(placed_block != 0.0, dtype=jnp.float32)
-            / (num_rows * num_cols),
+            lambda: jnp.sum(placed_block != 0.0, dtype=jnp.float32) / (num_rows * num_cols),
             lambda: jnp.float32(0.0),
         )
 

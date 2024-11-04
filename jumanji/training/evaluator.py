@@ -62,9 +62,7 @@ class Evaluator:
         policy_params: Optional[hk.Params],
         key: chex.PRNGKey,
     ) -> Dict:
-        policy = self.agent.make_policy(
-            policy_params=policy_params, stochastic=self.stochastic
-        )
+        policy = self.agent.make_policy(policy_params=policy_params, stochastic=self.stochastic)
         if isinstance(self.agent, A2CAgent):
 
             def acting_policy(observation: Any, key: chex.PRNGKey) -> chex.Array:
@@ -87,9 +85,7 @@ class Evaluator:
                 lambda x: x[None], acting_state.timestep.observation
             )
             action = acting_policy(observation, action_key)
-            state, timestep = self.eval_env.step(
-                acting_state.state, jnp.squeeze(action, axis=0)
-            )
+            state, timestep = self.eval_env.step(acting_state.state, jnp.squeeze(action, axis=0))
             return_ += timestep.reward
             acting_state = ActingState(
                 state=state,
@@ -148,9 +144,7 @@ class Evaluator:
 
         return eval_metrics
 
-    def run_evaluation(
-        self, params_state: Optional[ParamsState], eval_key: chex.PRNGKey
-    ) -> Dict:
+    def run_evaluation(self, params_state: Optional[ParamsState], eval_key: chex.PRNGKey) -> Dict:
         """Run one batch of evaluations."""
         eval_keys = jax.random.split(eval_key, self.num_global_devices).reshape(
             self.num_workers, self.num_local_devices, -1

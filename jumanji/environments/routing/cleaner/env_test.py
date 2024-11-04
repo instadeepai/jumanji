@@ -135,9 +135,7 @@ class TestCleaner:
         assert jnp.all(state.agents_locations[1] == jnp.array([0, 0]))
         assert jnp.all(state.agents_locations[2] == jnp.array([1, 1]))
 
-    def test_cleaner__step_invalid_action(
-        self, cleaner: Cleaner, key: chex.PRNGKey
-    ) -> None:
+    def test_cleaner__step_invalid_action(self, cleaner: Cleaner, key: chex.PRNGKey) -> None:
         state, _ = cleaner.reset(key)
 
         step_fn = jax.jit(cleaner.step)
@@ -153,9 +151,7 @@ class TestCleaner:
 
         assert timestep.reward == 1 - cleaner.penalty_per_timestep
 
-    def test_cleaner__initial_action_mask(
-        self, cleaner: Cleaner, key: chex.PRNGKey
-    ) -> None:
+    def test_cleaner__initial_action_mask(self, cleaner: Cleaner, key: chex.PRNGKey) -> None:
         state, _ = cleaner.reset(key)
 
         # All agents can only move right in the initial state
@@ -182,12 +178,8 @@ class TestCleaner:
     def test_cleaner__does_not_smoke(self, cleaner: Cleaner) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:
             @jax.vmap  # map over the keys and agents
-            def select_action(
-                key: chex.PRNGKey, agent_action_mask: chex.Array
-            ) -> chex.Array:
-                return jax.random.choice(
-                    key, jnp.arange(4), p=agent_action_mask.flatten()
-                )
+            def select_action(key: chex.PRNGKey, agent_action_mask: chex.Array) -> chex.Array:
+                return jax.random.choice(key, jnp.arange(4), p=agent_action_mask.flatten())
 
             subkeys = jax.random.split(key, cleaner.num_agents)
             return select_action(subkeys, observation.action_mask)
@@ -205,7 +197,5 @@ class TestCleaner:
         assert list(extras.keys()) == ["ratio_dirty_tiles", "num_dirty_tiles"]
         assert 0 <= extras["ratio_dirty_tiles"] <= 1
         grid = state.grid
-        assert extras["ratio_dirty_tiles"] == jnp.sum(grid == DIRTY) / jnp.sum(
-            grid != WALL
-        )
+        assert extras["ratio_dirty_tiles"] == jnp.sum(grid == DIRTY) / jnp.sum(grid != WALL)
         assert extras["num_dirty_tiles"] == jnp.sum(grid == DIRTY)

@@ -120,9 +120,7 @@ def make_sudoku_cnn(
             logits = head(embedding)
             logits = logits.reshape(-1, BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH)
 
-            logits = jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
             return logits.reshape(observation.action_mask.shape[0], -1)
 
@@ -162,13 +160,9 @@ def make_sudoku_equivariant(
 
             logits = jnp.transpose(logits, (0, 2, 1))
 
-            logits = logits.reshape(
-                board.shape[0], BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH
-            )
+            logits = logits.reshape(board.shape[0], BOARD_WIDTH, BOARD_WIDTH, BOARD_WIDTH)
 
-            logits = jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
             return logits.reshape(observation.action_mask.shape[0], -1)
 

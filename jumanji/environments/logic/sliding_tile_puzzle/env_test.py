@@ -47,9 +47,7 @@ def test_sliding_tile_puzzle_reset_jit(sliding_tile_puzzle: SlidingTilePuzzle) -
     assert isinstance(state, State)
 
 
-def test_sliding_tile_puzzle_step_jit(
-    sliding_tile_puzzle: SlidingTilePuzzle, state: State
-) -> None:
+def test_sliding_tile_puzzle_step_jit(sliding_tile_puzzle: SlidingTilePuzzle, state: State) -> None:
     """Confirm that the step is only compiled once when jitted."""
     up_action = jnp.array(0)
     down_action = jnp.array(2)

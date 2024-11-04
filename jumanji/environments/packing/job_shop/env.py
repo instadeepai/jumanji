@@ -168,9 +168,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Updates the status of all machines, the status of the operations, and increments the
         time step. It updates the environment state and the timestep (which contains the new
         observation). It calculates the reward based on the three terminal conditions:
@@ -226,8 +224,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         # Check if all machines are idle simultaneously
         all_machines_idle = jnp.all(
-            (updated_machines_job_ids == self.no_op_idx)
-            & (updated_machines_remaining_times == 0)
+            (updated_machines_job_ids == self.no_op_idx) & (updated_machines_remaining_times == 0)
         )
 
         # Check if the schedule has finished
@@ -300,9 +297,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
         is_next_op = jnp.zeros(shape=(self.num_jobs, self.max_num_ops), dtype=bool)
         is_next_op = is_next_op.at[jnp.arange(self.num_jobs), op_ids].set(True)
         is_new_job_and_next_op = jnp.logical_and(is_new_job, is_next_op)
-        updated_scheduled_times = jnp.where(
-            is_new_job_and_next_op, step_count, scheduled_times
-        )
+        updated_scheduled_times = jnp.where(is_new_job_and_next_op, step_count, scheduled_times)
         updated_ops_mask = ops_mask & ~is_new_job_and_next_op
         return updated_ops_mask, updated_scheduled_times
 
@@ -352,9 +347,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         # For busy machines, decrement the remaining time by one
-        updated_machines_remaining_times = jnp.where(
-            remaining_times > 0, remaining_times - 1, 0
-        )
+        updated_machines_remaining_times = jnp.where(remaining_times > 0, remaining_times - 1, 0)
 
         return updated_machines_job_ids, updated_machines_remaining_times
 
@@ -528,13 +521,9 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         is_machine_available = machines_remaining_times[machine_id] == 0
         is_correct_machine = ops_machine_ids[job_id, op_id] == machine_id
-        is_job_ready = ~jnp.any(
-            (machines_job_ids == job_id) & (machines_remaining_times > 0)
-        )
+        is_job_ready = ~jnp.any((machines_job_ids == job_id) & (machines_remaining_times > 0))
         is_job_finished = jnp.all(~updated_ops_mask[job_id])
-        return (
-            is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
-        )
+        return is_machine_available & is_correct_machine & is_job_ready & ~is_job_finished
 
     def _set_busy(self, job_id: jnp.int32, action: chex.Array) -> Any:
         """Determine, for a given action and job, whether the job is a new job to be
@@ -581,9 +570,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         # vmap over the jobs (and their ops) and vmap over the machines
         action_mask = jax.vmap(
-            jax.vmap(
-                self._is_action_valid, in_axes=(0, 0, None, None, None, None, None)
-            ),
+            jax.vmap(self._is_action_valid, in_axes=(0, 0, None, None, None, None, None)),
             in_axes=(None, None, 0, None, None, None, None),
         )(
             job_indexes,

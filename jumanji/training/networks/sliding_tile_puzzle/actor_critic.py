@@ -41,9 +41,7 @@ def make_actor_critic_networks_sliding_tile_puzzle(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `SlidingTilePuzzle` environment."""
     num_actions = sliding_tile_puzzle.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_mlp_network(
         num_outputs=num_actions,
         mlp_units=policy_layers,
@@ -86,9 +84,7 @@ def make_mlp_network(
             return jnp.squeeze(head(embedding), axis=-1)
         else:
             logits = head(embedding)
-            masked_logits = jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            masked_logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
             return masked_logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

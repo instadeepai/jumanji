@@ -76,9 +76,7 @@ class DummyGenerator(Generator):
         """
         del key
 
-        coordinates = jnp.array(
-            [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]], float
-        )
+        coordinates = jnp.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0], [0.5, 0.5]], float)
         demands = jnp.array([0, 1, 2, 1, 2], jnp.int32)
 
         # The initial position is set at the depot.

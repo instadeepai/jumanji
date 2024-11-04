@@ -79,9 +79,7 @@ def test_flatten_and_unflatten_action(cube_size: int) -> None:
     unflattened_actions = jnp.stack(
         [
             jnp.repeat(faces, len(CubeMovementAmount) * (cube_size // 2)),
-            jnp.concatenate(
-                [jnp.repeat(depths, len(CubeMovementAmount)) for _ in Face]
-            ),
+            jnp.concatenate([jnp.repeat(depths, len(CubeMovementAmount)) for _ in Face]),
             jnp.concatenate([amounts for _ in range(len(Face) * (cube_size // 2))]),
         ]
     )
@@ -140,9 +138,7 @@ def test_half_turns(
     assert jnp.array_equal(cube, differently_stickered_cube)
 
 
-def test_solved_reward(
-    solved_cube: chex.Array, differently_stickered_cube: chex.Array
-) -> None:
+def test_solved_reward(solved_cube: chex.Array, differently_stickered_cube: chex.Array) -> None:
     """Test that the cube fixtures have the expected rewards."""
     solved_state = State(
         cube=solved_cube,
@@ -163,6 +159,7 @@ def test_solved_reward(
     zip(
         generate_all_moves(cube_size=3),
         is_face_turn(cube_size=3),
+        strict=False,
     ),
 )
 def test_moves_nontrivial(
@@ -197,9 +194,7 @@ def test_moves_nontrivial(
     num_non_face_impacted_cubies = (len(Face) - 2) * differently_stickered_cube_size
     assert jnp.not_equal(
         differently_stickered_cube, moved_differently_stickered_cube
-    ).sum() == num_non_face_impacted_cubies + (
-        num_face_impacted_cubies if move_is_face_turn else 0
-    )
+    ).sum() == num_non_face_impacted_cubies + (num_face_impacted_cubies if move_is_face_turn else 0)
     if differently_stickered_cube_size % 2 == 1:
         assert jnp.array_equal(
             differently_stickered_cube[
@@ -285,9 +280,7 @@ def test_checkerboard(cube_size: int, indices: List[int]) -> None:
         assert jnp.array_equal(cube[face.value], expected_result)
 
 
-def test_manual_scramble(
-    solved_cube: chex.Array, expected_scramble_result: chex.Array
-) -> None:
+def test_manual_scramble(solved_cube: chex.Array, expected_scramble_result: chex.Array) -> None:
     """Testing a particular scramble manually.
     Scramble chosen to have all faces touched at least once."""
     scramble = [
@@ -328,17 +321,13 @@ def test_manual_scramble(
         ],
         dtype=jnp.int32,
     )
-    flattened_sequence = jnp.array(
-        [0, 14, 16, 2, 10, 6, 3, 7, 13, 11, 4, 0, 15], dtype=jnp.int32
-    )
+    flattened_sequence = jnp.array([0, 14, 16, 2, 10, 6, 3, 7, 13, 11, 4, 0, 15], dtype=jnp.int32)
     assert jnp.array_equal(
         unflattened_sequence.transpose(),
         unflatten_action(flattened_action=flattened_sequence, cube_size=3),
     )
     flatten_fn = lambda x: flatten_action(x, 3)
-    assert jnp.array_equal(
-        flattened_sequence, jax.vmap(flatten_fn)(unflattened_sequence)
-    )
+    assert jnp.array_equal(flattened_sequence, jax.vmap(flatten_fn)(unflattened_sequence))
     cube = scramble_solved_cube(
         flattened_actions_in_scramble=flattened_sequence,
         cube_size=3,

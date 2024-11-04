@@ -225,9 +225,7 @@ class RobotWarehouseViewer(Viewer):
             y, x = shelf.position.x, shelf.position.y
             y = self.rows - y - 1  # pyglet rendering is reversed
             shelf_color = (
-                constants._SHELF_REQ_COLOR
-                if shelf.is_requested
-                else constants._SHELF_COLOR
+                constants._SHELF_REQ_COLOR if shelf.is_requested else constants._SHELF_COLOR
             )
             shelf_padding = constants._SHELF_PADDING
 
@@ -276,9 +274,7 @@ class RobotWarehouseViewer(Viewer):
                 y = y_radius + y_center
                 verts += [[x, y]]
                 facecolor = (
-                    constants._AGENT_LOADED_COLOR
-                    if agent.is_carrying
-                    else constants._AGENT_COLOR
+                    constants._AGENT_LOADED_COLOR if agent.is_carrying else constants._AGENT_COLOR
                 )
                 circle = plt.Polygon(
                     verts,

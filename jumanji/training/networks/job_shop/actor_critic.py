@@ -43,9 +43,7 @@ def make_actor_critic_networks_job_shop(
 ) -> ActorCriticNetworks:
     """Create an actor-critic network for the `JobShop` environment."""
     num_values = np.asarray(job_shop.action_spec.num_values)
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     policy_network = make_actor_network_job_shop(
         num_layers_machines=num_layers_machines,
         num_layers_operations=num_layers_operations,
@@ -94,34 +92,24 @@ class JobShopTorso(hk.Module):
         m_remaining_times = observation.machines_remaining_times.astype(float)[
             ..., None
         ]  # (B, M, 1)
-        machine_embeddings = self.self_attention_machines(
-            m_remaining_times
-        )  # (B, M, D)
+        machine_embeddings = self.self_attention_machines(m_remaining_times)  # (B, M, D)
 
         # Job encoder
         o_machine_ids = observation.ops_machine_ids  # (B, J, O)
         o_durations = observation.ops_durations.astype(float)  # (B, J, O)
         o_mask = observation.ops_mask  # (B, J, O)
-        job_embeddings = jax.vmap(
-            self.job_encoder, in_axes=(-2, -2, -2, None), out_axes=-2
-        )(
+        job_embeddings = jax.vmap(self.job_encoder, in_axes=(-2, -2, -2, None), out_axes=-2)(
             o_durations,
             o_machine_ids,
             o_mask,
             machine_embeddings,
         )  # (B, J, D)
         # Add embedding for no-op
-        no_op_emb = hk.Linear(self.model_size)(
-            jnp.ones((o_mask.shape[0], 1, 1))
-        )  # (B, 1, D)
-        job_embeddings = jnp.concatenate(
-            [job_embeddings, no_op_emb], axis=-2
-        )  # (B, J+1, D)
+        no_op_emb = hk.Linear(self.model_size)(jnp.ones((o_mask.shape[0], 1, 1)))  # (B, 1, D)
+        job_embeddings = jnp.concatenate([job_embeddings, no_op_emb], axis=-2)  # (B, J+1, D)
 
         # Joint (machines & jobs) self-attention
-        embeddings = jnp.concatenate(
-            [machine_embeddings, job_embeddings], axis=-2
-        )  # (M+J+1, D)
+        embeddings = jnp.concatenate([machine_embeddings, job_embeddings], axis=-2)  # (M+J+1, D)
         embeddings = self.self_attention_joint_machines_ops(embeddings)
         return embeddings
 
@@ -263,16 +251,10 @@ def make_actor_network_job_shop(
         )
         embeddings = torso(observation)  # (B, M+J+1, D)
         num_machines = observation.machines_remaining_times.shape[-1]
-        machine_embeddings, job_embeddings = jnp.split(
-            embeddings, (num_machines,), axis=-2
-        )
-        machine_embeddings = hk.Linear(32, name="policy_head_machines")(
-            machine_embeddings
-        )
+        machine_embeddings, job_embeddings = jnp.split(embeddings, (num_machines,), axis=-2)
+        machine_embeddings = hk.Linear(32, name="policy_head_machines")(machine_embeddings)
         job_embeddings = hk.Linear(32, name="policy_head_jobs")(job_embeddings)
-        logits = jnp.einsum(
-            "...mk,...jk->...mj", machine_embeddings, job_embeddings
-        )  # (B, M, J+1)
+        logits = jnp.einsum("...mk,...jk->...mj", machine_embeddings, job_embeddings)  # (B, M, J+1)
         logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
         return logits
 
@@ -318,9 +300,7 @@ class PositionalEncoding(hk.Module):
         # for an input sequence of length max_len
         pos_enc = jnp.zeros((self.max_len, self.d_model))
         position = jnp.arange(0, self.max_len, dtype=np.float32)[:, None]
-        div_term = jnp.exp(
-            jnp.arange(0, self.d_model, 2) * (-math.log(10000.0) / self.d_model)
-        )
+        div_term = jnp.exp(jnp.arange(0, self.d_model, 2) * (-math.log(10000.0) / self.d_model))
         pos_enc = pos_enc.at[:, 0::2].set(jnp.sin(position * div_term))
         pos_enc = pos_enc.at[:, 1::2].set(jnp.cos(position * div_term))
         pos_enc = pos_enc[None]  # (1, max_len, d_model)
