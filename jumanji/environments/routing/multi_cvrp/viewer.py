@@ -210,10 +210,10 @@ class MultiCVRPViewer(Viewer):
         ax.scatter(x, y, s=self.NODE_SIZE, color=self._cmap(col_id))
 
     def _add_tour(self, ax: plt.Axes, state: State) -> None:
-        """Add the customers and the depot to the plot, and draw each route in the tour in a different
-        colour. The tour is the entire trajectory between the visited customers and a route is a
-        trajectory either starting and ending at the depot or starting at the depot and ending at
-        the current city."""
+        """Add the customers and the depot to the plot, and draw each route in the tour in a
+        different colour. The tour is the entire trajectory between the visited customers and a
+        route is a trajectory either starting and ending at the depot or starting at the depot
+        and ending at the current city."""
         x_coords, y_coords = (
             state.nodes.coordinates[:, 0] / self._map_max,
             state.nodes.coordinates[:, 1] / self._map_max,

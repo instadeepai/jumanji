@@ -296,7 +296,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         interval: int = 200,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
-        """Creates an animated gif of the `GraphColoring` environment based on the sequence of game states.
+        """Creates an animated gif of the `GraphColoring` environment based on a sequence of states.
 
         Args:
             states: is a list of `State` objects representing the sequence of game states.

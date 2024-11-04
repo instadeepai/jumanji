@@ -31,8 +31,8 @@ from jumanji.types import TimeStep
 
 @pytest.fixture(scope="module")
 def robot_warehouse_env() -> RobotWarehouse:
-    """Instantiates a default RobotWarehouse environment with 2 agents, 1 shelf row, 3 shelf columns,
-    a column height of 2, sensor range of 1 and a request queue size of 4."""
+    """Instantiates a default RobotWarehouse environment with 2 agents, 1 shelf row, 3 shelf
+    columns, a column height of 2, sensor range of 1 and a request queue size of 4."""
     generator = RandomGenerator(
         shelf_rows=1,
         shelf_columns=3,

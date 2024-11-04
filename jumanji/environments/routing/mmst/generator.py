@@ -88,7 +88,7 @@ class Generator(ABC):
 
 
 class SplitRandomGenerator(Generator):
-    """Generates a random environments that is solvable by spliting the graph into multiple sub graphs.
+    """Generates a random environments that is solvable by spliting the graph into sub graphs.
 
     Returns a graph and with a desired number of edges and nodes to connect per agent.
     """
