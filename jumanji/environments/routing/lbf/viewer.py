@@ -14,11 +14,9 @@
 
 # flake8: noqa: CCR001
 
-import os
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation as animation
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pkg_resources
@@ -218,9 +216,7 @@ class LevelBasedForagingViewer(Viewer):
 
             # Create an OffsetImage and add it to the axis
             imagebox = OffsetImage(img, zoom=self.icon_size / self.grid_size)
-            ab = AnnotationBbox(
-                imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0
-            )
+            ab = AnnotationBbox(imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0)
             ax.add_artist(ab)
 
             # Add a rectangle (polygon) next to the agent with the agent's level
@@ -245,9 +241,7 @@ class LevelBasedForagingViewer(Viewer):
 
             # Create an OffsetImage and add it to the axis
             imagebox = OffsetImage(img, zoom=self.icon_size / self.grid_size)
-            ab = AnnotationBbox(
-                imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0
-            )
+            ab = AnnotationBbox(imagebox, (cell_center[0], cell_center[1]), frameon=False, zorder=0)
             ax.add_artist(ab)
 
             # Add a rectangle (polygon) next to the agent with the food's level
@@ -263,9 +257,7 @@ class LevelBasedForagingViewer(Viewer):
             y_center,
         )
 
-    def draw_badge(
-        self, level: int, anchor_point: Tuple[float, float], ax: plt.Axes
-    ) -> None:
+    def draw_badge(self, level: int, anchor_point: Tuple[float, float], ax: plt.Axes) -> None:
         resolution = 6
         radius = self.grid_size / 6
 

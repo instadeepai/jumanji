@@ -67,9 +67,7 @@ class DummyGenerator(Generator):
         )
 
         # Initially, all machines are available (the index self.num_jobs corresponds to no-op)
-        machines_job_ids = jnp.array(
-            [self.num_jobs, self.num_jobs, self.num_jobs], jnp.int32
-        )
+        machines_job_ids = jnp.array([self.num_jobs, self.num_jobs, self.num_jobs], jnp.int32)
         machines_remaining_times = jnp.array([0, 0, 0], jnp.int32)
 
         # Initial action mask given the problem instance
@@ -83,9 +81,7 @@ class DummyGenerator(Generator):
         )
 
         # Initially, all ops have yet to be scheduled (ignore the padded element)
-        ops_mask = jnp.array(
-            [[True, True, True], [True, True, True], [True, True, False]], bool
-        )
+        ops_mask = jnp.array([[True, True, True], [True, True, True], [True, True, False]], bool)
 
         # Initially, none of the operations have been scheduled
         scheduled_times = jnp.array(

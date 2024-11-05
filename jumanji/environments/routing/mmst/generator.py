@@ -136,9 +136,7 @@ class SplitRandomGenerator(Generator):
             conn_nodes_index = conn_nodes_index.at[agent, agent_components[0]].set(
                 agent_components[0]
             )
-            state_nodes_to_connect = state_nodes_to_connect.at[agent].set(
-                agent_components
-            )
+            state_nodes_to_connect = state_nodes_to_connect.at[agent].set(agent_components)
 
         active_node_edges = jnp.repeat(node_edges[None, ...], self.num_agents, axis=0)
         active_node_edges = update_active_edges(
@@ -169,10 +167,7 @@ class SplitRandomGenerator(Generator):
 
         return state
 
-    def _generate_graph(
-        self, key: chex.PRNGKey
-    ) -> Tuple[chex.Array, chex.Array, chex.Array]:
-
+    def _generate_graph(self, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array, chex.Array]:
         nodes = jnp.arange(self._num_nodes, dtype=jnp.int32)
         graph, nodes_per_sub_graph = multi_random_walk(
             nodes, self._num_edges, self._num_agents, self._max_degree, key
@@ -193,9 +188,7 @@ class SplitRandomGenerator(Generator):
         )
 
         node_types = EMPTY_NODE * jnp.ones(self._num_nodes, dtype=jnp.int32)
-        conn_nodes = EMPTY_NODE * jnp.ones(
-            (self._num_agents, self._max_step), dtype=jnp.int32
-        )
+        conn_nodes = EMPTY_NODE * jnp.ones((self._num_agents, self._max_step), dtype=jnp.int32)
         conn_nodes_index = EMPTY_NODE * jnp.ones(
             (self._num_agents, self._num_nodes), dtype=jnp.int32
         )

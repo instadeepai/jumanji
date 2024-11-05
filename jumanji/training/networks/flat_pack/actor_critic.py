@@ -91,9 +91,7 @@ class UNet(hk.Module):
         grid_observation = grid_observation[..., jnp.newaxis].astype(float)
 
         # Down colvolve with strided convolutions
-        down_1 = hk.Conv2D(32, kernel_shape=3, stride=2, padding="SAME")(
-            grid_observation
-        )
+        down_1 = hk.Conv2D(32, kernel_shape=3, stride=2, padding="SAME")(grid_observation)
         down_1 = jax.nn.relu(down_1)  # (B, 6, 6, 32)
         down_2 = hk.Conv2D(32, kernel_shape=3, stride=2, padding="SAME")(down_1)
         down_2 = jax.nn.relu(down_2)  # (B, 3, 3, 32)
@@ -105,13 +103,9 @@ class UNet(hk.Module):
         up_2 = hk.Conv2DTranspose(32, kernel_shape=3, stride=2, padding="SAME")(up_1)
         up_2 = jax.nn.relu(up_2)  # (B, 12, 12, 32)
         up_2 = up_2[:, :-1, :-1]
-        up_2 = jnp.concatenate(
-            [up_2, grid_observation], axis=-1
-        )  # (B, num_rows, num_cols, 33)
+        up_2 = jnp.concatenate([up_2, grid_observation], axis=-1)  # (B, num_rows, num_cols, 33)
 
-        output = hk.Conv2D(self.hidden_size, kernel_shape=1, stride=1, padding="SAME")(
-            up_2
-        )
+        output = hk.Conv2D(self.hidden_size, kernel_shape=1, stride=1, padding="SAME")(up_2)
 
         # Crop the upconvolved output to be the same size as the action mask.
         output = output[:, 1:-1, 1:-1]  # (B, num_rows-2, num_cols-2, hidden_size)
@@ -123,9 +117,7 @@ class UNet(hk.Module):
         )
 
         # Linear mapping to transformer model size.
-        grid_conv_encoding = hk.Linear(self.model_size)(
-            grid_conv_encoding
-        )  # (B, model_size)
+        grid_conv_encoding = hk.Linear(self.model_size)(grid_conv_encoding)  # (B, model_size)
 
         return grid_conv_encoding, output
 
@@ -156,15 +148,11 @@ class FlatPackTorso(hk.Module):
 
         # Flatten the blocks
         # (B, num_blocks, 9)
-        flattened_blocks = jnp.reshape(
-            observation.blocks, (-1, self.num_blocks, 9)
-        ).astype(float)
+        flattened_blocks = jnp.reshape(observation.blocks, (-1, self.num_blocks, 9)).astype(float)
 
         # Encode the blocks with an MLP
         block_encoder = hk.nets.MLP(output_sizes=[self.model_size])
-        blocks_embedding = jax.vmap(block_encoder)(
-            flattened_blocks
-        )  # (B, num_blocks, model_size)
+        blocks_embedding = jax.vmap(block_encoder)(flattened_blocks)  # (B, num_blocks, model_size)
 
         unet = UNet(hidden_size=self.hidden_size, model_size=self.model_size)
         grid_conv_encoding, grid_encoding = unet(
@@ -210,9 +198,7 @@ class FlatPackTorso(hk.Module):
         # Map blocks embedding from (num_blocks, 128) to (num_blocks, num_rotations, hidden_size)
         blocks_head = hk.nets.MLP(output_sizes=[4 * self.hidden_size])
         blocks_embedding = jax.vmap(blocks_head)(blocks_embedding)
-        blocks_embedding = jnp.reshape(
-            blocks_embedding, (-1, self.num_blocks, 4, self.hidden_size)
-        )
+        blocks_embedding = jnp.reshape(blocks_embedding, (-1, self.num_blocks, 4, self.hidden_size))
 
         return blocks_embedding, grid_encoding
 
@@ -236,13 +222,9 @@ def make_actor_network_flat_pack(
             name="policy_torso",
         )
         blocks_embedding, grid_embedding = torso(observation)
-        outer_product = jnp.einsum(
-            "...ijh,...klh->...ijkl", blocks_embedding, grid_embedding
-        )
+        outer_product = jnp.einsum("...ijh,...klh->...ijkl", blocks_embedding, grid_embedding)
 
-        logits = jnp.where(
-            observation.action_mask, outer_product, jnp.finfo(jnp.float32).min
-        )
+        logits = jnp.where(observation.action_mask, outer_product, jnp.finfo(jnp.float32).min)
 
         logits = logits.reshape(*logits.shape[:-4], -1)
         return logits

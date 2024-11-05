@@ -25,6 +25,4 @@ def make_random_policy_sudoku(sudoku: Sudoku) -> RandomPolicy:
 
     action_spec_num_values = sudoku.action_spec.num_values
 
-    return make_masked_categorical_random_ndim(
-        action_spec_num_values=action_spec_num_values
-    )
+    return make_masked_categorical_random_ndim(action_spec_num_values=action_spec_num_values)

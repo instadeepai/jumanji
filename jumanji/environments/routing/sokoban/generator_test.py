@@ -41,7 +41,6 @@ def test_sokoban__hugging_generator_creation() -> None:
     ]
 
     for dataset in datasets:
-
         chex.clear_trace_counter()
 
         env = Sokoban(
@@ -156,7 +155,6 @@ def test_sokoban__deepmind_generator_creation() -> None:
     ]
 
     for dataset in valid_datasets:
-
         chex.clear_trace_counter()
 
         env = Sokoban(
@@ -183,7 +181,6 @@ def test_sokoban__deepmind_invalid_creation() -> None:
     ]
 
     for dataset in valid_datasets:
-
         chex.clear_trace_counter()
 
         with pytest.raises(Exception):

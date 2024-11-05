@@ -38,9 +38,7 @@ def make_actor_critic_networks_maze(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Maze` environment."""
     num_actions = np.asarray(maze.action_spec.num_values)
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_network_maze(
         maze=maze,
         critic=False,
@@ -99,9 +97,7 @@ def make_network_maze(
         normalised_step_count = (
             jnp.expand_dims(observation.step_count, axis=-1) / maze.time_limit
         )  # (B, 1)
-        output = jnp.concatenate(
-            [embedding, normalised_step_count], axis=-1
-        )  # (B, H+1)
+        output = jnp.concatenate([embedding, normalised_step_count], axis=-1)  # (B, H+1)
 
         if critic:
             head = hk.nets.MLP((*mlp_units, 1), activate_final=False)
@@ -109,9 +105,7 @@ def make_network_maze(
         else:
             head = hk.nets.MLP((*mlp_units, num_actions), activate_final=False)
             logits = head(output)
-            return jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            return jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)

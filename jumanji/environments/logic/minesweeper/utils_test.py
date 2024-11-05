@@ -47,6 +47,7 @@ from jumanji.environments.logic.minesweeper.utils import (
             False,
             False,
         ],
+        strict=False,
     ),
 )
 def test_explored_mine(
@@ -66,7 +67,9 @@ def test_explored_mine(
 
 @pytest.mark.parametrize(
     "action, expected_count_adjacent_mines_result",
-    zip(product(range(4), range(4)), [2, 4, 2, 2, 4, 8, 4, 3, 2, 4, 2, 2, 2, 3, 2, 1]),
+    zip(
+        product(range(4), range(4)), [2, 4, 2, 2, 4, 8, 4, 3, 2, 4, 2, 2, 2, 3, 2, 1], strict=False
+    ),
 )
 def test_count_adjacent_mines(
     manual_start_state: State,

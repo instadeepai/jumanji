@@ -50,9 +50,7 @@ def update_agent(
     return agents
 
 
-def get_new_direction_after_turn(
-    action: chex.Array, agent_direction: chex.Array
-) -> chex.Array:
+def get_new_direction_after_turn(action: chex.Array, agent_direction: chex.Array) -> chex.Array:
     """Get the correct direction the agent should face given
     the turn action it took. E.g. if the agent is facing LEFT
     and turns RIGHT it should now be facing UP, etc.

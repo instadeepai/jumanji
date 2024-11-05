@@ -79,7 +79,6 @@ class DenseRewardFn(RewardFn):
     def __call__(
         self, state: State, actions: chex.Array, nodes_to_connect: chex.Array
     ) -> chex.Array:
-
         num_agents = len(actions)
 
         rewards = jnp.zeros((num_agents,), dtype=jnp.float32)

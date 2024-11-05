@@ -94,9 +94,7 @@ class RubiksCubeViewer(Viewer[State]):
             fig = plt.figure(self.figure_name)
             ax = fig.get_axes()
         else:
-            fig, ax = plt.subplots(
-                nrows=3, ncols=2, figsize=self.figure_size, num=self.figure_name
-            )
+            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=self.figure_name)
             fig.suptitle(self.figure_name)
             ax = ax.flatten()
             plt.tight_layout()

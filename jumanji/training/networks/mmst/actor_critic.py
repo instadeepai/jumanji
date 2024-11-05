@@ -39,9 +39,7 @@ def make_actor_critic_networks_mmst(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `MMST` environment."""
     num_values = mmst.action_spec.num_values
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     policy_network = make_actor_network_mmst(
         num_transformer_layers=num_transformer_layers,
         transformer_num_heads=transformer_num_heads,

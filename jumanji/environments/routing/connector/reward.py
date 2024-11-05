@@ -70,7 +70,5 @@ class DenseRewardFn(RewardFn):
         connected_rewards = self.connected_reward * jnp.asarray(
             ~state.agents.connected & next_state.agents.connected, float
         )
-        timestep_rewards = self.timestep_reward * jnp.asarray(
-            ~state.agents.connected, float
-        )
+        timestep_rewards = self.timestep_reward * jnp.asarray(~state.agents.connected, float)
         return jnp.sum(connected_rewards + timestep_rewards)

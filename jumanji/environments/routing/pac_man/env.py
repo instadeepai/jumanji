@@ -245,9 +245,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         If an action is invalid, the agent does not move, i.e. the episode does not
@@ -320,9 +318,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size)
 
         # Check for collisions with ghosts
-        state, done, ghost_col_rewards = check_ghost_collisions(
-            ghost_paths, next_player_pos, state
-        )
+        state, done, ghost_col_rewards = check_ghost_collisions(ghost_paths, next_player_pos, state)
 
         state = state.replace(player_locations=next_player_pos)  # type: ignore
         state = state.replace(dead=done)
@@ -349,9 +345,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             return jnp.array(state.frightened_state_time - 1, jnp.int32)
 
         # Check if frightened state is active and decrement timer
-        state.frightened_state_time = jax.lax.cond(
-            eat > 0, powerup_collected, tick_frightened_time
-        )
+        state.frightened_state_time = jax.lax.cond(eat > 0, powerup_collected, tick_frightened_time)
 
         # Update power-up locations
         state.power_up_locations = power_up_locations
@@ -424,9 +418,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         new_pos = Position(x=new_pos_col % self.x_size, y=new_pos_row % self.y_size)
         return new_pos
 
-    def check_power_up(
-        self, state: State
-    ) -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
+    def check_power_up(self, state: State) -> Tuple[chex.Array, chex.Numeric, chex.Numeric]:
         """
         Check if the player is on a power-up location and update the power-up
         locations array accordingly.
@@ -498,9 +490,9 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             return grid[x][y]
 
         # vmap over the moves.
-        action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(
-            player_pos, MOVES
-        ) * jnp.array([True, True, True, True, False])
+        action_mask = jax.vmap(is_move_valid, in_axes=(None, 0))(player_pos, MOVES) * jnp.array(
+            [True, True, True, True, False]
+        )
 
         return action_mask
 

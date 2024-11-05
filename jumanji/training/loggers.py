@@ -30,9 +30,7 @@ from neptune import new as neptune
 
 
 class Logger(AbstractContextManager):
-    def __init__(
-        self, save_checkpoint: bool, checkpoint_file_name: str = "training_state"
-    ):
+    def __init__(self, save_checkpoint: bool, checkpoint_file_name: str = "training_state"):
         self.save_checkpoint = save_checkpoint
         self.checkpoint_file_name = checkpoint_file_name
 
@@ -88,9 +86,7 @@ class Logger(AbstractContextManager):
         `training_state`.
         """
         logging.info("Saving checkpoint...")
-        in_context_variables = dict(
-            set(self._variables_exit).difference(self._variables_enter)
-        )
+        in_context_variables = dict(set(self._variables_exit).difference(self._variables_enter))
         variable_id = in_context_variables.get("training_state", None)
         if variable_id is not None:
             training_state = self._variables_exit[("training_state", variable_id)]
@@ -132,9 +128,7 @@ class NoOpLogger(Logger):
 class TerminalLogger(Logger):
     """Logs to terminal."""
 
-    def __init__(
-        self, name: Optional[str] = None, save_checkpoint: bool = False
-    ) -> None:
+    def __init__(self, name: Optional[str] = None, save_checkpoint: bool = False) -> None:
         super().__init__(save_checkpoint=save_checkpoint)
         if name:
             logging.info(f"Experiment: {name}.")
@@ -250,6 +244,4 @@ class NeptuneLogger(Logger):
         self.run.stop()
 
     def upload_checkpoint(self) -> None:
-        self.run[f"checkpoint/{self.checkpoint_file_name}"].upload(
-            self.checkpoint_file_name
-        )
+        self.run[f"checkpoint/{self.checkpoint_file_name}"].upload(self.checkpoint_file_name)

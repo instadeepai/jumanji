@@ -117,15 +117,11 @@ class RandomWalkGenerator(Generator):
         move = jax.random.choice(key, MOVES, shape=(), p=valid_moves_mask)
         new_empty_tile_position = empty_tile_position + move
         # Swap the empty tile with the tile at the new position using _swap_tiles
-        updated_puzzle = self._swap_tiles(
-            puzzle, empty_tile_position, new_empty_tile_position
-        )
+        updated_puzzle = self._swap_tiles(puzzle, empty_tile_position, new_empty_tile_position)
 
         return updated_puzzle, new_empty_tile_position
 
-    def _swap_tiles(
-        self, puzzle: chex.Array, pos1: chex.Array, pos2: chex.Array
-    ) -> chex.Array:
+    def _swap_tiles(self, puzzle: chex.Array, pos1: chex.Array, pos2: chex.Array) -> chex.Array:
         """Swaps the tiles at the given positions."""
         temp = puzzle[tuple(pos1)]
         puzzle = puzzle.at[tuple(pos1)].set(puzzle[tuple(pos2)])

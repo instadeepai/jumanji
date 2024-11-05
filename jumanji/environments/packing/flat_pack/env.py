@@ -36,7 +36,6 @@ from jumanji.viewer import Viewer
 
 
 class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
-
     """The FlatPack environment with a configurable number of row and column blocks.
     Here the goal of an agent is to completely fill an empty grid by placing all
     available blocks. It can be thought of as a discrete 2D version of the `BinPack`
@@ -127,9 +126,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             compute_grid_dim(self.num_col_blocks),
         )
         self.reward_fn = reward_fn or CellDenseReward()
-        self.viewer = viewer or FlatPackViewer(
-            "FlatPack", self.num_blocks, render_mode="human"
-        )
+        self.viewer = viewer or FlatPackViewer("FlatPack", self.num_blocks, render_mode="human")
         super().__init__()
 
     def __repr__(self) -> str:
@@ -159,9 +156,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return grid_state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Steps the environment.
 
         Args:
@@ -326,9 +321,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         max_col_position = self.num_cols - 2
 
         return specs.MultiDiscreteArray(
-            num_values=jnp.array(
-                [self.num_blocks, 4, max_row_position, max_col_position]
-            ),
+            num_values=jnp.array([self.num_blocks, 4, max_row_position, max_col_position]),
             name="action",
         )
 
@@ -404,9 +397,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         grid_with_block = jnp.zeros((self.num_rows, self.num_cols), dtype=jnp.int32)
         place_location = (row_coord, col_coord)
 
-        grid_with_block = jax.lax.dynamic_update_slice(
-            grid_with_block, block, place_location
-        )
+        grid_with_block = jax.lax.dynamic_update_slice(grid_with_block, block, place_location)
 
         return grid_with_block
 
@@ -491,9 +482,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             cols_grid.flatten(),
         )
 
-        batch_is_legal_action = jax.vmap(
-            self._is_legal_action, in_axes=(0, None, None, 0)
-        )
+        batch_is_legal_action = jax.vmap(self._is_legal_action, in_axes=(0, None, None, 0))
 
         all_actions = jnp.stack(
             (blocks_grid, rotations_grid, rows_grid, cols_grid), axis=-1

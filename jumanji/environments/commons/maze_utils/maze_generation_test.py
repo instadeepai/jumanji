@@ -109,9 +109,7 @@ class TestMazeGeneration:
             assert i % 2 == 1
             assert 0 <= i < max_val
 
-    def test_split_vertically(
-        self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey
-    ) -> None:
+    def test_split_vertically(self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey) -> None:
         """Test that a horizontal wall is drawn and that subchambers are added to stack."""
         chambers, chamber = stack_pop(chambers)
         state = MazeGenerationState(maze, chambers, key)
@@ -124,9 +122,7 @@ class TestMazeGeneration:
 
         assert chambers.insertion_index >= 1
 
-    def test_split_horizontally(
-        self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey
-    ) -> None:
+    def test_split_horizontally(self, maze: chex.Array, chambers: Stack, key: chex.PRNGKey) -> None:
         """Test that a vertical wall is drawn and that subchambers are added to stack."""
         chambers, chamber = stack_pop(chambers)
         state = MazeGenerationState(maze, chambers, key)

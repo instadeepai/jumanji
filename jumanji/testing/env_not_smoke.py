@@ -27,9 +27,7 @@ SelectActionFn = Callable[[chex.PRNGKey, Observation], Action]
 
 
 def make_random_select_action_fn(
-    action_spec: Union[
-        specs.BoundedArray, specs.DiscreteArray, specs.MultiDiscreteArray
-    ],
+    action_spec: Union[specs.BoundedArray, specs.DiscreteArray, specs.MultiDiscreteArray],
 ) -> SelectActionFn:
     """Create select action function that chooses random actions."""
 
@@ -100,10 +98,10 @@ def check_env_does_not_smoke(
 
 def access_specs(env: Environment) -> None:
     """Access specs of the environment."""
-    env.observation_spec
-    env.action_spec
-    env.reward_spec
-    env.discount_spec
+    env.observation_spec  # noqa: B018
+    env.action_spec  # noqa: B018
+    env.reward_spec  # noqa: B018
+    env.discount_spec  # noqa: B018
 
 
 def check_env_specs_does_not_smoke(env: Environment) -> None:

@@ -198,9 +198,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         if self.normalize_dimensions:
             ems_dict = {
-                f"{coord_name}": specs.BoundedArray(
-                    (obs_num_ems,), float, 0.0, 1.0, coord_name
-                )
+                f"{coord_name}": specs.BoundedArray((obs_num_ems,), float, 0.0, 1.0, coord_name)
                 for coord_name in ["x1", "x2", "y1", "y2", "z1", "z2"]
             }
         else:
@@ -219,18 +217,12 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             }
         else:
             items_dict = {
-                f"{axis}": specs.BoundedArray(
-                    (max_num_items,), jnp.int32, 0, max_dim, axis
-                )
+                f"{axis}": specs.BoundedArray((max_num_items,), jnp.int32, 0, max_dim, axis)
                 for axis in ["x_len", "y_len", "z_len"]
             }
         items = specs.Spec(Item, "ItemsSpec", **items_dict)
-        items_mask = specs.BoundedArray(
-            (max_num_items,), bool, False, True, "items_mask"
-        )
-        items_placed = specs.BoundedArray(
-            (max_num_items,), bool, False, True, "items_placed"
-        )
+        items_mask = specs.BoundedArray((max_num_items,), bool, False, True, "items_mask")
+        items_placed = specs.BoundedArray((max_num_items,), bool, False, True, "items_placed")
         action_mask = specs.BoundedArray(
             (obs_num_ems, max_num_items),
             bool,
@@ -258,9 +250,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
             - ems_id: int between 0 and obs_num_ems - 1 (included).
             - item_id: int between 0 and max_num_items - 1 (included).
         """
-        num_values = jnp.array(
-            [self.obs_num_ems, self.generator.max_num_items], jnp.int32
-        )
+        num_values = jnp.array([self.obs_num_ems, self.generator.max_num_items], jnp.int32)
         return specs.MultiDiscreteArray(num_values=num_values, name="action")
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
@@ -294,9 +284,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics. If the action is invalid, the state
         is not updated, i.e. the action is not taken, and the episode terminates.
 
@@ -394,9 +382,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         self._viewer.close()
 
-    def _make_observation_and_extras(
-        self, state: State
-    ) -> Tuple[State, Observation, Dict]:
+    def _make_observation_and_extras(self, state: State) -> Tuple[State, Observation, Dict]:
         """Computes the observation and the environment metrics to include in `timestep.extras`.
         Also updates the `action_mask` and `sorted_ems_indexes` in the state. The observation is
         obtained by selecting a subset of all EMSs, namely the `obs_num_ems` largest ones.
@@ -456,9 +442,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         }
         return extras
 
-    def _normalize_ems_and_items(
-        self, state: State, obs_ems: EMS, items: Item
-    ) -> Tuple[EMS, Item]:
+    def _normalize_ems_and_items(self, state: State, obs_ems: EMS, items: Item) -> Tuple[EMS, Item]:
         """Normalize the EMSs and items in the observation. Each dimension is divided by the
         container length so that they are all between 0.0 and 1.0. Hence, the ratio is not kept.
         """
@@ -477,14 +461,10 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         container. This check is only done in debug mode.
         """
         item_spaces = space_from_item_and_location(state.items, state.items_location)
-        ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(
-            state.ems, item_spaces
-        )
+        ems_intersect_items = jax.vmap(Space.intersect, in_axes=(0, None))(state.ems, item_spaces)
         ems_intersect_items &= jnp.outer(state.ems_mask, state.items_placed)
         ems_intersection_with_items = jnp.any(ems_intersect_items)
-        ems_outside_container = jnp.any(
-            state.ems_mask & ~state.ems.is_included(state.container)
-        )
+        ems_outside_container = jnp.any(state.ems_mask & ~state.ems.is_included(state.container))
         return ~ems_intersection_with_items & ~ems_outside_container
 
     def _get_set_of_largest_ems(
@@ -492,9 +472,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
     ) -> Tuple[EMS, chex.Array, chex.Array]:
         """Returns a subset of EMSs by selecting the `obs_num_ems` largest EMSs."""
         ems_volumes = ems.volume() * ems_mask
-        sorted_ems_indexes = jnp.argsort(
-            -ems_volumes
-        )  # minus sign to sort in decreasing order
+        sorted_ems_indexes = jnp.argsort(-ems_volumes)  # minus sign to sort in decreasing order
         obs_ems_indexes = sorted_ems_indexes[: self.obs_num_ems]
         obs_ems = jax.tree_util.tree_map(lambda x: x[obs_ems_indexes], ems)
         obs_ems_mask = ems_mask[obs_ems_indexes]
@@ -567,7 +545,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         new_ems = state.ems
         new_ems_mask = ems_mask_after_intersect
         for intersection_ems, intersection_mask in zip(
-            intersections_ems_dict.values(), intersections_mask_dict.values()
+            intersections_ems_dict.values(), intersections_mask_dict.values(), strict=False
         ):
             new_ems, new_ems_mask = self._add_ems(
                 intersection_ems, intersection_mask, new_ems, new_ems_mask
@@ -585,12 +563,8 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         # Create new EMSs from EMSs that intersect the new item
         intersections_ems_dict: Dict[str, Space] = {
-            f"{axis}_{direction}": item_space.hyperplane(axis, direction).intersection(
-                state.ems
-            )
-            for axis, direction in itertools.product(
-                ["x", "y", "z"], ["lower", "upper"]
-            )
+            f"{axis}_{direction}": item_space.hyperplane(axis, direction).intersection(state.ems)
+            for axis, direction in itertools.product(["x", "y", "z"], ["lower", "upper"])
         }
 
         # A new EMS is added if the intersection is not empty and if it is not fully included in
@@ -611,12 +585,12 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         for (direction, direction_intersections_ems), (
             _,
             direction_intersections_mask,
-        ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items()):
+        ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items(), strict=False):
             # Inner loop iterates through alternative directions.
             for (alt_direction, alt_direction_intersections_ems), (
                 _,
                 alt_direction_intersections_mask,
-            ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items()):
+            ) in zip(intersections_ems_dict.items(), intersections_mask_dict.items(), strict=False):
                 # The current direction EMS is included in the alternative EMS.
                 directions_included_in_alt_directions = jax.vmap(
                     jax.vmap(Space.is_included, in_axes=(None, 0)), in_axes=(0, None)
@@ -629,9 +603,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
                     )
                 directions_included_in_alt_directions = (
                     directions_included_in_alt_directions
-                    & jnp.outer(
-                        direction_intersections_mask, alt_direction_intersections_mask
-                    )
+                    & jnp.outer(direction_intersections_mask, alt_direction_intersections_mask)
                 )
 
                 # The alternative EMSs are included in the current direction EMSs.
@@ -646,9 +618,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
                     )
                 alt_directions_included_in_directions = (
                     alt_directions_included_in_directions
-                    & jnp.outer(
-                        alt_direction_intersections_mask, direction_intersections_mask
-                    )
+                    & jnp.outer(alt_direction_intersections_mask, direction_intersections_mask)
                 )
 
                 # Remove EMSs that are strictly included in other EMSs. This does not remove

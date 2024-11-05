@@ -65,8 +65,8 @@ def normalize_dimensions(request: pytest.mark.FixtureRequest) -> bool:
     return request.param  # type: ignore
 
 
-@pytest.fixture(scope="function")  # noqa: CCR001
-def bin_pack_optimal_policy_select_action(  # noqa: CCR001
+@pytest.fixture(scope="function")
+def bin_pack_optimal_policy_select_action(
     request: pytest.mark.FixtureRequest,
 ) -> Callable[[Observation, State], chex.Array]:
     """Optimal policy for the BinPack environment.
@@ -84,9 +84,7 @@ def bin_pack_optimal_policy_select_action(  # noqa: CCR001
         )
         return obs_ems
 
-    def select_action(  # noqa: CCR001
-        observation: Observation, solution: State
-    ) -> chex.Array:
+    def select_action(observation: Observation, solution: State) -> chex.Array:
         """Outputs the best action to fully pack the container."""
         for obs_ems_id, obs_ems_action_mask in enumerate(observation.action_mask):
             if not obs_ems_action_mask.any():
@@ -257,9 +255,7 @@ def test_bin_pack__optimal_policy_random_instance(
         solution = generate_solution_fn(key)
 
         while not timestep.last():
-            action = bin_pack_optimal_policy_select_action(
-                timestep.observation, solution
-            )
+            action = bin_pack_optimal_policy_select_action(timestep.observation, solution)
             assert timestep.observation.action_mask[tuple(action)]
             state, timestep = step_fn(state, action)
             assert not timestep.extras["invalid_action"]

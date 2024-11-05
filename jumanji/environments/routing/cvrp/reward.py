@@ -96,9 +96,7 @@ class DenseReward(RewardFn):
         return reward
 
 
-def compute_tour_length(
-    coordinates: chex.Array, trajectory: chex.Array
-) -> chex.Numeric:
+def compute_tour_length(coordinates: chex.Array, trajectory: chex.Array) -> chex.Numeric:
     """Calculate the length of a tour."""
     sorted_coordinates = coordinates[trajectory]
     # Shift coordinates to compute the distance between neighboring cities.

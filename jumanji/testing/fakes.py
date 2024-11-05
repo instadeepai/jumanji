@@ -68,9 +68,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
             observation_spec: a `specs.Array` spec.
         """
 
-        return specs.Array(
-            shape=self.observation_shape, dtype=float, name="observation"
-        )
+        return specs.Array(shape=self.observation_shape, dtype=float, name="observation")
 
     @cached_property
     def action_spec(self) -> specs.BoundedArray:
@@ -188,9 +186,7 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             observation_spec: a `specs.Array` spec.
         """
 
-        return specs.Array(
-            shape=self.observation_shape, dtype=float, name="observation"
-        )
+        return specs.Array(shape=self.observation_shape, dtype=float, name="observation")
 
     @cached_property
     def action_spec(self) -> specs.BoundedArray:
@@ -200,9 +196,7 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             action_spec: a `specs.Array` spec.
         """
 
-        return specs.BoundedArray(
-            (self.num_agents,), int, 0, self.num_action_values - 1
-        )
+        return specs.BoundedArray((self.num_agents,), int, 0, self.num_action_values - 1)
 
     @cached_property
     def reward_spec(self) -> specs.Array:

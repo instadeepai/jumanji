@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence
+from typing import ClassVar, Dict, List, Optional, Sequence
 
 import matplotlib
 import matplotlib.animation
@@ -30,7 +30,7 @@ from jumanji.environments.routing.cleaner.types import State
 
 class CleanerViewer(MazeViewer):
     AGENT = 3
-    COLORS = {
+    COLORS: ClassVar[Dict[int, List[int]]] = {
         CLEAN: [1, 1, 1],  # White
         WALL: [0, 0, 0],  # Black
         DIRTY: [0, 1, 0],  # Green
@@ -121,10 +121,8 @@ class CleanerViewer(MazeViewer):
         return img
 
     def _set_agents_colors(self, img: NDArray, agents_locations: NDArray) -> NDArray:
-        unique_locations, counts = np.unique(
-            agents_locations, return_counts=True, axis=0
-        )
-        for location, count in zip(unique_locations, counts):
+        unique_locations, counts = np.unique(agents_locations, return_counts=True, axis=0)
+        for location, count in zip(unique_locations, counts, strict=False):
             img[location[0], location[1], :3] = np.array(self.AGENT_COLOR)
             img[location[0], location[1], 3] = 1 - self.ALPHA**count
         return img

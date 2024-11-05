@@ -179,9 +179,7 @@ class MultiCVRPViewer(Viewer):
         depot = tour[0]
         check_depot_fn = lambda x: (x != depot).all()
         tour_grouped = [
-            np.array([depot] + list(g) + [depot])
-            for k, g in groupby(tour, key=check_depot_fn)
-            if k
+            np.array([depot, *list(g), depot]) for k, g in groupby(tour, key=check_depot_fn) if k
         ]
         if (tour[-1] != tour[0]).all():
             tour_grouped[-1] = tour_grouped[-1][:-1]
@@ -226,16 +224,13 @@ class MultiCVRPViewer(Viewer):
         if state.step_count > 0:
             # TODO (dries): Can we do this without a for loop?
             for i in range(len(state.order)):
-                coords = (
-                    state.nodes.coordinates[state.order[i, : state.step_count]]
-                    / self._map_max
-                )
+                coords = state.nodes.coordinates[state.order[i, : state.step_count]] / self._map_max
 
                 coords_grouped = self._group_tour(coords)
 
                 # Draw each route in different colour
                 for coords_route, _ in zip(
-                    coords_grouped, np.arange(0, len(coords_grouped))
+                    coords_grouped, np.arange(0, len(coords_grouped)), strict=False
                 ):
                     self._draw_route(ax, coords_route, i)
 

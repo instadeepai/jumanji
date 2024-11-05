@@ -137,12 +137,8 @@ register(id="Sokoban-v0", entry_point="jumanji.environments:Sokoban")
 register(id="PacMan-v1", entry_point="jumanji.environments:PacMan")
 
 # SlidingTilePuzzle - A sliding tile puzzle environment with the default grid size of 5x5.
-register(
-    id="SlidingTilePuzzle-v0", entry_point="jumanji.environments:SlidingTilePuzzle"
-)
+register(id="SlidingTilePuzzle-v0", entry_point="jumanji.environments:SlidingTilePuzzle")
 
 # LevelBasedForaging  with a random generator with 8 grid size,
 # 2 agents and 2 food items and the maximum agent's level is 2.
-register(
-    id="LevelBasedForaging-v0", entry_point="jumanji.environments:LevelBasedForaging"
-)
+register(id="LevelBasedForaging-v0", entry_point="jumanji.environments:LevelBasedForaging")

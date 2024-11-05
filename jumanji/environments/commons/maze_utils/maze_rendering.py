@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Callable, ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation
@@ -32,7 +32,7 @@ class MazeViewer(Viewer):
     FONT_STYLE = "monospace"
     FIGURE_SIZE = (10.0, 10.0)
     # EMPTY is white, WALL is black
-    COLORS = {EMPTY: [1, 1, 1], WALL: [0, 0, 0]}
+    COLORS: ClassVar[Dict[int, List[int]]] = {EMPTY: [1, 1, 1], WALL: [0, 0, 0]}
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """Viewer for a maze environment.

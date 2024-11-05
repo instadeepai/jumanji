@@ -71,9 +71,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
     if jax.process_index() != 0:
         return NoOpLogger()
     if cfg.logger.type == "tensorboard":
-        logger = TensorboardLogger(
-            name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
-        )
+        logger = TensorboardLogger(name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint)
     elif cfg.logger.type == "neptune":
         logger = NeptuneLogger(
             name=cfg.logger.name,
@@ -82,9 +80,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
             save_checkpoint=cfg.logger.save_checkpoint,
         )
     elif cfg.logger.type == "terminal":
-        logger = TerminalLogger(
-            name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint
-        )
+        logger = TerminalLogger(name=cfg.logger.name, save_checkpoint=cfg.logger.save_checkpoint)
     else:
         raise ValueError(
             f"logger expected in ['neptune', 'tensorboard', 'terminal'], got {cfg.logger}."
@@ -133,15 +129,11 @@ def setup_agent(cfg: DictConfig, env: Environment) -> Agent:
             l_en=cfg.env.a2c.l_en,
         )
     else:
-        raise ValueError(
-            f"Expected agent name to be in ['random', 'a2c'], got {cfg.agent}."
-        )
+        raise ValueError(f"Expected agent name to be in ['random', 'a2c'], got {cfg.agent}.")
     return agent
 
 
-def _setup_random_policy(  # noqa: CCR001
-    cfg: DictConfig, env: Environment
-) -> RandomPolicy:
+def _setup_random_policy(cfg: DictConfig, env: Environment) -> RandomPolicy:
     assert cfg.agent == "random"
     if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
@@ -169,14 +161,10 @@ def _setup_random_policy(  # noqa: CCR001
         random_policy = networks.make_random_policy_multicvrp()
     elif cfg.env.name == "rubiks_cube":
         assert isinstance(env.unwrapped, RubiksCube)
-        random_policy = networks.make_random_policy_rubiks_cube(
-            rubiks_cube=env.unwrapped
-        )
+        random_policy = networks.make_random_policy_rubiks_cube(rubiks_cube=env.unwrapped)
     elif cfg.env.name == "minesweeper":
         assert isinstance(env.unwrapped, Minesweeper)
-        random_policy = networks.make_random_policy_minesweeper(
-            minesweeper=env.unwrapped
-        )
+        random_policy = networks.make_random_policy_minesweeper(minesweeper=env.unwrapped)
     elif cfg.env.name == "game_2048":
         assert isinstance(env.unwrapped, Game2048)
         random_policy = networks.make_random_policy_game_2048()
@@ -223,9 +211,7 @@ def _setup_random_policy(  # noqa: CCR001
     return random_policy
 
 
-def _setup_actor_critic_neworks(  # noqa: CCR001
-    cfg: DictConfig, env: Environment
-) -> ActorCriticNetworks:
+def _setup_actor_critic_neworks(cfg: DictConfig, env: Environment) -> ActorCriticNetworks:
     assert cfg.agent == "a2c"
     if cfg.env.name == "bin_pack":
         assert isinstance(env.unwrapped, BinPack)
@@ -457,9 +443,7 @@ def setup_evaluators(cfg: DictConfig, agent: Agent) -> Tuple[Evaluator, Evaluato
     return stochastic_eval, greedy_eval
 
 
-def setup_training_state(
-    env: Environment, agent: Agent, key: chex.PRNGKey
-) -> TrainingState:
+def setup_training_state(env: Environment, agent: Agent, key: chex.PRNGKey) -> TrainingState:
     params_key, reset_key, acting_key = jax.random.split(key, 3)
 
     # Initialize params.
@@ -479,9 +463,7 @@ def setup_training_state(
         )
     )
     reset_keys_per_worker = reset_keys[jax.process_index()]
-    env_state, timestep = jax.pmap(env.reset, axis_name="devices")(
-        reset_keys_per_worker
-    )
+    env_state, timestep = jax.pmap(env.reset, axis_name="devices")(reset_keys_per_worker)
 
     # Initialize acting states.
     acting_key_per_device = jax.random.split(acting_key, num_global_devices).reshape(

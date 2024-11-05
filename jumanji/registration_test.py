@@ -37,9 +37,7 @@ class TestParser:
 
 
 class TestRegistrationRules:
-    def test_registration__next_version(
-        self, mocker: pytest_mock.MockerFixture
-    ) -> None:
+    def test_registration__next_version(self, mocker: pytest_mock.MockerFixture) -> None:
         mocker.patch("jumanji.registration._REGISTRY", {})
 
         # Check that the next registrable version is v+1
@@ -51,9 +49,7 @@ class TestRegistrationRules:
         env_spec = registration.EnvSpec(id="Env-v1", entry_point="")
         registration._check_registration_is_allowed(env_spec)
 
-    def test_registration__already_registered(
-        self, mocker: pytest_mock.MockerFixture
-    ) -> None:
+    def test_registration__already_registered(self, mocker: pytest_mock.MockerFixture) -> None:
         mocker.patch("jumanji.registration._REGISTRY", {})
         env_spec = registration.EnvSpec(id="Env-v0", entry_point="")
         registration.register(env_spec.id, entry_point=env_spec.entry_point)

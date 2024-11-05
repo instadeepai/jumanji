@@ -63,9 +63,7 @@ def test_uniform_random_generator__no_retrace(
 ) -> None:
     """Checks that generator only traces the function once and works when jitted."""
     keys = jax.random.split(key, 2)
-    jitted_generator = jax.jit(
-        chex.assert_max_traces((uniform_random_generator.__call__), n=1)
-    )
+    jitted_generator = jax.jit(chex.assert_max_traces((uniform_random_generator.__call__), n=1))
 
     for key in keys:
         jitted_generator(key)

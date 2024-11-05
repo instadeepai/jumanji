@@ -205,9 +205,7 @@ class GraphColoringViewer(Viewer):
                     fill=(colors[i] != -1),
                 )
             )
-            ax.text(
-                x, y, str(i), color="white", ha="center", va="center", weight="bold"
-            )
+            ax.text(x, y, str(i), color="white", ha="center", va="center", weight="bold")
 
     def _render_edges(
         self,

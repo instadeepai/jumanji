@@ -133,33 +133,25 @@ def test_robot_warehouse_utils__entity_update(
 
     # test updating agent direction
     new_direction = 3
-    agents_with_new_agent_0_direction = update_agent(
-        agents, 0, "direction", new_direction
-    )
+    agents_with_new_agent_0_direction = update_agent(agents, 0, "direction", new_direction)
     agent_0 = tree_slice(agents_with_new_agent_0_direction, 0)
     assert agent_0.direction == new_direction
 
     # test updating agent carrying
     new_is_carrying = 1
-    agents_with_new_agent_0_carrying = update_agent(
-        agents, 0, "is_carrying", new_is_carrying
-    )
+    agents_with_new_agent_0_carrying = update_agent(agents, 0, "is_carrying", new_is_carrying)
     agent_0 = tree_slice(agents_with_new_agent_0_carrying, 0)
     assert agent_0.is_carrying == new_is_carrying
 
     # test updating shelf position
     new_position = Position(x=1, y=3)
-    shelves_with_new_shelf_0_position = update_shelf(
-        shelves, 0, "position", new_position
-    )
+    shelves_with_new_shelf_0_position = update_shelf(shelves, 0, "position", new_position)
     shelf_0 = tree_slice(shelves_with_new_shelf_0_position, 0)
     assert shelf_0.position == new_position
 
     # test updating shelf requested
     new_is_requested = 1
-    shelves_with_new_shelf_0_requested = update_shelf(
-        shelves, 0, "is_requested", new_is_requested
-    )
+    shelves_with_new_shelf_0_requested = update_shelf(shelves, 0, "is_requested", new_is_requested)
     shelf_0 = tree_slice(shelves_with_new_shelf_0_requested, 0)
     assert shelf_0.is_requested == new_is_requested
 
@@ -183,7 +175,7 @@ def test_robot_warehouse_utils__get_new_direction(
         3,  # turn right -> face left
     ]
 
-    for action, expected_direction in zip(actions, expected_directions):
+    for action, expected_direction in zip(actions, expected_directions, strict=False):
         new_direction = get_new_direction_after_turn(action, direction)
         assert new_direction == expected_direction
         direction = new_direction
@@ -209,7 +201,7 @@ def test_robot_warehouse_utils__get_new_position(
         Position(3, 3),  # facing left move forward
     ]
 
-    for direction, expected_position in zip(directions, expected_positions):
+    for direction, expected_position in zip(directions, expected_positions, strict=False):
         new_position = get_new_position_after_forward(grid, position, direction)
         assert new_position == expected_position
 
@@ -310,9 +302,7 @@ def test_robot_warehouse_utils__get_agent_view(
 
     # get agent view with sensor range of 1
     sensor_range = 1
-    agent_view_of_agents, agent_view_of_shelves = get_agent_view(
-        grid, agent, sensor_range
-    )
+    agent_view_of_agents, agent_view_of_shelves = get_agent_view(grid, agent, sensor_range)
 
     # flattened agent view of other agents and shelves
     flat_agents = jnp.array([0, 0, 0, 0, 1, 2, 0, 0, 0])
@@ -323,9 +313,7 @@ def test_robot_warehouse_utils__get_agent_view(
 
     # get agent view with sensor range of 2
     sensor_range = 2
-    agent_view_of_agents, agent_view_of_shelves = get_agent_view(
-        grid, agent, sensor_range
-    )
+    agent_view_of_agents, agent_view_of_shelves = get_agent_view(grid, agent, sensor_range)
 
     # flattened agent view of other agents and shelves
     flat_agents = jnp.array(

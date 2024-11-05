@@ -59,9 +59,7 @@ class FactorisedActionSpaceReshapeBijector(Postprocessor):
         flat_action = x
         n = self.action_spec_num_values.shape[0]
         for i in range(n - 1, 0, -1):
-            flat_action, remainder = jnp.divmod(
-                flat_action, self.action_spec_num_values[i]
-            )
+            flat_action, remainder = jnp.divmod(flat_action, self.action_spec_num_values[i])
             action_components.append(remainder)
         action_components.append(flat_action)
         action = jnp.stack(
@@ -76,9 +74,7 @@ class FactorisedActionSpaceReshapeBijector(Postprocessor):
         action_components = jnp.split(y, n, axis=-1)
         flat_action = action_components[0]
         for i in range(1, n):
-            flat_action = (
-                self.action_spec_num_values[i] * flat_action + action_components[i]
-            )
+            flat_action = self.action_spec_num_values[i] * flat_action + action_components[i]
         return flat_action
 
     def forward_log_det_jacobian(self, x: chex.Array) -> chex.Array:

@@ -195,9 +195,7 @@ class TestSparseCVRP:
         """Checks that the depot cannot be revisited if we are already at the depot."""
         key = jax.random.PRNGKey(0)
         state, timestep = cvrp_sparse_reward.reset(key)
-        state, timestep = cvrp_sparse_reward.step(
-            state, jnp.array(DEPOT_IDX, jnp.int32)
-        )
+        state, timestep = cvrp_sparse_reward.step(state, jnp.array(DEPOT_IDX, jnp.int32))
 
         assert timestep.last()
 
@@ -392,6 +390,4 @@ def test_cvrp__equivalence_dense_sparse_reward(
         return_sparse += timestep.reward
 
     # Check that both returns are the same and not the invalid action penalty
-    assert (
-        return_sparse == return_dense > -2 * cvrp_dense_reward.num_nodes * jnp.sqrt(2)
-    )
+    assert return_sparse == return_dense > -2 * cvrp_dense_reward.num_nodes * jnp.sqrt(2)

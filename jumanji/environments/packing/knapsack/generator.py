@@ -65,9 +65,7 @@ class RandomGenerator(Generator):
         key, sample_key = jax.random.split(key)
 
         # Sample weights and values of the items from a uniform distribution on [0, 1]
-        weights, values = jax.random.uniform(
-            sample_key, (2, self.num_items), minval=0, maxval=1
-        )
+        weights, values = jax.random.uniform(sample_key, (2, self.num_items), minval=0, maxval=1)
 
         # Initially, no items are packed.
         packed_items = jnp.zeros(self.num_items, dtype=bool)

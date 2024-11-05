@@ -158,9 +158,7 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Numeric
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -232,9 +230,7 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
             maximum=True,
             name="unvisited_nodes",
         )
-        position = specs.DiscreteArray(
-            self.num_nodes + 1, dtype=jnp.int32, name="position"
-        )
+        position = specs.DiscreteArray(self.num_nodes + 1, dtype=jnp.int32, name="position")
         trajectory = specs.BoundedArray(
             shape=(2 * self.num_nodes,),
             minimum=0,

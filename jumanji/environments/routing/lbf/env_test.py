@@ -33,9 +33,7 @@ def test_lbf_environment_integration(
     assert isinstance(initial_state, State)
     assert isinstance(timestep, TimeStep)
     assert timestep.step_type == StepType.FIRST
-    assert jnp.isclose(
-        timestep.reward, jnp.zeros(lbf_environment.num_agents, dtype=float)
-    ).all()
+    assert jnp.isclose(timestep.reward, jnp.zeros(lbf_environment.num_agents, dtype=float)).all()
     assert timestep.extras == {"percent_eaten": jnp.float32(0)}
     # Test the step function
     action = jnp.array([NOOP] * lbf_environment.num_agents)
@@ -64,9 +62,7 @@ def test_reset(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
     assert timestep.reward.shape == (num_agents,)
 
 
-def test_reset_grid_obs(
-    lbf_env_grid_obs: LevelBasedForaging, key: chex.PRNGKey
-) -> None:
+def test_reset_grid_obs(lbf_env_grid_obs: LevelBasedForaging, key: chex.PRNGKey) -> None:
     num_agents = lbf_env_grid_obs.num_agents
 
     state, timestep = lbf_env_grid_obs.reset(key)
@@ -89,9 +85,7 @@ def test_reset_grid_obs(
     assert timestep.reward.shape == (num_agents,)
 
 
-def test_get_reward(
-    lbf_environment: LevelBasedForaging, agents: Agent, food_items: Food
-) -> None:
+def test_get_reward(lbf_environment: LevelBasedForaging, agents: Agent, food_items: Food) -> None:
     adj_food0_level = jnp.array([0.0, agents.level[1], agents.level[2]])
     adj_food1_level = jnp.array([0.0, 0.0, agents.level[2]])
     adj_food2_level = jnp.array([0.0, 0.0, 0.0])
@@ -110,9 +104,7 @@ def test_get_reward(
     assert jnp.all(reward == expected_reward)
 
 
-def test_reward_with_penalty(
-    lbf_with_penalty: LevelBasedForaging, food_items: Food
-) -> None:
+def test_reward_with_penalty(lbf_with_penalty: LevelBasedForaging, food_items: Food) -> None:
     adj_food0_level = jnp.array([0.0, 1, 2])
     adj_food1_level = jnp.array([0.0, 0.0, 4])
     adj_food2_level = jnp.array([2, 0.0, 0.0])
@@ -123,20 +115,18 @@ def test_reward_with_penalty(
     penalty = lbf_with_penalty.penalty
 
     penalty_0 = jnp.where(jnp.sum(adj_food0_level) < food_items.level[0], penalty, 0)
-    expected_reward_food0 = (
-        adj_food0_level * eaten[0] * food_items.level[0] - penalty_0
-    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food0_level))
-    penalty_1 = jnp.where(jnp.sum(adj_food1_level) < food_items.level[1], penalty, 0)
-    expected_reward_food1 = (
-        adj_food1_level * eaten[1] * food_items.level[1] - penalty_1
-    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food1_level))
-    penalty_2 = jnp.where(jnp.sum(adj_food2_level) < food_items.level[2], penalty, 0)
-    expected_reward_food2 = (
-        adj_food2_level * eaten[1] * food_items.level[2] - penalty_2
-    ) / (jnp.sum(food_items.level) * jnp.sum(adj_food2_level))
-    expected_reward = (
-        expected_reward_food0 + expected_reward_food1 + expected_reward_food2
+    expected_reward_food0 = (adj_food0_level * eaten[0] * food_items.level[0] - penalty_0) / (
+        jnp.sum(food_items.level) * jnp.sum(adj_food0_level)
     )
+    penalty_1 = jnp.where(jnp.sum(adj_food1_level) < food_items.level[1], penalty, 0)
+    expected_reward_food1 = (adj_food1_level * eaten[1] * food_items.level[1] - penalty_1) / (
+        jnp.sum(food_items.level) * jnp.sum(adj_food1_level)
+    )
+    penalty_2 = jnp.where(jnp.sum(adj_food2_level) < food_items.level[2], penalty, 0)
+    expected_reward_food2 = (adj_food2_level * eaten[1] * food_items.level[2] - penalty_2) / (
+        jnp.sum(food_items.level) * jnp.sum(adj_food2_level)
+    )
+    expected_reward = expected_reward_food0 + expected_reward_food1 + expected_reward_food2
     assert jnp.all(reward == expected_reward)
 
 
@@ -158,7 +148,6 @@ def test_reward_with_no_norm(
 
 
 def test_step(lbf_environment: LevelBasedForaging, state: State) -> None:
-
     num_agents = lbf_environment.num_agents
     ep_return = jnp.zeros((num_agents,), jnp.int32)
 
@@ -196,9 +185,7 @@ def test_step(lbf_environment: LevelBasedForaging, state: State) -> None:
     assert jnp.sum(ep_return) == 1
 
 
-def test_step_done_horizon(
-    lbf_environment: LevelBasedForaging, key: chex.PRNGKey
-) -> None:
+def test_step_done_horizon(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
     num_agents = lbf_environment.num_agents
     # Test the done after 5 steps
     state, timestep = lbf_environment.reset(key)

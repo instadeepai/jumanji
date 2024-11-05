@@ -95,9 +95,7 @@ def test_sudoku__render(monkeypatch: pytest.MonkeyPatch, sudoku_env: Sudoku) -> 
     sudoku_env.close()
 
 
-def test_sudoku_animation(
-    sudoku_env: Sudoku, mocker: pytest_mock.MockerFixture
-) -> None:
+def test_sudoku_animation(sudoku_env: Sudoku, mocker: pytest_mock.MockerFixture) -> None:
     """Check that the animation method creates the animation correctly."""
     states = mocker.MagicMock()
     animation = sudoku_env.animate(states)

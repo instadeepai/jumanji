@@ -91,9 +91,7 @@ class RandomGenerator:
             False, indices_are_sorted=True, unique_indices=True
         )  # right
 
-        def take_positions(
-            mask: chex.Array, key: chex.PRNGKey
-        ) -> Tuple[chex.Array, chex.Array]:
+        def take_positions(mask: chex.Array, key: chex.PRNGKey) -> Tuple[chex.Array, chex.Array]:
             food_flat_pos = jax.random.choice(key=key, a=flat_size, shape=(), p=mask)
 
             # Mask out adjacent positions to avoid placing food items next to each other
@@ -138,17 +136,13 @@ class RandomGenerator:
         # Stack x and y coordinates to form a 2D array
         return jnp.stack([agent_positions_x, agent_positions_y], axis=1)
 
-    def sample_levels(
-        self, max_level: int, shape: chex.Shape, key: chex.PRNGKey
-    ) -> chex.Array:
+    def sample_levels(self, max_level: int, shape: chex.Shape, key: chex.PRNGKey) -> chex.Array:
         """Samples levels within specified bounds."""
         return jax.random.randint(key, shape=shape, minval=1, maxval=max_level + 1)
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a state containing grid, agent, and food item configurations."""
-        key_food, key_agents, key_food_level, key_agent_level, key = jax.random.split(
-            key, 5
-        )
+        key_food, key_agents, key_food_level, key_agent_level, key = jax.random.split(key, 5)
 
         # Generate positions for food items
         food_positions = self.sample_food(key_food)
@@ -161,9 +155,7 @@ class RandomGenerator:
         agent_positions = self.sample_agents(key=key_agents, mask=mask)
 
         # Generate levels for agents and food items
-        agent_levels = self.sample_levels(
-            self.max_agent_level, (self.num_agents,), key_agent_level
-        )
+        agent_levels = self.sample_levels(self.max_agent_level, (self.num_agents,), key_agent_level)
         # In the worst case, 3 agents are needed to eat a food item
         max_food_level = jnp.sum(jnp.sort(agent_levels)[:3])
 
@@ -189,6 +181,4 @@ class RandomGenerator:
         )
         step_count = jnp.array(0, jnp.int32)
 
-        return State(
-            key=key, step_count=step_count, agents=agents, food_items=food_items
-        )
+        return State(key=key, step_count=step_count, agents=agents, food_items=food_items)

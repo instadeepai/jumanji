@@ -37,9 +37,7 @@ def make_actor_critic_networks_snake(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `Snake` environment."""
     num_actions = snake.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_snake_cnn(
         num_outputs=num_actions,
         mlp_units=policy_layers,
@@ -84,9 +82,7 @@ def make_snake_cnn(
             return value
         else:
             logits = head(embedding)
-            logits = jnp.where(
-                observation.action_mask, logits, jnp.finfo(jnp.float32).min
-            )
+            logits = jnp.where(observation.action_mask, logits, jnp.finfo(jnp.float32).min)
             return logits
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))

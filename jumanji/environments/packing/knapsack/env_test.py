@@ -72,21 +72,15 @@ class TestSparseKnapsack:
         assert jnp.array_equal(new_state.packed_items, state.packed_items)
         assert jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 
-    def test_knapsack_sparse__does_not_smoke(
-        self, knapsack_sparse_reward: Knapsack
-    ) -> None:
+    def test_knapsack_sparse__does_not_smoke(self, knapsack_sparse_reward: Knapsack) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(knapsack_sparse_reward)
 
-    def test_knapsack_sparse__specs_does_not_smoke(
-        self, knapsack_sparse_reward: Knapsack
-    ) -> None:
+    def test_knapsack_sparse__specs_does_not_smoke(self, knapsack_sparse_reward: Knapsack) -> None:
         """Test that we can access specs without any errors."""
         check_env_specs_does_not_smoke(knapsack_sparse_reward)
 
-    def test_knapsack_sparse__trajectory_action(
-        self, knapsack_sparse_reward: Knapsack
-    ) -> None:
+    def test_knapsack_sparse__trajectory_action(self, knapsack_sparse_reward: Knapsack) -> None:
         """Checks that the agent stops when the remaining budget does not allow extra items
         and that the appropriate reward is received.
         """
@@ -111,9 +105,7 @@ class TestSparseKnapsack:
         assert not jnp.any(timestep.observation.action_mask)
         assert timestep.last()
 
-    def test_knapsack_sparse__invalid_action(
-        self, knapsack_sparse_reward: Knapsack
-    ) -> None:
+    def test_knapsack_sparse__invalid_action(self, knapsack_sparse_reward: Knapsack) -> None:
         """Checks that an invalid action leads to a termination and that the appropriate reward
         is returned.
         """
@@ -167,9 +159,7 @@ class TestDenseKnapsack:
         key = jax.random.PRNGKey(0)
         state, timestep = knapsack_dense_reward.reset(key)
 
-        action = jax.random.randint(
-            key, shape=(), minval=0, maxval=knapsack_dense_reward.num_items
-        )
+        action = jax.random.randint(key, shape=(), minval=0, maxval=knapsack_dense_reward.num_items)
         new_state, next_timestep = step_fn(state, action)
 
         # Check that the state has changed.
@@ -186,15 +176,11 @@ class TestDenseKnapsack:
         assert jnp.array_equal(new_state.packed_items, state.packed_items)
         assert jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 
-    def test_knapsack_dense__does_not_smoke(
-        self, knapsack_dense_reward: Knapsack
-    ) -> None:
+    def test_knapsack_dense__does_not_smoke(self, knapsack_dense_reward: Knapsack) -> None:
         """Test that we can run an episode without any errors."""
         check_env_does_not_smoke(knapsack_dense_reward)
 
-    def test_knapsack_dense__trajectory_action(
-        self, knapsack_dense_reward: Knapsack
-    ) -> None:
+    def test_knapsack_dense__trajectory_action(self, knapsack_dense_reward: Knapsack) -> None:
         """Checks that the agent stops when the remaining budget does not allow extra items
         and that the appropriate reward is received.
         """
@@ -219,9 +205,7 @@ class TestDenseKnapsack:
         assert not jnp.any(timestep.observation.action_mask)
         assert timestep.last()
 
-    def test_knapsack_dense__invalid_action(
-        self, knapsack_dense_reward: Knapsack
-    ) -> None:
+    def test_knapsack_dense__invalid_action(self, knapsack_dense_reward: Knapsack) -> None:
         """Checks that an invalid action leads to a termination and that the appropriate reward
         is returned.
         """

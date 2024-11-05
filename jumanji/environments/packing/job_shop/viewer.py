@@ -118,12 +118,7 @@ class JobShopViewer(Viewer):
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlabel("Time")
         ax.set_ylabel("Machine ID")
-        xlim = (
-            self._num_jobs
-            * self._max_num_ops
-            * self._max_op_duration
-            // self._num_machines
-        )
+        xlim = self._num_jobs * self._max_num_ops * self._max_op_duration // self._num_machines
         ax.set_xlim(0, xlim)
         ax.set_ylim(-0.9, self._num_machines)
         ax.xaxis.get_major_locator().set_params(integer=True)

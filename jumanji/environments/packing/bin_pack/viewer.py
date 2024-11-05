@@ -131,9 +131,7 @@ class BinPackViewer(Viewer):
             ax = fig.get_axes()[0]
         return fig, ax
 
-    def _create_entities(
-        self, state: State
-    ) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
+    def _create_entities(self, state: State) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
         entities = []
         n_items = len(state.items_mask)
         cmap = plt.cm.get_cmap("hsv", n_items)
@@ -201,9 +199,7 @@ class BinPackViewer(Viewer):
 
         n_items = sum(state.items_mask)
         placed_items = sum(state.items_placed)
-        container_volume = (
-            float(container.x_len) * float(container.y_len) * float(container.z_len)
-        )
+        container_volume = float(container.x_len) * float(container.y_len) * float(container.z_len)
         used_volume = self._get_used_volume(state)
         metrics = [
             ("Placed", f"{placed_items:{len(str(n_items))}}/{n_items}"),
@@ -267,9 +263,7 @@ class BinPackViewer(Viewer):
 
     def _get_used_volume(self, state: State) -> float:
         used_volume = sum(
-            float(state.items.x_len[i])
-            * float(state.items.y_len[i])
-            * float(state.items.z_len[i])
+            float(state.items.x_len[i]) * float(state.items.y_len[i]) * float(state.items.z_len[i])
             for i, placed in enumerate(state.items_placed)
             if placed
         )

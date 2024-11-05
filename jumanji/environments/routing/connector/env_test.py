@@ -240,9 +240,7 @@ def test_connector__specs_does_not_smoke(connector: Connector) -> None:
 
 def test_connector__get_action_mask(state: State, connector: Connector) -> None:
     """Validates the action masking."""
-    action_masks = jax.vmap(connector._get_action_mask, (0, None))(
-        state.agents, state.grid
-    )
+    action_masks = jax.vmap(connector._get_action_mask, (0, None))(state.agents, state.grid)
     expected_mask = jnp.array(
         [
             [True, True, False, True, True],

@@ -76,9 +76,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
     ```
     """
 
-    def __init__(
-        self, board_size: int = 4, viewer: Optional[Viewer[State]] = None
-    ) -> None:
+    def __init__(self, board_size: int = 4, viewer: Optional[Viewer[State]] = None) -> None:
         """Initialize the 2048 game.
 
         Args:
@@ -166,9 +164,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
         Args:
@@ -279,9 +275,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         position = jnp.divmod(tile_idx, self.board_size)
 
         # Choose the value of the new cell: 1 with probability 90% or 2 with probability of 10%
-        cell_value = jax.random.choice(
-            subkey, jnp.array([1, 2]), p=jnp.array([0.9, 0.1])
-        )
+        cell_value = jax.random.choice(subkey, jnp.array([1, 2]), p=jnp.array([0.9, 0.1]))
         board = board.at[position].set(cell_value)
 
         return board
@@ -325,9 +319,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

@@ -178,12 +178,8 @@ def make_actor_network_bin_pack(
         ems_embeddings, items_embeddings = torso(observation)
 
         # Process EMSs differently from items.
-        ems_embeddings = hk.Linear(torso.model_size, name="policy_ems_head")(
-            ems_embeddings
-        )
-        items_embeddings = hk.Linear(torso.model_size, name="policy_items_head")(
-            items_embeddings
-        )
+        ems_embeddings = hk.Linear(torso.model_size, name="policy_ems_head")(ems_embeddings)
+        items_embeddings = hk.Linear(torso.model_size, name="policy_items_head")(items_embeddings)
 
         # Outer-product between the embeddings to obtain logits.
         logits = jnp.einsum("...ek,...ik->...ei", ems_embeddings, items_embeddings)
@@ -214,9 +210,7 @@ def make_critic_network_bin_pack(
         ems_mask = observation.ems_mask
         ems_embedding = jnp.sum(ems_embeddings, axis=-2, where=ems_mask[..., None])
         items_mask = observation.items_mask & ~observation.items_placed
-        items_embedding = jnp.sum(
-            items_embeddings, axis=-2, where=items_mask[..., None]
-        )
+        items_embedding = jnp.sum(items_embeddings, axis=-2, where=items_mask[..., None])
         joint_embedding = jnp.concatenate([ems_embedding, items_embedding], axis=-1)
 
         value = hk.nets.MLP((torso.model_size, 1), name="critic_head")(joint_embedding)

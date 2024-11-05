@@ -76,9 +76,7 @@ class TestToyGenerator:
         state1 = toy_generator(jax.random.PRNGKey(1))
 
         chex.clear_trace_counter()
-        generate_solution = jax.jit(
-            chex.assert_max_traces(toy_generator.generate_solution, n=1)
-        )
+        generate_solution = jax.jit(chex.assert_max_traces(toy_generator.generate_solution, n=1))
 
         solution_state1 = generate_solution(jax.random.PRNGKey(1))
         assert isinstance(solution_state1, State)
@@ -87,9 +85,7 @@ class TestToyGenerator:
         assert_trees_are_equal(solution_state1.items, state1.items)
         assert_trees_are_equal(solution_state1.items_mask, state1.items_mask)
         assert_trees_are_different(solution_state1.items_placed, state1.items_placed)
-        assert_trees_are_different(
-            solution_state1.items_location, state1.items_location
-        )
+        assert_trees_are_different(solution_state1.items_location, state1.items_location)
         assert jnp.all(solution_state1.items_placed)
 
         solution_state2 = generate_solution(jax.random.PRNGKey(2))
@@ -120,9 +116,7 @@ class TestCSVGenerator:
         assert csv_generator.max_num_items == dummy_generator.max_num_items
         assert csv_generator.max_num_ems == dummy_generator.max_num_ems
 
-    def test_csv_generator__call(
-        self, dummy_state: State, csv_generator: CSVGenerator
-    ) -> None:
+    def test_csv_generator__call(self, dummy_state: State, csv_generator: CSVGenerator) -> None:
         """Validate that the csv instance generator's call function is jittable and compiles only
         once. Also check that the function is independent of the key.
         """
@@ -146,9 +140,7 @@ class TestCSVGenerator:
 
 class TestRandomGenerator:
     @pytest.fixture
-    def random_generator(
-        self, max_num_items: int = 6, max_num_ems: int = 10
-    ) -> RandomGenerator:
+    def random_generator(self, max_num_items: int = 6, max_num_ems: int = 10) -> RandomGenerator:
         return RandomGenerator(max_num_items, max_num_ems)
 
     def test_random_generator__properties(
@@ -181,9 +173,7 @@ class TestRandomGenerator:
         state1 = random_generator(jax.random.PRNGKey(1))
 
         chex.clear_trace_counter()
-        generate_solution = jax.jit(
-            chex.assert_max_traces(random_generator.generate_solution, n=1)
-        )
+        generate_solution = jax.jit(chex.assert_max_traces(random_generator.generate_solution, n=1))
 
         solution_state1 = generate_solution(jax.random.PRNGKey(1))
         assert isinstance(solution_state1, State)
@@ -192,13 +182,9 @@ class TestRandomGenerator:
         assert_trees_are_equal(solution_state1.items, state1.items)
         assert_trees_are_equal(solution_state1.items_mask, state1.items_mask)
         assert_trees_are_different(solution_state1.items_placed, state1.items_placed)
-        assert_trees_are_different(
-            solution_state1.items_location, state1.items_location
-        )
+        assert_trees_are_different(solution_state1.items_location, state1.items_location)
         assert jnp.all(solution_state1.items_placed | ~solution_state1.items_mask)
-        items_volume = (
-            item_volume(solution_state1.items) * solution_state1.items_mask
-        ).sum()
+        items_volume = (item_volume(solution_state1.items) * solution_state1.items_mask).sum()
         assert jnp.isclose(items_volume, solution_state1.container.volume())
 
         solution_state2 = generate_solution(jax.random.PRNGKey(2))

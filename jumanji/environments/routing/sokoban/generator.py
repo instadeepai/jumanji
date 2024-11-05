@@ -87,9 +87,7 @@ class DeepMindGenerator(Generator):
         self.proportion_of_files = proportion_of_files
 
         # Set the cache path to user's home directory's .cache sub-directory
-        self.cache_path = os.path.join(
-            os.path.expanduser("~"), ".cache", "sokoban_dataset"
-        )
+        self.cache_path = os.path.join(os.path.expanduser("~"), ".cache", "sokoban_dataset")
 
         # Downloads data if not already downloaded
         self._download_data()
@@ -100,9 +98,7 @@ class DeepMindGenerator(Generator):
 
         if self.difficulty in ["unfiltered", "medium"]:
             if self.difficulty == "medium" and split == "test":
-                raise Exception(
-                    "not a valid Deepmind Boxoban difficulty split" "combination"
-                )
+                raise Exception("not a valid Deepmind Boxoban difficulty split" "combination")
             self.train_data_dir = os.path.join(
                 self.train_data_dir,
                 split,
@@ -125,9 +121,7 @@ class DeepMindGenerator(Generator):
         """
 
         key, idx_key = jax.random.split(rng_key)
-        idx = jax.random.randint(
-            idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0]
-        )
+        idx = jax.random.randint(idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0])
         fixed_grid = self._fixed_grids.take(idx, axis=0)
         variable_grid = self._variable_grids.take(idx, axis=0)
 
@@ -157,9 +151,7 @@ class DeepMindGenerator(Generator):
         """
 
         all_files = [
-            f
-            for f in listdir(self.train_data_dir)
-            if isfile(join(self.train_data_dir, f))
+            f for f in listdir(self.train_data_dir) if isfile(join(self.train_data_dir, f))
         ]
         # Only keep a few files if specified
         all_files = all_files[: int(self.proportion_of_files * len(all_files))]
@@ -168,7 +160,6 @@ class DeepMindGenerator(Generator):
         variable_grids_list: List[chex.Array] = []
 
         for file in all_files:
-
             source_file = join(self.train_data_dir, file)
             current_map: List[str] = []
             # parses a game file containing multiple games
@@ -178,9 +169,7 @@ class DeepMindGenerator(Generator):
                         fixed_grid, variable_grid = convert_level_to_array(current_map)
 
                         fixed_grids_list.append(jnp.array(fixed_grid, dtype=jnp.uint8))
-                        variable_grids_list.append(
-                            jnp.array(variable_grid, dtype=jnp.uint8)
-                        )
+                        variable_grids_list.append(jnp.array(variable_grid, dtype=jnp.uint8))
 
                         current_map = []
                     if "#" == line[0]:
@@ -214,9 +203,7 @@ class DeepMindGenerator(Generator):
             if response.status_code != 200:
                 raise Exception("Could not download levels")
 
-            path_to_zip_file = os.path.join(
-                self.cache_path, "boxoban_levels-master.zip"
-            )
+            path_to_zip_file = os.path.join(self.cache_path, "boxoban_levels-master.zip")
             with open(path_to_zip_file, "wb") as handle:
                 for data in tqdm(response.iter_content()):
                     handle.write(data)
@@ -284,9 +271,7 @@ class HuggingFaceDeepMindGenerator(Generator):
         """
 
         key, idx_key = jax.random.split(rng_key)
-        idx = jax.random.randint(
-            idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0]
-        )
+        idx = jax.random.randint(idx_key, shape=(), minval=0, maxval=self._fixed_grids.shape[0])
         fixed_grid = self._fixed_grids.take(idx, axis=0)
         variable_grid = self._variable_grids.take(idx, axis=0)
 

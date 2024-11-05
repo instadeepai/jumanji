@@ -50,9 +50,7 @@ def grid_padded() -> chex.Array:
 @pytest.fixture
 def full_lines() -> chex.Array:
     """Full lines related to the grid_padded"""
-    full_lines = jnp.array(
-        [False, False, False, False, False, True, False, False, False, False]
-    )
+    full_lines = jnp.array([False, False, False, False, False, True, False, False, False, False])
     return full_lines
 
 
@@ -83,9 +81,7 @@ def test_place_tetromino(grid_padded: chex.Array, tetromino: chex.Array) -> None
     new_grid_padded, _ = place_tetromino_fn(grid_padded, tetromino, 0)
     cells_count = jnp.clip(new_grid_padded, a_max=1).sum()
     old_cells_count = jnp.clip(grid_padded, a_max=1).sum()
-    assert (
-        cells_count == old_cells_count + 4
-    )  # 4 is the number of filled cells a tetromino
+    assert cells_count == old_cells_count + 4  # 4 is the number of filled cells a tetromino
     expected_binary_grid_padded = grid_padded.at[2:6, 0:4].add(tetromino)
     new_grid_padded_binary = jnp.clip(new_grid_padded, a_max=1)
     assert (expected_binary_grid_padded == new_grid_padded_binary).all()

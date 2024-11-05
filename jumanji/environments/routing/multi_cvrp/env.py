@@ -136,8 +136,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
         self._speed: int = 1
 
         self._max_local_time = (
-            max_single_vehicle_distance(self._map_max, self._num_customers)
-            / self._speed
+            max_single_vehicle_distance(self._map_max, self._num_customers) / self._speed
         )
         super().__init__()
 
@@ -163,9 +162,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 
@@ -180,8 +177,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
         new_state = self._update_state(state, action)
 
         is_done = (
-            (new_state.nodes.demands.sum() == 0)
-            & (new_state.vehicles.positions == DEPOT_IDX).all()
+            (new_state.nodes.demands.sum() == 0) & (new_state.vehicles.positions == DEPOT_IDX).all()
         ) | jnp.any(new_state.step_count > self._num_customers * 2)
 
         reward = self._reward_fn(state, new_state, is_done)
@@ -398,9 +394,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
 
         # Zero node selections where more than one vehicle selected a valid conditional
         # action to visit the same node.
-        values, unique_indices = jnp.unique(
-            next_nodes, return_index=True, size=self._num_vehicles
-        )
+        values, unique_indices = jnp.unique(next_nodes, return_index=True, size=self._num_vehicles)
         next_nodes = jnp.zeros(len(next_nodes), dtype=next_nodes.dtype)
         next_nodes = next_nodes.at[unique_indices].set(values)
 
@@ -409,9 +403,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
         end_coords = state.nodes.coordinates[next_nodes]
         step_travel_distances = compute_distance(start_coords, end_coords)
         vehicle_distances = state.vehicles.distances + step_travel_distances
-        vehicle_local_times = (
-            state.vehicles.local_times + step_travel_distances / self._speed
-        )
+        vehicle_local_times = state.vehicles.local_times + step_travel_distances / self._speed
 
         # Update the vehicle time penalties.
         vehicle_time_penalties = state.vehicles.time_penalties + compute_time_penalties(
@@ -489,9 +481,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
             action_mask=state.action_mask,
         )
 
-    def _state_to_timestep(
-        self, state: State, reward: chex.Numeric, is_done: bool
-    ) -> TimeStep:
+    def _state_to_timestep(self, state: State, reward: chex.Numeric, is_done: bool) -> TimeStep:
         """
         Checks if the state is terminal and converts it into a timestep.
 

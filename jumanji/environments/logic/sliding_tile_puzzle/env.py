@@ -92,9 +92,7 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
             time_limit: maximum number of steps before the episode is terminated, default to 500.
             viewer: environment viewer for rendering.
         """
-        self.generator = generator or RandomWalkGenerator(
-            grid_size=5, num_random_moves=200
-        )
+        self.generator = generator or RandomWalkGenerator(grid_size=5, num_random_moves=200)
         self.reward_fn = reward_fn or DenseRewardFn()
         self.time_limit = time_limit
         super().__init__()
@@ -117,9 +115,7 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action."""
         (updated_puzzle, updated_empty_tile_position) = self._move_empty_tile(
             state.puzzle, state.empty_tile_position, action
@@ -175,8 +171,7 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
 
         # Predicate for the conditional
         is_valid_move = jnp.all(
-            (new_empty_tile_position >= 0)
-            & (new_empty_tile_position < self.generator.grid_size)
+            (new_empty_tile_position >= 0) & (new_empty_tile_position < self.generator.grid_size)
         )
 
         # Swap the empty tile and the tile at the new position
@@ -274,9 +269,7 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._env_viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

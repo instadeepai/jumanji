@@ -134,12 +134,8 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
         agent_position = specs.Spec(
             Position,
             "PositionSpec",
-            row=specs.BoundedArray(
-                (), jnp.int32, 0, self.num_rows - 1, "row_coordinate"
-            ),
-            col=specs.BoundedArray(
-                (), jnp.int32, 0, self.num_cols - 1, "col_coordinate"
-            ),
+            row=specs.BoundedArray((), jnp.int32, 0, self.num_rows - 1, "row_coordinate"),
+            col=specs.BoundedArray((), jnp.int32, 0, self.num_cols - 1, "col_coordinate"),
         )
         walls = specs.BoundedArray(
             shape=(self.num_rows, self.num_cols),
@@ -196,9 +192,7 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 
@@ -268,9 +262,7 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
         )
         return state, timestep
 
-    def _compute_action_mask(
-        self, walls: chex.Array, agent_position: Position
-    ) -> chex.Array:
+    def _compute_action_mask(self, walls: chex.Array, agent_position: Position) -> chex.Array:
         """Compute the action mask.
         An action is considered invalid if it leads to a WALL or goes outside of the maze.
         """

@@ -123,9 +123,7 @@ class PacManViewer(MazeViewer):
 
         return self._animation
 
-    def _add_grid_image(
-        self, state: Union[Observation, State], ax: Axes
-    ) -> image.AxesImage:
+    def _add_grid_image(self, state: Union[Observation, State], ax: Axes) -> image.AxesImage:
         img = create_grid_image(state)
         ax.set_axis_off()
         return ax.imshow(img)

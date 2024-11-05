@@ -54,9 +54,7 @@ def test_uniform_random_generator__no_retrace(
 ) -> None:
     """Checks that generator only traces the function once and works when jitted."""
     keys = jax.random.split(key, 2)
-    jitted_generator = jax.jit(
-        chex.assert_max_traces((uniform_random_generator.__call__), n=1)
-    )
+    jitted_generator = jax.jit(chex.assert_max_traces((uniform_random_generator.__call__), n=1))
 
     for key in keys:
         jitted_generator(key)
@@ -246,9 +244,7 @@ class TestRandomWalkGenerator:
     ) -> None:
         """Checks that generator only traces the function once and works when jitted."""
         keys = jax.random.split(key, 2)
-        jitted_generator = jax.jit(
-            chex.assert_max_traces((random_walk_generator.__call__), n=1)
-        )
+        jitted_generator = jax.jit(chex.assert_max_traces((random_walk_generator.__call__), n=1))
 
         for key in keys:
             jitted_generator(key)
@@ -320,9 +316,7 @@ class TestRandomWalkGenerator:
         assert (new_grid == end_grid).all()
         assert (new_key == end_key).all()
 
-    def test_initialize_agents(
-        self, random_walk_generator: RandomWalkGenerator
-    ) -> None:
+    def test_initialize_agents(self, random_walk_generator: RandomWalkGenerator) -> None:
         grid, agents = random_walk_generator._initialize_agents(key, empty_grid)
         assert agents == agents_starting_initialise_agents
         assert (grid == valid_starting_grid_initialize_agents).all()
@@ -392,9 +386,7 @@ class TestRandomWalkGenerator:
         expected_value: chex.Array,
     ) -> None:
         grid, agents = function_input
-        dones = jax.vmap(random_walk_generator._no_available_cells, in_axes=(None, 0))(
-            grid, agents
-        )
+        dones = jax.vmap(random_walk_generator._no_available_cells, in_axes=(None, 0))(grid, agents)
         assert (dones == expected_value).all()
 
     @staticmethod
@@ -411,9 +403,7 @@ class TestRandomWalkGenerator:
         function_input: chex.Array,
         expected_value: chex.Array,
     ) -> None:
-        position_tuple = random_walk_generator._convert_flat_position_to_tuple(
-            function_input
-        )
+        position_tuple = random_walk_generator._convert_flat_position_to_tuple(function_input)
         assert (position_tuple == expected_value).all()
 
     @staticmethod
@@ -430,9 +420,7 @@ class TestRandomWalkGenerator:
         function_input: chex.Array,
         expected_value: chex.Array,
     ) -> None:
-        position_tuple = random_walk_generator._convert_tuple_to_flat_position(
-            function_input
-        )
+        position_tuple = random_walk_generator._convert_tuple_to_flat_position(function_input)
         assert (position_tuple == expected_value).all()
 
     @staticmethod
@@ -545,9 +533,9 @@ class TestRandomWalkGenerator:
     ) -> None:
         agent, grid, action = function_input
         expected_grids, expected_agents = expected_value
-        new_agents, new_grids = jax.vmap(
-            random_walk_generator._step_agent, in_axes=(0, None, 0)
-        )(agent, grid, action)
+        new_agents, new_grids = jax.vmap(random_walk_generator._step_agent, in_axes=(0, None, 0))(
+            agent, grid, action
+        )
         # assert new_agents == expected_agents
         assert (new_grids == expected_grids).all()
 
@@ -569,7 +557,5 @@ class TestRandomWalkGenerator:
         expected_value: chex.Array,
     ) -> None:
         grid, agent, new_position = function_input
-        valid_position = random_walk_generator._is_valid_position(
-            grid, agent, new_position
-        )
+        valid_position = random_walk_generator._is_valid_position(grid, agent, new_position)
         assert (valid_position == expected_value).all()

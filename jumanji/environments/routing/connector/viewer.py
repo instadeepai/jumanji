@@ -98,9 +98,7 @@ class ConnectorViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=ConnectorViewer.FIGURE_SIZE
-        )
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=ConnectorViewer.FIGURE_SIZE)
         plt.close(fig)
 
         def make_frame(grid_index: int) -> None:
@@ -150,9 +148,7 @@ class ConnectorViewer(Viewer):
             for col in range(cols):
                 self._draw_grid_cell(grid[row, col], row, col, ax)
 
-    def _draw_grid_cell(
-        self, cell_value: int, row: int, col: int, ax: plt.Axes
-    ) -> None:
+    def _draw_grid_cell(self, cell_value: int, row: int, col: int, ax: plt.Axes) -> None:
         cell = plt.Rectangle((col, row), 1, 1, **self._get_cell_attributes(cell_value))
         ax.add_patch(cell)
 

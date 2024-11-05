@@ -109,12 +109,8 @@ def test_is_tree_with_leaves_of_type(
     """
     assert pytree_test_utils.is_tree_with_leaves_of_type(jax_tree, jnp.ndarray)
     assert pytree_test_utils.is_tree_with_leaves_of_type(np_tree, np.ndarray)
-    assert not pytree_test_utils.is_tree_with_leaves_of_type(
-        jax_and_numpy_tree, jnp.ndarray
-    )
-    assert not pytree_test_utils.is_tree_with_leaves_of_type(
-        jax_and_numpy_tree, np.ndarray
-    )
+    assert not pytree_test_utils.is_tree_with_leaves_of_type(jax_and_numpy_tree, jnp.ndarray)
+    assert not pytree_test_utils.is_tree_with_leaves_of_type(jax_and_numpy_tree, np.ndarray)
 
 
 def test_assert_tree_with_leaves_of_type(
@@ -133,16 +129,12 @@ def test_assert_tree_with_leaves_of_type(
         AssertionError,
         match=f"The tree has at least one leaf that is not of type {jnp.ndarray}.",
     ):
-        pytree_test_utils.assert_tree_with_leaves_of_type(
-            jax_and_numpy_tree, jnp.ndarray
-        )
+        pytree_test_utils.assert_tree_with_leaves_of_type(jax_and_numpy_tree, jnp.ndarray)
     with pytest.raises(
         AssertionError,
         match=f"The tree has at least one leaf that is not of type {np.ndarray}.",
     ):
-        pytree_test_utils.assert_tree_with_leaves_of_type(
-            jax_and_numpy_tree, np.ndarray
-        )
+        pytree_test_utils.assert_tree_with_leaves_of_type(jax_and_numpy_tree, np.ndarray)
 
 
 def test_assert_is_jax_array_tree(

@@ -124,7 +124,6 @@ class AsciiGenerator(Generator):
         self.y_size = self.numpy_maze.shape[1]
 
     def __call__(self, key: chex.PRNGKey) -> State:
-
         grid = self.numpy_maze
         pellets = self.pellet_spaces.shape[0]
         frightened_state_time = jnp.array(0, jnp.int32)
