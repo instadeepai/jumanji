@@ -102,8 +102,7 @@ def make_action_mask(
 
     full_action_mask = node_edges != EMPTY_NODE
     action_mask = (
-        full_action_mask[jnp.arange(num_agents), position]
-        & ~finished_agents[:, jnp.newaxis]
+        full_action_mask[jnp.arange(num_agents), position] & ~finished_agents[:, jnp.newaxis]
     )
 
     return action_mask
@@ -194,9 +193,7 @@ def init_graph(nodes: chex.Array, max_degree: int, num_edges: int) -> Graph:
     return graph
 
 
-def init_graph_merge(
-    graph_a: Graph, graph_b: Graph, num_edges: int, max_degree: int
-) -> Graph:
+def init_graph_merge(graph_a: Graph, graph_b: Graph, num_edges: int, max_degree: int) -> Graph:
     """Merge two graphs and initialize the setting to add new edges.
 
     Args:
@@ -230,9 +227,7 @@ def init_graph_merge(
 
     node_edges = jnp.ones((total_nodes, total_nodes), dtype=jnp.int32) * EMPTY_NODE
     node_edges = node_edges.at[0:nodes_a, 0:nodes_a].set(graph_a.node_edges)
-    node_edges = node_edges.at[nodes_a:total_nodes, nodes_a:total_nodes].set(
-        graph_b.node_edges
-    )
+    node_edges = node_edges.at[nodes_a:total_nodes, nodes_a:total_nodes].set(graph_b.node_edges)
 
     graph = Graph(
         nodes=nodes,
@@ -262,9 +257,7 @@ def correct_graph_offset(graph: Graph, offset: int) -> Graph:
     nodes = graph.nodes + offset
     edges = graph.edges + offset
 
-    edge_codes = jax.vmap(correct_edge_code_offset, in_axes=(0, None))(
-        graph.edge_codes, offset
-    )
+    edge_codes = jax.vmap(correct_edge_code_offset, in_axes=(0, None))(graph.edge_codes, offset)
 
     node_edges = graph.node_edges
     zero_mask = node_edges != EMPTY_NODE
@@ -358,9 +351,7 @@ def make_random_edge_from_nodes(
     return edge
 
 
-def add_random_edges(
-    graph: Graph, total_edges: jnp.int32, base_key: chex.PRNGKey
-) -> Graph:
+def add_random_edges(graph: Graph, total_edges: jnp.int32, base_key: chex.PRNGKey) -> Graph:
     """Add random edges until the number of desired edges is reached."""
 
     def desired_num_edges_not_reach(arg: Any) -> Any:
@@ -406,9 +397,7 @@ def update_conected_nodes(
     return (source, target, graph)
 
 
-def dummy_add_nodes(
-    graph: Graph, edge: chex.Array, source: chex.Array, target: chex.Array
-) -> Any:
+def dummy_add_nodes(graph: Graph, edge: chex.Array, source: chex.Array, target: chex.Array) -> Any:
     return (source, target, graph)
 
 
@@ -516,9 +505,7 @@ def merge_graphs(
     base_key1, base_key2 = jax.random.split(base_key, 2)
 
     # Add one edge between both subgraphs to guarentee the new graph is connected.
-    graph, _ = add_edge(
-        graph, make_random_edge_from_nodes(graph_a.nodes, graph_b.nodes, base_key1)
-    )
+    graph, _ = add_edge(graph, make_random_edge_from_nodes(graph_a.nodes, graph_b.nodes, base_key1))
 
     # Add remaining edges until the desired number of edges is reached.
     graph = add_random_edges(graph, num_edges, base_key2)
@@ -597,9 +584,9 @@ def multi_random_walk(
 
     # Get the total number of edges we need to add when merging the graphs.
     sum_ratio = np.arange(1, num_agents).sum()
-    frac = np.cumsum(
-        total_edges_merge_graph * np.arange(1, num_agents - 1) / sum_ratio
-    ).astype(np.int32)
+    frac = np.cumsum(total_edges_merge_graph * np.arange(1, num_agents - 1) / sum_ratio).astype(
+        np.int32
+    )
     edges_per_merge_graph = jnp.split(jnp.arange(total_edges_merge_graph), frac)
     num_edges_per_merge_graph = [len(edges) for edges in edges_per_merge_graph]
 
@@ -612,8 +599,6 @@ def multi_random_walk(
     for i in range(1, num_agents):
         total_edges += num_edges_per_sub_graph[i] + num_edges_per_merge_graph[i - 1]
         graph_i = correct_graph_offset(graphs[i - 1], nodes_offsets[i])
-        graph = merge_graphs(
-            graph, graph_i, total_edges, max_degree, merge_graph_keys[i]
-        )
+        graph = merge_graphs(graph, graph_i, total_edges, max_degree, merge_graph_keys[i])
 
     return graph, nodes_per_sub_graph

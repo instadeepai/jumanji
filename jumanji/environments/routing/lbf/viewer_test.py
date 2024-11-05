@@ -38,9 +38,7 @@ def test_lbf_viewer_render(
     viewer.close()
 
 
-def test_lbf_viewer_animate(
-    lbf_environment: LevelBasedForaging, key: chex.PRNGKey
-) -> None:
+def test_lbf_viewer_animate(lbf_environment: LevelBasedForaging, key: chex.PRNGKey) -> None:
     """Test animation using LevelBasedForagingViewer."""
 
     state, _ = jax.jit(lbf_environment.reset)(key)

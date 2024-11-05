@@ -55,7 +55,5 @@ def test_tree_slice() -> None:
         ),
     ],
 )
-def test_tree_add_element(
-    tree: T, i: chex.Numeric, element: T, expected_tree: T
-) -> None:
+def test_tree_add_element(tree: T, i: chex.Numeric, element: T, expected_tree: T) -> None:
     assert_trees_are_equal(tree_add_element(tree, i, element), expected_tree)

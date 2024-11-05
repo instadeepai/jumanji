@@ -111,9 +111,7 @@ class Spec(abc.ABC, Generic[T]):
 
     def generate_value(self) -> T:
         """Generate a value which conforms to this spec."""
-        constructor_kwargs = jax.tree_util.tree_map(
-            lambda spec: spec.generate_value(), self._specs
-        )
+        constructor_kwargs = jax.tree_util.tree_map(lambda spec: spec.generate_value(), self._specs)
         return self._constructor(**constructor_kwargs)
 
     def replace(self, **kwargs: Any) -> "Spec":
@@ -159,7 +157,7 @@ class Array(Spec[chex.Array]):
         self._dtype = get_valid_dtype(dtype)
 
     def __repr__(self) -> str:
-        return f"Array(shape={repr(self.shape)}, dtype={repr(self.dtype)}, name={repr(self.name)})"
+        return f"Array(shape={self.shape!r}, dtype={self.dtype!r}, name={self.name!r})"
 
     def __reduce__(self) -> Any:
         """To allow pickle to serialize the spec."""
@@ -196,21 +194,15 @@ class Array(Spec[chex.Array]):
         """
         value = jnp.asarray(value)
         if value.shape != self.shape:
-            self._fail_validation(
-                f"Expected shape {self.shape} but found {value.shape}"
-            )
+            self._fail_validation(f"Expected shape {self.shape} but found {value.shape}")
         if value.dtype != self.dtype:
-            self._fail_validation(
-                f"Expected dtype {self.dtype} but found {value.dtype}"
-            )
+            self._fail_validation(f"Expected dtype {self.dtype} but found {value.dtype}")
         return value
 
     def _get_constructor_kwargs(self) -> Dict[str, Any]:
         """Returns constructor kwargs for instantiating a new copy of this spec."""
         # Get the names and kinds of the constructor parameters.
-        params = inspect.signature(
-            functools.partial(type(self).__init__, self)
-        ).parameters
+        params = inspect.signature(functools.partial(type(self).__init__, self)).parameters
         # __init__ must not accept *args or **kwargs, since otherwise we won't be
         # able to infer what the corresponding attribute names are.
         kinds = {value.kind for value in params.values()}
@@ -306,20 +298,16 @@ class BoundedArray(Array):
         try:
             bcast_minimum = jnp.broadcast_to(minimum, shape=shape)
         except ValueError as jnp_exception:
-            raise ValueError(
-                "`minimum` is incompatible with `shape`"
-            ) from jnp_exception
+            raise ValueError("`minimum` is incompatible with `shape`") from jnp_exception
         try:
             bcast_maximum = jnp.broadcast_to(maximum, shape=shape)
         except ValueError as jnp_exception:
-            raise ValueError(
-                "`maximum` is incompatible with `shape`"
-            ) from jnp_exception
+            raise ValueError("`maximum` is incompatible with `shape`") from jnp_exception
 
         if jnp.any(bcast_minimum > bcast_maximum):
             raise ValueError(
                 f"All values in `minimum` must be less than or equal to their corresponding "
-                f"value in `maximum`, got: \n\tminimum={repr(minimum)}\n\tmaximum={repr(maximum)}"
+                f"value in `maximum`, got: \n\tminimum={minimum!r}\n\tmaximum={maximum!r}"
             )
         self._constructor = lambda: jnp.full(shape, minimum, dtype)
         self._minimum = minimum
@@ -327,8 +315,8 @@ class BoundedArray(Array):
 
     def __repr__(self) -> str:
         return (
-            f"BoundedArray(shape={repr(self.shape)}, dtype={repr(self.dtype)}, "
-            f"name={repr(self.name)}, minimum={repr(self.minimum)}, maximum={repr(self.maximum)})"
+            f"BoundedArray(shape={self.shape!r}, dtype={self.dtype!r}, "
+            f"name={self.name!r}, minimum={self.minimum!r}, maximum={self.maximum!r})"
         )
 
     def __reduce__(self) -> Any:
@@ -356,7 +344,7 @@ class BoundedArray(Array):
         if (value < self.minimum).any() or (value > self.maximum).any():
             self._fail_validation(
                 "Values were not all within bounds "
-                f"{repr(self.minimum)} <= {repr(value)} <= {repr(self.maximum)}"
+                f"{self.minimum!r} <= {value!r} <= {self.maximum!r}"
             )
         return value
 
@@ -384,9 +372,7 @@ class DiscreteArray(BoundedArray):
     that accepts discrete actions.
     """
 
-    def __init__(
-        self, num_values: int, dtype: Union[jnp.dtype, type] = jnp.int32, name: str = ""
-    ):
+    def __init__(self, num_values: int, dtype: Union[jnp.dtype, type] = jnp.int32, name: str = ""):
         """Initializes a new `DiscreteArray` spec.
 
         Args:
@@ -398,9 +384,7 @@ class DiscreteArray(BoundedArray):
             ValueError: if `num_values` is not positive, if `dtype` is not integer.
         """
         if num_values <= 0 or not jnp.issubdtype(type(num_values), jnp.integer):
-            raise ValueError(
-                f"`num_values` must be a positive integer, got {num_values}."
-            )
+            raise ValueError(f"`num_values` must be a positive integer, got {num_values}.")
 
         if not jnp.issubdtype(dtype, jnp.integer):
             raise ValueError(f"`dtype` must be integer, got {dtype}.")
@@ -412,9 +396,9 @@ class DiscreteArray(BoundedArray):
 
     def __repr__(self) -> str:
         return (
-            f"DiscreteArray(shape={repr(self.shape)}, dtype={repr(self.dtype)}, "
-            f"name={repr(self.name)}, minimum={repr(self.minimum)}, maximum={repr(self.maximum)}, "
-            f"num_values={repr(self.num_values)})"
+            f"DiscreteArray(shape={self.shape!r}, dtype={self.dtype!r}, "
+            f"name={self.name!r}, minimum={self.minimum!r}, maximum={self.maximum!r}, "
+            f"num_values={self.num_values!r})"
         )
 
     def __reduce__(self) -> Any:
@@ -479,9 +463,9 @@ class MultiDiscreteArray(BoundedArray):
 
     def __repr__(self) -> str:
         return (
-            f"MultiDiscreteArray(shape={repr(self.shape)}, dtype={repr(self.dtype)}, "
-            f"name={repr(self.name)}, minimum={repr(self.minimum)}, maximum={repr(self.maximum)}, "
-            f"num_values={repr(self.num_values)})"
+            f"MultiDiscreteArray(shape={self.shape!r}, dtype={self.dtype!r}, "
+            f"name={self.name!r}, minimum={self.minimum!r}, maximum={self.maximum!r}, "
+            f"num_values={self.num_values!r})"
         )
 
     def __reduce__(self) -> Any:

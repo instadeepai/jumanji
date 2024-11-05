@@ -72,9 +72,7 @@ class SnakeViewer(Viewer):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(
-            num=f"{self._figure_name}Anim", figsize=self._figure_size
-        )
+        fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
         self._draw_board(ax, states[0])
         plt.close(fig)
 
@@ -144,7 +142,7 @@ class SnakeViewer(Viewer):
 
         patches = []
         linewidth = (
-            min(n * size for n, size in zip((num_rows, num_cols), self._figure_size))
+            min(n * size for n, size in zip((num_rows, num_cols), self._figure_size, strict=False))
             / 44.0
         )
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(

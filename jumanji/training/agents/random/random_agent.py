@@ -89,8 +89,6 @@ class RandomAgent(Agent):
             extras = next_timestep.extras
             return acting_state, extras
 
-        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape(
-            (self.n_steps, -1)
-        )
+        acting_keys = jax.random.split(acting_state.key, self.n_steps).reshape((self.n_steps, -1))
         acting_state, extras = jax.lax.scan(run_one_step, acting_state, acting_keys)
         return acting_state, extras

@@ -87,9 +87,7 @@ def test_space__volume(space: Space) -> None:
         ),
     ],
 )
-def test_space__intersection(
-    space1: Space, space2: Space, expected_intersection: Space
-) -> None:
+def test_space__intersection(space1: Space, space2: Space, expected_intersection: Space) -> None:
     space = space1.intersection(space2)
     assert space == expected_intersection
 
@@ -128,9 +126,7 @@ def test_space__is_empty(space: Space, is_empty: bool) -> None:
         ),
     ],
 )
-def test_space__intersect(
-    space1: Space, space2: Space, expected_intersect: bool
-) -> None:
+def test_space__intersect(space1: Space, space2: Space, expected_intersect: bool) -> None:
     assert space1.intersect(space2) == expected_intersect
 
 

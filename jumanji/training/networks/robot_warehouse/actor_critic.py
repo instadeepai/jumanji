@@ -40,9 +40,7 @@ def make_actor_critic_networks_robot_warehouse(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `RobotWarehouse` environment."""
     num_values = np.asarray(robot_warehouse.action_spec.num_values)
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     policy_network = make_actor_network(
         time_limit=robot_warehouse.time_limit,
         transformer_num_blocks=transformer_num_blocks,
@@ -111,9 +109,7 @@ class RobotWarehouseTorso(hk.Module):
                 model_size=self.model_size,
                 name=f"self_attention_block_{block_id}",
             )
-            embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings
-            )
+            embeddings = transformer_block(query=embeddings, key=embeddings, value=embeddings)
         return embeddings  # (B, N, H)
 
 

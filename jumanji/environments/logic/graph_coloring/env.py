@@ -97,9 +97,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
             viewer: environment viewer for rendering.
                 Defaults to `GraphColoringViewer`.
         """
-        self.generator = generator or RandomGenerator(
-            num_nodes=20, edge_probability=0.8
-        )
+        self.generator = generator or RandomGenerator(num_nodes=20, edge_probability=0.8)
         self.num_nodes = self.generator.num_nodes
         super().__init__()
 
@@ -138,9 +136,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
         Specifically, this function allows the agent to choose
@@ -182,9 +178,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         # Update the current node index
         next_node_index = (state.current_node_index + 1) % self.num_nodes
 
-        next_action_mask = self._get_valid_actions(
-            next_node_index, state.adj_matrix, state.colors
-        )
+        next_action_mask = self._get_valid_actions(next_node_index, state.adj_matrix, state.colors)
 
         next_state = State(
             adj_matrix=state.adj_matrix,
@@ -263,9 +257,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             action_spec: specs.DiscreteArray object
         """
-        return specs.DiscreteArray(
-            num_values=self.num_nodes, name="action", dtype=jnp.int32
-        )
+        return specs.DiscreteArray(num_values=self.num_nodes, name="action", dtype=jnp.int32)
 
     def _get_valid_actions(
         self, current_node_index: int, adj_matrix: chex.Array, colors: chex.Array
@@ -307,9 +299,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._env_viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._env_viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

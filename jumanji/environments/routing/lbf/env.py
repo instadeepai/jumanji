@@ -119,7 +119,6 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
         normalize_reward: bool = True,
         penalty: float = 0.0,
     ) -> None:
-
         self._generator = generator or RandomGenerator(
             grid_size=8,
             fov=8,
@@ -154,9 +153,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
         super().__init__()
 
         # create viewer for rendering environment
-        self._viewer = viewer or LevelBasedForagingViewer(
-            self.grid_size, "LevelBasedForaging"
-        )
+        self._viewer = viewer or LevelBasedForagingViewer(self.grid_size, "LevelBasedForaging")
 
     def __repr__(self) -> str:
         return (
@@ -225,21 +222,13 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
             terminate + 2 * truncate,
             [
                 # !terminate !trunc
-                lambda rew, obs: transition(
-                    reward=rew, observation=obs, shape=self.num_agents
-                ),
+                lambda rew, obs: transition(reward=rew, observation=obs, shape=self.num_agents),
                 # terminate !truncate
-                lambda rew, obs: termination(
-                    reward=rew, observation=obs, shape=self.num_agents
-                ),
+                lambda rew, obs: termination(reward=rew, observation=obs, shape=self.num_agents),
                 # !terminate truncate
-                lambda rew, obs: truncation(
-                    reward=rew, observation=obs, shape=self.num_agents
-                ),
+                lambda rew, obs: truncation(reward=rew, observation=obs, shape=self.num_agents),
                 # terminate truncate
-                lambda rew, obs: termination(
-                    reward=rew, observation=obs, shape=self.num_agents
-                ),
+                lambda rew, obs: termination(reward=rew, observation=obs, shape=self.num_agents),
             ],
             reward,
             observation,
@@ -250,9 +239,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
 
     def _get_extra_info(self, state: State, timestep: TimeStep) -> Dict:
         """Computes extras metrics to be returned within the timestep."""
-        n_eaten = state.food_items.eaten.sum() + timestep.extras.get(
-            "eaten_food", jnp.int32(0)
-        )
+        n_eaten = state.food_items.eaten.sum() + timestep.extras.get("eaten_food", jnp.int32(0))
         percent_eaten = (n_eaten / self.num_food) * 100
         return {"percent_eaten": percent_eaten}
 
@@ -288,15 +275,11 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
             )
 
             # Zero out all agents if food was not eaten and add penalty
-            reward = (
-                adj_loading_agents_levels * eaten_this_step * food.level
-            ) - penalty
+            reward = (adj_loading_agents_levels * eaten_this_step * food.level) - penalty
 
             # jnp.nan_to_num: Used in the case where no agents are adjacent to the food
             normalizer = sum_agents_levels * total_food_level
-            reward = jnp.where(
-                self.normalize_reward, jnp.nan_to_num(reward / normalizer), reward
-            )
+            reward = jnp.where(self.normalize_reward, jnp.nan_to_num(reward / normalizer), reward)
 
             return reward
 
@@ -336,9 +319,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
             matplotlib.animation.FuncAnimation: Animation object that can be saved as a GIF, MP4,
             or rendered with HTML.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup."""

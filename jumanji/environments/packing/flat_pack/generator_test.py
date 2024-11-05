@@ -84,9 +84,7 @@ def test_random_flat_pack_generator__no_retrace(
 ) -> None:
     """Checks that generator call method is only traced once when jitted."""
     keys = jax.random.split(key, 2)
-    jitted_generator = jax.jit(
-        chex.assert_max_traces((random_flat_pack_generator.__call__), n=1)
-    )
+    jitted_generator = jax.jit(chex.assert_max_traces((random_flat_pack_generator.__call__), n=1))
 
     for key in keys:
         jitted_generator(key)
@@ -121,12 +119,13 @@ def test_random_flat_pack_generator__fill_grid_rows(
     """
 
     (
-        grid,
-        sum_value,
-        num_col_blocks,
-    ), arr_value = random_flat_pack_generator._fill_grid_rows(
-        (grid_columns_partially_filled, 2, 2), 2
-    )
+        (
+            grid,
+            sum_value,
+            num_col_blocks,
+        ),
+        arr_value,
+    ) = random_flat_pack_generator._fill_grid_rows((grid_columns_partially_filled, 2, 2), 2)
 
     assert grid.shape == (5, 5)
     assert jnp.array_equal(grid, grid_rows_partially_filled)
@@ -143,9 +142,7 @@ def test_random_flat_pack_generator__select_sides(
     at index 0 or 2.
     """
 
-    side_chosen_array = random_flat_pack_generator._select_sides(
-        jnp.array([1.0, 2.0, 3.0]), key
-    )
+    side_chosen_array = random_flat_pack_generator._select_sides(jnp.array([1.0, 2.0, 3.0]), key)
 
     assert side_chosen_array.shape == (3,)
     # check that the output is different from the input
@@ -160,11 +157,12 @@ def test_random_flat_pack_generator__select_col_interlocks(
     """Checks that interlocks are created along a given column of the grid."""
 
     (
-        grid_with_interlocks_selected,
-        new_key,
-    ), column = random_flat_pack_generator._select_col_interlocks(
-        (grid_rows_partially_filled, key), 2
-    )
+        (
+            grid_with_interlocks_selected,
+            new_key,
+        ),
+        column,
+    ) = random_flat_pack_generator._select_col_interlocks((grid_rows_partially_filled, key), 2)
 
     assert grid_with_interlocks_selected.shape == (5, 5)
     assert jnp.not_equal(key, new_key).all()
@@ -185,11 +183,12 @@ def test_random_flat_pack_generator__select_row_interlocks(
     """Checks that interlocks are created along a given row of the grid."""
 
     (
-        grid_with_interlocks_selected,
-        new_key,
-    ), row = random_flat_pack_generator._select_row_interlocks(
-        (grid_rows_partially_filled, key), 2
-    )
+        (
+            grid_with_interlocks_selected,
+            new_key,
+        ),
+        row,
+    ) = random_flat_pack_generator._select_row_interlocks((grid_rows_partially_filled, key), 2)
 
     assert grid_with_interlocks_selected.shape == (5, 5)
     assert jnp.not_equal(key, new_key).all()
@@ -208,12 +207,8 @@ def test_random_flat_pack_generator__first_nonzero(
 ) -> None:
     """Checks that the indices of the first non-zero value in a grid is found correctly."""
 
-    first_nonzero_row = random_flat_pack_generator._first_nonzero(
-        block_one_placed_at_1_1, 0
-    )
-    first_nonzero_col = random_flat_pack_generator._first_nonzero(
-        block_one_placed_at_1_1, 1
-    )
+    first_nonzero_row = random_flat_pack_generator._first_nonzero(block_one_placed_at_1_1, 0)
+    first_nonzero_col = random_flat_pack_generator._first_nonzero(block_one_placed_at_1_1, 1)
 
     assert first_nonzero_row == 1
     assert first_nonzero_col == 1
@@ -241,9 +236,7 @@ def test_random_flat_pack_generator__extract_block(
     """Checks that a block is correctly extracted from a solved grid."""
 
     # extract block number 3
-    (_, new_key), block = random_flat_pack_generator._extract_block(
-        (solved_grid, key), 3
-    )
+    (_, new_key), block = random_flat_pack_generator._extract_block((solved_grid, key), 3)
 
     assert block.shape == (3, 3)
     assert jnp.not_equal(key, new_key).all()

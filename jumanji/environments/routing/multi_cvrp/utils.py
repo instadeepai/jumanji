@@ -22,9 +22,7 @@ from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.multi_cvrp.types import State
 
 
-def create_action_mask(
-    node_demands: chex.Array, vehicle_capacities: chex.Array
-) -> chex.Array:
+def create_action_mask(node_demands: chex.Array, vehicle_capacities: chex.Array) -> chex.Array:
     # The action is valid if the node has a
     # non-zero demand and the vehicle has enough capacity.
     def single_vehicle_action_mask(capacity: chex.Array) -> chex.Array:
@@ -69,9 +67,7 @@ def compute_time_penalties(
     return time_penalties
 
 
-def max_single_vehicle_distance(
-    map_max: chex.Array, num_customers: chex.Array
-) -> chex.Array:
+def max_single_vehicle_distance(map_max: chex.Array, num_customers: chex.Array) -> chex.Array:
     return 2 * map_max * jnp.sqrt(2) * num_customers
 
 
@@ -79,10 +75,7 @@ def worst_case_remaining_reward(state: State) -> chex.Array:
     has_demand = state.nodes.demands > 0
     distance_penalty = (
         2
-        * (
-            compute_distance(state.nodes.coordinates[0], state.nodes.coordinates)
-            * has_demand
-        ).sum()
+        * (compute_distance(state.nodes.coordinates[0], state.nodes.coordinates) * has_demand).sum()
     )
 
     # Assuming the speed is 1.0.
@@ -122,7 +115,6 @@ def generate_uniform_random_problem(
     early_coef_rand: Tuple[jnp.float32, jnp.float32],
     late_coef_rand: Tuple[jnp.float32, jnp.float32],
 ) -> Tuple[chex.Array, chex.Array, chex.Array, chex.Array, chex.Array, chex.Array]:
-
     # Generate the node coordinates
     coord_key, demand_key, window_key, earl_key, late_key = jax.random.split(key, 5)
 

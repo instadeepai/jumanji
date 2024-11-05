@@ -65,9 +65,7 @@ class Generator(abc.ABC):
     for generating an instance when the environment is reset.
     """
 
-    def __init__(
-        self, max_num_items: int, max_num_ems: int, container_dims: Tuple[int, int, int]
-    ):
+    def __init__(self, max_num_items: int, max_num_ems: int, container_dims: Tuple[int, int, int]):
         """Abstract class implementing `max_num_items` and `max_num_ems` properties.
 
         Args:
@@ -131,9 +129,7 @@ class Generator(abc.ABC):
         """
         state.ems_mask = jnp.zeros(self.max_num_ems, bool).at[0].set(True)
         state.items_placed = jnp.zeros(self.max_num_items, bool)
-        state.items_location = Location(
-            *tuple(jnp.zeros((3, self.max_num_items), jnp.int32))
-        )
+        state.items_location = Location(*tuple(jnp.zeros((3, self.max_num_items), jnp.int32)))
         return state
 
 
@@ -144,9 +140,7 @@ class ToyGenerator(Generator):
 
     def __init__(self) -> None:
         """Instantiate a `ToyGenerator` with 20 items and 60 EMSs maximum."""
-        super().__init__(
-            max_num_items=20, max_num_ems=60, container_dims=TWENTY_FOOT_DIMS
-        )
+        super().__init__(max_num_items=20, max_num_ems=60, container_dims=TWENTY_FOOT_DIMS)
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Call method responsible for generating a new state. It returns a 20-ft container instance
@@ -405,9 +399,7 @@ class CSVGenerator(Generator):
             container_dims: (length, width, height) tuple of integers corresponding to the
                 dimensions of the container in millimeters. By default, assume a 20-ft container.
         """
-        self.instance_from_csv = self._parse_csv_file(
-            csv_path, max_num_ems, container_dims
-        )
+        self.instance_from_csv = self._parse_csv_file(csv_path, max_num_ems, container_dims)
         max_num_items = self.instance_from_csv.items_mask.shape[0]
         super().__init__(max_num_items, max_num_ems, container_dims)
 
@@ -497,9 +489,7 @@ class CSVGenerator(Generator):
                     )
         return rows
 
-    def _generate_list_of_items(
-        self, rows: List[Tuple[str, int, int, int, int]]
-    ) -> List[Item]:
+    def _generate_list_of_items(self, rows: List[Tuple[str, int, int, int, int]]) -> List[Item]:
         """Generate the list of items from a Pandas DataFrame.
 
         Args:
@@ -510,7 +500,7 @@ class CSVGenerator(Generator):
                 their quantity.
         """
         list_of_items = []
-        for (_, x_len, y_len, z_len, quantity) in rows:
+        for _, x_len, y_len, z_len, quantity in rows:
             identical_items = quantity * [
                 Item(
                     x_len=jnp.array(x_len, jnp.int32),
@@ -538,18 +528,15 @@ def save_instance_to_csv(state: State, path: str) -> None:
         shape_1,1080,760,300,5
         shape_2,1100,430,250,3
     """
-    items = list(zip(state.items.x_len, state.items.y_len, state.items.z_len))
+    items = list(zip(state.items.x_len, state.items.y_len, state.items.z_len, strict=False))
     items = [
         tuple(x.item() for x in item)
-        for item, mask in zip(items, state.items_mask)
+        for item, mask in zip(items, state.items_mask, strict=False)
         if mask and all(x > 0 for x in item)
     ]
     grouped_items = list(collections.Counter(items).items())
     grouped_items.sort(key=operator.itemgetter(1), reverse=True)
-    rows = [
-        (f"shape_{i}", *item, count)
-        for i, (item, count) in enumerate(grouped_items, start=1)
-    ]
+    rows = [(f"shape_{i}", *item, count) for i, (item, count) in enumerate(grouped_items, start=1)]
     with open(path, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(CSV_COLUMNS)
@@ -659,9 +646,7 @@ class RandomGenerator(Generator):
         ems = tree_transpose(list_of_ems)
         ems_mask = jnp.zeros(self.max_num_ems, bool)
 
-        items_spaces, items_mask = self._split_container_into_items_spaces(
-            container, split_key
-        )
+        items_spaces, items_mask = self._split_container_into_items_spaces(container, split_key)
         items = item_from_space(items_spaces)
         sorted_ems_indexes = jnp.arange(0, self.max_num_ems, dtype=jnp.int32)
 
@@ -691,12 +676,10 @@ class RandomGenerator(Generator):
         def cond_fun(val: Tuple[Space, chex.Array, chex.PRNGKey]) -> jnp.bool_:
             _, items_mask, _ = val
             num_placed_items = jnp.sum(items_mask)
-            return (
-                num_placed_items < self.max_num_items - self._split_num_same_items + 1
-            )
+            return num_placed_items < self.max_num_items - self._split_num_same_items + 1
 
         def body_fun(
-            val: Tuple[Space, chex.Array, chex.PRNGKey]
+            val: Tuple[Space, chex.Array, chex.PRNGKey],
         ) -> Tuple[Space, chex.Array, chex.PRNGKey]:
             items_spaces, items_mask, key = val
             key, subkey = jax.random.split(key)
@@ -773,12 +756,8 @@ class RandomGenerator(Generator):
 
         items_spaces, items_mask = jax.lax.cond(
             jax.random.uniform(mode_key) < self._prob_split_one_item,
-            functools.partial(
-                self._split_item_once, item_space, axis, axis_len, item_id
-            ),
-            functools.partial(
-                self._split_item_multiple_times, item_space, axis, axis_len, item_id
-            ),
+            functools.partial(self._split_item_once, item_space, axis, axis_len, item_id),
+            functools.partial(self._split_item_multiple_times, item_space, axis, axis_len, item_id),
             items_spaces,
             items_mask,
             split_key,
@@ -799,10 +778,8 @@ class RandomGenerator(Generator):
         space axis length with paddings equal to `_split_eps`% on each side of the space.
         """
         axis_min, axis_max = (
-            item_space.get_axis_value(axis, 1)
-            + jnp.array(self._split_eps * axis_len, jnp.int32),
-            item_space.get_axis_value(axis, 2)
-            - jnp.array(self._split_eps * axis_len, jnp.int32),
+            item_space.get_axis_value(axis, 1) + jnp.array(self._split_eps * axis_len, jnp.int32),
+            item_space.get_axis_value(axis, 2) - jnp.array(self._split_eps * axis_len, jnp.int32),
         )
         axis_split = jax.random.randint(split_key, (), axis_min, axis_max, jnp.int32)
         free_index = jnp.argmin(items_mask)
@@ -840,28 +817,18 @@ class RandomGenerator(Generator):
         )
         items_spaces.set_axis_value(axis, 2, new_items_axis_2)
 
-        def body_fn(
-            i: int, carry: Tuple[Space, chex.Array]
-        ) -> Tuple[Space, chex.Array]:
+        def body_fn(i: int, carry: Tuple[Space, chex.Array]) -> Tuple[Space, chex.Array]:
             items_spaces, items_mask = carry
             free_index = jnp.argmin(items_mask)
             items_spaces = jax.tree_util.tree_map(
                 lambda coord: coord.at[free_index].set(coord[item_id]),
                 items_spaces,
             )
-            item_axis_1 = initial_item_axis_1 + jnp.array(
-                i * axis_len / num_split, jnp.int32
-            )
-            item_axis_2 = initial_item_axis_1 + jnp.array(
-                (i + 1) * axis_len / num_split, jnp.int32
-            )
-            new_items_axis_1 = (
-                items_spaces.get_axis_value(axis, 1).at[free_index].set(item_axis_1)
-            )
+            item_axis_1 = initial_item_axis_1 + jnp.array(i * axis_len / num_split, jnp.int32)
+            item_axis_2 = initial_item_axis_1 + jnp.array((i + 1) * axis_len / num_split, jnp.int32)
+            new_items_axis_1 = items_spaces.get_axis_value(axis, 1).at[free_index].set(item_axis_1)
             items_spaces.set_axis_value(axis, 1, new_items_axis_1)
-            new_items_axis_2 = (
-                items_spaces.get_axis_value(axis, 2).at[free_index].set(item_axis_2)
-            )
+            new_items_axis_2 = items_spaces.get_axis_value(axis, 2).at[free_index].set(item_axis_2)
             items_spaces.set_axis_value(axis, 2, new_items_axis_2)
             items_mask = items_mask.at[free_index].set(True)
             return items_spaces, items_mask

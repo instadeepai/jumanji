@@ -92,9 +92,7 @@ class RandomGenerator(Generator):
         key, edge_key = jax.random.split(key)
 
         # Generate a random adjacency matrix with probabilities of connections.
-        p_matrix = jax.random.uniform(
-            key=edge_key, shape=(self.num_nodes, self.num_nodes)
-        )
+        p_matrix = jax.random.uniform(key=edge_key, shape=(self.num_nodes, self.num_nodes))
 
         # Threshold the probabilities to create a boolean adjacency matrix.
         adj_matrix = p_matrix < self.edge_probability

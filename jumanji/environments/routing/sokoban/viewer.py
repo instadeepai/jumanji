@@ -98,9 +98,7 @@ class BoxViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=BoxViewer.FIGURE_SIZE
-        )
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=BoxViewer.FIGURE_SIZE)
         plt.close(fig)
 
         def make_frame(state_index: int) -> None:
@@ -179,9 +177,7 @@ class BoxViewer(Viewer):
             for row in range(rows):
                 self._draw_grid_cell(grid[row, col], 9 - row, col, ax)
 
-    def _draw_grid_cell(
-        self, cell_value: int, row: int, col: int, ax: plt.Axes
-    ) -> None:
+    def _draw_grid_cell(self, cell_value: int, row: int, col: int, ax: plt.Axes) -> None:
         """
         Draw a single cell of the grid.
 

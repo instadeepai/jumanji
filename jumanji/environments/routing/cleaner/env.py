@@ -99,9 +99,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             viewer: `Viewer` used for rendering. Defaults to `CleanerViewer` with "human" render
                 mode.
         """
-        self.generator = generator or RandomGenerator(
-            num_rows=10, num_cols=10, num_agents=3
-        )
+        self.generator = generator or RandomGenerator(num_rows=10, num_cols=10, num_agents=3)
         self.num_agents = self.generator.num_agents
         self.num_rows = self.generator.num_rows
         self.num_cols = self.generator.num_cols
@@ -141,9 +139,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
         agents_locations = specs.BoundedArray(
             (self.num_agents, 2), jnp.int32, [0, 0], self.grid_shape, "agents_locations"
         )
-        action_mask = specs.BoundedArray(
-            (self.num_agents, 4), bool, False, True, "action_mask"
-        )
+        action_mask = specs.BoundedArray((self.num_agents, 4), bool, False, True, "action_mask")
         step_count = specs.BoundedArray((), jnp.int32, 0, self.time_limit, "step_count")
         return specs.Spec(
             Observation,
@@ -196,9 +192,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         If an action is invalid, the corresponding agent does not move and
@@ -299,14 +293,9 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
         Since walls and dirty tiles do not change, counting the tiles which changed since previeous
         step is the same as counting the tiles which were cleaned.
         """
-        return (
-            jnp.sum(prev_state.grid != state.grid, dtype=float)
-            - self.penalty_per_timestep
-        )
+        return jnp.sum(prev_state.grid != state.grid, dtype=float) - self.penalty_per_timestep
 
-    def _compute_action_mask(
-        self, grid: chex.Array, agents_locations: chex.Array
-    ) -> chex.Array:
+    def _compute_action_mask(self, grid: chex.Array, agents_locations: chex.Array) -> chex.Array:
         """Compute the action mask.
 
         An action is masked if it leads to a WALL or out of the maze.
@@ -323,9 +312,9 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             )
 
         # vmap over the moves and agents
-        action_mask = jax.vmap(
-            jax.vmap(is_move_valid, in_axes=(None, 0)), in_axes=(0, None)
-        )(agents_locations, MOVES)
+        action_mask = jax.vmap(jax.vmap(is_move_valid, in_axes=(None, 0)), in_axes=(0, None))(
+            agents_locations, MOVES
+        )
 
         return action_mask
 
@@ -338,9 +327,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=state.step_count,
         )
 
-    def _is_action_valid(
-        self, action: chex.Array, action_mask: chex.Array
-    ) -> chex.Array:
+    def _is_action_valid(self, action: chex.Array, action_mask: chex.Array) -> chex.Array:
         """Compute, for the action of each agent, whether said action is valid.
 
         Args:

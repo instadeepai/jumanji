@@ -59,9 +59,7 @@ class UniformGenerator(Generator):
         key, sample_key = jax.random.split(key)
 
         # Randomly sample the coordinates of the cities.
-        coordinates = jax.random.uniform(
-            sample_key, (self.num_cities, 2), minval=0, maxval=1
-        )
+        coordinates = jax.random.uniform(sample_key, (self.num_cities, 2), minval=0, maxval=1)
 
         # Initially, the position is set to -1, which means that the agent is not in any city.
         position = jnp.array(-1, jnp.int32)

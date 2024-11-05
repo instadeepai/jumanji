@@ -64,7 +64,5 @@ def tree_add_element(tree: T, i: chex.Numeric, element: T) -> T:
         tree whose elements are the same as before but with the ith value being set to that of
             the given element.
     """
-    new_tree: T = jax.tree_util.tree_map(
-        lambda array, value: array.at[i].set(value), tree, element
-    )
+    new_tree: T = jax.tree_util.tree_map(lambda array, value: array.at[i].set(value), tree, element)
     return new_tree

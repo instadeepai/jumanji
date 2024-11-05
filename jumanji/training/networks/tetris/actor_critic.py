@@ -82,9 +82,7 @@ def make_network_cnn(
                 jax.nn.relu,
             ]
         )
-        grid_embeddings = grid_net(
-            observation.grid.astype(float)[..., None]
-        )  # [B, 2, 10, 64]
+        grid_embeddings = grid_net(observation.grid.astype(float)[..., None])  # [B, 2, 10, 64]
         grid_embeddings = jnp.transpose(grid_embeddings, [0, 2, 1, 3])  # [B, 10, 2, 64]
         grid_embeddings = jnp.reshape(
             grid_embeddings, [*grid_embeddings.shape[:2], -1]
@@ -101,9 +99,7 @@ def make_network_cnn(
             tetromino_embeddings[:, None], (grid_embeddings.shape[1], 1)
         )
         norm_step_count = observation.step_count / time_limit
-        norm_step_count = jnp.tile(
-            norm_step_count[:, None, None], (grid_embeddings.shape[1], 1)
-        )
+        norm_step_count = jnp.tile(norm_step_count[:, None, None], (grid_embeddings.shape[1], 1))
 
         embedding = jnp.concatenate(
             [grid_embeddings, tetromino_embeddings, norm_step_count], axis=-1

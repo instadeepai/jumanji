@@ -129,9 +129,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
         self.num_cols = self.generator.num_cols
         self.num_mines = self.generator.num_mines
         super().__init__()
-        self._viewer = viewer or MinesweeperViewer(
-            num_rows=self.num_rows, num_cols=self.num_cols
-        )
+        self._viewer = viewer or MinesweeperViewer(num_rows=self.num_rows, num_cols=self.num_cols)
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -149,9 +147,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -162,9 +158,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
             next_state: `State` corresponding to the next state of the environment,
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
-        board = state.board.at[tuple(action)].set(
-            count_adjacent_mines(state=state, action=action)
-        )
+        board = state.board.at[tuple(action)].set(count_adjacent_mines(state=state, action=action))
         step_count = state.step_count + 1
         next_state = State(
             board=board,
@@ -279,9 +273,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

@@ -39,9 +39,7 @@ def make_actor_critic_networks_cvrp(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `CVRP` environment."""
     num_actions = cvrp.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_actor_network_cvrp(
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
@@ -233,9 +231,7 @@ def make_cvrp_query(
 
     if mean_nodes_in_query:
         mean_nodes = jnp.mean(embeddings, axis=-2)
-        query = jnp.concatenate(
-            [current_position, current_capacity, mean_nodes], axis=-1
-        )
+        query = jnp.concatenate([current_position, current_capacity, mean_nodes], axis=-1)
     else:
         query = jnp.concatenate([current_position, current_capacity], axis=-1)
     return jnp.expand_dims(query, axis=-2)

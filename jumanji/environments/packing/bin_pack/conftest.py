@@ -125,9 +125,7 @@ def dense_reward() -> DenseReward:
 
 
 @pytest.fixture
-def bin_pack_dense_reward(
-    dummy_generator: DummyGenerator, dense_reward: DenseReward
-) -> BinPack:
+def bin_pack_dense_reward(dummy_generator: DummyGenerator, dense_reward: DenseReward) -> BinPack:
     return BinPack(
         generator=dummy_generator,
         obs_num_ems=5,
@@ -141,9 +139,7 @@ def sparse_reward() -> SparseReward:
 
 
 @pytest.fixture
-def bin_pack_sparse_reward(
-    dummy_generator: DummyGenerator, sparse_reward: SparseReward
-) -> BinPack:
+def bin_pack_sparse_reward(dummy_generator: DummyGenerator, sparse_reward: SparseReward) -> BinPack:
     return BinPack(
         generator=dummy_generator,
         obs_num_ems=5,

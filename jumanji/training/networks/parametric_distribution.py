@@ -69,9 +69,7 @@ class ParametricDistribution(abc.ABC):
     def inverse_postprocess(self, event: chex.Array) -> chex.Array:
         return self._postprocessor.inverse(event)
 
-    def sample_no_postprocessing(
-        self, parameters: chex.Array, seed: chex.PRNGKey
-    ) -> Any:
+    def sample_no_postprocessing(self, parameters: chex.Array, seed: chex.PRNGKey) -> Any:
         """Returns a sample of the distribution before postprocessing it."""
         return self.create_dist(parameters).sample(seed=seed)
 
@@ -105,9 +103,7 @@ class ParametricDistribution(abc.ABC):
             entropy = jnp.sum(entropy, axis=-1)
         return entropy
 
-    def kl_divergence(
-        self, parameters: chex.Array, other_parameters: chex.Array
-    ) -> chex.Array:
+    def kl_divergence(self, parameters: chex.Array, other_parameters: chex.Array) -> chex.Array:
         """KL divergence is invariant with respect to transformation by the same bijector."""
         if not isinstance(self._postprocessor, IdentityBijector):
             raise ValueError(
@@ -173,9 +169,7 @@ class FactorisedActionSpaceParametricDistribution(ParametricDistribution):
         posprocessor = FactorisedActionSpaceReshapeBijector(
             action_spec_num_values=action_spec_num_values
         )
-        super().__init__(
-            param_size=num_actions, postprocessor=posprocessor, event_ndims=0
-        )
+        super().__init__(param_size=num_actions, postprocessor=posprocessor, event_ndims=0)
 
     def create_dist(self, parameters: chex.Array) -> CategoricalDistribution:
         return CategoricalDistribution(logits=parameters)

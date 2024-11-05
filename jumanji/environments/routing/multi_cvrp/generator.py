@@ -162,9 +162,7 @@ class UniformRandomGenerator(Generator):
                 distances=jnp.zeros(self._num_vehicles, dtype=jnp.float32),
                 time_penalties=jnp.zeros(self._num_vehicles, dtype=jnp.float32),
             ),
-            order=jnp.zeros(
-                (self._num_vehicles, 2 * self._num_customers), dtype=jnp.int16
-            ),
+            order=jnp.zeros((self._num_vehicles, 2 * self._num_customers), dtype=jnp.int16),
             action_mask=create_action_mask(node_demands, capacities),
             step_count=jnp.ones((), dtype=jnp.int16),
             key=key,

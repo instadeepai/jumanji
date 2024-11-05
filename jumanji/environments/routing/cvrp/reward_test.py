@@ -72,9 +72,7 @@ def test_dense_reward(cvrp_dense_reward: CVRP, dense_reward: DenseReward) -> Non
     assert dense_reward(state, 0, next_state, is_valid=False) == penalty
 
 
-def test_sparse_reward(  # noqa: CCR001
-    cvrp_sparse_reward: CVRP, sparse_reward: SparseReward
-) -> None:
+def test_sparse_reward(cvrp_sparse_reward: CVRP, sparse_reward: SparseReward) -> None:
     sparse_reward = jax.jit(sparse_reward)
     step_fn = jax.jit(cvrp_sparse_reward.step)
     state, timestep = cvrp_sparse_reward.reset(jax.random.PRNGKey(0))
@@ -101,8 +99,5 @@ def test_sparse_reward(  # noqa: CCR001
             else:
                 # Check that a penalty is given for every invalid action.
                 invalid_next_state, _ = step_fn(state, action)
-                assert (
-                    sparse_reward(state, action, invalid_next_state, is_valid)
-                    == penalty
-                )
+                assert sparse_reward(state, action, invalid_next_state, is_valid) == penalty
         state = next_state

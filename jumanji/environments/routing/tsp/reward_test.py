@@ -47,9 +47,7 @@ def test_dense_reward(tsp_dense_reward: TSP, dense_reward: DenseReward) -> None:
     assert reward == penalty
 
 
-def test_sparse_reward(  # noqa: CCR001
-    tsp_sparse_reward: TSP, sparse_reward: SparseReward
-) -> None:
+def test_sparse_reward(tsp_sparse_reward: TSP, sparse_reward: SparseReward) -> None:
     sparse_reward = jax.jit(sparse_reward)
     step_fn = jax.jit(tsp_sparse_reward.step)
     state, timestep = tsp_sparse_reward.reset(jax.random.PRNGKey(0))

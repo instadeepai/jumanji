@@ -90,9 +90,7 @@ class RandomGenerator(Generator):
         """
         key, maze_key, agent_key = jax.random.split(key, 3)
 
-        walls = maze_generation.generate_maze(
-            self.num_cols, self.num_rows, maze_key
-        ).astype(bool)
+        walls = maze_generation.generate_maze(self.num_cols, self.num_rows, maze_key).astype(bool)
 
         # Randomise agent start and target positions.
         start_and_target_indices = jax.random.choice(

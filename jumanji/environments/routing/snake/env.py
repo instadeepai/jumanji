@@ -165,9 +165,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Numeric
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -253,9 +251,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
             dtype=float,
             name="grid",
         )
-        step_count = specs.DiscreteArray(
-            self.time_limit, dtype=jnp.int32, name="step_count"
-        )
+        step_count = specs.DiscreteArray(self.time_limit, dtype=jnp.int32, name="step_count")
         action_mask = specs.BoundedArray(
             shape=(4,),
             dtype=bool,
@@ -360,9 +356,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         action_mask = jax.vmap(is_valid)(self.MOVES)
         return action_mask
 
-    def _update_head_position(
-        self, head_position: Position, action: chex.Numeric
-    ) -> Position:
+    def _update_head_position(self, head_position: Position, action: chex.Numeric) -> Position:
         """Give the new head position after taking an action.
 
         Args:

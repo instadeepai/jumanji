@@ -120,9 +120,7 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
     positions = jnp.array([1, 3], dtype=jnp.int32)
 
     active_node_edges = jnp.repeat(node_edges[None, ...], num_agents, axis=0)
-    active_node_edges = update_active_edges(
-        num_agents, active_node_edges, positions, node_types
-    )
+    active_node_edges = update_active_edges(num_agents, active_node_edges, positions, node_types)
     finished_agents = jnp.zeros((num_agents), dtype=bool)
 
     state = State(

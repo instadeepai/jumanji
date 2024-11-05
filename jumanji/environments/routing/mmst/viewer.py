@@ -152,7 +152,6 @@ class MMSTViewer(Viewer):
     def build_edges(
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
     ) -> Dict[Tuple[int, ...], List[Tuple[float, ...]]]:
-
         # Normalize id for either order.
         def edge_id(n1: int, n2: int) -> Tuple[int, ...]:
             return tuple(sorted((n1, n2)))
@@ -165,7 +164,7 @@ class MMSTViewer(Viewer):
         row_indices, col_indices = jnp.nonzero(adj_matrix)
         # Create the edge list as a list of tuples (source, target)
         edges_list = [
-            (int(row), int(col)) for row, col in zip(row_indices, col_indices)
+            (int(row), int(col)) for row, col in zip(row_indices, col_indices, strict=False)
         ]
 
         for edge in edges_list:
@@ -176,9 +175,7 @@ class MMSTViewer(Viewer):
 
         for agent in range(self.num_agents):
             conn_group = connected_nodes[agent]
-            len_conn = np.where(conn_group != -1)[0][
-                -1
-            ]  # Get last index where node is not -1.
+            len_conn = np.where(conn_group != -1)[0][-1]  # Get last index where node is not -1.
             for i in range(len_conn):
                 eid = edge_id(conn_group[i], conn_group[i + 1])
                 edges[eid] = [(conn_group[i], conn_group[i + 1]), self.palette[agent]]
@@ -217,9 +214,7 @@ class MMSTViewer(Viewer):
 
         num_nodes = states[0].adj_matrix.shape[0]
         node_scale = 5 + int(np.sqrt(num_nodes))
-        fig, ax = plt.subplots(
-            num=f"{self._name}Animation", figsize=(node_scale, node_scale)
-        )
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
         plt.close(fig)
 
         def make_frame(grid_index: int) -> None:
@@ -308,9 +303,7 @@ class MMSTViewer(Viewer):
 
         return attractive_forces
 
-    def _spring_layout(
-        self, graph: chex.Array, seed: int = 42
-    ) -> List[Tuple[float, float]]:
+    def _spring_layout(self, graph: chex.Array, seed: int = 42) -> List[Tuple[float, float]]:
         """Compute a 2D spring layout for the given graph using
         the Fruchterman-Reingold force-directed algorithm.
 
@@ -334,9 +327,7 @@ class MMSTViewer(Viewer):
         temperature = 2.0  # Added a temperature variable
 
         for _ in range(iterations):
-            repulsive_forces = self._compute_repulsive_forces(
-                np.zeros((num_nodes, 2)), pos, k
-            )
+            repulsive_forces = self._compute_repulsive_forces(np.zeros((num_nodes, 2)), pos, k)
             attractive_forces = self._compute_attractive_forces(
                 graph, np.zeros((num_nodes, 2)), pos, k
             )

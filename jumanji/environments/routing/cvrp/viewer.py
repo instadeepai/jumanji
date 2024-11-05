@@ -62,9 +62,7 @@ class CVRPViewer(Viewer):
         else:
             raise ValueError(f"Invalid render mode: {render_mode}")
 
-    def render(
-        self, state: State, save_path: Optional[str] = None
-    ) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `CVRP` environment.
 
         Args:
@@ -166,9 +164,7 @@ class CVRPViewer(Viewer):
         depot = tour[0]
         check_depot_fn = lambda x: (x != depot).all()
         tour_grouped = [
-            np.array([depot] + list(g) + [depot])
-            for k, g in groupby(tour, key=check_depot_fn)
-            if k
+            np.array([depot, *list(g), depot]) for k, g in groupby(tour, key=check_depot_fn) if k
         ]
         if (tour[-1] != tour[0]).all():
             tour_grouped[-1] = tour_grouped[-1][:-1]
@@ -213,7 +209,7 @@ class CVRPViewer(Viewer):
 
             # Draw each route in different colour
             for coords_route, col_id in zip(
-                coords_grouped, np.arange(0, len(coords_grouped))
+                coords_grouped, np.arange(0, len(coords_grouped)), strict=False
             ):
                 self._draw_route(ax, coords_route, col_id)
 

@@ -19,9 +19,7 @@ from jumanji.environments.packing.knapsack.env import Knapsack
 from jumanji.environments.packing.knapsack.reward import DenseReward, SparseReward
 
 
-def test_dense_reward(
-    knapsack_dense_reward: Knapsack, dense_reward: DenseReward
-) -> None:
+def test_dense_reward(knapsack_dense_reward: Knapsack, dense_reward: DenseReward) -> None:
     dense_reward = jax.jit(dense_reward)
     step_fn = jax.jit(knapsack_dense_reward.step)
     state, timestep = knapsack_dense_reward.reset(jax.random.PRNGKey(0))
@@ -39,9 +37,7 @@ def test_dense_reward(
     assert reward == 0
 
 
-def test_sparse_reward(  # noqa: CCR001
-    knapsack_sparse_reward: Knapsack, sparse_reward: SparseReward
-) -> None:
+def test_sparse_reward(knapsack_sparse_reward: Knapsack, sparse_reward: SparseReward) -> None:
     sparse_reward = jax.jit(sparse_reward)
     step_fn = jax.jit(knapsack_sparse_reward.step)
     state, timestep = knapsack_sparse_reward.reset(jax.random.PRNGKey(0))
@@ -52,9 +48,7 @@ def test_sparse_reward(  # noqa: CCR001
         for action, is_valid in enumerate(timestep.observation.action_mask):
             if is_valid:
                 next_state, timestep = step_fn(state, action)
-                reward = sparse_reward(
-                    state, action, next_state, is_valid, is_done=timestep.last()
-                )
+                reward = sparse_reward(state, action, next_state, is_valid, is_done=timestep.last())
                 if timestep.last():
                     # At the end of the episode, check that the reward is the total values of
                     # packed items.

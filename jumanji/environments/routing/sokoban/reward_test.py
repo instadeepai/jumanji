@@ -41,7 +41,6 @@ def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
         num_boxes_on_targets_new: chex.Array,
         num_boxes_on_targets: chex.Array,
     ) -> None:
-
         if num_boxes_on_targets_new == jnp.array(4, jnp.int32):
             assert timestep.reward == jnp.array(10.9, jnp.float32)
         elif num_boxes_on_targets_new - num_boxes_on_targets > jnp.array(0, jnp.int32):
@@ -67,8 +66,6 @@ def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
 
             num_boxes_on_targets_new = sokoban_simple.reward_fn.count_targets(state)
 
-            check_correct_reward(
-                timestep, num_boxes_on_targets_new, num_boxes_on_targets
-            )
+            check_correct_reward(timestep, num_boxes_on_targets_new, num_boxes_on_targets)
 
             num_boxes_on_targets = num_boxes_on_targets_new

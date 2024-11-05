@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence
+from typing import ClassVar, Optional, Sequence
 
 import chex
 import matplotlib
@@ -29,7 +29,7 @@ WALL = 1
 class MazeEnvViewer(MazeViewer):
     AGENT = 2
     TARGET = 3
-    COLORS = {
+    COLORS: ClassVar = {
         EMPTY: [1, 1, 1],  # White
         WALL: [0, 0, 0],  # Black
         AGENT: [0, 1, 0],  # Green

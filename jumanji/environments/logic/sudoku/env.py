@@ -98,26 +98,20 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=obs)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         # check if action is valid
         invalid = ~state.action_mask[tuple(action)]
         updated_board = apply_action(action=action, board=state.board)
         updated_action_mask = get_action_mask(board=updated_board)
 
         # creating next state
-        next_state = State(
-            board=updated_board, action_mask=updated_action_mask, key=state.key
-        )
+        next_state = State(board=updated_board, action_mask=updated_action_mask, key=state.key)
 
         no_actions_available = ~jnp.any(updated_action_mask)
 
         # computing terminal condition
         done = invalid | no_actions_available
-        reward = self._reward_fn(
-            state=state, new_state=next_state, action=action, done=done
-        )
+        reward = self._reward_fn(state=state, new_state=next_state, action=action, done=done)
 
         observation = Observation(board=updated_board, action_mask=updated_action_mask)
 
@@ -157,9 +151,7 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
             name="action_mask",
         )
 
-        return specs.Spec(
-            Observation, "ObservationSpec", board=board, action_mask=action_mask
-        )
+        return specs.Spec(Observation, "ObservationSpec", board=board, action_mask=action_mask)
 
     @cached_property
     def action_spec(self) -> specs.MultiDiscreteArray:
@@ -200,6 +192,4 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
         Returns:
             animation.FuncAnimation: the animation object that was created.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)

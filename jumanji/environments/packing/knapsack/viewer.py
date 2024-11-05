@@ -27,9 +27,7 @@ from jumanji.viewer import Viewer
 class KnapsackViewer(Viewer):
     FIGURE_SIZE = (5.0, 5.0)
 
-    def __init__(
-        self, name: str, render_mode: str = "human", total_budget: float = 2.0
-    ) -> None:
+    def __init__(self, name: str, render_mode: str = "human", total_budget: float = 2.0) -> None:
         """Viewer for the `Knapsack` environment.
 
         Args:

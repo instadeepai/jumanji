@@ -193,9 +193,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """
         Executes one timestep of the environment's dynamics.
 
@@ -331,9 +329,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         }
         return extras
 
-    def grid_combine(
-        self, variable_grid: chex.Array, fixed_grid: chex.Array
-    ) -> chex.Array:
+    def grid_combine(self, variable_grid: chex.Array, fixed_grid: chex.Array) -> chex.Array:
         """
         Combines the variable grid and fixed grid into one single grid
         representation of the current Sokoban state required for visual
@@ -444,9 +440,9 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         new_location = agent_location + MOVES[action].squeeze()
 
-        valid_destination = self.check_space(
-            fixed_grid, new_location, WALL
-        ) | ~self.in_grid(new_location)
+        valid_destination = self.check_space(fixed_grid, new_location, WALL) | ~self.in_grid(
+            new_location
+        )
 
         updated_action = jax.lax.select(
             valid_destination,
@@ -538,10 +534,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         next_variable_grid = jax.lax.select(
             self.check_space(variable_grid, next_location, BOX),
-            next_variable_grid.at[tuple(next_location)]
-            .set(AGENT)
-            .at[tuple(box_location)]
-            .set(BOX),
+            next_variable_grid.at[tuple(next_location)].set(AGENT).at[tuple(box_location)].set(BOX),
             next_variable_grid.at[tuple(next_location)].set(AGENT),
         )
 

@@ -100,9 +100,7 @@ class DenseReward(RewardFn):
         return reward
 
 
-def compute_tour_length(
-    coordinates: chex.Array, trajectory: chex.Array
-) -> chex.Numeric:
+def compute_tour_length(coordinates: chex.Array, trajectory: chex.Array) -> chex.Numeric:
     sorted_coordinates = coordinates[trajectory]
     # Shift coordinates to compute the distance between neighboring cities.
     shifted_coordinates = jnp.roll(sorted_coordinates, -1, axis=0)

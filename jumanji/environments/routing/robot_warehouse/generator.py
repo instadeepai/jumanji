@@ -58,9 +58,7 @@ class Generator(abc.ABC):
                 given time which remains fixed throughout environment steps. Defaults to 4.
         """
         if shelf_columns % 2 != 1:
-            raise ValueError(
-                "Environment argument: `shelf_columns`, must be an odd number."
-            )
+            raise ValueError("Environment argument: `shelf_columns`, must be an odd number.")
 
         self._shelf_rows = shelf_rows
         self._shelf_columns = shelf_columns

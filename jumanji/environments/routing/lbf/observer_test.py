@@ -39,28 +39,16 @@ def test_lbf_observer_initialization(lbf_env_2s: LevelBasedForaging) -> None:
 def test_vector_full_obs(state: State) -> None:
     observer = VectorObserver(fov=6, grid_size=6, num_agents=3, num_food=3)
     obs1 = observer.state_to_observation(state)
-    expected_agent_0_view = jnp.array(
-        [2, 1, 4, 2, 3, 4, 4, 2, 3, 0, 0, 1, 1, 1, 2, 2, 2, 4]
-    )
-    expected_agent_1_view = jnp.array(
-        [2, 1, 4, 2, 3, 4, 4, 2, 3, 1, 1, 2, 0, 0, 1, 2, 2, 4]
-    )
-    expected_agent_2_view = jnp.array(
-        [2, 1, 4, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2]
-    )
+    expected_agent_0_view = jnp.array([2, 1, 4, 2, 3, 4, 4, 2, 3, 0, 0, 1, 1, 1, 2, 2, 2, 4])
+    expected_agent_1_view = jnp.array([2, 1, 4, 2, 3, 4, 4, 2, 3, 1, 1, 2, 0, 0, 1, 2, 2, 4])
+    expected_agent_2_view = jnp.array([2, 1, 4, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2])
 
     assert jnp.all(obs1.agents_view[0, :] == expected_agent_0_view)
-    assert jnp.all(
-        obs1.action_mask[0, :] == jnp.array([True, False, True, False, True, False])
-    )
+    assert jnp.all(obs1.action_mask[0, :] == jnp.array([True, False, True, False, True, False]))
     assert jnp.all(obs1.agents_view[1, :] == expected_agent_1_view)
-    assert jnp.all(
-        obs1.action_mask[1, :] == jnp.array([True, True, False, True, True, True])
-    )
+    assert jnp.all(obs1.action_mask[1, :] == jnp.array([True, True, False, True, True, True]))
     assert jnp.all(obs1.agents_view[2, :] == expected_agent_2_view)
-    assert jnp.all(
-        obs1.action_mask[2, :] == jnp.array([True, True, True, False, False, True])
-    )
+    assert jnp.all(obs1.action_mask[2, :] == jnp.array([True, True, True, False, False, True]))
 
     # If agent1 and agent2 eat the food0
     eaten = jnp.array([True, False, False])
@@ -73,47 +61,27 @@ def test_vector_full_obs(state: State) -> None:
     state = state.replace(food_items=food_items)  # type: ignore
 
     obs2 = observer.state_to_observation(state)
-    expected_agent_1_view = jnp.array(
-        [-1, -1, 0, 2, 3, 4, 4, 2, 3, 1, 1, 2, 0, 0, 1, 2, 2, 4]
-    )
-    expected_agent_2_view = jnp.array(
-        [-1, -1, 0, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2]
-    )
+    expected_agent_1_view = jnp.array([-1, -1, 0, 2, 3, 4, 4, 2, 3, 1, 1, 2, 0, 0, 1, 2, 2, 4])
+    expected_agent_2_view = jnp.array([-1, -1, 0, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2])
     assert jnp.all(obs2.agents_view[1, :] == expected_agent_1_view)
-    assert jnp.all(
-        obs2.action_mask[1, :] == jnp.array([True, True, True, True, True, False])
-    )
+    assert jnp.all(obs2.action_mask[1, :] == jnp.array([True, True, True, True, True, False]))
     assert jnp.all(obs2.agents_view[2, :] == expected_agent_2_view)
-    assert jnp.all(
-        obs2.action_mask[2, :] == jnp.array([True, True, True, True, False, True])
-    )
+    assert jnp.all(obs2.action_mask[2, :] == jnp.array([True, True, True, True, False, True]))
 
 
 def test_vector_partial_obs(state: State) -> None:
     observer = VectorObserver(fov=2, grid_size=6, num_agents=3, num_food=3)
     obs1 = observer.state_to_observation(state)
-    expected_agent_0_view = jnp.array(
-        [2, 1, 4, -1, -1, 0, -1, -1, 0, 0, 0, 1, 1, 1, 2, 2, 2, 4]
-    )
-    expected_agent_1_view = jnp.array(
-        [2, 1, 4, 2, 3, 4, -1, -1, 0, 1, 1, 2, 0, 0, 1, 2, 2, 4]
-    )
-    expected_agent_2_view = jnp.array(
-        [2, 1, 4, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2]
-    )
+    expected_agent_0_view = jnp.array([2, 1, 4, -1, -1, 0, -1, -1, 0, 0, 0, 1, 1, 1, 2, 2, 2, 4])
+    expected_agent_1_view = jnp.array([2, 1, 4, 2, 3, 4, -1, -1, 0, 1, 1, 2, 0, 0, 1, 2, 2, 4])
+    expected_agent_2_view = jnp.array([2, 1, 4, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2])
 
     assert jnp.all(obs1.agents_view[0, :] == expected_agent_0_view)
-    assert jnp.all(
-        obs1.action_mask[0, :] == jnp.array([True, False, True, False, True, False])
-    )
+    assert jnp.all(obs1.action_mask[0, :] == jnp.array([True, False, True, False, True, False]))
     assert jnp.all(obs1.agents_view[1, :] == expected_agent_1_view)
-    assert jnp.all(
-        obs1.action_mask[1, :] == jnp.array([True, True, False, True, True, True])
-    )
+    assert jnp.all(obs1.action_mask[1, :] == jnp.array([True, True, False, True, True, True]))
     assert jnp.all(obs1.agents_view[2, :] == expected_agent_2_view)
-    assert jnp.all(
-        obs1.action_mask[2, :] == jnp.array([True, True, True, False, False, True])
-    )
+    assert jnp.all(obs1.action_mask[2, :] == jnp.array([True, True, True, False, False, True]))
 
     # test eaten food is not visible
     eaten = jnp.array([True, False, False])
@@ -126,20 +94,12 @@ def test_vector_partial_obs(state: State) -> None:
     state = state.replace(food_items=food_items)  # type: ignore
 
     obs2 = observer.state_to_observation(state)
-    expected_agent_1_view = jnp.array(
-        [-1, -1, 0, 2, 3, 4, -1, -1, 0, 1, 1, 2, 0, 0, 1, 2, 2, 4]
-    )
-    expected_agent_2_view = jnp.array(
-        [-1, -1, 0, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2]
-    )
+    expected_agent_1_view = jnp.array([-1, -1, 0, 2, 3, 4, -1, -1, 0, 1, 1, 2, 0, 0, 1, 2, 2, 4])
+    expected_agent_2_view = jnp.array([-1, -1, 0, 2, 3, 4, 4, 2, 3, 2, 2, 4, 0, 0, 1, 1, 1, 2])
     assert jnp.all(obs2.agents_view[1, :] == expected_agent_1_view)
-    assert jnp.all(
-        obs2.action_mask[1, :] == jnp.array([True, True, True, True, True, False])
-    )
+    assert jnp.all(obs2.action_mask[1, :] == jnp.array([True, True, True, True, True, False]))
     assert jnp.all(obs2.agents_view[2, :] == expected_agent_2_view)
-    assert jnp.all(
-        obs2.action_mask[2, :] == jnp.array([True, True, True, True, False, True])
-    )
+    assert jnp.all(obs2.action_mask[2, :] == jnp.array([True, True, True, True, False, True]))
 
 
 def test_grid_observer(state: State) -> None:
@@ -225,14 +185,8 @@ def test_grid_observer(state: State) -> None:
     )
 
     assert jnp.all(obs.agents_view[0, :] == expected_agent_0_view)
-    assert jnp.all(
-        obs.action_mask[0, :] == jnp.array([True, False, True, False, True, False])
-    )
+    assert jnp.all(obs.action_mask[0, :] == jnp.array([True, False, True, False, True, False]))
     assert jnp.all(obs.agents_view[1, :] == expected_agent_1_view)
-    assert jnp.all(
-        obs.action_mask[1, :] == jnp.array([True, True, False, True, True, True])
-    )
+    assert jnp.all(obs.action_mask[1, :] == jnp.array([True, True, False, True, True, True]))
     assert jnp.all(obs.agents_view[2, :] == expected_agent_2_view)
-    assert jnp.all(
-        obs.action_mask[2, :] == jnp.array([True, True, True, False, False, True])
-    )
+    assert jnp.all(obs.action_mask[2, :] == jnp.array([True, True, True, False, False, True]))

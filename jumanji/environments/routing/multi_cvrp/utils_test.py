@@ -197,6 +197,4 @@ class TestObservationSpec:
         assert np.array_equal(
             early_coefs, np.array([0.0] + [0.1] * num_customers, dtype=np.float32)
         )
-        assert np.array_equal(
-            late_coefs, np.array([0.0] + [0.5] * num_customers, dtype=np.float32)
-        )
+        assert np.array_equal(late_coefs, np.array([0.0] + [0.5] * num_customers, dtype=np.float32))

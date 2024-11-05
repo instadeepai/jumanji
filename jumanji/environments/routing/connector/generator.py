@@ -173,9 +173,7 @@ class RandomWalkGenerator(Generator):
 
         stepping_tuple = (step_key, grid, agents)
 
-        _, grid, agents = jax.lax.while_loop(
-            self._continue_stepping, self._step, stepping_tuple
-        )
+        _, grid, agents = jax.lax.while_loop(self._continue_stepping, self._step, stepping_tuple)
 
         # Convert heads and targets to format accepted by generator
         heads = agents.start.T
@@ -220,14 +218,10 @@ class RandomWalkGenerator(Generator):
         keys = jax.random.split(key, num=self.num_agents)
 
         # Randomly select action for each agent
-        actions = jax.vmap(self._select_action, in_axes=(0, None, 0))(
-            keys, grid, agents
-        )
+        actions = jax.vmap(self._select_action, in_axes=(0, None, 0))(keys, grid, agents)
 
         # Step all agents at the same time (separately) and return all of the grids
-        new_agents, grids = jax.vmap(self._step_agent, in_axes=(0, None, 0))(
-            agents, grid, actions
-        )
+        new_agents, grids = jax.vmap(self._step_agent, in_axes=(0, None, 0))(agents, grid, actions)
 
         # Get grids with only values related to a single agent.
         # For example: remove all other agents from agent 1's grid. Do this for all agents.
@@ -251,9 +245,7 @@ class RandomWalkGenerator(Generator):
         # Create the new grid by fixing old one with correction mask and adding the obstacles
         return agents, joined_grid + correction_mask
 
-    def _initialize_agents(
-        self, key: chex.PRNGKey, grid: chex.Array
-    ) -> Tuple[chex.Array, Agent]:
+    def _initialize_agents(self, key: chex.PRNGKey, grid: chex.Array) -> Tuple[chex.Array, Agent]:
         """Initializes agents using random starting point and places heads on the grid.
 
         Args:
@@ -345,9 +337,7 @@ class RandomWalkGenerator(Generator):
         cell = self._convert_tuple_to_flat_position(agent.position)
         return (self._available_cells(grid, cell) == -1).all()
 
-    def _select_action(
-        self, key: chex.PRNGKey, grid: chex.Array, agent: Agent
-    ) -> chex.Array:
+    def _select_action(self, key: chex.PRNGKey, grid: chex.Array, agent: Agent) -> chex.Array:
         """Selects action for agent to take given its current position.
 
         Args:
@@ -380,9 +370,7 @@ class RandomWalkGenerator(Generator):
     def _convert_tuple_to_flat_position(self, position: chex.Array) -> chex.Array:
         return jnp.array((position[0] * self.grid_size + position[1]), jnp.int32)
 
-    def _action_from_positions(
-        self, position_1: chex.Array, position_2: chex.Array
-    ) -> chex.Array:
+    def _action_from_positions(self, position_1: chex.Array, position_2: chex.Array) -> chex.Array:
         """Compares two positions and returns action id to get from one to the other."""
         position_1 = self._convert_flat_position_to_tuple(position_1)
         position_2 = self._convert_flat_position_to_tuple(position_2)
@@ -453,13 +441,11 @@ class RandomWalkGenerator(Generator):
         value = grid[jnp.divmod(cell, self.grid_size)]
         wire_id = (value - 1) // 3
 
-        available_cells_mask = jax.vmap(self._is_cell_free, in_axes=(None, 0))(
-            grid, adjacent_cells
-        )
+        available_cells_mask = jax.vmap(self._is_cell_free, in_axes=(None, 0))(grid, adjacent_cells)
         # Also want to check if the cell is touching itself more than once
-        touching_cells_mask = jax.vmap(
-            self._is_cell_doubling_back, in_axes=(None, None, 0)
-        )(grid, wire_id, adjacent_cells)
+        touching_cells_mask = jax.vmap(self._is_cell_doubling_back, in_axes=(None, None, 0))(
+            grid, wire_id, adjacent_cells
+        )
         available_cells_mask = available_cells_mask & touching_cells_mask
         available_cells = jnp.where(available_cells_mask, adjacent_cells, -1)
         return available_cells
@@ -496,9 +482,7 @@ class RandomWalkGenerator(Generator):
         # Get the adjacent cells of the current cell
         adjacent_cells = self._adjacent_cells(cell)
 
-        def is_cell_doubling_back_inner(
-            grid: chex.Array, cell: chex.Array
-        ) -> chex.Array:
+        def is_cell_doubling_back_inner(grid: chex.Array, cell: chex.Array) -> chex.Array:
             coordinate = jnp.divmod(cell, self.grid_size)
             cell_value = grid[tuple(coordinate)]
             touching_self = (

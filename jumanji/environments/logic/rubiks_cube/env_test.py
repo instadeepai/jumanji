@@ -97,9 +97,7 @@ def test_rubiks_cube__specs_does_not_smoke(cube_size: int) -> None:
     check_env_specs_does_not_smoke(env)
 
 
-def test_rubiks_cube__render(
-    monkeypatch: pytest.MonkeyPatch, rubiks_cube: RubiksCube
-) -> None:
+def test_rubiks_cube__render(monkeypatch: pytest.MonkeyPatch, rubiks_cube: RubiksCube) -> None:
     """Test that the render method builds the figure (but does not display it)."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     state, timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
@@ -128,9 +126,7 @@ def test_rubiks_cube__done(time_limit: int) -> None:
     assert episode_length == time_limit
 
 
-def test_rubiks_cube__animate(
-    rubiks_cube: RubiksCube, mocker: pytest_mock.MockerFixture
-) -> None:
+def test_rubiks_cube__animate(rubiks_cube: RubiksCube, mocker: pytest_mock.MockerFixture) -> None:
     """Test that the `animate` method creates the animation correctly (but does not display it)."""
     states = mocker.MagicMock()
     animation = rubiks_cube.animate(states)

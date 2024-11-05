@@ -40,9 +40,7 @@ def make_actor_critic_networks_lbf(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `LevelBasedForaging` environment."""
     num_values = np.asarray(lbf_env.action_spec.num_values)
-    parametric_action_distribution = MultiCategoricalParametricDistribution(
-        num_values=num_values
-    )
+    parametric_action_distribution = MultiCategoricalParametricDistribution(num_values=num_values)
     policy_network = make_actor_network(
         time_limit=lbf_env.time_limit,
         transformer_num_blocks=transformer_num_blocks,
@@ -111,9 +109,7 @@ class LevelBasedForagingTorso(hk.Module):
                 model_size=self.model_size,
                 name=f"self_attention_block_{block_id}",
             )
-            embeddings = transformer_block(
-                query=embeddings, key=embeddings, value=embeddings
-            )
+            embeddings = transformer_block(query=embeddings, key=embeddings, value=embeddings)
         return embeddings  # (B, N, H)
 
 

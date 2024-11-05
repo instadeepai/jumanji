@@ -49,9 +49,7 @@ class TestRandomGenerator:
     def random_generator(self) -> RandomGenerator:
         return RandomGenerator(num_items=50, total_budget=12.5)
 
-    def test_random_generator__properties(
-        self, random_generator: RandomGenerator
-    ) -> None:
+    def test_random_generator__properties(self, random_generator: RandomGenerator) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert random_generator.num_items == 50
         assert random_generator.total_budget == 12.5

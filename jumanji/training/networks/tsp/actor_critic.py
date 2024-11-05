@@ -39,9 +39,7 @@ def make_actor_critic_networks_tsp(
 ) -> ActorCriticNetworks:
     """Make actor-critic networks for the `TSP` environment."""
     num_actions = tsp.action_spec.num_values
-    parametric_action_distribution = CategoricalParametricDistribution(
-        num_actions=num_actions
-    )
+    parametric_action_distribution = CategoricalParametricDistribution(num_actions=num_actions)
     policy_network = make_actor_network_tsp(
         transformer_num_blocks=transformer_num_blocks,
         transformer_num_heads=transformer_num_heads,
@@ -83,9 +81,7 @@ class TSPTorso(hk.Module):
         self.model_size = transformer_num_heads * transformer_key_size
 
     def __call__(self, coordinates: chex.Array, mask: chex.Array) -> chex.Array:
-        embeddings = hk.Linear(self.model_size, name="coordinates_projection")(
-            coordinates
-        )
+        embeddings = hk.Linear(self.model_size, name="coordinates_projection")(coordinates)
         for block_id in range(self.transformer_num_blocks):
             transformer_block = TransformerBlock(
                 num_heads=self.transformer_num_heads,

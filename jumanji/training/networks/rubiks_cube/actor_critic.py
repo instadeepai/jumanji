@@ -71,15 +71,11 @@ def make_torso_network_fn(
     def torso_network_fn(observation: Observation) -> chex.Array:
         # Cube embedding
         cube_embedder = hk.Embed(vocab_size=len(Face), embed_dim=cube_embed_dim)
-        cube_embedding = cube_embedder(observation.cube).reshape(
-            *observation.cube.shape[:-3], -1
-        )
+        cube_embedding = cube_embedder(observation.cube).reshape(*observation.cube.shape[:-3], -1)
 
         # Step count embedding
         step_count_embedder = hk.Linear(step_count_embed_dim)
-        step_count_embedding = step_count_embedder(
-            observation.step_count[:, None] / time_limit
-        )
+        step_count_embedding = step_count_embedder(observation.step_count[:, None] / time_limit)
 
         embedding = jnp.concatenate([cube_embedding, step_count_embedding], axis=-1)
         return embedding

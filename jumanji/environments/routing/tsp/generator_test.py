@@ -50,9 +50,7 @@ class TestUniformGenerator:
             num_cities=50,
         )
 
-    def test_uniform_generator__properties(
-        self, uniform_generator: UniformGenerator
-    ) -> None:
+    def test_uniform_generator__properties(self, uniform_generator: UniformGenerator) -> None:
         """Validate that the random instance generator has the correct properties."""
         assert uniform_generator.num_cities == 50
 

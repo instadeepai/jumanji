@@ -61,9 +61,7 @@ def can_move_left_row_cond(carry: CanMoveCarry) -> chex.Numeric:
 def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
     """Check if the current tiles can move and increment the indices."""
     # Check if tiles can move
-    can_move = (carry.origin != 0) & (
-        (carry.target == 0) | (carry.target == carry.origin)
-    )
+    can_move = (carry.origin != 0) & ((carry.target == 0) | (carry.target == carry.origin))
 
     # Increment indices as if performed a no op
     # If not performing no op, loop will be terminated anyways
@@ -75,17 +73,13 @@ def can_move_left_row_body(carry: CanMoveCarry) -> CanMoveCarry:
     )
 
     # Return updated carry
-    return carry._replace(
-        can_move=can_move, target_idx=target_idx, origin_idx=origin_idx
-    )
+    return carry._replace(can_move=can_move, target_idx=target_idx, origin_idx=origin_idx)
 
 
 def can_move_left_row(row: chex.Array) -> bool:
     """Check if row can move left."""
     carry = CanMoveCarry(can_move=False, row=row, target_idx=0, origin_idx=1)
-    can_move: bool = jax.lax.while_loop(
-        can_move_left_row_cond, can_move_left_row_body, carry
-    )[0]
+    can_move: bool = jax.lax.while_loop(can_move_left_row_cond, can_move_left_row_body, carry)[0]
     return can_move
 
 

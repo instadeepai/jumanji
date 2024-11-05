@@ -25,35 +25,23 @@ def test_simulate_agent_movement(
     agent0: Agent, agent1: Agent, agent2: Agent, agents: Agent, food_items: Food
 ) -> None:
     grid_size = 6
-    agent0_new = utils.simulate_agent_movement(
-        agent0, RIGHT, food_items, agents, grid_size
-    )
+    agent0_new = utils.simulate_agent_movement(agent0, RIGHT, food_items, agents, grid_size)
     assert jnp.all(agent0_new.position == jnp.array([0, 1]))
-    agent1_new = utils.simulate_agent_movement(
-        agent1, LEFT, food_items, agents, grid_size
-    )
+    agent1_new = utils.simulate_agent_movement(agent1, LEFT, food_items, agents, grid_size)
     assert jnp.all(agent1_new.position == jnp.array([1, 0]))
 
     # Move agent out of bounds
-    agent0_new = utils.simulate_agent_movement(
-        agent0, UP, food_items, agents, grid_size
-    )
+    agent0_new = utils.simulate_agent_movement(agent0, UP, food_items, agents, grid_size)
     assert jnp.all(agent0_new.position == agent0.position)
 
     # Move agent1 to take the position of the food0
-    agent1_new = utils.simulate_agent_movement(
-        agent1, DOWN, food_items, agents, grid_size
-    )
+    agent1_new = utils.simulate_agent_movement(agent1, DOWN, food_items, agents, grid_size)
     assert jnp.all(agent1_new.position == agent1.position)
 
     # Try to load and do nothing.
-    agent2_new = utils.simulate_agent_movement(
-        agent2, NOOP, food_items, agents, grid_size
-    )
+    agent2_new = utils.simulate_agent_movement(agent2, NOOP, food_items, agents, grid_size)
     assert jnp.all(agent2_new.position == agent2.position)
-    agent2_new = utils.simulate_agent_movement(
-        agent2, LOAD, food_items, agents, grid_size
-    )
+    agent2_new = utils.simulate_agent_movement(agent2, LOAD, food_items, agents, grid_size)
     assert jnp.all(agent2_new.position == agent2.position)
 
 
@@ -67,7 +55,6 @@ def test_are_entities_adjacent(
     food2: Food,
     food_items: Food,
 ) -> None:
-
     assert utils.are_entities_adjacent(agent1, food0)
     assert utils.are_entities_adjacent(agent2, food0)
     assert utils.are_entities_adjacent(agent2, food1)

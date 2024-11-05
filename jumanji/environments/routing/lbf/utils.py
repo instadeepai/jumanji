@@ -45,9 +45,7 @@ def flag_duplicates(a: chex.Array) -> chex.Array:
         flag_duplicates(a)  # jnp.array([True, False, True, False, True, True])
     """
     # https://stackoverflow.com/a/11528078/5768407
-    _, indices, counts = jnp.unique(
-        a, return_inverse=True, return_counts=True, size=len(a), axis=0
-    )
+    _, indices, counts = jnp.unique(a, return_inverse=True, return_counts=True, size=len(a), axis=0)
     return ~(counts[indices] == 1)
 
 
@@ -85,9 +83,7 @@ def simulate_agent_movement(
 
     # Move the agent to the new position if it's a valid position,
     # otherwise keep the current position
-    new_agent_position = jnp.where(
-        out_of_bounds | entity_at_position, agent.position, new_position
-    )
+    new_agent_position = jnp.where(out_of_bounds | entity_at_position, agent.position, new_position)
 
     # Return the agent with the updated position
     return agent.replace(position=new_agent_position)  # type: ignore
@@ -121,9 +117,9 @@ def update_agent_positions(
     moved_agents = fix_collisions(moved_agents, agents)
 
     # set agent's loading status
-    moved_agents = jax.vmap(
-        lambda agent, action: agent.replace(loading=(action == LOAD))
-    )(moved_agents, actions)
+    moved_agents = jax.vmap(lambda agent, action: agent.replace(loading=(action == LOAD)))(
+        moved_agents, actions
+    )
 
     return moved_agents
 
@@ -222,9 +218,7 @@ def compute_action_mask(agent: Agent, state: State, grid_size: int) -> chex.Arra
         next_positions, state.food_items, ~state.food_items.eaten
     )
     # Check if the next position is out of bounds
-    out_of_bounds = jnp.any(
-        (next_positions < 0) | (next_positions >= grid_size), axis=-1
-    )
+    out_of_bounds = jnp.any((next_positions < 0) | (next_positions >= grid_size), axis=-1)
 
     action_mask = ~(food_occupied | agent_occupied | out_of_bounds)
 

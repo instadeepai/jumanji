@@ -39,9 +39,7 @@ def is_puzzle_solved(board: chex.Array) -> chex.Array:
 
     condition_rows = jax.vmap(_validate_row)(board).all()
     condition_columns = jax.vmap(_validate_row)(board.T).all()
-    condition_boxes = jax.vmap(_validate_row)(
-        jnp.take(board, jnp.asarray(BOX_IDX))
-    ).all()
+    condition_boxes = jax.vmap(_validate_row)(jnp.take(board, jnp.asarray(BOX_IDX))).all()
     return condition_rows & condition_columns & condition_boxes
 
 

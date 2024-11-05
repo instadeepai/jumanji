@@ -238,23 +238,17 @@ def make_agent_observation(
     )
 
     # function for writing receptive field cells
-    def write_no_agent(
-        obs: chex.Array, idx: int, _: int, is_self: bool
-    ) -> Tuple[chex.Array, int]:
+    def write_no_agent(obs: chex.Array, idx: int, _: int, is_self: bool) -> Tuple[chex.Array, int]:
         "Write information for empty agent cell."
         # if there is no agent we set a 0 and all zeros
         # for the direction as well, i.e. [0, 0, 0, 0, 0]
         idx = jax.lax.cond(is_self, lambda i: i, lambda i: move_writer_index(i, 5), idx)
         return obs, idx
 
-    def write_agent(
-        obs: chex.Array, idx: int, id_agent: int, _: bool
-    ) -> Tuple[chex.Array, int]:
+    def write_agent(obs: chex.Array, idx: int, id_agent: int, _: bool) -> Tuple[chex.Array, int]:
         "Write information for cell containing an agent."
         obs, idx = write_to_observation(obs, idx, jnp.array([1], dtype=jnp.int32))
-        direction = jax.nn.one_hot(
-            tree_slice(agents, id_agent - 1).direction, 4, dtype=jnp.int32
-        )
+        direction = jax.nn.one_hot(tree_slice(agents, id_agent - 1).direction, 4, dtype=jnp.int32)
         obs, idx = write_to_observation(obs, idx, direction)
         return obs, idx
 
@@ -311,9 +305,7 @@ def make_agent_observation(
         )
         return (obs, idx), None
 
-    (obs, idx, _), _ = jax.lax.scan(
-        agent_sensor_scan, (obs, idx, agent_id), agents_grid
-    )
+    (obs, idx, _), _ = jax.lax.scan(agent_sensor_scan, (obs, idx, agent_id), agents_grid)
     (obs, _), _ = jax.lax.scan(shelf_sensor_scan, (obs, idx), shelves_grid)
     return obs
 

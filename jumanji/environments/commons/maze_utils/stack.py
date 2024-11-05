@@ -52,6 +52,7 @@ be inserted. All rows up to this index are elements of the stack, all rows after
 [. . . .]]
 
 """
+
 from typing import NamedTuple, Tuple
 
 import chex

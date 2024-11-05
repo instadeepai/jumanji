@@ -178,17 +178,13 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         self.agent_ids = jnp.arange(self.num_agents)
         self.directions = jnp.array([d.value for d in Direction])
-        self.num_obs_features = utils.calculate_num_observation_features(
-            self.sensor_range
-        )
+        self.num_obs_features = utils.calculate_num_observation_features(self.sensor_range)
         self.goals = self._generator.goals
         self.time_limit = time_limit
         super().__init__()
 
         # create viewer for rendering environment
-        self._viewer = viewer or RobotWarehouseViewer(
-            self.grid_size, self.goals, "RobotWarehouse"
-        )
+        self._viewer = viewer or RobotWarehouseViewer(self.grid_size, self.goals, "RobotWarehouse")
 
     def __repr__(self) -> str:
         return (
@@ -258,9 +254,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
             carry_info: Tuple[chex.Array, chex.Array, chex.Array, int], action: int
         ) -> Tuple[Tuple[chex.Array, chex.Array, chex.Array, int], None]:
             grid, agents, shelves, agent_id = carry_info
-            grid, agents, shelves = self._update_state(
-                grid, agents, shelves, action, agent_id
-            )
+            grid, agents, shelves = self._update_state(grid, agents, shelves, action, agent_id)
             return (grid, agents, shelves, agent_id + 1), None
 
         (grid, agents, shelves, _), _ = jax.lax.scan(
@@ -268,9 +262,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         # check for agent collisions
-        collisions = jax.vmap(functools.partial(utils.is_collision, grid))(
-            agents, self.agent_ids
-        )
+        collisions = jax.vmap(functools.partial(utils.is_collision, grid))(agents, self.agent_ids)
         collision = jnp.any(collisions)
 
         # compute shared reward for all agents and update request queue
@@ -278,13 +270,9 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         reward = jnp.array(0, dtype=jnp.float32)
 
         def update_reward_and_request_queue_scan(
-            carry_info: Tuple[
-                chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array
-            ],
+            carry_info: Tuple[chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array],
             goal: chex.Array,
-        ) -> Tuple[
-            Tuple[chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array], None
-        ]:
+        ) -> Tuple[Tuple[chex.PRNGKey, chex.Array, chex.Array, chex.Array, chex.Array], None]:
             key, reward, request_queue, grid, shelves = carry_info
             (
                 key,
@@ -348,9 +336,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         agents_view = specs.Array(
             (self.num_agents, self.num_obs_features), jnp.int32, "agents_view"
         )
-        action_mask = specs.BoundedArray(
-            (self.num_agents, 5), bool, False, True, "action_mask"
-        )
+        action_mask = specs.BoundedArray((self.num_agents, 5), bool, False, True, "action_mask")
         step_count = specs.BoundedArray((), jnp.int32, 0, self.time_limit, "step_count")
         return specs.Spec(
             Observation,
@@ -497,9 +483,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
             return key, reward, request_queue, shelves
 
         # check if shelf is at goal position and in request queue
-        shelf_at_goal = (~jnp.equal(shelf_id, 0)) & jnp.isin(
-            shelf_id, request_queue + 1
-        )
+        shelf_at_goal = (~jnp.equal(shelf_id, 0)) & jnp.isin(shelf_id, request_queue + 1)
 
         key, reward, request_queue, shelves = jax.lax.cond(
             shelf_at_goal,
@@ -540,9 +524,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        return self._viewer.animate(
-            states=states, interval=interval, save_path=save_path
-        )
+        return self._viewer.animate(states=states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup.

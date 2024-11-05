@@ -90,9 +90,7 @@ def make_network_cnn(
     def network_fn(observation: Observation) -> chex.Array:
         conv_layers = [
             [
-                hk.Conv2D(
-                    output_channels=output_channels, kernel_shape=board_kernel_shape
-                ),
+                hk.Conv2D(output_channels=output_channels, kernel_shape=board_kernel_shape),
                 jax.nn.relu,
             ]
             for output_channels in board_conv_channels
@@ -105,9 +103,9 @@ def make_network_cnn(
         )
         x = board_embedder(observation.board + 1)
         num_mines_embedder = hk.Linear(num_mines_embed_dim)
-        y = num_mines_embedder(
-            observation.num_mines[:, None] / (board_num_rows * board_num_cols)
-        )[:, None, None, :]
+        y = num_mines_embedder(observation.num_mines[:, None] / (board_num_rows * board_num_cols))[
+            :, None, None, :
+        ]
         y = jnp.tile(y, [1, board_num_rows, board_num_cols, 1])
         output = jnp.concatenate([x, y], axis=-1)
         final_layers = hk.nets.MLP((*final_layer_dims, 1))

@@ -104,16 +104,12 @@ def spawn_random_entities(
         shape=(num_agents,),
         replace=False,
     )
-    agent_coords = jnp.transpose(
-        jnp.asarray(jnp.unravel_index(agent_coords, grid_size))
-    )
+    agent_coords = jnp.transpose(jnp.asarray(jnp.unravel_index(agent_coords, grid_size)))
 
     # random agent directions
     key, direction_key = jax.random.split(key)
 
-    agent_dirs = jax.random.choice(
-        direction_key, _POSSIBLE_DIRECTIONS, shape=(num_agents,)
-    )
+    agent_dirs = jax.random.choice(direction_key, _POSSIBLE_DIRECTIONS, shape=(num_agents,))
 
     # sample request queue
     key, queue_key = jax.random.split(key)
@@ -155,9 +151,7 @@ def place_entity_on_grid(
     return grid.at[channel, x, y].set(entity_id + 1)
 
 
-def place_entities_on_grid(
-    grid: chex.Array, agents: Agent, shelves: Shelf
-) -> chex.Array:
+def place_entities_on_grid(grid: chex.Array, agents: Agent, shelves: Shelf) -> chex.Array:
     """Place agents and shelves on the grid.
 
     Args:

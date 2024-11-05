@@ -144,9 +144,7 @@ def test_minesweeper__step(minesweeper_env: Minesweeper) -> None:
 
     # Check that the state has changed, since we took the same action twice
     assert jnp.array_equal(next_next_state.board, next_state.board)
-    assert (
-        next_next_timestep.observation.num_mines == next_timestep.observation.num_mines
-    )
+    assert next_next_timestep.observation.num_mines == next_timestep.observation.num_mines
     assert next_next_state.step_count == 2
     assert next_next_timestep.observation.step_count == 2
     assert jnp.array_equal(next_next_state.board, next_next_timestep.observation.board)
@@ -162,9 +160,7 @@ def test_minesweeper__specs_does_not_smoke(minesweeper_env: Minesweeper) -> None
     check_env_specs_does_not_smoke(minesweeper_env)
 
 
-def test_minesweeper__render(
-    monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper
-) -> None:
+def test_minesweeper__render(monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
@@ -205,9 +201,7 @@ def test_minesweeper__solved(minesweeper_env: Minesweeper) -> None:
         minesweeper_env.num_rows * minesweeper_env.num_cols - minesweeper_env.num_mines
     )
     assert collected_rewards == [1.0] * expected_episode_length
-    assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [
-        StepType.LAST
-    ]
+    assert collected_step_types == [StepType.MID] * (expected_episode_length - 1) + [StepType.LAST]
 
 
 def test_minesweeper_animation(

@@ -68,9 +68,7 @@ class RandomGenerator(Generator):
             state: the generated state.
         """
         generator_key, state_key = jax.random.split(key)
-        maze = maze_generation.generate_maze(
-            self.num_cols, self.num_rows, generator_key
-        )
+        maze = maze_generation.generate_maze(self.num_cols, self.num_rows, generator_key)
 
         grid = self._adapt_values(maze)
 

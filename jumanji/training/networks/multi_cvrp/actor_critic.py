@@ -271,13 +271,9 @@ def make_actor_network_multicvrp(
         )
         vehicle_embeddings, customer_embeddings = torso(observation)  # (B, V+C+1, D)
 
-        vehicle_embeddings = hk.Linear(32, name="policy_head_vehicles")(
-            vehicle_embeddings
-        )
+        vehicle_embeddings = hk.Linear(32, name="policy_head_vehicles")(vehicle_embeddings)
 
-        customer_embeddings = hk.Linear(32, name="policy_head_customers")(
-            customer_embeddings
-        )
+        customer_embeddings = hk.Linear(32, name="policy_head_customers")(customer_embeddings)
 
         logits = jnp.einsum(
             "...vk,...ck->...vc", vehicle_embeddings, customer_embeddings

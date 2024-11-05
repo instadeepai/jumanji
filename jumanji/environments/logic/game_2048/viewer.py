@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import ClassVar, Dict, Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib.animation
@@ -24,7 +24,7 @@ from jumanji.viewer import Viewer
 
 
 class Game2048Viewer(Viewer):
-    COLORS = {
+    COLORS: ClassVar[Dict[int | str, str]] = {
         1: "#ccc0b3",
         2: "#eee4da",
         4: "#ede0c8",
@@ -158,13 +158,9 @@ class Game2048Viewer(Viewer):
         """
         # Set the background color of the tile based on its value.
         if tile_value <= 16384:
-            rect = plt.Rectangle(
-                [col - 0.5, row - 0.5], 1, 1, color=self.COLORS[int(tile_value)]
-            )
+            rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.COLORS[int(tile_value)])
         else:
-            rect = plt.Rectangle(
-                [col - 0.5, row - 0.5], 1, 1, color=self.COLORS["other"]
-            )
+            rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.COLORS["other"])
         ax.add_patch(rect)
 
         if tile_value in [2, 4]:

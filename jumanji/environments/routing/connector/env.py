@@ -121,9 +121,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         self.grid_size = self._generator.grid_size
         super().__init__()
         self._agent_ids = jnp.arange(self.num_agents)
-        self._viewer = viewer or ConnectorViewer(
-            "Connector", self.num_agents, render_mode="human"
-        )
+        self._viewer = viewer or ConnectorViewer("Connector", self.num_agents, render_mode="human")
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -137,9 +135,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         state = self._generator(key)
 
-        action_mask = jax.vmap(self._get_action_mask, (0, None))(
-            state.agents, state.grid
-        )
+        action_mask = jax.vmap(self._get_action_mask, (0, None))(state.agents, state.grid)
         observation = Observation(
             grid=state.grid,
             action_mask=action_mask,
@@ -149,9 +145,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=observation, extras=extras)
         return state, timestep
 
-    def step(
-        self, state: State, action: chex.Array
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
         Args:
@@ -168,9 +162,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
         agents, grid = self._step_agents(state, action)
-        new_state = State(
-            grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key
-        )
+        new_state = State(grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key)
 
         # Construct timestep: get reward, legal actions and done
         reward = self._reward_fn(state, action, new_state)
@@ -197,9 +189,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return new_state, timestep
 
-    def _step_agents(
-        self, state: State, action: chex.Array
-    ) -> Tuple[Agent, chex.Array]:
+    def _step_agents(self, state: State, action: chex.Array) -> Tuple[Agent, chex.Array]:
         """Steps all agents at the same time correcting for possible collisions.
 
         If a collision occurs we place the agent with the lower `agent_id` in its previous position.
@@ -220,9 +210,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         # Create a correction mask for possible collisions (see the docs of `get_correction_mask`)
         correction_fn = jax.vmap(get_correction_mask, in_axes=(None, None, 0))
-        correction_masks, collided_agents = correction_fn(
-            state.grid, joined_grid, agent_ids
-        )
+        correction_masks, collided_agents = correction_fn(state.grid, joined_grid, agent_ids)
         correction_mask = jnp.sum(correction_masks, 0)
 
         # Correct state.agents
