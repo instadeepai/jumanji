@@ -50,7 +50,7 @@ In general, we follow the [Google Style Guide](https://google.github.io/stylegui
 We use [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages.
 In addition, to guarantee the quality and uniformity of the code, we use two tools:
 
-- [Ruff](https://docs.astral.sh/ruff/) An extremely fast Python linter and code formatter.
+- [Ruff](https://docs.astral.sh/ruff/) is an extremely fast Python linter and code formatter.
 - [MyPy](https://mypy.readthedocs.io/en/stable/#) is a static type checker that can help you detect inconsistent typing of variables.
 
 
