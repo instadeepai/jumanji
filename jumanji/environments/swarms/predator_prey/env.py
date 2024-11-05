@@ -23,7 +23,11 @@ from esquilax.transforms import spatial
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
-from jumanji.environments.swarms.common.updates import init_state, update_state, view
+from jumanji.environments.swarms.common.updates import update_state, view
+from jumanji.environments.swarms.predator_prey.generator import (
+    Generator,
+    RandomGenerator,
+)
 from jumanji.environments.swarms.predator_prey.rewards import DistanceRewards, RewardFn
 from jumanji.environments.swarms.predator_prey.types import (
     Actions,
@@ -144,6 +148,7 @@ class PredatorPrey(Environment):
         prey_view_angle: float,
         max_steps: int = 10_000,
         viewer: Optional[Viewer[State]] = None,
+        generator: Optional[Generator] = None,
         reward_fn: Optional[RewardFn] = None,
     ) -> None:
         """Instantiates a `PredatorPrey` environment
@@ -196,7 +201,8 @@ class PredatorPrey(Environment):
                 relative to its heading.
             max_steps: Maximum number of environment steps before termination
             viewer: `Viewer` used for rendering. Defaults to `PredatorPreyViewer`.
-            reward_fn: Reward function
+            generator: Initial state generator. Defaults to `RandomGenerator`.
+            reward_fn: Reward function. Defaults to `DistanceRewards`.
         """
         self.num_predators = num_predators
         self.num_prey = num_prey
@@ -222,7 +228,8 @@ class PredatorPrey(Environment):
         self.max_steps = max_steps
         super().__init__()
         self._viewer = viewer or PredatorPreyViewer()
-        self.reward_fn = reward_fn or DistanceRewards(
+        self._generator = generator or RandomGenerator(num_predators, num_prey)
+        self._reward_fn = reward_fn or DistanceRewards(
             predator_vision_range, prey_vision_range, 1.0, 1.0
         )
 
@@ -237,7 +244,8 @@ class PredatorPrey(Environment):
                 f" - num vision: {self.num_vision}"
                 f" - agent radius: {self.agent_radius}"
                 f" - sparse-rewards: {self.sparse_rewards}",
-                f" - reward-fn: {self.reward_fn.__class__.__name__}",
+                f" - generator: {self._generator.__class__.__name__}",
+                f" - reward-fn: {self._reward_fn.__class__.__name__}",
             ]
         )
 
@@ -251,12 +259,7 @@ class PredatorPrey(Environment):
             state: Agent states.
             timestep: TimeStep with individual agent local environment views.
         """
-        key, predator_key, prey_key = jax.random.split(key, num=3)
-        predator_state = init_state(
-            self.num_predators, self.predator_params, predator_key
-        )
-        prey_state = init_state(self.num_prey, self.prey_params, prey_key)
-        state = State(predators=predator_state, prey=prey_state, key=key)
+        state = self._generator(key, self.predator_params, self.prey_params)
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
@@ -284,7 +287,7 @@ class PredatorPrey(Environment):
         state = State(
             predators=predators, prey=prey, key=state.key, step=state.step + 1
         )
-        rewards = self.reward_fn(state)
+        rewards = self._reward_fn(state)
         observation = self._state_to_observation(state)
         timestep = jax.lax.cond(
             state.step >= self.max_steps,
