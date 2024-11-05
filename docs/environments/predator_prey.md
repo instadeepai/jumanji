@@ -35,19 +35,8 @@ parameters. Agents are restricted to velocities within a fixed range of speeds.
 
 ## Reward
 
-Rewards can be either sparse or proximity-based.
+Rewards are generated for each agent individually. They are generally dependent on proximity, so
+their scale can depend on agent density and interaction ranges.
 
-### Sparse
-
-- `predators`: jax array (float) of shape `(num_predators,)`, predators are rewarded a fixed amount
-  for coming into contact with a prey agent. If they are in contact with multiple prey, only the
-  nearest agent is selected.
-- `prey`: jax array (float) of shape `(num_predators,)`, prey are penalised a fix negative amount if
-  they come into contact with a predator agent.
-
-### Proximity
-
-- `predators`: jax array (float) of shape `(num_predators,)`, predators are rewarded with an amount
-  scaled linearly with the distance to the prey agents, summed over agents in range.
-- `prey`: jax array (float) of shape `(num_predators,)`, prey are penalised by an amount scaled linearly
-  with distance from predator agents, summed over all predators in range.
+- `predators`: jax array (float) of shape `(num_predators,)`, individual predator agent rewards.
+- `prey`: jax array (float) of shape `(num_prey,)`, individual prey rewards.

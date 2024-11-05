@@ -70,10 +70,9 @@ class PredatorPrey(Environment):
         - prey: jax array (float) of shape (num_prey, 2)
 
     - reward: `Rewards`
-        Arrays of individual agent rewards. Rewards can either be generated
-        sparsely applied when agent collide, or be generated based on distance
-        to other agents (hence they are dependent on the number and density
-        of agents).
+        Arrays of individual agent rewards. Rewards generally depend on
+        proximity to other agents, and so can vary dependent on
+        density and agent radius and vision ranges.
 
         - predators: jax array (float) of shape (num_predators,)
         - prey: jax array (float) of shape (num_prey,)

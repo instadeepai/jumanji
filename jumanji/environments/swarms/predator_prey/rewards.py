@@ -28,20 +28,35 @@ class RewardFn(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, state: State) -> Rewards:
-        """The reward function used in the `Predator` environment.
+        """The reward function used in the `PredatorPrey` environment.
 
         Args:
             state: `PredatorPrey` state.
 
         Returns:
-            The reward for the current step.
+            The reward for the current step for individual agents.
         """
 
 
 class SparseRewards(RewardFn):
+    """Sparse rewards applied when agents come into contact.
+
+    Rewards applied when predators and prey come into contact
+    (i.e. overlap), positively rewarding predators and negatively
+    penalising prey. Attempts to model predators `capturing` prey.
+    """
+
     def __init__(
         self, agent_radius: float, predator_reward: float, prey_penalty: float
     ) -> None:
+        """
+        Initialise a sparse reward function.
+
+        Args:
+            agent_radius: Radius of simulated agents.
+            predator_reward: Predator reward value.
+            prey_penalty: Prey penalty (this is negated when applied).
+        """
         self.agent_radius = agent_radius
         self.prey_penalty = prey_penalty
         self.predator_reward = predator_reward
@@ -129,6 +144,16 @@ class SparseRewards(RewardFn):
 
 
 class DistanceRewards(RewardFn):
+    """Rewards based on proximity to other agents.
+
+    Rewards generated based on an agents proximity to other
+    agents within their vision range. Predator rewards increase
+    as they get closer to prey, and prey rewards become
+    increasingly negative as they get closer to predators.
+    Rewards are summed over all other agents within range of
+    an agent.
+    """
+
     def __init__(
         self,
         predator_vision_range: float,
@@ -136,6 +161,17 @@ class DistanceRewards(RewardFn):
         predator_reward: float,
         prey_penalty: float,
     ) -> None:
+        """
+        Initialise a distance reward function
+
+        Args:
+            predator_vision_range: Predator agent vision range.
+            prey_vision_range: Prey agent vision range.
+            predator_reward: Max reward value applied to
+              predator agents.
+            prey_penalty: Max reward value applied to prey agents
+              (this value is negated when applied).
+        """
         self.predator_vision_range = predator_vision_range
         self.prey_vision_range = prey_vision_range
         self.prey_penalty = prey_penalty
