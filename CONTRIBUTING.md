@@ -48,16 +48,14 @@ Before sending your pull request for review, make sure your changes are consiste
 ### Coding Style
 In general, we follow the [Google Style Guide](https://google.github.io/styleguide/pyguide.html).
 We use [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages.
-In addition, to guarantee the quality and uniformity of the code, we use various linters:
+In addition, to guarantee the quality and uniformity of the code, we use two tools:
 
-- [Black](https://black.readthedocs.io/en/stable/#) is a deterministic code formatter that is compliant with PEP8 standards.
-- [Isort](https://pycqa.github.io/isort/) sorts imports alphabetically and separates them into sections.
-- [Flake8](https://flake8.pycqa.org/en/latest/) is a library that wraps PyFlakes and PyCodeStyle. It is a great toolkit for checking your codebase against coding style (PEP8), programming, and syntax errors. Flake8 also benefits from an ecosystem of plugins developed by the community that extend its capabilities. You can read more about Flake8 plugins on the documentation and find a curated list of plugins here.
+- [Ruff](https://docs.astral.sh/ruff/) An extremely fast Python linter and code formatter.
 - [MyPy](https://mypy.readthedocs.io/en/stable/#) is a static type checker that can help you detect inconsistent typing of variables.
 
 
 #### Pre-Commit
-To help in automating the quality of the code, we use [pre-commit](https://pre-commit.com/), a framework that manages the installation and execution of git hooks that will be run before every commit. These hooks help to automatically point out issues in code such as formatting mistakes, unused variables, trailing whitespace, debug statements, etc. By pointing these issues out before code review, it allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Each commit should be preceded by a call to pre-commit to ensure code quality and formatting. The configuration is in .pre-commit-config.yaml and includes Black, Flake8, MyPy and checks for the yaml formatting, trimming trailing whitespace, etc.
+To help in automating the quality of the code, we use [pre-commit](https://pre-commit.com/), a framework that manages the installation and execution of git hooks that will be run before every commit. These hooks help to automatically point out issues in code such as formatting mistakes, unused variables, trailing whitespace, debug statements, etc. By pointing these issues out before code review, it allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Each commit should be preceded by a call to pre-commit to ensure code quality and formatting. The configuration is in .pre-commit-config.yaml and includes Ruff, MyPy and checks for the yaml formatting, trimming trailing whitespace, etc.
 Try running: `pre-commit run --all-files`. All linters must pass before committing your change.
 
 ### Code of Conduct
