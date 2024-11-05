@@ -45,8 +45,8 @@ class Observation:
     prey: Local view of prey agents.
     """
 
-    predators: chex.Array
-    prey: chex.Array
+    predators: chex.Array  # (num_predators, num_vision)
+    prey: chex.Array  # (num_prey, num_vision)
 
 
 @dataclass
@@ -56,8 +56,8 @@ class Actions:
     prey: Array of actions for prey agents.
     """
 
-    predators: chex.Array
-    prey: chex.Array
+    predators: chex.Array  # (num_predators, 2)
+    prey: chex.Array  # (num_prey, 2)
 
 
 @dataclass
@@ -67,5 +67,5 @@ class Rewards:
     prey: Array of individual rewards for prey agents.
     """
 
-    predators: chex.Array
-    prey: chex.Array
+    predators: chex.Array  # (num_predators,)
+    prey: chex.Array  # (num_prey,)

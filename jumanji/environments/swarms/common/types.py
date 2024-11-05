@@ -21,7 +21,7 @@ else:
 import chex
 
 
-@dataclass
+@dataclass(frozen=True)
 class AgentParams:
     """
     max_rotate: Max angle an agent can rotate during a step (a fraction of pi)
@@ -48,6 +48,6 @@ class AgentState:
     speed: Speed of the agents
     """
 
-    pos: chex.Array
-    heading: chex.Array
-    speed: chex.Array
+    pos: chex.Array  # (num_agents, 2)
+    heading: chex.Array  # (num_agents,)
+    speed: chex.Array  # (num_agents,)

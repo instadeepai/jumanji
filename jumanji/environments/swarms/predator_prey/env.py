@@ -24,17 +24,21 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
 from jumanji.environments.swarms.common.updates import init_state, update_state, view
-from jumanji.types import TimeStep, restart, termination, transition
-from jumanji.viewer import Viewer
-
-from .types import Actions, Observation, Rewards, State
-from .updates import (
+from jumanji.environments.swarms.predator_prey.types import (
+    Actions,
+    Observation,
+    Rewards,
+    State,
+)
+from jumanji.environments.swarms.predator_prey.updates import (
     distance_predator_rewards,
     distance_prey_rewards,
     sparse_predator_rewards,
     sparse_prey_rewards,
 )
-from .viewer import PredatorPreyViewer
+from jumanji.environments.swarms.predator_prey.viewer import PredatorPreyViewer
+from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.viewer import Viewer
 
 
 class PredatorPrey(Environment):

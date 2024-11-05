@@ -19,7 +19,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.quiver import Quiver
 
-from .types import AgentState
+from jumanji.environments.swarms.common.types import AgentState
 
 
 def draw_agents(ax: Axes, agent_states: AgentState, color: str) -> Quiver:
