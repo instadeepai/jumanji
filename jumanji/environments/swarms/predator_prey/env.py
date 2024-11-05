@@ -13,12 +13,13 @@
 # limitations under the License.
 
 from functools import cached_property
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
 from esquilax.transforms import spatial
+from matplotlib.animation import FuncAnimation
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -466,6 +467,26 @@ class PredatorPrey(Environment):
             state: State object containing the current dynamics of the environment.
         """
         self._viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save_path: Optional[str] = None,
+    ) -> FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive
+                timesteps.
+            interval: delay between frames in milliseconds.
+            save_path: the path where the animation file should be saved. If it
+                is None, the plot will not be saved.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        return self._viewer.animate(states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup."""

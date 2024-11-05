@@ -380,7 +380,7 @@ def test_snake__animation(env: PredatorPrey, tmpdir: py.path.local) -> None:
     action = env.action_spec.generate_value()
     state, _ = step_fn(state, action)
     states.append(state)
-    animation = env._viewer.animate(states, 200, None)
+    animation = env.animate(states, interval=200, save_path=None)
     assert isinstance(animation, matplotlib.animation.Animation)
 
     path = str(tmpdir.join("/anim.gif"))
