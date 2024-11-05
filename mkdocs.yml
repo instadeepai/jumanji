@@ -79,6 +79,8 @@ nav:
               - Sokoban: api/environments/sokoban.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
+          - Swarms:
+              - PredatorPrey: api/environments/predator_prey.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 

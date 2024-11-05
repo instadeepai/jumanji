@@ -13,28 +13,32 @@
 # limitations under the License.
 
 from functools import cached_property
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
-from esquilax.transforms import nearest_neighbour, spatial
+from esquilax.transforms import spatial
+from matplotlib.animation import FuncAnimation
 
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
-from jumanji.environments.swarms.common.updates import init_state, update_state, view
+from jumanji.environments.swarms.common.updates import update_state, view
+from jumanji.environments.swarms.predator_prey.generator import (
+    Generator,
+    RandomGenerator,
+)
+from jumanji.environments.swarms.predator_prey.rewards import DistanceRewards, RewardFn
+from jumanji.environments.swarms.predator_prey.types import (
+    Actions,
+    Observation,
+    Rewards,
+    State,
+)
+from jumanji.environments.swarms.predator_prey.viewer import PredatorPreyViewer
 from jumanji.types import TimeStep, restart, termination, transition
 from jumanji.viewer import Viewer
-
-from .types import Actions, Observation, Rewards, State
-from .updates import (
-    distance_predator_rewards,
-    distance_prey_rewards,
-    sparse_predator_rewards,
-    sparse_prey_rewards,
-)
-from .viewer import PredatorPreyViewer
 
 
 class PredatorPrey(Environment):
@@ -67,10 +71,9 @@ class PredatorPrey(Environment):
         - prey: jax array (float) of shape (num_prey, 2)
 
     - reward: `Rewards`
-        Arrays of individual agent rewards. Rewards can either be generated
-        sparsely applied when agent collide, or be generated based on distance
-        to other agents (hence they are dependent on the number and density
-        of agents).
+        Arrays of individual agent rewards. Rewards generally depend on
+        proximity to other agents, and so can vary dependent on
+        density and agent radius and vision ranges.
 
         - predators: jax array (float) of shape (num_predators,)
         - prey: jax array (float) of shape (num_prey,)
@@ -133,8 +136,6 @@ class PredatorPrey(Environment):
         num_vision: int,
         agent_radius: float,
         sparse_rewards: bool,
-        prey_penalty: float,
-        predator_rewards: float,
         predator_max_rotate: float,
         predator_max_accelerate: float,
         predator_min_speed: float,
@@ -147,6 +148,8 @@ class PredatorPrey(Environment):
         prey_view_angle: float,
         max_steps: int = 10_000,
         viewer: Optional[Viewer[State]] = None,
+        generator: Optional[Generator] = None,
+        reward_fn: Optional[RewardFn] = None,
     ) -> None:
         """Instantiates a `PredatorPrey` environment
 
@@ -174,11 +177,6 @@ class PredatorPrey(Environment):
                 when agents are within a fixed collision range. If
                 `False` rewards are dependent on distance to
                 other agents with vision range.
-            prey_penalty: Penalty to apply to prey agents if
-                they interact with predator agents. This
-                value is negated when applied.
-            predator_rewards: Rewards provided to predator agents
-                when they interact with prey agents.
             predator_max_rotate: Maximum rotation predator agents can
                 turn within a step. Should be a value from [0,1]
                 representing a fraction of pi radians.
@@ -203,6 +201,8 @@ class PredatorPrey(Environment):
                 relative to its heading.
             max_steps: Maximum number of environment steps before termination
             viewer: `Viewer` used for rendering. Defaults to `PredatorPreyViewer`.
+            generator: Initial state generator. Defaults to `RandomGenerator`.
+            reward_fn: Reward function. Defaults to `DistanceRewards`.
         """
         self.num_predators = num_predators
         self.num_prey = num_prey
@@ -211,8 +211,6 @@ class PredatorPrey(Environment):
         self.num_vision = num_vision
         self.agent_radius = agent_radius
         self.sparse_rewards = sparse_rewards
-        self.prey_penalty = prey_penalty
-        self.predator_rewards = predator_rewards
         self.predator_params = AgentParams(
             max_rotate=predator_max_rotate,
             max_accelerate=predator_max_accelerate,
@@ -230,6 +228,10 @@ class PredatorPrey(Environment):
         self.max_steps = max_steps
         super().__init__()
         self._viewer = viewer or PredatorPreyViewer()
+        self._generator = generator or RandomGenerator(num_predators, num_prey)
+        self._reward_fn = reward_fn or DistanceRewards(
+            predator_vision_range, prey_vision_range, 1.0, 1.0
+        )
 
     def __repr__(self) -> str:
         return "\n".join(
@@ -242,8 +244,8 @@ class PredatorPrey(Environment):
                 f" - num vision: {self.num_vision}"
                 f" - agent radius: {self.agent_radius}"
                 f" - sparse-rewards: {self.sparse_rewards}",
-                f" - prey-penalty: {self.prey_penalty}",
-                f" - predator-rewards: {self.predator_rewards}",
+                f" - generator: {self._generator.__class__.__name__}",
+                f" - reward-fn: {self._reward_fn.__class__.__name__}",
             ]
         )
 
@@ -257,12 +259,7 @@ class PredatorPrey(Environment):
             state: Agent states.
             timestep: TimeStep with individual agent local environment views.
         """
-        key, predator_key, prey_key = jax.random.split(key, num=3)
-        predator_state = init_state(
-            self.num_predators, self.predator_params, predator_key
-        )
-        prey_state = init_state(self.num_prey, self.prey_params, prey_key)
-        state = State(predators=predator_state, prey=prey_state, key=key)
+        state = self._generator(key, self.predator_params, self.prey_params)
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
@@ -290,12 +287,7 @@ class PredatorPrey(Environment):
         state = State(
             predators=predators, prey=prey, key=state.key, step=state.step + 1
         )
-
-        if self.sparse_rewards:
-            rewards = self._state_to_sparse_rewards(state)
-        else:
-            rewards = self._state_to_distance_rewards(state)
-
+        rewards = self._reward_fn(state)
         observation = self._state_to_observation(state)
         timestep = jax.lax.cond(
             state.step >= self.max_steps,
@@ -379,76 +371,6 @@ class PredatorPrey(Environment):
             prey=prey_obs,
         )
 
-    def _state_to_sparse_rewards(self, state: State) -> Rewards:
-        prey_rewards = spatial(
-            sparse_prey_rewards,
-            reduction=jnp.add,
-            default=0.0,
-            include_self=False,
-            i_range=2 * self.agent_radius,
-        )(
-            state.key,
-            self.prey_penalty,
-            None,
-            None,
-            pos=state.prey.pos,
-            pos_b=state.predators.pos,
-        )
-        predator_rewards = nearest_neighbour(
-            sparse_predator_rewards,
-            default=0.0,
-            i_range=2 * self.agent_radius,
-        )(
-            state.key,
-            self.predator_rewards,
-            None,
-            None,
-            pos=state.predators.pos,
-            pos_b=state.prey.pos,
-        )
-        return Rewards(
-            predators=predator_rewards,
-            prey=prey_rewards,
-        )
-
-    def _state_to_distance_rewards(self, state: State) -> Rewards:
-
-        prey_rewards = spatial(
-            distance_prey_rewards,
-            reduction=jnp.add,
-            default=0.0,
-            include_self=False,
-            i_range=self.prey_vision_range,
-        )(
-            state.key,
-            self.prey_penalty,
-            state.prey,
-            state.predators,
-            pos=state.prey.pos,
-            pos_b=state.predators.pos,
-            i_range=self.prey_vision_range,
-        )
-        predator_rewards = spatial(
-            distance_predator_rewards,
-            reduction=jnp.add,
-            default=0.0,
-            include_self=False,
-            i_range=self.predator_vision_range,
-        )(
-            state.key,
-            self.predator_rewards,
-            state.predators,
-            state.prey,
-            pos=state.predators.pos,
-            pos_b=state.prey.pos,
-            i_range=self.prey_vision_range,
-        )
-
-        return Rewards(
-            predators=predator_rewards,
-            prey=prey_rewards,
-        )
-
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.
@@ -514,9 +436,10 @@ class PredatorPrey(Environment):
 
     @cached_property
     def reward_spec(self) -> specs.Spec[Rewards]:  # type: ignore[override]
-        """Returns the reward spec
+        """Returns the reward spec.
 
-        Individual rewards for predator and prey types.
+        Arrays of individual rewards for both predator and
+        prey types.
 
         Returns:
             reward_spec: Predator-prey reward spec
@@ -545,6 +468,26 @@ class PredatorPrey(Environment):
             state: State object containing the current dynamics of the environment.
         """
         self._viewer.render(state)
+
+    def animate(
+        self,
+        states: Sequence[State],
+        interval: int = 200,
+        save_path: Optional[str] = None,
+    ) -> FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive
+                timesteps.
+            interval: delay between frames in milliseconds.
+            save_path: the path where the animation file should be saved. If it
+                is None, the plot will not be saved.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        return self._viewer.animate(states, interval=interval, save_path=save_path)
 
     def close(self) -> None:
         """Perform any necessary cleanup."""

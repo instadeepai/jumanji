@@ -19,8 +19,7 @@ import esquilax
 import jax
 import jax.numpy as jnp
 
-from . import types
-from .types import AgentParams
+from jumanji.environments.swarms.common import types
 
 
 @esquilax.transforms.amap
@@ -55,22 +54,18 @@ def update_velocity(
     return new_heading, new_speeds
 
 
-@esquilax.transforms.amap
-def move(
-    _: chex.PRNGKey, _params: None, x: Tuple[chex.Array, float, float]
-) -> chex.Array:
+def move(pos: chex.Array, heading: chex.Array, speed: chex.Array) -> chex.Array:
     """
     Get updated agent positions from current speed and heading
 
     Args:
-        _: Dummy JAX random key.
-        _params: unused parameters.
-        x: Tuple containing current agent position, heading and speed.
+        pos: Agent position
+        heading: Agent heading (angle).
+        speed: Agent speed
 
     Returns:
         jax array (float32): Updated agent position
     """
-    pos, heading, speed = x
     d_pos = jnp.array([speed * jnp.cos(heading), speed * jnp.sin(heading)])
     return (pos + d_pos) % 1.0
 
@@ -95,7 +90,7 @@ def init_state(
     speeds = jax.random.uniform(
         k2, (n,), minval=params.min_speed, maxval=params.max_speed
     )
-    headings = jax.random.uniform(k3, (n,), minval=0.0, maxval=2.0 * jax.numpy.pi)
+    headings = jax.random.uniform(k3, (n,), minval=0.0, maxval=2.0 * jnp.pi)
 
     return types.AgentState(
         pos=positions,
@@ -105,7 +100,10 @@ def init_state(
 
 
 def update_state(
-    key: chex.PRNGKey, params: AgentParams, state: types.AgentState, actions: chex.Array
+    key: chex.PRNGKey,
+    params: types.AgentParams,
+    state: types.AgentState,
+    actions: chex.Array,
 ) -> types.AgentState:
     """
     Update the state of a group of agents from a sample of actions
@@ -120,9 +118,9 @@ def update_state(
         AgentState: Updated state of the agents after applying steering
             actions and updating positions.
     """
-    actions = jax.numpy.clip(actions, min=-1.0, max=1.0)
+    actions = jnp.clip(actions, min=-1.0, max=1.0)
     headings, speeds = update_velocity(key, params, (actions, state))
-    positions = move(key, None, (state.pos, headings, speeds))
+    positions = jax.vmap(move)(state.pos, headings, speeds)
 
     return types.AgentState(
         pos=positions,
@@ -132,7 +130,7 @@ def update_state(
 
 
 def view(
-    _: chex.PRNGKey,
+    _key: chex.PRNGKey,
     params: Tuple[float, float],
     a: types.AgentState,
     b: types.AgentState,
@@ -151,7 +149,8 @@ def view(
     Currently, this model assumes the viewed objects are circular.
 
     Args:
-        _: Dummy JAX random key.
+        _key: Dummy JAX random key, required by esquilax API, but
+            not used during the interaction.
         params: Tuple containing agent view angle and view-radius.
         a: Viewing agent state.
         b: State of agent being viewed.
