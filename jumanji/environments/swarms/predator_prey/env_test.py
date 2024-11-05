@@ -23,6 +23,10 @@ import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.predator_prey import PredatorPrey
+from jumanji.environments.swarms.predator_prey.rewards import (
+    DistanceRewards,
+    SparseRewards,
+)
 from jumanji.environments.swarms.predator_prey.types import (
     Actions,
     Observation,
@@ -35,8 +39,11 @@ from jumanji.testing.env_not_smoke import (
 )
 from jumanji.types import StepType, TimeStep
 
+PREDATOR_VISION_RANGE = 0.2
+PREY_VISION_RANGE = 0.1
 PREDATOR_REWARD = 0.2
 PREY_PENALTY = 0.1
+AGENT_RADIUS = 0.05
 
 
 @pytest.fixture
@@ -44,13 +51,11 @@ def env() -> PredatorPrey:
     return PredatorPrey(
         num_predators=2,
         num_prey=10,
-        prey_vision_range=0.1,
-        predator_vision_range=0.2,
+        prey_vision_range=PREY_VISION_RANGE,
+        predator_vision_range=PREDATOR_VISION_RANGE,
         num_vision=11,
-        agent_radius=0.05,
+        agent_radius=AGENT_RADIUS,
         sparse_rewards=True,
-        prey_penalty=PREY_PENALTY,
-        predator_rewards=PREDATOR_REWARD,
         predator_max_rotate=0.1,
         predator_max_accelerate=0.01,
         predator_min_speed=0.01,
@@ -282,7 +287,6 @@ def test_view_observations(
     ],
 )
 def test_sparse_rewards(
-    env: PredatorPrey,
     predator_pos: List[float],
     predator_reward: float,
     prey_pos: List[float],
@@ -306,7 +310,9 @@ def test_sparse_rewards(
         key=jax.random.PRNGKey(101),
     )
 
-    rewards = env._state_to_sparse_rewards(state)
+    reward_fn = SparseRewards(AGENT_RADIUS, PREDATOR_REWARD, PREY_PENALTY)
+    rewards = reward_fn(state)
+
     assert isinstance(rewards, Rewards)
     assert rewards.predators[0] == predator_reward
     assert rewards.prey[0] == prey_reward
@@ -321,7 +327,6 @@ def test_sparse_rewards(
     ],
 )
 def test_distance_rewards(
-    env: PredatorPrey,
     predator_pos: List[float],
     predator_reward: float,
     prey_pos: List[float],
@@ -345,7 +350,10 @@ def test_distance_rewards(
         key=jax.random.PRNGKey(101),
     )
 
-    rewards = env._state_to_distance_rewards(state)
+    reward_fn = DistanceRewards(
+        PREDATOR_VISION_RANGE, PREY_VISION_RANGE, PREDATOR_REWARD, PREY_PENALTY
+    )
+    rewards = reward_fn(state)
     assert isinstance(rewards, Rewards)
     assert jnp.isclose(rewards.predators[0], predator_reward)
     assert jnp.isclose(rewards.prey[0], prey_reward)
