@@ -263,9 +263,7 @@ class PredatorPrey(Environment):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(
-        self, state: State, action: Actions
-    ) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: Actions) -> Tuple[State, TimeStep[Observation]]:
         """Environment update
 
         Update agent velocities and consequently their positions,
@@ -279,14 +277,10 @@ class PredatorPrey(Environment):
             state: Updated agent positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        predators = update_state(
-            state.key, self.predator_params, state.predators, action.predators
-        )
+        predators = update_state(state.key, self.predator_params, state.predators, action.predators)
         prey = update_state(state.key, self.prey_params, state.prey, action.prey)
 
-        state = State(
-            predators=predators, prey=prey, key=state.key, step=state.step + 1
-        )
+        state = State(predators=predators, prey=prey, key=state.key, step=state.step + 1)
         rewards = self._reward_fn(state)
         observation = self._state_to_observation(state)
         timestep = jax.lax.cond(
@@ -299,7 +293,6 @@ class PredatorPrey(Environment):
         return state, timestep
 
     def _state_to_observation(self, state: State) -> Observation:
-
         prey_obs_predators = spatial(
             view,
             reduction=jnp.minimum,

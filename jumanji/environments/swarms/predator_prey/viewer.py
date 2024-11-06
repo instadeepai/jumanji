@@ -74,9 +74,7 @@ class PredatorPreyViewer(Viewer):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(
-            num=f"{self._figure_name}Anim", figsize=self._figure_size
-        )
+        fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
         fig, ax = format_plot(fig, ax)
 
         predators_quiver = draw_agents(ax, states[0].predators, self.predator_color)
@@ -89,9 +87,7 @@ class PredatorPreyViewer(Viewer):
                 jnp.cos(state.predators.heading), jnp.sin(state.predators.heading)
             )
             prey_quiver.set_offsets(state.prey.pos)
-            prey_quiver.set_UVC(
-                jnp.cos(state.prey.heading), jnp.sin(state.prey.heading)
-            )
+            prey_quiver.set_UVC(jnp.cos(state.prey.heading), jnp.sin(state.prey.heading))
             return ((predators_quiver, prey_quiver),)
 
         matplotlib.rc("animation", html="jshtml")
@@ -128,9 +124,7 @@ class PredatorPreyViewer(Viewer):
             ax = fig.get_axes()[0]
         else:
             fig = plt.figure(self._figure_name, figsize=self._figure_size)
-            fig.set_layout_engine(
-                layout=TightLayoutEngine(pad=False, w_pad=0.0, h_pad=0.0)
-            )
+            fig.set_layout_engine(layout=TightLayoutEngine(pad=False, w_pad=0.0, h_pad=0.0))
             if not plt.isinteractive():
                 fig.show()
             ax = fig.add_subplot()

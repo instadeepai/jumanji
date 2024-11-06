@@ -114,9 +114,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
         k, state = carry
         k, k_pred, k_prey = jax.random.split(k, num=3)
         actions = Actions(
-            predators=jax.random.uniform(
-                k_pred, (env.num_predators, 2), minval=-1.0, maxval=1.0
-            ),
+            predators=jax.random.uniform(k_pred, (env.num_predators, 2), minval=-1.0, maxval=1.0),
             prey=jax.random.uniform(k_prey, (env.num_prey, 2), minval=-1.0, maxval=1.0),
         )
         new_state, timestep = env.step(state, actions)
@@ -130,9 +128,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
     assert isinstance(state_history, State)
 
     assert state_history.predators.pos.shape == (n_steps, env.num_predators, 2)
-    assert jnp.all(
-        (0.0 <= state_history.predators.pos) & (state_history.predators.pos <= 1.0)
-    )
+    assert jnp.all((0.0 <= state_history.predators.pos) & (state_history.predators.pos <= 1.0))
     assert state_history.predators.speed.shape == (n_steps, env.num_predators)
     assert jnp.all(
         (env.predator_params.min_speed <= state_history.predators.speed)
@@ -140,8 +136,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
     )
     assert state_history.predators.speed.shape == (n_steps, env.num_predators)
     assert jnp.all(
-        (0.0 <= state_history.predators.heading)
-        & (state_history.predators.heading <= 2.0 * jnp.pi)
+        (0.0 <= state_history.predators.heading) & (state_history.predators.heading <= 2.0 * jnp.pi)
     )
 
     assert state_history.prey.pos.shape == (n_steps, env.num_prey, 2)
@@ -153,8 +148,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
     )
     assert state_history.prey.heading.shape == (n_steps, env.num_prey)
     assert jnp.all(
-        (0.0 <= state_history.prey.heading)
-        & (state_history.prey.heading <= 2.0 * jnp.pi)
+        (0.0 <= state_history.prey.heading) & (state_history.prey.heading <= 2.0 * jnp.pi)
     )
 
 
@@ -170,9 +164,7 @@ def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
             predators=jax.random.uniform(
                 predator_key, (env.num_predators, 2), minval=-1.0, maxval=1.0
             ),
-            prey=jax.random.uniform(
-                prey_key, (env.num_prey, 2), minval=-1.0, maxval=1.0
-            ),
+            prey=jax.random.uniform(prey_key, (env.num_prey, 2), minval=-1.0, maxval=1.0),
         )
 
     check_env_does_not_smoke(env, select_action=select_action)
@@ -244,9 +236,7 @@ def test_view_observations(
     prey_speed = jnp.zeros(prey_heading.shape)
 
     state = State(
-        predators=AgentState(
-            pos=predator_pos, heading=predator_heading, speed=predator_speed
-        ),
+        predators=AgentState(pos=predator_pos, heading=predator_heading, speed=predator_speed),
         prey=AgentState(pos=prey_pos, heading=prey_heading, speed=prey_speed),
         key=jax.random.PRNGKey(101),
     )
@@ -359,9 +349,7 @@ def test_distance_rewards(
     assert jnp.isclose(rewards.prey[0], prey_reward)
 
 
-def test_predator_prey_render(
-    monkeypatch: pytest.MonkeyPatch, env: PredatorPrey
-) -> None:
+def test_predator_prey_render(monkeypatch: pytest.MonkeyPatch, env: PredatorPrey) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     step_fn = jax.jit(env.step)

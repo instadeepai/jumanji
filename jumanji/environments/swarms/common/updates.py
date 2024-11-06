@@ -70,9 +70,7 @@ def move(pos: chex.Array, heading: chex.Array, speed: chex.Array) -> chex.Array:
     return (pos + d_pos) % 1.0
 
 
-def init_state(
-    n: int, params: types.AgentParams, key: chex.PRNGKey
-) -> types.AgentState:
+def init_state(n: int, params: types.AgentParams, key: chex.PRNGKey) -> types.AgentState:
     """
     Randomly initialise state of a group of agents
 
@@ -87,9 +85,7 @@ def init_state(
     k1, k2, k3 = jax.random.split(key, 3)
 
     positions = jax.random.uniform(k1, (n, 2))
-    speeds = jax.random.uniform(
-        k2, (n,), minval=params.min_speed, maxval=params.max_speed
-    )
+    speeds = jax.random.uniform(k2, (n,), minval=params.min_speed, maxval=params.max_speed)
     headings = jax.random.uniform(k3, (n,), minval=0.0, maxval=2.0 * jnp.pi)
 
     return types.AgentState(

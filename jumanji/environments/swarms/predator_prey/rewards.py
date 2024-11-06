@@ -46,9 +46,7 @@ class SparseRewards(RewardFn):
     penalising prey. Attempts to model predators `capturing` prey.
     """
 
-    def __init__(
-        self, agent_radius: float, predator_reward: float, prey_penalty: float
-    ) -> None:
+    def __init__(self, agent_radius: float, predator_reward: float, prey_penalty: float) -> None:
         """
         Initialise a sparse reward function.
 
