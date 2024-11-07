@@ -39,25 +39,17 @@ class State:
 
 
 @dataclass
-class Actions:
+class PredatorPreyStruct:
     """
-    predators: Array of actions for predator agents.
-    prey: Array of actions for prey agents.
-    """
+    General struct for predator prey structured data
+    (e.g. rewards or observations)
 
-    predators: chex.Array  # (num_predators, 2)
-    prey: chex.Array  # (num_prey, 2)
-
-
-@dataclass
-class Rewards:
-    """
-    predators: Array of individual rewards for predator agents.
-    prey: Array of individual rewards for prey agents.
+    predators: Array of data per predator agent.
+    prey: Array of data per prey agents.
     """
 
-    predators: chex.Array  # (num_predators,)
-    prey: chex.Array  # (num_prey,)
+    predators: chex.Array  # (num_predators, ...)
+    prey: chex.Array  # (num_prey, ...)
 
 
 class Observation(NamedTuple):

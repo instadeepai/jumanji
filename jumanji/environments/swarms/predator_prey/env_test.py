@@ -28,9 +28,8 @@ from jumanji.environments.swarms.predator_prey.rewards import (
     SparseRewards,
 )
 from jumanji.environments.swarms.predator_prey.types import (
-    Actions,
     Observation,
-    Rewards,
+    PredatorPreyStruct,
     State,
 )
 from jumanji.testing.env_not_smoke import (
@@ -113,7 +112,7 @@ def test_env_step(env: PredatorPrey, sparse_rewards: bool) -> None:
     ) -> Tuple[Tuple[chex.PRNGKey, State], Tuple[State, TimeStep[Observation]]]:
         k, state = carry
         k, k_pred, k_prey = jax.random.split(k, num=3)
-        actions = Actions(
+        actions = PredatorPreyStruct(
             predators=jax.random.uniform(k_pred, (env.num_predators, 2), minval=-1.0, maxval=1.0),
             prey=jax.random.uniform(k_prey, (env.num_prey, 2), minval=-1.0, maxval=1.0),
         )
@@ -158,9 +157,9 @@ def test_env_does_not_smoke(env: PredatorPrey, sparse_rewards: bool) -> None:
     env.sparse_rewards = sparse_rewards
     env.max_steps = 10
 
-    def select_action(action_key: chex.PRNGKey, _state: Observation) -> Actions:
+    def select_action(action_key: chex.PRNGKey, _state: Observation) -> PredatorPreyStruct:
         predator_key, prey_key = jax.random.split(action_key)
-        return Actions(
+        return PredatorPreyStruct(
             predators=jax.random.uniform(
                 predator_key, (env.num_predators, 2), minval=-1.0, maxval=1.0
             ),
@@ -303,7 +302,7 @@ def test_sparse_rewards(
     reward_fn = SparseRewards(AGENT_RADIUS, PREDATOR_REWARD, PREY_PENALTY)
     rewards = reward_fn(state)
 
-    assert isinstance(rewards, Rewards)
+    assert isinstance(rewards, PredatorPreyStruct)
     assert rewards.predators[0] == predator_reward
     assert rewards.prey[0] == prey_reward
 
@@ -344,7 +343,7 @@ def test_distance_rewards(
         PREDATOR_VISION_RANGE, PREY_VISION_RANGE, PREDATOR_REWARD, PREY_PENALTY
     )
     rewards = reward_fn(state)
-    assert isinstance(rewards, Rewards)
+    assert isinstance(rewards, PredatorPreyStruct)
     assert jnp.isclose(rewards.predators[0], predator_reward)
     assert jnp.isclose(rewards.prey[0], prey_reward)
 

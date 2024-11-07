@@ -20,14 +20,14 @@ import jax.numpy as jnp
 from esquilax.transforms import nearest_neighbour, spatial
 from esquilax.utils import shortest_distance
 
-from jumanji.environments.swarms.predator_prey.types import Rewards, State
+from jumanji.environments.swarms.predator_prey.types import PredatorPreyStruct, State
 
 
 class RewardFn(abc.ABC):
     """Abstract class for `PredatorPrey` rewards."""
 
     @abc.abstractmethod
-    def __call__(self, state: State) -> Rewards:
+    def __call__(self, state: State) -> PredatorPreyStruct:
         """The reward function used in the `PredatorPrey` environment.
 
         Args:
@@ -108,7 +108,7 @@ class SparseRewards(RewardFn):
         """
         return self.predator_reward
 
-    def __call__(self, state: State) -> Rewards:
+    def __call__(self, state: State) -> PredatorPreyStruct:
         prey_rewards = spatial(
             self.prey_rewards,
             reduction=jnp.add,
@@ -135,7 +135,7 @@ class SparseRewards(RewardFn):
             pos=state.predators.pos,
             pos_b=state.prey.pos,
         )
-        return Rewards(
+        return PredatorPreyStruct(
             predators=predator_rewards,
             prey=prey_rewards,
         )
@@ -235,7 +235,7 @@ class DistanceRewards(RewardFn):
         d = shortest_distance(predator_pos, prey_pos) / i_range
         return self.predator_reward * (1.0 - d)
 
-    def __call__(self, state: State) -> Rewards:
+    def __call__(self, state: State) -> PredatorPreyStruct:
         prey_rewards = spatial(
             self.prey_rewards,
             reduction=jnp.add,
@@ -267,7 +267,7 @@ class DistanceRewards(RewardFn):
             i_range=self.prey_vision_range,
         )
 
-        return Rewards(
+        return PredatorPreyStruct(
             predators=predator_rewards,
             prey=prey_rewards,
         )

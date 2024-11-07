@@ -31,9 +31,8 @@ from jumanji.environments.swarms.predator_prey.generator import (
 )
 from jumanji.environments.swarms.predator_prey.rewards import DistanceRewards, RewardFn
 from jumanji.environments.swarms.predator_prey.types import (
-    Actions,
     Observation,
-    Rewards,
+    PredatorPreyStruct,
     State,
 )
 from jumanji.environments.swarms.predator_prey.viewer import PredatorPreyViewer
@@ -61,7 +60,7 @@ class PredatorPrey(Environment):
         - predators: jax array (float) of shape (num_predators, 2 * num_vision)
         - prey: jax array (float) of shape (num_prey, 2 * num_vision)
 
-    - action: `Actions`
+    - action: `PredatorPreyStruct`
         Arrays of individual agent actions. Each agents actions rotate and
         accelerate/decelerate the agent as [rotation, acceleration] on the range
         [-1, 1]. These values are then scaled to update agent velocities within
@@ -70,7 +69,7 @@ class PredatorPrey(Environment):
         - predators: jax array (float) of shape (num_predators, 2)
         - prey: jax array (float) of shape (num_prey, 2)
 
-    - reward: `Rewards`
+    - reward: `PredatorPreyStruct`
         Arrays of individual agent rewards. Rewards generally depend on
         proximity to other agents, and so can vary dependent on
         density and agent radius and vision ranges.
@@ -263,7 +262,7 @@ class PredatorPrey(Environment):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: Actions) -> Tuple[State, TimeStep[Observation]]:
+    def step(self, state: State, action: PredatorPreyStruct) -> Tuple[State, TimeStep[Observation]]:
         """Environment update
 
         Update agent velocities and consequently their positions,
@@ -396,7 +395,7 @@ class PredatorPrey(Environment):
         )
 
     @cached_property
-    def action_spec(self) -> specs.Spec[Actions]:
+    def action_spec(self) -> specs.Spec[PredatorPreyStruct]:
         """Returns the action spec.
 
         Arrays of individual agent actions. Each agents action is
@@ -421,14 +420,14 @@ class PredatorPrey(Environment):
             name="prey",
         )
         return specs.Spec(
-            Actions,
+            PredatorPreyStruct,
             "ActionSpec",
             predators=predators,
             prey=prey,
         )
 
     @cached_property
-    def reward_spec(self) -> specs.Spec[Rewards]:  # type: ignore[override]
+    def reward_spec(self) -> specs.Spec[PredatorPreyStruct]:  # type: ignore[override]
         """Returns the reward spec.
 
         Arrays of individual rewards for both predator and
@@ -448,7 +447,7 @@ class PredatorPrey(Environment):
             name="prey",
         )
         return specs.Spec(
-            Rewards,
+            PredatorPreyStruct,
             "rewardsSpec",
             predators=predators,
             prey=prey,
