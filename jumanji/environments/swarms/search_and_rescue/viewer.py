@@ -17,24 +17,26 @@ from typing import Any, Optional, Sequence, Tuple
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.layout_engine import TightLayoutEngine
 
 import jumanji
 import jumanji.environments
 from jumanji.environments.swarms.common.viewer import draw_agents, format_plot
-from jumanji.environments.swarms.predator_prey.types import State
+from jumanji.environments.swarms.search_and_rescue.types import State
 from jumanji.viewer import Viewer
 
 
-class PredatorPreyViewer(Viewer):
+class SearchAndRescueViewer(Viewer):
     def __init__(
         self,
-        figure_name: str = "PredatorPrey",
+        figure_name: str = "SearchAndRescue",
         figure_size: Tuple[float, float] = (6.0, 6.0),
-        predator_color: str = "red",
-        prey_color: str = "green",
+        searcher_color: str = "blue",
+        target_found_color: str = "green",
+        target_lost_color: str = "red",
     ) -> None:
-        """Viewer for the `PredatorPrey` environment.
+        """Viewer for the `SearchAndRescue` environment.
 
         Args:
             figure_name: the window name to be used when initialising the window.
@@ -42,8 +44,8 @@ class PredatorPreyViewer(Viewer):
         """
         self._figure_name = figure_name
         self._figure_size = figure_size
-        self.predator_color = predator_color
-        self.prey_color = prey_color
+        self.searcher_color = searcher_color
+        self.target_colors = np.array([target_lost_color, target_found_color])
         self._animation: Optional[matplotlib.animation.Animation] = None
 
     def render(self, state: State) -> None:
@@ -77,18 +79,21 @@ class PredatorPreyViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
         fig, ax = format_plot(fig, ax)
 
-        predators_quiver = draw_agents(ax, states[0].predators, self.predator_color)
-        prey_quiver = draw_agents(ax, states[0].prey, self.prey_color)
+        searcher_quiver = draw_agents(ax, states[0].searchers, self.searcher_color)
+        target_scatter = ax.scatter(
+            states[0].targets.pos[:, 0], states[0].targets.pos[:, 1], marker="o"
+        )
 
         def make_frame(state: State) -> Any:
-            # Rather than redraw just update the quivers properties
-            predators_quiver.set_offsets(state.predators.pos)
-            predators_quiver.set_UVC(
-                jnp.cos(state.predators.heading), jnp.sin(state.predators.heading)
+            # Rather than redraw just update the quivers and scatter properties
+            searcher_quiver.set_offsets(state.searchers.pos)
+            searcher_quiver.set_UVC(
+                jnp.cos(state.searchers.heading), jnp.sin(state.searchers.heading)
             )
-            prey_quiver.set_offsets(state.prey.pos)
-            prey_quiver.set_UVC(jnp.cos(state.prey.heading), jnp.sin(state.prey.heading))
-            return ((predators_quiver, prey_quiver),)
+            target_colors = self.target_colors[state.targets.found.astype(jnp.int32)]
+            target_scatter.set_offsets(state.targets.pos)
+            target_scatter.set_color(target_colors)
+            return ((searcher_quiver, target_scatter),)
 
         matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
@@ -114,8 +119,11 @@ class PredatorPreyViewer(Viewer):
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
-        draw_agents(ax, state.predators, self.predator_color)
-        draw_agents(ax, state.prey, self.prey_color)
+        draw_agents(ax, state.searchers, self.searcher_color)
+        target_colors = self.target_colors[state.targets.found.astype(jnp.int32)]
+        ax.scatter(
+            state.targets.pos[:, 0], state.targets.pos[:, 1], marker="o", color=target_colors
+        )
 
     def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
         exists = plt.fignum_exists(self._figure_name)

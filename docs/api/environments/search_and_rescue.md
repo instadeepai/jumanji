@@ -1,4 +1,4 @@
-::: jumanji.environments.swarms.predator_prey.env.PredatorPrey
+::: jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue
     selection:
       members:
         - __init__

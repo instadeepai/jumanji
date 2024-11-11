@@ -24,66 +24,48 @@ from jumanji.environments.swarms.common.types import AgentState
 
 
 @dataclass
+class TargetState:
+    pos: chex.Array
+    found: chex.Array
+
+
+@dataclass
 class State:
     """
-    predators: Predator agent states.
-    prey: Prey agent states.
+    searchers: Searcher agent states.
+    targets: Search target state.
     key: JAX random key.
     step: Environment step number
     """
 
-    predators: AgentState
-    prey: AgentState
+    searchers: AgentState
+    targets: TargetState
     key: chex.PRNGKey
     step: int = 0
 
 
-@dataclass
-class PredatorPreyStruct:
-    """
-    General struct for predator prey structured data
-    (e.g. rewards or observations)
-
-    predators: Array of data per predator agent.
-    prey: Array of data per prey agents.
-    """
-
-    predators: chex.Array  # (num_predators, ...)
-    prey: chex.Array  # (num_prey, ...)
-
-
 class Observation(NamedTuple):
     """
-    Individual observations for predator and prey agents.
+    Individual observations for searching agents and information
+    on number of remaining time and targets to be found.
 
     Each agent generates an independent observation, an array of
     values representing the distance along a ray from the agent to
     the nearest neighbour, with each cell representing a ray angle
     (with `num_vision` rays evenly distributed over the agents
-    field of vision). Prey and prey agent types are visualised
-    independently to allow agents to observe both local position and type.
+    field of vision).
 
-    For example if a prey agent sees a predator straight ahead and
+    For example if an agent sees another agent straight ahead and
     `num_vision = 5` then the observation array could be
 
     ```
-    [1.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    ```
-
-    or if it observes another prey agent
-
-    ```
-    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 1.0, 1.0]
+    [1.0, 1.0, 0.5, 1.0, 1.0]
     ```
 
     where `1.0` indicates there is no agents along that ray,
     and `0.5` is the normalised distance to the other agent.
-
-    - `predators`: jax array (float) of shape `(num_predators, 2 * num_vision)`
-      in the unit interval.
-    - `prey`: jax array (float) of shape `(num_prey, 2 * num_vision)` in the
-      unit interval.
     """
 
-    predators: chex.Array  # (num_predators, num_vision)
-    prey: chex.Array  # (num_prey, num_vision)
+    searcher_views: chex.Array  # (num_searchers, num_vision)
+    target_remaining: chex.Array  # ()
+    time_remaining: chex.Array  # ()
