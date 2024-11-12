@@ -108,6 +108,8 @@ def restart(
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
+        dtype: Optional parameter to specify the data type of the rewards and discounts.
+            Defaults to `float`.
 
     Returns:
         TimeStep identified as a reset.
@@ -143,6 +145,8 @@ def transition(
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
+        dtype: Optional parameter to specify the data type of the discounts. Defaults
+            to `float`.
 
     Returns:
         TimeStep identified as a transition.
@@ -177,6 +181,8 @@ def termination(
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
+        dtype: Optional parameter to specify the data type of the discounts. Defaults
+            to `float`.
 
     Returns:
         TimeStep identified as the termination of an episode.
@@ -212,6 +218,9 @@ def truncation(
         shape: optional parameter to specify the shape of the rewards and discounts.
             Allows multi-agent environment compatibility. Defaults to () for
             scalar reward and discount.
+        dtype: Optional parameter to specify the data type of the discounts. Defaults
+            to `float`.
+
     Returns:
         TimeStep identified as the truncation of an episode.
     """
