@@ -57,8 +57,8 @@ def test_connector__reset(connector: Connector, key: jax.random.PRNGKey) -> None
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
 
-    assert timestep.discount == 1.0
-    assert timestep.reward == 0.0
+    assert jnp.allclose(timestep.discount, jnp.ones((connector.num_agents,)))
+    assert jnp.allclose(timestep.reward, jnp.zeros((connector.num_agents,)))
     assert timestep.step_type == StepType.FIRST
 
 
@@ -94,7 +94,7 @@ def test_connector__step_connected(
     chex.assert_trees_all_equal(real_state2, state2)
 
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
     reward = connector._reward_fn(real_state1, action2, real_state2)
     assert jnp.array_equal(timestep.reward, reward)
 
@@ -146,7 +146,7 @@ def test_connector__step_blocked(
 
     assert jnp.array_equal(state.grid, expected_grid)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
 
     assert all(is_head_on_grid(state.agents, state.grid))
     assert all(is_target_on_grid(state.agents, state.grid))
@@ -165,12 +165,12 @@ def test_connector__step_horizon(connector: Connector, state: State) -> None:
         state, timestep = step_fn(state, actions)
 
         assert timestep.step_type != StepType.LAST
-        assert jnp.array_equal(timestep.discount, jnp.asarray(1))
+        assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
 
     # step 5
     state, timestep = step_fn(state, actions)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.asarray(0))
+    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
 
 
 def test_connector__step_agents_collision(
