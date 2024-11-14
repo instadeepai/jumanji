@@ -35,20 +35,33 @@ space is a uniform space with unit dimensions, and wrapped at the boundaries.
 
   where `1.0` indicates there is no agents along that ray, and `0.5` is the normalised
   distance to the other agent.
-- `target_remaining`: float in the range [0, 1]. The normalised number of targets
+- `targets_remaining`: float in the range `[0, 1]`. The normalised number of targets
   remaining to be detected (i.e. 1.0 when no targets have been found).
-- `time_remaining`: float in the range [0, 1]. The normalised number of steps remaining
+- `time_remaining`: float in the range `[0, 1]`. The normalised number of steps remaining
   to locate the targets (i.e. 0.0 at the end of the episode).
 
 ## Actions
 
-Jax array (float) of `(num_searchers, 2)` in the range [-1, 1]. Each entry in the
+Jax array (float) of `(num_searchers, 2)` in the range `[-1, 1]`. Each entry in the
 array represents an update of each agents velocity in the next step. Searching agents
-update their velocity each step by  rotating and accelerating/decelerating. Values
-are clipped to the range `[-1, 1]` and then scaled by max rotation and acceleration
-parameters. Agents are restricted to velocities within a fixed range of speeds.
+update their velocity each step by rotating and accelerating/decelerating, where the
+values are `[rotation, acceleration]`. Values are clipped to the range `[-1, 1]`
+and then scaled by max rotation and acceleration parameters, i.e. the new values each
+step are given by
+
+```
+heading = heading + max_rotation * action[0]
+```
+
+and speed
+
+```
+speed = speed + max_acceleration * action[1]
+```
+
+Once applied, agent speeds are clipped to velocities within a fixed range of speeds.
 
 ## Rewards
 
-Jax array (float) of `(num_searchers, 2)`. Rewards are generated for each agent individually.
+Jax array (float) of `(num_searchers,)`. Rewards are generated for each agent individually.
 Agents are rewarded 1.0 for locating a target that has not already been detected.

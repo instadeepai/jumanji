@@ -18,8 +18,7 @@ import chex
 import jax
 import jax.numpy as jnp
 
-from jumanji.environments.swarms.common.types import AgentParams
-from jumanji.environments.swarms.common.updates import init_state
+from jumanji.environments.swarms.common.types import AgentParams, AgentState
 from jumanji.environments.swarms.search_and_rescue.types import State, TargetState
 
 
@@ -59,8 +58,26 @@ class RandomGenerator(Generator):
             state: the generated state.
         """
         key, searcher_key, target_key = jax.random.split(key, num=3)
-        searcher_state = init_state(self.num_searchers, searcher_params, searcher_key)
+
+        k_pos, k_head, k_speed = jax.random.split(searcher_key, 3)
+        positions = jax.random.uniform(k_pos, (self.num_searchers, 2))
+        headings = jax.random.uniform(
+            k_head, (self.num_searchers,), minval=0.0, maxval=2.0 * jnp.pi
+        )
+        speeds = jax.random.uniform(
+            k_speed,
+            (self.num_searchers,),
+            minval=searcher_params.min_speed,
+            maxval=searcher_params.max_speed,
+        )
+        searcher_state = AgentState(
+            pos=positions,
+            speed=speeds,
+            heading=headings,
+        )
+
         target_pos = jax.random.uniform(target_key, (self.num_targets, 2))
+
         state = State(
             searchers=searcher_state,
             targets=TargetState(

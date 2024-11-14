@@ -40,8 +40,6 @@ AGENT_RADIUS = 0.05
 @pytest.fixture
 def env() -> SearchAndRescue:
     return SearchAndRescue(
-        num_searchers=10,
-        num_targets=20,
         searcher_vision_range=SEARCHER_VISION_RANGE,
         target_contact_range=TARGET_CONTACT_RANGE,
         num_vision=11,
@@ -65,19 +63,21 @@ def test_env_init(env: SearchAndRescue) -> None:
     assert isinstance(state, State)
 
     assert isinstance(state.searchers, AgentState)
-    assert state.searchers.pos.shape == (env.num_searchers, 2)
-    assert state.searchers.speed.shape == (env.num_searchers,)
-    assert state.searchers.speed.shape == (env.num_searchers,)
+    assert state.searchers.pos.shape == (env.generator.num_searchers, 2)
+    assert state.searchers.speed.shape == (env.generator.num_searchers,)
+    assert state.searchers.speed.shape == (env.generator.num_searchers,)
 
     assert isinstance(state.targets, TargetState)
-    assert state.targets.pos.shape == (env.num_targets, 2)
-    assert state.targets.found.shape == (env.num_targets,)
-    assert jnp.array_equal(state.targets.found, jnp.full((env.num_targets,), False, dtype=bool))
+    assert state.targets.pos.shape == (env.generator.num_targets, 2)
+    assert state.targets.found.shape == (env.generator.num_targets,)
+    assert jnp.array_equal(
+        state.targets.found, jnp.full((env.generator.num_targets,), False, dtype=bool)
+    )
     assert state.step == 0
 
     assert isinstance(timestep.observation, Observation)
     assert timestep.observation.searcher_views.shape == (
-        env.num_searchers,
+        env.generator.num_searchers,
         env.num_vision,
     )
     assert timestep.step_type == StepType.FIRST
@@ -97,7 +97,9 @@ def test_env_step(env: SearchAndRescue) -> None:
     ) -> Tuple[Tuple[chex.PRNGKey, State], Tuple[State, TimeStep[Observation]]]:
         k, state = carry
         k, k_search = jax.random.split(k)
-        actions = jax.random.uniform(k_search, (env.num_searchers, 2), minval=-1.0, maxval=1.0)
+        actions = jax.random.uniform(
+            k_search, (env.generator.num_searchers, 2), minval=-1.0, maxval=1.0
+        )
         new_state, timestep = env.step(state, actions)
         return (k, new_state), (state, timestep)
 
@@ -108,19 +110,19 @@ def test_env_step(env: SearchAndRescue) -> None:
 
     assert isinstance(state_history, State)
 
-    assert state_history.searchers.pos.shape == (n_steps, env.num_searchers, 2)
+    assert state_history.searchers.pos.shape == (n_steps, env.generator.num_searchers, 2)
     assert jnp.all((0.0 <= state_history.searchers.pos) & (state_history.searchers.pos <= 1.0))
-    assert state_history.searchers.speed.shape == (n_steps, env.num_searchers)
+    assert state_history.searchers.speed.shape == (n_steps, env.generator.num_searchers)
     assert jnp.all(
         (env.searcher_params.min_speed <= state_history.searchers.speed)
         & (state_history.searchers.speed <= env.searcher_params.max_speed)
     )
-    assert state_history.searchers.speed.shape == (n_steps, env.num_searchers)
+    assert state_history.searchers.speed.shape == (n_steps, env.generator.num_searchers)
     assert jnp.all(
         (0.0 <= state_history.searchers.heading) & (state_history.searchers.heading <= 2.0 * jnp.pi)
     )
 
-    assert state_history.targets.pos.shape == (n_steps, env.num_targets, 2)
+    assert state_history.targets.pos.shape == (n_steps, env.generator.num_targets, 2)
     assert jnp.all((0.0 <= state_history.targets.pos) & (state_history.targets.pos <= 1.0))
 
 
@@ -129,7 +131,9 @@ def test_env_does_not_smoke(env: SearchAndRescue) -> None:
     env.max_steps = 10
 
     def select_action(action_key: chex.PRNGKey, _state: Observation) -> chex.Array:
-        return jax.random.uniform(action_key, (env.num_searchers, 2), minval=-1.0, maxval=1.0)
+        return jax.random.uniform(
+            action_key, (env.generator.num_searchers, 2), minval=-1.0, maxval=1.0
+        )
 
     check_env_does_not_smoke(env, select_action=select_action)
 
@@ -229,7 +233,12 @@ def test_target_detection(env: SearchAndRescue) -> None:
     assert state.targets.found[0]
     assert timestep.reward[0] == 1
 
-    # Once detected should remain detected
+    # Searcher should only get rewards once
+    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    assert state.targets.found[0]
+    assert timestep.reward[0] == 0
+
+    # Once detected target should remain detected if agent moves away
     state = State(
         searchers=AgentState(
             pos=jnp.array([[0.0, 0.0]]),

@@ -67,5 +67,5 @@ class Observation(NamedTuple):
     """
 
     searcher_views: chex.Array  # (num_searchers, num_vision)
-    target_remaining: chex.Array  # ()
+    targets_remaining: chex.Array  # ()
     time_remaining: chex.Array  # ()
