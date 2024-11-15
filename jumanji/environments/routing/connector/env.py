@@ -70,9 +70,10 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         - can take the values [0,1,2,3,4] which correspond to [No Op, Up, Right, Down, Left].
         - each value in the array corresponds to an agent's action.
 
-    - reward: jax array (float) of shape ():
-        - dense: reward is 1 for each successful connection on that step. Additionally,
-            each pair of points that have not connected receives a penalty reward of -0.03.
+    - reward: jax array (float) of shape (num_agents,):
+        - dense: for each agent the reward is 1 for each successful connection on that step.
+                Additionally, each pair of points that have not connected receives a
+                penalty reward of -0.03.
 
     - episode termination:
         - all agents either can't move (no available actions) or have connected to their target.
@@ -142,7 +143,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=state.step_count,
         )
         extras = self._get_extras(state)
-        timestep = restart(observation=observation, extras=extras)
+        timestep = restart(observation=observation, extras=extras, shape=(self.num_agents,))
         return state, timestep
 
     def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
@@ -171,19 +172,23 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             grid=grid, action_mask=action_mask, step_count=new_state.step_count
         )
 
-        done = jnp.all(jax.vmap(connected_or_blocked)(agents, action_mask))
+        done = jax.vmap(connected_or_blocked)(agents, action_mask)
+        discount = (1 - done).astype(float)
         extras = self._get_extras(new_state)
         timestep = jax.lax.cond(
-            done | (new_state.step_count >= self.time_limit),
+            jnp.all(done) | (new_state.step_count >= self.time_limit),
             lambda: termination(
                 reward=reward,
                 observation=observation,
                 extras=extras,
+                shape=(self.num_agents,),
             ),
             lambda: transition(
                 reward=reward,
                 observation=observation,
                 extras=extras,
+                discount=discount,
+                shape=(self.num_agents,),
             ),
         )
 
@@ -361,4 +366,20 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             num_values=jnp.array([5] * self.num_agents),
             dtype=jnp.int32,
             name="action",
+        )
+
+    @cached_property
+    def reward_spec(self) -> specs.Array:
+        """Returns: a reward per agent."""
+        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
+
+    @cached_property
+    def discount_spec(self) -> specs.BoundedArray:
+        """Returns: discount per agent."""
+        return specs.BoundedArray(
+            shape=(self.num_agents,),
+            dtype=float,
+            minimum=0.0,
+            maximum=1.0,
+            name="discount",
         )
