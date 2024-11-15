@@ -90,7 +90,7 @@ def setup_logger(cfg: DictConfig) -> Logger:
 
 def _make_raw_env(cfg: DictConfig) -> Environment:
     env = jumanji.make(cfg.env.registered_version)
-    if cfg.env.name in {"lbf"}:
+    if cfg.env.name in {"lbf", "connector"}:
         # Convert a multi-agent environment to a single-agent environment
         env = MultiToSingleWrapper(env)
     return env
