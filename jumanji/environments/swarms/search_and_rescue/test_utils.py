@@ -14,44 +14,21 @@
 
 from typing import List
 
-import jax
+import chex
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.swarms.common.types import AgentParams, AgentState
+from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
-from jumanji.environments.swarms.search_and_rescue.generator import Generator, RandomGenerator
-from jumanji.environments.swarms.search_and_rescue.types import State, TargetState
-from jumanji.environments.swarms.search_and_rescue.utils import has_been_found, has_found_target
+from jumanji.environments.swarms.search_and_rescue.types import TargetState
+from jumanji.environments.swarms.search_and_rescue.utils import (
+    reward_if_found_target,
+    target_has_been_found,
+)
 
 
-def test_random_generator() -> None:
-    key = jax.random.PRNGKey(101)
-    params = AgentParams(
-        max_rotate=0.5,
-        max_accelerate=0.01,
-        min_speed=0.01,
-        max_speed=0.05,
-        view_angle=0.5,
-    )
-    generator = RandomGenerator(num_searchers=100, num_targets=101)
-
-    assert isinstance(generator, Generator)
-
-    state = generator(key, params)
-
-    assert isinstance(state, State)
-    assert state.searchers.pos.shape == (generator.num_searchers, 2)
-    assert jnp.all(0.0 <= state.searchers.pos) and jnp.all(state.searchers.pos <= 1.0)
-    assert state.targets.pos.shape == (generator.num_targets, 2)
-    assert jnp.all(0.0 <= state.targets.pos) and jnp.all(state.targets.pos <= 1.0)
-    assert not jnp.any(state.targets.found)
-    assert state.step == 0
-
-
-def test_random_walk_dynamics() -> None:
+def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
     n_targets = 50
-    key = jax.random.PRNGKey(101)
     s0 = jnp.full((n_targets, 2), 0.5)
 
     dynamics = RandomWalk(0.1)
@@ -94,8 +71,8 @@ def test_target_found(
         speed=0.0,
     )
 
-    found = has_been_found(None, view_angle, target.pos, searcher)
-    reward = has_found_target(None, view_angle, searcher, target)
+    found = target_has_been_found(None, view_angle, target.pos, searcher)
+    reward = reward_if_found_target(None, view_angle, searcher, target)
 
     assert found == expected
 

@@ -100,11 +100,36 @@ def update_state(
     )
 
 
+def view_reduction(view_a: chex.Array, view_b: chex.Array) -> chex.Array:
+    """
+    Binary view reduction function.
+
+    Handles reduction where a value of -1.0 indicates no
+    agent in view-range. Returns the min value of they
+    are both positive, but the max value if one or both of
+    the values is -1.0.
+
+    Args:
+        view_a: View vector.
+        view_b: View vector.
+
+    Returns:
+        jax array (float32): View vector indicating the
+            shortest distance to the nearest neighbour or
+            -1.0 if no agent is present along a ray.
+    """
+    return jnp.where(
+        jnp.logical_or(view_a < 0.0, view_b < 0.0),
+        jnp.maximum(view_a, view_b),
+        jnp.minimum(view_a, view_b),
+    )
+
+
 def view(
     _key: chex.PRNGKey,
     params: Tuple[float, float],
-    a: types.AgentState,
-    b: types.AgentState,
+    viewing_agent: types.AgentState,
+    viewed_agent: types.AgentState,
     *,
     n_view: int,
     i_range: float,
@@ -115,16 +140,16 @@ def view(
     Simple view model where the agents view angle is subdivided
     into an array of values representing the distance from
     the agent along a rays from the agent, with rays evenly distributed.
-    across the agents field of view. The limit of vision is set at 1.0,
-    which is also the default value if no object is within range.
+    across the agents field of view. The limit of vision is set at 1.0.
+    The default value if no object is within range is -1.0.
     Currently, this model assumes the viewed objects are circular.
 
     Args:
         _key: Dummy JAX random key, required by esquilax API, but
             not used during the interaction.
         params: Tuple containing agent view angle and view-radius.
-        a: Viewing agent state.
-        b: State of agent being viewed.
+        viewing_agent: Viewing agent state.
+        viewed_agent: State of agent being viewed.
         n_view: Static number of view rays/subdivisions (i.e. how
             many cells the resulting array contains).
         i_range: Static agent view/interaction range.
@@ -140,14 +165,14 @@ def view(
         n_view,
         endpoint=True,
     )
-    dx = esquilax.utils.shortest_vector(a.pos, b.pos)
+    dx = esquilax.utils.shortest_vector(viewing_agent.pos, viewed_agent.pos)
     d = jnp.sqrt(jnp.sum(dx * dx)) / i_range
     phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
-    dh = esquilax.utils.shortest_vector(phi, a.heading, 2 * jnp.pi)
+    dh = esquilax.utils.shortest_vector(phi, viewing_agent.heading, 2 * jnp.pi)
 
     angular_width = jnp.arctan2(radius, d)
     left = dh - angular_width
     right = dh + angular_width
 
-    obs = jnp.where(jnp.logical_and(left < rays, rays < right), d, 1.0)
+    obs = jnp.where(jnp.logical_and(left < rays, rays < right), d, -1.0)
     return obs

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import chex
-import jax
 import jax.numpy as jnp
 from esquilax.utils import shortest_vector
 
@@ -21,7 +20,32 @@ from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.search_and_rescue.types import TargetState
 
 
-def has_been_found(
+def _check_target_in_view(
+    searcher_pos: chex.Array,
+    target_pos: chex.Array,
+    searcher_heading: chex.Array,
+    searcher_view_angle: float,
+) -> chex.Array:
+    """
+    Check if a target is inside the view-cone of a searcher.
+
+    Args:
+        searcher_pos: Searcher position
+        target_pos: Target position
+        searcher_heading: Searcher heading angle
+        searcher_view_angle: Searcher view angle
+
+    Returns:
+        bool: Flag indicating if a target is within view.
+    """
+    dx = shortest_vector(searcher_pos, target_pos)
+    phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
+    dh = shortest_vector(phi, searcher_heading, 2 * jnp.pi)
+    searcher_view_angle = searcher_view_angle * jnp.pi
+    return (dh >= -searcher_view_angle) & (dh <= searcher_view_angle)
+
+
+def target_has_been_found(
     _key: chex.PRNGKey,
     searcher_view_angle: float,
     target_pos: chex.Array,
@@ -45,14 +69,10 @@ def has_been_found(
     Returns:
         is-found: `bool` True if the target had been found/detected.
     """
-    dx = shortest_vector(searcher.pos, target_pos)
-    phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
-    dh = shortest_vector(phi, searcher.heading, 2 * jnp.pi)
-    searcher_view_angle = searcher_view_angle * jnp.pi
-    return (dh >= -searcher_view_angle) & (dh <= searcher_view_angle)
+    return _check_target_in_view(searcher.pos, target_pos, searcher.heading, searcher_view_angle)
 
 
-def has_found_target(
+def reward_if_found_target(
     _key: chex.PRNGKey,
     searcher_view_angle: float,
     searcher: AgentState,
@@ -76,13 +96,5 @@ def has_found_target(
     Returns:
         reward: +1.0 reward if the agent detects a new target.
     """
-    dx = shortest_vector(searcher.pos, target.pos)
-    phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
-    dh = shortest_vector(phi, searcher.heading, 2 * jnp.pi)
-    searcher_view_angle = searcher_view_angle * jnp.pi
-    can_see = (dh >= -searcher_view_angle) & (dh <= searcher_view_angle)
-    return jax.lax.cond(
-        ~target.found & can_see,
-        lambda: 1.0,
-        lambda: 0.0,
-    )
+    can_see = _check_target_in_view(searcher.pos, target.pos, searcher.heading, searcher_view_angle)
+    return (~target.found & can_see).astype(float)

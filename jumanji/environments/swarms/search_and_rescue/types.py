@@ -25,8 +25,16 @@ from jumanji.environments.swarms.common.types import AgentState
 
 @dataclass
 class TargetState:
-    pos: chex.Array
-    found: chex.Array
+    """
+    The state for the rescue targets.
+
+    pos: 2d position of the target agents
+    found: Boolean flag indicating if the
+        target has been located by a searcher.
+    """
+
+    pos: chex.Array  # (num_targets, 2)
+    found: chex.Array  # (num_targets,)
 
 
 @dataclass
@@ -59,10 +67,10 @@ class Observation(NamedTuple):
     `num_vision = 5` then the observation array could be
 
     ```
-    [1.0, 1.0, 0.5, 1.0, 1.0]
+    [-1.0, -1.0, 0.5, -1.0, -1.0]
     ```
 
-    where `1.0` indicates there is no agents along that ray,
+    where `-1.0` indicates there is no agents along that ray,
     and `0.5` is the normalised distance to the other agent.
     """
 

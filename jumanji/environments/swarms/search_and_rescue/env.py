@@ -24,7 +24,7 @@ from matplotlib.animation import FuncAnimation
 from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.swarms.common.types import AgentParams
-from jumanji.environments.swarms.common.updates import update_state, view
+from jumanji.environments.swarms.common.updates import update_state, view, view_reduction
 from jumanji.environments.swarms.search_and_rescue import utils
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.generator import Generator, RandomGenerator
@@ -47,6 +47,9 @@ class SearchAndRescue(Environment):
     - observation: `Observation`
         searcher_views: jax array (float) of shape (num_searchers, num_vision)
             individual local views of positions of other searching agents.
+            Each entry in the view indicates the distant to the nearest neighbour
+            along a ray from the agent, and is -1.0 if no agent is in range
+            along the ray.
         targets_remaining: (float) Number of targets remaining to be found from
             the total scaled to the range [0, 1] (i.e. a value of 1.0 indicates
             all the targets are still to be found).
@@ -216,15 +219,17 @@ class SearchAndRescue(Environment):
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        searchers = update_state(state.key, self.searcher_params, state.searchers, actions)
+        # Note: only one new key is needed for the targets, as all other
+        #  keys are just dummy values required by Esquilax
         key, target_key = jax.random.split(state.key, num=2)
+        searchers = update_state(key, self.searcher_params, state.searchers, actions)
         # Ensure target positions are wrapped
         target_pos = self._target_dynamics(target_key, state.targets.pos) % 1.0
         # Grant searchers rewards if in range and not already detected
         # spatial maps the has_found_target function over all pair of targets and
         # searchers within range of each other and sums rewards per agent.
         rewards = spatial(
-            utils.has_found_target,
+            utils.reward_if_found_target,
             reduction=jnp.add,
             default=0.0,
             i_range=self.target_contact_range,
@@ -240,7 +245,7 @@ class SearchAndRescue(Environment):
         # spatial maps the has_been_found function over all pair of targets and
         # searchers within range of each other
         targets_found = spatial(
-            utils.has_been_found,
+            utils.target_has_been_found,
             reduction=jnp.logical_or,
             default=False,
             i_range=self.target_contact_range,
@@ -262,7 +267,7 @@ class SearchAndRescue(Environment):
         )
         observation = self._state_to_observation(state)
         timestep = jax.lax.cond(
-            state.step >= self.max_steps | jnp.all(targets_found),
+            jnp.logical_or(state.step >= self.max_steps, jnp.all(targets_found)),
             termination,
             transition,
             rewards,
@@ -273,8 +278,8 @@ class SearchAndRescue(Environment):
     def _state_to_observation(self, state: State) -> Observation:
         searcher_views = spatial(
             view,
-            reduction=jnp.minimum,
-            default=jnp.ones((self.num_vision,)),
+            reduction=view_reduction,
+            default=-jnp.ones((self.num_vision,)),
             include_self=False,
             i_range=self.searcher_vision_range,
         )(
@@ -306,7 +311,7 @@ class SearchAndRescue(Environment):
         """
         searcher_views = specs.BoundedArray(
             shape=(self.generator.num_searchers, self.num_vision),
-            minimum=0.0,
+            minimum=-1.0,
             maximum=1.0,
             dtype=float,
             name="searcher_views",

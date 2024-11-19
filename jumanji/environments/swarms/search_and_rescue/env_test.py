@@ -32,34 +32,13 @@ from jumanji.environments.swarms.search_and_rescue.types import (
 from jumanji.testing.env_not_smoke import check_env_does_not_smoke, check_env_specs_does_not_smoke
 from jumanji.types import StepType, TimeStep
 
-SEARCHER_VISION_RANGE = 0.2
-TARGET_CONTACT_RANGE = 0.05
-AGENT_RADIUS = 0.05
 
-
-@pytest.fixture
-def env() -> SearchAndRescue:
-    return SearchAndRescue(
-        searcher_vision_range=SEARCHER_VISION_RANGE,
-        target_contact_range=TARGET_CONTACT_RANGE,
-        num_vision=11,
-        agent_radius=AGENT_RADIUS,
-        searcher_max_rotate=0.2,
-        searcher_max_accelerate=0.01,
-        searcher_min_speed=0.01,
-        searcher_max_speed=0.05,
-        searcher_view_angle=0.5,
-        max_steps=25,
-    )
-
-
-def test_env_init(env: SearchAndRescue) -> None:
+def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     """
     Check newly initialised state has expected array shapes
     and initial timestep.
     """
-    k = jax.random.PRNGKey(101)
-    state, timestep = env.reset(k)
+    state, timestep = env.reset(key)
     assert isinstance(state, State)
 
     assert isinstance(state.searchers, AgentState)
@@ -83,13 +62,12 @@ def test_env_init(env: SearchAndRescue) -> None:
     assert timestep.step_type == StepType.FIRST
 
 
-def test_env_step(env: SearchAndRescue) -> None:
+def test_env_step(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     """
     Run several steps of the environment with random actions and
     check states (i.e. positions, heading, speeds) all fall
     inside expected ranges.
     """
-    key = jax.random.PRNGKey(101)
     n_steps = 22
 
     def step(
@@ -172,6 +150,7 @@ def test_env_specs_do_not_smoke(env: SearchAndRescue) -> None:
 )
 def test_searcher_view(
     env: SearchAndRescue,
+    key: chex.PRNGKey,
     searcher_positions: List[List[float]],
     searcher_headings: List[float],
     view_updates: List[Tuple[int, int, float]],
@@ -190,14 +169,14 @@ def test_searcher_view(
             pos=searcher_positions, heading=searcher_headings, speed=searcher_speed
         ),
         targets=TargetState(pos=jnp.zeros((1, 2)), found=jnp.zeros((1, 2), dtype=bool)),
-        key=jax.random.PRNGKey(101),
+        key=key,
     )
 
     obs = env._state_to_observation(state)
 
     assert isinstance(obs, Observation)
 
-    expected = jnp.ones((searcher_headings.shape[0], env.num_vision))
+    expected = jnp.full((searcher_headings.shape[0], env.num_vision), -1.0)
 
     for i, idx, val in view_updates:
         expected = expected.at[i, idx].set(val)
@@ -205,7 +184,7 @@ def test_searcher_view(
     assert jnp.all(jnp.isclose(obs.searcher_views, expected))
 
 
-def test_target_detection(env: SearchAndRescue) -> None:
+def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     # Keep targets in one location
     env._target_dynamics = RandomWalk(step_size=0.0)
 
@@ -215,7 +194,7 @@ def test_target_detection(env: SearchAndRescue) -> None:
             pos=jnp.array([[0.5, 0.5]]), heading=jnp.array([jnp.pi]), speed=jnp.array([0.0])
         ),
         targets=TargetState(pos=jnp.array([[0.54, 0.5]]), found=jnp.array([False])),
-        key=jax.random.PRNGKey(101),
+        key=key,
     )
     state, timestep = env.step(state, jnp.zeros((1, 2)))
     assert not state.targets.found[0]

@@ -30,10 +30,10 @@ space is a uniform space with unit dimensions, and wrapped at the boundaries.
   the observation array could be
 
   ```
-  [1.0, 1.0, 0.5, 1.0, 1.0]
+  [-1.0, -1.0, 0.5, -1.0, -1.0]
   ```
 
-  where `1.0` indicates there is no agents along that ray, and `0.5` is the normalised
+  where `-1.0` indicates there is no agents along that ray, and `0.5` is the normalised
   distance to the other agent.
 - `targets_remaining`: float in the range `[0, 1]`. The normalised number of targets
   remaining to be detected (i.e. 1.0 when no targets have been found).
