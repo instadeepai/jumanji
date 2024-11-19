@@ -72,30 +72,38 @@ def test_velocity_update(
 
 
 @pytest.mark.parametrize(
-    "pos, heading, speed, expected",
+    "pos, heading, speed, expected, env_size",
     [
-        [[0.0, 0.5], 0.0, 0.1, [0.1, 0.5]],
-        [[0.0, 0.5], jnp.pi, 0.1, [0.9, 0.5]],
-        [[0.5, 0.0], 0.5 * jnp.pi, 0.1, [0.5, 0.1]],
-        [[0.5, 0.0], 1.5 * jnp.pi, 0.1, [0.5, 0.9]],
+        [[0.0, 0.5], 0.0, 0.1, [0.1, 0.5], 1.0],
+        [[0.0, 0.5], jnp.pi, 0.1, [0.9, 0.5], 1.0],
+        [[0.5, 0.0], 0.5 * jnp.pi, 0.1, [0.5, 0.1], 1.0],
+        [[0.5, 0.0], 1.5 * jnp.pi, 0.1, [0.5, 0.9], 1.0],
+        [[0.4, 0.2], 0.0, 0.2, [0.1, 0.2], 0.5],
+        [[0.1, 0.2], jnp.pi, 0.2, [0.4, 0.2], 0.5],
+        [[0.2, 0.4], 0.5 * jnp.pi, 0.2, [0.2, 0.1], 0.5],
+        [[0.2, 0.1], 1.5 * jnp.pi, 0.2, [0.2, 0.4], 0.5],
     ],
 )
-def test_move(pos: List[float], heading: float, speed: float, expected: List[float]) -> None:
+def test_move(
+    pos: List[float], heading: float, speed: float, expected: List[float], env_size: float
+) -> None:
     pos = jnp.array(pos)
-    new_pos = updates.move(pos, heading, speed)
+    new_pos = updates.move(pos, heading, speed, env_size)
 
     assert jnp.allclose(new_pos, jnp.array(expected))
 
 
 @pytest.mark.parametrize(
-    "pos, heading, speed, actions, expected_pos, expected_heading, expected_speed",
+    "pos, heading, speed, actions, expected_pos, expected_heading, expected_speed, env_size",
     [
-        [[0.0, 0.5], 0.0, 0.01, [0.0, 0.0], [0.01, 0.5], 0.0, 0.01],
-        [[0.5, 0.0], 0.0, 0.01, [1.0, 0.0], [0.5, 0.01], 0.5 * jnp.pi, 0.01],
-        [[0.5, 0.0], 0.0, 0.01, [-1.0, 0.0], [0.5, 0.99], 1.5 * jnp.pi, 0.01],
-        [[0.0, 0.5], 0.0, 0.01, [0.0, 1.0], [0.02, 0.5], 0.0, 0.02],
-        [[0.0, 0.5], 0.0, 0.01, [0.0, -1.0], [0.01, 0.5], 0.0, 0.01],
-        [[0.0, 0.5], 0.0, 0.05, [0.0, 1.0], [0.05, 0.5], 0.0, 0.05],
+        [[0.0, 0.5], 0.0, 0.01, [0.0, 0.0], [0.01, 0.5], 0.0, 0.01, 1.0],
+        [[0.5, 0.0], 0.0, 0.01, [1.0, 0.0], [0.5, 0.01], 0.5 * jnp.pi, 0.01, 1.0],
+        [[0.5, 0.0], 0.0, 0.01, [-1.0, 0.0], [0.5, 0.99], 1.5 * jnp.pi, 0.01, 1.0],
+        [[0.0, 0.5], 0.0, 0.01, [0.0, 1.0], [0.02, 0.5], 0.0, 0.02, 1.0],
+        [[0.0, 0.5], 0.0, 0.01, [0.0, -1.0], [0.01, 0.5], 0.0, 0.01, 1.0],
+        [[0.0, 0.5], 0.0, 0.05, [0.0, 1.0], [0.05, 0.5], 0.0, 0.05, 1.0],
+        [[0.495, 0.25], 0.0, 0.01, [0.0, 0.0], [0.005, 0.25], 0.0, 0.01, 0.5],
+        [[0.25, 0.005], 1.5 * jnp.pi, 0.01, [0.0, 0.0], [0.25, 0.495], 1.5 * jnp.pi, 0.01, 0.5],
     ],
 )
 def test_state_update(
@@ -107,6 +115,7 @@ def test_state_update(
     expected_pos: List[float],
     expected_heading: float,
     expected_speed: float,
+    env_size: float,
 ) -> None:
     key = jax.random.PRNGKey(101)
 
@@ -117,7 +126,7 @@ def test_state_update(
     )
     actions = jnp.array([actions])
 
-    new_state = updates.update_state(key, params, state, actions)
+    new_state = updates.update_state(key, env_size, params, state, actions)
 
     assert isinstance(new_state, types.AgentState)
     assert jnp.allclose(new_state.pos, jnp.array([expected_pos]))
@@ -133,19 +142,21 @@ def test_view_reduction() -> None:
 
 
 @pytest.mark.parametrize(
-    "pos, view_angle, expected",
+    "pos, view_angle, env_size, expected",
     [
-        [[0.05, 0.0], 0.5, [-1.0, -1.0, 0.5, -1.0, -1.0]],
-        [[0.0, 0.05], 0.5, [0.5, -1.0, -1.0, -1.0, -1.0]],
-        [[0.0, 0.95], 0.5, [-1.0, -1.0, -1.0, -1.0, 0.5]],
-        [[0.95, 0.0], 0.5, [-1.0, -1.0, -1.0, -1.0, -1.0]],
-        [[0.05, 0.0], 0.25, [-1.0, -1.0, 0.5, -1.0, -1.0]],
-        [[0.0, 0.05], 0.25, [-1.0, -1.0, -1.0, -1.0, -1.0]],
-        [[0.0, 0.95], 0.25, [-1.0, -1.0, -1.0, -1.0, -1.0]],
-        [[0.01, 0.0], 0.5, [-1.0, -1.0, 0.1, -1.0, -1.0]],
+        [[0.05, 0.0], 0.5, 1.0, [-1.0, -1.0, 0.5, -1.0, -1.0]],
+        [[0.0, 0.05], 0.5, 1.0, [0.5, -1.0, -1.0, -1.0, -1.0]],
+        [[0.0, 0.95], 0.5, 1.0, [-1.0, -1.0, -1.0, -1.0, 0.5]],
+        [[0.95, 0.0], 0.5, 1.0, [-1.0, -1.0, -1.0, -1.0, -1.0]],
+        [[0.05, 0.0], 0.25, 1.0, [-1.0, -1.0, 0.5, -1.0, -1.0]],
+        [[0.0, 0.05], 0.25, 1.0, [-1.0, -1.0, -1.0, -1.0, -1.0]],
+        [[0.0, 0.95], 0.25, 1.0, [-1.0, -1.0, -1.0, -1.0, -1.0]],
+        [[0.01, 0.0], 0.5, 1.0, [-1.0, -1.0, 0.1, -1.0, -1.0]],
+        [[0.0, 0.45], 0.5, 1.0, [4.5, -1.0, -1.0, -1.0, -1.0]],
+        [[0.0, 0.45], 0.5, 0.5, [-1.0, -1.0, -1.0, -1.0, 0.5]],
     ],
 )
-def test_view(pos: List[float], view_angle: float, expected: List[float]) -> None:
+def test_view(pos: List[float], view_angle: float, env_size: float, expected: List[float]) -> None:
     state_a = types.AgentState(
         pos=jnp.zeros((2,)),
         heading=0.0,
@@ -158,13 +169,15 @@ def test_view(pos: List[float], view_angle: float, expected: List[float]) -> Non
         speed=0.0,
     )
 
-    obs = updates.view(None, (view_angle, 0.02), state_a, state_b, n_view=5, i_range=0.1)
+    obs = updates.view(
+        None, (view_angle, 0.02), state_a, state_b, n_view=5, i_range=0.1, env_size=env_size
+    )
     assert jnp.allclose(obs, jnp.array(expected))
 
 
 def test_viewer_utils() -> None:
     f, ax = plt.subplots()
-    f, ax = viewer.format_plot(f, ax)
+    f, ax = viewer.format_plot(f, ax, (1.0, 1.0))
 
     assert isinstance(f, matplotlib.figure.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)

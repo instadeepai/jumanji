@@ -27,7 +27,7 @@ from jumanji.environments.swarms.search_and_rescue.types import State
 from jumanji.viewer import Viewer
 
 
-class SearchAndRescueViewer(Viewer):
+class SearchAndRescueViewer(Viewer[State]):
     def __init__(
         self,
         figure_name: str = "SearchAndRescue",
@@ -35,6 +35,7 @@ class SearchAndRescueViewer(Viewer):
         searcher_color: str = "blue",
         target_found_color: str = "green",
         target_lost_color: str = "red",
+        env_size: Tuple[float, float] = (1.0, 1.0),
     ) -> None:
         """Viewer for the `SearchAndRescue` environment.
 
@@ -47,6 +48,7 @@ class SearchAndRescueViewer(Viewer):
         self.searcher_color = searcher_color
         self.target_colors = np.array([target_lost_color, target_found_color])
         self._animation: Optional[matplotlib.animation.Animation] = None
+        self.env_size = env_size
 
     def render(self, state: State) -> None:
         """Render a frame of the environment for a given state using matplotlib.
@@ -77,7 +79,7 @@ class SearchAndRescueViewer(Viewer):
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
         fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
-        fig, ax = format_plot(fig, ax)
+        fig, ax = format_plot(fig, ax, self.env_size)
 
         searcher_quiver = draw_agents(ax, states[0].searchers, self.searcher_color)
         target_scatter = ax.scatter(
@@ -137,7 +139,7 @@ class SearchAndRescueViewer(Viewer):
                 fig.show()
             ax = fig.add_subplot()
 
-        fig, ax = format_plot(fig, ax)
+        fig, ax = format_plot(fig, ax, self.env_size)
         return fig, ax
 
     def _update_display(self, fig: plt.Figure) -> None:

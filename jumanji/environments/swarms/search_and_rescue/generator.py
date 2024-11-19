@@ -23,15 +23,17 @@ from jumanji.environments.swarms.search_and_rescue.types import State, TargetSta
 
 
 class Generator(abc.ABC):
-    def __init__(self, num_searchers: int, num_targets: int) -> None:
+    def __init__(self, num_searchers: int, num_targets: int, env_size: float = 1.0) -> None:
         """Interface for instance generation for the `SearchAndRescue` environment.
 
         Args:
             num_searchers: Number of searcher agents
             num_targets: Number of search targets
+            env_size: Size (dimensions of the environment), default 1.0.
         """
         self.num_searchers = num_searchers
         self.num_targets = num_targets
+        self.env_size = env_size
 
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey, searcher_params: AgentParams) -> State:
@@ -60,7 +62,9 @@ class RandomGenerator(Generator):
         key, searcher_key, target_key = jax.random.split(key, num=3)
 
         k_pos, k_head, k_speed = jax.random.split(searcher_key, 3)
-        positions = jax.random.uniform(k_pos, (self.num_searchers, 2))
+        positions = jax.random.uniform(
+            k_pos, (self.num_searchers, 2), minval=0.0, maxval=self.env_size
+        )
         headings = jax.random.uniform(
             k_head, (self.num_searchers,), minval=0.0, maxval=2.0 * jnp.pi
         )
@@ -76,7 +80,9 @@ class RandomGenerator(Generator):
             heading=headings,
         )
 
-        target_pos = jax.random.uniform(target_key, (self.num_targets, 2))
+        target_pos = jax.random.uniform(
+            target_key, (self.num_targets, 2), minval=0.0, maxval=self.env_size
+        )
 
         state = State(
             searchers=searcher_state,

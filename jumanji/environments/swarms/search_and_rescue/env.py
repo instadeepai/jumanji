@@ -170,9 +170,12 @@ class SearchAndRescue(Environment):
             view_angle=searcher_view_angle,
         )
         self.max_steps = max_steps
-        self._viewer = viewer or SearchAndRescueViewer()
         self._target_dynamics = target_dynamics or RandomWalk(0.01)
         self.generator = generator or RandomGenerator(num_targets=20, num_searchers=10)
+        self._viewer = viewer or SearchAndRescueViewer()
+        # Needed to set environment boundaries for plots
+        if isinstance(self._viewer, SearchAndRescueViewer):
+            self._viewer.env_size = (self.generator.env_size, self.generator.env_size)
         super().__init__()
 
     def __repr__(self) -> str:
@@ -186,6 +189,7 @@ class SearchAndRescue(Environment):
                 f" - num vision: {self.num_vision}",
                 f" - agent radius: {self.agent_radius}",
                 f" - max steps: {self.max_steps},"
+                f" - env size: {self.generator.env_size}"
                 f" - target dynamics: {self._target_dynamics.__class__.__name__}",
                 f" - generator: {self.generator.__class__.__name__}",
             ]
@@ -222,9 +226,11 @@ class SearchAndRescue(Environment):
         # Note: only one new key is needed for the targets, as all other
         #  keys are just dummy values required by Esquilax
         key, target_key = jax.random.split(state.key, num=2)
-        searchers = update_state(key, self.searcher_params, state.searchers, actions)
+        searchers = update_state(
+            key, self.generator.env_size, self.searcher_params, state.searchers, actions
+        )
         # Ensure target positions are wrapped
-        target_pos = self._target_dynamics(target_key, state.targets.pos) % 1.0
+        target_pos = self._target_dynamics(target_key, state.targets.pos) % self.generator.env_size
         # Grant searchers rewards if in range and not already detected
         # spatial maps the has_found_target function over all pair of targets and
         # searchers within range of each other and sums rewards per agent.
@@ -233,6 +239,7 @@ class SearchAndRescue(Environment):
             reduction=jnp.add,
             default=0.0,
             i_range=self.target_contact_range,
+            dims=self.generator.env_size,
         )(
             key,
             self.searcher_params.view_angle,
@@ -240,6 +247,7 @@ class SearchAndRescue(Environment):
             state.targets,
             pos=searchers.pos,
             pos_b=target_pos,
+            env_size=self.generator.env_size,
         )
         # Mark targets as found if with contact range and view angle of a searcher
         # spatial maps the has_been_found function over all pair of targets and
@@ -249,6 +257,7 @@ class SearchAndRescue(Environment):
             reduction=jnp.logical_or,
             default=False,
             i_range=self.target_contact_range,
+            dims=self.generator.env_size,
         )(
             key,
             self.searcher_params.view_angle,
@@ -256,6 +265,7 @@ class SearchAndRescue(Environment):
             searchers,
             pos=target_pos,
             pos_b=searchers.pos,
+            env_size=self.generator.env_size,
         )
         # Targets need to remain found if they already have been
         targets_found = jnp.logical_or(targets_found, state.targets.found)
@@ -282,6 +292,7 @@ class SearchAndRescue(Environment):
             default=-jnp.ones((self.num_vision,)),
             include_self=False,
             i_range=self.searcher_vision_range,
+            dims=self.generator.env_size,
         )(
             state.key,
             (self.searcher_params.view_angle, self.agent_radius),
@@ -290,6 +301,7 @@ class SearchAndRescue(Environment):
             pos=state.searchers.pos,
             n_view=self.num_vision,
             i_range=self.searcher_vision_range,
+            env_size=self.generator.env_size,
         )
 
         return Observation(

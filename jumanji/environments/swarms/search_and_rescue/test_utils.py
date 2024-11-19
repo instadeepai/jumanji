@@ -40,17 +40,19 @@ def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
 
 
 @pytest.mark.parametrize(
-    "pos, heading, view_angle, target_state, expected",
+    "pos, heading, view_angle, target_state, expected, env_size",
     [
-        ([0.1, 0.0], 0.0, 0.5, False, False),
-        ([0.1, 0.0], jnp.pi, 0.5, False, True),
-        ([0.1, 0.0], jnp.pi, 0.5, True, True),
-        ([0.9, 0.0], jnp.pi, 0.5, False, False),
-        ([0.9, 0.0], 0.0, 0.5, False, True),
-        ([0.9, 0.0], 0.0, 0.5, True, True),
-        ([0.0, 0.1], 1.5 * jnp.pi, 0.5, True, True),
-        ([0.1, 0.0], 0.5 * jnp.pi, 0.5, False, True),
-        ([0.1, 0.0], 0.5 * jnp.pi, 0.4, False, False),
+        ([0.1, 0.0], 0.0, 0.5, False, False, 1.0),
+        ([0.1, 0.0], jnp.pi, 0.5, False, True, 1.0),
+        ([0.1, 0.0], jnp.pi, 0.5, True, True, 1.0),
+        ([0.9, 0.0], jnp.pi, 0.5, False, False, 1.0),
+        ([0.9, 0.0], 0.0, 0.5, False, True, 1.0),
+        ([0.9, 0.0], 0.0, 0.5, True, True, 1.0),
+        ([0.0, 0.1], 1.5 * jnp.pi, 0.5, True, True, 1.0),
+        ([0.1, 0.0], 0.5 * jnp.pi, 0.5, False, True, 1.0),
+        ([0.1, 0.0], 0.5 * jnp.pi, 0.4, False, False, 1.0),
+        ([0.4, 0.0], 0.0, 0.5, False, False, 1.0),
+        ([0.4, 0.0], 0.0, 0.5, False, True, 0.5),
     ],
 )
 def test_target_found(
@@ -59,6 +61,7 @@ def test_target_found(
     view_angle: float,
     target_state: bool,
     expected: bool,
+    env_size: float,
 ) -> None:
     target = TargetState(
         pos=jnp.zeros((2,)),
@@ -71,8 +74,8 @@ def test_target_found(
         speed=0.0,
     )
 
-    found = target_has_been_found(None, view_angle, target.pos, searcher)
-    reward = reward_if_found_target(None, view_angle, searcher, target)
+    found = target_has_been_found(None, view_angle, target.pos, searcher, env_size=env_size)
+    reward = reward_if_found_target(None, view_angle, searcher, target, env_size=env_size)
 
     assert found == expected
 

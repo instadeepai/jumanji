@@ -54,24 +54,26 @@ def update_velocity(
     return new_heading, new_speeds
 
 
-def move(pos: chex.Array, heading: chex.Array, speed: chex.Array) -> chex.Array:
+def move(pos: chex.Array, heading: chex.Array, speed: chex.Array, env_size: float) -> chex.Array:
     """
     Get updated agent positions from current speed and heading
 
     Args:
-        pos: Agent position
+        pos: Agent position.
         heading: Agent heading (angle).
-        speed: Agent speed
+        speed: Agent speed.
+        env_size: Size of the environment.
 
     Returns:
-        jax array (float32): Updated agent position
+        jax array (float32): Updated agent position.
     """
     d_pos = jnp.array([speed * jnp.cos(heading), speed * jnp.sin(heading)])
-    return (pos + d_pos) % 1.0
+    return (pos + d_pos) % env_size
 
 
 def update_state(
     key: chex.PRNGKey,
+    env_size: float,
     params: types.AgentParams,
     state: types.AgentState,
     actions: chex.Array,
@@ -81,6 +83,7 @@ def update_state(
 
     Args:
         key: Dummy JAX random key.
+        env_size: Size of the environment.
         params: Agent parameters.
         state: Current agent states.
         actions: Agent actions, i.e. a 2D array of action for each agent.
@@ -91,7 +94,7 @@ def update_state(
     """
     actions = jnp.clip(actions, min=-1.0, max=1.0)
     headings, speeds = update_velocity(key, params, (actions, state))
-    positions = jax.vmap(move)(state.pos, headings, speeds)
+    positions = jax.vmap(move, in_axes=(0, 0, 0, None))(state.pos, headings, speeds, env_size)
 
     return types.AgentState(
         pos=positions,
@@ -133,6 +136,7 @@ def view(
     *,
     n_view: int,
     i_range: float,
+    env_size: float,
 ) -> chex.Array:
     """
     Simple agent view model
@@ -153,6 +157,7 @@ def view(
         n_view: Static number of view rays/subdivisions (i.e. how
             many cells the resulting array contains).
         i_range: Static agent view/interaction range.
+        env_size: Size of the environment.
 
     Returns:
         jax array (float32): 1D array representing the distance
@@ -165,7 +170,7 @@ def view(
         n_view,
         endpoint=True,
     )
-    dx = esquilax.utils.shortest_vector(viewing_agent.pos, viewed_agent.pos)
+    dx = esquilax.utils.shortest_vector(viewing_agent.pos, viewed_agent.pos, length=env_size)
     d = jnp.sqrt(jnp.sum(dx * dx)) / i_range
     phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
     dh = esquilax.utils.shortest_vector(phi, viewing_agent.heading, 2 * jnp.pi)

@@ -62,13 +62,15 @@ def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert timestep.step_type == StepType.FIRST
 
 
-def test_env_step(env: SearchAndRescue, key: chex.PRNGKey) -> None:
+@pytest.mark.parametrize("env_size", [1.0, 0.2])
+def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> None:
     """
     Run several steps of the environment with random actions and
     check states (i.e. positions, heading, speeds) all fall
     inside expected ranges.
     """
     n_steps = 22
+    env.generator.env_size = env_size
 
     def step(
         carry: Tuple[chex.PRNGKey, State], _: None
@@ -89,7 +91,7 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert isinstance(state_history, State)
 
     assert state_history.searchers.pos.shape == (n_steps, env.generator.num_searchers, 2)
-    assert jnp.all((0.0 <= state_history.searchers.pos) & (state_history.searchers.pos <= 1.0))
+    assert jnp.all((0.0 <= state_history.searchers.pos) & (state_history.searchers.pos <= env_size))
     assert state_history.searchers.speed.shape == (n_steps, env.generator.num_searchers)
     assert jnp.all(
         (env.searcher_params.min_speed <= state_history.searchers.speed)
@@ -101,7 +103,7 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     )
 
     assert state_history.targets.pos.shape == (n_steps, env.generator.num_targets, 2)
-    assert jnp.all((0.0 <= state_history.targets.pos) & (state_history.targets.pos <= 1.0))
+    assert jnp.all((0.0 <= state_history.targets.pos) & (state_history.targets.pos <= env_size))
 
 
 def test_env_does_not_smoke(env: SearchAndRescue) -> None:
@@ -122,28 +124,38 @@ def test_env_specs_do_not_smoke(env: SearchAndRescue) -> None:
 
 
 @pytest.mark.parametrize(
-    "searcher_positions, searcher_headings, view_updates",
+    "searcher_positions, searcher_headings, env_size, view_updates",
     [
         # Both out of view range
-        ([[0.8, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], []),
+        ([[0.8, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], 1.0, []),
         # Both view each other
-        ([[0.25, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], [(0, 5, 0.25), (1, 5, 0.25)]),
+        ([[0.25, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], 1.0, [(0, 5, 0.25), (1, 5, 0.25)]),
         # One facing wrong direction
         (
             [[0.25, 0.5], [0.2, 0.5]],
             [jnp.pi, jnp.pi],
+            1.0,
             [(0, 5, 0.25)],
         ),
         # Only see closest neighbour
         (
             [[0.35, 0.5], [0.25, 0.5], [0.2, 0.5]],
             [jnp.pi, 0.0, 0.0],
+            1.0,
             [(0, 5, 0.5), (1, 5, 0.5), (2, 5, 0.25)],
         ),
         # Observed around wrapped edge
         (
             [[0.025, 0.5], [0.975, 0.5]],
             [jnp.pi, 0.0],
+            1.0,
+            [(0, 5, 0.25), (1, 5, 0.25)],
+        ),
+        # Observed around wrapped edge of smaller env
+        (
+            [[0.025, 0.25], [0.475, 0.25]],
+            [jnp.pi, 0.0],
+            0.5,
             [(0, 5, 0.25), (1, 5, 0.25)],
         ),
     ],
@@ -153,12 +165,14 @@ def test_searcher_view(
     key: chex.PRNGKey,
     searcher_positions: List[List[float]],
     searcher_headings: List[float],
+    env_size: float,
     view_updates: List[Tuple[int, int, float]],
 ) -> None:
     """
     Test view model generates expected array with different
     configurations of agents.
     """
+    env.generator.env_size = env_size
 
     searcher_positions = jnp.array(searcher_positions)
     searcher_headings = jnp.array(searcher_headings)

@@ -25,6 +25,7 @@ def _check_target_in_view(
     target_pos: chex.Array,
     searcher_heading: chex.Array,
     searcher_view_angle: float,
+    env_size: float,
 ) -> chex.Array:
     """
     Check if a target is inside the view-cone of a searcher.
@@ -34,11 +35,12 @@ def _check_target_in_view(
         target_pos: Target position
         searcher_heading: Searcher heading angle
         searcher_view_angle: Searcher view angle
+        env_size: Size of the environment
 
     Returns:
         bool: Flag indicating if a target is within view.
     """
-    dx = shortest_vector(searcher_pos, target_pos)
+    dx = shortest_vector(searcher_pos, target_pos, length=env_size)
     phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
     dh = shortest_vector(phi, searcher_heading, 2 * jnp.pi)
     searcher_view_angle = searcher_view_angle * jnp.pi
@@ -50,6 +52,8 @@ def target_has_been_found(
     searcher_view_angle: float,
     target_pos: chex.Array,
     searcher: AgentState,
+    *,
+    env_size: float,
 ) -> chex.Array:
     """
     Returns True a target has been found.
@@ -65,11 +69,14 @@ def target_has_been_found(
         target_pos: jax array (float) if shape (2,) representing
             the position of the target.
         searcher: Searcher agent state (i.e. position and heading).
+        env_size: size of the environment.
 
     Returns:
         is-found: `bool` True if the target had been found/detected.
     """
-    return _check_target_in_view(searcher.pos, target_pos, searcher.heading, searcher_view_angle)
+    return _check_target_in_view(
+        searcher.pos, target_pos, searcher.heading, searcher_view_angle, env_size
+    )
 
 
 def reward_if_found_target(
@@ -77,6 +84,8 @@ def reward_if_found_target(
     searcher_view_angle: float,
     searcher: AgentState,
     target: TargetState,
+    *,
+    env_size: float,
 ) -> chex.Array:
     """
     Return +1.0 reward if the agent has detected an agent.
@@ -92,9 +101,12 @@ def reward_if_found_target(
             position and heading)
         target: State of the target (i.e. its position and
             search status).
+        env_size: size of the environment.
 
     Returns:
         reward: +1.0 reward if the agent detects a new target.
     """
-    can_see = _check_target_in_view(searcher.pos, target.pos, searcher.heading, searcher_view_angle)
+    can_see = _check_target_in_view(
+        searcher.pos, target.pos, searcher.heading, searcher_view_angle, env_size
+    )
     return (~target.found & can_see).astype(float)

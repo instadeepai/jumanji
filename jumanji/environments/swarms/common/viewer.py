@@ -45,12 +45,15 @@ def draw_agents(ax: Axes, agent_states: AgentState, color: str) -> Quiver:
     return q
 
 
-def format_plot(fig: Figure, ax: Axes, border: float = 0.01) -> Tuple[Figure, Axes]:
+def format_plot(
+    fig: Figure, ax: Axes, env_dims: Tuple[float, float], border: float = 0.01
+) -> Tuple[Figure, Axes]:
     """Format a flock/swarm plot, remove ticks and bound to the unit interval
 
     Args:
         fig: Matplotlib figure.
         ax: Matplotlib axes.
+        env_dims: Environment dimensions (i.e. its boundaries).
         border: Border padding to apply around plot.
 
     Returns:
@@ -67,7 +70,7 @@ def format_plot(fig: Figure, ax: Axes, border: float = 0.01) -> Tuple[Figure, Ax
     )
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
+    ax.set_xlim(0, env_dims[0])
+    ax.set_ylim(0, env_dims[1])
 
     return fig, ax
