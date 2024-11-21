@@ -20,7 +20,7 @@ from typing import Any, NamedTuple, Sequence, Union
 
 import chex
 import dm_env.specs
-import gym.spaces
+import gymnasium as gym
 import jax.numpy as jnp
 import numpy as np
 import pytest
