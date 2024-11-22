@@ -32,7 +32,7 @@ from typing import (
 
 import chex
 import dm_env.specs
-import gym
+import gymnasium as gym
 import jax
 import jax.numpy as jnp
 import numpy as np

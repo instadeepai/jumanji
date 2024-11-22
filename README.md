@@ -86,7 +86,7 @@ combinatorial problems.
 - 🍬 **Wrappers**: easily connect to your favourite RL frameworks and libraries such as
 [Acme](https://github.com/deepmind/acme),
 [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3),
-[RLlib](https://docs.ray.io/en/latest/rllib/index.html), [OpenAI Gym](https://github.com/openai/gym)
+[RLlib](https://docs.ray.io/en/latest/rllib/index.html), [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
 and [DeepMind-Env](https://github.com/deepmind/dm_env) through our `dm_env` and `gym` wrappers.
 - 🎓 **Examples**: guides to facilitate Jumanji's adoption and highlight the added value of
 JAX-based environments.
