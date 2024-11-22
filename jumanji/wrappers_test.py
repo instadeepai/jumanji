@@ -17,7 +17,7 @@ from typing import Tuple, Type
 
 import chex
 import dm_env.specs
-import gym
+import gymnasium as gym
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -265,14 +265,17 @@ class TestJumanjiEnvironmentToGymEnv:
         self, fake_gym_env: FakeJumanjiToGymWrapper
     ) -> None:
         """Validates reset function of the wrapped environment."""
-        observation1 = fake_gym_env.reset()
+        observation1, info1 = fake_gym_env.reset()
         state1 = fake_gym_env._state
-        observation2 = fake_gym_env.reset()
+        observation2, info2 = fake_gym_env.reset()
         state2 = fake_gym_env._state
 
         # Observation is typically numpy array
         assert isinstance(observation1, chex.ArrayNumpy)
         assert isinstance(observation2, chex.ArrayNumpy)
+
+        assert isinstance(info1, dict)
+        assert isinstance(info2, dict)
 
         # Check that the observations are equal
         chex.assert_trees_all_equal(observation1, observation2)
@@ -282,12 +285,14 @@ class TestJumanjiEnvironmentToGymEnv:
         self, fake_gym_env: FakeJumanjiToGymWrapper
     ) -> None:
         """Validates step function of the wrapped environment."""
-        observation = fake_gym_env.reset()
+        observation, _ = fake_gym_env.reset()
         action = fake_gym_env.action_space.sample()
-        next_observation, reward, terminated, info = fake_gym_env.step(action)
+        next_observation, reward, terminated, truncated, info = fake_gym_env.step(action)
         assert_trees_are_different(observation, next_observation)
         assert isinstance(reward, float)
         assert isinstance(terminated, bool)
+        assert isinstance(truncated, bool)
+        assert isinstance(info, dict)
 
     def test_jumanji_environment_to_gym_env__observation_space(
         self, fake_gym_env: FakeJumanjiToGymWrapper

@@ -14,11 +14,11 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Any, Callable, ClassVar, Dict, Generic, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generic, Optional, Tuple, TypeAlias, Union
 
 import chex
 import dm_env.specs
-import gym
+import gymnasium as gym
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -28,7 +28,7 @@ from jumanji.env import ActionSpec, Environment, Observation, State
 from jumanji.types import TimeStep
 
 # Type alias that corresponds to ObsType in the Gym API
-GymObservation = Any
+GymObservation: TypeAlias = chex.ArrayNumpy | Dict[str, Union[chex.ArrayNumpy, "GymObservation"]]
 
 
 class Wrapper(Environment[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]):
@@ -584,10 +584,6 @@ class VmapAutoResetWrapper(
 class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
     """A wrapper that converts a Jumanji `Environment` to one that follows the `gym.Env` API."""
 
-    # Flag that prevents `gym.register` from misinterpreting the `_step` and
-    # `_reset` as signs of a deprecated gym Env API.
-    _gym_disable_underscore_compat: ClassVar[bool] = True
-
     def __init__(
         self,
         env: Environment[State, ActionSpec, Observation],
@@ -618,11 +614,12 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
 
         def step(
             state: State, action: chex.Array
-        ) -> Tuple[State, Observation, chex.Array, bool, Optional[Any]]:
+        ) -> Tuple[State, Observation, chex.Array, chex.Array, chex.Array, Optional[Any]]:
             """Step function of a Jumanji environment to be jitted."""
             state, timestep = self._env.step(state, action)
-            done = jnp.bool_(timestep.last())
-            return state, timestep.observation, timestep.reward, done, timestep.extras
+            term = timestep.discount.astype(bool)
+            trunc = timestep.last().astype(bool)
+            return state, timestep.observation, timestep.reward, term, trunc, timestep.extras
 
         self._step = jax.jit(step, backend=self.backend)
 
@@ -630,9 +627,8 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
         self,
         *,
         seed: Optional[int] = None,
-        return_info: bool = False,
         options: Optional[dict] = None,
-    ) -> Union[GymObservation, Tuple[GymObservation, Optional[Any]]]:
+    ) -> Tuple[GymObservation, Dict[str, Any]]:
         """Resets the environment to an initial state by starting a new sequence
         and returns the first `Observation` of this sequence.
 
@@ -648,13 +644,11 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
         # Convert the observation to a numpy array or a nested dict thereof
         obs = jumanji_to_gym_obs(obs)
 
-        if return_info:
-            info = jax.tree_util.tree_map(np.asarray, extras)
-            return obs, info
-        else:
-            return obs  # type: ignore
+        return obs, jax.device_get(extras)
 
-    def step(self, action: chex.ArrayNumpy) -> Tuple[GymObservation, float, bool, Optional[Any]]:
+    def step(
+        self, action: chex.ArrayNumpy
+    ) -> Tuple[GymObservation, float, bool, bool, Dict[str, Any]]:
         """Updates the environment according to the action and returns an `Observation`.
 
         Args:
@@ -667,16 +661,17 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
             info: contains supplementary information such as metrics.
         """
 
-        action = jnp.array(action)  # Convert input numpy array to JAX array
-        self._state, obs, reward, done, extras = self._step(self._state, action)
+        action_jax = jnp.asarray(action)  # Convert input numpy array to JAX array
+        self._state, obs, reward, term, trunc, extras = self._step(self._state, action_jax)
 
         # Convert to get the correct signature
         obs = jumanji_to_gym_obs(obs)
         reward = float(reward)
-        terminated = bool(done)
-        info = jax.tree_util.tree_map(np.asarray, extras)
+        terminated = bool(term)
+        truncated = bool(trunc)
+        info = jax.device_get(extras)
 
-        return obs, reward, terminated, info
+        return obs, reward, terminated, truncated, info
 
     def seed(self, seed: int = 0) -> None:
         """Function which sets the seed for the environment's random number generator(s).

@@ -18,9 +18,9 @@ next_timestep = dm_env.step(action)
 ...
 ```
 
-## Jumanji To Gym
-We can also convert our Jumanji environments to a [Gym](https://github.com/openai/gym) environment!
-Below is an example of how to convert a Jumanji environment into a Gym environment.
+## Jumanji To Gymnasium
+We can also convert our Jumanji environments to a [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) environment!
+Below is an example of how to convert a Jumanji environment into a Gymnasium environment.
 
 ```python
 import jumanji.wrappers
@@ -28,9 +28,9 @@ import jumanji.wrappers
 env = jumanji.make("Snake-6x6-v0")
 gym_env = jumanji.wrappers.JumanjiToGymWrapper(env)
 
-obs = gym_env.reset()
+obs, info = gym_env.reset()
 action = gym_env.action_space.sample()
-observation, reward, done, extra = gym_env.step(action)
+observation, reward, term, trunc, info = gym_env.step(action)
 ...
 ```
 
