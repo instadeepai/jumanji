@@ -42,6 +42,10 @@ class SearchAndRescueViewer(Viewer[State]):
         Args:
             figure_name: the window name to be used when initialising the window.
             figure_size: tuple (height, width) of the matplotlib figure window.
+            searcher_color: Color of searcher agent markers (arrows).
+            target_found_color: Color of target markers when they have been found.
+            target_lost_color: Color of target markers when they are still to be found.
+            env_size: Tuple environment spatial dimensions, used to set the plot region.
         """
         self._figure_name = figure_name
         self._figure_size = figure_size

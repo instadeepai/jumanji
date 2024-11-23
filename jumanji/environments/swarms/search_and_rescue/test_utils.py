@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 from typing import List
 
 import chex
+import jax
 import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.types import TargetState
-from jumanji.environments.swarms.search_and_rescue.utils import (
-    reward_if_found_target,
-    target_has_been_found,
-)
+from jumanji.environments.swarms.search_and_rescue.utils import searcher_detect_targets
 
 
 def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
@@ -44,11 +43,11 @@ def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
     [
         ([0.1, 0.0], 0.0, 0.5, False, False, 1.0),
         ([0.1, 0.0], jnp.pi, 0.5, False, True, 1.0),
-        ([0.1, 0.0], jnp.pi, 0.5, True, True, 1.0),
+        ([0.1, 0.0], jnp.pi, 0.5, True, False, 1.0),
         ([0.9, 0.0], jnp.pi, 0.5, False, False, 1.0),
         ([0.9, 0.0], 0.0, 0.5, False, True, 1.0),
-        ([0.9, 0.0], 0.0, 0.5, True, True, 1.0),
-        ([0.0, 0.1], 1.5 * jnp.pi, 0.5, True, True, 1.0),
+        ([0.9, 0.0], 0.0, 0.5, True, False, 1.0),
+        ([0.0, 0.1], 1.5 * jnp.pi, 0.5, True, False, 1.0),
         ([0.1, 0.0], 0.5 * jnp.pi, 0.5, False, True, 1.0),
         ([0.1, 0.0], 0.5 * jnp.pi, 0.4, False, False, 1.0),
         ([0.4, 0.0], 0.0, 0.5, False, False, 1.0),
@@ -74,14 +73,12 @@ def test_target_found(
         speed=0.0,
     )
 
-    found = target_has_been_found(None, view_angle, target.pos, searcher, env_size=env_size)
-    reward = reward_if_found_target(None, view_angle, searcher, target, env_size=env_size)
+    found = jax.jit(partial(searcher_detect_targets, env_size=env_size, n_targets=1))(
+        None,
+        view_angle,
+        searcher,
+        (jnp.arange(1), target),
+    )
 
-    assert found == expected
-
-    if found and target_state:
-        assert reward == 0.0
-    elif found and not target_state:
-        assert reward == 1.0
-    elif not found:
-        assert reward == 0.0
+    assert found.shape == (1,)
+    assert found[0] == expected

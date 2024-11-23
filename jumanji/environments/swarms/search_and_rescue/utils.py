@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Tuple
+
 import chex
 import jax.numpy as jnp
 from esquilax.utils import shortest_vector
@@ -47,50 +49,19 @@ def _check_target_in_view(
     return (dh >= -searcher_view_angle) & (dh <= searcher_view_angle)
 
 
-def target_has_been_found(
-    _key: chex.PRNGKey,
-    searcher_view_angle: float,
-    target_pos: chex.Array,
-    searcher: AgentState,
-    *,
-    env_size: float,
-) -> chex.Array:
-    """
-    Returns True a target has been found.
-
-    Return true if a target is within detection range
-    and within the view cone of a searcher. Used
-    to mark targets as found.
-
-    Args:
-        _key: Dummy random key (required by Esquilax).
-        searcher_view_angle: View angle of searching agents
-            representing a fraction of pi from the agents heading.
-        target_pos: jax array (float) if shape (2,) representing
-            the position of the target.
-        searcher: Searcher agent state (i.e. position and heading).
-        env_size: size of the environment.
-
-    Returns:
-        is-found: `bool` True if the target had been found/detected.
-    """
-    return _check_target_in_view(
-        searcher.pos, target_pos, searcher.heading, searcher_view_angle, env_size
-    )
-
-
-def reward_if_found_target(
+def searcher_detect_targets(
     _key: chex.PRNGKey,
     searcher_view_angle: float,
     searcher: AgentState,
-    target: TargetState,
+    target: Tuple[chex.Array, TargetState],
     *,
     env_size: float,
+    n_targets: int,
 ) -> chex.Array:
     """
-    Return +1.0 reward if the agent has detected an agent.
+    Return array of flags indicating if a target has been located
 
-    Generate rewards for agents if a target is inside the
+    Sets the flag at the target index if the target is within the
     searchers view cone, and had not already been detected.
 
     Args:
@@ -99,14 +70,17 @@ def reward_if_found_target(
             representing a fraction of pi from the agents heading.
         searcher: State of the searching agent (i.e. the agent
             position and heading)
-        target: State of the target (i.e. its position and
+        target: Index and State of the target (i.e. its position and
             search status).
         env_size: size of the environment.
+        n_targets: Number of search targets (static).
 
     Returns:
-        reward: +1.0 reward if the agent detects a new target.
+        array of boolean flags, set if a target at the index has been found.
     """
+    target_idx, target = target
+    target_found = jnp.zeros((n_targets,), dtype=bool)
     can_see = _check_target_in_view(
         searcher.pos, target.pos, searcher.heading, searcher_view_angle, env_size
     )
-    return (~target.found & can_see).astype(float)
+    return target_found.at[target_idx].set(jnp.logical_and(~target.found, can_see))

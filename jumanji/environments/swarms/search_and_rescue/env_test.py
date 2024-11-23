@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import py
 import pytest
 
-from jumanji.environments.swarms.common.types import AgentState
+from jumanji.environments.swarms.common.types import AgentParams, AgentState
 from jumanji.environments.swarms.search_and_rescue import SearchAndRescue
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk
 from jumanji.environments.swarms.search_and_rescue.types import (
@@ -244,6 +244,72 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     state, timestep = env.step(state, jnp.zeros((1, 2)))
     assert state.targets.found[0]
     assert timestep.reward[0] == 0
+
+
+def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
+    # Keep targets in one location
+    env._target_dynamics = RandomWalk(step_size=0.0)
+    env.searcher_params = AgentParams(
+        max_rotate=0.1,
+        max_accelerate=0.01,
+        min_speed=0.01,
+        max_speed=0.05,
+        view_angle=0.25,
+    )
+
+    # Agent facing wrong direction should not see target
+    state = State(
+        searchers=AgentState(
+            pos=jnp.array([[0.5, 0.5]]), heading=jnp.array([0.5 * jnp.pi]), speed=jnp.array([0.0])
+        ),
+        targets=TargetState(
+            pos=jnp.array([[0.54, 0.5], [0.46, 0.5]]), found=jnp.array([False, False])
+        ),
+        key=key,
+    )
+    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    assert not state.targets.found[0]
+    assert not state.targets.found[1]
+    assert timestep.reward[0] == 0
+
+    # Rotated agent should detect first target
+    state = State(
+        searchers=AgentState(
+            pos=state.searchers.pos, heading=jnp.array([0.0]), speed=state.searchers.speed
+        ),
+        targets=state.targets,
+        key=state.key,
+    )
+    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    assert state.targets.found[0]
+    assert not state.targets.found[1]
+    assert timestep.reward[0] == 1
+
+    # Rotated agent should not detect another agent
+    state = State(
+        searchers=AgentState(
+            pos=state.searchers.pos, heading=jnp.array([1.5 * jnp.pi]), speed=state.searchers.speed
+        ),
+        targets=state.targets,
+        key=state.key,
+    )
+    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    assert state.targets.found[0]
+    assert not state.targets.found[1]
+    assert timestep.reward[0] == 0
+
+    # Rotated agent again should see second agent
+    state = State(
+        searchers=AgentState(
+            pos=state.searchers.pos, heading=jnp.array([jnp.pi]), speed=state.searchers.speed
+        ),
+        targets=state.targets,
+        key=state.key,
+    )
+    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    assert state.targets.found[0]
+    assert state.targets.found[1]
+    assert timestep.reward[0] == 1
 
 
 def test_search_and_rescue_render(monkeypatch: pytest.MonkeyPatch, env: SearchAndRescue) -> None:

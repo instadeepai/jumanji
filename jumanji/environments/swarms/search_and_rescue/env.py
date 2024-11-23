@@ -173,9 +173,6 @@ class SearchAndRescue(Environment):
         self._target_dynamics = target_dynamics or RandomWalk(0.01)
         self.generator = generator or RandomGenerator(num_targets=20, num_searchers=10)
         self._viewer = viewer or SearchAndRescueViewer()
-        # Needed to set environment boundaries for plots
-        if isinstance(self._viewer, SearchAndRescueViewer):
-            self._viewer.env_size = (self.generator.env_size, self.generator.env_size)
         super().__init__()
 
     def __repr__(self) -> str:
@@ -231,44 +228,30 @@ class SearchAndRescue(Environment):
         )
         # Ensure target positions are wrapped
         target_pos = self._target_dynamics(target_key, state.targets.pos) % self.generator.env_size
-        # Grant searchers rewards if in range and not already detected
-        # spatial maps the has_found_target function over all pair of targets and
-        # searchers within range of each other and sums rewards per agent.
-        rewards = spatial(
-            utils.reward_if_found_target,
+        # Searchers return an array of flags of any targets they are in range of,
+        #  and that have not already been locating, result shape here is (n-searcher, n-targets)
+        targets_found = spatial(
+            utils.searcher_detect_targets,
             reduction=jnp.add,
-            default=0.0,
+            default=jnp.zeros((target_pos.shape[0],), dtype=bool),
             i_range=self.target_contact_range,
             dims=self.generator.env_size,
         )(
             key,
             self.searcher_params.view_angle,
             searchers,
-            state.targets,
+            (jnp.arange(target_pos.shape[0]), state.targets),
             pos=searchers.pos,
             pos_b=target_pos,
             env_size=self.generator.env_size,
+            n_targets=target_pos.shape[0],
         )
-        # Mark targets as found if with contact range and view angle of a searcher
-        # spatial maps the has_been_found function over all pair of targets and
-        # searchers within range of each other
-        targets_found = spatial(
-            utils.target_has_been_found,
-            reduction=jnp.logical_or,
-            default=False,
-            i_range=self.target_contact_range,
-            dims=self.generator.env_size,
-        )(
-            key,
-            self.searcher_params.view_angle,
-            state.targets.pos,
-            searchers,
-            pos=target_pos,
-            pos_b=searchers.pos,
-            env_size=self.generator.env_size,
-        )
+
+        rewards = jnp.sum(targets_found, axis=1)
+        targets_found = jnp.any(targets_found, axis=0)
         # Targets need to remain found if they already have been
         targets_found = jnp.logical_or(targets_found, state.targets.found)
+
         state = State(
             searchers=searchers,
             targets=TargetState(pos=target_pos, found=targets_found),
