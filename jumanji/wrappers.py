@@ -617,7 +617,7 @@ class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
         ) -> Tuple[State, Observation, chex.Array, chex.Array, chex.Array, Optional[Any]]:
             """Step function of a Jumanji environment to be jitted."""
             state, timestep = self._env.step(state, action)
-            term = timestep.discount.astype(bool)
+            term = ~timestep.discount.astype(bool)
             trunc = timestep.last().astype(bool)
             return state, timestep.observation, timestep.reward, term, trunc, timestep.extras
 
