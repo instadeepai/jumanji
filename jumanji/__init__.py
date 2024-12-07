@@ -142,3 +142,10 @@ register(id="SlidingTilePuzzle-v0", entry_point="jumanji.environments:SlidingTil
 # LevelBasedForaging  with a random generator with 8 grid size,
 # 2 agents and 2 food items and the maximum agent's level is 2.
 register(id="LevelBasedForaging-v0", entry_point="jumanji.environments:LevelBasedForaging")
+
+###
+# Swarm Environments
+###
+
+# Search-and-Rescue environment
+register(id="SearchAndRescue-v0", entry_point="jumanji.environments:SearchAndRescue")
