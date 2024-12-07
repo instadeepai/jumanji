@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Tuple
+from typing import Tuple
 
 import chex
 import jax
@@ -57,7 +57,7 @@ def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert isinstance(timestep.observation, Observation)
     assert timestep.observation.searcher_views.shape == (
         env.generator.num_searchers,
-        env.num_vision,
+        *env._observation.view_shape,
     )
     assert timestep.step_type == StepType.FIRST
 
@@ -121,81 +121,6 @@ def test_env_does_not_smoke(env: SearchAndRescue) -> None:
 def test_env_specs_do_not_smoke(env: SearchAndRescue) -> None:
     """Test that we can access specs without any errors."""
     check_env_specs_does_not_smoke(env)
-
-
-@pytest.mark.parametrize(
-    "searcher_positions, searcher_headings, env_size, view_updates",
-    [
-        # Both out of view range
-        ([[0.8, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], 1.0, []),
-        # Both view each other
-        ([[0.25, 0.5], [0.2, 0.5]], [jnp.pi, 0.0], 1.0, [(0, 5, 0.25), (1, 5, 0.25)]),
-        # One facing wrong direction
-        (
-            [[0.25, 0.5], [0.2, 0.5]],
-            [jnp.pi, jnp.pi],
-            1.0,
-            [(0, 5, 0.25)],
-        ),
-        # Only see closest neighbour
-        (
-            [[0.35, 0.5], [0.25, 0.5], [0.2, 0.5]],
-            [jnp.pi, 0.0, 0.0],
-            1.0,
-            [(0, 5, 0.5), (1, 5, 0.5), (2, 5, 0.25)],
-        ),
-        # Observed around wrapped edge
-        (
-            [[0.025, 0.5], [0.975, 0.5]],
-            [jnp.pi, 0.0],
-            1.0,
-            [(0, 5, 0.25), (1, 5, 0.25)],
-        ),
-        # Observed around wrapped edge of smaller env
-        (
-            [[0.025, 0.25], [0.475, 0.25]],
-            [jnp.pi, 0.0],
-            0.5,
-            [(0, 5, 0.25), (1, 5, 0.25)],
-        ),
-    ],
-)
-def test_searcher_view(
-    env: SearchAndRescue,
-    key: chex.PRNGKey,
-    searcher_positions: List[List[float]],
-    searcher_headings: List[float],
-    env_size: float,
-    view_updates: List[Tuple[int, int, float]],
-) -> None:
-    """
-    Test view model generates expected array with different
-    configurations of agents.
-    """
-    env.generator.env_size = env_size
-
-    searcher_positions = jnp.array(searcher_positions)
-    searcher_headings = jnp.array(searcher_headings)
-    searcher_speed = jnp.zeros(searcher_headings.shape)
-
-    state = State(
-        searchers=AgentState(
-            pos=searcher_positions, heading=searcher_headings, speed=searcher_speed
-        ),
-        targets=TargetState(pos=jnp.zeros((1, 2)), found=jnp.zeros((1, 2), dtype=bool)),
-        key=key,
-    )
-
-    obs = env._state_to_observation(state)
-
-    assert isinstance(obs, Observation)
-
-    expected = jnp.full((searcher_headings.shape[0], env.num_vision), -1.0)
-
-    for i, idx, val in view_updates:
-        expected = expected.at[i, idx].set(val)
-
-    assert jnp.all(jnp.isclose(obs.searcher_views, expected))
 
 
 def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:

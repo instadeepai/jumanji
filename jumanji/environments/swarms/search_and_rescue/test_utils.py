@@ -23,7 +23,9 @@ import pytest
 from jumanji.environments.swarms.common.types import AgentState
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.types import TargetState
-from jumanji.environments.swarms.search_and_rescue.utils import searcher_detect_targets
+from jumanji.environments.swarms.search_and_rescue.utils import (
+    searcher_detect_targets,
+)
 
 
 def test_random_walk_dynamics(key: chex.PRNGKey) -> None:

@@ -128,6 +128,38 @@ def view_reduction(view_a: chex.Array, view_b: chex.Array) -> chex.Array:
     )
 
 
+def angular_width(
+    viewing_pos: chex.Array,
+    viewed_pos: chex.Array,
+    viewing_heading: chex.Array,
+    i_range: float,
+    agent_radius: float,
+    env_size: float,
+) -> Tuple[chex.Array, chex.Array, chex.Array]:
+    """
+    Get the normalised distance, and left and right angles to another agent.
+
+    Args:
+        viewing_pos: Co-ordinates of the viewing agent
+        viewed_pos: Co-ordinates of the viewed agent
+        viewing_heading: Heading of viewing agent
+        i_range: Interaction range
+        agent_radius: Agent visual radius
+        env_size: Environment size
+
+    Returns:
+        Normalised distance between agents, and the left and right
+        angles to the edges of the agent.
+    """
+    dx = esquilax.utils.shortest_vector(viewing_pos, viewed_pos, length=env_size)
+    dist = jnp.sqrt(jnp.sum(dx * dx))
+    phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
+    dh = esquilax.utils.shortest_vector(phi, viewing_heading, 2 * jnp.pi)
+    a_width = jnp.arctan2(agent_radius, dist)
+    norm_dist = dist / i_range
+    return norm_dist, dh - a_width, dh + a_width
+
+
 def view(
     _key: chex.PRNGKey,
     params: Tuple[float, float],
@@ -163,21 +195,20 @@ def view(
         jax array (float32): 1D array representing the distance
             along a ray from the agent to another agent.
     """
-    view_angle, radius = params
+    view_angle, agent_radius = params
     rays = jnp.linspace(
         -view_angle * jnp.pi,
         view_angle * jnp.pi,
         n_view,
         endpoint=True,
     )
-    dx = esquilax.utils.shortest_vector(viewing_agent.pos, viewed_agent.pos, length=env_size)
-    d = jnp.sqrt(jnp.sum(dx * dx)) / i_range
-    phi = jnp.arctan2(dx[1], dx[0]) % (2 * jnp.pi)
-    dh = esquilax.utils.shortest_vector(phi, viewing_agent.heading, 2 * jnp.pi)
-
-    angular_width = jnp.arctan2(radius, d)
-    left = dh - angular_width
-    right = dh + angular_width
-
+    d, left, right = angular_width(
+        viewing_agent.pos,
+        viewed_agent.pos,
+        viewing_agent.heading,
+        i_range,
+        agent_radius,
+        env_size,
+    )
     obs = jnp.where(jnp.logical_and(left < rays, rays < right), d, -1.0)
     return obs
