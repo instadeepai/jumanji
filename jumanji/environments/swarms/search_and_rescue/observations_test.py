@@ -263,3 +263,90 @@ def test_search_and_target_view_targets(
         expected = expected.at[0, 1, idx].set(val)
 
     assert jnp.all(jnp.isclose(obs, expected))
+
+
+@pytest.mark.parametrize(
+    "searcher_position, searcher_heading, target_position, target_found, env_size, view_updates",
+    [
+        # Target out of view range
+        ([0.8, 0.5], jnp.pi, [0.2, 0.5], True, 1.0, []),
+        # Target in view and found
+        ([0.25, 0.5], jnp.pi, [0.2, 0.5], True, 1.0, [(1, 5, 0.25)]),
+        # Target in view but not found
+        ([0.25, 0.5], jnp.pi, [0.2, 0.5], False, 1.0, [(2, 5, 0.25)]),
+        # Observed around wrapped edge found
+        (
+            [0.025, 0.5],
+            jnp.pi,
+            [0.975, 0.5],
+            True,
+            1.0,
+            [(1, 5, 0.25)],
+        ),
+        # Observed around wrapped edge not found
+        (
+            [0.025, 0.5],
+            jnp.pi,
+            [0.975, 0.5],
+            False,
+            1.0,
+            [(2, 5, 0.25)],
+        ),
+        # Observed around wrapped edge of smaller env
+        (
+            [0.025, 0.25],
+            jnp.pi,
+            [0.475, 0.25],
+            True,
+            0.5,
+            [(1, 5, 0.25)],
+        ),
+    ],
+)
+def test_search_and_all_target_view_targets(
+    key: chex.PRNGKey,
+    env: SearchAndRescue,
+    searcher_position: List[float],
+    searcher_heading: float,
+    target_position: List[float],
+    target_found: bool,
+    env_size: float,
+    view_updates: List[Tuple[int, int, float]],
+) -> None:
+    """
+    Test agent+target view model generates expected array with different
+    configurations of targets only.
+    """
+
+    searcher_position = jnp.array([searcher_position])
+    searcher_heading = jnp.array([searcher_heading])
+    searcher_speed = jnp.zeros((1,))
+    target_position = jnp.array([target_position])
+    target_found = jnp.array([target_found])
+
+    state = State(
+        searchers=AgentState(pos=searcher_position, heading=searcher_heading, speed=searcher_speed),
+        targets=TargetState(
+            pos=target_position,
+            found=target_found,
+        ),
+        key=key,
+    )
+
+    observe_fn = observations.AgentAndAllTargetObservationFn(
+        num_vision=11,
+        vision_range=VISION_RANGE,
+        view_angle=VIEW_ANGLE,
+        agent_radius=0.01,
+        env_size=env_size,
+    )
+
+    obs = observe_fn(state)
+    assert obs.shape == (1, 3, observe_fn.num_vision)
+
+    expected = jnp.full((1, 3, observe_fn.num_vision), -1.0)
+
+    for i, idx, val in view_updates:
+        expected = expected.at[0, i, idx].set(val)
+
+    assert jnp.all(jnp.isclose(obs, expected))

@@ -16,6 +16,7 @@ from typing import Sequence, Tuple, Union
 
 import chex
 import haiku as hk
+import jax
 import jax.numpy as jnp
 
 from jumanji.environments.swarms.search_and_rescue import SearchAndRescue
@@ -50,7 +51,9 @@ def make_actor_critic_search_and_rescue(
     """
     n_actions = prod(search_and_rescue.action_spec.shape)
     parametric_action_distribution = ContinuousActionSpaceNormalTanhDistribution(n_actions)
-    policy_network = make_actor_network(layers=layers, n_actions=n_actions)
+    policy_network = make_actor_network(
+        layers=layers, n_agents=search_and_rescue.generator.num_searchers, n_actions=n_actions
+    )
     value_network = make_critic_network(layers=layers)
 
     return ActorCriticNetworks(
@@ -60,43 +63,52 @@ def make_actor_critic_search_and_rescue(
     )
 
 
+def embedding(x: chex.Array) -> chex.Array:
+    n_channels = x.shape[-2]
+    x = hk.Conv1D(2 * n_channels, 3, data_format="NCW")(x)
+    x = jax.nn.relu(x)
+    x = hk.MaxPool(2, 2, "SAME", channel_axis=-2)(x)
+    return x
+
+
 def make_critic_network(layers: Sequence[int]) -> FeedForwardNetwork:
     # Shape names:
     # B: batch size
     # N: number of agents
+    # C: Observation channels
     # O: observation size
 
     def network_fn(observation: Observation) -> Union[chex.Array, Tuple[chex.Array, chex.Array]]:
-        views = observation.searcher_views  # (B, N, O)
-        batch_size = views.shape[0]
-        views = views.reshape(batch_size, -1)  # (B, N * O)
-        value = hk.nets.MLP([*layers, 1])(views)  # (B,)
+        x = observation.searcher_views  # (B, N, C, O)
+        x = hk.vmap(embedding, split_rng=False)(x)
+        x = hk.Flatten()(x)
+        value = hk.nets.MLP([*layers, 1])(x)  # (B,)
         return jnp.squeeze(value, axis=-1)
 
     init, apply = hk.without_apply_rng(hk.transform(network_fn))
     return FeedForwardNetwork(init=init, apply=apply)
 
 
-def make_actor_network(layers: Sequence[int], n_actions: int) -> FeedForwardNetwork:
+def make_actor_network(layers: Sequence[int], n_agents: int, n_actions: int) -> FeedForwardNetwork:
     # Shape names:
     # B: batch size
     # N: number of agents
+    # C: Observation channels
     # O: observation size
     # A: Number of actions
 
-    def network_fn(observation: Observation) -> Union[chex.Array, Tuple[chex.Array, chex.Array]]:
-        views = observation.searcher_views  # (B, N, O)
-        batch_size = views.shape[0]
-        n_agents = views.shape[1]
-        views = views.reshape((batch_size, -1))  # (B, N * 0)
-        means = hk.nets.MLP([*layers, n_agents * n_actions])(views)  # (B, N * A)
-        means = means.reshape(batch_size, n_agents, n_actions)  # (B, N, A)
+    def log_std_params(x: chex.Array) -> chex.Array:
+        return hk.get_parameter("log_stds", shape=x.shape, init=hk.initializers.Constant(0.1))
 
-        log_stds = hk.get_parameter(
-            "log_stds", shape=(n_agents * n_actions,), init=hk.initializers.Constant(0.1)
-        )  # (N * A,)
-        log_stds = jnp.broadcast_to(log_stds, (batch_size, n_agents * n_actions))  # (B, N * A)
-        log_stds = log_stds.reshape(batch_size, n_agents, n_actions)  # (B, N, A)
+    def network_fn(observation: Observation) -> Union[chex.Array, Tuple[chex.Array, chex.Array]]:
+        x = observation.searcher_views  # (B, N, C, O)
+        x = hk.vmap(embedding, split_rng=False)(x)
+        x = hk.Flatten()(x)
+
+        means = hk.nets.MLP([*layers, n_agents * n_actions])(x)  # (B, N * A)
+        means = hk.Reshape(output_shape=(n_agents, n_actions))(means)  # (B, N, A)
+
+        log_stds = hk.vmap(log_std_params, split_rng=False)(means)  # (B, N, A)
 
         return means, log_stds
 

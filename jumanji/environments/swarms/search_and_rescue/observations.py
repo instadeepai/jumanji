@@ -124,7 +124,7 @@ class AgentObservationFn(ObservationFn):
         return searcher_views[:, jnp.newaxis]
 
 
-def target_view(
+def found_target_view(
     _key: chex.PRNGKey,
     params: Tuple[float, float],
     searcher: AgentState,
@@ -235,7 +235,7 @@ class AgentAndTargetObservationFn(ObservationFn):
             env_size=self.env_size,
         )
         target_views = spatial(
-            target_view,
+            found_target_view,
             reduction=view_reduction,
             default=-jnp.ones((self.num_vision,)),
             include_self=False,
@@ -253,3 +253,137 @@ class AgentAndTargetObservationFn(ObservationFn):
             env_size=self.env_size,
         )
         return jnp.hstack([searcher_views[:, jnp.newaxis], target_views[:, jnp.newaxis]])
+
+
+def all_target_view(
+    _key: chex.PRNGKey,
+    params: Tuple[float, float],
+    searcher: AgentState,
+    target: TargetState,
+    *,
+    n_view: int,
+    i_range: float,
+    env_size: float,
+) -> chex.Array:
+    """
+    Return view of a target, dependent on target status.
+
+    This function is intended to be mapped over agents-targets
+    by Esquilax.
+
+    Args:
+        _key: Dummy random key (required by Esquilax).
+        params: View angle and target visual radius.
+        searcher: Searcher agent state
+        target: Target state
+        n_view: Number of value sin view array.
+        i_range: Vision range
+        env_size: Environment size
+
+    Returns:
+        Segmented agent view of target.
+    """
+    view_angle, agent_radius = params
+    rays = jnp.linspace(
+        -view_angle * jnp.pi,
+        view_angle * jnp.pi,
+        n_view,
+        endpoint=True,
+    )
+    d, left, right = angular_width(
+        searcher.pos,
+        target.pos,
+        searcher.heading,
+        i_range,
+        agent_radius,
+        env_size,
+    )
+    ray_checks = jnp.logical_and(left < rays, rays < right)
+    checks_a = jnp.logical_and(target.found, ray_checks)
+    checks_b = jnp.logical_and(~target.found, ray_checks)
+    obs = [jnp.where(checks_a, d, -1.0), jnp.where(checks_b, d, -1.0)]
+    obs = jnp.vstack(obs)
+    return obs
+
+
+class AgentAndAllTargetObservationFn(ObservationFn):
+    def __init__(
+        self,
+        num_vision: int,
+        vision_range: float,
+        view_angle: float,
+        agent_radius: float,
+        env_size: float,
+    ) -> None:
+        """
+        Vision model that contains other agents, and found targets.
+
+        Searchers and targets are visualised as individual channels.
+        Targets are only included if they have been located already.
+
+        Args:
+            num_vision: Size of vision array.
+            vision_range: Vision range.
+            view_angle: Agent view angle (as a fraction of pi).
+            agent_radius: Agent/target visual radius.
+            env_size: Environment size.
+        """
+        self.vision_range = vision_range
+        self.view_angle = view_angle
+        self.agent_radius = agent_radius
+        self.env_size = env_size
+        super().__init__(
+            (3, num_vision),
+            num_vision,
+            vision_range,
+            view_angle,
+            agent_radius,
+            env_size,
+        )
+
+    def __call__(self, state: State) -> chex.Array:
+        """
+        Generate agent view/observation from state
+
+        Args:
+            state: Current simulation state
+
+        Returns:
+            Array of individual agent views
+        """
+        searcher_views = spatial(
+            view,
+            reduction=view_reduction,
+            default=-jnp.ones((self.num_vision,)),
+            include_self=False,
+            i_range=self.vision_range,
+            dims=self.env_size,
+        )(
+            state.key,
+            (self.view_angle, self.agent_radius),
+            state.searchers,
+            state.searchers,
+            pos=state.searchers.pos,
+            n_view=self.num_vision,
+            i_range=self.vision_range,
+            env_size=self.env_size,
+        )
+        target_views = spatial(
+            all_target_view,
+            reduction=view_reduction,
+            default=-jnp.ones((2, self.num_vision)),
+            include_self=False,
+            i_range=self.vision_range,
+            dims=self.env_size,
+        )(
+            state.key,
+            (self.view_angle, self.agent_radius),
+            state.searchers,
+            state.targets,
+            pos=state.searchers.pos,
+            pos_b=state.targets.pos,
+            n_view=self.num_vision,
+            i_range=self.vision_range,
+            env_size=self.env_size,
+        )
+        return jnp.hstack([searcher_views[:, jnp.newaxis], target_views])
