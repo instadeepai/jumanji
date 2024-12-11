@@ -40,7 +40,9 @@ def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
     assert isinstance(dynamics, TargetDynamics)
     s1 = dynamics(key, s0, 1.0)
 
+    assert isinstance(s1, TargetState)
     assert s1.pos.shape == (n_targets, 2)
+    assert jnp.array_equal(s0.found, s1.found)
     assert jnp.all(jnp.abs(s0.pos - s1.pos) < 0.1)
 
 

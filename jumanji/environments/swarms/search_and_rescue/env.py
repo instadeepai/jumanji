@@ -29,7 +29,7 @@ from jumanji.environments.swarms.search_and_rescue import utils
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.generator import Generator, RandomGenerator
 from jumanji.environments.swarms.search_and_rescue.observations import (
-    AgentAndTargetObservationFn,
+    AgentAndAllTargetObservationFn,
     ObservationFn,
 )
 from jumanji.environments.swarms.search_and_rescue.reward import RewardFn, SharedRewardFn
@@ -46,8 +46,9 @@ class SearchAndRescue(Environment):
     for a set of targets on a 2d environment. Agents are rewarded
     (individually) for coming within a fixed range of a target that has
     not already been detected. Agents visualise their local environment
-    (i.e. the location of other agents) via a simple segmented view model.
-    The environment consists of a uniform space with wrapped boundaries.
+    (i.e. the location of other agents and targets) via a simple segmented
+    view model. The environment area is a uniform square space with wrapped
+    boundaries.
 
     An episode will terminate if all targets have been located by the team of
     searching agents.
@@ -58,12 +59,12 @@ class SearchAndRescue(Environment):
             channels can be used to differentiate between agents and targets.
             Each entry in the view indicates the distant to another agent/target
             along a ray from the agent, and is -1.0 if nothing is in range along the ray.
-            The view model can be customised using an `ObservationFn` implementation.
+            The view model can be customised using an `ObservationFn` implementation, e.g.
+            the view can include all agents and targets, or just other agents.
         targets_remaining: (float) Number of targets remaining to be found from
             the total scaled to the range [0, 1] (i.e. a value of 1.0 indicates
             all the targets are still to be found).
-        time_remaining: (float) Steps remaining to find agents, scaled to the
-            range [0,1] (i.e. the value is 0 when time runs out).
+        step: (int) current simulation step.
 
     - action: jax array (float) of shape (num_searchers, 2)
         Array of individual agent actions. Each agents actions rotate and
@@ -80,13 +81,14 @@ class SearchAndRescue(Environment):
 
     - state: `State`
         - searchers: `AgentState`
-            - pos: jax array (float) of shape (num_searchers, 2) in the range [0, 1].
+            - pos: jax array (float) of shape (num_searchers, 2) in the range [0, env_size].
             - heading: jax array (float) of shape (num_searcher,) in
                 the range [0, 2pi].
             - speed: jax array (float) of shape (num_searchers,) in the
                 range [min_speed, max_speed].
         - targets: `TargetState`
-            - pos: jax array (float) of shape (num_targets, 2) in the range [0, 1].
+            - pos: jax array (float) of shape (num_targets, 2) in the range [0, env_size].
+            - vel:  jax array (float) of shape (num_targets, 2).
             - found: jax array (bool) of shape (num_targets,) flag indicating if
                 target has been located by an agent.
         - key: jax array (uint32) of shape (2,)
@@ -127,8 +129,8 @@ class SearchAndRescue(Environment):
             searcher_max_rotate: Maximum rotation searcher agents can
                 turn within a step. Should be a value from [0,1]
                 representing a fraction of pi radians.
-            searcher_max_accelerate: Maximum acceleration/deceleration
-                a searcher agent can apply within a step.
+            searcher_max_accelerate: Magnitude of the maximum
+                acceleration/deceleration a searcher agent can apply within a step.
             searcher_min_speed: Minimum speed a searcher agent can move at.
             searcher_max_speed: Maximum speed a searcher agent can move at.
             searcher_view_angle: Searcher agent local view angle. Should be
@@ -145,8 +147,11 @@ class SearchAndRescue(Environment):
                 with 20 targets and 10 searchers.
             reward_fn: Reward aggregation function. Defaults to `SharedRewardFn` where
                 agents share rewards if they locate a target simultaneously.
+            observation: Agent observation view generation function. Defaults to
+                `AgentAndAllTargetObservationFn` where all targets (found and unfound)
+                and other ogents are included in the generated view.
         """
-        # self.searcher_vision_range = searcher_vision_range
+
         self.target_contact_range = target_contact_range
 
         self.searcher_params = AgentParams(
@@ -161,7 +166,7 @@ class SearchAndRescue(Environment):
         self.generator = generator or RandomGenerator(num_targets=100, num_searchers=2)
         self._viewer = viewer or SearchAndRescueViewer()
         self._reward_fn = reward_fn or SharedRewardFn()
-        self._observation = observation or AgentAndTargetObservationFn(
+        self._observation = observation or AgentAndAllTargetObservationFn(
             num_vision=64,
             vision_range=0.1,
             view_angle=searcher_view_angle,
@@ -190,7 +195,7 @@ class SearchAndRescue(Environment):
         )
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
-        """Initialise searcher positions and velocities, and target positions.
+        """Initialise searcher and target initial states.
 
         Args:
             key: Random key used to reset the environment.
@@ -217,7 +222,7 @@ class SearchAndRescue(Environment):
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        # Note: only one new key is needed for the targets, as all other
+        # Note: only one new key is needed for the target updates, as all other
         #  keys are just dummy values required by Esquilax
         key, target_key = jax.random.split(state.key, num=2)
         searchers = update_state(
@@ -228,22 +233,21 @@ class SearchAndRescue(Environment):
 
         # Searchers return an array of flags of any targets they are in range of,
         #  and that have not already been located, result shape here is (n-searcher, n-targets)
-        n_targets = targets.pos.shape[0]
         targets_found = spatial(
             utils.searcher_detect_targets,
             reduction=jnp.logical_or,
-            default=jnp.zeros((n_targets,), dtype=bool),
+            default=jnp.zeros((self.generator.num_targets,), dtype=bool),
             i_range=self.target_contact_range,
             dims=self.generator.env_size,
         )(
             key,
             self.searcher_params.view_angle,
             searchers,
-            (jnp.arange(n_targets), targets),
+            (jnp.arange(self.generator.num_targets), targets),
             pos=searchers.pos,
             pos_b=targets.pos,
             env_size=self.generator.env_size,
-            n_targets=n_targets,
+            n_targets=self.generator.num_targets,
         )
 
         rewards = self._reward_fn(targets_found, state.step, self.time_limit)
@@ -352,14 +356,14 @@ class SearchAndRescue(Environment):
         """Render a frame of the environment for a given state using matplotlib.
 
         Args:
-            state: State object containing the current dynamics of the environment.
+            state: State object containing the current state of the environment.
         """
         self._viewer.render(state)
 
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 200,
+        interval: int = 100,
         save_path: Optional[str] = None,
     ) -> FuncAnimation:
         """Create an animation from a sequence of environment states.

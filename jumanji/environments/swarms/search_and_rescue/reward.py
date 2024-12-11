@@ -69,7 +69,8 @@ class SharedScaledRewardFn(RewardFn):
 
     Targets detected by multiple agents share rewards. Agents
     can receive rewards for detecting multiple targets.
-    Rewards are scaled by the current time step.
+    Rewards are linearly scaled by the current time step such that
+    rewards are 0 at the final step.
     """
 
     def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:

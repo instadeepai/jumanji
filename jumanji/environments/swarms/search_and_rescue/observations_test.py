@@ -19,7 +19,7 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
-from jumanji.environments.swarms.search_and_rescue import SearchAndRescue, observations
+from jumanji.environments.swarms.search_and_rescue import observations
 from jumanji.environments.swarms.search_and_rescue.types import State, TargetState
 
 VISION_RANGE = 0.2
@@ -65,7 +65,6 @@ VIEW_ANGLE = 0.5
 )
 def test_searcher_view(
     key: chex.PRNGKey,
-    # env: SearchAndRescue,
     searcher_positions: List[List[float]],
     searcher_headings: List[float],
     env_size: float,
@@ -222,7 +221,6 @@ def test_search_and_target_view_searchers(
 )
 def test_search_and_target_view_targets(
     key: chex.PRNGKey,
-    env: SearchAndRescue,
     searcher_position: List[float],
     searcher_heading: float,
     target_position: List[float],
@@ -310,7 +308,6 @@ def test_search_and_target_view_targets(
 )
 def test_search_and_all_target_view_targets(
     key: chex.PRNGKey,
-    env: SearchAndRescue,
     searcher_position: List[float],
     searcher_heading: float,
     target_position: List[float],

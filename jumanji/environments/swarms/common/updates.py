@@ -24,15 +24,15 @@ from jumanji.environments.swarms.common import types
 
 @esquilax.transforms.amap
 def update_velocity(
-    _: chex.PRNGKey,
+    _key: chex.PRNGKey,
     params: types.AgentParams,
     x: Tuple[chex.Array, types.AgentState],
-) -> Tuple[float, float]:
+) -> Tuple[chex.Numeric, chex.Numeric]:
     """
     Get the updated agent heading and speeds from actions
 
     Args:
-        _: Dummy JAX random key.
+        _key: Dummy JAX random key.
         params: Agent parameters.
         x: Agent rotation and acceleration actions.
 
@@ -105,10 +105,10 @@ def update_state(
 
 def view_reduction(view_a: chex.Array, view_b: chex.Array) -> chex.Array:
     """
-    Binary view reduction function.
+    Binary view reduction function for use in Esquilax spatial transformation.
 
     Handles reduction where a value of -1.0 indicates no
-    agent in view-range. Returns the min value of they
+    agent in view-range. Returns the min value if they
     are both positive, but the max value if one or both of
     the values is -1.0.
 
@@ -137,7 +137,7 @@ def angular_width(
     env_size: float,
 ) -> Tuple[chex.Array, chex.Array, chex.Array]:
     """
-    Get the normalised distance, and left and right angles to another agent.
+    Get the normalised distance, and angles to edges of another agent.
 
     Args:
         viewing_pos: Co-ordinates of the viewing agent
@@ -175,10 +175,10 @@ def view(
 
     Simple view model where the agents view angle is subdivided
     into an array of values representing the distance from
-    the agent along a rays from the agent, with rays evenly distributed.
+    the agent along a rays from the agent, with rays evenly distributed
     across the agents field of view. The limit of vision is set at 1.0.
     The default value if no object is within range is -1.0.
-    Currently, this model assumes the viewed objects are circular.
+    Currently, this model assumes the viewed agent/objects are circular.
 
     Args:
         _key: Dummy JAX random key, required by esquilax API, but

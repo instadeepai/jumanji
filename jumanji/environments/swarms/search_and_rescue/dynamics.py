@@ -23,11 +23,15 @@ from jumanji.environments.swarms.search_and_rescue.types import TargetState
 class TargetDynamics(abc.ABC):
     @abc.abstractmethod
     def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
-        """Interface for target position update function.
+        """Interface for target state update function.
+
+        NOTE: Target positions should be bound to environment
+            area (generally wrapped around at the boundaries).
 
         Args:
-            key: random key.
+            key: Random key.
             targets: Current target states.
+            env_size: Environment size.
 
         Returns:
             Updated target states.
@@ -37,23 +41,23 @@ class TargetDynamics(abc.ABC):
 class RandomWalk(TargetDynamics):
     def __init__(self, step_size: float):
         """
-        Random walk target dynamics.
+        Simple random walk target dynamics.
 
-        Target positions are updated with random
-        steps, sampled uniformly from the range
-        [-step-size, step-size].
+        Target positions are updated with random steps, sampled uniformly
+        from the range `[-step-size, step-size]`.
 
         Args:
-            step_size: Maximum random step-size
+            step_size: Maximum random step-size in each axis.
         """
         self.step_size = step_size
 
     def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
-        """Update target positions.
+        """Update target state.
 
         Args:
             key: random key.
             targets: Current target states.
+            env_size: Environment size.
 
         Returns:
             Updated target states.

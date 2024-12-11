@@ -62,7 +62,7 @@ def searcher_detect_targets(
     Return array of flags indicating if a target has been located
 
     Sets the flag at the target index if the target is within the
-    searchers view cone, and had not already been detected.
+    searchers view cone, and has not already been detected.
 
     Args:
         _key: Dummy random key (required by Esquilax).

@@ -41,7 +41,7 @@ class Generator(abc.ABC):
 
         Args:
             key: random key.
-            searcher_params: Searcher `AgentParams`.
+            searcher_params: Searcher aagent `AgentParams`.
 
         Returns:
             Initial agent `State`.
