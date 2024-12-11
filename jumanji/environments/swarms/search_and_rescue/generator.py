@@ -83,11 +83,14 @@ class RandomGenerator(Generator):
         target_pos = jax.random.uniform(
             target_key, (self.num_targets, 2), minval=0.0, maxval=self.env_size
         )
+        target_vel = jnp.zeros((self.num_targets, 2))
 
         state = State(
             searchers=searcher_state,
             targets=TargetState(
-                pos=target_pos, found=jnp.full((self.num_targets,), False, dtype=bool)
+                pos=target_pos,
+                vel=target_vel,
+                found=jnp.full((self.num_targets,), False, dtype=bool),
             ),
             key=key,
         )

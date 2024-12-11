@@ -17,18 +17,20 @@ import abc
 import chex
 import jax
 
+from jumanji.environments.swarms.search_and_rescue.types import TargetState
+
 
 class TargetDynamics(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, key: chex.PRNGKey, target_pos: chex.Array) -> chex.Array:
+    def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
         """Interface for target position update function.
 
         Args:
             key: random key.
-            target_pos: Current target positions.
+            targets: Current target states.
 
         Returns:
-            Updated target positions.
+            Updated target states.
         """
 
 
@@ -46,16 +48,17 @@ class RandomWalk(TargetDynamics):
         """
         self.step_size = step_size
 
-    def __call__(self, key: chex.PRNGKey, target_pos: chex.Array) -> chex.Array:
+    def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
         """Update target positions.
 
         Args:
             key: random key.
-            target_pos: Current target positions.
+            targets: Current target states.
 
         Returns:
-            Updated target positions.
+            Updated target states.
         """
-        d_pos = jax.random.uniform(key, target_pos.shape)
+        d_pos = jax.random.uniform(key, targets.pos.shape)
         d_pos = self.step_size * 2.0 * (d_pos - 0.5)
-        return target_pos + d_pos
+        pos = (targets.pos + d_pos) % env_size
+        return TargetState(pos=pos, vel=targets.vel, found=targets.found)

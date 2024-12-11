@@ -84,7 +84,9 @@ def test_searcher_view(
         searchers=AgentState(
             pos=searcher_positions, heading=searcher_headings, speed=searcher_speed
         ),
-        targets=TargetState(pos=jnp.zeros((1, 2)), found=jnp.zeros((1, 2), dtype=bool)),
+        targets=TargetState(
+            pos=jnp.zeros((1, 2)), vel=jnp.zeros((1, 2)), found=jnp.zeros((1, 2), dtype=bool)
+        ),
         key=key,
     )
 
@@ -164,7 +166,9 @@ def test_search_and_target_view_searchers(
         searchers=AgentState(
             pos=searcher_positions, heading=searcher_headings, speed=searcher_speed
         ),
-        targets=TargetState(pos=jnp.zeros((1, 2)), found=jnp.zeros((1,), dtype=bool)),
+        targets=TargetState(
+            pos=jnp.zeros((1, 2)), vel=jnp.zeros((1, 2)), found=jnp.zeros((1,), dtype=bool)
+        ),
         key=key,
     )
 
@@ -241,6 +245,7 @@ def test_search_and_target_view_targets(
         searchers=AgentState(pos=searcher_position, heading=searcher_heading, speed=searcher_speed),
         targets=TargetState(
             pos=target_position,
+            vel=jnp.zeros_like(target_position),
             found=target_found,
         ),
         key=key,
@@ -328,6 +333,7 @@ def test_search_and_all_target_view_targets(
         searchers=AgentState(pos=searcher_position, heading=searcher_heading, speed=searcher_speed),
         targets=TargetState(
             pos=target_position,
+            vel=jnp.zeros_like(target_position),
             found=target_found,
         ),
         key=key,

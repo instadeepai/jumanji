@@ -22,7 +22,7 @@ class RewardFn(abc.ABC):
     """Abstract class for `SearchAndRescue` rewards."""
 
     @abc.abstractmethod
-    def __call__(self, found_targets: chex.Array) -> chex.Array:
+    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         """The reward function used in the `SearchAndRescue` environment.
 
         Args:
@@ -41,7 +41,7 @@ class SharedRewardFn(RewardFn):
     can receive rewards for detecting multiple targets.
     """
 
-    def __call__(self, found_targets: chex.Array) -> chex.Array:
+    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         rewards = found_targets.astype(float)
         norms = jnp.sum(rewards, axis=0)[jnp.newaxis]
         rewards = jnp.where(norms > 0, rewards / norms, rewards)
@@ -57,7 +57,25 @@ class IndividualRewardFn(RewardFn):
     even if a target is detected by multiple agents.
     """
 
-    def __call__(self, found_targets: chex.Array) -> chex.Array:
+    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         rewards = found_targets.astype(float)
         rewards = jnp.sum(rewards, axis=1)
         return rewards
+
+
+class SharedScaledRewardFn(RewardFn):
+    """
+    Calculate per agent rewards from detected targets
+
+    Targets detected by multiple agents share rewards. Agents
+    can receive rewards for detecting multiple targets.
+    Rewards are scaled by the current time step.
+    """
+
+    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
+        rewards = found_targets.astype(float)
+        norms = jnp.sum(rewards, axis=0)[jnp.newaxis]
+        rewards = jnp.where(norms > 0, rewards / norms, rewards)
+        rewards = jnp.sum(rewards, axis=1)
+        scale = (time_limit - step) / time_limit
+        return scale * rewards

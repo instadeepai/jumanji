@@ -27,7 +27,7 @@ from jumanji.environments.swarms.search_and_rescue.types import State, TargetSta
 class ObservationFn(abc.ABC):
     def __init__(
         self,
-        view_shape: Tuple[int, ...],
+        num_channels: int,
         num_vision: int,
         vision_range: float,
         view_angle: float,
@@ -38,14 +38,14 @@ class ObservationFn(abc.ABC):
         Base class for observation function mapping state to individual agent views.
 
         Args:
-            view_shape: Individual agent view shape.
+            num_channels: Number of channels in agent view.
             num_vision: Size of vision array.
             vision_range: Vision range.
             view_angle: Agent view angle (as a fraction of pi).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
-        self.view_shape = view_shape
+        self.num_channels = num_channels
         self.num_vision = num_vision
         self.vision_range = vision_range
         self.view_angle = view_angle
@@ -85,7 +85,7 @@ class AgentObservationFn(ObservationFn):
             env_size: Environment size.
         """
         super().__init__(
-            (1, num_vision),
+            1,
             num_vision,
             vision_range,
             view_angle,
@@ -199,7 +199,7 @@ class AgentAndTargetObservationFn(ObservationFn):
         self.agent_radius = agent_radius
         self.env_size = env_size
         super().__init__(
-            (2, num_vision),
+            2,
             num_vision,
             vision_range,
             view_angle,
@@ -333,7 +333,7 @@ class AgentAndAllTargetObservationFn(ObservationFn):
         self.agent_radius = agent_radius
         self.env_size = env_size
         super().__init__(
-            (3, num_vision),
+            3,
             num_vision,
             vision_range,
             view_angle,

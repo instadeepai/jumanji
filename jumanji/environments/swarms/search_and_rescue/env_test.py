@@ -57,7 +57,8 @@ def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert isinstance(timestep.observation, Observation)
     assert timestep.observation.searcher_views.shape == (
         env.generator.num_searchers,
-        *env._observation.view_shape,
+        env._observation.num_channels,
+        env._observation.num_vision,
     )
     assert timestep.step_type == StepType.FIRST
 
@@ -69,8 +70,9 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
     check states (i.e. positions, heading, speeds) all fall
     inside expected ranges.
     """
-    n_steps = 22
+    n_steps = env.time_limit
     env.generator.env_size = env_size
+    env.time_limit = 22
 
     def step(
         carry: Tuple[chex.PRNGKey, State], _: None
@@ -108,7 +110,7 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
 
 def test_env_does_not_smoke(env: SearchAndRescue) -> None:
     """Test that we can run an episode without any errors."""
-    env.max_steps = 10
+    env.time_limit = 10
 
     def select_action(action_key: chex.PRNGKey, _state: Observation) -> chex.Array:
         return jax.random.uniform(
@@ -132,7 +134,9 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
         searchers=AgentState(
             pos=jnp.array([[0.5, 0.5]]), heading=jnp.array([jnp.pi]), speed=jnp.array([0.0])
         ),
-        targets=TargetState(pos=jnp.array([[0.54, 0.5]]), found=jnp.array([False])),
+        targets=TargetState(
+            pos=jnp.array([[0.54, 0.5]]), vel=jnp.zeros((1, 2)), found=jnp.array([False])
+        ),
         key=key,
     )
     state, timestep = env.step(state, jnp.zeros((1, 2)))
@@ -188,7 +192,9 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
             pos=jnp.array([[0.5, 0.5]]), heading=jnp.array([0.5 * jnp.pi]), speed=jnp.array([0.0])
         ),
         targets=TargetState(
-            pos=jnp.array([[0.54, 0.5], [0.46, 0.5]]), found=jnp.array([False, False])
+            pos=jnp.array([[0.54, 0.5], [0.46, 0.5]]),
+            vel=jnp.zeros((2, 2)),
+            found=jnp.array([False, False]),
         ),
         key=key,
     )

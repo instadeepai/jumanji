@@ -20,14 +20,26 @@ from jumanji.environments.swarms.search_and_rescue import reward
 def test_rewards_from_found_targets() -> None:
     targets_found = jnp.array([[False, True, True], [False, False, True]], dtype=bool)
 
-    shared_rewards = reward.SharedRewardFn()(targets_found)
+    shared_rewards = reward.SharedRewardFn()(targets_found, 0, 10)
 
     assert shared_rewards.shape == (2,)
     assert shared_rewards.dtype == jnp.float32
     assert jnp.allclose(shared_rewards, jnp.array([1.5, 0.5]))
 
-    individual_rewards = reward.IndividualRewardFn()(targets_found)
+    individual_rewards = reward.IndividualRewardFn()(targets_found, 0, 10)
 
     assert individual_rewards.shape == (2,)
     assert individual_rewards.dtype == jnp.float32
     assert jnp.allclose(individual_rewards, jnp.array([2.0, 1.0]))
+
+    shared_scaled_rewards = reward.SharedScaledRewardFn()(targets_found, 0, 10)
+
+    assert shared_scaled_rewards.shape == (2,)
+    assert shared_scaled_rewards.dtype == jnp.float32
+    assert jnp.allclose(shared_scaled_rewards, jnp.array([1.5, 0.5]))
+
+    shared_scaled_rewards = reward.SharedScaledRewardFn()(targets_found, 10, 10)
+
+    assert shared_scaled_rewards.shape == (2,)
+    assert shared_scaled_rewards.dtype == jnp.float32
+    assert jnp.allclose(shared_scaled_rewards, jnp.array([0.0, 0.0]))

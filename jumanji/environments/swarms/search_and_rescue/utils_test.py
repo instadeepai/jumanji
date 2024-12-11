@@ -30,14 +30,18 @@ from jumanji.environments.swarms.search_and_rescue.utils import (
 
 def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
     n_targets = 50
-    s0 = jnp.full((n_targets, 2), 0.5)
+    pos_0 = jnp.full((n_targets, 2), 0.5)
+
+    s0 = TargetState(
+        pos=pos_0, vel=jnp.zeros((n_targets, 2)), found=jnp.zeros((n_targets,), dtype=bool)
+    )
 
     dynamics = RandomWalk(0.1)
     assert isinstance(dynamics, TargetDynamics)
-    s1 = dynamics(key, s0)
+    s1 = dynamics(key, s0, 1.0)
 
-    assert s1.shape == (n_targets, 2)
-    assert jnp.all(jnp.abs(s0 - s1) < 0.1)
+    assert s1.pos.shape == (n_targets, 2)
+    assert jnp.all(jnp.abs(s0.pos - s1.pos) < 0.1)
 
 
 @pytest.mark.parametrize(
@@ -66,6 +70,7 @@ def test_target_found(
 ) -> None:
     target = TargetState(
         pos=jnp.zeros((2,)),
+        vel=jnp.zeros((2,)),
         found=target_state,
     )
 

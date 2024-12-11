@@ -29,11 +29,13 @@ class TargetState:
     The state for the rescue targets.
 
     pos: 2d position of the target agents
+    velocity: 2d velocity of the target agents
     found: Boolean flag indicating if the
         target has been located by a searcher.
     """
 
     pos: chex.Array  # (num_targets, 2)
+    vel: chex.Array  # (num_targets, 2)
     found: chex.Array  # (num_targets,)
 
 
@@ -75,5 +77,5 @@ class Observation(NamedTuple):
     """
 
     searcher_views: chex.Array  # (num_searchers, num_vision)
-    targets_remaining: chex.Array  # ()
-    time_remaining: chex.Array  # ()
+    targets_remaining: chex.Numeric  # ()
+    step: chex.Numeric  # ()

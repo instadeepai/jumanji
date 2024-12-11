@@ -113,7 +113,7 @@ class SearchAndRescue(Environment):
         searcher_min_speed: float = 0.01,
         searcher_max_speed: float = 0.02,
         searcher_view_angle: float = 0.75,
-        max_steps: int = 400,
+        time_limit: int = 400,
         viewer: Optional[Viewer[State]] = None,
         target_dynamics: Optional[TargetDynamics] = None,
         generator: Optional[Generator] = None,
@@ -136,7 +136,7 @@ class SearchAndRescue(Environment):
                 The view cone of an agent goes from +- of the view angle
                 relative to its heading, e.g. 0.5 would mean searchers have a
                 90° view angle in total.
-            max_steps: Maximum number of environment steps allowed for search.
+            time_limit: Maximum number of environment steps allowed for search.
             viewer: `Viewer` used for rendering. Defaults to `SearchAndRescueViewer`.
                 target_dynamics:
             target_dynamics: Target object dynamics model, implemented as a
@@ -156,7 +156,7 @@ class SearchAndRescue(Environment):
             max_speed=searcher_max_speed,
             view_angle=searcher_view_angle,
         )
-        self.max_steps = max_steps
+        self.time_limit = time_limit
         self._target_dynamics = target_dynamics or RandomWalk(0.001)
         self.generator = generator or RandomGenerator(num_targets=100, num_searchers=2)
         self._viewer = viewer or SearchAndRescueViewer()
@@ -180,7 +180,7 @@ class SearchAndRescue(Environment):
                 f" - target contact range: {self.target_contact_range}",
                 f" - num vision: {self._observation.num_vision}",
                 f" - agent radius: {self._observation.agent_radius}",
-                f" - max steps: {self.max_steps},"
+                f" - time limit: {self.time_limit},"
                 f" - env size: {self.generator.env_size}"
                 f" - target dynamics: {self._target_dynamics.__class__.__name__}",
                 f" - generator: {self.generator.__class__.__name__}",
@@ -223,11 +223,12 @@ class SearchAndRescue(Environment):
         searchers = update_state(
             key, self.generator.env_size, self.searcher_params, state.searchers, actions
         )
-        # Ensure target positions are wrapped
-        target_pos = self._target_dynamics(target_key, state.targets.pos) % self.generator.env_size
+
+        targets = self._target_dynamics(target_key, state.targets, self.generator.env_size)
+
         # Searchers return an array of flags of any targets they are in range of,
         #  and that have not already been located, result shape here is (n-searcher, n-targets)
-        n_targets = target_pos.shape[0]
+        n_targets = targets.pos.shape[0]
         targets_found = spatial(
             utils.searcher_detect_targets,
             reduction=jnp.logical_or,
@@ -238,14 +239,14 @@ class SearchAndRescue(Environment):
             key,
             self.searcher_params.view_angle,
             searchers,
-            (jnp.arange(n_targets), state.targets),
+            (jnp.arange(n_targets), targets),
             pos=searchers.pos,
-            pos_b=target_pos,
+            pos_b=targets.pos,
             env_size=self.generator.env_size,
             n_targets=n_targets,
         )
 
-        rewards = self._reward_fn(targets_found)
+        rewards = self._reward_fn(targets_found, state.step, self.time_limit)
 
         targets_found = jnp.any(targets_found, axis=0)
         # Targets need to remain found if they already have been
@@ -253,14 +254,14 @@ class SearchAndRescue(Environment):
 
         state = State(
             searchers=searchers,
-            targets=TargetState(pos=target_pos, found=targets_found),
+            targets=TargetState(pos=targets.pos, vel=targets.vel, found=targets_found),
             key=key,
             step=state.step + 1,
         )
         observation = self._state_to_observation(state)
         observation = jax.lax.stop_gradient(observation)
         timestep = jax.lax.cond(
-            jnp.logical_or(state.step >= self.max_steps, jnp.all(targets_found)),
+            jnp.logical_or(state.step >= self.time_limit, jnp.all(targets_found)),
             termination,
             transition,
             rewards,
@@ -273,8 +274,12 @@ class SearchAndRescue(Environment):
         return Observation(
             searcher_views=searcher_views,
             targets_remaining=1.0 - jnp.sum(state.targets.found) / self.generator.num_targets,
-            time_remaining=1.0 - state.step / (self.max_steps + 1),
+            step=state.step,
         )
+
+    @cached_property
+    def num_agents(self) -> int:
+        return self.generator.num_searchers
 
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
@@ -287,7 +292,11 @@ class SearchAndRescue(Environment):
             observation_spec: Search-and-rescue observation spec
         """
         searcher_views = specs.BoundedArray(
-            shape=(self.generator.num_searchers, *self._observation.view_shape),
+            shape=(
+                self.generator.num_searchers,
+                self._observation.num_channels,
+                self._observation.num_vision,
+            ),
             minimum=-1.0,
             maximum=1.0,
             dtype=float,
@@ -298,10 +307,10 @@ class SearchAndRescue(Environment):
             "ObservationSpec",
             searcher_views=searcher_views,
             targets_remaining=specs.BoundedArray(
-                shape=(), minimum=0.0, maximum=1.0, name="targets_remaining", dtype=float
+                shape=(), minimum=0.0, maximum=1.0, name="targets_remaining", dtype=jnp.float32
             ),
-            time_remaining=specs.BoundedArray(
-                shape=(), minimum=0.0, maximum=1.0, name="time_remaining", dtype=float
+            step=specs.BoundedArray(
+                shape=(), minimum=0, maximum=self.time_limit, name="step", dtype=jnp.int32
             ),
         )
 
