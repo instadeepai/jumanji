@@ -43,6 +43,8 @@ nav:
           - Sokoban: environments/sokoban.md
           - Snake: environments/snake.md
           - TSP: environments/tsp.md
+      - Swarms:
+          - SearchAndRescue: environments/search_and_rescue.md
   - User Guides:
       - Advanced Usage: guides/advanced_usage.md
       - Registration: guides/registration.md
@@ -77,6 +79,8 @@ nav:
               - Sokoban: api/environments/sokoban.md
               - Snake: api/environments/snake.md
               - TSP: api/environments/tsp.md
+          - Swarms:
+              - SearchAndRescue: api/environments/search_and_rescue.md
           - Wrappers: api/wrappers.md
           - Types: api/types.md
 
