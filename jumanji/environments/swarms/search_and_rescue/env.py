@@ -279,6 +279,7 @@ class SearchAndRescue(Environment):
             searcher_views=searcher_views,
             targets_remaining=1.0 - jnp.sum(state.targets.found) / self.generator.num_targets,
             step=state.step,
+            positions=state.searchers.pos / self.generator.env_size,
         )
 
     @cached_property
@@ -297,7 +298,7 @@ class SearchAndRescue(Environment):
         """
         searcher_views = specs.BoundedArray(
             shape=(
-                self.generator.num_searchers,
+                self.num_agents,
                 self._observation.num_channels,
                 self._observation.num_vision,
             ),
@@ -315,6 +316,13 @@ class SearchAndRescue(Environment):
             ),
             step=specs.BoundedArray(
                 shape=(), minimum=0, maximum=self.time_limit, name="step", dtype=jnp.int32
+            ),
+            positions=specs.BoundedArray(
+                shape=(self.num_agents, 2),
+                minimum=0.0,
+                maximum=1.0,
+                name="positions",
+                dtype=jnp.float32,
             ),
         )
 

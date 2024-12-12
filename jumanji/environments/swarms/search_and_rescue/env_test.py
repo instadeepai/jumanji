@@ -65,7 +65,7 @@ def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert timestep.reward.shape == (env.generator.num_searchers,)
 
 
-@pytest.mark.parametrize("env_size", [1.0, 0.2])
+@pytest.mark.parametrize("env_size", [1.0, 0.2, 10.0])
 def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> None:
     """
     Run several steps of the environment with random actions and
@@ -81,9 +81,7 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
     ) -> Tuple[Tuple[chex.PRNGKey, State], Tuple[State, TimeStep[Observation]]]:
         k, state = carry
         k, k_search = jax.random.split(k)
-        actions = jax.random.uniform(
-            k_search, (env.generator.num_searchers, 2), minval=-1.0, maxval=1.0
-        )
+        actions = jax.random.uniform(k_search, (env.num_agents, 2), minval=-1.0, maxval=1.0)
         new_state, timestep = env.step(state, actions)
         return (k, new_state), (state, timestep)
 
@@ -94,20 +92,25 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
 
     assert isinstance(state_history, State)
 
-    assert state_history.searchers.pos.shape == (n_steps, env.generator.num_searchers, 2)
+    assert state_history.searchers.pos.shape == (n_steps, env.num_agents, 2)
     assert jnp.all((0.0 <= state_history.searchers.pos) & (state_history.searchers.pos <= env_size))
-    assert state_history.searchers.speed.shape == (n_steps, env.generator.num_searchers)
+    assert state_history.searchers.speed.shape == (n_steps, env.num_agents)
     assert jnp.all(
         (env.searcher_params.min_speed <= state_history.searchers.speed)
         & (state_history.searchers.speed <= env.searcher_params.max_speed)
     )
-    assert state_history.searchers.speed.shape == (n_steps, env.generator.num_searchers)
+    assert state_history.searchers.speed.shape == (n_steps, env.num_agents)
     assert jnp.all(
         (0.0 <= state_history.searchers.heading) & (state_history.searchers.heading <= 2.0 * jnp.pi)
     )
 
     assert state_history.targets.pos.shape == (n_steps, env.generator.num_targets, 2)
     assert jnp.all((0.0 <= state_history.targets.pos) & (state_history.targets.pos <= env_size))
+
+    assert timesteps.observation.positions.shape == (n_steps, env.num_agents, 2)
+    assert jnp.all(
+        (0.0 <= timesteps.observation.positions) & (timesteps.observation.positions <= 1.0)
+    )
 
 
 def test_env_does_not_smoke(multi_obs_env: SearchAndRescue) -> None:

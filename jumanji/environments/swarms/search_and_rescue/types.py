@@ -79,3 +79,4 @@ class Observation(NamedTuple):
     searcher_views: chex.Array  # (num_searchers, num_vision)
     targets_remaining: chex.Numeric  # ()
     step: chex.Numeric  # ()
+    positions: chex.Array  # (num_searchers, 2)
