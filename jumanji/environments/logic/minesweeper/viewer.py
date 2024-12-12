@@ -16,8 +16,9 @@ from typing import List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
-import matplotlib
 from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.logic.minesweeper.constants import (
@@ -48,6 +49,7 @@ class MinesweeperViewer(Viewer[State]):
         self.cmap = color_mapping or DEFAULT_COLOR_MAPPING
         self.figure_name = f"{num_rows}x{num_cols} Minesweeper"
         self.figure_size = (6.0, 6.0)
+        self._animation: Optional[FuncAnimation] = None
 
     def render(self, state: State) -> None:
         """Render the given environment state using matplotlib.
@@ -65,7 +67,7 @@ class MinesweeperViewer(Viewer[State]):
         states: Sequence[State],
         interval: int = 200,
         save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
+    ) -> FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
@@ -81,15 +83,15 @@ class MinesweeperViewer(Viewer[State]):
         plt.tight_layout()
         plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self._draw(ax, state)
+            return (ax,)
 
         # Create the animation object.
-        self._animation = matplotlib.animation.FuncAnimation(
+        self._animation = FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

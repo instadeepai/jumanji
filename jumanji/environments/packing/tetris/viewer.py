@@ -20,6 +20,7 @@ import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -186,7 +187,7 @@ class TetrisViewer(Viewer):
         """Create an animation from a sequence of Tetris grids.
 
         Args:
-            grids: sequence of Tetris grids corresponding to consecutive timesteps.
+            states: Sequence of states.
             interval: delay between frames in milliseconds, default to 100.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
@@ -197,7 +198,7 @@ class TetrisViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(grid_index: int) -> None:
+        def make_frame(grid_index: int) -> Tuple[Artist]:
             """creates a frames for each state
 
             Args:
@@ -209,9 +210,11 @@ class TetrisViewer(Viewer):
             grid = grids[grid_index]
 
             self._add_grid_image(ax, grid)
+            return (ax,)
 
         grids = []
         scores = []
+
         for state in states:
             scores.append(state.score - state.reward)
             if not state.is_reset:
@@ -225,11 +228,12 @@ class TetrisViewer(Viewer):
                 if state.full_lines.sum() > 0:
                     grids += self._crush_lines(state, grids[-1])
                     scores.extend([score for i in range(len(grids) - len(scores))])
+
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(grids),
+            frames=range(len(grids)),
             interval=interval,
         )
 

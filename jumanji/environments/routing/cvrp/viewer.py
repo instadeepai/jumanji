@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pkg_resources
 from chex import Array
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -100,15 +101,15 @@ class CVRPViewer(Viewer):
         plt.close(fig)
         self._prepare_figure(ax)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self._add_tour(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

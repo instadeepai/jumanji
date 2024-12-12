@@ -24,6 +24,7 @@ import chex
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
@@ -107,10 +108,11 @@ class RobotWarehouseViewer(Viewer):
         plt.close(fig)
         self._prepare_figure(ax)
 
-        def make_frame(state: State) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
             self._draw_state(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = animation.FuncAnimation(

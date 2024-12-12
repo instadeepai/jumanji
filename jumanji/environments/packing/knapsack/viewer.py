@@ -17,6 +17,7 @@ from typing import Callable, Optional, Sequence, Tuple
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -95,9 +96,9 @@ class KnapsackViewer(Viewer):
         ax = fig.add_subplot(111)
         self._prepare_figure(ax)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self._show_value_and_budget(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(

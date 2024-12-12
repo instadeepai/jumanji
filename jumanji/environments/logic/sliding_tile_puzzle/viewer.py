@@ -32,6 +32,7 @@ import matplotlib.animation
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.logic.sliding_tile_puzzle.types import State
@@ -82,14 +83,14 @@ class SlidingTilePuzzleViewer(Viewer):
         """
         fig, ax = self.get_fig_ax()
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self.draw_puzzle(ax, state)
+            return (ax,)
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

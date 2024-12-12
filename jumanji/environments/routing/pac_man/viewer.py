@@ -22,6 +22,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
@@ -103,17 +104,17 @@ class PacManViewer(MazeViewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
             self._add_grid_image(state, ax)
             fig.suptitle(f"PacMan    Score: {int(state.score)}", size=10)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -159,7 +160,7 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     Generate the observation of the current state.
 
     Args:
-        state: 'State` object corresponding to the new state of the environment.
+        observation: `State` or `Observation` object corresponding to the new state of the environment.
 
     Returns:
         rgb: A 3-dimensional array representing the RGB observation of the current state.

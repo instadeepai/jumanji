@@ -19,6 +19,7 @@ import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -101,16 +102,16 @@ class ConnectorViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=ConnectorViewer.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(grid_index: int) -> None:
+        def make_frame(grid: chex.Array) -> Tuple[Artist]:
             ax.clear()
-            grid = grids[grid_index]
             self._add_grid_image(grid, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(grids),
+            frames=grids,
             interval=interval,
         )
 

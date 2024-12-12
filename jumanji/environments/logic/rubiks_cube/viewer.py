@@ -17,6 +17,8 @@ from typing import List, Optional, Sequence, Tuple
 import jax.numpy as jnp
 import matplotlib
 from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.logic.rubiks_cube.constants import Face
@@ -35,6 +37,7 @@ class RubiksCubeViewer(Viewer[State]):
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
         self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
         self.figure_size = (6.0, 6.0)
+        self._animation: Optional[FuncAnimation] = None
 
     def render(self, state: State) -> None:
         """Render frames of the environment for a given state using matplotlib.
@@ -52,7 +55,7 @@ class RubiksCubeViewer(Viewer[State]):
         states: Sequence[State],
         interval: int,
         save_path: Optional[str],
-    ) -> matplotlib.animation.FuncAnimation:
+    ) -> FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
@@ -70,15 +73,15 @@ class RubiksCubeViewer(Viewer[State]):
         ax = ax.flatten()
         plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self._draw(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

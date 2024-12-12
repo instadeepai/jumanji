@@ -20,6 +20,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
@@ -92,16 +93,16 @@ class MazeViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(maze_index: int) -> None:
+        def make_frame(maze: chex.Array) -> Tuple[Artist]:
             ax.clear()
-            maze = mazes[maze_index]
             self._add_grid_image(maze, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(mazes),
+            frames=mazes,
             interval=interval,
         )
 

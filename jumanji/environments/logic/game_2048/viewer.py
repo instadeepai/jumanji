@@ -17,6 +17,7 @@ from typing import ClassVar, Dict, Optional, Sequence, Tuple
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.logic.game_2048.types import State
@@ -103,16 +104,16 @@ class Game2048Viewer(Viewer):
         plt.tight_layout()
 
         # Define a function to animate a single game state.
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self.draw_board(ax, state)
             fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
