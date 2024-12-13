@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d
 import mpl_toolkits.mplot3d.axes3d
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -91,8 +92,7 @@ class BinPackViewer(Viewer):
 
         entities: List[mpl_toolkits.mplot3d.art3d.Poly3DCollection] = []
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             for entity in entities:
                 entity.remove()
             entities.clear()
@@ -100,13 +100,14 @@ class BinPackViewer(Viewer):
             for entity in entities:
                 ax.add_collection3d(entity)
             self._add_overlay(fig, ax, state)
+            return (ax,)
 
         # Create the animation object.
         matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

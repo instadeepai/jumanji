@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, Rectangle
+from matplotlib.artist import Artist
+from matplotlib.patches import Circle, Patch, Rectangle
 
 import jumanji
 import jumanji.environments
@@ -78,12 +79,13 @@ class SnakeViewer(Viewer):
 
         patches: List[matplotlib.patches.Patch] = []
 
-        def make_frame(state: State) -> Any:
+        def make_frame(state: State) -> Tuple[Artist]:
             while patches:
                 patches.pop().remove()
             patches.extend(self._create_entities(state))
             for patch in patches:
                 ax.add_patch(patch)
+            return (ax,)
 
         # Create the animation object.
         matplotlib.rc("animation", html="jshtml")
@@ -136,11 +138,11 @@ class SnakeViewer(Viewer):
         ax.plot([num_cols, num_cols], [num_rows, 0], "-k", lw=2)
         ax.plot([num_cols, 0], [0, 0], "-k", lw=2)
 
-    def _create_entities(self, state: State) -> List[matplotlib.patches.Patch]:
+    def _create_entities(self, state: State) -> Sequence[Patch]:
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         num_rows, num_cols = state.body_state.shape[-2:]
 
-        patches = []
+        patches: List[Patch] = list()
         linewidth = (
             min(n * size for n, size in zip((num_rows, num_cols), self._figure_size, strict=False))
             / 44.0

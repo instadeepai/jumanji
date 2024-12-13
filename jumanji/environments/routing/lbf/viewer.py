@@ -20,6 +20,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import pkg_resources
+from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from numpy.typing import NDArray
@@ -105,10 +106,11 @@ class LevelBasedForagingViewer(Viewer):
         plt.close(fig)
         self._prepare_figure(ax)
 
-        def make_frame(state: State) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
             self._draw_state(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = animation.FuncAnimation(

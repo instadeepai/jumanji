@@ -19,6 +19,7 @@ import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -217,16 +218,16 @@ class MMSTViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
         plt.close(fig)
 
-        def make_frame(grid_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[grid_index]
             self._draw_graph(state, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

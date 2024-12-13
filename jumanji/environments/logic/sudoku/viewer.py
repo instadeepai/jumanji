@@ -16,6 +16,7 @@ from typing import Optional, Sequence, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.artist import Artist
 
 import jumanji
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
@@ -81,12 +82,12 @@ class SudokuViewer(Viewer[State]):
         fig, ax = plt.subplots(figsize=(6, 6))
         plt.title(f"{self._name}")
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self.render(state, ax=ax)
+            return (ax,)
 
         animation = matplotlib.animation.FuncAnimation(
-            fig, make_frame, frames=len(states), interval=interval, blit=False
+            fig, make_frame, frames=states, interval=interval, blit=False
         )
 
         if save_path:

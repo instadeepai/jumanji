@@ -19,6 +19,7 @@ import matplotlib.animation as animation
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.logic.graph_coloring.types import State
@@ -72,12 +73,12 @@ class GraphColoringViewer(Viewer):
         fig, ax = self._get_fig_ax(ax=None)
         plt.title(f"{self._name}")
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self.render(state, ax=ax)
+            return (ax,)
 
         _animation = animation.FuncAnimation(
-            fig, make_frame, frames=len(states), interval=interval, blit=False
+            fig, make_frame, frames=states, interval=interval, blit=False
         )
 
         if save_path:

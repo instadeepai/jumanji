@@ -20,6 +20,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pkg_resources
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 from PIL import Image
 
@@ -101,16 +102,16 @@ class BoxViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=BoxViewer.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: chex.Array) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
             self._add_grid_image(state, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

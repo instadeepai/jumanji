@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import ClassVar, Dict, List, Optional, Sequence
+from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import matplotlib
 import matplotlib.animation
@@ -20,6 +20,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
@@ -85,16 +86,15 @@ class CleanerViewer(MazeViewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
-            self._add_grid_image(state, ax)
+            return (self._add_grid_image(state, ax),)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

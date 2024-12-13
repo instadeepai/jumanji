@@ -18,6 +18,7 @@ import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 
 import jumanji.environments
 from jumanji.environments.packing.job_shop.types import State
@@ -94,18 +95,18 @@ class JobShopViewer(Viewer):
         ax = fig.add_subplot(111)
         self._prepare_figure(ax)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
-            state = states[state_index]
             ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
