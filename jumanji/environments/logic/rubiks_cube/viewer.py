@@ -19,6 +19,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist
+from matplotlib.image import AxesImage
 
 import jumanji.environments
 from jumanji.environments.logic.rubiks_cube.constants import Face
@@ -73,9 +74,12 @@ class RubiksCubeViewer(Viewer[State]):
         ax = ax.flatten()
         plt.close(fig)
 
-        def make_frame(state: State) -> Tuple[Artist]:
-            self._draw(ax, state)
-            return (ax,)
+        images = self._draw(ax, states[0])
+
+        def make_frame(state: State) -> Sequence[Artist]:
+            for i, image in enumerate(images):
+                image.set_data(state.cube[i])
+            return images
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
@@ -106,9 +110,10 @@ class RubiksCubeViewer(Viewer[State]):
                 fig.show()
         return fig, ax
 
-    def _draw(self, ax: List[plt.Axes], state: State) -> None:
-        i = 0
-        for face in Face:
+    def _draw(self, ax: List[plt.Axes], state: State) -> List[AxesImage]:
+        images = list()
+
+        for i, face in enumerate(Face):
             ax[i].clear()
             ax[i].set_title(label=f"{face}")
             ax[i].set_xticks(jnp.arange(-0.5, self.cube_size - 1, 1))
@@ -123,14 +128,16 @@ class RubiksCubeViewer(Viewer[State]):
                 labeltop=False,
                 labelright=False,
             )
-            ax[i].imshow(
+            image = ax[i].imshow(
                 state.cube[i],
                 cmap=self.sticker_colors_cmap,
                 vmin=0,
                 vmax=len(Face) - 1,
             )
+            images.append(image)
             ax[i].grid(color="black", linestyle="-", linewidth=2)
-            i += 1
+
+        return images
 
     def _update_display(self, fig: plt.Figure) -> None:
         if plt.isinteractive():

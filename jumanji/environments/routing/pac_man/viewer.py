@@ -160,7 +160,8 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     Generate the observation of the current state.
 
     Args:
-        observation: `State` or `Observation` object corresponding to the new state of the environment.
+        observation: `State` or `Observation` object corresponding to the new state
+        of the environment.
 
     Returns:
         rgb: A 3-dimensional array representing the RGB observation of the current state.
