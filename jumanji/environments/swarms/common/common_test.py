@@ -14,7 +14,6 @@
 
 from typing import List, Tuple
 
-import jax
 import jax.numpy as jnp
 import matplotlib
 import matplotlib.pyplot as plt
@@ -56,8 +55,6 @@ def test_velocity_update(
     actions: List[float],
     expected: Tuple[float, float],
 ) -> None:
-    key = jax.random.PRNGKey(101)
-
     state = types.AgentState(
         pos=jnp.zeros((1, 2)),
         heading=jnp.array([heading]),
@@ -65,7 +62,7 @@ def test_velocity_update(
     )
     actions = jnp.array([actions])
 
-    new_heading, new_speed = updates.update_velocity(key, params, (actions, state))
+    new_heading, new_speed = updates.update_velocity(params, (actions, state))
 
     assert jnp.isclose(new_heading[0], expected[0])
     assert jnp.isclose(new_speed[0], expected[1])
@@ -117,8 +114,6 @@ def test_state_update(
     expected_speed: float,
     env_size: float,
 ) -> None:
-    key = jax.random.PRNGKey(101)
-
     state = types.AgentState(
         pos=jnp.array([pos]),
         heading=jnp.array([heading]),
@@ -126,7 +121,7 @@ def test_state_update(
     )
     actions = jnp.array([actions])
 
-    new_state = updates.update_state(key, env_size, params, state, actions)
+    new_state = updates.update_state(env_size, params, state, actions)
 
     assert isinstance(new_state, types.AgentState)
     assert jnp.allclose(new_state.pos, jnp.array([expected_pos]))
@@ -137,7 +132,7 @@ def test_state_update(
 def test_view_reduction() -> None:
     view_a = jnp.array([-1.0, -1.0, 0.2, 0.2, 0.5])
     view_b = jnp.array([-1.0, 0.2, -1.0, 0.5, 0.2])
-    result = updates.view_reduction(view_a, view_b)
+    result = updates.view_reduction_fn(view_a, view_b)
     assert jnp.allclose(result, jnp.array([-1.0, 0.2, 0.2, 0.2, 0.2]))
 
 
@@ -170,7 +165,7 @@ def test_view(pos: List[float], view_angle: float, env_size: float, expected: Li
     )
 
     obs = updates.view(
-        None, (view_angle, 0.02), state_a, state_b, n_view=5, i_range=0.1, env_size=env_size
+        (view_angle, 0.02), state_a, state_b, n_view=5, i_range=0.1, env_size=env_size
     )
     assert jnp.allclose(obs, jnp.array(expected))
 

@@ -24,7 +24,6 @@ from jumanji.environments.swarms.common import types
 
 @esquilax.transforms.amap
 def update_velocity(
-    _key: chex.PRNGKey,
     params: types.AgentParams,
     x: Tuple[chex.Array, types.AgentState],
 ) -> Tuple[chex.Numeric, chex.Numeric]:
@@ -32,7 +31,6 @@ def update_velocity(
     Get the updated agent heading and speeds from actions
 
     Args:
-        _key: Dummy JAX random key.
         params: Agent parameters.
         x: Agent rotation and acceleration actions.
 
@@ -72,7 +70,6 @@ def move(pos: chex.Array, heading: chex.Array, speed: chex.Array, env_size: floa
 
 
 def update_state(
-    key: chex.PRNGKey,
     env_size: float,
     params: types.AgentParams,
     state: types.AgentState,
@@ -82,7 +79,6 @@ def update_state(
     Update the state of a group of agents from a sample of actions
 
     Args:
-        key: Dummy JAX random key.
         env_size: Size of the environment.
         params: Agent parameters.
         state: Current agent states.
@@ -93,7 +89,7 @@ def update_state(
             actions and updating positions.
     """
     actions = jnp.clip(actions, min=-1.0, max=1.0)
-    headings, speeds = update_velocity(key, params, (actions, state))
+    headings, speeds = update_velocity(params, (actions, state))
     positions = jax.vmap(move, in_axes=(0, 0, 0, None))(state.pos, headings, speeds, env_size)
 
     return types.AgentState(
@@ -103,7 +99,7 @@ def update_state(
     )
 
 
-def view_reduction(view_a: chex.Array, view_b: chex.Array) -> chex.Array:
+def view_reduction_fn(view_a: chex.Array, view_b: chex.Array) -> chex.Array:
     """
     Binary view reduction function for use in Esquilax spatial transformation.
 
@@ -161,7 +157,6 @@ def angular_width(
 
 
 def view(
-    _key: chex.PRNGKey,
     params: Tuple[float, float],
     viewing_agent: types.AgentState,
     viewed_agent: types.AgentState,
@@ -181,8 +176,6 @@ def view(
     Currently, this model assumes the viewed agent/objects are circular.
 
     Args:
-        _key: Dummy JAX random key, required by esquilax API, but
-            not used during the interaction.
         params: Tuple containing agent view angle and view-radius.
         viewing_agent: Viewing agent state.
         viewed_agent: State of agent being viewed.

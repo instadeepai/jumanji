@@ -16,6 +16,7 @@ from functools import cached_property, partial
 from typing import Optional, Sequence, Tuple
 
 import chex
+import esquilax
 import jax
 import jax.numpy as jnp
 from esquilax.transforms import spatial
@@ -222,25 +223,20 @@ class SearchAndRescue(Environment):
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        # Note: only one new key is needed for the target updates, as all other
-        #  keys are just dummy values required by Esquilax
         key, target_key = jax.random.split(state.key, num=2)
         searchers = update_state(
-            key, self.generator.env_size, self.searcher_params, state.searchers, actions
+            self.generator.env_size, self.searcher_params, state.searchers, actions
         )
-
         targets = self._target_dynamics(target_key, state.targets, self.generator.env_size)
 
         # Searchers return an array of flags of any targets they are in range of,
         #  and that have not already been located, result shape here is (n-searcher, n-targets)
         targets_found = spatial(
             utils.searcher_detect_targets,
-            reduction=jnp.logical_or,
-            default=jnp.zeros((self.generator.num_targets,), dtype=bool),
+            reduction=esquilax.reductions.logical_or((self.generator.num_targets,)),
             i_range=self.target_contact_range,
             dims=self.generator.env_size,
         )(
-            key,
             self.searcher_params.view_angle,
             searchers,
             (jnp.arange(self.generator.num_targets), targets),

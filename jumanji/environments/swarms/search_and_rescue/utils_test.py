@@ -83,7 +83,6 @@ def test_target_found(
     )
 
     found = jax.jit(partial(searcher_detect_targets, env_size=env_size, n_targets=1))(
-        None,
         view_angle,
         searcher,
         (jnp.arange(1), target),

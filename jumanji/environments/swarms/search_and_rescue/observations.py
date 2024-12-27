@@ -16,12 +16,19 @@ import abc
 from typing import Tuple
 
 import chex
+import esquilax
 import jax.numpy as jnp
-from esquilax.transforms import spatial
 
 from jumanji.environments.swarms.common.types import AgentState
-from jumanji.environments.swarms.common.updates import angular_width, view, view_reduction
+from jumanji.environments.swarms.common.updates import angular_width, view, view_reduction_fn
 from jumanji.environments.swarms.search_and_rescue.types import State, TargetState
+
+
+def view_reduction(view_shape: Tuple[int, ...]) -> esquilax.reductions.Reduction:
+    return esquilax.reductions.Reduction(
+        fn=view_reduction_fn,
+        id=-jnp.ones(view_shape),
+    )
 
 
 class ObservationFn(abc.ABC):
@@ -109,15 +116,13 @@ class AgentObservationFn(ObservationFn):
             Array of individual agent views of shape
             (n-agents, 1, n-vision).
         """
-        searcher_views = spatial(
+        searcher_views = esquilax.transforms.spatial(
             view,
-            reduction=view_reduction,
-            default=-jnp.ones((self.num_vision,)),
+            reduction=view_reduction((self.num_vision,)),
             include_self=False,
             i_range=self.vision_range,
             dims=self.env_size,
         )(
-            state.key,
             (self.view_angle, self.agent_radius),
             state.searchers,
             state.searchers,
@@ -130,7 +135,6 @@ class AgentObservationFn(ObservationFn):
 
 
 def found_target_view(
-    _key: chex.PRNGKey,
     params: Tuple[float, float],
     searcher: AgentState,
     target: TargetState,
@@ -146,7 +150,6 @@ def found_target_view(
     by Esquilax.
 
     Args:
-        _key: Dummy random key (required by Esquilax).
         params: View angle and target visual radius.
         searcher: Searcher agent state
         target: Target state
@@ -224,15 +227,13 @@ class AgentAndTargetObservationFn(ObservationFn):
             (n-agents, 2, n-vision). Other agents are shown
             in channel 0, and located targets 1.
         """
-        searcher_views = spatial(
+        searcher_views = esquilax.transforms.spatial(
             view,
-            reduction=view_reduction,
-            default=-jnp.ones((self.num_vision,)),
+            reduction=view_reduction((self.num_vision,)),
             include_self=False,
             i_range=self.vision_range,
             dims=self.env_size,
         )(
-            state.key,
             (self.view_angle, self.agent_radius),
             state.searchers,
             state.searchers,
@@ -241,15 +242,13 @@ class AgentAndTargetObservationFn(ObservationFn):
             i_range=self.vision_range,
             env_size=self.env_size,
         )
-        target_views = spatial(
+        target_views = esquilax.transforms.spatial(
             found_target_view,
-            reduction=view_reduction,
-            default=-jnp.ones((self.num_vision,)),
+            reduction=view_reduction((self.num_vision,)),
             include_self=False,
             i_range=self.vision_range,
             dims=self.env_size,
         )(
-            state.key,
             (self.view_angle, self.agent_radius),
             state.searchers,
             state.targets,
@@ -263,7 +262,6 @@ class AgentAndTargetObservationFn(ObservationFn):
 
 
 def all_target_view(
-    _key: chex.PRNGKey,
     params: Tuple[float, float],
     searcher: AgentState,
     target: TargetState,
@@ -279,7 +277,6 @@ def all_target_view(
     by Esquilax.
 
     Args:
-        _key: Dummy random key (required by Esquilax).
         params: View angle and target visual radius.
         searcher: Searcher agent state
         target: Target state
@@ -361,15 +358,13 @@ class AgentAndAllTargetObservationFn(ObservationFn):
             in channel 0, located targets 1, and un-located
             targets at index 2.
         """
-        searcher_views = spatial(
+        searcher_views = esquilax.transforms.spatial(
             view,
-            reduction=view_reduction,
-            default=-jnp.ones((self.num_vision,)),
+            reduction=view_reduction((self.num_vision,)),
             include_self=False,
             i_range=self.vision_range,
             dims=self.env_size,
         )(
-            state.key,
             (self.view_angle, self.agent_radius),
             state.searchers,
             state.searchers,
@@ -378,15 +373,13 @@ class AgentAndAllTargetObservationFn(ObservationFn):
             i_range=self.vision_range,
             env_size=self.env_size,
         )
-        target_views = spatial(
+        target_views = esquilax.transforms.spatial(
             all_target_view,
-            reduction=view_reduction,
-            default=-jnp.ones((2, self.num_vision)),
+            reduction=view_reduction((2, self.num_vision)),
             include_self=False,
             i_range=self.vision_range,
             dims=self.env_size,
         )(
-            state.key,
             (self.view_angle, self.agent_radius),
             state.searchers,
             state.targets,

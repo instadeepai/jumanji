@@ -50,7 +50,6 @@ def _check_target_in_view(
 
 
 def searcher_detect_targets(
-    _key: chex.PRNGKey,
     searcher_view_angle: float,
     searcher: AgentState,
     target: Tuple[chex.Array, TargetState],
@@ -65,7 +64,6 @@ def searcher_detect_targets(
     searchers view cone, and has not already been detected.
 
     Args:
-        _key: Dummy random key (required by Esquilax).
         searcher_view_angle: View angle of searching agents
             representing a fraction of pi from the agents heading.
         searcher: State of the searching agent (i.e. the agent
