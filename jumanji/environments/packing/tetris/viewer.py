@@ -198,17 +198,11 @@ class TetrisViewer(Viewer):
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE)
         plt.close(fig)
 
-        def make_frame(grid_index: int) -> Tuple[Artist]:
-            """creates a frames for each state
-
-            Args:
-                grid_index: `int`
-            """
+        def make_frame(frame_data: Tuple[chex.Array, chex.Numeric]) -> Tuple[Artist]:
+            grid, score = frame_data
             ax.clear()
             ax.invert_yaxis()
-            fig.suptitle(f"Tetris    Score: {int(scores[grid_index])}", size=20)
-            grid = grids[grid_index]
-
+            fig.suptitle(f"Tetris    Score: {int(score)}", size=20)
             self._add_grid_image(ax, grid)
             return (ax,)
 
@@ -233,7 +227,7 @@ class TetrisViewer(Viewer):
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=range(len(grids)),
+            frames=zip(grids, scores, strict=False),
             interval=interval,
         )
 

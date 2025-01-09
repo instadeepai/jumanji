@@ -126,8 +126,9 @@ def test_rubiks_cube__done(time_limit: int) -> None:
     assert episode_length == time_limit
 
 
-def test_rubiks_cube__animate(rubiks_cube: RubiksCube, mocker: pytest_mock.MockerFixture) -> None:
+def test_rubiks_cube_animate(rubiks_cube: RubiksCube, mocker: pytest_mock.MockerFixture) -> None:
     """Test that the `animate` method creates the animation correctly (but does not display it)."""
-    states = mocker.MagicMock()
+    state, _ = rubiks_cube.reset(jax.random.PRNGKey(0))
+    states = [state] * 5
     animation = rubiks_cube.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)

@@ -3,7 +3,7 @@ dm-env>=1.5
 gymnasium>=1.0
 huggingface-hub
 jax>=0.2.26,<0.4.36
-matplotlib>3.8.0
+matplotlib>=3.8.0
 numpy>=1.19.5
 Pillow>=9.0.0
 typing-extensions>=4.0.0

@@ -74,12 +74,12 @@ class RubiksCubeViewer(Viewer[State]):
         ax = ax.flatten()
         plt.close(fig)
 
-        images = self._draw(ax, states[0])
+        faces = self._draw(ax, states[0])
 
         def make_frame(state: State) -> Sequence[Artist]:
-            for i, image in enumerate(images):
-                image.set_data(state.cube[i])
-            return images
+            for i, face in enumerate(faces):
+                face.set_data(state.cube[i])
+            return faces
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
@@ -111,7 +111,7 @@ class RubiksCubeViewer(Viewer[State]):
         return fig, ax
 
     def _draw(self, ax: List[plt.Axes], state: State) -> List[AxesImage]:
-        images = list()
+        images = []
 
         for i, face in enumerate(Face):
             ax[i].clear()
