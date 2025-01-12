@@ -61,17 +61,19 @@ class SearchAndRescue(Environment):
             Each entry in the view indicates the distant to another agent/target
             along a ray from the agent, and is -1.0 if nothing is in range along the ray.
             The view model can be customised using an `ObservationFn` implementation, e.g.
-            the view can include all agents and targets, or just other agents.
+            the view can include agents and all targets, agents and found targets,or
+            just other agents.
         targets_remaining: (float) Number of targets remaining to be found from
             the total scaled to the range [0, 1] (i.e. a value of 1.0 indicates
             all the targets are still to be found).
         step: (int) current simulation step.
+        positions: jax array (float) of shape (num_searchers, 2) search agent positions.
 
     - action: jax array (float) of shape (num_searchers, 2)
         Array of individual agent actions. Each agents actions rotate and
         accelerate/decelerate the agent as [rotation, acceleration] on the range
         [-1, 1]. These values are then scaled to update agent velocities within
-        given parameters.
+        given parameters (i.e. a value of -+1 is the maximum acceleration/rotation).
 
     - reward: jax array (float) of shape (num_searchers,)
         Arrays of individual agent rewards. A reward of +1 is granted when an agent
@@ -84,7 +86,7 @@ class SearchAndRescue(Environment):
         - searchers: `AgentState`
             - pos: jax array (float) of shape (num_searchers, 2) in the range [0, env_size].
             - heading: jax array (float) of shape (num_searcher,) in
-                the range [0, 2pi].
+                the range [0, 2π].
             - speed: jax array (float) of shape (num_searchers,) in the
                 range [min_speed, max_speed].
         - targets: `TargetState`
@@ -115,7 +117,7 @@ class SearchAndRescue(Environment):
         searcher_max_accelerate: float = 0.005,
         searcher_min_speed: float = 0.01,
         searcher_max_speed: float = 0.02,
-        searcher_view_angle: float = 0.75,
+        searcher_view_angle: float = 0.5,
         time_limit: int = 400,
         viewer: Optional[Viewer[State]] = None,
         target_dynamics: Optional[TargetDynamics] = None,
@@ -129,19 +131,18 @@ class SearchAndRescue(Environment):
             target_contact_range: Range at which a searchers will 'find' a target.
             searcher_max_rotate: Maximum rotation searcher agents can
                 turn within a step. Should be a value from [0,1]
-                representing a fraction of pi radians.
+                representing a fraction of π-radians.
             searcher_max_accelerate: Magnitude of the maximum
                 acceleration/deceleration a searcher agent can apply within a step.
             searcher_min_speed: Minimum speed a searcher agent can move at.
             searcher_max_speed: Maximum speed a searcher agent can move at.
             searcher_view_angle: Searcher agent local view angle. Should be
-                a value from [0,1] representing a fraction of pi radians.
+                a value from [0,1] representing a fraction of π-radians.
                 The view cone of an agent goes from +- of the view angle
                 relative to its heading, e.g. 0.5 would mean searchers have a
                 90° view angle in total.
             time_limit: Maximum number of environment steps allowed for search.
             viewer: `Viewer` used for rendering. Defaults to `SearchAndRescueViewer`.
-                target_dynamics:
             target_dynamics: Target object dynamics model, implemented as a
                 `TargetDynamics` interface. Defaults to `RandomWalk`.
             generator: Initial state `Generator` instance. Defaults to `RandomGenerator`
@@ -150,7 +151,7 @@ class SearchAndRescue(Environment):
                 agents share rewards if they locate a target simultaneously.
             observation: Agent observation view generation function. Defaults to
                 `AgentAndAllTargetObservationFn` where all targets (found and unfound)
-                and other ogents are included in the generated view.
+                and other searching agents are included in the generated view.
         """
 
         self.target_contact_range = target_contact_range
@@ -164,14 +165,14 @@ class SearchAndRescue(Environment):
         )
         self.time_limit = time_limit
         self._target_dynamics = target_dynamics or RandomWalk(0.001)
-        self.generator = generator or RandomGenerator(num_targets=100, num_searchers=2)
+        self.generator = generator or RandomGenerator(num_targets=50, num_searchers=2)
         self._viewer = viewer or SearchAndRescueViewer()
         self._reward_fn = reward_fn or SharedRewardFn()
         self._observation = observation or AgentAndAllTargetObservationFn(
             num_vision=64,
-            vision_range=0.1,
+            vision_range=0.25,
             view_angle=searcher_view_angle,
-            agent_radius=0.01,
+            agent_radius=0.02,
             env_size=self.generator.env_size,
         )
         super().__init__()
@@ -182,7 +183,12 @@ class SearchAndRescue(Environment):
                 "Search & rescue multi-agent environment:",
                 f" - num searchers: {self.generator.num_searchers}",
                 f" - num targets: {self.generator.num_targets}",
+                f" - max searcher rotation: {self.searcher_params.max_rotate}",
+                f" - max searcher acceleration: {self.searcher_params.max_accelerate}",
+                f" - searcher min speed: {self.searcher_params.min_speed}",
+                f" - searcher max speed: {self.searcher_params.max_speed}",
                 f" - search vision range: {self._observation.vision_range}",
+                f" - search view angle: {self._observation.view_angle}",
                 f" - target contact range: {self.target_contact_range}",
                 f" - num vision: {self._observation.num_vision}",
                 f" - agent radius: {self._observation.agent_radius}",
@@ -217,7 +223,7 @@ class SearchAndRescue(Environment):
 
         Args:
             state: Environment state.
-            actions: Arrays of searcher steering actions.
+            actions: 2d array of searcher steering actions.
 
         Returns:
             state: Updated searcher and target positions and velocities.
@@ -360,7 +366,7 @@ class SearchAndRescue(Environment):
         """Render a frame of the environment for a given state using matplotlib.
 
         Args:
-            state: State object containing the current state of the environment.
+            state: State object.
         """
         self._viewer.render(state)
 

@@ -53,7 +53,7 @@ class ObservationFn(abc.ABC):
             num_channels: Number of channels in agent view.
             num_vision: Size of vision array.
             vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of pi).
+            view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
@@ -92,7 +92,7 @@ class AgentObservationFn(ObservationFn):
         Args:
             num_vision: Size of vision array.
             vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of pi).
+            view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
@@ -146,14 +146,14 @@ def found_target_view(
     """
     Return view of a target, dependent on target status.
 
-    This function is intended to be mapped over agents-targets
-    by Esquilax.
+    This function is intended to be mapped over agents-target
+    pairs by Esquilax.
 
     Args:
         params: View angle and target visual radius.
         searcher: Searcher agent state
         target: Target state
-        n_view: Number of value sin view array.
+        n_view: Number of values in view array.
         i_range: Vision range
         env_size: Environment size
 
@@ -190,7 +190,7 @@ class AgentAndTargetObservationFn(ObservationFn):
         env_size: float,
     ) -> None:
         """
-        Vision model that contains other agents, and found targets.
+        Vision model that contains other agents and found targets.
 
         Searchers and targets are visualised as individual channels.
         Targets are only included if they have been located already.
@@ -198,7 +198,7 @@ class AgentAndTargetObservationFn(ObservationFn):
         Args:
             num_vision: Size of vision array.
             vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of pi).
+            view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
@@ -225,7 +225,7 @@ class AgentAndTargetObservationFn(ObservationFn):
         Returns:
             Array of individual agent views of shape
             (n-agents, 2, n-vision). Other agents are shown
-            in channel 0, and located targets 1.
+            in channel 0, and located targets in channel 1.
         """
         searcher_views = esquilax.transforms.spatial(
             view,
@@ -273,16 +273,16 @@ def all_target_view(
     """
     Return view of a target, dependent on target status.
 
-    This function is intended to be mapped over agents-targets
-    by Esquilax.
+    This function is intended to be mapped over agents target
+    pairs by Esquilax.
 
     Args:
         params: View angle and target visual radius.
-        searcher: Searcher agent state
-        target: Target state
+        searcher: Searcher agent state.
+        target: Target state.
         n_view: Number of value sin view array.
-        i_range: Vision range
-        env_size: Environment size
+        i_range: Vision range.
+        env_size: Environment size.
 
     Returns:
         Segmented agent view of target.
@@ -328,7 +328,7 @@ class AgentAndAllTargetObservationFn(ObservationFn):
         Args:
             num_vision: Size of vision array.
             vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of pi).
+            view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
@@ -355,8 +355,8 @@ class AgentAndAllTargetObservationFn(ObservationFn):
         Returns:
             Array of individual agent views of shape
             (n-agents, 3, n-vision). Other agents are shown
-            in channel 0, located targets 1, and un-located
-            targets at index 2.
+            in channel 0, located targets channel 1, and un-located
+            targets in channel 2.
         """
         searcher_views = esquilax.transforms.spatial(
             view,

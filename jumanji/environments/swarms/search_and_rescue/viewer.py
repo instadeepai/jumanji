@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from matplotlib.layout_engine import TightLayoutEngine
 
 import jumanji
@@ -40,8 +41,8 @@ class SearchAndRescueViewer(Viewer[State]):
         """Viewer for the `SearchAndRescue` environment.
 
         Args:
-            figure_name: the window name to be used when initialising the window.
-            figure_size: tuple (height, width) of the matplotlib figure window.
+            figure_name: The window name to be used when initialising the window.
+            figure_size: Tuple (height, width) of the matplotlib figure window.
             searcher_color: Color of searcher agent markers (arrows).
             target_found_color: Color of target markers when they have been found.
             target_lost_color: Color of target markers when they are still to be found.
@@ -59,7 +60,6 @@ class SearchAndRescueViewer(Viewer[State]):
 
         Args:
             state: State object containing the current dynamics of the environment.
-
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -90,8 +90,7 @@ class SearchAndRescueViewer(Viewer[State]):
             states[0].targets.pos[:, 0], states[0].targets.pos[:, 1], marker="o"
         )
 
-        def make_frame(state: State) -> Any:
-            # Rather than redraw just update the quivers and scatter properties
+        def make_frame(state: State) -> Tuple[Artist, Artist]:
             searcher_quiver.set_offsets(state.searchers.pos)
             searcher_quiver.set_UVC(
                 jnp.cos(state.searchers.heading), jnp.sin(state.searchers.heading)
@@ -99,7 +98,7 @@ class SearchAndRescueViewer(Viewer[State]):
             target_colors = self.target_colors[state.targets.found.astype(jnp.int32)]
             target_scatter.set_offsets(state.targets.pos)
             target_scatter.set_color(target_colors)
-            return ((searcher_quiver, target_scatter),)
+            return searcher_quiver, target_scatter
 
         matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(

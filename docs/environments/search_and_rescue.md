@@ -12,9 +12,9 @@ is updated in the following sequence:
 
 - The velocity of searching agents are updated, and consequently their positions.
 - The positions of targets are updated.
-- Targets within detection range and an agents view cone are marked as found.
+- Targets within detection range, and within an agents view cone are marked as found.
 - Agents are rewarded for locating previously unfound targets.
-- Local views of the environment are generated for each search agent.
+- Local views of the environment are generated for each searching agent.
 
 The agents are allotted a fixed number of steps to locate the targets. The search
 space is a uniform square space, wrapped at the boundaries.
@@ -22,7 +22,8 @@ space is a uniform square space, wrapped at the boundaries.
 Many aspects of the environment can be customised:
 
 - Agent observations can include targets as well as other searcher agents.
-- Rewards can be shared by agents, or can be treated completely individually for individual agents.
+- Rewards can be shared by agents, or can be treated completely individually for individual
+  agents and can be scaled by time-step.
 - Target dynamics can be customised to model various search scenarios.
 
 ## Observations
@@ -38,13 +39,14 @@ Many aspects of the environment can be customised:
   [-1.0, -1.0, 0.5, -1.0, -1.0]
   ```
 
-  where `-1.0` indicates there is no agents along that ray, and `0.5` is the normalised
+  where `-1.0` indicates there are no agents along that ray, and `0.5` is the normalised
   distance to the other agent. Channels in the segmented view are used to differentiate
   between different agents/targets and can be customised. By default, the view has three
-  channels representing other agents, found targets, and unfound targets.
+  channels representing other agents, found targets, and unlocated targets.
 - `targets_remaining`: float in the range `[0, 1]`. The normalised number of targets
   remaining to be detected (i.e. 1.0 when no targets have been found).
-- `Step`: int in the range `[0, time_limit]`. The current simulation step.
+- `step`: int in the range `[0, time_limit]`. The current simulation step.
+- `positions`: jax array (float) of shape `(num_searchers, 2)`. Agent coordinates.
 
 ## Actions
 
@@ -65,11 +67,14 @@ and speed
 speed = speed + max_acceleration * action[1]
 ```
 
-Once applied, agent speeds are clipped to velocities within a fixed range of speeds.
+Once applied, agent speeds are clipped to velocities within a fixed range of speeds given
+by the `min_speed` and `max_speed` parameters.
 
 ## Rewards
 
 Jax array (float) of `(num_searchers,)`. Rewards are generated for each agent individually.
+
 Agents are rewarded +1 for locating a target that has not already been detected. It is possible
 for multiple agents to detect a target inside a step, as such rewards can either be shared
-by the locating agents, or each agent can get the full reward.
+by the locating agents, or each individual agent can get the full reward. Rewards provided can
+also be scaled by simulation step to encourage agents to develop efficient search patterns.

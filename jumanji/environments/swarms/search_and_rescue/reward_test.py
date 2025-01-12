@@ -39,7 +39,7 @@ def test_individual_rewards(target_states: chex.Array) -> None:
     assert jnp.allclose(individual_rewards, jnp.array([2.0, 1.0]))
 
 
-def test_scaled_rewards(target_states: chex.Array) -> None:
+def test_shared_scaled_rewards(target_states: chex.Array) -> None:
     reward_fn = reward.SharedScaledRewardFn()
 
     shared_scaled_rewards = reward_fn(target_states, 0, 10)
@@ -53,3 +53,19 @@ def test_scaled_rewards(target_states: chex.Array) -> None:
     assert shared_scaled_rewards.shape == (2,)
     assert shared_scaled_rewards.dtype == jnp.float32
     assert jnp.allclose(shared_scaled_rewards, jnp.array([0.0, 0.0]))
+
+
+def test_individual_scaled_rewards(target_states: chex.Array) -> None:
+    reward_fn = reward.IndividualScaledRewardFn()
+
+    individual_scaled_rewards = reward_fn(target_states, 0, 10)
+
+    assert individual_scaled_rewards.shape == (2,)
+    assert individual_scaled_rewards.dtype == jnp.float32
+    assert jnp.allclose(individual_scaled_rewards, jnp.array([2.0, 1.0]))
+
+    individual_scaled_rewards = reward_fn(target_states, 10, 10)
+
+    assert individual_scaled_rewards.shape == (2,)
+    assert individual_scaled_rewards.dtype == jnp.float32
+    assert jnp.allclose(individual_scaled_rewards, jnp.array([0.0, 0.0]))

@@ -26,11 +26,23 @@ class RewardFn(abc.ABC):
         """The reward function used in the `SearchAndRescue` environment.
 
         Args:
-            found_targets: Array of boolean flags indicating
+            found_targets: Array of boolean flags indicating if an
+            agent has found a target.
 
         Returns:
             Individual reward for each agent.
         """
+
+
+def _normalise_rewards(rewards: chex.Array) -> chex.Array:
+    norms = jnp.sum(rewards, axis=0)[jnp.newaxis]
+    rewards = jnp.where(norms > 0, rewards / norms, rewards)
+    return rewards
+
+
+def _scale_rewards(rewards: chex.Array, step: int, time_limit: int) -> chex.Array:
+    scale = (time_limit - step) / time_limit
+    return scale * rewards
 
 
 class SharedRewardFn(RewardFn):
@@ -43,9 +55,26 @@ class SharedRewardFn(RewardFn):
 
     def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         rewards = found_targets.astype(float)
-        norms = jnp.sum(rewards, axis=0)[jnp.newaxis]
-        rewards = jnp.where(norms > 0, rewards / norms, rewards)
+        rewards = _normalise_rewards(rewards)
         rewards = jnp.sum(rewards, axis=1)
+        return rewards
+
+
+class SharedScaledRewardFn(RewardFn):
+    """
+    Calculate per agent rewards from detected targets and scale by timestep
+
+    Targets detected by multiple agents share rewards. Agents
+    can receive rewards for detecting multiple targets.
+    Rewards are linearly scaled by the current time step such that
+    rewards received are 0 at the final step.
+    """
+
+    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
+        rewards = found_targets.astype(float)
+        rewards = _normalise_rewards(rewards)
+        rewards = jnp.sum(rewards, axis=1)
+        rewards = _scale_rewards(rewards, step, time_limit)
         return rewards
 
 
@@ -63,20 +92,18 @@ class IndividualRewardFn(RewardFn):
         return rewards
 
 
-class SharedScaledRewardFn(RewardFn):
+class IndividualScaledRewardFn(RewardFn):
     """
-    Calculate per agent rewards from detected targets
+    Calculate per agent rewards from detected targets and scale by timestep
 
-    Targets detected by multiple agents share rewards. Agents
-    can receive rewards for detecting multiple targets.
+    Each agent that detects a target receives a +1 reward
+    even if a target is detected by multiple agents.
     Rewards are linearly scaled by the current time step such that
-    rewards are 0 at the final step.
+    rewards received are 0 at the final step.
     """
 
     def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         rewards = found_targets.astype(float)
-        norms = jnp.sum(rewards, axis=0)[jnp.newaxis]
-        rewards = jnp.where(norms > 0, rewards / norms, rewards)
         rewards = jnp.sum(rewards, axis=1)
-        scale = (time_limit - step) / time_limit
-        return scale * rewards
+        rewards = _scale_rewards(rewards, step, time_limit)
+        return rewards

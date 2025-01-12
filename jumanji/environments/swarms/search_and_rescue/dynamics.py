@@ -25,8 +25,9 @@ class TargetDynamics(abc.ABC):
     def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
         """Interface for target state update function.
 
-        NOTE: Target positions should be bound to environment
-            area (generally wrapped around at the boundaries).
+        NOTE: Target positions should be inside the bounds
+            of the environment. Out-of-bound co-ordinates can
+            lead to unexpected behaviour.
 
         Args:
             key: Random key.
@@ -55,7 +56,7 @@ class RandomWalk(TargetDynamics):
         """Update target state.
 
         Args:
-            key: random key.
+            key: Random key.
             targets: Current target states.
             env_size: Environment size.
 

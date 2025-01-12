@@ -63,7 +63,7 @@ def move(pos: chex.Array, heading: chex.Array, speed: chex.Array, env_size: floa
         env_size: Size of the environment.
 
     Returns:
-        jax array (float32): Updated agent position.
+        jax array (float32): Updated agent positions.
     """
     d_pos = jnp.array([speed * jnp.cos(heading), speed * jnp.sin(heading)])
     return (pos + d_pos) % env_size
@@ -170,7 +170,7 @@ def view(
 
     Simple view model where the agents view angle is subdivided
     into an array of values representing the distance from
-    the agent along a rays from the agent, with rays evenly distributed
+    the agent along rays from the agent, with rays evenly distributed
     across the agents field of view. The limit of vision is set at 1.0.
     The default value if no object is within range is -1.0.
     Currently, this model assumes the viewed agent/objects are circular.

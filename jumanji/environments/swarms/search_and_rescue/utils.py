@@ -33,11 +33,11 @@ def _check_target_in_view(
     Check if a target is inside the view-cone of a searcher.
 
     Args:
-        searcher_pos: Searcher position
-        target_pos: Target position
-        searcher_heading: Searcher heading angle
-        searcher_view_angle: Searcher view angle
-        env_size: Size of the environment
+        searcher_pos: Searcher position.
+        target_pos: Target position.
+        searcher_heading: Searcher heading angle.
+        searcher_view_angle: Searcher view angle.
+        env_size: Size of the environment.
 
     Returns:
         bool: Flag indicating if a target is within view.
@@ -65,7 +65,7 @@ def searcher_detect_targets(
 
     Args:
         searcher_view_angle: View angle of searching agents
-            representing a fraction of pi from the agents heading.
+            representing a fraction of π from the agents heading.
         searcher: State of the searching agent (i.e. the agent
             position and heading)
         target: Index and State of the target (i.e. its position and

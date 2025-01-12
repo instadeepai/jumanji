@@ -26,10 +26,10 @@ from jumanji.environments.swarms.common.types import AgentState
 @dataclass
 class TargetState:
     """
-    The state for the rescue targets.
+    The state of the rescue targets.
 
-    pos: 2d position of the target agents
-    velocity: 2d velocity of the target agents
+    pos: 2d position of the target agents.
+    velocity: 2d velocity of the target agents.
     found: Boolean flag indicating if the
         target has been located by a searcher.
     """
@@ -57,13 +57,16 @@ class State:
 class Observation(NamedTuple):
     """
     Individual observations for searching agents and information
-    on number of remaining time and targets to be found.
+    on number of remaining steps and ratio of targets to be found.
 
     Each agent generates an independent observation, an array of
     values representing the distance along a ray from the agent to
     the nearest neighbour, with each cell representing a ray angle
     (with `num_vision` rays evenly distributed over the agents
     field of vision).
+
+    The co-ordinates of each agent are also included in the
+    observation for debug and use in global observations.
 
     For example if an agent sees another agent straight ahead and
     `num_vision = 5` then the observation array could be
