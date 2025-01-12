@@ -40,10 +40,10 @@ class Position(NamedTuple):
 
 
 class Actions(IntEnum):
-    UP: int = 0
-    RIGHT: int = 1
-    DOWN: int = 2
-    LEFT: int = 3
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
 
 
 @dataclass
