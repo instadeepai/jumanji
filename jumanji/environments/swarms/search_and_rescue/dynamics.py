@@ -16,6 +16,7 @@ import abc
 
 import chex
 import jax
+import jax.numpy as jnp
 
 from jumanji.environments.swarms.search_and_rescue.types import TargetState
 
@@ -40,17 +41,20 @@ class TargetDynamics(abc.ABC):
 
 
 class RandomWalk(TargetDynamics):
-    def __init__(self, step_size: float):
+    def __init__(self, acc_std: float, vel_max: float):
         """
         Simple random walk target dynamics.
 
-        Target positions are updated with random steps, sampled uniformly
-        from the range `[-step-size, step-size]`.
+        Target velocities are updated with values sampled from
+        a normal distribution with width `acc_std`, and the
+        magnitude of the updated velocity clipped to `vel_max`.
 
         Args:
-            step_size: Maximum random step-size in each axis.
+            acc_std: Standard deviation of acceleration distribution
+            vel_max: Max velocity magnitude.
         """
-        self.step_size = step_size
+        self.acc_std = acc_std
+        self.vel_max = vel_max
 
     def __call__(self, key: chex.PRNGKey, targets: TargetState, env_size: float) -> TargetState:
         """Update target state.
@@ -63,7 +67,11 @@ class RandomWalk(TargetDynamics):
         Returns:
             Updated target states.
         """
-        d_pos = jax.random.uniform(key, targets.pos.shape)
-        d_pos = self.step_size * 2.0 * (d_pos - 0.5)
-        pos = (targets.pos + d_pos) % env_size
-        return TargetState(pos=pos, vel=targets.vel, found=targets.found)
+        acc = self.acc_std * jax.random.normal(key, targets.pos.shape)
+        vel = targets.vel + acc
+        norm = jnp.sqrt(jnp.sum(vel * vel, axis=1))
+        vel = jnp.where(
+            norm[:, jnp.newaxis] > self.vel_max, self.vel_max * vel / norm[:, jnp.newaxis], vel
+        )
+        pos = (targets.pos + vel) % env_size
+        return targets.replace(pos=pos, vel=vel)  # type: ignore

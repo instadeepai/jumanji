@@ -30,10 +30,10 @@ from jumanji.environments.swarms.search_and_rescue import utils
 from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.generator import Generator, RandomGenerator
 from jumanji.environments.swarms.search_and_rescue.observations import (
-    AgentAndAllTargetObservationFn,
+    AgentAndTargetObservationFn,
     ObservationFn,
 )
-from jumanji.environments.swarms.search_and_rescue.reward import RewardFn, SharedRewardFn
+from jumanji.environments.swarms.search_and_rescue.reward import IndividualRewardFn, RewardFn
 from jumanji.environments.swarms.search_and_rescue.types import Observation, State, TargetState
 from jumanji.environments.swarms.search_and_rescue.viewer import SearchAndRescueViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -57,12 +57,10 @@ class SearchAndRescue(Environment):
     - observation: `Observation`
         searcher_views: jax array (float) of shape (num_searchers, channels, num_vision)
             Individual local views of positions of other agents and targets, where
-            channels can be used to differentiate between agents and targets.
-            Each entry in the view indicates the distant to another agent/target
+            channels can be used to differentiate between agents and targets types.
+            Each entry in the view indicates the distance to another agent/target
             along a ray from the agent, and is -1.0 if nothing is in range along the ray.
-            The view model can be customised using an `ObservationFn` implementation, e.g.
-            the view can include agents and all targets, agents and found targets,or
-            just other agents.
+            The view model can be customised by implementing the  `ObservationFn` interface.
         targets_remaining: (float) Number of targets remaining to be found from
             the total scaled to the range [0, 1] (i.e. a value of 1.0 indicates
             all the targets are still to be found).
@@ -78,9 +76,13 @@ class SearchAndRescue(Environment):
     - reward: jax array (float) of shape (num_searchers,)
         Arrays of individual agent rewards. A reward of +1 is granted when an agent
         comes into contact range with a target that has not yet been found, and
-        the target is within the searchers view cone. Rewards can be shared
-        between agents if a target is simultaneously detected by multiple agents,
-        or each can be provided the full reward individually.
+        the target is within the searchers view cone. It is possible for multiple
+        agents to newly find the same target within a given step, by default
+        in this case the reward is split between the locating agents. By default,
+        rewards granted linearly decrease over time, with zero reward granted
+        at the environment time-limit. These defaults can be modified by flags
+        in `IndividualRewardFn`, or further customised by  implementing the `RewardFn`
+        interface.
 
     - state: `State`
         - searchers: `AgentState`
@@ -146,11 +148,13 @@ class SearchAndRescue(Environment):
             target_dynamics: Target object dynamics model, implemented as a
                 `TargetDynamics` interface. Defaults to `RandomWalk`.
             generator: Initial state `Generator` instance. Defaults to `RandomGenerator`
-                with 20 targets and 10 searchers.
-            reward_fn: Reward aggregation function. Defaults to `SharedRewardFn` where
-                agents share rewards if they locate a target simultaneously.
+                with 50 targets and 2 searchers, with targets uniformly distributed
+                across the environment.
+            reward_fn: Reward aggregation function. Defaults to `IndividualRewardFn` where
+                agents split rewards if they locate a target simultaneously, and
+                rewards linearly decrease to zero over time.
             observation: Agent observation view generation function. Defaults to
-                `AgentAndAllTargetObservationFn` where all targets (found and unfound)
+                `AgentAndTargetObservationFn` where all targets (found and unfound)
                 and other searching agents are included in the generated view.
         """
 
@@ -164,13 +168,14 @@ class SearchAndRescue(Environment):
             view_angle=searcher_view_angle,
         )
         self.time_limit = time_limit
-        self._target_dynamics = target_dynamics or RandomWalk(0.001)
-        self.generator = generator or RandomGenerator(num_targets=50, num_searchers=2)
+        self._target_dynamics = target_dynamics or RandomWalk(acc_std=0.0001, vel_max=0.002)
+        self.generator = generator or RandomGenerator(num_targets=20, num_searchers=2)
         self._viewer = viewer or SearchAndRescueViewer()
-        self._reward_fn = reward_fn or SharedRewardFn()
-        self._observation = observation or AgentAndAllTargetObservationFn(
+        self._reward_fn = reward_fn or IndividualRewardFn()
+        self._observation_fn = observation or AgentAndTargetObservationFn(
             num_vision=64,
-            vision_range=0.25,
+            searcher_vision_range=0.25,
+            target_vision_range=0.1,
             view_angle=searcher_view_angle,
             agent_radius=0.02,
             env_size=self.generator.env_size,
@@ -187,17 +192,18 @@ class SearchAndRescue(Environment):
                 f" - max searcher acceleration: {self.searcher_params.max_accelerate}",
                 f" - searcher min speed: {self.searcher_params.min_speed}",
                 f" - searcher max speed: {self.searcher_params.max_speed}",
-                f" - search vision range: {self._observation.vision_range}",
-                f" - search view angle: {self._observation.view_angle}",
+                f" - search vision range: {self._observation_fn.searcher_vision_range}",
+                f" - target vision range: {self._observation_fn.target_vision_range}",
+                f" - search view angle: {self._observation_fn.view_angle}",
                 f" - target contact range: {self.target_contact_range}",
-                f" - num vision: {self._observation.num_vision}",
-                f" - agent radius: {self._observation.agent_radius}",
+                f" - num vision: {self._observation_fn.num_vision}",
+                f" - agent radius: {self._observation_fn.agent_radius}",
                 f" - time limit: {self.time_limit},"
                 f" - env size: {self.generator.env_size}"
                 f" - target dynamics: {self._target_dynamics.__class__.__name__}",
                 f" - generator: {self.generator.__class__.__name__}",
                 f" - reward fn: {self._reward_fn.__class__.__name__}",
-                f" - observation fn: {self._observation.__class__.__name__}",
+                f" - observation fn: {self._observation_fn.__class__.__name__}",
             ]
         )
 
@@ -276,7 +282,7 @@ class SearchAndRescue(Environment):
         return state, timestep
 
     def _state_to_observation(self, state: State) -> Observation:
-        searcher_views = self._observation(state)
+        searcher_views = self._observation_fn(state)
         return Observation(
             searcher_views=searcher_views,
             targets_remaining=1.0 - jnp.sum(state.targets.found) / self.generator.num_targets,
@@ -301,8 +307,8 @@ class SearchAndRescue(Environment):
         searcher_views = specs.BoundedArray(
             shape=(
                 self.num_agents,
-                self._observation.num_channels,
-                self._observation.num_vision,
+                self._observation_fn.num_channels,
+                self._observation_fn.num_vision,
             ),
             minimum=-1.0,
             maximum=1.0,

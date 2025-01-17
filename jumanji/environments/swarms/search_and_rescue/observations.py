@@ -36,7 +36,8 @@ class ObservationFn(abc.ABC):
         self,
         num_channels: int,
         num_vision: int,
-        vision_range: float,
+        searcher_vision_range: float,
+        target_vision_range: float,
         view_angle: float,
         agent_radius: float,
         env_size: float,
@@ -52,14 +53,17 @@ class ObservationFn(abc.ABC):
         Args:
             num_channels: Number of channels in agent view.
             num_vision: Size of vision array.
-            vision_range: Vision range.
+            searcher_vision_range: Range at which other searching agents
+                become visible.
+            target_vision_range: Range at which targets become visible.
             view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
         self.num_channels = num_channels
         self.num_vision = num_vision
-        self.vision_range = vision_range
+        self.searcher_vision_range = searcher_vision_range
+        self.target_vision_range = target_vision_range
         self.view_angle = view_angle
         self.agent_radius = agent_radius
         self.env_size = env_size
@@ -77,191 +81,7 @@ class ObservationFn(abc.ABC):
         """
 
 
-class AgentObservationFn(ObservationFn):
-    def __init__(
-        self,
-        num_vision: int,
-        vision_range: float,
-        view_angle: float,
-        agent_radius: float,
-        env_size: float,
-    ) -> None:
-        """
-        Observation that only visualises other search agents in proximity.
-
-        Args:
-            num_vision: Size of vision array.
-            vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of π).
-            agent_radius: Agent/target visual radius.
-            env_size: Environment size.
-        """
-        super().__init__(
-            1,
-            num_vision,
-            vision_range,
-            view_angle,
-            agent_radius,
-            env_size,
-        )
-
-    def __call__(self, state: State) -> chex.Array:
-        """
-        Generate agent view/observation from state
-
-        Args:
-            state: Current simulation state
-
-        Returns:
-            Array of individual agent views of shape
-            (n-agents, 1, n-vision).
-        """
-        searcher_views = esquilax.transforms.spatial(
-            view,
-            reduction=view_reduction((self.num_vision,)),
-            include_self=False,
-            i_range=self.vision_range,
-            dims=self.env_size,
-        )(
-            (self.view_angle, self.agent_radius),
-            state.searchers,
-            state.searchers,
-            pos=state.searchers.pos,
-            n_view=self.num_vision,
-            i_range=self.vision_range,
-            env_size=self.env_size,
-        )
-        return searcher_views[:, jnp.newaxis]
-
-
-def found_target_view(
-    params: Tuple[float, float],
-    searcher: AgentState,
-    target: TargetState,
-    *,
-    n_view: int,
-    i_range: float,
-    env_size: float,
-) -> chex.Array:
-    """
-    Return view of a target, dependent on target status.
-
-    This function is intended to be mapped over agents-target
-    pairs by Esquilax.
-
-    Args:
-        params: View angle and target visual radius.
-        searcher: Searcher agent state
-        target: Target state
-        n_view: Number of values in view array.
-        i_range: Vision range
-        env_size: Environment size
-
-    Returns:
-        Segmented agent view of target.
-    """
-    view_angle, agent_radius = params
-    rays = jnp.linspace(
-        -view_angle * jnp.pi,
-        view_angle * jnp.pi,
-        n_view,
-        endpoint=True,
-    )
-    d, left, right = angular_width(
-        searcher.pos,
-        target.pos,
-        searcher.heading,
-        i_range,
-        agent_radius,
-        env_size,
-    )
-    checks = jnp.logical_and(target.found, jnp.logical_and(left < rays, rays < right))
-    obs = jnp.where(checks, d, -1.0)
-    return obs
-
-
-class AgentAndTargetObservationFn(ObservationFn):
-    def __init__(
-        self,
-        num_vision: int,
-        vision_range: float,
-        view_angle: float,
-        agent_radius: float,
-        env_size: float,
-    ) -> None:
-        """
-        Vision model that contains other agents and found targets.
-
-        Searchers and targets are visualised as individual channels.
-        Targets are only included if they have been located already.
-
-        Args:
-            num_vision: Size of vision array.
-            vision_range: Vision range.
-            view_angle: Agent view angle (as a fraction of π).
-            agent_radius: Agent/target visual radius.
-            env_size: Environment size.
-        """
-        self.vision_range = vision_range
-        self.view_angle = view_angle
-        self.agent_radius = agent_radius
-        self.env_size = env_size
-        super().__init__(
-            2,
-            num_vision,
-            vision_range,
-            view_angle,
-            agent_radius,
-            env_size,
-        )
-
-    def __call__(self, state: State) -> chex.Array:
-        """
-        Generate agent view/observation from state
-
-        Args:
-            state: Current simulation state
-
-        Returns:
-            Array of individual agent views of shape
-            (n-agents, 2, n-vision). Other agents are shown
-            in channel 0, and located targets in channel 1.
-        """
-        searcher_views = esquilax.transforms.spatial(
-            view,
-            reduction=view_reduction((self.num_vision,)),
-            include_self=False,
-            i_range=self.vision_range,
-            dims=self.env_size,
-        )(
-            (self.view_angle, self.agent_radius),
-            state.searchers,
-            state.searchers,
-            pos=state.searchers.pos,
-            n_view=self.num_vision,
-            i_range=self.vision_range,
-            env_size=self.env_size,
-        )
-        target_views = esquilax.transforms.spatial(
-            found_target_view,
-            reduction=view_reduction((self.num_vision,)),
-            include_self=False,
-            i_range=self.vision_range,
-            dims=self.env_size,
-        )(
-            (self.view_angle, self.agent_radius),
-            state.searchers,
-            state.targets,
-            pos=state.searchers.pos,
-            pos_b=state.targets.pos,
-            n_view=self.num_vision,
-            i_range=self.vision_range,
-            env_size=self.env_size,
-        )
-        return jnp.hstack([searcher_views[:, jnp.newaxis], target_views[:, jnp.newaxis]])
-
-
-def all_target_view(
+def _target_view(
     params: Tuple[float, float],
     searcher: AgentState,
     target: TargetState,
@@ -310,11 +130,12 @@ def all_target_view(
     return obs
 
 
-class AgentAndAllTargetObservationFn(ObservationFn):
+class AgentAndTargetObservationFn(ObservationFn):
     def __init__(
         self,
         num_vision: int,
-        vision_range: float,
+        searcher_vision_range: float,
+        target_vision_range: float,
         view_angle: float,
         agent_radius: float,
         env_size: float,
@@ -327,19 +148,18 @@ class AgentAndAllTargetObservationFn(ObservationFn):
 
         Args:
             num_vision: Size of vision array.
-            vision_range: Vision range.
+            searcher_vision_range: Range at which other searching agents
+                become visible.
+            target_vision_range: Range at which targets become visible.
             view_angle: Agent view angle (as a fraction of π).
             agent_radius: Agent/target visual radius.
             env_size: Environment size.
         """
-        self.vision_range = vision_range
-        self.view_angle = view_angle
-        self.agent_radius = agent_radius
-        self.env_size = env_size
         super().__init__(
             3,
             num_vision,
-            vision_range,
+            searcher_vision_range,
+            target_vision_range,
             view_angle,
             agent_radius,
             env_size,
@@ -362,7 +182,7 @@ class AgentAndAllTargetObservationFn(ObservationFn):
             view,
             reduction=view_reduction((self.num_vision,)),
             include_self=False,
-            i_range=self.vision_range,
+            i_range=self.searcher_vision_range,
             dims=self.env_size,
         )(
             (self.view_angle, self.agent_radius),
@@ -370,14 +190,14 @@ class AgentAndAllTargetObservationFn(ObservationFn):
             state.searchers,
             pos=state.searchers.pos,
             n_view=self.num_vision,
-            i_range=self.vision_range,
+            i_range=self.searcher_vision_range,
             env_size=self.env_size,
         )
         target_views = esquilax.transforms.spatial(
-            all_target_view,
+            _target_view,
             reduction=view_reduction((2, self.num_vision)),
             include_self=False,
-            i_range=self.vision_range,
+            i_range=self.target_vision_range,
             dims=self.env_size,
         )(
             (self.view_angle, self.agent_radius),
@@ -386,7 +206,7 @@ class AgentAndAllTargetObservationFn(ObservationFn):
             pos=state.searchers.pos,
             pos_b=state.targets.pos,
             n_view=self.num_vision,
-            i_range=self.vision_range,
+            i_range=self.target_vision_range,
             env_size=self.env_size,
         )
         return jnp.hstack([searcher_views[:, jnp.newaxis], target_views])

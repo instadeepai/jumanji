@@ -21,10 +21,10 @@ space is a uniform square space, wrapped at the boundaries.
 
 Many aspects of the environment can be customised:
 
-- Agent observations can include targets as well as other searcher agents.
-- Rewards can be shared by agents, or can be treated completely individually for individual
-  agents and can be scaled by time-step.
-- Target dynamics can be customised to model various search scenarios.
+- Agent observations can be customised by implementing the `ObservationFn` interface.
+- Rewards can be customised by implementing the `RewardFn` interface.
+- Target dynamics can be customised to model various search scenarios by implementing the
+  `TargetDynamics` interface.
 
 ## Observations
 
@@ -42,7 +42,7 @@ Many aspects of the environment can be customised:
   where `-1.0` indicates there are no agents along that ray, and `0.5` is the normalised
   distance to the other agent. Channels in the segmented view are used to differentiate
   between different agents/targets and can be customised. By default, the view has three
-  channels representing other agents, found targets, and unlocated targets.
+  channels representing other agents, found targets, and unlocated targets respectively.
 - `targets_remaining`: float in the range `[0, 1]`. The normalised number of targets
   remaining to be detected (i.e. 1.0 when no targets have been found).
 - `step`: int in the range `[0, time_limit]`. The current simulation step.
@@ -75,6 +75,7 @@ by the `min_speed` and `max_speed` parameters.
 Jax array (float) of `(num_searchers,)`. Rewards are generated for each agent individually.
 
 Agents are rewarded +1 for locating a target that has not already been detected. It is possible
-for multiple agents to detect a target inside a step, as such rewards can either be shared
-by the locating agents, or each individual agent can get the full reward. Rewards provided can
-also be scaled by simulation step to encourage agents to develop efficient search patterns.
+for multiple agents to newly detect the same target inside a step. By default, the reward is
+split between the locating agents if this is the case. By default, rewards granted linearly
+decrease over time, from +1 to 0 at the final step. The reward function can be customised by
+implementing the `RewardFn` interface.

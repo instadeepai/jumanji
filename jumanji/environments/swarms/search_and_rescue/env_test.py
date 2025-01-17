@@ -58,8 +58,8 @@ def test_env_init(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     assert isinstance(timestep.observation, Observation)
     assert timestep.observation.searcher_views.shape == (
         env.generator.num_searchers,
-        env._observation.num_channels,
-        env._observation.num_vision,
+        env._observation_fn.num_channels,
+        env._observation_fn.num_vision,
     )
     assert timestep.step_type == StepType.FIRST
     assert timestep.reward.shape == (env.generator.num_searchers,)
@@ -113,26 +113,26 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
     )
 
 
-def test_env_does_not_smoke(multi_obs_env: SearchAndRescue) -> None:
+def test_env_does_not_smoke(env: SearchAndRescue) -> None:
     """Test that we can run an episode without any errors."""
-    multi_obs_env.time_limit = 10
+    env.time_limit = 10
 
     def select_action(action_key: chex.PRNGKey, _state: Observation) -> chex.Array:
         return jax.random.uniform(
-            action_key, (multi_obs_env.generator.num_searchers, 2), minval=-1.0, maxval=1.0
+            action_key, (env.generator.num_searchers, 2), minval=-1.0, maxval=1.0
         )
 
-    check_env_does_not_smoke(multi_obs_env, select_action=select_action)
+    check_env_does_not_smoke(env, select_action=select_action)
 
 
-def test_env_specs_do_not_smoke(multi_obs_env: SearchAndRescue) -> None:
+def test_env_specs_do_not_smoke(env: SearchAndRescue) -> None:
     """Test that we can access specs without any errors."""
-    check_env_specs_does_not_smoke(multi_obs_env)
+    check_env_specs_does_not_smoke(env)
 
 
 def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     # Keep targets in one location
-    env._target_dynamics = RandomWalk(step_size=0.0)
+    env._target_dynamics = RandomWalk(acc_std=0.1, vel_max=0.0)
     env.generator.num_targets = 1
 
     # Agent facing wrong direction should not see target
@@ -183,7 +183,7 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
 
 def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
     # Keep targets in one location
-    env._target_dynamics = RandomWalk(step_size=0.0)
+    env._target_dynamics = RandomWalk(acc_std=0.1, vel_max=0.0)
     env.searcher_params = AgentParams(
         max_rotate=0.1,
         max_accelerate=0.01,

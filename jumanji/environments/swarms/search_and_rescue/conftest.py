@@ -21,49 +21,14 @@ from jumanji.environments.swarms.search_and_rescue import SearchAndRescue, obser
 
 @pytest.fixture
 def env() -> SearchAndRescue:
-    return SearchAndRescue(
-        target_contact_range=0.05,
-        searcher_max_rotate=0.2,
-        searcher_max_accelerate=0.01,
-        searcher_min_speed=0.01,
-        searcher_max_speed=0.05,
-        searcher_view_angle=0.5,
-        time_limit=10,
+    observation_fn = observations.AgentAndTargetObservationFn(
+        num_vision=32,
+        searcher_vision_range=0.1,
+        target_vision_range=0.1,
+        view_angle=0.5,
+        agent_radius=0.01,
+        env_size=1.0,
     )
-
-
-class FixtureRequest:
-    """Just used for typing"""
-
-    param: observations.ObservationFn
-
-
-@pytest.fixture(
-    params=[
-        observations.AgentObservationFn(
-            num_vision=32,
-            vision_range=0.1,
-            view_angle=0.5,
-            agent_radius=0.01,
-            env_size=1.0,
-        ),
-        observations.AgentAndTargetObservationFn(
-            num_vision=32,
-            vision_range=0.1,
-            view_angle=0.5,
-            agent_radius=0.01,
-            env_size=1.0,
-        ),
-        observations.AgentAndAllTargetObservationFn(
-            num_vision=32,
-            vision_range=0.1,
-            view_angle=0.5,
-            agent_radius=0.01,
-            env_size=1.0,
-        ),
-    ]
-)
-def multi_obs_env(request: FixtureRequest) -> SearchAndRescue:
     return SearchAndRescue(
         target_contact_range=0.05,
         searcher_max_rotate=0.2,
@@ -72,7 +37,7 @@ def multi_obs_env(request: FixtureRequest) -> SearchAndRescue:
         searcher_max_speed=0.05,
         searcher_view_angle=0.5,
         time_limit=10,
-        observation=request.param,
+        observation=observation_fn,
     )
 
 

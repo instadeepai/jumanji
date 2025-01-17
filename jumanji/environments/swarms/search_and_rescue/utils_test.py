@@ -15,35 +15,15 @@
 from functools import partial
 from typing import List
 
-import chex
 import jax
 import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.swarms.common.types import AgentState
-from jumanji.environments.swarms.search_and_rescue.dynamics import RandomWalk, TargetDynamics
 from jumanji.environments.swarms.search_and_rescue.types import TargetState
 from jumanji.environments.swarms.search_and_rescue.utils import (
     searcher_detect_targets,
 )
-
-
-def test_random_walk_dynamics(key: chex.PRNGKey) -> None:
-    n_targets = 50
-    pos_0 = jnp.full((n_targets, 2), 0.5)
-
-    s0 = TargetState(
-        pos=pos_0, vel=jnp.zeros((n_targets, 2)), found=jnp.zeros((n_targets,), dtype=bool)
-    )
-
-    dynamics = RandomWalk(0.1)
-    assert isinstance(dynamics, TargetDynamics)
-    s1 = dynamics(key, s0, 1.0)
-
-    assert isinstance(s1, TargetState)
-    assert s1.pos.shape == (n_targets, 2)
-    assert jnp.array_equal(s0.found, s1.found)
-    assert jnp.all(jnp.abs(s0.pos - s1.pos) < 0.1)
 
 
 @pytest.mark.parametrize(

@@ -45,65 +45,44 @@ def _scale_rewards(rewards: chex.Array, step: int, time_limit: int) -> chex.Arra
     return scale * rewards
 
 
-class SharedRewardFn(RewardFn):
-    """
-    Calculate per agent rewards from detected targets
-
-    Targets detected by multiple agents share rewards. Agents
-    can receive rewards for detecting multiple targets.
-    """
-
-    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
-        rewards = found_targets.astype(float)
-        rewards = _normalise_rewards(rewards)
-        rewards = jnp.sum(rewards, axis=1)
-        return rewards
-
-
-class SharedScaledRewardFn(RewardFn):
-    """
-    Calculate per agent rewards from detected targets and scale by timestep
-
-    Targets detected by multiple agents share rewards. Agents
-    can receive rewards for detecting multiple targets.
-    Rewards are linearly scaled by the current time step such that
-    rewards received are 0 at the final step.
-    """
-
-    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
-        rewards = found_targets.astype(float)
-        rewards = _normalise_rewards(rewards)
-        rewards = jnp.sum(rewards, axis=1)
-        rewards = _scale_rewards(rewards, step, time_limit)
-        return rewards
-
-
 class IndividualRewardFn(RewardFn):
     """
-    Calculate per agent rewards from detected targets
+    Calculate individual agent rewards from detected targets inside a step
 
-    Each agent that detects a target receives a +1 reward
-    even if a target is detected by multiple agents.
+    Assigns individual rewards to each agent based on the number of newly
+    found targets inside a step.
+
+    Note that multiple agents can locate the same target inside a single
+    step. By default, rewards are split between the locating agents and
+    rewards linearly decrease over time (i.e. rewards are +1 per target in
+    the first step, decreasing to 0 at the final step).
     """
+
+    def __init__(self, split_rewards: bool = True, scale_rewards: bool = True):
+        """
+        Initialise reward-function
+
+        Args:
+            split_rewards: If ``True`` rewards will be split in the case multiple agents
+                find a target at the same time. If ``False`` then agents will receive the
+                full reward irrespective of the number of agents who located the
+                target simultaneously.
+            scale_rewards: If ``True`` rewards granted will linearly decrease over time from
+                +1 per target to 0 at the final step. If ``False`` rewards will be fixed at
+                +1 per target irrespective of step.
+        """
+        self.split_rewards = split_rewards
+        self.scale_rewards = scale_rewards
 
     def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
         rewards = found_targets.astype(float)
+
+        if self.split_rewards:
+            rewards = _normalise_rewards(rewards)
+
         rewards = jnp.sum(rewards, axis=1)
-        return rewards
 
+        if self.scale_rewards:
+            rewards = _scale_rewards(rewards, step, time_limit)
 
-class IndividualScaledRewardFn(RewardFn):
-    """
-    Calculate per agent rewards from detected targets and scale by timestep
-
-    Each agent that detects a target receives a +1 reward
-    even if a target is detected by multiple agents.
-    Rewards are linearly scaled by the current time step such that
-    rewards received are 0 at the final step.
-    """
-
-    def __call__(self, found_targets: chex.Array, step: int, time_limit: int) -> chex.Array:
-        rewards = found_targets.astype(float)
-        rewards = jnp.sum(rewards, axis=1)
-        rewards = _scale_rewards(rewards, step, time_limit)
         return rewards
