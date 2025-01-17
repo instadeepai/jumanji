@@ -114,7 +114,7 @@ class SearchAndRescue(Environment):
 
     def __init__(
         self,
-        target_contact_range: float = 0.04,
+        target_contact_range: float = 0.01,
         searcher_max_rotate: float = 0.25,
         searcher_max_accelerate: float = 0.005,
         searcher_min_speed: float = 0.01,
@@ -173,11 +173,11 @@ class SearchAndRescue(Environment):
         self._viewer = viewer or SearchAndRescueViewer()
         self._reward_fn = reward_fn or IndividualRewardFn()
         self._observation_fn = observation or AgentAndTargetObservationFn(
-            num_vision=64,
+            num_vision=128,
             searcher_vision_range=0.25,
-            target_vision_range=0.1,
+            target_vision_range=0.05,
             view_angle=searcher_view_angle,
-            agent_radius=0.02,
+            agent_radius=target_contact_range,
             env_size=self.generator.env_size,
         )
         super().__init__()
