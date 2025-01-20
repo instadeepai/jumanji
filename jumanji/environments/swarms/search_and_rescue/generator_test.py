@@ -27,7 +27,6 @@ def test_random_generator(key: chex.PRNGKey, env_size: float) -> None:
         max_accelerate=0.01,
         min_speed=0.01,
         max_speed=0.05,
-        view_angle=0.5,
     )
     generator = RandomGenerator(num_searchers=100, num_targets=101, env_size=env_size)
 

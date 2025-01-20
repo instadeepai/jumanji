@@ -35,7 +35,6 @@ class AgentParams:
     max_accelerate: float
     min_speed: float
     max_speed: float
-    view_angle: float
 
 
 @dataclass

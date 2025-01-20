@@ -115,8 +115,14 @@ def test_search_and_target_view_searchers(
     [
         # Target out of view range
         ([0.8, 0.5], jnp.pi, [0.2, 0.5], True, 1.0, []),
+        # Target found but not in view
+        ([0.25, 0.5], 0.0, [0.2, 0.5], True, 1.0, []),
         # Target in view and found
         ([0.25, 0.5], jnp.pi, [0.2, 0.5], True, 1.0, [(1, 5, 0.25)]),
+        # Target in view at angle
+        ([0.25, 0.5], 0.5 * jnp.pi, [0.2, 0.5], True, 1.0, [(1, 0, 0.25)]),
+        # Target in view at angle
+        ([0.25, 0.5], 1.5 * jnp.pi, [0.2, 0.5], True, 1.0, [(1, 10, 0.25)]),
         # Target in view but not found
         ([0.25, 0.5], jnp.pi, [0.2, 0.5], False, 1.0, [(2, 5, 0.25)]),
         # Observed around wrapped edge found

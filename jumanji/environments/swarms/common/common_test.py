@@ -29,7 +29,6 @@ def params() -> types.AgentParams:
         max_accelerate=0.01,
         min_speed=0.01,
         max_speed=0.05,
-        view_angle=0.5,
     )
 
 

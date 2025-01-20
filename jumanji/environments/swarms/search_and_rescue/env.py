@@ -119,7 +119,6 @@ class SearchAndRescue(Environment):
         searcher_max_accelerate: float = 0.005,
         searcher_min_speed: float = 0.01,
         searcher_max_speed: float = 0.02,
-        searcher_view_angle: float = 0.5,
         time_limit: int = 400,
         viewer: Optional[Viewer[State]] = None,
         target_dynamics: Optional[TargetDynamics] = None,
@@ -138,11 +137,6 @@ class SearchAndRescue(Environment):
                 acceleration/deceleration a searcher agent can apply within a step.
             searcher_min_speed: Minimum speed a searcher agent can move at.
             searcher_max_speed: Maximum speed a searcher agent can move at.
-            searcher_view_angle: Searcher agent local view angle. Should be
-                a value from [0,1] representing a fraction of π-radians.
-                The view cone of an agent goes from +- of the view angle
-                relative to its heading, e.g. 0.5 would mean searchers have a
-                90° view angle in total.
             time_limit: Maximum number of environment steps allowed for search.
             viewer: `Viewer` used for rendering. Defaults to `SearchAndRescueViewer`.
             target_dynamics: Target object dynamics model, implemented as a
@@ -165,7 +159,6 @@ class SearchAndRescue(Environment):
             max_accelerate=searcher_max_accelerate,
             min_speed=searcher_min_speed,
             max_speed=searcher_max_speed,
-            view_angle=searcher_view_angle,
         )
         self.time_limit = time_limit
         self._target_dynamics = target_dynamics or RandomWalk(acc_std=0.0001, vel_max=0.002)
@@ -174,9 +167,9 @@ class SearchAndRescue(Environment):
         self._reward_fn = reward_fn or IndividualRewardFn()
         self._observation_fn = observation or AgentAndTargetObservationFn(
             num_vision=128,
-            searcher_vision_range=0.25,
-            target_vision_range=0.05,
-            view_angle=searcher_view_angle,
+            searcher_vision_range=0.4,
+            target_vision_range=0.1,
+            view_angle=0.4,
             agent_radius=target_contact_range,
             env_size=self.generator.env_size,
         )
@@ -249,7 +242,7 @@ class SearchAndRescue(Environment):
             i_range=self.target_contact_range,
             dims=self.generator.env_size,
         )(
-            self.searcher_params.view_angle,
+            self._observation_fn.view_angle,
             searchers,
             (jnp.arange(self.generator.num_targets), targets),
             pos=searchers.pos,

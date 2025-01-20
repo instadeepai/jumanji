@@ -35,7 +35,6 @@ def env() -> SearchAndRescue:
         searcher_max_accelerate=0.01,
         searcher_min_speed=0.01,
         searcher_max_speed=0.05,
-        searcher_view_angle=0.5,
         time_limit=10,
         observation=observation_fn,
     )

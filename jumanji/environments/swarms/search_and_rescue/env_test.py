@@ -189,9 +189,9 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
         max_accelerate=0.01,
         min_speed=0.01,
         max_speed=0.05,
-        view_angle=0.25,
     )
     env.generator.num_targets = 2
+    env._observation_fn.view_angle = 0.25
 
     # Agent facing wrong direction should not see target
     state = State(
