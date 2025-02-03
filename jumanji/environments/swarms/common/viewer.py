@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Tuple, Union
 
 import jax.numpy as jnp
 from matplotlib.axes import Axes
@@ -22,7 +22,9 @@ from matplotlib.quiver import Quiver
 from jumanji.environments.swarms.common.types import AgentState
 
 
-def draw_agents(ax: Axes, agent_states: AgentState, color: str) -> Quiver:
+def draw_agents(
+    ax: Axes, agent_states: AgentState, color: Union[str, Tuple[int, int, int, int]]
+) -> Quiver:
     """Draw a flock/swarm of agent using a matplotlib quiver
 
     Args:
@@ -41,6 +43,10 @@ def draw_agents(ax: Axes, agent_states: AgentState, color: str) -> Quiver:
         jnp.sin(agent_states.heading),
         color=color,
         pivot="middle",
+        width=0.005,
+        headwidth=5,
+        headlength=8,
+        headaxislength=8,
     )
     return q
 

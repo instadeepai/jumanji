@@ -33,25 +33,22 @@ class SearchAndRescueViewer(Viewer[State]):
         self,
         figure_name: str = "SearchAndRescue",
         figure_size: Tuple[float, float] = (6.0, 6.0),
-        searcher_color: str = "blue",
-        target_found_color: str = "green",
-        target_lost_color: str = "red",
+        colormap: str = "hsv",
         env_size: Tuple[float, float] = (1.0, 1.0),
     ) -> None:
         """Viewer for the `SearchAndRescue` environment.
 
         Args:
             figure_name: The window name to be used when initialising the window.
-            figure_size: Tuple (height, width) of the matplotlib figure window.
-            searcher_color: Color of searcher agent markers (arrows).
-            target_found_color: Color of target markers when they have been found.
-            target_lost_color: Color of target markers when they are still to be found.
+            figure_size: Tuple `(height, width)` of the matplotlib figure window.
+            colormap: Matplotlib colormap to sample agent colors from.
             env_size: Tuple environment spatial dimensions, used to set the plot region.
         """
         self._figure_name = figure_name
         self._figure_size = figure_size
-        self.searcher_color = searcher_color
-        self.target_colors = np.array([target_lost_color, target_found_color])
+        colormap = matplotlib.colormaps.get_cmap(colormap)
+        self.searcher_color = colormap(0.0)
+        self.target_colors = np.array([colormap(0.33), colormap(0.66)])
         self._animation: Optional[matplotlib.animation.Animation] = None
         self.env_size = env_size
 
