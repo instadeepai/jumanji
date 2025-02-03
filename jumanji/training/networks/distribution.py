@@ -88,25 +88,4 @@ class CategoricalDistribution(Distribution):
         return jnp.sum(jnp.where(probs == 0, 0.0, probs * (log_probs - log_probs_other)), axis=-1)
 
 
-class NormalDistribution(Distribution):
-    """Normal distribution (with log standard deviations)."""
-
-    def __init__(self, means: chex.Array, log_stds: chex.Array):
-        self.dist = Normal(loc=means, scale=jnp.exp(log_stds))
-
-    def mode(self) -> chex.Array:
-        return self.dist.mode()
-
-    def log_prob(self, x: chex.Array) -> chex.Array:
-        return self.dist.log_prob(x)
-
-    def entropy(self) -> chex.Array:
-        return self.dist.entropy()
-
-    def kl_divergence(  # type: ignore[override]
-        self, other: NormalDistribution
-    ) -> chex.Array:
-        return self.dist.kl_divergence(other)
-
-    def sample(self, seed: chex.PRNGKey) -> chex.Array:
-        return self.dist.sample(seed=seed)
+NormalDistribution = Normal
