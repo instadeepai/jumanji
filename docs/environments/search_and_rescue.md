@@ -1,6 +1,8 @@
 # 🚁 Search & Rescue
 
-[//]: # (TODO: Add animated plot)
+<p align="center">
+    <img src="../env_anim/search_and_rescue.gif" width="500"/>
+</p>
 
 Multi-agent environment, modelling a group of agents searching a 2d environment
 for multiple targets. Agents are individually rewarded for finding a target
