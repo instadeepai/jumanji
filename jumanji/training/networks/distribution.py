@@ -19,6 +19,7 @@ from __future__ import annotations
 import abc
 
 import chex
+import distrax
 import jax
 import jax.numpy as jnp
 
@@ -85,3 +86,6 @@ class CategoricalDistribution(Distribution):
         probs = jax.nn.softmax(self.logits)
         log_probs_other = jax.nn.log_softmax(other.logits)
         return jnp.sum(jnp.where(probs == 0, 0.0, probs * (log_probs - log_probs_other)), axis=-1)
+
+
+NormalDistribution = distrax.Normal

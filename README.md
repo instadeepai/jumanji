@@ -51,6 +51,7 @@
     <img src="https://raw.githubusercontent.com/instadeepai/jumanji/main/docs/env_anim/tetris.gif" alt="Tetris" width="16%">
     <img src="https://raw.githubusercontent.com/instadeepai/jumanji/main/docs/env_anim/tsp.gif" alt="Tetris" width="16%">
     <img src="https://raw.githubusercontent.com/instadeepai/jumanji/main/docs/env_anim/lbf.gif" alt="Level-Based Foraging" width="16%">
+    <img src="https://raw.githubusercontent.com/instadeepai/jumanji/main/docs/env_anim/search_and_rescue.gif" alt="Search and Rescue" width="16%">
   </div>
 </div>
 
@@ -123,6 +124,7 @@ problems.
 | ᗧ•••ᗣ•• PacMan   | Routing  | `PacMan-v1`                                            | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/pac_man/)      | [doc](https://instadeepai.github.io/jumanji/environments/pac_man/)
 | 👾 Sokoban                                                     | Routing  | `Sokoban-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/sokoban/)          | [doc](https://instadeepai.github.io/jumanji/environments/sokoban/)         |
 | 🍎 Level-Based Foraging                                                     | Routing  | `LevelBasedForaging-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/routing/lbf/)          | [doc](https://instadeepai.github.io/jumanji/environments/lbf/)         |
+| 🚁 Search and Rescue                                                     | Swarms  | `SearchAndRescue-v0`                                         | [code](https://github.com/instadeepai/jumanji/tree/main/jumanji/environments/swarms/search_and_rescue/)          | [doc](https://instadeepai.github.io/jumanji/environments/search_and_rescue/)         |
 
 <h2 name="install" id="install">Installation 🎬</h2>
 
