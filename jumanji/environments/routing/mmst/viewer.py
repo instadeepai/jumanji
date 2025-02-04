@@ -20,6 +20,7 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
+from matplotlib.lines import Line2D
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -51,7 +52,7 @@ class MMSTViewer(Viewer):
         self._name = name
         self.num_agents = num_agents
 
-        # Pick display method. Only one mode avaliable.
+        # Pick display method. Only one mode available.
         self._display: Callable[[plt.Figure], Optional[NDArray]]
         self._display = self._display_human
 
@@ -69,7 +70,7 @@ class MMSTViewer(Viewer):
 
         self._animation: Optional[matplotlib.animation.Animation] = None
 
-    def render(self, state: State) -> chex.Array:
+    def render(self, state: State, save_path: Optional[str] = None) -> None:
         """Render the state of the environment.
 
         Args:
@@ -88,9 +89,12 @@ class MMSTViewer(Viewer):
         ax.clear()
         self._draw_graph(state, ax)
 
-        return self._display(fig)
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
 
-    def _draw_graph(self, state: State, ax: plt.Axes) -> None:
+        self._display(fig)
+
+    def _draw_graph(self, state: State, ax: plt.Axes) -> Tuple[Dict, List]:
         """Draw the different nodes and edges in the graph
 
         Args:
@@ -105,13 +109,20 @@ class MMSTViewer(Viewer):
         node_radius = 0.05 * 5 / node_scale
 
         edges = self.build_edges(state.adj_matrix, state.connected_nodes)
+
+        lines = {}
+
         # Draw edges.
-        for e in edges.values():
+        for k, e in edges.items():
             (n1, n2), color = e
             n1, n2 = int(n1), int(n2)
             x_values = [positions[n1][0], positions[n2][0]]
             y_values = [positions[n1][1], positions[n2][1]]
-            ax.plot(x_values, y_values, c=color, linewidth=2)
+            edge = Line2D(x_values, y_values, c=color, linewidth=2)
+            ax.add_artist(edge)
+            lines[k] = edge
+
+        circles = []
 
         # Draw nodes.
         for node in range(num_nodes):
@@ -126,7 +137,7 @@ class MMSTViewer(Viewer):
             else:
                 lcolor = blue
 
-            self.circle_fill(
+            c = self.circle_fill(
                 positions[node],
                 lcolor,
                 fcolor,
@@ -135,20 +146,25 @@ class MMSTViewer(Viewer):
                 ax,
             )
 
+            circles.append(c)
+
             ax.text(
                 positions[node][0],
                 positions[node][1],
-                node,
+                str(node),
                 color="white",
                 ha="center",
                 va="center",
                 weight="bold",
+                zorder=200,
             )
 
         ax.set_axis_off()
         ax.set_aspect(1)
         ax.relim()
         ax.autoscale_view()
+
+        return lines, circles
 
     def build_edges(
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
@@ -185,15 +201,18 @@ class MMSTViewer(Viewer):
 
     def circle_fill(
         self,
-        xy: chex.Array,
+        xy: Tuple[float, float],
         line_color: Tuple[float, float, float],
         fill_color: Tuple[float, float, float],
         radius: float,
         thickness: float,
         ax: plt.Axes,
-    ) -> None:
-        ax.add_artist(plt.Circle(xy, radius, color=line_color))
-        ax.add_artist(plt.Circle(xy, radius - thickness, color=fill_color))
+    ) -> Tuple[plt.Circle, plt.Circle]:
+        ca = plt.Circle(xy, radius, color=line_color, zorder=100)
+        cb = plt.Circle(xy, radius - thickness, color=fill_color, zorder=100)
+        ax.add_artist(ca)
+        ax.add_artist(cb)
+        return ca, cb
 
     def animate(
         self,
@@ -217,17 +236,42 @@ class MMSTViewer(Viewer):
         node_scale = 5 + int(np.sqrt(num_nodes))
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
         plt.close(fig)
+        edges, circles = self._draw_graph(states[0], ax)
 
-        def make_frame(state: State) -> Tuple[Artist]:
-            ax.clear()
-            self._draw_graph(state, ax)
-            return (ax,)
+        def make_frame(state: State) -> List[Artist]:
+            updated = []
+
+            edge_updates = self.build_edges(state.adj_matrix, state.connected_nodes)
+
+            for k, (_, color) in edge_updates.items():
+                edge = edges[k]
+                edge.set(color=color)
+                updated.append(edge)
+
+            for i, (ca, cb) in enumerate(circles):
+                pos = np.where(state.nodes_to_connect == i)[0]
+                if len(pos) == 1:
+                    fcolor = self.palette[pos[0]]
+                else:
+                    fcolor = black
+
+                if i in state.positions:
+                    lcolor = yellow
+                else:
+                    lcolor = blue
+
+                ca.set(color=lcolor)
+                cb.set(color=fcolor)
+                updated.append(ca)
+                updated.append(cb)
+
+            return updated
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=states,
+            frames=states[1:],
             interval=interval,
         )
 
