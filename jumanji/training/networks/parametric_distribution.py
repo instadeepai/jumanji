@@ -193,7 +193,7 @@ class ContinuousActionSpaceNormalTanhDistribution(ParametricDistribution):
         self._log_epsilon = jnp.log(1.0 - threshold)
 
     def create_dist(self, parameters: Tuple[chex.Array, chex.Array]) -> NormalDistribution:
-        return NormalDistribution(means=parameters[0], log_stds=parameters[1])
+        return NormalDistribution(loc=parameters[0], scale=parameters[1])
 
     def log_prob(
         self, parameters: Tuple[chex.Array, chex.Array], raw_actions: chex.Array
@@ -201,10 +201,8 @@ class ContinuousActionSpaceNormalTanhDistribution(ParametricDistribution):
         """Compute the log probability of raw actions when transformed"""
         dist = self.create_dist(parameters)
 
-        log_prob_left = dist.dist.log_cdf(-self._inverse_threshold) - self._log_epsilon
-        log_prob_right = (
-            dist.dist.log_survival_function(self._inverse_threshold) - self._log_epsilon
-        )
+        log_prob_left = dist.log_cdf(-self._inverse_threshold) - self._log_epsilon
+        log_prob_right = dist.log_survival_function(self._inverse_threshold) - self._log_epsilon
 
         clipped_actions = jnp.clip(raw_actions, -self._inverse_threshold, self._inverse_threshold)
         raw_log_probs = dist.log_prob(clipped_actions)

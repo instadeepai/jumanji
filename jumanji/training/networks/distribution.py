@@ -19,9 +19,9 @@ from __future__ import annotations
 import abc
 
 import chex
+import distrax
 import jax
 import jax.numpy as jnp
-from distrax import Normal
 
 
 class Distribution(abc.ABC):
@@ -88,4 +88,4 @@ class CategoricalDistribution(Distribution):
         return jnp.sum(jnp.where(probs == 0, 0.0, probs * (log_probs - log_probs_other)), axis=-1)
 
 
-NormalDistribution = Normal
+NormalDistribution = distrax.Normal
