@@ -12,13 +12,13 @@
         <meta name="author" content="InstaDeep Research">
       
       
-        <link rel="canonical" href="https://instadeepai.github.io/jumanji/api/environments/graph_coloring/">
+        <link rel="canonical" href="https://instadeepai.github.io/jumanji/api/environments/search_and_rescue/">
       
       
-        <link rel="prev" href="../game_2048/">
+        <link rel="prev" href="../tsp/">
       
       
-        <link rel="next" href="../minesweeper/">
+        <link rel="next" href="../../wrappers/">
       
       
       <link rel="icon" href="../../../img/instadeep_logo.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>GraphColoring - Jumanji</title>
+        <title>SearchAndRescue - Jumanji</title>
       
     
     
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring" class="md-skip">
+        <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GraphColoring
+              SearchAndRescue
             
           </span>
         </div>
@@ -1480,10 +1480,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1507,11 +1505,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_2" >
         
           
           <label class="md-nav__link" for="__nav_4_1_2" id="__nav_4_1_2_label" tabindex="0">
@@ -1525,7 +1523,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_1_2">
             <span class="md-nav__icon md-icon"></span>
             Logic
@@ -1557,28 +1555,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    GraphColoring
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../graph_coloring/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1587,96 +1567,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      GraphColoring
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.action_spec" class="md-nav__link">
-    <span class="md-ellipsis">
-      action_spec
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.observation_spec" class="md-nav__link">
-    <span class="md-ellipsis">
-      observation_spec
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.animate" class="md-nav__link">
-    <span class="md-ellipsis">
-      animate
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.close" class="md-nav__link">
-    <span class="md-ellipsis">
-      close
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.render" class="md-nav__link">
-    <span class="md-ellipsis">
-      render
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.reset" class="md-nav__link">
-    <span class="md-ellipsis">
-      reset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.step" class="md-nav__link">
-    <span class="md-ellipsis">
-      step
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2269,8 +2159,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -2284,11 +2176,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_5" checked>
         
           
           <label class="md-nav__link" for="__nav_4_1_5" id="__nav_4_1_5_label" tabindex="0">
@@ -2302,7 +2194,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_1_5">
             <span class="md-nav__icon md-icon"></span>
             Swarms
@@ -2313,10 +2205,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../search_and_rescue/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    SearchAndRescue
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -2325,6 +2235,105 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue" class="md-nav__link">
+    <span class="md-ellipsis">
+      SearchAndRescue
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.action_spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      action_spec
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.observation_spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      observation_spec
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reward_spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      reward_spec
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.animate" class="md-nav__link">
+    <span class="md-ellipsis">
+      animate
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      close
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.render" class="md-nav__link">
+    <span class="md-ellipsis">
+      render
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      reset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.step" class="md-nav__link">
+    <span class="md-ellipsis">
+      step
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2413,63 +2422,82 @@
   
 
 
-  <h1>GraphColoring</h1>
+  <h1>SearchAndRescue</h1>
 
 <div class="doc doc-object doc-class">
 
 
 
-<a id="jumanji.environments.logic.graph_coloring.env.GraphColoring"></a>
+<a id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue"></a>
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../../env/#jumanji.env.Environment">Environment</a>[<span title="jumanji.environments.logic.graph_coloring.types.State">State</span>, <span title="jumanji.specs.DiscreteArray">DiscreteArray</span>, <span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="jumanji.env.Environment" href="../../env/#jumanji.env.Environment">Environment</a></code></p>
 
 
-        <p>Environment for the GraphColoring problem.
-The problem is a combinatorial optimization task where the goal is
-  to assign a color to each vertex of a graph
-  in such a way that no two adjacent vertices share the same color.
-The problem is usually formulated as minimizing the number of colors used.</p>
+        <p>A multi-agent search environment</p>
+<p>Environment modelling a collection of agents collectively searching
+for a set of targets on a 2d environment. Agents are rewarded
+(individually) for coming within a fixed range of a target that has
+not already been detected. Agents visualise their local environment
+(i.e. the location of other agents and targets) via a simple segmented
+view model. The environment area is a uniform square space with wrapped
+boundaries.</p>
+<p>An episode will terminate if all targets have been located by the team of
+searching agents.</p>
 <ul>
 <li>
-<p>observation: <code>Observation</code></p>
-<ul>
-<li>adj_matrix: jax array (bool) of shape (num_nodes, num_nodes),
-    representing the adjacency matrix of the graph.</li>
-<li>colors: jax array (int32) of shape (num_nodes,),
-    representing the current color assignments for the vertices.</li>
-<li>action_mask: jax array (bool) of shape (num_colors,),
-    indicating which actions are valid in the current state of the environment.</li>
-<li>current_node_index: integer representing the current node being colored.</li>
-</ul>
+<p>observation: <code>Observation</code>
+    searcher_views: jax array (float) of shape (num_searchers, channels, num_vision)
+        Individual local views of positions of other agents and targets, where
+        channels can be used to differentiate between agents and targets types.
+        Each entry in the view indicates the distance to another agent/target
+        along a ray from the agent, and is -1.0 if nothing is in range along the ray.
+        The view model can be customised by implementing the  <code>ObservationFn</code> interface.
+    targets_remaining: (float) Number of targets remaining to be found from
+        the total scaled to the range [0, 1] (i.e. a value of 1.0 indicates
+        all the targets are still to be found).
+    step: (int) current simulation step.
+    positions: jax array (float) of shape (num_searchers, 2) search agent positions.</p>
 </li>
 <li>
-<p>action: int, the color to be assigned to the current node (0 to num_nodes - 1)</p>
+<p>action: jax array (float) of shape (num_searchers, 2)
+    Array of individual agent actions. Each agents actions rotate and
+    accelerate/decelerate the agent as [rotation, acceleration] on the range
+    [-1, 1]. These values are then scaled to update agent velocities within
+    given parameters (i.e. a value of -+1 is the maximum acceleration/rotation).</p>
 </li>
 <li>
-<p>reward: float, a sparse reward is provided at the end of the episode.
-    Equals the negative of the number of unique colors used to color all vertices in the graph.
-    If an invalid action is taken, the reward is the negative of the total number of colors.</p>
-</li>
-<li>
-<p>episode termination:</p>
-<ul>
-<li>if all nodes have been assigned a color or if an invalid action is taken.</li>
-</ul>
+<p>reward: jax array (float) of shape (num_searchers,)
+    Arrays of individual agent rewards. A reward of +1 is granted when an agent
+    comes into contact range with a target that has not yet been found, and
+    the target is within the searchers view cone. It is possible for multiple
+    agents to newly find the same target within a given step, by default
+    in this case the reward is split between the locating agents. By default,
+    rewards granted linearly decrease over time, with zero reward granted
+    at the environment time-limit. These defaults can be modified by flags
+    in <code>IndividualRewardFn</code>, or further customised by  implementing the <code>RewardFn</code>
+    interface.</p>
 </li>
 <li>
 <p>state: <code>State</code></p>
 <ul>
-<li>adj_matrix: jax array (bool) of shape (num_nodes, num_nodes),
-    representing the adjacency matrix of the graph.</li>
-<li>colors: jax array (int32) of shape (num_nodes,),
-    color assigned to each node, -1 if not assigned.</li>
-<li>current_node_index: jax array (int) with shape (),
-    index of the current node.</li>
-<li>action_mask: jax array (bool) of shape (num_colors,),
-    indicating which actions are valid in the current state of the environment.</li>
-<li>key: jax array (uint32) of shape (2,),
-    random key used to generate random numbers at each step and for auto-reset.</li>
+<li>searchers: <code>AgentState</code><ul>
+<li>pos: jax array (float) of shape (num_searchers, 2) in the range [0, env_size].</li>
+<li>heading: jax array (float) of shape (num_searcher,) in
+    the range [0, 2π].</li>
+<li>speed: jax array (float) of shape (num_searchers,) in the
+    range [min_speed, max_speed].</li>
+</ul>
+</li>
+<li>targets: <code>TargetState</code><ul>
+<li>pos: jax array (float) of shape (num_targets, 2) in the range [0, env_size].</li>
+<li>vel:  jax array (float) of shape (num_targets, 2).</li>
+<li>found: jax array (bool) of shape (num_targets,) flag indicating if
+    target has been located by an agent.</li>
+</ul>
+</li>
+<li>key: jax array (uint32) of shape (2,)</li>
+<li>step: int representing the current simulation step.</li>
 </ul>
 </li>
 </ul>
@@ -2480,8 +2508,10 @@ The problem is usually formulated as minimizing the number of colors used.</p>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jumanji.environments</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphColoring</span>
-<span class="n">env</span> <span class="o">=</span> <span class="n">GraphColoring</span><span class="p">()</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jumanji.environments</span><span class="w"> </span><span class="kn">import</span> <span class="n">SearchAndRescue</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">SearchAndRescue</span><span class="p">()</span>
 <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">)(</span><span class="n">key</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
@@ -2490,7 +2520,7 @@ The problem is usually formulated as minimizing the number of colors used.</p>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
 
-        <p>Instantiate a <code>GraphColoring</code> environment.</p>
+        <p>Instantiates a <code>SearchAndRescue</code> environment</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2506,16 +2536,113 @@ The problem is usually formulated as minimizing the number of colors used.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>generator</code>
+                <code>target_contact_range</code>
             </td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.environments.logic.graph_coloring.generator.Generator">Generator</span>]</code>
+                  <code>float</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>callable to instantiate environment instances.
-Defaults to <code>RandomGenerator</code> which generates graphs with
-20 <code>num_nodes</code> and <code>edge_probability</code> equal to 0.8.</p>
+                <p>Range at which a searchers will 'find' a target.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.02</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>searcher_max_rotate</code>
+            </td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum rotation searcher agents can
+turn within a step. Should be a value from [0,1]
+representing a fraction of π-radians.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.25</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>searcher_max_accelerate</code>
+            </td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Magnitude of the maximum
+acceleration/deceleration a searcher agent can apply within a step.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.005</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>searcher_min_speed</code>
+            </td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Minimum speed a searcher agent can move at.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.005</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>searcher_max_speed</code>
+            </td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum speed a searcher agent can move at.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.02</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>time_limit</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum number of environment steps allowed for search.</p>
+              </div>
+            </td>
+            <td>
+                  <code>400</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>viewer</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.viewer.Viewer">Viewer</span>[<span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>Viewer</code> used for rendering. Defaults to <code>SearchAndRescueViewer</code>.</p>
               </div>
             </td>
             <td>
@@ -2524,15 +2651,69 @@ Defaults to <code>RandomGenerator</code> which generates graphs with
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>viewer</code>
+                <code>target_dynamics</code>
             </td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.viewer.Viewer">Viewer</span>[<span title="jumanji.environments.logic.graph_coloring.types.State">State</span>]]</code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.environments.swarms.search_and_rescue.dynamics.TargetDynamics">TargetDynamics</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>environment viewer for rendering.
-Defaults to <code>GraphColoringViewer</code>.</p>
+                <p>Target object dynamics model, implemented as a
+<code>TargetDynamics</code> interface. Defaults to <code>RandomWalk</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>generator</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.environments.swarms.search_and_rescue.generator.Generator">Generator</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Initial state <code>Generator</code> instance. Defaults to <code>RandomGenerator</code>
+with 50 targets and 2 searchers, with targets uniformly distributed
+across the environment.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>reward_fn</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.environments.swarms.search_and_rescue.reward.RewardFn">RewardFn</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reward aggregation function. Defaults to <code>IndividualRewardFn</code> where
+agents split rewards if they locate a target simultaneously, and
+rewards linearly decrease to zero over time.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>observation</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="jumanji.environments.swarms.search_and_rescue.observations.ObservationFn">ObservationFn</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Agent observation view generation function. Defaults to
+<code>AgentAndTargetObservationFn</code> where all targets (found and unfound)
+and other searching agents are included in the generated view.</p>
               </div>
             </td>
             <td>
@@ -2548,491 +2729,8 @@ Defaults to <code>GraphColoringViewer</code>.</p>
 
 
                   <details class="quote">
-                    <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Viewer</span><span class="p">[</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Instantiate a `GraphColoring` environment.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        generator: callable to instantiate environment instances.</span>
-<span class="sd">            Defaults to `RandomGenerator` which generates graphs with</span>
-<span class="sd">            20 `num_nodes` and `edge_probability` equal to 0.8.</span>
-<span class="sd">        viewer: environment viewer for rendering.</span>
-<span class="sd">            Defaults to `GraphColoringViewer`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span> <span class="ow">or</span> <span class="n">RandomGenerator</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">edge_probability</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">num_nodes</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-    <span class="c1"># Create viewer used for rendering</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_env_viewer</span> <span class="o">=</span> <span class="n">viewer</span> <span class="ow">or</span> <span class="n">GraphColoringViewer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;GraphColoring&quot;</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.action_spec" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">action_spec</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.action_spec" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Specification of the action for the <code>GraphColoring</code> environment.</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>action_spec</code></td>            <td>
-                  <code><span title="jumanji.specs.DiscreteArray">DiscreteArray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>specs.DiscreteArray object</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.observation_spec" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">observation_spec</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.observation_spec" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Returns the observation spec.</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Spec for the <code>Observation</code> whose fields are:</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <ul>
-<li>adj_matrix: BoundedArray (bool) of shape (num_nodes, num_nodes).
-Represents the adjacency matrix of the graph.</li>
-</ul>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <ul>
-<li>action_mask: BoundedArray (bool) of shape (num_nodes,).
-Represents the valid actions in the current state.</li>
-</ul>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <ul>
-<li>colors: BoundedArray (int32) of shape (num_nodes,).
-Represents the colors assigned to each node.</li>
-</ul>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <ul>
-<li>current_node_index: BoundedArray (int32) of shape ().
-Represents the index of the current node.</li>
-</ul>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-    </div>
-
-</div>
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.animate" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">animate</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.animate" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Creates an animated gif of the <code>GraphColoring</code> environment based on a sequence of states.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>states</code>
-            </td>
-            <td>
-                  <code><span title="typing.Sequence">Sequence</span>[<span title="jumanji.environments.logic.graph_coloring.types.State">State</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>is a list of <code>State</code> objects representing the sequence of game states.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>interval</code>
-            </td>
-            <td>
-                  <code>int</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the delay between frames in milliseconds, default to 200.</p>
-              </div>
-            </td>
-            <td>
-                  <code>200</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>save_path</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[str]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the path where the animation file should be saved. If it is None, the plot
-will not be stored.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="matplotlib.animation.FuncAnimation">FuncAnimation</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>animation.FuncAnimation: the animation object that was created.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">State</span><span class="p">],</span>
-    <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
-    <span class="n">save_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates an animated gif of the `GraphColoring` environment based on a sequence of states.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        states: is a list of `State` objects representing the sequence of game states.</span>
-<span class="sd">        interval: the delay between frames in milliseconds, default to 200.</span>
-<span class="sd">        save_path: the path where the animation file should be saved. If it is None, the plot</span>
-<span class="sd">            will not be stored.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        animation.FuncAnimation: the animation object that was created.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_viewer</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">states</span><span class="o">=</span><span class="n">states</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="n">save_path</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.close" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.close" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Perform any necessary cleanup.</p>
-<p>Environments will automatically :meth:<code>close()</code> themselves when
-garbage collected or when the program exits.</p>
-
-            <details class="quote">
-              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform any necessary cleanup.</span>
-
-<span class="sd">    Environments will automatically :meth:`close()` themselves when</span>
-<span class="sd">    garbage collected or when the program exits.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_env_viewer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.render" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.render" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Renders the current state of the <code>GraphColoring</code> environment.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>state</code>
-            </td>
-            <td>
-                  <code><span title="jumanji.environments.logic.graph_coloring.types.State">State</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>is the current game state to be rendered.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders the current state of the `GraphColoring` environment.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        state: is the current game state to be rendered.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_viewer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.reset" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></code>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.reset" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Resets the environment to an initial state.</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<span title="jumanji.environments.logic.graph_coloring.types.State">State</span>, <a class="autorefs autorefs-internal" title="jumanji.types.TimeStep" href="../../types/#jumanji.types.TimeStep">TimeStep</a>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The initial state and timestep.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
+                    <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
@@ -3054,142 +2752,9 @@ garbage collected or when the program exits.</p>
 <span class="normal">134</span>
 <span class="normal">135</span>
 <span class="normal">136</span>
-<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resets the environment to an initial state.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The initial state and timestep.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">colors</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-    <span class="n">key</span><span class="p">,</span> <span class="n">subkey</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="n">adj_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">subkey</span><span class="p">)</span>
-
-    <span class="n">action_mask</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="n">current_node_index</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">current_node_index</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="n">Observation</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">current_node_index</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="n">obs</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.step" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span></code>
-
-<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.step" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Updates the environment state after the agent takes an action.</p>
-<p>Specifically, this function allows the agent to choose
-a color for the current node (based on the action taken)
-in a graph coloring problem.
-It then updates the state of the environment based on
-the color chosen and calculates the reward based on
-the validity of the action and the completion of the coloring task.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>state</code>
-            </td>
-            <td>
-                  <code><span title="jumanji.environments.logic.graph_coloring.types.State">State</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the current state of the environment.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>action</code>
-            </td>
-            <td>
-                  <code><span title="chex.Array">Array</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the action taken by the agent.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>state</code></td>            <td>
-                  <code><span title="jumanji.environments.logic.graph_coloring.types.State">State</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the new state of the environment.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td><code>timestep</code></td>            <td>
-                  <code><a class="autorefs autorefs-internal" title="jumanji.types.TimeStep" href="../../types/#jumanji.types.TimeStep">TimeStep</a>[<span title="jumanji.environments.logic.graph_coloring.types.Observation">Observation</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the next timestep.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
@@ -3226,98 +2791,785 @@ the validity of the action and the completion of the coloring task.</p>
 <span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the environment state after the agent takes an action.</span>
-
-<span class="sd">    Specifically, this function allows the agent to choose</span>
-<span class="sd">    a color for the current node (based on the action taken)</span>
-<span class="sd">    in a graph coloring problem.</span>
-<span class="sd">    It then updates the state of the environment based on</span>
-<span class="sd">    the color chosen and calculates the reward based on</span>
-<span class="sd">    the validity of the action and the completion of the coloring task.</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">target_contact_range</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.02</span><span class="p">,</span>
+    <span class="n">searcher_max_rotate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">searcher_max_accelerate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">searcher_min_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">searcher_max_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.02</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+    <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Viewer</span><span class="p">[</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">target_dynamics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TargetDynamics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RewardFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">observation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ObservationFn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Instantiates a `SearchAndRescue` environment</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: the current state of the environment.</span>
-<span class="sd">        action: the action taken by the agent.</span>
+<span class="sd">        target_contact_range: Range at which a searchers will &#39;find&#39; a target.</span>
+<span class="sd">        searcher_max_rotate: Maximum rotation searcher agents can</span>
+<span class="sd">            turn within a step. Should be a value from [0,1]</span>
+<span class="sd">            representing a fraction of π-radians.</span>
+<span class="sd">        searcher_max_accelerate: Magnitude of the maximum</span>
+<span class="sd">            acceleration/deceleration a searcher agent can apply within a step.</span>
+<span class="sd">        searcher_min_speed: Minimum speed a searcher agent can move at.</span>
+<span class="sd">        searcher_max_speed: Maximum speed a searcher agent can move at.</span>
+<span class="sd">        time_limit: Maximum number of environment steps allowed for search.</span>
+<span class="sd">        viewer: `Viewer` used for rendering. Defaults to `SearchAndRescueViewer`.</span>
+<span class="sd">        target_dynamics: Target object dynamics model, implemented as a</span>
+<span class="sd">            `TargetDynamics` interface. Defaults to `RandomWalk`.</span>
+<span class="sd">        generator: Initial state `Generator` instance. Defaults to `RandomGenerator`</span>
+<span class="sd">            with 50 targets and 2 searchers, with targets uniformly distributed</span>
+<span class="sd">            across the environment.</span>
+<span class="sd">        reward_fn: Reward aggregation function. Defaults to `IndividualRewardFn` where</span>
+<span class="sd">            agents split rewards if they locate a target simultaneously, and</span>
+<span class="sd">            rewards linearly decrease to zero over time.</span>
+<span class="sd">        observation: Agent observation view generation function. Defaults to</span>
+<span class="sd">            `AgentAndTargetObservationFn` where all targets (found and unfound)</span>
+<span class="sd">            and other searching agents are included in the generated view.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">target_contact_range</span> <span class="o">=</span> <span class="n">target_contact_range</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">searcher_params</span> <span class="o">=</span> <span class="n">AgentParams</span><span class="p">(</span>
+        <span class="n">max_rotate</span><span class="o">=</span><span class="n">searcher_max_rotate</span><span class="p">,</span>
+        <span class="n">max_accelerate</span><span class="o">=</span><span class="n">searcher_max_accelerate</span><span class="p">,</span>
+        <span class="n">min_speed</span><span class="o">=</span><span class="n">searcher_min_speed</span><span class="p">,</span>
+        <span class="n">max_speed</span><span class="o">=</span><span class="n">searcher_max_speed</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="n">time_limit</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_target_dynamics</span> <span class="o">=</span> <span class="n">target_dynamics</span> <span class="ow">or</span> <span class="n">RandomWalk</span><span class="p">(</span><span class="n">acc_std</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">vel_max</span><span class="o">=</span><span class="mf">0.002</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span> <span class="ow">or</span> <span class="n">RandomGenerator</span><span class="p">(</span><span class="n">num_targets</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">num_searchers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_viewer</span> <span class="o">=</span> <span class="n">viewer</span> <span class="ow">or</span> <span class="n">SearchAndRescueViewer</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_reward_fn</span> <span class="o">=</span> <span class="n">reward_fn</span> <span class="ow">or</span> <span class="n">IndividualRewardFn</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_observation_fn</span> <span class="o">=</span> <span class="n">observation</span> <span class="ow">or</span> <span class="n">AgentAndTargetObservationFn</span><span class="p">(</span>
+        <span class="n">num_vision</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+        <span class="n">searcher_vision_range</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">target_vision_range</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">view_angle</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">agent_radius</span><span class="o">=</span><span class="n">target_contact_range</span><span class="p">,</span>
+        <span class="n">env_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">env_size</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.action_spec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">action_spec</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.action_spec" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the action spec.</p>
+<p>2d array of individual agent actions. Each agents action is
+an array representing [rotation, acceleration] in the range
+[-1, 1].</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>action_spec</code></td>            <td>
+                  <code><span title="jumanji.specs.BoundedArray">BoundedArray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action array spec</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.observation_spec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">observation_spec</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.observation_spec" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the observation spec.</p>
+<p>Local searcher agent views representing the distance to the
+closest neighbouring agents and targets in the environment.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>observation_spec</code></td>            <td>
+                  <code><span title="jumanji.specs.Spec">Spec</span>[<span title="jumanji.environments.swarms.search_and_rescue.types.Observation">Observation</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Search-and-rescue observation spec</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reward_spec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">reward_spec</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reward_spec" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the reward spec.</p>
+<p>Array of individual rewards for each agent.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>reward_spec</code></td>            <td>
+                  <code><span title="jumanji.specs.BoundedArray">BoundedArray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reward array spec.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.animate" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">animate</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.animate" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create an animation from a sequence of environment states.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>states</code>
+            </td>
+            <td>
+                  <code><span title="typing.Sequence">Sequence</span>[<span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>sequence of environment states corresponding to consecutive
+timesteps.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>interval</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>delay between frames in milliseconds.</p>
+              </div>
+            </td>
+            <td>
+                  <code>100</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>save_path</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>the path where the animation file should be saved. If it
+is None, the plot will not be saved.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="matplotlib.animation.FuncAnimation">FuncAnimation</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Animation that can be saved as a GIF, MP4, or rendered with HTML.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">State</span><span class="p">],</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FuncAnimation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an animation from a sequence of environment states.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        states: sequence of environment states corresponding to consecutive</span>
+<span class="sd">            timesteps.</span>
+<span class="sd">        interval: delay between frames in milliseconds.</span>
+<span class="sd">        save_path: the path where the animation file should be saved. If it</span>
+<span class="sd">            is None, the plot will not be saved.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        state: the new state of the environment.</span>
-<span class="sd">        timestep: the next timestep.</span>
+<span class="sd">        Animation that can be saved as a GIF, MP4, or rendered with HTML.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Get the valid actions for the current state.</span>
-    <span class="n">valid_actions</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">action_mask</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viewer</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="n">save_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
 
-    <span class="c1"># Check if the chosen action is invalid (not in valid_actions).</span>
-    <span class="n">invalid_action_taken</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">valid_actions</span><span class="p">[</span><span class="n">action</span><span class="p">])</span>
+</div>
 
-    <span class="c1"># Update the colors array with the chosen action.</span>
-    <span class="n">colors</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_node_index</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+<div class="doc doc-object doc-function">
 
-    <span class="c1"># Determine if all nodes have been assigned a color</span>
-    <span class="n">all_nodes_colored</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">colors</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1"># Calculate the reward</span>
-    <span class="n">unique_colors_used</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">num_unique_colors</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">unique_colors_used</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">reward</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">all_nodes_colored</span><span class="p">,</span> <span class="o">-</span><span class="n">num_unique_colors</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.close" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
 
-    <span class="c1"># Apply the maximum penalty when an invalid action is taken and terminate the episode</span>
-    <span class="n">reward</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">invalid_action_taken</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
-    <span class="n">done</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">all_nodes_colored</span><span class="p">,</span> <span class="n">invalid_action_taken</span><span class="p">)</span>
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.close" class="headerlink" title="Permanent link">#</a></h2>
 
-    <span class="c1"># Update the current node index</span>
-    <span class="n">next_node_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">current_node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span>
 
-    <span class="n">next_action_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_valid_actions</span><span class="p">(</span><span class="n">next_node_index</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">colors</span><span class="p">)</span>
+    <div class="doc doc-contents ">
 
-    <span class="n">next_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">next_node_index</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">next_action_mask</span><span class="p">,</span>
-        <span class="n">key</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+        <p>Perform any necessary cleanup.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform any necessary cleanup.&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_viewer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.render" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.render" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Render a frame of the environment for a given state using matplotlib.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state</code>
+            </td>
+            <td>
+                  <code><span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>State object.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a frame of the environment for a given state using matplotlib.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: State object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_viewer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">reset</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.reset" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialise searcher and target initial states.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>key</code>
+            </td>
+            <td>
+                  <code><span title="chex.PRNGKey">PRNGKey</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random key used to reset the environment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>state</code></td>            <td>
+                  <code><span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Initial environment state.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>timestep</code></td>            <td>
+                  <code><a class="autorefs autorefs-internal" title="jumanji.types.TimeStep" href="../../types/#jumanji.types.TimeStep">TimeStep</a>[<span title="jumanji.environments.swarms.search_and_rescue.types.Observation">Observation</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>TimeStep with individual search agent views.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialise searcher and target initial states.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key: Random key used to reset the environment.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        state: Initial environment state.</span>
+<span class="sd">        timestep: TimeStep with individual search agent views.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">searcher_params</span><span class="p">)</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_to_observation</span><span class="p">(</span><span class="n">state</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span><span class="p">,))</span>
+    <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.step" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.swarms.search_and_rescue.env.SearchAndRescue.step" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Environment update.</p>
+<p>Update searcher velocities and consequently their positions,
+mark found targets, and generate rewards and local observations.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state</code>
+            </td>
+            <td>
+                  <code><span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Environment state.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>actions</code>
+            </td>
+            <td>
+                  <code><span title="chex.Array">Array</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>2d array of searcher steering actions.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>state</code></td>            <td>
+                  <code><span title="jumanji.environments.swarms.search_and_rescue.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Updated searcher and target positions and velocities.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>timestep</code></td>            <td>
+                  <code><a class="autorefs autorefs-internal" title="jumanji.types.TimeStep" href="../../types/#jumanji.types.TimeStep">TimeStep</a>[<span title="jumanji.environments.swarms.search_and_rescue.types.Observation">Observation</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Transition timestep with individual agent local observations.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/swarms/search_and_rescue/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Environment update.</span>
+
+<span class="sd">    Update searcher velocities and consequently their positions,</span>
+<span class="sd">    mark found targets, and generate rewards and local observations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: Environment state.</span>
+<span class="sd">        actions: 2d array of searcher steering actions.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        state: Updated searcher and target positions and velocities.</span>
+<span class="sd">        timestep: Transition timestep with individual agent local observations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key</span><span class="p">,</span> <span class="n">target_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">searchers</span> <span class="o">=</span> <span class="n">update_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">env_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">searcher_params</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">searchers</span><span class="p">,</span> <span class="n">actions</span>
     <span class="p">)</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="n">Observation</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">next_state</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">next_node_index</span><span class="p">,</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_dynamics</span><span class="p">(</span><span class="n">target_key</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">env_size</span><span class="p">)</span>
+
+    <span class="c1"># Searchers return an array of flags of any targets they are in range of,</span>
+    <span class="c1">#  and that have not already been located, result shape here is (n-searcher, n-targets)</span>
+    <span class="n">targets_found</span> <span class="o">=</span> <span class="n">spatial</span><span class="p">(</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">searcher_detect_targets</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="o">=</span><span class="n">esquilax</span><span class="o">.</span><span class="n">reductions</span><span class="o">.</span><span class="n">logical_or</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">num_targets</span><span class="p">,)),</span>
+        <span class="n">i_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_contact_range</span><span class="p">,</span>
+        <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">env_size</span><span class="p">,</span>
+    <span class="p">)(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_fn</span><span class="o">.</span><span class="n">view_angle</span><span class="p">,</span>
+        <span class="n">searchers</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">num_targets</span><span class="p">),</span> <span class="n">targets</span><span class="p">),</span>
+        <span class="n">pos</span><span class="o">=</span><span class="n">searchers</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+        <span class="n">pos_b</span><span class="o">=</span><span class="n">targets</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+        <span class="n">env_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">env_size</span><span class="p">,</span>
+        <span class="n">n_targets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">num_targets</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">timestep</span> <span class="o">=</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
-        <span class="n">done</span><span class="p">,</span>
-        <span class="n">termination</span><span class="p">,</span>
-        <span class="n">transition</span><span class="p">,</span>
-        <span class="n">reward</span><span class="p">,</span>
-        <span class="n">obs</span><span class="p">,</span>
+
+    <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reward_fn</span><span class="p">(</span><span class="n">targets_found</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span>
+
+    <span class="n">targets_found</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">targets_found</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Targets need to remain found if they already have been</span>
+    <span class="n">targets_found</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">targets_found</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">found</span><span class="p">)</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span>
+        <span class="n">searchers</span><span class="o">=</span><span class="n">searchers</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">TargetState</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">targets</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="o">=</span><span class="n">targets</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="n">targets_found</span><span class="p">),</span>
+        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+        <span class="n">step</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">timestep</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_to_observation</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+        <span class="n">jnp</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">step</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">targets_found</span><span class="p">)),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">termination</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span><span class="p">,)),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span><span class="p">,)),</span>
+        <span class="n">rewards</span><span class="p">,</span>
+        <span class="n">observation</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
