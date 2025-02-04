@@ -1,0 +1,24 @@
+name: search_and_rescue
+registered_version: SearchAndRescue-v0
+
+network:
+    layers: [128, 128]
+
+training:
+    num_epochs: 50
+    num_learner_steps_per_epoch: 400
+    n_steps: 20
+    total_batch_size: 128
+
+evaluation:
+    eval_total_batch_size: 2000
+    greedy_eval_total_batch_size: 2000
+
+a2c:
+    normalize_advantage: False
+    discount_factor: 0.997
+    bootstrapping_factor: 0.95
+    l_pg: 1.0
+    l_td: 1.0
+    l_en: 0.01
+    learning_rate: 3e-4

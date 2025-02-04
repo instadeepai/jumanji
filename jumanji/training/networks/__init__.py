@@ -80,6 +80,10 @@ from jumanji.training.networks.rubiks_cube.actor_critic import (
     make_actor_critic_networks_rubiks_cube,
 )
 from jumanji.training.networks.rubiks_cube.random import make_random_policy_rubiks_cube
+from jumanji.training.networks.search_and_rescue.actor_critic import (
+    make_actor_critic_search_and_rescue,
+)
+from jumanji.training.networks.search_and_rescue.random import make_random_policy_search_and_rescue
 from jumanji.training.networks.sliding_tile_puzzle.actor_critic import (
     make_actor_critic_networks_sliding_tile_puzzle,
 )
