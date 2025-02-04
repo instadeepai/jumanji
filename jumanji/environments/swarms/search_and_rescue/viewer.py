@@ -33,8 +33,10 @@ class SearchAndRescueViewer(Viewer[State]):
         self,
         figure_name: str = "SearchAndRescue",
         figure_size: Tuple[float, float] = (6.0, 6.0),
-        colormap: str = "hsv",
         env_size: Tuple[float, float] = (1.0, 1.0),
+        searcher_color: str = "#282B28",  # black
+        target_found_color: str = "#B3B6BC",  # light grey
+        target_lost_color: str = "#E98449",  # orange
     ) -> None:
         """Viewer for the `SearchAndRescue` environment.
 
@@ -46,9 +48,9 @@ class SearchAndRescueViewer(Viewer[State]):
         """
         self._figure_name = figure_name
         self._figure_size = figure_size
-        colormap = matplotlib.colormaps.get_cmap(colormap)
-        self.searcher_color = colormap(0.0)
-        self.target_colors = np.array([colormap(0.33), colormap(0.66)])
+
+        self.searcher_color = searcher_color
+        self.target_colors = np.array([target_lost_color, target_found_color])
         self._animation: Optional[matplotlib.animation.Animation] = None
         self.env_size = env_size
 
