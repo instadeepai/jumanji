@@ -27,6 +27,8 @@ from jumanji.viewer import Viewer
 
 
 class GraphColoringViewer(Viewer):
+    FIGURE_SIZE = (10.0, 10.0)
+
     def __init__(
         self,
         name: str = "GraphColoring",
@@ -38,23 +40,12 @@ class GraphColoringViewer(Viewer):
         self,
         state: State,
         save_path: Optional[str] = None,
-        ax: Optional[plt.Axes] = None,
     ) -> None:
-        num_nodes = state.adj_matrix.shape[0]
-        self.node_scale = self._calculate_node_scale(num_nodes)
-        self._color_mapping = self._create_color_mapping(num_nodes)
-
         self._clear_display()
-        fig, ax = self._get_fig_ax(ax)
-        pos = self._spring_layout(state.adj_matrix, num_nodes)
-        self._render_nodes(ax, pos, state.colors)
-        self._render_edges(ax, pos, state.adj_matrix, num_nodes)
-
-        ax.set_xlim(-0.5, 0.50)
-        ax.set_ylim(-0.50, 0.50)
-        ax.set_aspect("equal")
-        ax.axis("off")
-
+        self._set_params(state)
+        fig, ax = self._get_fig_ax()
+        ax.clear()
+        self._prepare_figure(ax, state)
         if save_path:
             fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
 
@@ -66,25 +57,41 @@ class GraphColoringViewer(Viewer):
         interval: int = 500,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
-        num_nodes = states[0].adj_matrix.shape[0]
-        self.node_scale = self._calculate_node_scale(num_nodes)
-        self._color_mapping = self._create_color_mapping(num_nodes)
+        self._set_params(states[0])
+        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
+        ax = fig.add_subplot(111)
+        plt.close(fig)
+        circles = self._prepare_figure(ax, states[0])
 
-        fig, ax = self._get_fig_ax(ax=None)
-        plt.title(f"{self._name}")
-
-        def make_frame(state: State) -> Tuple[Artist]:
-            self.render(state, ax=ax)
-            return (ax,)
+        def make_frame(state: State) -> List[Artist]:
+            for circle, color in zip(circles, state.colors, strict=False):
+                circle.set(color=self._color_mapping[color])
+            return circles
 
         _animation = animation.FuncAnimation(
-            fig, make_frame, frames=states, interval=interval, blit=False
+            fig, make_frame, frames=states[1:], interval=interval, blit=False
         )
 
         if save_path:
             _animation.save(save_path)
 
         return _animation
+
+    def _set_params(self, state: State) -> None:
+        self.num_nodes = state.adj_matrix.shape[0]
+        self.node_scale = self._calculate_node_scale(self.num_nodes)
+        self._color_mapping = self._create_color_mapping(self.num_nodes)
+
+    def _prepare_figure(self, ax: plt.Axes, state: State) -> List[Artist]:
+        ax.set_xlim(-0.5, 0.50)
+        ax.set_ylim(-0.50, 0.50)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        pos = self._spring_layout(state.adj_matrix, self.num_nodes)
+        self._render_edges(ax, pos, state.adj_matrix, self.num_nodes)
+        artists = self._render_nodes(ax, pos, state.colors)
+        return artists
 
     def close(self) -> None:
         plt.close(self._name)
@@ -181,32 +188,49 @@ class GraphColoringViewer(Viewer):
 
         return [(float(p[0]), float(p[1])) for p in pos]
 
-    def _get_fig_ax(self, ax: Optional[plt.Axes]) -> Tuple[plt.Figure, plt.Axes]:
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(self.node_scale, self.node_scale))
-            plt.title(f"{self._name}")
+    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
+        recreate = not plt.fignum_exists(self._name)
+        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
+        if recreate:
+            fig.tight_layout()
+            if not plt.isinteractive():
+                fig.show()
+            ax = fig.add_subplot(111)
         else:
-            fig = ax.figure
-            ax.clear()
+            ax = fig.get_axes()[0]
         return fig, ax
 
     def _render_nodes(
         self, ax: plt.Axes, pos: List[Tuple[float, float]], colors: chex.Array
-    ) -> None:
+    ) -> List[Artist]:
         # Set the radius of the nodes as a fraction of the scale,
         # so nodes appear smaller when there are more of them.
         node_radius = 0.05 * 5 / self.node_scale
+        circles = []
 
         for i, (x, y) in enumerate(pos):
-            ax.add_artist(
-                plt.Circle(
-                    (x, y),
-                    node_radius,
-                    color=self._color_mapping[colors[i]],
-                    fill=(colors[i] != -1),
-                )
+            c = plt.Circle(
+                (x, y),
+                node_radius,
+                color=self._color_mapping[colors[i]],
+                fill=True,
+                zorder=100,
             )
-            ax.text(x, y, str(i), color="white", ha="center", va="center", weight="bold")
+            circles.append(c)
+            ax.add_artist(c)
+            ax.text(
+                x,
+                y,
+                str(i),
+                color="white",
+                ha="center",
+                va="center",
+                weight="bold",
+                zorder=200,
+            )
+
+        return circles
 
     def _render_edges(
         self,
