@@ -99,7 +99,7 @@ class TSPViewer(Viewer):
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
