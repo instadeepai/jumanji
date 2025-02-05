@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.artist import Artist
+from matplotlib.text import Text
 
 import jumanji
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
@@ -46,6 +47,7 @@ class SudokuViewer(Viewer[State]):
         else:
             fig = ax.figure
             ax.clear()
+
         self._draw(ax, state)
         self._display_human(fig)
 
@@ -81,13 +83,24 @@ class SudokuViewer(Viewer[State]):
     ) -> matplotlib.animation.FuncAnimation:
         fig, ax = plt.subplots(figsize=(6, 6))
         plt.title(f"{self._name}")
+        texts = self._draw(ax, states[0])
 
-        def make_frame(state: State) -> Tuple[Artist]:
-            self.render(state, ax=ax)
-            return (ax,)
+        board_shape = states[0].board.shape
+
+        def make_frame(state: State) -> List[Artist]:
+            updated = []
+            for i in range(board_shape[0]):
+                for j in range(board_shape[1]):
+                    element = state.board[i, j]
+                    text = "" if element == -1 else str(element + 1)
+                    txt_artist = texts[i][j]
+                    txt_artist.set(text=text)
+                    updated.append(txt_artist)
+
+            return updated
 
         animation = matplotlib.animation.FuncAnimation(
-            fig, make_frame, frames=states, interval=interval, blit=False
+            fig, make_frame, frames=states[1:], interval=interval, blit=False
         )
 
         if save_path:
@@ -114,30 +127,36 @@ class SudokuViewer(Viewer[State]):
     def close(self) -> None:
         plt.close(self._name)
 
-    def _draw(self, ax: plt.Axes, state: State) -> None:
+    def _draw(self, ax: plt.Axes, state: State) -> List[List[Text]]:
         ax.clear()
         self._draw_board(ax)
-        self._draw_figures(ax, state)
+        return self._draw_figures(ax, state)
 
-    def _draw_figures(self, ax: plt.Axes, state: State) -> None:
+    def _draw_figures(self, ax: plt.Axes, state: State) -> List[List[Text]]:
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         board = state.board
         board_shape = board.shape
+        artists = list()
 
         for i in range(board_shape[0]):
+            artists.append([])
             for j in range(board_shape[1]):
                 x_pos = j + 0.5
                 y_pos = board_shape[0] - i - 0.5
                 element = board[i, j]
-                if element != -1:
-                    ax.text(
-                        x_pos,
-                        y_pos,
-                        element + 1,
-                        horizontalalignment="center",
-                        verticalalignment="center",
-                        fontsize=16,
-                    )
+                txt = "" if element == -1 else str(element + 1)
+                txt = Text(
+                    x=x_pos,
+                    y=y_pos,
+                    text=txt,
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    fontsize=16,
+                )
+                ax.add_artist(txt)
+                artists[-1].append(txt)
+
+        return artists
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
