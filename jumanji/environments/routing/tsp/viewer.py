@@ -13,12 +13,16 @@
 # limitations under the License.
 
 from importlib import resources
-from typing import Callable, Optional, Sequence, Tuple
+from itertools import pairwise
+from typing import Callable, List, Optional, Sequence, Tuple
 
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
+from matplotlib.collections import PathCollection
+from matplotlib.quiver import Quiver
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -90,17 +94,37 @@ class TSPViewer(Viewer):
         ax = fig.add_subplot(111)
         plt.close(fig)
         self._prepare_figure(ax)
+        cities, route, route_nodes = self._add_tour(ax, states[0])
+        routes = [(route, route_nodes)]
 
-        def make_frame(state: State) -> Tuple[Artist]:
-            self._add_tour(ax, state)
-            return (ax,)
+        def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
+            old_state, new_state = state_pair
+            updated: List[Artist] = []
+
+            if not jnp.array_equal(old_state.coordinates, new_state.coordinates):
+                cities.set_offsets(new_state.coordinates)
+                updated.append(cities)
+
+            old_route, old_route_nodes = routes.pop()
+            old_route.remove()
+            old_route_nodes.remove()
+            updated.append(old_route)
+            updated.append(old_route_nodes)
+
+            new_route, new_route_nodes = self._draw_route(ax, new_state)
+            updated.append(new_route)
+            updated.append(new_route_nodes)
+            routes.append((new_route, new_route_nodes))
+
+            return updated
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=states,
+            frames=pairwise(states),
             interval=interval,
+            save_count=len(states) - 1,
         )
 
         # Save the animation as a gif.
@@ -140,30 +164,38 @@ class TSPViewer(Viewer):
         map_img = plt.imread(img_path)
         ax.imshow(map_img, extent=(0, 1, 0, 1))
 
-    def _add_tour(self, ax: plt.Axes, state: State) -> None:
+    def _draw_route(self, ax: plt.Axes, state: State) -> Tuple[Quiver, PathCollection]:
+        xs, ys = state.coordinates[state.trajectory[: state.num_visited]].T
+        dx = xs[1:] - xs[:-1]
+        dy = ys[1:] - ys[:-1]
+        quiver = ax.quiver(
+            xs[:-1],
+            ys[:-1],
+            dx,
+            dy,
+            scale_units="xy",
+            angles="xy",
+            scale=1,
+            width=self.ARROW_WIDTH,
+            headwidth=5,
+        )
+        scatter = ax.scatter(xs, ys, s=self.NODE_SIZE, color="black")
+        return quiver, scatter
+
+    def _add_tour(
+        self, ax: plt.Axes, state: State
+    ) -> Tuple[PathCollection, Quiver, PathCollection]:
         """Add all the cities and the current tour between the visited cities to the plot."""
         x_coords, y_coords = state.coordinates.T
 
         # Draw the cities as nodes
-        ax.scatter(x_coords, y_coords, s=self.NODE_SIZE, color=self.NODE_COLOUR)
+        cities = ax.scatter(x_coords, y_coords, s=self.NODE_SIZE, color=self.NODE_COLOUR)
 
         # Draw the arrows between cities
-        if state.num_visited > 1:
-            xs, ys = state.coordinates[state.trajectory[: state.num_visited]].T
-            dx = xs[1:] - xs[:-1]
-            dy = ys[1:] - ys[:-1]
-            ax.quiver(
-                xs[:-1],
-                ys[:-1],
-                dx,
-                dy,
-                scale_units="xy",
-                angles="xy",
-                scale=1,
-                width=self.ARROW_WIDTH,
-                headwidth=5,
-            )
-            ax.scatter(xs, ys, s=self.NODE_SIZE, color="black")
+        # if state.num_visited > 1:
+        route, route_nodes = self._draw_route(ax, state)
+
+        return cities, route, route_nodes
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
