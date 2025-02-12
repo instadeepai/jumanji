@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
@@ -136,11 +136,9 @@ class TSPViewer(Viewer):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        img_path = pkg_resources.resource_filename(
-            "jumanji", "environments/routing/tsp/img/city_map.jpeg"
-        )
+        img_path = resources.files(jumanji.environments.routing.tsp) / "img/city_map.jpeg"
         map_img = plt.imread(img_path)
-        ax.imshow(map_img, extent=[0, 1, 0, 1])
+        ax.imshow(map_img, extent=(0, 1, 0, 1))
 
     def _add_tour(self, ax: plt.Axes, state: State) -> None:
         """Add all the cities and the current tour between the visited cities to the plot."""

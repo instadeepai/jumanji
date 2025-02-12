@@ -101,7 +101,7 @@ class Game2048Viewer(Viewer):
         # Set up the figure and axes for the game board.
         fig, ax = self.get_fig_ax()
         fig.suptitle("2048    Score: 0", size=20)
-        plt.tight_layout()
+        plt.close(fig)
 
         # Define a function to animate a single game state.
         def make_frame(state: State) -> Tuple[Artist]:
@@ -131,21 +131,19 @@ class Game2048Viewer(Viewer):
         """
         # Check if a figure with an id "2048" already exists.
         exists = plt.fignum_exists(self._name)
+        fig = plt.figure(
+            self._name,
+            figsize=(6.0, 6.0),
+            facecolor=self.COLORS["bg"],
+        )
         if exists:
-            # If it exists, get the figure and axes objects.
-            fig = plt.figure(self._name)
             ax = fig.get_axes()[0]
         else:
             # If it doesn't exist, create a new figure and axes objects.
-            fig = plt.figure(
-                self._name,
-                figsize=(6.0, 6.0),
-                facecolor=self.COLORS["bg"],
-            )
             plt.tight_layout()
             if not plt.isinteractive():
                 fig.show()
-            ax = fig.add_subplot()
+            ax = fig.add_subplot(111)
         return fig, ax
 
     def render_tile(self, tile_value: int, ax: plt.Axes, row: int, col: int) -> None:

@@ -14,12 +14,12 @@
 
 # flake8: noqa: CCR001
 
+from importlib import resources
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
 from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
@@ -211,9 +211,7 @@ class LevelBasedForagingViewer(Viewer):
             cell_center = self._entity_position(agent)
 
             # Read the image file
-            img_path = pkg_resources.resource_filename(
-                "jumanji", "environments/routing/lbf/imgs/agent.png"
-            )
+            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/agent.png"
             img = plt.imread(img_path)
 
             # Create an OffsetImage and add it to the axis
@@ -234,9 +232,7 @@ class LevelBasedForagingViewer(Viewer):
                 continue
 
             # Read the image file
-            img_path = pkg_resources.resource_filename(
-                "jumanji", "environments/routing/lbf/imgs/apple.png"
-            )
+            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/apple.png"
             img = plt.imread(img_path)
             cell_center = self._entity_position(food)
             self.draw_badge(food.level, cell_center, ax)

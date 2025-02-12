@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 from typing import Callable, Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
@@ -142,9 +142,7 @@ class KnapsackViewer(Viewer):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        img_path = pkg_resources.resource_filename(
-            "jumanji", "environments/packing/knapsack/img/knapsack.png"
-        )
+        img_path = resources.files(jumanji.environments.packing.knapsack) / "img/knapsack.png"
         sack_img = plt.imread(img_path)
         ax.imshow(sack_img, extent=(0, 1, 0, 1))
 

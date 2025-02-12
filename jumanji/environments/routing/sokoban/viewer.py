@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 from typing import Callable, Optional, Sequence, Tuple
 
 import chex
@@ -19,7 +20,6 @@ import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 from PIL import Image
@@ -61,10 +61,10 @@ class BoxViewer(Viewer):
         ]
 
         def get_image(image_name: str) -> Image.Image:
-            img_path = pkg_resources.resource_filename(
-                "jumanji", f"environments/routing/sokoban/imgs/{image_name}.png"
+            img_path = (
+                resources.files(jumanji.environments.routing.sokoban) / f"imgs/{image_name}.png"
             )
-            return Image.open(img_path)
+            return Image.open(str(img_path))
 
         self.images = [get_image(image_name) for image_name in image_names]
 
