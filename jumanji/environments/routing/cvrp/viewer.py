@@ -13,14 +13,17 @@
 # limitations under the License.
 
 from importlib import resources
-from itertools import groupby
-from typing import Callable, Optional, Sequence, Tuple
+from itertools import groupby, pairwise
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 from chex import Array
 from matplotlib.artist import Artist
+from matplotlib.collections import PathCollection
+from matplotlib.quiver import Quiver
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -32,8 +35,9 @@ class CVRPViewer(Viewer):
     FIGURE_SIZE = (10.0, 10.0)
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"
-    NODE_SIZE = 150
-    DEPOT_SIZE = 250
+    NODE_SIZE = 0.01
+    ROUTE_NODE_SIZE = 100
+    DEPOT_SIZE = 0.04
     ARROW_WIDTH = 0.004
 
     def __init__(self, name: str, num_cities: int, render_mode: str = "human") -> None:
@@ -68,6 +72,7 @@ class CVRPViewer(Viewer):
 
         Args:
             state: the environment state to render.
+            save_path: If supplied, file to save the animation to.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -100,17 +105,45 @@ class CVRPViewer(Viewer):
         ax = fig.add_subplot(111)
         plt.close(fig)
         self._prepare_figure(ax)
+        nodes, routes = self._add_tour(ax, states[0])
 
-        def make_frame(state: State) -> Tuple[Artist]:
-            self._add_tour(ax, state)
-            return (ax,)
+        def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
+            old_state, new_state = state_pair
+            updated = []
+
+            # If new episode then update node positions
+            if not jnp.array_equal(old_state.coordinates, new_state.coordinates):
+                x_coords, y_coords = new_state.coordinates.T
+                nodes[0].set(
+                    x=x_coords[0] - 0.5 * self.DEPOT_SIZE, y=y_coords[0] - 0.5 * self.DEPOT_SIZE
+                )
+                for i in range(1, x_coords.shape[0]):
+                    nodes[i].set_center((x_coords[i], y_coords[i]))
+                updated.extend(nodes)
+
+            while routes:
+                quiver, route_nodes = routes.pop()
+                quiver.remove()
+                route_nodes.remove()
+                updated.append(quiver)
+                updated.append(route_nodes)
+
+            if new_state.num_total_visits > 1:
+                coords = new_state.coordinates[new_state.trajectory[: new_state.num_total_visits]]
+                coords_grouped = self._group_tour(coords)
+
+                for coords_route, col_id in zip(
+                    coords_grouped, range(0, len(coords_grouped)), strict=False
+                ):
+                    new_route = self._draw_route(ax, coords_route, col_id)
+                    routes.append(new_route)
+                    updated.extend(new_route)
+
+            return updated
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
-            fig,
-            make_frame,
-            frames=states,
-            interval=interval,
+            fig, make_frame, frames=pairwise(states), interval=interval, save_count=len(states) - 1
         )
 
         # Save the animation as a gif.
@@ -169,7 +202,9 @@ class CVRPViewer(Viewer):
             tour_grouped[-1] = tour_grouped[-1][:-1]
         return tour_grouped
 
-    def _draw_route(self, ax: plt.Axes, coords: Array, col_id: int) -> None:
+    def _draw_route(
+        self, ax: plt.Axes, coords: Array, col_id: int
+    ) -> Tuple[Quiver, PathCollection]:
         """Draw the arrows and nodes for each route in the given colour."""
         x, y = coords.T
 
@@ -177,7 +212,7 @@ class CVRPViewer(Viewer):
         # consecutive cities.
         dx = x[1:] - x[:-1]
         dy = y[1:] - y[:-1]
-        ax.quiver(
+        quiver = ax.quiver(
             x[:-1],
             y[:-1],
             dx,
@@ -189,17 +224,41 @@ class CVRPViewer(Viewer):
             headwidth=5,
             color=self._cmap(col_id),
         )
-        ax.scatter(x, y, s=self.NODE_SIZE, color=self._cmap(col_id))
+        scatter = ax.scatter(x, y, s=self.ROUTE_NODE_SIZE, color=self._cmap(col_id))
+        return quiver, scatter
 
-    def _add_tour(self, ax: plt.Axes, state: State) -> None:
+    def _draw_cities(self, ax: plt.Axes, state: State) -> List[Union[plt.Circle, plt.Rectangle]]:
+        nodes = []
+
+        x_coords, y_coords = state.coordinates.T
+
+        depot = plt.Rectangle(
+            (x_coords[0] - 0.5 * self.DEPOT_SIZE, y_coords[0] - 0.5 * self.DEPOT_SIZE),
+            self.DEPOT_SIZE,
+            self.DEPOT_SIZE,
+            color=self.NODE_COLOUR,
+        )
+        ax.add_artist(depot)
+        nodes.append(depot)
+
+        for i in range(1, x_coords.shape[0]):
+            node = plt.Circle((x_coords[i], y_coords[i]), self.NODE_SIZE, color=self.NODE_COLOUR)
+            ax.add_artist(node)
+            nodes.append(node)
+
+        return nodes
+
+    def _add_tour(
+        self, ax: plt.Axes, state: State
+    ) -> Tuple[List[Union[plt.Circle, plt.Rectangle]], List[Tuple[Quiver, PathCollection]]]:
         """Add the cities and the depot to the plot, and draw each route in the tour in a different
         colour. The tour is the entire trajectory between the visited cities and a route is a
         trajectory either starting and ending at the depot or starting at the depot and ending at
         the current city."""
         x_coords, y_coords = state.coordinates.T
 
-        # Draw the cities
-        ax.scatter(x_coords[1:], y_coords[1:], s=self.NODE_SIZE, color=self.NODE_COLOUR)
+        nodes = self._draw_cities(ax, state)
+        routes = []
 
         # Draw the arrows between cities
         if state.num_total_visits > 1:
@@ -210,16 +269,9 @@ class CVRPViewer(Viewer):
             for coords_route, col_id in zip(
                 coords_grouped, range(0, len(coords_grouped)), strict=False
             ):
-                self._draw_route(ax, coords_route, col_id)
+                routes.append(self._draw_route(ax, coords_route, col_id))
 
-        # Draw the depot node
-        ax.scatter(
-            x_coords[0],
-            y_coords[0],
-            marker="s",
-            s=self.DEPOT_SIZE,
-            color=self.NODE_COLOUR,
-        )
+        return nodes, routes
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
