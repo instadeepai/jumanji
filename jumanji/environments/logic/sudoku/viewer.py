@@ -16,7 +16,7 @@ from typing import List, Optional, Sequence, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.artist import Artist
+from matplotlib.animation import FuncAnimation
 from matplotlib.text import Text
 
 import jumanji
@@ -80,14 +80,14 @@ class SudokuViewer(Viewer[State]):
         states: Sequence[State],
         interval: int = 500,
         save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
+    ) -> FuncAnimation:
         fig, ax = plt.subplots(figsize=(6, 6))
         plt.title(f"{self._name}")
         texts = self._draw(ax, states[0])
 
         board_shape = states[0].board.shape
 
-        def make_frame(state: State) -> List[Artist]:
+        def make_frame(state: State) -> List[plt.Text]:
             updated = []
             for i in range(board_shape[0]):
                 for j in range(board_shape[1]):
@@ -99,9 +99,7 @@ class SudokuViewer(Viewer[State]):
 
             return updated
 
-        animation = matplotlib.animation.FuncAnimation(
-            fig, make_frame, frames=states[1:], interval=interval, blit=False
-        )
+        animation = FuncAnimation(fig, make_frame, frames=states[1:], interval=interval, blit=False)
 
         if save_path:
             animation.save(save_path)
@@ -136,7 +134,7 @@ class SudokuViewer(Viewer[State]):
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         board = state.board
         board_shape = board.shape
-        artists = list()
+        artists: List[List[Text]] = list()
 
         for i in range(board_shape[0]):
             artists.append([])

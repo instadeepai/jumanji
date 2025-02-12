@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import pairwise
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import chex
@@ -94,7 +95,11 @@ class MMSTViewer(Viewer):
 
         self._display(fig)
 
-    def _draw_graph(self, state: State, ax: plt.Axes) -> Tuple[Dict, List]:
+    def _draw_graph(
+        self, state: State, ax: plt.Axes
+    ) -> Tuple[
+        Dict[Tuple[int, ...], plt.Line2D], List[Tuple[plt.Circle, plt.Circle]], List[plt.Text]
+    ]:
         """Draw the different nodes and edges in the graph
 
         Args:
@@ -123,6 +128,7 @@ class MMSTViewer(Viewer):
             lines[k] = edge
 
         circles = []
+        labels = []
 
         # Draw nodes.
         for node in range(num_nodes):
@@ -148,7 +154,7 @@ class MMSTViewer(Viewer):
 
             circles.append(c)
 
-            ax.text(
+            txt = plt.Text(
                 positions[node][0],
                 positions[node][1],
                 str(node),
@@ -158,13 +164,15 @@ class MMSTViewer(Viewer):
                 weight="bold",
                 zorder=200,
             )
+            ax.add_artist(txt)
+            labels.append(txt)
 
         ax.set_axis_off()
         ax.set_aspect(1)
         ax.relim()
         ax.autoscale_view()
 
-        return lines, circles
+        return lines, circles, labels
 
     def build_edges(
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
@@ -236,34 +244,58 @@ class MMSTViewer(Viewer):
         node_scale = 5 + int(np.sqrt(num_nodes))
         fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
         plt.close(fig)
-        edges, circles = self._draw_graph(states[0], ax)
+        edges, circles, labels = self._draw_graph(states[0], ax)
 
-        def make_frame(state: State) -> List[Artist]:
+        def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
+            old_state, new_state = state_pair
+
             updated = []
 
-            edge_updates = self.build_edges(state.adj_matrix, state.connected_nodes)
+            if not jnp.array_equal(old_state.adj_matrix, new_state.adj_matrix):
+                while circles:
+                    circle = circles.pop()
+                    circle[0].remove()
+                    circle[1].remove()
+                    updated.append(circle[0])
+                    updated.append(circle[1])
+                while labels:
+                    label = labels.pop()
+                    label.remove()
+                    updated.append(label)
+                for k in list(edges.keys()):
+                    edge = edges.pop(k)
+                    edge.remove()
+                    updated.append(edge)
 
-            for k, (_, color) in edge_updates.items():
-                edge = edges[k]
-                edge.set(color=color)
-                updated.append(edge)
+                new_edges, new_circles, new_labels = self._draw_graph(new_state, ax)
+                edges.update(new_edges)
+                circles.extend(new_circles)
+                labels.extend(new_labels)
 
-            for i, (ca, cb) in enumerate(circles):
-                pos = np.where(state.nodes_to_connect == i)[0]
-                if len(pos) == 1:
-                    fcolor = self.palette[pos[0]]
-                else:
-                    fcolor = black
+            else:
+                edge_updates = self.build_edges(new_state.adj_matrix, new_state.connected_nodes)
 
-                if i in state.positions:
-                    lcolor = yellow
-                else:
-                    lcolor = blue
+                for k, (_, color) in edge_updates.items():
+                    edge = edges[k]
+                    edge.set(color=color)
+                    updated.append(edge)
 
-                ca.set(color=lcolor)
-                cb.set(color=fcolor)
-                updated.append(ca)
-                updated.append(cb)
+                for i, (ca, cb) in enumerate(circles):
+                    pos = np.where(new_state.nodes_to_connect == i)[0]
+                    if len(pos) == 1:
+                        fcolor = self.palette[pos[0]]
+                    else:
+                        fcolor = black
+
+                    if i in new_state.positions:
+                        lcolor = yellow
+                    else:
+                        lcolor = blue
+
+                    ca.set(color=lcolor)
+                    cb.set(color=fcolor)
+                    updated.append(ca)
+                    updated.append(cb)
 
             return updated
 
@@ -271,7 +303,7 @@ class MMSTViewer(Viewer):
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=states[1:],
+            frames=pairwise(states),
             interval=interval,
         )
 

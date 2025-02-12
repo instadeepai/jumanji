@@ -210,7 +210,7 @@ class CVRPViewer(Viewer):
 
             # Draw each route in different colour
             for coords_route, col_id in zip(
-                coords_grouped, np.arange(0, len(coords_grouped)), strict=False
+                coords_grouped, range(0, len(coords_grouped)), strict=False
             ):
                 self._draw_route(ax, coords_route, col_id)
 

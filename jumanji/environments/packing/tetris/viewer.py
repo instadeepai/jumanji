@@ -72,7 +72,7 @@ class TetrisViewer(Viewer):
         """Render Tetris.
 
         Args:
-            grid: the grid of the Tetris environment to render.
+            state: State of the Tetris environment to render.
 
         Returns:
             RGB array if the render_mode is RenderMode.RGB_ARRAY.

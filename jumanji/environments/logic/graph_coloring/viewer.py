@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import pairwise
 from typing import List, Optional, Sequence, Tuple
 
 import chex
@@ -67,12 +68,12 @@ class GraphColoringViewer(Viewer):
         def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
             prev_state, state = state_pair
 
-            for (circle, color) in zip(nodes, state.colors, strict=False):
+            for circle, color in zip(nodes, state.colors, strict=False):
                 circle.set(color=self._color_mapping[color])
             # Update node and edges if new episode
             if not np.array_equal(prev_state.adj_matrix, state.adj_matrix):
                 pos = self._spring_layout(state.adj_matrix, self.num_nodes)
-                for (circle, label, xy) in zip(nodes, labels, pos):
+                for circle, label, xy in zip(nodes, labels, pos, strict=False):
                     circle.set_center(xy)
                     label.set(x=xy[0], y=xy[1])
                 n = 0
@@ -91,7 +92,11 @@ class GraphColoringViewer(Viewer):
                 return nodes
 
         _animation = animation.FuncAnimation(
-            fig, make_frame, frames=zip(states[:-1], states[1:]), interval=interval, blit=False
+            fig,
+            make_frame,
+            frames=pairwise(states),
+            interval=interval,
+            blit=False,
         )
 
         if save_path:
@@ -294,6 +299,6 @@ class GraphColoringViewer(Viewer):
         colormap = cm.get_cmap("hsv", num_nodes + 1)
         color_mapping = []
         for colormap_idx in colormap_indices:
-            color_mapping.append(colormap(colormap_idx))
+            color_mapping.append(colormap(float(colormap_idx)))
         color_mapping.append((0.0, 0.0, 0.0, 1.0))  # Adding black to the color mapping
         return color_mapping

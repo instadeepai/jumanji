@@ -61,7 +61,7 @@ class ConnectorViewer(Viewer):
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
         for colormap_idx in colormap_indecies:
-            self.colors.append(colormap(colormap_idx))
+            self.colors.append(colormap(float(colormap_idx)))
 
         # The animation must be stored in a variable that lives as long as the
         # animation should run. Otherwise, the animation will get garbage-collected.
