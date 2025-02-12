@@ -17,6 +17,7 @@ from typing import Callable, Optional, Sequence, Tuple
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+import pkg_resources
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
@@ -104,7 +105,7 @@ class KnapsackViewer(Viewer):
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -141,8 +142,11 @@ class KnapsackViewer(Viewer):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        map_img = plt.imread("docs/img/knapsack.png")
-        ax.imshow(map_img, extent=[0, 1, 0, 1])
+        img_path = pkg_resources.resource_filename(
+            "jumanji", "environments/packing/knapsack/img/knapsack.png"
+        )
+        sack_img = plt.imread(img_path)
+        ax.imshow(sack_img, extent=(0, 1, 0, 1))
 
     def _display_human(self, fig: plt.Figure) -> None:
         if plt.isinteractive():
