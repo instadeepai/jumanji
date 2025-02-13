@@ -229,6 +229,7 @@ class TetrisViewer(Viewer):
             make_frame,
             frames=zip(grids, scores, strict=False),
             interval=interval,
+            save_count=len(grids),
         )
 
         # Save the animation as a gif.

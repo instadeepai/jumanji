@@ -47,6 +47,7 @@ class Game2048Viewer(Viewer):
         "edge": "#bbada0",
         "bg": "#faf8ef",
     }
+    FIG_SIZE = (6.0, 6.0)
 
     def __init__(
         self,
@@ -99,7 +100,7 @@ class Game2048Viewer(Viewer):
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
         # Set up the figure and axes for the game board.
-        fig, ax = self.get_fig_ax()
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIG_SIZE)
         fig.suptitle("2048    Score: 0", size=20)
         plt.close(fig)
 
@@ -133,7 +134,7 @@ class Game2048Viewer(Viewer):
         exists = plt.fignum_exists(self._name)
         fig = plt.figure(
             self._name,
-            figsize=(6.0, 6.0),
+            figsize=self.FIG_SIZE,
             facecolor=self.COLORS["bg"],
         )
         if exists:

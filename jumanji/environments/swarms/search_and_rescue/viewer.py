@@ -99,13 +99,11 @@ class SearchAndRescueViewer(Viewer[State]):
             target_scatter.set_color(target_colors)
             return searcher_quiver, target_scatter
 
-        matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=states,
             interval=interval,
-            blit=False,
         )
 
         if save_path:

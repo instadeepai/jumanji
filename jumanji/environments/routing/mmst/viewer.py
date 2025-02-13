@@ -25,6 +25,7 @@ from matplotlib.lines import Line2D
 from numpy.typing import NDArray
 
 import jumanji.environments
+from jumanji.environments.commons.viewer_utils import spring_layout
 from jumanji.environments.routing.mmst.types import State
 from jumanji.viewer import Viewer
 
@@ -106,10 +107,8 @@ class MMSTViewer(Viewer):
             state: current state of the environment.
             ax: figure axes on which to plot.
         """
-
-        positions = self._spring_layout(state.adj_matrix)
-
         num_nodes = state.adj_matrix.shape[0]
+        positions = spring_layout(state.adj_matrix, num_nodes)
         node_scale = 5 + int(np.sqrt(num_nodes))
         node_radius = 0.05 * 5 / node_scale
 
@@ -305,6 +304,7 @@ class MMSTViewer(Viewer):
             make_frame,
             frames=pairwise(states),
             interval=interval,
+            save_count=len(states) - 1,
         )
 
         # Save the animation as a gif.
@@ -344,75 +344,3 @@ class MMSTViewer(Viewer):
             import IPython.display
 
             IPython.display.clear_output(True)
-
-    def _compute_repulsive_forces(
-        self, repulsive_forces: np.ndarray, pos: np.ndarray, k: float
-    ) -> np.ndarray:
-        num_nodes = repulsive_forces.shape[0]
-        for i in range(num_nodes):
-            for j in range(i + 1, num_nodes):
-                delta = pos[i] - pos[j]
-                distance = np.linalg.norm(delta)
-                direction = delta / (distance + 1e-6)
-                force = k * k / (distance + 1e-6)
-                repulsive_forces[i] += direction * force
-                repulsive_forces[j] -= direction * force
-
-        return repulsive_forces
-
-    def _compute_attractive_forces(
-        self,
-        graph: chex.Array,
-        attractive_forces: np.ndarray,
-        pos: np.ndarray,
-        k: float,
-    ) -> np.ndarray:
-        num_nodes = graph.shape[0]
-        for i in range(num_nodes):
-            for j in range(num_nodes):
-                if graph[i, j]:
-                    delta = pos[i] - pos[j]
-                    distance = np.linalg.norm(delta)
-                    direction = delta / (distance + 1e-6)
-                    force = distance * distance / k
-                    attractive_forces[i] -= direction * force
-                    attractive_forces[j] += direction * force
-
-        return attractive_forces
-
-    def _spring_layout(self, graph: chex.Array, seed: int = 42) -> List[Tuple[float, float]]:
-        """Compute a 2D spring layout for the given graph using
-        the Fruchterman-Reingold force-directed algorithm.
-
-        The algorithm computes a layout by simulating the graph as a physical system,
-        where nodes are repelling each other and edges are attracting connected nodes.
-        The method minimizes the energy of the system over several iterations.
-
-        Args:
-            graph: A Graph object representing the adjacency matrix of the graph.
-            seed: An integer used to seed the random number generator for reproducibility.
-
-        Returns:
-            A list of tuples representing the 2D positions of nodes in the graph.
-        """
-        num_nodes = graph.shape[0]
-        rng = np.random.default_rng(seed)
-        pos = rng.random((num_nodes, 2)) * 2 - 1
-
-        iterations = 100
-        k = np.sqrt(1 / num_nodes)
-        temperature = 2.0  # Added a temperature variable
-
-        for _ in range(iterations):
-            repulsive_forces = self._compute_repulsive_forces(np.zeros((num_nodes, 2)), pos, k)
-            attractive_forces = self._compute_attractive_forces(
-                graph, np.zeros((num_nodes, 2)), pos, k
-            )
-
-            pos += (repulsive_forces + attractive_forces) * temperature
-            # Reduce the temperature (cooling factor) to refine the layout.
-            temperature *= 0.9
-
-            pos = np.clip(pos, -1, 1)  # Keep positions within the [-1, 1] range
-
-        return [(float(p[0]), float(p[1])) for p in pos]
