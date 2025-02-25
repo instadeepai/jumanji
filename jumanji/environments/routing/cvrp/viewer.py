@@ -111,7 +111,7 @@ class CVRPViewer(Viewer):
             old_state, new_state = state_pair
             updated = []
 
-            # If new episode then update node positions
+            # If new episode then update node  artist positions
             if not jnp.array_equal(old_state.coordinates, new_state.coordinates):
                 x_coords, y_coords = new_state.coordinates.T
                 nodes[0].set(
@@ -121,6 +121,8 @@ class CVRPViewer(Viewer):
                     nodes[i].set_center((x_coords[i], y_coords[i]))
                 updated.extend(nodes)
 
+            # Pop existing route artists from the list, remove them from
+            #  the plot, and add them to the updated artist list
             while routes:
                 quiver, route_nodes = routes.pop()
                 quiver.remove()
@@ -128,6 +130,7 @@ class CVRPViewer(Viewer):
                 updated.append(quiver)
                 updated.append(route_nodes)
 
+            # Redraw the route (if it exists)
             if new_state.num_total_visits > 1:
                 coords = new_state.coordinates[new_state.trajectory[: new_state.num_total_visits]]
                 coords_grouped = self._group_tour(coords)
@@ -143,7 +146,12 @@ class CVRPViewer(Viewer):
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
-            fig, make_frame, frames=pairwise(states), interval=interval, save_count=len(states) - 1
+            fig,
+            make_frame,
+            frames=pairwise(states),
+            interval=interval,
+            save_count=len(states) - 1,
+            blit=True,
         )
 
         # Save the animation as a gif.

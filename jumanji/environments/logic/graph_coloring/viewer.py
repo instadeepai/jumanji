@@ -23,7 +23,7 @@ import numpy as np
 from matplotlib.artist import Artist
 
 import jumanji.environments
-from jumanji.environments.commons.viewer_utils import spring_layout
+from jumanji.environments.commons.graph_view_utils import spring_layout
 from jumanji.environments.logic.graph_coloring.types import State
 from jumanji.viewer import Viewer
 

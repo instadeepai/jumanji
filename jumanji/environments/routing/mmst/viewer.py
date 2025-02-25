@@ -25,7 +25,7 @@ from matplotlib.lines import Line2D
 from numpy.typing import NDArray
 
 import jumanji.environments
-from jumanji.environments.commons.viewer_utils import spring_layout
+from jumanji.environments.commons.graph_view_utils import spring_layout
 from jumanji.environments.routing.mmst.types import State
 from jumanji.viewer import Viewer
 
