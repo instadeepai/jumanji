@@ -108,17 +108,25 @@ class MatplotlibViewer(Viewer, abc.ABC, Generic[State]):
 
             IPython.display.clear_output(True)
 
-    def _get_fig_ax(self, **fig_kwargs: Any) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._name)
+    def _get_fig_ax(
+        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        name = self._name if name_suffix is None else self._name + name_suffix
+        exists = plt.fignum_exists(name)
+
+        if (not plt.isinteractive()) or (not show):
+            plt.ioff()
+
         if exists:
-            fig = plt.figure(self._name)
+            fig = plt.figure(name)
             ax = fig.get_axes()[0]
         else:
-            fig = plt.figure(self._name, figsize=self.figure_size, **fig_kwargs)
-            fig.set_layout_engine(layout=TightLayoutEngine(pad=False, w_pad=0.0, h_pad=0.0))
-            if not plt.isinteractive():
+            fig = plt.figure(name, figsize=self.figure_size, **fig_kwargs)
+            fig.set_layout_engine(layout=TightLayoutEngine(pad=0.02))
+            ax = fig.add_subplot(111)
+
+            if (not plt.isinteractive()) and show:
                 fig.show()
-            ax = fig.add_subplot()
 
         return fig, ax
 

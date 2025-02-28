@@ -29,7 +29,7 @@ from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
 import jumanji.environments.routing.robot_warehouse.constants as constants
-from jumanji.environments.routing.robot_warehouse.types import Direction, State
+from jumanji.environments.routing.robot_warehouse.types import Agent, Direction, Shelf, State
 from jumanji.tree_utils import tree_slice
 from jumanji.viewer import MatplotlibViewer
 
@@ -94,10 +94,8 @@ class RobotWarehouseViewer(MatplotlibViewer[State]):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=constants._FIGURE_SIZE)
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
         def make_frame(state: State) -> Tuple[Artist]:
@@ -185,7 +183,7 @@ class RobotWarehouseViewer(MatplotlibViewer[State]):
                 alpha=1,
             )
 
-    def _draw_shelves(self, ax: plt.Axes, shelves: chex.Array) -> None:
+    def _draw_shelves(self, ax: plt.Axes, shelves: Shelf) -> None:
         """Draw shelves at their respective positions.
 
         Args:
@@ -216,7 +214,7 @@ class RobotWarehouseViewer(MatplotlibViewer[State]):
 
             ax.fill(x_points, y_points, color=shelf_color)
 
-    def _draw_agents(self, ax: plt.Axes, agents: chex.Array) -> None:
+    def _draw_agents(self, ax: plt.Axes, agents: Agent) -> None:
         """Draw agents at their respective positions.
 
         Args:

@@ -84,14 +84,10 @@ class LevelBasedForagingViewer(MatplotlibViewer[State]):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(
-            f"{self._name}Animation",
-            figsize=self.figure_size,
-            facecolor=constants._GRID_COLOR,
+        fig, ax = self._get_fig_ax(
+            name_suffix="_animation", show=False, facecolor=constants._GRID_COLOR
         )
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
         def make_frame(state: State) -> Tuple[Artist]:

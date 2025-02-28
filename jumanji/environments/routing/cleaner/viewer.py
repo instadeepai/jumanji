@@ -14,7 +14,6 @@
 
 from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
 
-import matplotlib
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -83,8 +82,8 @@ class CleanerViewer(MazeViewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.figure_size)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
         def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()

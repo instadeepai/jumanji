@@ -69,11 +69,8 @@ class RubiksCubeViewer(MatplotlibViewer[State]):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
-        fig.suptitle(self._name)
-        plt.tight_layout()
-        ax = ax.flatten()
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
         faces = self._draw(ax, states[0])
 
@@ -96,19 +93,23 @@ class RubiksCubeViewer(MatplotlibViewer[State]):
 
         return self._animation
 
-    def _get_fig_ax(self, **fig_kwargs: Any) -> Tuple[plt.Figure, List[plt.Axes]]:
-        exists = plt.fignum_exists(self._name)
+    def _get_fig_ax(
+        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+    ) -> Tuple[plt.Figure, List[plt.Axes]]:
+        name = self._name if name_suffix is None else self._name + name_suffix
+        exists = plt.fignum_exists(name)
         if exists:
-            fig = plt.figure(self._name)
+            fig = plt.figure(name)
             ax = fig.get_axes()
         else:
-            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=self._name)
-            fig.suptitle(self._name)
+            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=name)
+            fig.suptitle(name)
             ax = ax.flatten()
             plt.tight_layout()
             plt.axis("off")
-            if not plt.isinteractive():
+            if not plt.isinteractive() and show:
                 fig.show()
+
         return fig, ax
 
     def _draw(self, ax: List[plt.Axes], state: State) -> List[AxesImage]:

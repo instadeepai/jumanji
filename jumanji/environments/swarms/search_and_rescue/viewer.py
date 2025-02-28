@@ -80,8 +80,9 @@ class SearchAndRescueViewer(MatplotlibViewer[State]):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(num=f"{self._name}Anim", figsize=self.figure_size)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         fig, ax = format_plot(fig, ax, self.env_size)
+        plt.close(fig=fig)
 
         searcher_quiver = draw_agents(ax, states[0].searchers, self.searcher_color)
         target_scatter = ax.scatter(
@@ -103,6 +104,7 @@ class SearchAndRescueViewer(MatplotlibViewer[State]):
             make_frame,
             frames=states,
             interval=interval,
+            blit=True,
         )
 
         if save_path:
@@ -118,7 +120,9 @@ class SearchAndRescueViewer(MatplotlibViewer[State]):
             state.targets.pos[:, 0], state.targets.pos[:, 1], marker="o", color=target_colors
         )
 
-    def _get_fig_ax(self, **fig_kwargs: str) -> Tuple[plt.Figure, plt.Axes]:
-        fig, ax = super()._get_fig_ax()
+    def _get_fig_ax(
+        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: str
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        fig, ax = super()._get_fig_ax(name_suffix=name_suffix, show=show)
         fig, ax = format_plot(fig, ax, self.env_size)
         return fig, ax

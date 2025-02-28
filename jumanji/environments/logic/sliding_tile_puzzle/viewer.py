@@ -82,7 +82,8 @@ class SlidingTilePuzzleViewer(MatplotlibViewer[State]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = self._get_fig_ax()
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
         def make_frame(state: State) -> Tuple[Artist]:
             self.draw_puzzle(ax, state)

@@ -68,8 +68,8 @@ class SnakeViewer(MatplotlibViewer[State]):
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
         fig, ax = plt.subplots(num=f"{self._name}Anim", figsize=self.figure_size)
+        plt.close(fig=fig)
         self._draw_board(ax, states[0])
-        plt.close(fig)
 
         patches: List[matplotlib.patches.Patch] = []
 

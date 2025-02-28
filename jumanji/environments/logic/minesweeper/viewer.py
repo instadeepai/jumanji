@@ -80,10 +80,9 @@ class MinesweeperViewer(MatplotlibViewer[State]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = self._get_fig_ax()
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         fig.suptitle(self._name)
-        plt.tight_layout()
-        plt.close(fig)
 
         def make_frame(state: State) -> Tuple[Artist]:
             self._draw(ax, state)

@@ -60,10 +60,8 @@ class GraphColoringViewer(MatplotlibViewer[State]):
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
         self._set_params(states[0])
-        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         nodes, labels, edges = self._prepare_figure(ax, states[0])
 
         def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:

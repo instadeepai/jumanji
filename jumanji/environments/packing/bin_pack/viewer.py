@@ -72,9 +72,8 @@ class BinPackViewer(MatplotlibViewer[State]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Anim", figsize=self.figure_size)
-        ax = fig.add_subplot(111, projection="3d")
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
         entities: List[mpl_toolkits.mplot3d.art3d.Poly3DCollection] = []
 
@@ -103,12 +102,15 @@ class BinPackViewer(MatplotlibViewer[State]):
 
         return self._animation
 
-    def _get_fig_ax(self, **fig_kwargs: Any) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.figure_size)
+    def _get_fig_ax(
+        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        name = self._name if name_suffix is None else self._name + name_suffix
+        recreate = not plt.fignum_exists(name)
+        fig = plt.figure(name, figsize=self.figure_size)
         if recreate:
             fig.tight_layout()
-            if not plt.isinteractive():
+            if not plt.isinteractive() and show:
                 fig.show()
             ax = fig.add_subplot(111, projection="3d")
         else:

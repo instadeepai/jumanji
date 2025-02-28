@@ -99,9 +99,9 @@ class Game2048Viewer(MatplotlibViewer[State]):
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
         # Set up the figure and axes for the game board.
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.figure_size)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         fig.suptitle("2048    Score: 0", size=20)
-        plt.close(fig)
 
         # Define a function to animate a single game state.
         def make_frame(state: State) -> Tuple[Artist]:
@@ -145,7 +145,7 @@ class Game2048Viewer(MatplotlibViewer[State]):
         elif tile_value < 1024:
             color = self.COLORS["light_text"]
             size = 30
-        elif tile_value >= 1024 and tile_value < 16384:
+        elif 1024 <= tile_value < 16384:
             color = self.COLORS["light_text"]
             size = 25
         else:  # tile_value >= 16384:

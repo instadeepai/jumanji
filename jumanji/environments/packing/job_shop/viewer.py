@@ -87,8 +87,8 @@ class JobShopViewer(MatplotlibViewer[State]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
-        ax = fig.add_subplot(111)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
         def make_frame(state: State) -> Tuple[Artist]:

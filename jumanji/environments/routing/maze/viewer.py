@@ -15,7 +15,7 @@
 from typing import ClassVar, Optional, Sequence
 
 import chex
-import matplotlib
+from matplotlib import animation
 from numpy.typing import NDArray
 
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
@@ -66,7 +66,7 @@ class MazeEnvViewer(MazeViewer):
         states: Sequence[State],
         interval: int = 200,
         save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
+    ) -> animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:

@@ -227,10 +227,10 @@ class MMSTViewer(MatplotlibViewer[State]):
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
 
-        num_nodes = states[0].adj_matrix.shape[0]
-        node_scale = 5 + int(np.sqrt(num_nodes))
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
-        plt.close(fig)
+        # num_nodes = states[0].adj_matrix.shape[0]
+        # node_scale = 5 + int(np.sqrt(num_nodes))
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         edges, circles, labels = self._draw_graph(states[0], ax)
 
         def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:

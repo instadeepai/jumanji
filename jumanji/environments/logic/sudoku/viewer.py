@@ -73,8 +73,9 @@ class SudokuViewer(MatplotlibViewer[State]):
         interval: int = 500,
         save_path: Optional[str] = None,
     ) -> FuncAnimation:
-        fig, ax = plt.subplots(figsize=(6, 6))
-        plt.title(f"{self._name}")
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        fig.suptitle(f"{self._name}")
         texts = self._draw(ax, states[0])
 
         board_shape = states[0].board.shape
