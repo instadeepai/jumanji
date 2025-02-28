@@ -18,13 +18,13 @@ import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 from matplotlib.artist import Artist
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.logic.game_2048.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class Game2048Viewer(Viewer):
+class Game2048Viewer(MatplotlibViewer[State]):
     COLORS: ClassVar[Dict[int | str, str]] = {
         1: "#ccc0b3",
         2: "#eee4da",
@@ -47,27 +47,26 @@ class Game2048Viewer(Viewer):
         "edge": "#bbada0",
         "bg": "#faf8ef",
     }
-    FIG_SIZE = (6.0, 6.0)
 
     def __init__(
         self,
         name: str = "2048",
         board_size: int = 4,
+        render_mode: str = "human",
     ) -> None:
         """Viewer for the 2048 environment.
 
         Args:
             name: the window name to be used when initialising the window.
             board_size: size of the board.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self._board_size = board_size
+        super().__init__(name, render_mode)
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Renders the current state of the game board.
 
         Args:
@@ -75,12 +74,12 @@ class Game2048Viewer(Viewer):
         """
         self._clear_display()
         # Get the figure and axes for the game board.
-        fig, ax = self.get_fig_ax()
+        fig, ax = self._get_fig_ax()
         # Set the figure title to display the current score.
         fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
         # Draw the game board
         self.draw_board(ax, state)
-        self._display_human(fig)
+        return self._display(fig)
 
     def animate(
         self,
@@ -100,7 +99,7 @@ class Game2048Viewer(Viewer):
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
         # Set up the figure and axes for the game board.
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIG_SIZE)
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.figure_size)
         fig.suptitle("2048    Score: 0", size=20)
         plt.close(fig)
 
@@ -124,29 +123,6 @@ class Game2048Viewer(Viewer):
 
         return self._animation
 
-    def get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        """This function returns a `Matplotlib` figure and axes for displaying the 2048 game board.
-
-        Returns:
-            A tuple containing the figure and axes objects.
-        """
-        # Check if a figure with an id "2048" already exists.
-        exists = plt.fignum_exists(self._name)
-        fig = plt.figure(
-            self._name,
-            figsize=self.FIG_SIZE,
-            facecolor=self.COLORS["bg"],
-        )
-        if exists:
-            ax = fig.get_axes()[0]
-        else:
-            # If it doesn't exist, create a new figure and axes objects.
-            plt.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        return fig, ax
-
     def render_tile(self, tile_value: int, ax: plt.Axes, row: int, col: int) -> None:
         """Renders a single tile on the game board.
 
@@ -158,9 +134,9 @@ class Game2048Viewer(Viewer):
         """
         # Set the background color of the tile based on its value.
         if tile_value <= 16384:
-            rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.COLORS[int(tile_value)])
+            rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=self.COLORS[int(tile_value)])
         else:
-            rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.COLORS["other"])
+            rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=self.COLORS["other"])
         ax.add_patch(rect)
 
         if tile_value in [2, 4]:
@@ -221,23 +197,3 @@ class Game2048Viewer(Viewer):
 
         # Draw the grid lines.
         ax.grid(color=self.COLORS["edge"], linestyle="-", linewidth=7)
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

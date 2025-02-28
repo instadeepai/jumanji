@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from importlib import resources
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
@@ -23,12 +23,10 @@ from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.packing.knapsack.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class KnapsackViewer(Viewer):
-    FIGURE_SIZE = (5.0, 5.0)
-
+class KnapsackViewer(MatplotlibViewer[State]):
     def __init__(self, name: str, render_mode: str = "human", total_budget: float = 2.0) -> None:
         """Viewer for the `Knapsack` environment.
 
@@ -39,20 +37,8 @@ class KnapsackViewer(Viewer):
                 - "rgb_array": return a numpy array frame representing the environment.
             total_budget: the capacity of the knapsack.
         """
-        self._name = name
         self._total_budget = total_budget
-
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
+        super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `Knapsack` environment.
@@ -93,7 +79,7 @@ class KnapsackViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
         ax = fig.add_subplot(111)
         self._prepare_figure(ax)
 
@@ -115,28 +101,6 @@ class KnapsackViewer(Viewer):
 
         return self._animation
 
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._name)
-        if exists:
-            fig = plt.figure(self._name)
-            # ax = fig.add_subplot()
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        return fig, ax
-
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
@@ -145,18 +109,3 @@ class KnapsackViewer(Viewer):
         img_path = resources.files(jumanji.environments.packing.knapsack) / "img/knapsack.png"
         sack_img = plt.imread(img_path)
         ax.imshow(sack_img, extent=(0, 1, 0, 1))
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())

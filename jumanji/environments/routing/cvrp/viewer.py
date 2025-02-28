@@ -14,7 +14,7 @@
 
 from importlib import resources
 from itertools import groupby, pairwise
-from typing import Callable, List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import jax.numpy as jnp
 import matplotlib.animation
@@ -28,11 +28,10 @@ from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.routing.cvrp.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class CVRPViewer(Viewer):
-    FIGURE_SIZE = (10.0, 10.0)
+class CVRPViewer(MatplotlibViewer):
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"
     NODE_SIZE = 0.01
@@ -49,38 +48,22 @@ class CVRPViewer(Viewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self._num_cities = num_cities
-
         # Each route to and from depot has a different color
         self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_cities)
+        super().__init__(name, render_mode)
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `CVRP` environment.
 
         Args:
             state: the environment state to render.
-            save_path: If supplied, file to save the animation to.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._prepare_figure(ax)
         self._add_tour(ax, state)
-        if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
         return self._display(fig)
 
     def animate(
@@ -100,7 +83,7 @@ class CVRPViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         ax = fig.add_subplot(111)
         plt.close(fig)
@@ -159,28 +142,6 @@ class CVRPViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, 1)
@@ -280,18 +241,3 @@ class CVRPViewer(Viewer):
                 routes.append(self._draw_route(ax, coords_route, col_id))
 
         return nodes, routes
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())

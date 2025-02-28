@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from itertools import pairwise
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
@@ -24,10 +24,9 @@ from matplotlib.artist import Artist
 from matplotlib.lines import Line2D
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.commons.graph_view_utils import spring_layout
 from jumanji.environments.routing.mmst.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 grey = (100 / 255, 100 / 255, 100 / 255)
 white = (255 / 255, 255 / 255, 255 / 255)
@@ -37,13 +36,14 @@ black = (0 / 255, 0 / 255, 0 / 255)
 blue = (50 / 255, 50 / 255, 160 / 255)
 
 
-class MMSTViewer(Viewer):
+class MMSTViewer(MatplotlibViewer[State]):
     """Viewer class for the MMST environment."""
 
     def __init__(
         self,
         num_agents: int,
         name: str = "MMST",
+        render_mode: str = "human",
     ) -> None:
         """Create a `MMSTViewer` instance for rendering the `MMST` environment.
 
@@ -51,12 +51,7 @@ class MMSTViewer(Viewer):
             num_agents: Number of agents in the environment.
         """
 
-        self._name = name
         self.num_agents = num_agents
-
-        # Pick display method. Only one mode available.
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        self._display = self._display_human
 
         np.random.seed(0)
 
@@ -70,31 +65,24 @@ class MMSTViewer(Viewer):
             )
             self.palette.append(colour)
 
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-    def render(self, state: State, save_path: Optional[str] = None) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render the state of the environment.
 
         Args:
             state: the current state of the environment to render.
-            save_path: optional name to save frame as.
 
         Return:
             pixel RGB array
         """
-        num_nodes = state.adj_matrix.shape[0]
-        node_scale = 5 + int(np.sqrt(num_nodes))
-
         self._clear_display()
-        fig, ax = self._get_fig_ax(node_scale)
-        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
+        # fig, ax = self._get_fig_ax(node_scale)
+        fig, ax = self._get_fig_ax()
         ax.clear()
         self._draw_graph(state, ax)
 
-        if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
-
-        self._display(fig)
+        return self._display(fig)
 
     def _draw_graph(
         self, state: State, ax: plt.Axes
@@ -305,6 +293,7 @@ class MMSTViewer(Viewer):
             frames=pairwise(states),
             interval=interval,
             save_count=len(states) - 1,
+            blit=True,
         )
 
         # Save the animation as a gif.
@@ -312,35 +301,3 @@ class MMSTViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self, node_scale: float) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, (node_scale, node_scale))
-        # plt.style.use("dark_background")
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_notebook():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)

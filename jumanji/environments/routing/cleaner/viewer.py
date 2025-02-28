@@ -83,7 +83,7 @@ class CleanerViewer(MazeViewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.figure_size)
         plt.close(fig)
 
         def make_frame(state: State) -> Tuple[Artist]:

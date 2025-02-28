@@ -15,7 +15,7 @@
 # flake8: noqa: CCR001
 
 from importlib import resources
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -29,10 +29,10 @@ import jumanji
 import jumanji.environments.routing.lbf.constants as constants
 from jumanji.environments.routing.lbf.types import Agent, Entity, Food, State
 from jumanji.tree_utils import tree_slice
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class LevelBasedForagingViewer(Viewer):
+class LevelBasedForagingViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         grid_size: int,
@@ -45,7 +45,6 @@ class LevelBasedForagingViewer(Viewer):
             grid_size: the size of the grid (width, height)
             name: custom name for the Viewer. Defaults to `LevelBasedForaging`.
         """
-        self._name = name
         self.rows, self.cols = (grid_size, grid_size)
         self.grid_size = 30
 
@@ -53,18 +52,7 @@ class LevelBasedForagingViewer(Viewer):
 
         self.width = 1 + self.cols * (self.grid_size + 1)
         self.height = 1 + self.rows * (self.grid_size + 1)
-
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[animation.Animation] = None
+        super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `LevelBasedForaging` environment.
@@ -73,7 +61,7 @@ class LevelBasedForagingViewer(Viewer):
             state: the environment state to render.
         """
         self._clear_display()
-        fig, ax = self._get_fig_ax()
+        fig, ax = self._get_fig_ax(facecolor=constants._GRID_COLOR)
         ax.clear()
         self._prepare_figure(ax)
         self._draw_state(ax, state)
@@ -98,7 +86,7 @@ class LevelBasedForagingViewer(Viewer):
         """
         fig = plt.figure(
             f"{self._name}Animation",
-            figsize=constants._FIGURE_SIZE,
+            figsize=self.figure_size,
             facecolor=constants._GRID_COLOR,
         )
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
@@ -125,31 +113,6 @@ class LevelBasedForagingViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(
-            self._name, figsize=constants._FIGURE_SIZE, facecolor=constants._GRID_COLOR
-        )
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, self.width)
@@ -186,21 +149,6 @@ class LevelBasedForagingViewer(Viewer):
         )
         lc = LineCollection(lines, colors=(constants._LINE_COLOR,))
         ax.add_collection(lc)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
 
     def _draw_agents(self, agents: Agent, ax: plt.Axes) -> None:
         """Draw the agents on the grid."""

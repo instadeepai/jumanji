@@ -21,37 +21,37 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.commons.graph_view_utils import spring_layout
 from jumanji.environments.logic.graph_coloring.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class GraphColoringViewer(Viewer):
-    FIGURE_SIZE = (10.0, 10.0)
-
+class GraphColoringViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         name: str = "GraphColoring",
+        render_mode: str = "human",
     ) -> None:
-        self._name = name
-        self._animation: Optional[animation.Animation] = None
+        """
+        Viewer for the `GraphColoring` environment.
 
-    def render(
-        self,
-        state: State,
-        save_path: Optional[str] = None,
-    ) -> None:
+        Args:
+            name: the window name to be used when initializing the window.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
+        """
+        super().__init__(name, render_mode)
+
+    def render(self, state: State) -> Optional[NDArray]:
         self._clear_display()
         self._set_params(state)
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._prepare_figure(ax, state)
-        if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
-
-        self._display_human(fig)
+        return self._display(fig)
 
     def animate(
         self,
@@ -60,7 +60,7 @@ class GraphColoringViewer(Viewer):
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
         self._set_params(states[0])
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         ax = fig.add_subplot(111)
         plt.close(fig)
@@ -98,6 +98,7 @@ class GraphColoringViewer(Viewer):
             frames=pairwise(states),
             interval=interval,
             save_count=len(states) - 1,
+            blit=True,
         )
 
         if save_path:
@@ -121,39 +122,6 @@ class GraphColoringViewer(Viewer):
         edges = self._render_edges(ax, pos, state.adj_matrix, self.num_nodes)
         nodes, labels = self._render_nodes(ax, pos, state.colors)
         return nodes, labels, edges
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _render_nodes(
         self, ax: plt.Axes, pos: List[Tuple[float, float]], colors: chex.Array

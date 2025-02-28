@@ -12,44 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence
 
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.text import Text
+from numpy.typing import NDArray
 
-import jumanji
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.env import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class SudokuViewer(Viewer[State]):
-    def __init__(
-        self,
-        name: str = "Sudoku",
-    ) -> None:
-        self._name = name
-        self._animation: Optional[matplotlib.animation.Animation] = None
+class SudokuViewer(MatplotlibViewer[State]):
+    def __init__(self, name: str = "Sudoku", render_mode: str = "human") -> None:
+        """Viewer for the `Sudoku` environment.
 
-    def render(
-        self,
-        state: State,
-        save_path: Optional[str] = None,
-        ax: Optional[plt.Axes] = None,
-    ) -> None:
+        Args:
+            name: the window name to be used when initialising the window.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
+        """
+        super().__init__(name, render_mode)
+
+    def render(self, state: State) -> Optional[NDArray]:
         self._clear_display()
-
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(6, 6))
-            plt.title(f"{self._name}")
-        else:
-            fig = ax.figure
-            ax.clear()
-
+        fig, ax = self._get_fig_ax()
         self._draw(ax, state)
-        self._display_human(fig)
+        return self._display(fig)
 
     def _draw_board(self, ax: plt.Axes) -> None:
         # Draw the square box that delimits the board.
@@ -99,31 +91,12 @@ class SudokuViewer(Viewer[State]):
 
             return updated
 
-        animation = FuncAnimation(fig, make_frame, frames=states[1:], interval=interval, blit=False)
+        animation = FuncAnimation(fig, make_frame, frames=states[1:], interval=interval, blit=True)
 
         if save_path:
             animation.save(save_path)
 
         return animation
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._name)
-        if exists:
-            fig = plt.figure(self._name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(
-                self._name,
-                figsize=(6, 6),
-            )
-            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        return fig, ax
-
-    def close(self) -> None:
-        plt.close(self._name)
 
     def _draw(self, ax: plt.Axes, state: State) -> List[List[Text]]:
         ax.clear()
@@ -155,20 +128,3 @@ class SudokuViewer(Viewer[State]):
                 artists[-1].append(txt)
 
         return artists
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

@@ -12,61 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.tetris.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class TetrisViewer(Viewer):
-    FIGURE_SIZE = (6.0, 10.0)
-
+class TetrisViewer(MatplotlibViewer[State]):
     def __init__(self, num_rows: int, num_cols: int, render_mode: str = "human") -> None:
         """
         Viewer for a `Tetris` environment.
 
         Args:
-            name: the window name to be used when initialising the window.
+            num_rows: Number of environment rows
+            num_cols: Number of environment columns
             render_mode: the mode used to render the environment. Must be one of:
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
-        self._name = f"{num_rows}x{num_cols} Tetris"
         self.n_colors = 10
-        self.figure_size = (6.0, 6.0)
-        # Pick display method.
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
 
         # Pick colors.
-        colormap_indecies = jnp.arange(0, 1, 1 / self.n_colors)
+        colormap_indicies = jnp.arange(0, 1, 1 / self.n_colors)
         colormap = matplotlib.cm.get_cmap("hsv", self.n_colors + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
-        for colormap_idx in colormap_indecies:
+        for colormap_idx in colormap_indicies:
             self.colors.append(colormap(colormap_idx))
         self.edgecolors = [(0.0, 0.0, 0.0), (0.9, 0.9, 0.9)]
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(f"{num_rows}x{num_cols} Tetris", render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render Tetris.
@@ -195,7 +180,7 @@ class TetrisViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE)
+        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.figure_size)
         plt.close(fig)
 
         def make_frame(frame_data: Tuple[chex.Array, chex.Numeric]) -> Tuple[Artist]:
@@ -238,20 +223,6 @@ class TetrisViewer(Viewer):
 
         return self._animation
 
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, TetrisViewer.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
-
     def _add_grid_image(self, ax: plt.Axes, grid: chex.Array) -> None:
         self._draw_grid(grid, ax)
         ax.set_axis_off()
@@ -278,24 +249,3 @@ class TetrisViewer(Viewer):
         color = self.colors[color_id]
         edge_color = self.edgecolors[is_padd]
         return {"facecolor": color, "edgecolor": edge_color, "linewidth": 1}
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_notebook():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)

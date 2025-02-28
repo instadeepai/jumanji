@@ -18,7 +18,7 @@ copyright."""
 
 # flake8: noqa: CCR001
 
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation as animation
@@ -28,14 +28,13 @@ from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
-import jumanji
 import jumanji.environments.routing.robot_warehouse.constants as constants
 from jumanji.environments.routing.robot_warehouse.types import Direction, State
 from jumanji.tree_utils import tree_slice
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class RobotWarehouseViewer(Viewer):
+class RobotWarehouseViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         grid_size: Tuple[int, int],
@@ -50,8 +49,10 @@ class RobotWarehouseViewer(Viewer):
             goals: x,y coordinates of goal locations (where shelves
                 should be delivered)
             name: custom name for the Viewer. Defaults to `RobotWarehouse`.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self.goals = goals
         self.rows, self.cols = grid_size
 
@@ -60,17 +61,8 @@ class RobotWarehouseViewer(Viewer):
 
         self.width = 1 + self.cols * (self.grid_size + 1)
         self.height = 1 + self.rows * (self.grid_size + 1)
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[animation.Animation] = None
+        super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `RobotWarehouse` environment.
@@ -127,29 +119,6 @@ class RobotWarehouseViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=constants._FIGURE_SIZE)
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, self.width)
@@ -305,18 +274,3 @@ class RobotWarehouseViewer(Viewer):
                 color=constants._AGENT_DIR_COLOR,
                 linewidth=2,
             )
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())

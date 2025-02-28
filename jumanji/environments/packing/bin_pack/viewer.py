@@ -12,25 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d
 import mpl_toolkits.mplot3d.axes3d
-import numpy as np
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.bin_pack.types import State, item_from_space
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class BinPackViewer(Viewer):
+class BinPackViewer(MatplotlibViewer[State]):
     FONT_STYLE = "monospace"
-    FIGURE_SIZE = (6.0, 6.0)
 
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """Viewer for the `BinPack` environment.
@@ -41,18 +38,7 @@ class BinPackViewer(Viewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-        # You must store the created Animation in a variable that lives as long as the animation
-        # should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
+        super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `BinPack` environment.
@@ -86,7 +72,7 @@ class BinPackViewer(Viewer):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Anim", figsize=self.FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Anim", figsize=self.figure_size)
         ax = fig.add_subplot(111, projection="3d")
         plt.close(fig)
 
@@ -117,12 +103,9 @@ class BinPackViewer(Viewer):
 
         return self._animation
 
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
+    def _get_fig_ax(self, **fig_kwargs: Any) -> Tuple[plt.Figure, plt.Axes]:
         recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
+        fig = plt.figure(self._name, figsize=self.figure_size)
         if recreate:
             fig.tight_layout()
             if not plt.isinteractive():
@@ -208,28 +191,6 @@ class BinPackViewer(Viewer):
         ]
         title = " | ".join(key + ": " + value for key, value in metrics)
         fig.suptitle(title, font=self.FONT_STYLE)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            # Block for 2 seconds.
-            fig.canvas.start_event_loop(2.0)
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
 
     def _create_box_vertices(
         self, pos: Tuple[float, float, float], lens: Tuple[float, float, float]

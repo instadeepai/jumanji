@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, List, Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib
@@ -20,27 +20,28 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist
 from matplotlib.image import AxesImage
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.logic.rubiks_cube.constants import Face
 from jumanji.environments.logic.rubiks_cube.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class RubiksCubeViewer(Viewer[State]):
-    def __init__(self, sticker_colors: Optional[list], cube_size: int):
+class RubiksCubeViewer(MatplotlibViewer[State]):
+    def __init__(self, sticker_colors: Optional[list], cube_size: int, render_mode: str = "human"):
         """
         Args:
             sticker_colors: colors used in rendering the faces of the Rubik's cube.
             cube_size: size of cube to view.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
         self.cube_size = cube_size
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
-        self.figure_name = f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube"
-        self.figure_size = (6.0, 6.0)
-        self._animation: Optional[FuncAnimation] = None
+        super().__init__(f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube", render_mode)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
@@ -49,7 +50,7 @@ class RubiksCubeViewer(Viewer[State]):
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
-        self._update_display(fig)
+        return self._display(fig)
 
     def animate(
         self,
@@ -69,7 +70,7 @@ class RubiksCubeViewer(Viewer[State]):
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
         fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size)
-        fig.suptitle(self.figure_name)
+        fig.suptitle(self._name)
         plt.tight_layout()
         ax = ax.flatten()
         plt.close(fig)
@@ -95,14 +96,14 @@ class RubiksCubeViewer(Viewer[State]):
 
         return self._animation
 
-    def _get_fig_ax(self) -> Tuple[plt.Figure, List[plt.Axes]]:
-        exists = plt.fignum_exists(self.figure_name)
+    def _get_fig_ax(self, **fig_kwargs: Any) -> Tuple[plt.Figure, List[plt.Axes]]:
+        exists = plt.fignum_exists(self._name)
         if exists:
-            fig = plt.figure(self.figure_name)
+            fig = plt.figure(self._name)
             ax = fig.get_axes()
         else:
-            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=self.figure_name)
-            fig.suptitle(self.figure_name)
+            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=self._name)
+            fig.suptitle(self._name)
             ax = ax.flatten()
             plt.tight_layout()
             plt.axis("off")
@@ -138,28 +139,3 @@ class RubiksCubeViewer(Viewer[State]):
             ax[i].grid(color="black", linestyle="-", linewidth=2)
 
         return images
-
-    def _update_display(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self.figure_name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        plt.close(self.figure_name)

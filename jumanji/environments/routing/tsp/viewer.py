@@ -14,12 +14,11 @@
 
 from importlib import resources
 from itertools import pairwise
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.artist import Artist
 from matplotlib.collections import PathCollection
 from matplotlib.quiver import Quiver
@@ -27,11 +26,10 @@ from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.routing.tsp.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class TSPViewer(Viewer):
-    FIGURE_SIZE = (10.0, 10.0)
+class TSPViewer(MatplotlibViewer[State]):
     NODE_COLOUR = "dimgray"
     NODE_SIZE = 150
     ARROW_WIDTH = 0.004
@@ -45,19 +43,7 @@ class TSPViewer(Viewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
+        super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the `TSP` environment.
@@ -89,7 +75,7 @@ class TSPViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
+        fig = plt.figure(f"{self._name}Animation", figsize=self.figure_size)
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         ax = fig.add_subplot(111)
         plt.close(fig)
@@ -125,6 +111,7 @@ class TSPViewer(Viewer):
             frames=pairwise(states),
             interval=interval,
             save_count=len(states) - 1,
+            blit=True,
         )
 
         # Save the animation as a gif.
@@ -132,28 +119,6 @@ class TSPViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, 1)
@@ -196,18 +161,3 @@ class TSPViewer(Viewer):
         route, route_nodes = self._draw_route(ax, state)
 
         return cities, route, route_nodes
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
