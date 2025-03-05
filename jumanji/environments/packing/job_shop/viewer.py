@@ -51,7 +51,7 @@ class JobShopViewer(MatplotlibViewer[State]):
         self._max_op_duration = max_op_duration
 
         # Have additional color to avoid two jobs having same color when using hsv colormap
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_jobs + 1)
+        self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_jobs + 1)
 
         super().__init__(name, "human")
 

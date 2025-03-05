@@ -44,7 +44,7 @@ class ConnectorViewer(MatplotlibViewer):
         """
         # Pick colors.
         colormap_indecies = np.arange(0, 1, 1 / num_agents)
-        colormap = matplotlib.cm.get_cmap("hsv", num_agents + 1)
+        colormap = plt.get_cmap("hsv", num_agents + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
         for colormap_idx in colormap_indecies:

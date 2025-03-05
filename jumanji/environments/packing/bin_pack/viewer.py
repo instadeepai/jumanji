@@ -123,7 +123,7 @@ class BinPackViewer(MatplotlibViewer[State]):
     def _create_entities(self, state: State) -> List[mpl_toolkits.mplot3d.art3d.Poly3DCollection]:
         entities = []
         n_items = len(state.items_mask)
-        cmap = plt.cm.get_cmap("hsv", n_items)
+        cmap = plt.get_cmap("hsv", n_items)
         for i in range(n_items):
             if state.items_placed[i]:
                 box = self._create_box(

@@ -50,7 +50,7 @@ class CVRPViewer(MatplotlibViewer):
         """
         self._num_cities = num_cities
         # Each route to and from depot has a different color
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_cities)
+        self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_cities)
         super().__init__(name, render_mode)
 
     def render(self, state: State) -> Optional[NDArray]:

@@ -60,7 +60,7 @@ class MultiCVRPViewer(MatplotlibViewer[State]):
         self._map_max = map_max
 
         # Each vehicle has a different colour
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
+        self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
 
         super().__init__(name, render_mode)
 
@@ -75,7 +75,6 @@ class MultiCVRPViewer(MatplotlibViewer[State]):
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
-        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
         self._prepare_figure(ax)
         self._add_tour(ax, state)

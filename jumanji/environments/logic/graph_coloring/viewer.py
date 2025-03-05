@@ -17,7 +17,6 @@ from typing import List, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation as animation
-import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
@@ -188,7 +187,7 @@ class GraphColoringViewer(MatplotlibViewer[State]):
         num_nodes: int,
     ) -> List[Tuple[float, float, float, float]]:
         colormap_indices = np.arange(0, 1, 1 / num_nodes)
-        colormap = cm.get_cmap("hsv", num_nodes + 1)
+        colormap = plt.get_cmap("hsv", num_nodes + 1)
         color_mapping = []
         for colormap_idx in colormap_indices:
             color_mapping.append(colormap(float(colormap_idx)))

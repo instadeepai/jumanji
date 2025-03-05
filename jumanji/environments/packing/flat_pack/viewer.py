@@ -39,7 +39,7 @@ class FlatPackViewer(MatplotlibViewer[State]):
         """
         # Create a color for each block.
         colormap_indices = np.arange(0, 1, 1 / num_blocks)
-        colormap = matplotlib.cm.get_cmap("hsv", num_blocks + 1)
+        colormap = plt.get_cmap("hsv", num_blocks + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Empty grid colour should be white.
         for colormap_idx in colormap_indices:

@@ -92,7 +92,14 @@ class SudokuViewer(MatplotlibViewer[State]):
 
             return updated
 
-        animation = FuncAnimation(fig, make_frame, frames=states[1:], interval=interval, blit=True)
+        animation = FuncAnimation(
+            fig,
+            make_frame,
+            frames=states,
+            interval=interval,
+            blit=True,
+            save_count=len(states),
+        )
 
         if save_path:
             animation.save(save_path)

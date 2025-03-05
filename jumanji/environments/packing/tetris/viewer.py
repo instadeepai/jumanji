@@ -44,7 +44,7 @@ class TetrisViewer(MatplotlibViewer[State]):
 
         # Pick colors.
         colormap_indicies = jnp.arange(0, 1, 1 / self.n_colors)
-        colormap = matplotlib.cm.get_cmap("hsv", self.n_colors + 1)
+        colormap = plt.get_cmap("hsv", self.n_colors + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
         for colormap_idx in colormap_indicies:

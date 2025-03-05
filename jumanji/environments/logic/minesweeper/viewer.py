@@ -94,6 +94,7 @@ class MinesweeperViewer(MatplotlibViewer[State]):
             make_frame,
             frames=states,
             interval=interval,
+            save_count=len(states),
         )
 
         # Save the animation as a GIF.
