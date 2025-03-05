@@ -94,16 +94,20 @@ class RubiksCubeViewer(MatplotlibViewer[State]):
         return self._animation
 
     def _get_fig_ax(
-        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: Any,
     ) -> Tuple[plt.Figure, List[plt.Axes]]:
-        name = self._name if name_suffix is None else self._name + name_suffix
-        exists = plt.fignum_exists(name)
+        fig_name = self._name if name_suffix is None else self._name + name_suffix
+        exists = plt.fignum_exists(fig_name)
         if exists:
-            fig = plt.figure(name)
+            fig = plt.figure(fig_name)
             ax = fig.get_axes()
         else:
-            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=name)
-            fig.suptitle(name)
+            fig, ax = plt.subplots(nrows=3, ncols=2, figsize=self.figure_size, num=fig_name)
+            fig.suptitle(self._name)
             ax = ax.flatten()
             plt.tight_layout()
             plt.axis("off")

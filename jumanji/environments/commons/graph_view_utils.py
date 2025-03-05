@@ -53,7 +53,9 @@ def _compute_attractive_forces(
     return attractive_forces
 
 
-def spring_layout(graph: chex.Array, num_nodes: int, seed: int = 42) -> List[Tuple[float, float]]:
+def spring_layout(
+    graph: chex.Array, num_nodes: int, seed: int = 42, iterations: int = 100
+) -> List[Tuple[float, float]]:
     """
     Compute a 2D spring layout for the given graph using
     the Fruchterman-Reingold force-directed algorithm.
@@ -66,6 +68,7 @@ def spring_layout(graph: chex.Array, num_nodes: int, seed: int = 42) -> List[Tup
         graph: A Graph object representing the adjacency matrix of the graph.
         num_nodes: Number of graph nodes.
         seed: An integer used to seed the random number generator for reproducibility.
+        iterations: Number of layout refining iterations.
 
     Returns:
         A list of tuples representing the 2D positions of nodes in the graph.
@@ -73,7 +76,6 @@ def spring_layout(graph: chex.Array, num_nodes: int, seed: int = 42) -> List[Tup
     rng = np.random.default_rng(seed)
     pos = rng.random((num_nodes, 2)) * 2 - 1
 
-    iterations = 100
     k = np.sqrt(5 / num_nodes)
     temperature = 2.0  # Added a temperature variable
 
@@ -88,5 +90,10 @@ def spring_layout(graph: chex.Array, num_nodes: int, seed: int = 42) -> List[Tup
         temperature *= 0.9
 
         pos = np.clip(pos, -1, 1)  # Keep positions within the [-1, 1] range
+
+    # Scale positions to fill figure
+    pos_max = np.max(pos, axis=0)
+    pos_min = np.min(pos, axis=0)
+    pos = 0.05 + (pos - pos_min) / (1.1 * (pos_max - pos_min))
 
     return [(float(p[0]), float(p[1])) for p in pos]

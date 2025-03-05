@@ -101,12 +101,12 @@ class Game2048Viewer(MatplotlibViewer[State]):
         # Set up the figure and axes for the game board.
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
-        fig.suptitle("2048    Score: 0", size=20)
+        ax.set_title("2048    Score: 0", size=20)
 
         # Define a function to animate a single game state.
         def make_frame(state: State) -> Tuple[Artist]:
             self.draw_board(ax, state)
-            fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
+            ax.set_title(f"2048    Score: {int(state.score)}", size=20)
             return (ax,)
 
         # Create the animation object.

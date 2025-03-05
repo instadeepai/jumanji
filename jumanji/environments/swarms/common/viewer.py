@@ -66,14 +66,6 @@ def format_plot(
         Figure: Formatted figure.
         Axes: Formatted axes.
     """
-    fig.subplots_adjust(
-        top=1.0 - border,
-        bottom=border,
-        right=1.0 - border,
-        left=border,
-        hspace=0,
-        wspace=0,
-    )
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_xlim(0, env_dims[0])

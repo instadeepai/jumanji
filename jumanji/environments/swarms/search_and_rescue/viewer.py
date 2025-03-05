@@ -121,8 +121,12 @@ class SearchAndRescueViewer(MatplotlibViewer[State]):
         )
 
     def _get_fig_ax(
-        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: str
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: str,
     ) -> Tuple[plt.Figure, plt.Axes]:
-        fig, ax = super()._get_fig_ax(name_suffix=name_suffix, show=show)
+        fig, ax = super()._get_fig_ax(name_suffix=name_suffix, show=show, padding=padding)
         fig, ax = format_plot(fig, ax, self.env_size)
         return fig, ax

@@ -67,7 +67,11 @@ class SnakeViewer(MatplotlibViewer[State]):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(num=f"{self._name}Anim", figsize=self.figure_size)
+
+        fig, ax = self._get_fig_ax(
+            "_animation",
+            show=False,
+        )
         plt.close(fig=fig)
         self._draw_board(ax, states[0])
 
@@ -82,11 +86,10 @@ class SnakeViewer(MatplotlibViewer[State]):
             return (ax,)
 
         # Create the animation object.
-        matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=states,
+            frames=states[1:],
             interval=interval,
         )
 

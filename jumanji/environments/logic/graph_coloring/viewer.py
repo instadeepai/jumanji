@@ -112,8 +112,8 @@ class GraphColoringViewer(MatplotlibViewer[State]):
     def _prepare_figure(
         self, ax: plt.Axes, state: State
     ) -> Tuple[List[plt.Circle], List[plt.Text], List[plt.Line2D]]:
-        ax.set_xlim(-1.0, 1.0)
-        ax.set_ylim(-1.0, 1.0)
+        ax.set_xlim(0, 1.0)
+        ax.set_ylim(0, 1.0)
         ax.set_aspect("equal")
         ax.axis("off")
         pos = spring_layout(state.adj_matrix, self.num_nodes)

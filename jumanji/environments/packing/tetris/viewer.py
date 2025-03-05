@@ -182,12 +182,13 @@ class TetrisViewer(MatplotlibViewer[State]):
         """
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
+        ax.set_title("Tetris    Score: 0", size=20)
 
         def make_frame(frame_data: Tuple[chex.Array, chex.Numeric]) -> Tuple[Artist]:
             grid, score = frame_data
             ax.clear()
             ax.invert_yaxis()
-            fig.suptitle(f"Tetris    Score: {int(score)}", size=20)
+            ax.set_title(f"Tetris    Score: {int(score)}", size=20)
             self._add_grid_image(ax, grid)
             return (ax,)
 

@@ -79,11 +79,12 @@ class PacManViewer(MazeViewer):
 
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
+        ax.set_title("PacMan    Score: 0", size=20)
 
         def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._add_grid_image(state, ax)
-            fig.suptitle(f"PacMan    Score: {int(state.score)}", size=10)
+            ax.set_title(f"PacMan    Score: {int(state.score)}", size=20)
             return (ax,)
 
         # Create the animation object.

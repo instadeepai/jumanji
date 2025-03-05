@@ -20,7 +20,7 @@ from typing import Any, Callable, Generic, Optional, Sequence, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-from matplotlib.layout_engine import TightLayoutEngine
+from matplotlib.layout_engine import ConstrainedLayoutEngine
 from numpy.typing import NDArray
 
 import jumanji.environments
@@ -109,8 +109,27 @@ class MatplotlibViewer(Viewer, abc.ABC, Generic[State]):
             IPython.display.clear_output(True)
 
     def _get_fig_ax(
-        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: Any,
     ) -> Tuple[plt.Figure, plt.Axes]:
+        """
+        Get axes figure, either retrieving existing axes with the same name
+        or otherwise creating new axes.
+
+        Args:
+            name_suffix: Suffix to append to figure name, for example appending
+                "_animation" to animation axes.
+            show: Whether to display the figure, default `False`.
+            padding: Padding around the figure axes, in fractions of the figure size.
+                Default value is 0.05.
+            **fig_kwargs: Keyword arguments to forward to the figure creation method.
+
+        Returns:
+            Matplotlib figure and axes.
+        """
         name = self._name if name_suffix is None else self._name + name_suffix
         exists = plt.fignum_exists(name)
 
@@ -122,7 +141,8 @@ class MatplotlibViewer(Viewer, abc.ABC, Generic[State]):
             ax = fig.get_axes()[0]
         else:
             fig = plt.figure(name, figsize=self.figure_size, **fig_kwargs)
-            fig.set_layout_engine(layout=TightLayoutEngine(pad=0.02))
+            h_pad, w_pad = padding * self.figure_size[0], padding * self.figure_size[1]
+            fig.set_layout_engine(layout=ConstrainedLayoutEngine(h_pad=h_pad, w_pad=w_pad))
             ax = fig.add_subplot(111)
 
             if (not plt.isinteractive()) and show:

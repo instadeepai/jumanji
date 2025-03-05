@@ -88,7 +88,6 @@ class BinPackViewer(MatplotlibViewer[State]):
             return (ax,)
 
         # Create the animation object.
-        matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
@@ -103,7 +102,11 @@ class BinPackViewer(MatplotlibViewer[State]):
         return self._animation
 
     def _get_fig_ax(
-        self, name_suffix: Optional[str] = None, show: bool = True, **fig_kwargs: Any
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: Any,
     ) -> Tuple[plt.Figure, plt.Axes]:
         name = self._name if name_suffix is None else self._name + name_suffix
         recreate = not plt.fignum_exists(name)

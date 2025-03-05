@@ -82,7 +82,7 @@ class MinesweeperViewer(MatplotlibViewer[State]):
         """
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
-        fig.suptitle(self._name)
+        ax.set_title(self._name)
 
         def make_frame(state: State) -> Tuple[Artist]:
             self._draw(ax, state)
