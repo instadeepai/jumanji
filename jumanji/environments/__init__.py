@@ -82,7 +82,7 @@ try:
         if is_colab():
             backend = "inline"
         elif is_notebook():
-            backend = "notebook"
+            backend = "ipympl"
         else:
             backend = ""
         IPython.get_ipython().run_line_magic("matplotlib", backend)

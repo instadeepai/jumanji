@@ -98,7 +98,6 @@ class SudokuViewer(MatplotlibViewer[State]):
             frames=states,
             interval=interval,
             blit=True,
-            save_count=len(states),
         )
 
         if save_path:

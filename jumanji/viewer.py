@@ -91,6 +91,9 @@ class MatplotlibViewer(Viewer, abc.ABC, Generic[State]):
         self._animation: Optional[animation.Animation] = None
         self.figure_size = figure_size
 
+        # Render interactive animations in Jupyter
+        plt.rcParams["animation.html"] = "jshtml"
+
         self._display: Callable[[plt.Figure], Optional[NDArray]]
         if render_mode == "rgb_array":
             self._display = self._display_rgb_array
