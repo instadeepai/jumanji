@@ -66,11 +66,12 @@ class Game2048Viewer(MatplotlibViewer[State]):
         self._board_size = board_size
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Renders the current state of the game board.
 
         Args:
             state: is the current game state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
         """
         self._clear_display()
         # Get the figure and axes for the game board.
@@ -79,6 +80,10 @@ class Game2048Viewer(MatplotlibViewer[State]):
         fig.suptitle(f"2048    Score: {int(state.score)}", size=20)
         # Draw the game board
         self.draw_board(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(

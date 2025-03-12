@@ -51,16 +51,21 @@ class MinesweeperViewer(MatplotlibViewer[State]):
         self.cmap = color_mapping or DEFAULT_COLOR_MAPPING
         super().__init__(f"{num_rows}x{num_cols} Minesweeper", render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given environment state using matplotlib.
 
         Args:
             state: environment state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         fig.suptitle(self._name)
         self._draw(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(

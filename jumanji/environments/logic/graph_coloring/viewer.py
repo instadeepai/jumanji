@@ -44,20 +44,41 @@ class GraphColoringViewer(MatplotlibViewer[State]):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
+        """Renders the current state of the graph.
+
+        Args:
+            state: The current game state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
+        """
         self._clear_display()
         self._set_params(state)
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._prepare_figure(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 500,
+        interval: int = 200,
         save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
+        """Creates an animation of the graph from a sequence of game states.
+
+        Args:
+            states: Sequence of `State` objects.
+            interval: Delay between frames in milliseconds, default to 200.
+            save_path: Path to save the animation to. If None, the plot
+                will not be saved.
+
+        Returns:
+            Animation object that can be saved as a GIF, MP4, or rendered with HTML.
+        """
         self._set_params(states[0])
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)

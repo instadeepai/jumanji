@@ -42,20 +42,27 @@ class PacManViewer(MazeViewer):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: Union[Observation, State]) -> Optional[NDArray]:
+    def render(
+        self, state: Union[Observation, State], save_path: Optional[str] = None
+    ) -> Optional[NDArray]:
         """Render the given state of the `PacMan` environment.
 
         Args:
             state: the environment state or observation from the environment to render.
+            save_path: Optional path to save the rendered environment image to.
 
-        Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         fig.suptitle(f"PacMan    Score: {int(state.score)}", size=15)
         self._add_grid_image(state, ax)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(

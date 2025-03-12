@@ -33,11 +33,12 @@ class Viewer(abc.ABC, Generic[State]):
     """
 
     @abc.abstractmethod
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: `State` object corresponding to the new state of the environment.
+            save_path: Path to save the rendered environment image to.
         """
 
     @abc.abstractmethod
@@ -45,7 +46,7 @@ class Viewer(abc.ABC, Generic[State]):
         self,
         states: Sequence[State],
         interval: int,
-        save_path: Optional[str],
+        save_path: Optional[str] = None,
     ) -> animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 

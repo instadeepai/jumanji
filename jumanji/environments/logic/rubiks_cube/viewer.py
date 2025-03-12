@@ -41,22 +41,27 @@ class RubiksCubeViewer(MatplotlibViewer[State]):
         self.sticker_colors_cmap = matplotlib.colors.ListedColormap(sticker_colors)
         super().__init__(f"{cube_size}x{cube_size}x{cube_size} Rubik's Cube", render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: `State` object corresponding to the new state of the environment.
+            save_path: Path to save the rendered environment image to.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
         self,
         states: Sequence[State],
-        interval: int,
-        save_path: Optional[str],
+        interval: int = 200,
+        save_path: Optional[str] = None,
     ) -> FuncAnimation:
         """Create an animation from a sequence of environment states.
 

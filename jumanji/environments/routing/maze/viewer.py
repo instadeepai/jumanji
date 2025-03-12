@@ -52,14 +52,19 @@ class MazeEnvViewer(MazeViewer):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `Maze` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Returns:
+            RGB array if the render_mode is 'rgb_array'.
         """
         maze = self._overlay_agent_and_target(state)
-        return super().render(maze)
+
+        return super().render(maze, save_path=save_path)
 
     def animate(
         self,

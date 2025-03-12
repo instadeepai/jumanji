@@ -53,19 +53,27 @@ class SearchAndRescueViewer(MatplotlibViewer[State]):
         self.env_size = env_size
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render a frame of the environment for a given state using matplotlib.
 
         Args:
             state: State object containing the current dynamics of the environment.
+            save_path: Optional path to save the rendered environment image to.
+
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
-        self, states: Sequence[State], interval: int, save_path: Optional[str]
+        self, states: Sequence[State], interval: int, save_path: Optional[str] = None
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 

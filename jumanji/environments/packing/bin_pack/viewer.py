@@ -40,11 +40,15 @@ class BinPackViewer(MatplotlibViewer[State]):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `BinPack` environment.
 
         Args:
             state: the `State` to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Returns:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -53,6 +57,10 @@ class BinPackViewer(MatplotlibViewer[State]):
         for entity in entities:
             ax.add_collection3d(entity)
         self._add_overlay(fig, ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(

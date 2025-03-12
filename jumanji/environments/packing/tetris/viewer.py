@@ -53,14 +53,15 @@ class TetrisViewer(MatplotlibViewer[State]):
 
         super().__init__(f"{num_rows}x{num_cols} Tetris", render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render Tetris.
 
         Args:
             state: State of the Tetris environment to render.
+            save_path: Optional path to save the rendered environment image to.
 
         Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -69,6 +70,10 @@ class TetrisViewer(MatplotlibViewer[State]):
         ax.invert_yaxis()
         grid = self._create_rendering_grid(state)
         self._add_grid_image(ax, grid)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def _move_tetromino(self, state: State, old_padded_grid: chex.Array) -> List[chex.Array]:

@@ -64,17 +64,25 @@ class RobotWarehouseViewer(MatplotlibViewer[State]):
 
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `RobotWarehouse` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._prepare_figure(ax)
         self._draw_state(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(

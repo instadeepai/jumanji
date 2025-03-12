@@ -37,10 +37,20 @@ class SudokuViewer(MatplotlibViewer[State]):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
+        """Render frames of the environment for a given state using matplotlib.
+
+        Args:
+            state: `State` object corresponding to the new state of the environment.
+            save_path: Optional path to save the rendered environment image to.
+        """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def _draw_board(self, ax: plt.Axes) -> None:
@@ -70,9 +80,20 @@ class SudokuViewer(MatplotlibViewer[State]):
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 500,
+        interval: int = 200,
         save_path: Optional[str] = None,
     ) -> FuncAnimation:
+        """Create an animation from a sequence of environment states.
+
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
+
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
         fig.suptitle(f"{self._name}")
