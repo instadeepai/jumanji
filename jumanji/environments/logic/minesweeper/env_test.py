@@ -38,7 +38,7 @@ def play_and_get_episode_stats(
     time_limit: int,
     force_start_state: Optional[State] = None,
 ) -> Tuple[List[float], List[StepType], int]:
-    state, timestep = jax.jit(env.reset)(jax.random.PRNGKey(0))
+    state, timestep = jax.jit(env.reset)(jax.random.PRNGKey(1))
     if force_start_state:
         state = force_start_state
     episode_length = 0
