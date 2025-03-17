@@ -90,7 +90,7 @@ class TestObservationSpec:
         assert np.min(node_coordinates) >= 0
 
         assert node_demands.shape == (num_customers + 1,)
-        assert np.min(node_coordinates) >= 0
+        assert np.min(node_demands) >= 0
         assert node_demands[DEPOT_IDX] == 0
 
         assert window_start_times.shape == (num_customers + 1,)
