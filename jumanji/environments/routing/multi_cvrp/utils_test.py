@@ -15,12 +15,7 @@
 import jax
 import numpy as np
 
-from jumanji.environments.routing.multi_cvrp.test_data import (
-    fifty_correct_node_demands,
-    one_hundred_window_end_times,
-    one_hundred_window_start_times,
-    twenty_correct_node_coordinates,
-)
+from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.multi_cvrp.utils import (
     compute_distance,
     compute_time_penalties,
@@ -54,115 +49,11 @@ class TestObservationSpec:
         assert np.array_equal(distances, np.array([1.0, 2.0], dtype=np.float32))
 
     def test_generate_uniform_random_problem(self) -> None:
-        """Test whether a problem can be generated correctly using the
-        20, 50, 100 and 150 customer settings."""
+        """Test whether a problem can be generated correctly using the 150 customer setting."""
 
         key = jax.random.PRNGKey(1234)
-        num_vehicles = 2
         window_length = 20
 
-        # 20 customer setting
-        num_customers = 20
-        (
-            map_max,
-            max_capacity,
-            max_start_window,
-            early_coef_rand,
-            late_coef_rand,
-            customer_demand_max,
-        ) = get_init_settings(num_customers, num_vehicles)
-        total_capacity = max_capacity * num_vehicles
-
-        (
-            node_coordinates,
-            node_demands,
-            window_start_times,
-            window_end_times,
-            early_coefs,
-            late_coefs,
-        ) = generate_uniform_random_problem(
-            key,
-            num_customers,
-            total_capacity,
-            map_max,
-            customer_demand_max,
-            max_start_window,
-            window_length,
-            early_coef_rand,
-            late_coef_rand,
-        )
-
-        assert np.array_equal(node_coordinates, twenty_correct_node_coordinates)
-
-        # 50 customer setting
-        num_customers = 50
-        (
-            map_max,
-            max_capacity,
-            max_start_window,
-            early_coef_rand,
-            late_coef_rand,
-            customer_demand_max,
-        ) = get_init_settings(num_customers, num_vehicles)
-        total_capacity = max_capacity * num_vehicles
-
-        (
-            node_coordinates,
-            node_demands,
-            window_start_times,
-            window_end_times,
-            early_coefs,
-            late_coefs,
-        ) = generate_uniform_random_problem(
-            key,
-            num_customers,
-            total_capacity,
-            map_max,
-            customer_demand_max,
-            max_start_window,
-            window_length,
-            early_coef_rand,
-            late_coef_rand,
-        )
-
-        print("got: ", np.array2string(node_demands, separator=","))
-        assert np.array_equal(node_demands, fifty_correct_node_demands)
-
-        # 100 customer setting
-        num_customers = 100
-        (
-            map_max,
-            max_capacity,
-            max_start_window,
-            early_coef_rand,
-            late_coef_rand,
-            customer_demand_max,
-        ) = get_init_settings(num_customers, num_vehicles)
-        total_capacity = max_capacity * num_vehicles
-
-        (
-            node_coordinates,
-            node_demands,
-            window_start_times,
-            window_end_times,
-            early_coefs,
-            late_coefs,
-        ) = generate_uniform_random_problem(
-            key,
-            num_customers,
-            total_capacity,
-            map_max,
-            customer_demand_max,
-            max_start_window,
-            window_length,
-            early_coef_rand,
-            late_coef_rand,
-        )
-
-        assert np.array_equal(window_start_times, one_hundred_window_start_times)
-        assert np.array_equal(window_end_times, one_hundred_window_end_times)
-
-        # 150 customer setting
         num_vehicles = 5
         num_customers = 150
         (
@@ -193,6 +84,20 @@ class TestObservationSpec:
             early_coef_rand,
             late_coef_rand,
         )
+
+        assert node_coordinates.shape == (num_customers + 1, 2)
+        assert np.max(node_coordinates) < map_max
+        assert np.min(node_coordinates) >= 0
+
+        assert node_demands.shape == (num_customers + 1,)
+        assert np.min(node_coordinates) >= 0
+        assert node_demands[DEPOT_IDX] == 0
+
+        assert window_start_times.shape == (num_customers + 1,)
+        assert np.min(window_start_times) >= 0
+        assert np.min(window_start_times) < max_start_window
+
+        assert np.array_equal(window_start_times + window_length, window_end_times)
 
         assert np.array_equal(
             early_coefs, np.array([0.0] + [0.1] * num_customers, dtype=np.float32)

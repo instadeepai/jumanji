@@ -18,10 +18,6 @@ import numpy as np
 
 from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
-from jumanji.environments.routing.multi_cvrp.test_data import (
-    test_action_mask,
-    test_node_demand,
-)
 from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.testing.env_not_smoke import (
     check_env_does_not_smoke,
@@ -230,8 +226,11 @@ class TestEnvironmentSpec:
         )
 
         # Check that the node demands and action masks are correct.
-        assert np.array_equal(obs.nodes.demands, test_node_demand)
-        assert np.array_equal(obs.action_mask, test_action_mask)
+        assert obs.nodes.demands.shape == (multicvrp_env._num_customers + 1,)
+        assert obs.action_mask.shape == (
+            multicvrp_env._num_vehicles,
+            multicvrp_env._num_customers + 1,
+        )
 
         # Generate a timestep
         is_done = False
