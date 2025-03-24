@@ -35,6 +35,7 @@ class JobShopViewer(MatplotlibViewer[State]):
         num_machines: int,
         max_num_ops: int,
         max_op_duration: int,
+        render_mode: str = "human",
     ) -> None:
         """Viewer for the `JobShop` environment.
 
@@ -44,6 +45,9 @@ class JobShopViewer(MatplotlibViewer[State]):
             num_machines: the number of machines that the jobs can be scheduled on.
             max_num_ops: the maximum number of operations for any given job.
             max_op_duration: the maximum processing time of any given operation.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
         self._num_jobs = num_jobs
         self._num_machines = num_machines
@@ -53,7 +57,7 @@ class JobShopViewer(MatplotlibViewer[State]):
         # Have additional color to avoid two jobs having same color when using hsv colormap
         self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_jobs + 1)
 
-        super().__init__(name, "human")
+        super().__init__(name, render_mode)
 
     def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `JobShop` environment.

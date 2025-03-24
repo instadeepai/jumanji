@@ -43,11 +43,11 @@ class ConnectorViewer(MatplotlibViewer):
                 - "rgb_array": return a numpy array frame representing the environment.
         """
         # Pick colors.
-        colormap_indecies = np.arange(0, 1, 1 / num_agents)
+        colormap_indices = np.arange(0, 1, 1 / num_agents)
         colormap = plt.get_cmap("hsv", num_agents + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
-        for colormap_idx in colormap_indecies:
+        for colormap_idx in colormap_indices:
             self.colors.append(colormap(float(colormap_idx)))
 
         super().__init__(name, render_mode)
