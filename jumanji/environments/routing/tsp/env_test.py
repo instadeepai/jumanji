@@ -280,4 +280,5 @@ def test_tsp__equivalence_dense_sparse_reward(
         return_sparse += timestep.reward
 
     # Check that both returns are the same and not the invalid action penalty
-    assert return_sparse == return_dense > -tsp_dense_reward.num_cities * jnp.sqrt(2)
+    assert jnp.isclose(return_sparse, return_dense)
+    assert return_dense > -tsp_dense_reward.num_cities * jnp.sqrt(2)

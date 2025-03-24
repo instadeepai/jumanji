@@ -132,16 +132,15 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
 
     # turning and moving actions
     actions = [2, 2, 3, 3, 1, 3, 1]
-
-    # Note: starting direction is 3 (facing left)
+    # Note: starting direction is 0 (facing up)
     new_locs = [
+        (x, y, 3),  # turn left -> facing left
         (x, y, 2),  # turn left -> facing down
-        (x, y, 1),  # turn left -> facing right
-        (x, y, 2),  # turn right -> facing down
-        (x, y, 3),  # turn right -> face left
-        (x, y - 1, 3),  # move forward -> move left
-        (x, y - 1, 0),  # turn right -> face up
-        (x - 1, y - 1, 0),  # move forward -> move up
+        (x, y, 3),  # turn right -> facing left
+        (x, y, 0),  # turn right -> face up
+        (x - 1, y, 0),  # move forward -> move up
+        (x - 1, y, 1),  # turn right -> face right
+        (x - 1, y + 1, 1),  # move forward -> move right
     ]
 
     for action, new_loc in zip(actions, new_locs, strict=False):

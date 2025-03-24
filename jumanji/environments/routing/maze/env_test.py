@@ -148,15 +148,21 @@ class TestMazeEnvironment:
         assert state.agent_position == Position(row=2, col=2)
 
     def test_maze__action_mask(self, maze: Maze) -> None:
-        key = jax.random.PRNGKey(0)
-        state, _ = maze.reset(key)
-
+        walls = jnp.array(
+            [
+                [False, False, False, True, False],
+                [True, True, False, True, False],
+                [False, True, False, False, False],
+                [False, True, False, True, False],
+                [False, False, False, True, False],
+            ],
+        )
         # Fixed agent start state
         agent_position = Position(row=4, col=0)
 
         # The agent can only move up or right in the initial state
         expected_action_mask = jnp.array([True, True, False, False])
-        action_mask = maze._compute_action_mask(state.walls, agent_position)
+        action_mask = maze._compute_action_mask(walls, agent_position)
         assert jnp.all(action_mask == expected_action_mask)
 
         # Check another position
@@ -164,7 +170,7 @@ class TestMazeEnvironment:
 
         # The agent can move up, right or down
         expected_action_mask = jnp.array([True, True, True, False])
-        action_mask = maze._compute_action_mask(state.walls, another_position)
+        action_mask = maze._compute_action_mask(walls, another_position)
         assert jnp.all(action_mask == expected_action_mask)
 
     def test_maze__reward(self, maze: Maze) -> None:
