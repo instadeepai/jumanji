@@ -15,11 +15,15 @@
 """Abstract environment viewer class."""
 
 import abc
-from typing import Generic, Optional, Sequence
+from typing import Any, Callable, Generic, Optional, Sequence, Tuple
 
-import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import animation
+from matplotlib.layout_engine import ConstrainedLayoutEngine
 from numpy.typing import NDArray
 
+import jumanji.environments
 from jumanji.env import State
 
 
@@ -29,11 +33,12 @@ class Viewer(abc.ABC, Generic[State]):
     """
 
     @abc.abstractmethod
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: `State` object corresponding to the new state of the environment.
+            save_path: Path to save the rendered environment image to.
         """
 
     @abc.abstractmethod
@@ -41,8 +46,8 @@ class Viewer(abc.ABC, Generic[State]):
         self,
         states: Sequence[State],
         interval: int,
-        save_path: Optional[str],
-    ) -> matplotlib.animation.FuncAnimation:
+        save_path: Optional[str] = None,
+    ) -> animation.FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
@@ -60,3 +65,106 @@ class Viewer(abc.ABC, Generic[State]):
         """Perform any necessary cleanup. Environments will automatically :meth:`close()`
         themselves when garbage collected or when the program exits.
         """
+
+
+class MatplotlibViewer(Viewer, abc.ABC, Generic[State]):
+    """Abstract viewer class extending `Viewer` with some common
+    matplotib figure creation and display functionality
+    """
+
+    def __init__(
+        self,
+        name: str,
+        render_mode: str,
+        figure_size: Tuple[float, float] = (10.0, 10.0),
+    ):
+        """
+        Initialise a matplotlib viewer
+
+        Args:
+            name: Figure name.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
+            figure_size: Figure size, default (10.0, 10.0)
+        """
+        self._name = name
+        self._animation: Optional[animation.Animation] = None
+        self.figure_size = figure_size
+
+        # Render interactive animations in Jupyter
+        plt.rcParams["animation.html"] = "jshtml"
+
+        self._display: Callable[[plt.Figure], Optional[NDArray]]
+        if render_mode == "rgb_array":
+            self._display = self._display_rgb_array
+        elif render_mode == "human":
+            self._display = self._display_human
+        else:
+            raise ValueError(f"Invalid render mode: {render_mode}")
+
+    def close(self) -> None:
+        plt.close(self._name)
+
+    def _clear_display(self) -> None:
+        if jumanji.environments.is_colab():
+            import IPython.display
+
+            IPython.display.clear_output(True)
+
+    def _get_fig_ax(
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: Any,
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        """
+        Get axes figure, either retrieving existing axes with the same name
+        or otherwise creating new axes.
+
+        Args:
+            name_suffix: Suffix to append to figure name, for example appending
+                "_animation" to animation axes.
+            show: Whether to display the figure, default `False`.
+            padding: Padding around the figure axes, in fractions of the figure size.
+                Default value is 0.05.
+            **fig_kwargs: Keyword arguments to forward to the figure creation method.
+
+        Returns:
+            Matplotlib figure and axes.
+        """
+        name = self._name if name_suffix is None else self._name + name_suffix
+        exists = plt.fignum_exists(name)
+
+        if (not plt.isinteractive()) or (not show):
+            plt.ioff()
+
+        if exists:
+            fig = plt.figure(name)
+            ax = fig.get_axes()[0]
+        else:
+            fig = plt.figure(name, figsize=self.figure_size, **fig_kwargs)
+            h_pad, w_pad = padding * self.figure_size[0], padding * self.figure_size[1]
+            fig.set_layout_engine(layout=ConstrainedLayoutEngine(h_pad=h_pad, w_pad=w_pad))
+            ax = fig.add_subplot(111)
+
+            if (not plt.isinteractive()) and show:
+                fig.show()
+
+        return fig, ax
+
+    def _display_human(self, fig: plt.Figure) -> None:
+        if plt.isinteractive():
+            # Required to update render when using Jupyter Notebook.
+            fig.canvas.draw()
+            if jumanji.environments.is_colab():
+                plt.show(self._name)
+        else:
+            # Required to update render when not using Jupyter Notebook.
+            fig.canvas.draw_idle()
+            fig.canvas.flush_events()
+
+    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
+        fig.canvas.draw()
+        return np.asarray(fig.canvas.buffer_rgba())

@@ -12,42 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 from typing import Callable, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import numpy as np
-import pkg_resources
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 from PIL import Image
 
 import jumanji.environments
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class BoxViewer(Viewer):
-    FIGURE_SIZE = (10.0, 10.0)
-
-    def __init__(
-        self,
-        name: str,
-        grid_combine: Callable,
-    ) -> None:
+class BoxViewer(MatplotlibViewer):
+    def __init__(self, name: str, grid_combine: Callable, render_mode: str = "human") -> None:
         """
         Viewer for a `Sokoban` environment using images from
         https://github.com/mpSchrader/gym-sokoban.
 
         Args:
             name: the window name to be used when initialising the window.
-            grid_combine: function for combining fixed_grid and variable grid
+            grid_combine: function for combining fixed_grid and variable grid.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
+
         self.NUM_COLORS = 10
         self.grid_combine = grid_combine
-        self._display = self._display_rgb_array
-        self._animation: Optional[matplotlib.animation.Animation] = None
 
         image_names = [
             "floor",
@@ -60,24 +55,34 @@ class BoxViewer(Viewer):
         ]
 
         def get_image(image_name: str) -> Image.Image:
-            img_path = pkg_resources.resource_filename(
-                "jumanji", f"environments/routing/sokoban/imgs/{image_name}.png"
+            img_path = (
+                resources.files(jumanji.environments.routing.sokoban) / f"imgs/{image_name}.png"
             )
-            return Image.open(img_path)
+            return Image.open(str(img_path))
 
         self.images = [get_image(image_name) for image_name in image_names]
 
-    def render(self, state: chex.Array) -> Optional[NDArray]:
+        super().__init__(name, render_mode)
+
+    def render(self, state: chex.Array, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `Sokoban` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
 
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._add_grid_image(state, ax)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -98,19 +103,19 @@ class BoxViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=BoxViewer.FIGURE_SIZE)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: chex.Array) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
             self._add_grid_image(state, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -119,32 +124,6 @@ class BoxViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        """
-        Fetch or create a matplotlib figure and its associated axes.
-
-        Returns:
-            fig: (plt.Figure) A matplotlib figure object
-            axes: (plt.Axes) The axes associated with the figure.
-        """
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, BoxViewer.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _add_grid_image(self, state: chex.Array, ax: plt.Axes) -> None:
         """
@@ -190,26 +169,3 @@ class BoxViewer(Viewer):
         cell_value = int(cell_value)
         image = self.images[cell_value]
         ax.imshow(image, extent=(col, col + 1, row, row + 1))
-
-    def _clear_display(self) -> None:
-        """
-        Clear the current notebook display if the environment is a notebook.
-        """
-
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        """
-        Convert the given figure to an RGB array.
-
-        Args:
-            fig: (plt.Figure) The figure to be converted.
-
-        Returns:
-            NDArray: The RGB array representation of the figure.
-        """
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())

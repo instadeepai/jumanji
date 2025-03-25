@@ -12,41 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, Tuple
+from typing import List, Optional, Sequence
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.text import Text
+from numpy.typing import NDArray
 
-import jumanji
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH
 from jumanji.environments.logic.sudoku.env import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class SudokuViewer(Viewer[State]):
-    def __init__(
-        self,
-        name: str = "Sudoku",
-    ) -> None:
-        self._name = name
-        self._animation: Optional[matplotlib.animation.Animation] = None
+class SudokuViewer(MatplotlibViewer[State]):
+    def __init__(self, name: str = "Sudoku", render_mode: str = "human") -> None:
+        """Viewer for the `Sudoku` environment.
 
-    def render(
-        self,
-        state: State,
-        save_path: Optional[str] = None,
-        ax: Optional[plt.Axes] = None,
-    ) -> None:
+        Args:
+            name: the window name to be used when initialising the window.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
+        """
+        super().__init__(name, render_mode)
+
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
+        """Render frames of the environment for a given state using matplotlib.
+
+        Args:
+            state: `State` object corresponding to the new state of the environment.
+            save_path: Optional path to save the rendered environment image to.
+        """
         self._clear_display()
-
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(6, 6))
-            plt.title(f"{self._name}")
-        else:
-            fig = ax.figure
-            ax.clear()
+        fig, ax = self._get_fig_ax()
         self._draw(ax, state)
-        self._display_human(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def _draw_board(self, ax: plt.Axes) -> None:
         # Draw the square box that delimits the board.
@@ -75,18 +80,46 @@ class SudokuViewer(Viewer[State]):
     def animate(
         self,
         states: Sequence[State],
-        interval: int = 500,
+        interval: int = 200,
         save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
-        fig, ax = plt.subplots(figsize=(6, 6))
-        plt.title(f"{self._name}")
+    ) -> FuncAnimation:
+        """Create an animation from a sequence of environment states.
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
-            self.render(state, ax=ax)
+        Args:
+            states: sequence of environment states corresponding to consecutive timesteps.
+            interval: delay between frames in milliseconds, default to 200.
+            save_path: the path where the animation file should be saved. If it is None, the plot
+                will not be saved.
 
-        animation = matplotlib.animation.FuncAnimation(
-            fig, make_frame, frames=len(states), interval=interval, blit=False
+        Returns:
+            Animation that can be saved as a GIF, MP4, or rendered with HTML.
+        """
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        fig.suptitle(f"{self._name}")
+        texts = self._draw(ax, states[0])
+
+        board_shape = states[0].board.shape
+
+        def make_frame(state: State) -> List[plt.Text]:
+            updated = []
+            for i in range(board_shape[0]):
+                for j in range(board_shape[1]):
+                    element = state.board[i, j]
+                    text = "" if element == -1 else str(element + 1)
+                    txt_artist = texts[i][j]
+                    txt_artist.set(text=text)
+                    updated.append(txt_artist)
+
+            return updated
+
+        animation = FuncAnimation(
+            fig,
+            make_frame,
+            frames=states,
+            interval=interval,
+            blit=True,
+            save_count=len(states),
         )
 
         if save_path:
@@ -94,63 +127,33 @@ class SudokuViewer(Viewer[State]):
 
         return animation
 
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._name)
-        if exists:
-            fig = plt.figure(self._name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(
-                self._name,
-                figsize=(6, 6),
-            )
-            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        return fig, ax
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _draw(self, ax: plt.Axes, state: State) -> None:
+    def _draw(self, ax: plt.Axes, state: State) -> List[List[Text]]:
         ax.clear()
         self._draw_board(ax)
-        self._draw_figures(ax, state)
+        return self._draw_figures(ax, state)
 
-    def _draw_figures(self, ax: plt.Axes, state: State) -> None:
+    def _draw_figures(self, ax: plt.Axes, state: State) -> List[List[Text]]:
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         board = state.board
         board_shape = board.shape
+        artists: List[List[Text]] = list()
 
         for i in range(board_shape[0]):
+            artists.append([])
             for j in range(board_shape[1]):
                 x_pos = j + 0.5
                 y_pos = board_shape[0] - i - 0.5
                 element = board[i, j]
-                if element != -1:
-                    ax.text(
-                        x_pos,
-                        y_pos,
-                        element + 1,
-                        horizontalalignment="center",
-                        verticalalignment="center",
-                        fontsize=16,
-                    )
+                txt = "" if element == -1 else str(element + 1)
+                txt = Text(
+                    x=x_pos,
+                    y=y_pos,
+                    text=txt,
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    fontsize=16,
+                )
+                ax.add_artist(txt)
+                artists[-1].append(txt)
 
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
+        return artists

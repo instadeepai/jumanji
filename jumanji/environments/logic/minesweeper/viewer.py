@@ -16,56 +16,64 @@ from typing import List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
-import matplotlib
 from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.logic.minesweeper.constants import (
     DEFAULT_COLOR_MAPPING,
     UNEXPLORED_ID,
 )
 from jumanji.environments.logic.minesweeper.types import State
 from jumanji.environments.logic.minesweeper.utils import explored_mine
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class MinesweeperViewer(Viewer[State]):
+class MinesweeperViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         num_rows: int,
         num_cols: int,
+        render_mode: str = "human",
         color_mapping: Optional[List[str]] = None,
     ):
         """
         Args:
             num_rows: number of rows, i.e. height of the board.
             num_cols: number of columns, i.e. width of the board.
+            render_mode: Figure rendering mode, either "human" or "rgb_array".
             color_mapping: colors used in rendering the cells in `Minesweeper`.
                 Defaults to `DEFAULT_COLOR_MAPPING`.
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
         self.cmap = color_mapping or DEFAULT_COLOR_MAPPING
-        self.figure_name = f"{num_rows}x{num_cols} Minesweeper"
-        self.figure_size = (6.0, 6.0)
+        super().__init__(f"{num_rows}x{num_cols} Minesweeper", render_mode)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given environment state using matplotlib.
 
         Args:
             state: environment state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
+        fig.suptitle(self._name)
         self._draw(ax, state)
-        self._update_display(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
         self,
         states: Sequence[State],
         interval: int = 200,
         save_path: Optional[str] = None,
-    ) -> matplotlib.animation.FuncAnimation:
+    ) -> FuncAnimation:
         """Create an animation from a sequence of environment states.
 
         Args:
@@ -77,20 +85,21 @@ class MinesweeperViewer(Viewer[State]):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = self._get_fig_ax()
-        plt.tight_layout()
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        ax.set_title(self._name)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self._draw(ax, state)
+            return (ax,)
 
         # Create the animation object.
-        self._animation = matplotlib.animation.FuncAnimation(
+        self._animation = FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
+            save_count=len(states),
         )
 
         # Save the animation as a GIF.
@@ -98,28 +107,6 @@ class MinesweeperViewer(Viewer[State]):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        plt.close(self.figure_name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self.figure_name)
-        if exists:
-            fig = plt.figure(self.figure_name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self.figure_name, figsize=self.figure_size)
-            plt.suptitle(self.figure_name)
-            plt.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        return fig, ax
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
@@ -162,20 +149,3 @@ class MinesweeperViewer(Viewer[State]):
                     fontsize="xx-large",
                 )
         return background
-
-    def _update_display(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self.figure_name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

@@ -19,54 +19,61 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
-from matplotlib.layout_engine import TightLayoutEngine
+from numpy.typing import NDArray
 
-import jumanji
-import jumanji.environments
 from jumanji.environments.swarms.common.viewer import draw_agents, format_plot
 from jumanji.environments.swarms.search_and_rescue.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class SearchAndRescueViewer(Viewer[State]):
+class SearchAndRescueViewer(MatplotlibViewer[State]):
     def __init__(
         self,
-        figure_name: str = "SearchAndRescue",
-        figure_size: Tuple[float, float] = (6.0, 6.0),
+        name: str = "SearchAndRescue",
         env_size: Tuple[float, float] = (1.0, 1.0),
         searcher_color: str = "#282B28",  # black
         target_found_color: str = "#B3B6BC",  # light grey
         target_lost_color: str = "#E98449",  # orange
+        render_mode: str = "human",
     ) -> None:
         """Viewer for the `SearchAndRescue` environment.
 
         Args:
-            figure_name: The window name to be used when initialising the window.
-            figure_size: Tuple `(height, width)` of the matplotlib figure window.
-            colormap: Matplotlib colormap to sample agent colors from.
+            name: The window name to be used when initialising the window.
+            searcher_color: Searching agents color
+            target_found_color: Target node color when found
+            target_lost_color: Target node color when not found
             env_size: Tuple environment spatial dimensions, used to set the plot region.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._figure_name = figure_name
-        self._figure_size = figure_size
-
         self.searcher_color = searcher_color
         self.target_colors = np.array([target_lost_color, target_found_color])
-        self._animation: Optional[matplotlib.animation.Animation] = None
         self.env_size = env_size
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render a frame of the environment for a given state using matplotlib.
 
         Args:
             state: State object containing the current dynamics of the environment.
+            save_path: Optional path to save the rendered environment image to.
+
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
-        self._update_display(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
-        self, states: Sequence[State], interval: int, save_path: Optional[str]
+        self, states: Sequence[State], interval: int, save_path: Optional[str] = None
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
@@ -81,8 +88,9 @@ class SearchAndRescueViewer(Viewer[State]):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         fig, ax = format_plot(fig, ax, self.env_size)
+        plt.close(fig=fig)
 
         searcher_quiver = draw_agents(ax, states[0].searchers, self.searcher_color)
         target_scatter = ax.scatter(
@@ -99,27 +107,18 @@ class SearchAndRescueViewer(Viewer[State]):
             target_scatter.set_color(target_colors)
             return searcher_quiver, target_scatter
 
-        matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
             frames=states,
             interval=interval,
-            blit=False,
+            blit=True,
         )
 
         if save_path:
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        plt.close(self._figure_name)
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
@@ -129,34 +128,13 @@ class SearchAndRescueViewer(Viewer[State]):
             state.targets.pos[:, 0], state.targets.pos[:, 1], marker="o", color=target_colors
         )
 
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._figure_name)
-        if exists:
-            fig = plt.figure(self._figure_name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self._figure_name, figsize=self._figure_size)
-            fig.set_layout_engine(layout=TightLayoutEngine(pad=False, w_pad=0.0, h_pad=0.0))
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-
+    def _get_fig_ax(
+        self,
+        name_suffix: Optional[str] = None,
+        show: bool = True,
+        padding: float = 0.05,
+        **fig_kwargs: str,
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        fig, ax = super()._get_fig_ax(name_suffix=name_suffix, show=show, padding=padding)
         fig, ax = format_plot(fig, ax, self.env_size)
         return fig, ax
-
-    def _update_display(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._figure_name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

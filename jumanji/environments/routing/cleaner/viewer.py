@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import ClassVar, Dict, List, Optional, Sequence
+from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
 
-import matplotlib
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
@@ -50,19 +50,24 @@ class CleanerViewer(MazeViewer):
         """
         super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `Cleaner` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
 
         Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._add_grid_image(state, ax)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -82,19 +87,18 @@ class CleanerViewer(MazeViewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
-            self._add_grid_image(state, ax)
+            return (self._add_grid_image(state, ax),)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 

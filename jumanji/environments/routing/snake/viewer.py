@@ -12,46 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, Rectangle
+from matplotlib.artist import Artist
+from matplotlib.patches import Circle, Patch, Rectangle
+from numpy.typing import NDArray
 
-import jumanji
-import jumanji.environments
 from jumanji.environments.routing.snake.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class SnakeViewer(Viewer):
-    def __init__(
-        self, figure_name: str = "Snake", figure_size: Tuple[float, float] = (6.0, 6.0)
-    ) -> None:
+class SnakeViewer(MatplotlibViewer[State]):
+    def __init__(self, name: str = "Snake", render_mode: str = "human") -> None:
         """Viewer for the `Snake` environment.
 
         Args:
-            figure_name: the window name to be used when initialising the window.
-            figure_size: tuple (height, width) of the matplotlib figure window.
+            name: the window name to be used when initialising the window.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._figure_name = figure_name
-        self._figure_size = figure_size
+        super().__init__(name, render_mode)
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
-
-    def render(self, state: State) -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render frames of the environment for a given state using matplotlib.
 
         Args:
             state: State object containing the current dynamics of the environment.
+            save_path: Optional path to save the rendered environment image to.
 
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         self._draw(ax, state)
-        self._update_display(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
         self,
@@ -72,25 +74,29 @@ class SnakeViewer(Viewer):
         """
         if not states:
             raise ValueError(f"The states argument has to be non-empty, got {states}.")
-        fig, ax = plt.subplots(num=f"{self._figure_name}Anim", figsize=self._figure_size)
+
+        fig, ax = self._get_fig_ax(
+            "_animation",
+            show=False,
+        )
+        plt.close(fig=fig)
         self._draw_board(ax, states[0])
-        plt.close(fig)
 
         patches: List[matplotlib.patches.Patch] = []
 
-        def make_frame(state: State) -> Any:
+        def make_frame(state: State) -> Tuple[Artist]:
             while patches:
                 patches.pop().remove()
             patches.extend(self._create_entities(state))
             for patch in patches:
                 ax.add_patch(patch)
+            return (ax,)
 
         # Create the animation object.
-        matplotlib.rc("animation", html="jshtml")
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=states,
+            frames=states[1:],
             interval=interval,
         )
 
@@ -99,27 +105,6 @@ class SnakeViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        """Perform any necessary cleanup.
-
-        Environments will automatically :meth:`close()` themselves when
-        garbage collected or when the program exits.
-        """
-        plt.close(self._figure_name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        exists = plt.fignum_exists(self._figure_name)
-        if exists:
-            fig = plt.figure(self._figure_name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self._figure_name, figsize=self._figure_size)
-            fig.set_tight_layout({"pad": False, "w_pad": 0.0, "h_pad": 0.0})
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        return fig, ax
 
     def _draw(self, ax: plt.Axes, state: State) -> None:
         ax.clear()
@@ -136,13 +121,13 @@ class SnakeViewer(Viewer):
         ax.plot([num_cols, num_cols], [num_rows, 0], "-k", lw=2)
         ax.plot([num_cols, 0], [0, 0], "-k", lw=2)
 
-    def _create_entities(self, state: State) -> List[matplotlib.patches.Patch]:
+    def _create_entities(self, state: State) -> Sequence[Patch]:
         """Loop over the different cells and draws corresponding shapes in the ax object."""
         num_rows, num_cols = state.body_state.shape[-2:]
 
-        patches = []
+        patches: List[Patch] = list()
         linewidth = (
-            min(n * size for n, size in zip((num_rows, num_cols), self._figure_size, strict=False))
+            min(n * size for n, size in zip((num_rows, num_cols), self.figure_size, strict=False))
             / 44.0
         )
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
@@ -186,20 +171,3 @@ class SnakeViewer(Viewer):
         )
         patches.append(fruit_patch)
         return patches
-
-    def _update_display(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._figure_name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

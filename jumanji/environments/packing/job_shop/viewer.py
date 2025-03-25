@@ -18,14 +18,14 @@ import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.job_shop.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class JobShopViewer(Viewer):
-    FIGURE_SIZE = (15.0, 10.0)
+class JobShopViewer(MatplotlibViewer[State]):
     COLORMAP_NAME = "hsv"
 
     def __init__(
@@ -35,6 +35,7 @@ class JobShopViewer(Viewer):
         num_machines: int,
         max_num_ops: int,
         max_op_duration: int,
+        render_mode: str = "human",
     ) -> None:
         """Viewer for the `JobShop` environment.
 
@@ -44,25 +45,29 @@ class JobShopViewer(Viewer):
             num_machines: the number of machines that the jobs can be scheduled on.
             max_num_ops: the maximum number of operations for any given job.
             max_op_duration: the maximum processing time of any given operation.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self._num_jobs = num_jobs
         self._num_machines = num_machines
         self._max_num_ops = max_num_ops
         self._max_op_duration = max_op_duration
 
         # Have additional color to avoid two jobs having same color when using hsv colormap
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_jobs + 1)
+        self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_jobs + 1)
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `JobShop` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Returns:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -71,7 +76,11 @@ class JobShopViewer(Viewer):
         ax.axvline(state.step_count, ls="--", color="red", lw=0.5)
         self._prepare_figure(ax)
         self._add_scheduled_ops(ax, state)
-        return self._display_human(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
         self,
@@ -90,22 +99,22 @@ class JobShopViewer(Viewer):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        ax = fig.add_subplot(111)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
-            state = states[state_index]
             ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -129,38 +138,6 @@ class JobShopViewer(Viewer):
         ax.set_xticks(minor_ticks, minor=True)
         ax.grid(axis="x", linewidth=0.25)
         ax.set_axisbelow(True)
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
 
     def _add_scheduled_ops(self, ax: plt.Axes, state: State) -> None:
         """Add the scheduled operations to the plot."""

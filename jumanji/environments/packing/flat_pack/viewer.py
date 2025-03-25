@@ -12,45 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.flat_pack.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class FlatPackViewer(Viewer):
-    FIGURE_SIZE = (10, 10)
-
+class FlatPackViewer(MatplotlibViewer[State]):
     def __init__(self, name: str, num_blocks: int, render_mode: str = "human") -> None:
         """Viewer for a `FlatPack` environment.
 
         Args:
             name: the window name to be used when initialising the window.
             num_blocks: number of blocks in the environment.
-            render_mode: return a numpy array frame representing the environment.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-
-        # Pick display method
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
         # Create a color for each block.
         colormap_indices = np.arange(0, 1, 1 / num_blocks)
-        colormap = matplotlib.cm.get_cmap("hsv", num_blocks + 1)
+        colormap = plt.get_cmap("hsv", num_blocks + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Empty grid colour should be white.
         for colormap_idx in colormap_indices:
@@ -58,23 +47,26 @@ class FlatPackViewer(Viewer):
             r, g, b, _ = colormap(colormap_idx)
             self.colors.append((r, g, b, 0.7))
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render a FlatPack environment state.
 
         Args:
             state: the flat_pack environment state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
 
         Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._add_grid_image(state.grid, ax)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -94,19 +86,19 @@ class FlatPackViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=FlatPackViewer.FIGURE_SIZE)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
-        def make_frame(state_index: int) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
             self._add_grid_image(state.grid, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -115,41 +107,6 @@ class FlatPackViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_notebook():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, FlatPackViewer.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _add_grid_image(self, grid: chex.Array, ax: plt.Axes) -> None:
         self._draw_grid(grid, ax)

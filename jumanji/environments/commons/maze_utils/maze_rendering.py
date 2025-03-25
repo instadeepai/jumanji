@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, ClassVar, Dict, List, Optional, Sequence, Tuple
+from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation
@@ -20,17 +20,16 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.commons.maze_utils.maze_generation import EMPTY, WALL
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class MazeViewer(Viewer):
+class MazeViewer(MatplotlibViewer):
     FONT_STYLE = "monospace"
-    FIGURE_SIZE = (10.0, 10.0)
     # EMPTY is white, WALL is black
     COLORS: ClassVar[Dict[int, List[int]]] = {EMPTY: [1, 1, 1], WALL: [0, 0, 0]}
 
@@ -43,33 +42,27 @@ class MazeViewer(Viewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-    def render(self, maze: chex.Array) -> Optional[NDArray]:
+    def render(self, maze: chex.Array, save_path: Optional[str] = None) -> Optional[NDArray]:
         """
         Render maze.
 
         Args:
             maze: the maze to render.
+            save_path: Optional path to save the rendered environment image to.
 
         Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._add_grid_image(maze, ax)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -89,19 +82,19 @@ class MazeViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
-        def make_frame(maze_index: int) -> None:
+        def make_frame(maze: chex.Array) -> Tuple[Artist]:
             ax.clear()
-            maze = mazes[maze_index]
             self._add_grid_image(maze, ax)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(mazes),
+            frames=mazes,
             interval=interval,
         )
 
@@ -110,20 +103,6 @@ class MazeViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _add_grid_image(self, maze: chex.Array, ax: Axes) -> image.AxesImage:
         img = self._create_grid_image(maze)
@@ -137,24 +116,3 @@ class MazeViewer(Viewer):
         # Draw black frame around maze by padding axis 0 and 1
         img = np.pad(img, ((1, 1), (1, 1), (0, 0)))  # type: ignore
         return img
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

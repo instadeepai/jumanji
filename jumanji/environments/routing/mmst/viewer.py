@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from itertools import pairwise
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
+from matplotlib.lines import Line2D
 from numpy.typing import NDArray
 
-import jumanji.environments
+from jumanji.environments.commons.graph_view_utils import spring_layout
 from jumanji.environments.routing.mmst.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 grey = (100 / 255, 100 / 255, 100 / 255)
 white = (255 / 255, 255 / 255, 255 / 255)
@@ -33,13 +36,14 @@ black = (0 / 255, 0 / 255, 0 / 255)
 blue = (50 / 255, 50 / 255, 160 / 255)
 
 
-class MMSTViewer(Viewer):
+class MMSTViewer(MatplotlibViewer[State]):
     """Viewer class for the MMST environment."""
 
     def __init__(
         self,
         num_agents: int,
         name: str = "MMST",
+        render_mode: str = "human",
     ) -> None:
         """Create a `MMSTViewer` instance for rendering the `MMST` environment.
 
@@ -47,12 +51,7 @@ class MMSTViewer(Viewer):
             num_agents: Number of agents in the environment.
         """
 
-        self._name = name
         self.num_agents = num_agents
-
-        # Pick display method. Only one mode avaliable.
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        self._display = self._display_human
 
         np.random.seed(0)
 
@@ -66,51 +65,60 @@ class MMSTViewer(Viewer):
             )
             self.palette.append(colour)
 
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> chex.Array:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the state of the environment.
 
         Args:
             state: the current state of the environment to render.
-            save_path: optional name to save frame as.
+            save_path: Optional path to save the rendered environment image to.
 
         Return:
-            pixel RGB array
+            RGB array if the render_mode is 'rgb_array'.
         """
-        num_nodes = state.adj_matrix.shape[0]
-        node_scale = 5 + int(np.sqrt(num_nodes))
-
         self._clear_display()
-        fig, ax = self._get_fig_ax(node_scale)
-        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
+        fig, ax = self._get_fig_ax()
         ax.clear()
         self._draw_graph(state, ax)
 
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
-    def _draw_graph(self, state: State, ax: plt.Axes) -> None:
+    def _draw_graph(
+        self, state: State, ax: plt.Axes
+    ) -> Tuple[
+        Dict[Tuple[int, ...], plt.Line2D], List[Tuple[plt.Circle, plt.Circle]], List[plt.Text]
+    ]:
         """Draw the different nodes and edges in the graph
 
         Args:
             state: current state of the environment.
             ax: figure axes on which to plot.
         """
-
-        positions = self._spring_layout(state.adj_matrix)
-
         num_nodes = state.adj_matrix.shape[0]
+        positions = spring_layout(state.adj_matrix, num_nodes)
         node_scale = 5 + int(np.sqrt(num_nodes))
         node_radius = 0.05 * 5 / node_scale
 
         edges = self.build_edges(state.adj_matrix, state.connected_nodes)
+
+        lines = {}
+
         # Draw edges.
-        for e in edges.values():
+        for k, e in edges.items():
             (n1, n2), color = e
             n1, n2 = int(n1), int(n2)
             x_values = [positions[n1][0], positions[n2][0]]
             y_values = [positions[n1][1], positions[n2][1]]
-            ax.plot(x_values, y_values, c=color, linewidth=2)
+            edge = Line2D(x_values, y_values, c=color, linewidth=2)
+            ax.add_artist(edge)
+            lines[k] = edge
+
+        circles = []
+        labels = []
 
         # Draw nodes.
         for node in range(num_nodes):
@@ -125,7 +133,7 @@ class MMSTViewer(Viewer):
             else:
                 lcolor = blue
 
-            self.circle_fill(
+            c = self.circle_fill(
                 positions[node],
                 lcolor,
                 fcolor,
@@ -134,20 +142,27 @@ class MMSTViewer(Viewer):
                 ax,
             )
 
-            ax.text(
+            circles.append(c)
+
+            txt = plt.Text(
                 positions[node][0],
                 positions[node][1],
-                node,
+                str(node),
                 color="white",
                 ha="center",
                 va="center",
                 weight="bold",
+                zorder=200,
             )
+            ax.add_artist(txt)
+            labels.append(txt)
 
         ax.set_axis_off()
         ax.set_aspect(1)
         ax.relim()
         ax.autoscale_view()
+
+        return lines, circles, labels
 
     def build_edges(
         self, adj_matrix: chex.Array, connected_nodes: chex.Array
@@ -184,15 +199,18 @@ class MMSTViewer(Viewer):
 
     def circle_fill(
         self,
-        xy: chex.Array,
+        xy: Tuple[float, float],
         line_color: Tuple[float, float, float],
         fill_color: Tuple[float, float, float],
         radius: float,
         thickness: float,
         ax: plt.Axes,
-    ) -> None:
-        ax.add_artist(plt.Circle(xy, radius, color=line_color))
-        ax.add_artist(plt.Circle(xy, radius - thickness, color=fill_color))
+    ) -> Tuple[plt.Circle, plt.Circle]:
+        ca = plt.Circle(xy, radius, color=line_color, zorder=100)
+        cb = plt.Circle(xy, radius - thickness, color=fill_color, zorder=100)
+        ax.add_artist(ca)
+        ax.add_artist(cb)
+        return ca, cb
 
     def animate(
         self,
@@ -212,22 +230,71 @@ class MMSTViewer(Viewer):
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
 
-        num_nodes = states[0].adj_matrix.shape[0]
-        node_scale = 5 + int(np.sqrt(num_nodes))
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=(node_scale, node_scale))
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        edges, circles, labels = self._draw_graph(states[0], ax)
 
-        def make_frame(grid_index: int) -> None:
-            ax.clear()
-            state = states[grid_index]
-            self._draw_graph(state, ax)
+        def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
+            old_state, new_state = state_pair
+
+            updated = []
+
+            if not jnp.array_equal(old_state.adj_matrix, new_state.adj_matrix):
+                while circles:
+                    circle = circles.pop()
+                    circle[0].remove()
+                    circle[1].remove()
+                    updated.append(circle[0])
+                    updated.append(circle[1])
+                while labels:
+                    label = labels.pop()
+                    label.remove()
+                    updated.append(label)
+                for k in list(edges.keys()):
+                    edge = edges.pop(k)
+                    edge.remove()
+                    updated.append(edge)
+
+                new_edges, new_circles, new_labels = self._draw_graph(new_state, ax)
+                edges.update(new_edges)
+                circles.extend(new_circles)
+                labels.extend(new_labels)
+
+            else:
+                edge_updates = self.build_edges(new_state.adj_matrix, new_state.connected_nodes)
+
+                for k, (_, color) in edge_updates.items():
+                    edge = edges[k]
+                    edge.set(color=color)
+                    updated.append(edge)
+
+                for i, (ca, cb) in enumerate(circles):
+                    pos = np.where(new_state.nodes_to_connect == i)[0]
+                    if len(pos) == 1:
+                        fcolor = self.palette[pos[0]]
+                    else:
+                        fcolor = black
+
+                    if i in new_state.positions:
+                        lcolor = yellow
+                    else:
+                        lcolor = blue
+
+                    ca.set(color=lcolor)
+                    cb.set(color=fcolor)
+                    updated.append(ca)
+                    updated.append(cb)
+
+            return updated
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=pairwise(states),
             interval=interval,
+            save_count=len(states) - 1,
+            blit=True,
         )
 
         # Save the animation as a gif.
@@ -235,107 +302,3 @@ class MMSTViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self, node_scale: float) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, (node_scale, node_scale))
-        # plt.style.use("dark_background")
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_notebook():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _compute_repulsive_forces(
-        self, repulsive_forces: np.ndarray, pos: np.ndarray, k: float
-    ) -> np.ndarray:
-        num_nodes = repulsive_forces.shape[0]
-        for i in range(num_nodes):
-            for j in range(i + 1, num_nodes):
-                delta = pos[i] - pos[j]
-                distance = np.linalg.norm(delta)
-                direction = delta / (distance + 1e-6)
-                force = k * k / (distance + 1e-6)
-                repulsive_forces[i] += direction * force
-                repulsive_forces[j] -= direction * force
-
-        return repulsive_forces
-
-    def _compute_attractive_forces(
-        self,
-        graph: chex.Array,
-        attractive_forces: np.ndarray,
-        pos: np.ndarray,
-        k: float,
-    ) -> np.ndarray:
-        num_nodes = graph.shape[0]
-        for i in range(num_nodes):
-            for j in range(num_nodes):
-                if graph[i, j]:
-                    delta = pos[i] - pos[j]
-                    distance = np.linalg.norm(delta)
-                    direction = delta / (distance + 1e-6)
-                    force = distance * distance / k
-                    attractive_forces[i] -= direction * force
-                    attractive_forces[j] += direction * force
-
-        return attractive_forces
-
-    def _spring_layout(self, graph: chex.Array, seed: int = 42) -> List[Tuple[float, float]]:
-        """Compute a 2D spring layout for the given graph using
-        the Fruchterman-Reingold force-directed algorithm.
-
-        The algorithm computes a layout by simulating the graph as a physical system,
-        where nodes are repelling each other and edges are attracting connected nodes.
-        The method minimizes the energy of the system over several iterations.
-
-        Args:
-            graph: A Graph object representing the adjacency matrix of the graph.
-            seed: An integer used to seed the random number generator for reproducibility.
-
-        Returns:
-            A list of tuples representing the 2D positions of nodes in the graph.
-        """
-        num_nodes = graph.shape[0]
-        rng = np.random.default_rng(seed)
-        pos = rng.random((num_nodes, 2)) * 2 - 1
-
-        iterations = 100
-        k = np.sqrt(1 / num_nodes)
-        temperature = 2.0  # Added a temperature variable
-
-        for _ in range(iterations):
-            repulsive_forces = self._compute_repulsive_forces(np.zeros((num_nodes, 2)), pos, k)
-            attractive_forces = self._compute_attractive_forces(
-                graph, np.zeros((num_nodes, 2)), pos, k
-            )
-
-            pos += (repulsive_forces + attractive_forces) * temperature
-            # Reduce the temperature (cooling factor) to refine the layout.
-            temperature *= 0.9
-
-            pos = np.clip(pos, -1, 1)  # Keep positions within the [-1, 1] range
-
-        return [(float(p[0]), float(p[1])) for p in pos]

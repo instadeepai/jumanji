@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import chex
 import jax
@@ -20,19 +20,16 @@ import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib import image
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.commons.maze_utils.maze_rendering import MazeViewer
 from jumanji.environments.routing.pac_man.types import Observation, State
 
 
 class PacManViewer(MazeViewer):
-    FIGURE_SIZE = (4.0, 4.0)
-
     def __init__(self, name: str, render_mode: str = "human") -> None:
         """
         Viewer for the `PacMan` environment.
@@ -43,44 +40,30 @@ class PacManViewer(MazeViewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-        self._render_mode = render_mode
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-    def render(self, state: Union[Observation, State]) -> Optional[NDArray]:
+    def render(
+        self, state: Union[Observation, State], save_path: Optional[str] = None
+    ) -> Optional[NDArray]:
         """Render the given state of the `PacMan` environment.
 
         Args:
             state: the environment state or observation from the environment to render.
+            save_path: Optional path to save the rendered environment image to.
 
-        Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         fig.suptitle(f"PacMan    Score: {int(state.score)}", size=15)
         self._add_grid_image(state, ax)
-        return self._display(fig)
 
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
         self,
@@ -100,20 +83,22 @@ class PacManViewer(MazeViewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        plt.close(fig)
 
-        def make_frame(state_index: int) -> None:
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        ax.set_title("PacMan    Score: 0", size=20)
+
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            state = states[state_index]
             self._add_grid_image(state, ax)
-            fig.suptitle(f"PacMan    Score: {int(state.score)}", size=10)
+            ax.set_title(f"PacMan    Score: {int(state.score)}", size=20)
+            return (ax,)
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -128,30 +113,6 @@ class PacManViewer(MazeViewer):
         ax.set_axis_off()
         return ax.imshow(img)
 
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
 
 # flake8: noqa: C901
 def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
@@ -159,7 +120,8 @@ def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     Generate the observation of the current state.
 
     Args:
-        state: 'State` object corresponding to the new state of the environment.
+        observation: `State` or `Observation` object corresponding to the new state
+        of the environment.
 
     Returns:
         rgb: A 3-dimensional array representing the RGB observation of the current state.

@@ -32,36 +32,43 @@ import matplotlib.animation
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
+from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.logic.sliding_tile_puzzle.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class SlidingTilePuzzleViewer(Viewer):
+class SlidingTilePuzzleViewer(MatplotlibViewer[State]):
     EMPTY_TILE_COLOR = "#ccc0b3"
 
-    def __init__(self, name: str = "SlidingTilePuzzle") -> None:
+    def __init__(self, name: str = "SlidingTilePuzzle", render_mode: str = "human") -> None:
         """Viewer for the Sliding Tile Puzzle environment.
 
         Args:
             name: the window name to be used when initialising the window.
-            grid_size: size of the puzzle.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
-        self._animation: Optional[matplotlib.animation.Animation] = None
         self._color_map = mcolors.LinearSegmentedColormap.from_list("", ["white", "blue"])
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> None:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Renders the current state of the game puzzle.
 
         Args:
             state: is the current game state to be rendered.
+            save_path: Optional path to save the rendered environment image to.
         """
         self._clear_display()
-        fig, ax = self.get_fig_ax()
+        fig, ax = self._get_fig_ax()
         self.draw_puzzle(ax, state)
-        self._display_human(fig)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
+        return self._display(fig)
 
     def animate(
         self,
@@ -80,16 +87,17 @@ class SlidingTilePuzzleViewer(Viewer):
         Returns:
             Animation object that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = self.get_fig_ax()
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
+        def make_frame(state: State) -> Tuple[Artist]:
             self.draw_puzzle(ax, state)
+            return (ax,)
 
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=states,
             interval=interval,
         )
 
@@ -97,24 +105,6 @@ class SlidingTilePuzzleViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        """This function returns a `Matplotlib` figure and axes for displaying the puzzle.
-
-        Returns:
-            A tuple containing the figure and axes objects.
-        """
-        exists = plt.fignum_exists(self._name)
-        if exists:
-            fig = plt.figure(self._name)
-            ax = fig.get_axes()[0]
-        else:
-            fig = plt.figure(self._name, figsize=(6.0, 6.0))
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-
-        return fig, ax
 
     def draw_puzzle(self, ax: plt.Axes, state: State) -> None:
         """Draw the game puzzle with the current state.
@@ -135,7 +125,7 @@ class SlidingTilePuzzleViewer(Viewer):
                 tile_value = state.puzzle[row, col]
                 if tile_value == 0:
                     # Render the empty tile
-                    rect = plt.Rectangle([col - 0.5, row - 0.5], 1, 1, color=self.EMPTY_TILE_COLOR)
+                    rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=self.EMPTY_TILE_COLOR)
                     ax.add_patch(rect)
                 else:
                     # Render the numbered tile
@@ -143,23 +133,3 @@ class SlidingTilePuzzleViewer(Viewer):
 
         # Show the image of the puzzle.
         ax.imshow(state.puzzle, cmap=self._color_map)
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)

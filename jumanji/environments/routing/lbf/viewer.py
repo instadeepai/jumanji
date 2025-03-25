@@ -14,12 +14,13 @@
 
 # flake8: noqa: CCR001
 
-from typing import Callable, Optional, Sequence, Tuple
+from importlib import resources
+from typing import Optional, Sequence, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
+from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from numpy.typing import NDArray
@@ -28,10 +29,10 @@ import jumanji
 import jumanji.environments.routing.lbf.constants as constants
 from jumanji.environments.routing.lbf.types import Agent, Entity, Food, State
 from jumanji.tree_utils import tree_slice
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class LevelBasedForagingViewer(Viewer):
+class LevelBasedForagingViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         grid_size: int,
@@ -44,7 +45,6 @@ class LevelBasedForagingViewer(Viewer):
             grid_size: the size of the grid (width, height)
             name: custom name for the Viewer. Defaults to `LevelBasedForaging`.
         """
-        self._name = name
         self.rows, self.cols = (grid_size, grid_size)
         self.grid_size = 30
 
@@ -52,30 +52,27 @@ class LevelBasedForagingViewer(Viewer):
 
         self.width = 1 + self.cols * (self.grid_size + 1)
         self.height = 1 + self.rows * (self.grid_size + 1)
+        super().__init__(name, render_mode)
 
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[animation.Animation] = None
-
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `LevelBasedForaging` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Returns:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
-        fig, ax = self._get_fig_ax()
+        fig, ax = self._get_fig_ax(facecolor=constants._GRID_COLOR)
         ax.clear()
         self._prepare_figure(ax)
         self._draw_state(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -95,20 +92,17 @@ class LevelBasedForagingViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(
-            f"{self._name}Animation",
-            figsize=constants._FIGURE_SIZE,
-            facecolor=constants._GRID_COLOR,
+        fig, ax = self._get_fig_ax(
+            name_suffix="_animation", show=False, facecolor=constants._GRID_COLOR
         )
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
-        def make_frame(state: State) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
             self._draw_state(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = animation.FuncAnimation(
@@ -123,31 +117,6 @@ class LevelBasedForagingViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(
-            self._name, figsize=constants._FIGURE_SIZE, facecolor=constants._GRID_COLOR
-        )
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, self.width)
@@ -185,21 +154,6 @@ class LevelBasedForagingViewer(Viewer):
         lc = LineCollection(lines, colors=(constants._LINE_COLOR,))
         ax.add_collection(lc)
 
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
     def _draw_agents(self, agents: Agent, ax: plt.Axes) -> None:
         """Draw the agents on the grid."""
         num_agents = len(agents.level)
@@ -209,9 +163,7 @@ class LevelBasedForagingViewer(Viewer):
             cell_center = self._entity_position(agent)
 
             # Read the image file
-            img_path = pkg_resources.resource_filename(
-                "jumanji", "environments/routing/lbf/imgs/agent.png"
-            )
+            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/agent.png"
             img = plt.imread(img_path)
 
             # Create an OffsetImage and add it to the axis
@@ -232,9 +184,7 @@ class LevelBasedForagingViewer(Viewer):
                 continue
 
             # Read the image file
-            img_path = pkg_resources.resource_filename(
-                "jumanji", "environments/routing/lbf/imgs/apple.png"
-            )
+            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/apple.png"
             img = plt.imread(img_path)
             cell_center = self._entity_position(food)
             self.draw_badge(food.level, cell_center, ax)

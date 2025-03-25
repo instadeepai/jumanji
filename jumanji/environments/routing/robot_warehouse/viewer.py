@@ -18,23 +18,23 @@ copyright."""
 
 # flake8: noqa: CCR001
 
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import chex
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.artist import Artist
 from matplotlib.collections import LineCollection
 from numpy.typing import NDArray
 
-import jumanji
 import jumanji.environments.routing.robot_warehouse.constants as constants
-from jumanji.environments.routing.robot_warehouse.types import Direction, State
+from jumanji.environments.routing.robot_warehouse.types import Agent, Direction, Shelf, State
 from jumanji.tree_utils import tree_slice
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class RobotWarehouseViewer(Viewer):
+class RobotWarehouseViewer(MatplotlibViewer[State]):
     def __init__(
         self,
         grid_size: Tuple[int, int],
@@ -49,8 +49,10 @@ class RobotWarehouseViewer(Viewer):
             goals: x,y coordinates of goal locations (where shelves
                 should be delivered)
             name: custom name for the Viewer. Defaults to `RobotWarehouse`.
+            render_mode: the mode used to render the environment. Must be one of:
+                - "human": render the environment on screen.
+                - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self.goals = goals
         self.rows, self.cols = grid_size
 
@@ -59,29 +61,28 @@ class RobotWarehouseViewer(Viewer):
 
         self.width = 1 + self.cols * (self.grid_size + 1)
         self.height = 1 + self.rows * (self.grid_size + 1)
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[animation.Animation] = None
+        super().__init__(name, render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `RobotWarehouse` environment.
 
         Args:
             state: the environment state to render.
+            save_path: Optional path to save the rendered environment image to.
+
+        Return:
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
         ax.clear()
         self._prepare_figure(ax)
         self._draw_state(ax, state)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -101,16 +102,15 @@ class RobotWarehouseViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=constants._FIGURE_SIZE)
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
 
-        def make_frame(state: State) -> None:
+        def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
             self._prepare_figure(ax)
             self._draw_state(ax, state)
+            return (ax,)
 
         # Create the animation object.
         self._animation = animation.FuncAnimation(
@@ -125,29 +125,6 @@ class RobotWarehouseViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=constants._FIGURE_SIZE)
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, self.width)
@@ -214,7 +191,7 @@ class RobotWarehouseViewer(Viewer):
                 alpha=1,
             )
 
-    def _draw_shelves(self, ax: plt.Axes, shelves: chex.Array) -> None:
+    def _draw_shelves(self, ax: plt.Axes, shelves: Shelf) -> None:
         """Draw shelves at their respective positions.
 
         Args:
@@ -245,7 +222,7 @@ class RobotWarehouseViewer(Viewer):
 
             ax.fill(x_points, y_points, color=shelf_color)
 
-    def _draw_agents(self, ax: plt.Axes, agents: chex.Array) -> None:
+    def _draw_agents(self, ax: plt.Axes, agents: Agent) -> None:
         """Draw agents at their respective positions.
 
         Args:
@@ -303,18 +280,3 @@ class RobotWarehouseViewer(Viewer):
                 color=constants._AGENT_DIR_COLOR,
                 linewidth=2,
             )
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())

@@ -12,69 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import chex
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.tetris.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class TetrisViewer(Viewer):
-    FIGURE_SIZE = (6.0, 10.0)
-
+class TetrisViewer(MatplotlibViewer[State]):
     def __init__(self, num_rows: int, num_cols: int, render_mode: str = "human") -> None:
         """
         Viewer for a `Tetris` environment.
 
         Args:
-            name: the window name to be used when initialising the window.
+            num_rows: Number of environment rows
+            num_cols: Number of environment columns
             render_mode: the mode used to render the environment. Must be one of:
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
         self.num_rows = num_rows
         self.num_cols = num_cols
-        self._name = f"{num_rows}x{num_cols} Tetris"
         self.n_colors = 10
-        self.figure_size = (6.0, 6.0)
-        # Pick display method.
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
 
         # Pick colors.
-        colormap_indecies = jnp.arange(0, 1, 1 / self.n_colors)
-        colormap = matplotlib.cm.get_cmap("hsv", self.n_colors + 1)
+        colormap_indicies = jnp.arange(0, 1, 1 / self.n_colors)
+        colormap = plt.get_cmap("hsv", self.n_colors + 1)
 
         self.colors = [(1.0, 1.0, 1.0, 1.0)]  # Initial color must be white.
-        for colormap_idx in colormap_indecies:
+        for colormap_idx in colormap_indicies:
             self.colors.append(colormap(colormap_idx))
         self.edgecolors = [(0.0, 0.0, 0.0), (0.9, 0.9, 0.9)]
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(f"{num_rows}x{num_cols} Tetris", render_mode)
 
-    def render(self, state: State) -> Optional[NDArray]:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render Tetris.
 
         Args:
-            grid: the grid of the Tetris environment to render.
+            state: State of the Tetris environment to render.
+            save_path: Optional path to save the rendered environment image to.
 
         Returns:
-            RGB array if the render_mode is RenderMode.RGB_ARRAY.
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
@@ -83,6 +70,10 @@ class TetrisViewer(Viewer):
         ax.invert_yaxis()
         grid = self._create_rendering_grid(state)
         self._add_grid_image(ax, grid)
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def _move_tetromino(self, state: State, old_padded_grid: chex.Array) -> List[chex.Array]:
@@ -186,7 +177,7 @@ class TetrisViewer(Viewer):
         """Create an animation from a sequence of Tetris grids.
 
         Args:
-            grids: sequence of Tetris grids corresponding to consecutive timesteps.
+            states: Sequence of states.
             interval: delay between frames in milliseconds, default to 100.
             save_path: the path where the animation file should be saved. If it is None, the plot
                 will not be saved.
@@ -194,24 +185,21 @@ class TetrisViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig, ax = plt.subplots(num=f"{self._name}Animation", figsize=TetrisViewer.FIGURE_SIZE)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
+        ax.set_title("Tetris    Score: 0", size=20)
 
-        def make_frame(grid_index: int) -> None:
-            """creates a frames for each state
-
-            Args:
-                grid_index: `int`
-            """
+        def make_frame(frame_data: Tuple[chex.Array, chex.Numeric]) -> Tuple[Artist]:
+            grid, score = frame_data
             ax.clear()
             ax.invert_yaxis()
-            fig.suptitle(f"Tetris    Score: {int(scores[grid_index])}", size=20)
-            grid = grids[grid_index]
-
+            ax.set_title(f"Tetris    Score: {int(score)}", size=20)
             self._add_grid_image(ax, grid)
+            return (ax,)
 
         grids = []
         scores = []
+
         for state in states:
             scores.append(state.score - state.reward)
             if not state.is_reset:
@@ -225,12 +213,14 @@ class TetrisViewer(Viewer):
                 if state.full_lines.sum() > 0:
                     grids += self._crush_lines(state, grids[-1])
                     scores.extend([score for i in range(len(grids) - len(scores))])
+
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(grids),
+            frames=zip(grids, scores, strict=False),
             interval=interval,
+            save_count=len(grids),
         )
 
         # Save the animation as a gif.
@@ -238,20 +228,6 @@ class TetrisViewer(Viewer):
             self._animation.save(save_path)
 
         return self._animation
-
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, TetrisViewer.FIGURE_SIZE)
-        if recreate:
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot()
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
 
     def _add_grid_image(self, ax: plt.Axes, grid: chex.Array) -> None:
         self._draw_grid(grid, ax)
@@ -279,24 +255,3 @@ class TetrisViewer(Viewer):
         color = self.colors[color_id]
         edge_color = self.edgecolors[is_padd]
         return {"facecolor": color, "edgecolor": edge_color, "linewidth": 1}
-
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_notebook():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            fig.canvas.flush_events()
-
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_notebook():
-            import IPython.display
-
-            IPython.display.clear_output(True)

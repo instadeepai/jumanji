@@ -12,27 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from itertools import groupby
-from typing import Callable, Optional, Sequence, Tuple
+from importlib import resources
+from itertools import groupby, pairwise
+from typing import List, Optional, Sequence, Tuple, Union
 
 import chex
+import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-import pkg_resources
+from matplotlib.artist import Artist
+from matplotlib.collections import PathCollection
+from matplotlib.quiver import Quiver
 from numpy.typing import NDArray
 
 import jumanji.environments
 from jumanji.environments.routing.multi_cvrp.types import State
-from jumanji.viewer import Viewer
+from jumanji.viewer import MatplotlibViewer
 
 
-class MultiCVRPViewer(Viewer):
-    FIGURE_SIZE = (10.0, 10.0)
+class MultiCVRPViewer(MatplotlibViewer[State]):
     NODE_COLOUR = "black"
     COLORMAP_NAME = "hsv"
-    NODE_SIZE = 150
-    DEPOT_SIZE = 250
+    NODE_SIZE = 0.01
+    DEPOT_SIZE = 0.04
+    ROUTE_NODES_SIZE = 100
     ARROW_WIDTH = 0.004
 
     def __init__(
@@ -51,44 +55,34 @@ class MultiCVRPViewer(Viewer):
                 - "human": render the environment on screen.
                 - "rgb_array": return a numpy array frame representing the environment.
         """
-        self._name = name
         self._num_vehicles = num_vehicles
         self._num_customers = num_customers
         self._map_max = map_max
 
         # Each vehicle has a different colour
-        self._cmap = matplotlib.cm.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
+        self._cmap = plt.get_cmap(self.COLORMAP_NAME, self._num_vehicles + 1)
 
-        # The animation must be stored in a variable that lives as long as the
-        # animation should run. Otherwise, the animation will get garbage-collected.
-        self._animation: Optional[matplotlib.animation.Animation] = None
+        super().__init__(name, render_mode)
 
-        self._display: Callable[[plt.Figure], Optional[NDArray]]
-        if render_mode == "rgb_array":
-            self._display = self._display_rgb_array
-        elif render_mode == "human":
-            self._display = self._display_human
-        else:
-            raise ValueError(f"Invalid render mode: {render_mode}")
-
-    def render(self, state: State, save_path: Optional[str] = None) -> chex.Array:
+    def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the state of the environment.
 
         Args:
             state: the current state of the environment to render.
-            save_path: optional name to save frame as.
+            save_path: Optional path to save the rendered environment image to.
 
         Return:
-            pixel RGB array
+            RGB array if the render_mode is 'rgb_array'.
         """
         self._clear_display()
         fig, ax = self._get_fig_ax()
-        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
         ax.clear()
         self._prepare_figure(ax)
         self._add_tour(ax, state)
+
         if save_path:
-            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.0)
+            fig.savefig(save_path, bbox_inches="tight", pad_inches=0.2)
+
         return self._display(fig)
 
     def animate(
@@ -108,22 +102,48 @@ class MultiCVRPViewer(Viewer):
         Returns:
             Animation that can be saved as a GIF, MP4, or rendered with HTML.
         """
-        fig = plt.figure(f"{self._name}Animation", figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        ax = fig.add_subplot(111)
-        plt.close(fig)
+        fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
+        plt.close(fig=fig)
         self._prepare_figure(ax)
+        nodes, routes = self._add_tour(ax, states[0])
 
-        def make_frame(state_index: int) -> None:
-            state = states[state_index]
-            self._add_tour(ax, state)
+        def make_frame(state_pair: Tuple[State, State]) -> List[Artist]:
+            old_state, new_state = state_pair
+            updated = []
+
+            if not jnp.array_equal(old_state.nodes.coordinates, new_state.nodes.coordinates):
+                x_coords, y_coords = (
+                    new_state.nodes.coordinates[:, 0] / self._map_max,
+                    new_state.nodes.coordinates[:, 1] / self._map_max,
+                )
+                nodes[0].set(
+                    xy=(x_coords[0] - 0.5 * self.DEPOT_SIZE, y_coords[0] - 0.5 * self.DEPOT_SIZE)
+                )
+                for i, node in enumerate(nodes[1:]):
+                    node.set_center((x_coords[i], y_coords[i]))
+                updated.extend(nodes)
+
+            while routes:
+                route_arrows, route_nodes = routes.pop()
+                route_arrows.remove()
+                route_nodes.remove()
+                updated.append(route_arrows)
+                updated.append(route_nodes)
+
+            new_routes = self._draw_all_routes(ax, new_state)
+            routes.extend(new_routes)
+            updated.extend([item for sublist in new_routes for item in sublist])
+
+            return updated
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
             fig,
             make_frame,
-            frames=len(states),
+            frames=pairwise(states),
             interval=interval,
+            save_count=len(states) - 1,
+            blit=True,
         )
 
         # Save the animation as a gif.
@@ -132,41 +152,17 @@ class MultiCVRPViewer(Viewer):
 
         return self._animation
 
-    def close(self) -> None:
-        plt.close(self._name)
-
-    def _clear_display(self) -> None:
-        if jumanji.environments.is_colab():
-            import IPython.display
-
-            IPython.display.clear_output(True)
-
-    def _get_fig_ax(self) -> Tuple[plt.Figure, plt.Axes]:
-        recreate = not plt.fignum_exists(self._name)
-        fig = plt.figure(self._name, figsize=self.FIGURE_SIZE)
-        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
-        if recreate:
-            fig.tight_layout()
-            if not plt.isinteractive():
-                fig.show()
-            ax = fig.add_subplot(111)
-        else:
-            ax = fig.get_axes()[0]
-        return fig, ax
-
     def _prepare_figure(self, ax: plt.Axes) -> None:
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 
-        img_path = pkg_resources.resource_filename(
-            "jumanji", "environments/routing/multi_cvrp/img/city_map.jpeg"
-        )
+        img_path = resources.files(jumanji.environments.routing.multi_cvrp) / "img/city_map.jpeg"
         map_img = plt.imread(img_path)
-        ax.imshow(map_img, extent=[0, 1, 0, 1])
+        ax.imshow(map_img, extent=(0, 1, 0, 1))
 
-    def _group_tour(self, tour: chex.Array) -> list:
+    def _group_tour(self, tour: chex.Array) -> List[NDArray]:
         """Group the tour into routes that either (1) start and end at the depot, or, (2) start at
         the depot and end at the current city.
 
@@ -185,7 +181,9 @@ class MultiCVRPViewer(Viewer):
             tour_grouped[-1] = tour_grouped[-1][:-1]
         return tour_grouped
 
-    def _draw_route(self, ax: plt.Axes, coords: chex.Array, col_id: int) -> None:
+    def _draw_route(
+        self, ax: plt.Axes, coords: chex.Array, col_id: int
+    ) -> Tuple[Quiver, PathCollection]:
         """Draw the arrows and nodes for each route in the given colour."""
         x, y = coords[:, 0], coords[:, 1]
 
@@ -193,7 +191,7 @@ class MultiCVRPViewer(Viewer):
         # consecutive cities.
         dx = x[1:] - x[:-1]
         dy = y[1:] - y[:-1]
-        ax.quiver(
+        arrows = ax.quiver(
             x[:-1],
             y[:-1],
             dx,
@@ -205,22 +203,13 @@ class MultiCVRPViewer(Viewer):
             headwidth=5,
             color=self._cmap(col_id),
         )
-        ax.scatter(x, y, s=self.NODE_SIZE, color=self._cmap(col_id))
+        nodes = ax.scatter(x, y, s=self.ROUTE_NODES_SIZE, color=self._cmap(col_id))
 
-    def _add_tour(self, ax: plt.Axes, state: State) -> None:
-        """Add the customers and the depot to the plot, and draw each route in the tour in a
-        different colour. The tour is the entire trajectory between the visited customers and a
-        route is a trajectory either starting and ending at the depot or starting at the depot
-        and ending at the current city."""
-        x_coords, y_coords = (
-            state.nodes.coordinates[:, 0] / self._map_max,
-            state.nodes.coordinates[:, 1] / self._map_max,
-        )
+        return arrows, nodes
 
-        # Draw the customers
-        ax.scatter(x_coords[1:], y_coords[1:], s=self.NODE_SIZE, color=self.NODE_COLOUR)
+    def _draw_all_routes(self, ax: plt.Axes, state: State) -> List[Tuple[Quiver, PathCollection]]:
+        routes = []
 
-        # Draw the arrows between customers
         if state.step_count > 0:
             # TODO (dries): Can we do this without a for loop?
             for i in range(len(state.order)):
@@ -232,29 +221,40 @@ class MultiCVRPViewer(Viewer):
                 for coords_route, _ in zip(
                     coords_grouped, np.arange(0, len(coords_grouped)), strict=False
                 ):
-                    self._draw_route(ax, coords_route, i)
+                    route = self._draw_route(ax, coords_route, i)
+                    routes.append(route)
 
-        # Draw the depot node
-        ax.scatter(
-            x_coords[0],
-            y_coords[0],
-            marker="s",
-            s=self.DEPOT_SIZE,
-            color=self.NODE_COLOUR,
+        return routes
+
+    def _add_tour(
+        self, ax: plt.Axes, state: State
+    ) -> Tuple[List[Union[plt.Circle, plt.Rectangle]], List[Tuple[Quiver, PathCollection]]]:
+        """Add the customers and the depot to the plot, and draw each route in the tour in a
+        different colour. The tour is the entire trajectory between the visited customers and a
+        route is a trajectory either starting and ending at the depot or starting at the depot
+        and ending at the current city."""
+
+        x_coords, y_coords = (
+            state.nodes.coordinates[:, 0] / self._map_max,
+            state.nodes.coordinates[:, 1] / self._map_max,
         )
 
-    def _display_human(self, fig: plt.Figure) -> None:
-        if plt.isinteractive():
-            # Required to update render when using Jupyter Notebook.
-            fig.canvas.draw()
-            if jumanji.environments.is_colab():
-                plt.show(self._name)
-        else:
-            # Required to update render when not using Jupyter Notebook.
-            fig.canvas.draw_idle()
-            # Block for 2 seconds.
-            fig.canvas.start_event_loop(2.0)
+        depot = plt.Rectangle(
+            (x_coords[0] - 0.5 * self.DEPOT_SIZE, y_coords[0] - 0.5 * self.DEPOT_SIZE),
+            self.DEPOT_SIZE,
+            self.DEPOT_SIZE,
+            color=self.NODE_COLOUR,
+        )
+        ax.add_artist(depot)
 
-    def _display_rgb_array(self, fig: plt.Figure) -> NDArray:
-        fig.canvas.draw()
-        return np.asarray(fig.canvas.buffer_rgba())
+        nodes = [depot]
+
+        # Draw the customers
+        for i in range(1, x_coords.shape[0]):
+            node = plt.Circle((x_coords[i], y_coords[i]), self.NODE_SIZE, color=self.NODE_COLOUR)
+            ax.add_artist(node)
+            nodes.append(node)
+
+        routes = self._draw_all_routes(ax, state)
+
+        return nodes, routes
