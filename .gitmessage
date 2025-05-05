@@ -1,0 +1,29 @@
+# ----------------------------------------------------------
+# Header - type: Brief description
+# ----------------------------------------------------------
+#   * feat         A new feature
+#   * fix          A bug fix
+#   * docs         Changes to documentation only
+#   * style        Style/format changes (whitespace, etc.)
+#   * refactor     Changes not related to a bug or feature
+#   * perf         Changes that affects performance
+#   * test         Changes that add/modify/correct tests
+#   * build        Changes to build system (configs, etc.)
+#   * ci           Changes to CI pipeline/workflow
+#   * exp          Triggers an experiment on AIchor
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
+# Body - More detailed description, if necessary
+# ----------------------------------------------------------
+#   * Motivation behind changes, more detail into how
+# functionality might be affected, etc.
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
+# Footer - Associated issues, PRs, etc.
+# ----------------------------------------------------------
+#   * Ex: Resolves Issue #207, see PR #15, etc.
+# ----------------------------------------------------------
