@@ -170,7 +170,7 @@ def test_connector__step_horizon(connector: Connector, state: State) -> None:
     # step 5
     state, timestep = step_fn(state, actions)
     assert timestep.step_type == StepType.LAST
-    assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
+    assert jnp.array_equal(timestep.discount, jnp.ones(connector.num_agents))
 
 
 def test_connector__step_agents_collision(
