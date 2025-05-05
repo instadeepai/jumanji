@@ -32,7 +32,7 @@ from jumanji.environments.routing.connector.generator import (
     Generator,
     RandomWalkGenerator,
 )
-from jumanji.environments.routing.connector.reward import DenseRewardFn, RewardFn
+from jumanji.environments.routing.connector.reward import RewardFn, SingleAgentDenseRewardFn
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     connected_or_blocked,
@@ -43,7 +43,7 @@ from jumanji.environments.routing.connector.utils import (
     move_position,
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -116,7 +116,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
                 mode.
         """
         self._generator = generator or RandomWalkGenerator(grid_size=10, num_agents=10)
-        self._reward_fn = reward_fn or DenseRewardFn()
+        self._reward_fn = reward_fn or SingleAgentDenseRewardFn()
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
@@ -172,24 +172,26 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             grid=grid, action_mask=action_mask, step_count=new_state.step_count
         )
 
-        done = jax.vmap(connected_or_blocked)(agents, action_mask)
-        discount = (1 - done).astype(float)
+        agents_done = jax.vmap(connected_or_blocked)(agents, action_mask)
+        done = jnp.all(agents_done)
+        discount = (1 - agents_done).astype(jnp.float32)
+        timeout = new_state.step_count >= self.time_limit
+
         extras = self._get_extras(new_state)
-        timestep = jax.lax.cond(
-            jnp.all(done) | (new_state.step_count >= self.time_limit),
-            lambda: termination(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-                shape=(self.num_agents,),
-            ),
-            lambda: transition(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-                discount=discount,
-                shape=(self.num_agents,),
-            ),
+
+        term_fn = lambda rew, obs, disc, ext, _: termination(rew, obs, ext, (self.num_agents,))
+        # 0 = still going
+        # 1 = all agents connected or blocked
+        # 2 = timeout
+        # 3 = done and timeout - therefore done
+        timestep = jax.lax.switch(
+            done + 2 * timeout,
+            [transition, term_fn, truncation, term_fn],
+            reward,
+            observation,
+            discount,
+            extras,
+            (self.num_agents,),
         )
 
         return new_state, timestep
