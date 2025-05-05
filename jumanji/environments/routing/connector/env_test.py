@@ -86,7 +86,7 @@ def test_connector__step_connected(
     """Tests that timestep is done when all agents connect"""
     step_fn = jax.jit(connector.step)
     real_state1, timestep = step_fn(state, action1)
-    reward = connector._reward_fn(state, action1, real_state1)
+    reward = connector._rewarder(state, action1, real_state1)
     assert jnp.array_equal(timestep.reward, reward)
     chex.assert_trees_all_equal(real_state1, state1)
 
@@ -95,7 +95,7 @@ def test_connector__step_connected(
 
     assert timestep.step_type == StepType.LAST
     assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
-    reward = connector._reward_fn(real_state1, action2, real_state2)
+    reward = connector._rewarder(real_state1, action2, real_state2)
     assert jnp.array_equal(timestep.reward, reward)
 
     assert all(is_head_on_grid(state.agents, state.grid))

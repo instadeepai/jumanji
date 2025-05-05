@@ -32,7 +32,10 @@ from jumanji.environments.routing.connector.generator import (
     Generator,
     RandomWalkGenerator,
 )
-from jumanji.environments.routing.connector.reward import RewardFn, SingleAgentDenseRewardFn
+from jumanji.environments.routing.connector.reward import (
+    MultiAgentDenseRewardFn,
+    RewardFn,
+)
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     connected_or_blocked,
@@ -116,7 +119,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
                 mode.
         """
         self._generator = generator or RandomWalkGenerator(grid_size=10, num_agents=10)
-        self._reward_fn = reward_fn or SingleAgentDenseRewardFn()
+        self._rewarder = reward_fn or MultiAgentDenseRewardFn(self._generator.num_agents)
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
@@ -166,7 +169,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         new_state = State(grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key)
 
         # Construct timestep: get reward, legal actions and done
-        reward = self._reward_fn(state, action, new_state)
+        reward = self._rewarder(state, action, new_state)
         action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
         observation = Observation(
             grid=grid, action_mask=action_mask, step_count=new_state.step_count
@@ -373,7 +376,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns: a reward per agent."""
-        return specs.Array(shape=(self.num_agents,), dtype=float, name="reward")
+        return self._rewarder.spec()
 
     @cached_property
     def discount_spec(self) -> specs.BoundedArray:
