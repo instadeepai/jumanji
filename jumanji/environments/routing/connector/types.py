@@ -66,6 +66,7 @@ class State:
     step_count: chex.Array  # ()
     agents: Agent  # (num_agents, ...)
     key: chex.PRNGKey  # (2,)
+    action_mask: chex.Array  # (num_agents, 5)
 
 
 class Observation(NamedTuple):
