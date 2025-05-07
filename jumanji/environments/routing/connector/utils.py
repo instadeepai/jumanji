@@ -143,6 +143,7 @@ def get_agent_grid(agent_id: jnp.int32, grid: chex.Array) -> chex.Array:
     return agent_head + agent_target + agent_path
 
 
+# TODO: remove once random walk generator is re-done
 def get_correction_mask(
     old_grid: chex.Array, joined_grid: chex.Array, agent_id: chex.Numeric
 ) -> Tuple[chex.Array, chex.Array]:
@@ -172,21 +173,71 @@ def get_correction_mask(
     return correction_mask * has_collision, has_collision
 
 
-def get_action_mask(agent: Agent, grid: chex.Array) -> chex.Array:
-    """Gets an agent's action mask."""
+def get_action_masks(agents: Agent, grid: chex.Array) -> chex.Array:
+    """Gets the action mask for all agents"""
+    num_agents = len(agents.id)  # N in shape comments
     # Don't check action 0 because no-op is always valid
-    actions = jnp.arange(1, 5)
-    # TODO: instead of vmapping this function just double vmap here - all agents over all actions
-    new_positions = jax.vmap(move_position, (None, 0))(agent.position, actions)
-    grid_val_at_postion = grid[tuple(new_positions.T)]
+    actions_to_check = jnp.arange(1, 5)
+    num_total_actions = 5  # Or derive from your action space definition
 
-    mask = jnp.ones(5, dtype=bool)
-    mask = mask.at[actions].set(
-        jax.vmap(is_valid_position, (0, None, 0, None))(
-            grid_val_at_postion, agent, new_positions, grid.shape[0]
-        )
+    new_positions = jax.vmap(
+        jax.vmap(move_position, (None, 0)),
+        (0, None),
+    )(agents.position, actions_to_check)
+    print(f"NEW T {new_positions.T.shape}")
+    print(f"NEW {new_positions.shape}")
+    print(f"NEW movepos {jnp.moveaxis(new_positions, -1, 0).shape}")
+    # 2. Fetch grid values at all calculated `new_positions`.
+    #    `grid` has shape (grid_dim1, grid_dim2, ...).
+    #    `new_positions` has shape (N, A, pos_dims).
+    #    We need to gather values from `grid` at each of the (N*A) locations.
+    #    `jnp.moveaxis(...)` changes shape from (N, 4, pos_dims) to (pos_dims, N, 4)
+    #    `grid_val_at_new_positions` will have shape (N, A).
+    grid_val_at_new_positions = grid[tuple(jnp.moveaxis(new_positions, -1, 0))]
+
+    # 3. Initialize action masks.
+    #    Assuming 5 total actions (0: no-op, 1-4: checked actions).
+    #    The no-op (action 0) is always valid.
+    all_masks = jnp.ones((num_agents, num_total_actions), dtype=bool)
+
+    # 4. Determine validity for the 'actions_to_check'.
+    #    This uses a "double vmap" strategy:
+    #    - The inner vmap (`vmapped_is_valid_over_actions`) maps over the A actions for one agent
+    #    - The outer vmap iterates this inner function over all N agents.
+
+    #    `is_valid_position` signature: (grid_val, agent_slice, new_pos_slice, grid_size_scalar)
+    #    Inner vmap function (`vmapped_is_valid_over_actions`):
+    #      - Takes inputs corresponding to ONE agent:
+    #        1. grid_vals_for_agent (A,): Grid values for A potential new positions.
+    #        2. single_agent_data (Agent Pytree slice): Data for that one agent.
+    #        3. new_positions_for_agent (A, pos_dims): A potential new positions.
+    #        4. grid_shape_val (scalar): Relevant grid dimension (broadcasted over A actions).
+    #      - Returns: (A,) boolean array for that agent.
+    vmapped_is_valid_over_actions = jax.vmap(
+        is_valid_position,
+        in_axes=(0, None, 0, None),
     )
-    return mask
+
+    # Outer vmap:
+    #  - Applies `vmapped_is_valid_over_actions` to each agent.
+    #  - Inputs:
+    #    1. `grid_val_at_new_positions` (N, A): Each (A,) slice goes to `grid_vals_for_agent`.
+    #    2. `agents` (Agent Pytree with N leading dim): Each slice goes to `single_agent_data`.
+    #    3. `new_positions` (N, A, pos_dims): Each slice goes to `new_positions_for_agent`.
+    #    4. `grid.shape[0]` (scalar): Broadcasted to `grid_shape_val`.
+    #  - Returns: (N, A) boolean array: `validity_for_checked_actions`.
+    validity_for_checked_actions = jax.vmap(
+        vmapped_is_valid_over_actions,
+        in_axes=(0, 0, 0, None),
+    )(grid_val_at_new_positions, agents, new_positions, grid.shape[0])
+
+    # 5. Update the initialized masks with the calculated validities.
+    #    `all_masks` is (N, num_total_actions).
+    #    `actions_to_check` (e.g., [1,2,3,4]) specifies which columns to update.
+    #    `validity_for_checked_actions` is (N, A).
+    all_masks = all_masks.at[:, actions_to_check].set(validity_for_checked_actions)
+
+    return all_masks
 
 
 # TODO: tests

@@ -224,19 +224,6 @@ def test_connector__specs_does_not_smoke(connector: Connector) -> None:
     check_env_specs_does_not_smoke(connector)
 
 
-# def test_connector__get_action_mask(state: State, connector: Connector) -> None:
-#     """Validates the action masking."""
-#     action_masks = jax.vmap(connector._get_action_mask, (0, None))(state.agents, state.grid)
-#     expected_mask = jnp.array(
-#         [
-#             [True, True, False, True, True],
-#             [True, True, True, False, True],
-#             [True, False, True, False, True],
-#         ]
-#     )
-#     assert jnp.array_equal(action_masks, expected_mask)
-
-
 def test_connector__get_extras(state: State, connector: Connector) -> None:
     """Validates the `_get_extras` method to generates extras metrics."""
     extras = connector._get_extras(state)

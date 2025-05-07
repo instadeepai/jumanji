@@ -40,11 +40,10 @@ from jumanji.environments.routing.connector.reward import (
 from jumanji.environments.routing.connector.types import Agent, Observation, State
 from jumanji.environments.routing.connector.utils import (
     connected_or_blocked,
-    get_action_mask,
+    get_action_masks,
     get_position,
     is_repeated_later,
     is_target,
-    is_valid_position,
     move_position,
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
@@ -172,8 +171,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
         agents, grid = self._step_agents(state, action)
-        # TODO: make get_action_masks fn so no need to vmap the grid
-        action_mask = jax.vmap(get_action_mask, (0, None))(agents, grid)
+        action_mask = get_action_masks(agents, grid)
         new_state = State(
             grid=grid,
             step_count=state.step_count + 1,
@@ -256,22 +254,9 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         new_positions = jnp.where(collided[:, jnp.newaxis], state.agents.position, new_positions)
-        new_agents = state.agents.replace(position=new_positions)
+        new_agents = state.agents.replace(position=new_positions)  # type: ignore
 
         return new_agents, grid
-
-    def _get_action_mask(self, agent: Agent, grid: chex.Array) -> chex.Array:
-        """Gets an agent's action mask."""
-        # Don't check action 0 because no-op is always valid
-        actions = jnp.arange(1, 5)
-
-        def is_valid_action(action: int) -> chex.Array:
-            agent_pos = move_position(agent.position, action)
-            return is_valid_position(grid, agent, agent_pos)
-
-        mask = jnp.ones(5, dtype=bool)
-        mask = mask.at[actions].set(jax.vmap(is_valid_action)(actions))
-        return mask
 
     def _get_extras(self, state: State) -> Dict:
         """Computes extras metrics to be return within the timestep."""
