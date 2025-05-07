@@ -34,7 +34,7 @@ from jumanji.environments.routing.connector.generator import (
     RandomWalkGenerator,
 )
 from jumanji.environments.routing.connector.reward import (
-    MultiAgentDenseRewardFn,
+    DenseRewardFn,
     RewardFn,
 )
 from jumanji.environments.routing.connector.types import Agent, Observation, State
@@ -126,7 +126,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
                 mode.
         """
         self._generator = generator or RandomWalkGenerator(grid_size=10, num_agents=10)
-        self._rewarder = reward_fn or MultiAgentDenseRewardFn(self._generator.num_agents)
+        self._rewarder = reward_fn or DenseRewardFn()
         self.time_limit = time_limit
         self.num_agents = self._generator.num_agents
         self.grid_size = self._generator.grid_size
@@ -380,7 +380,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     @cached_property
     def reward_spec(self) -> specs.Array:
         """Returns: a reward per agent."""
-        return self._rewarder.spec()
+        return specs.Array((self.num_agents,), jnp.float32, name="reward")
 
     @cached_property
     def discount_spec(self) -> specs.BoundedArray:
