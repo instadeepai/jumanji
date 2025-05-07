@@ -184,9 +184,6 @@ def get_action_masks(agents: Agent, grid: chex.Array) -> chex.Array:
         jax.vmap(move_position, (None, 0)),
         (0, None),
     )(agents.position, actions_to_check)
-    print(f"NEW T {new_positions.T.shape}")
-    print(f"NEW {new_positions.shape}")
-    print(f"NEW movepos {jnp.moveaxis(new_positions, -1, 0).shape}")
     # 2. Fetch grid values at all calculated `new_positions`.
     #    `grid` has shape (grid_dim1, grid_dim2, ...).
     #    `new_positions` has shape (N, A, pos_dims).
