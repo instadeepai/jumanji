@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import chex
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -21,16 +22,19 @@ from jumanji.environments.routing.connector.constants import (
     EMPTY,
     LEFT,
     NOOP,
+    PATH,
     RIGHT,
     UP,
 )
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
     connected_or_blocked,
+    get_action_masks,
     get_agent_grid,
     get_path,
     get_position,
     get_target,
+    is_repeated_later,
     is_valid_position,
     move_agent,
     move_position,
@@ -93,8 +97,15 @@ def test_move_agent_invalid(state: State) -> None:
 def test_is_valid_position(state: State) -> None:
     """Tests that the _is_valid_move method flags invalid moves."""
     agent1 = tree_slice(state.agents, 1)
-    valid_move = is_valid_position(grid=state.grid, agent=agent1, position=jnp.array([2, 2]))
-    move_into_path = is_valid_position(grid=state.grid, agent=agent1, position=jnp.array([4, 2]))
+    valid_move = is_valid_position(
+        value_on_grid=0, agent=agent1, position=jnp.array([2, 2]), grid_size=state.grid.shape[0]
+    )
+    move_into_path = is_valid_position(
+        value_on_grid=PATH,
+        agent=agent1,
+        position=jnp.array([4, 2]),
+        grid_size=state.grid.shape[0],
+    )
 
     assert valid_move
     assert not move_into_path
@@ -146,3 +157,57 @@ def test_get_agent_grid(grid: chex.Array) -> None:
         | (agent_2_grid == get_target(2))
         | (agent_2_grid == get_position(2))
     )
+
+
+def test_is_repeated_later() -> None:
+    """Test that the method is_repeated_later finds future duplicated in a list of positions"""
+
+    repeated_later_jit = jax.jit(is_repeated_later)
+
+    # Example 1: simple
+    positions1 = jnp.array([[1, 1], [2, 2], [1, 1], [3, 3], [2, 2]])
+    mask1 = repeated_later_jit(positions1)
+    assert jnp.array_equal(mask1, jnp.array([True, True, False, False, False]))
+
+    # Example 2: All unique
+    positions2 = jnp.array([[1, 0], [0, 1], [1, 1], [0, 0]])
+    mask2 = repeated_later_jit(positions2)
+    assert jnp.array_equal(mask2, jnp.array([False, False, False, False]))
+
+    # Example 3: All same
+    positions3 = jnp.array([[5, 5], [5, 5], [5, 5]])
+    mask3 = repeated_later_jit(positions3)
+    assert jnp.array_equal(mask3, jnp.array([True, True, False]))
+
+    # Example 4: Empty list of positions
+    positions4 = jnp.array([]).reshape(0, 2)  # or jnp.empty((0,2), dtype=int)
+    mask4 = repeated_later_jit(positions4)
+    assert jnp.array_equal(mask4, jnp.array([]))
+
+    # Example 5: Single position
+    positions5 = jnp.array([[10, 20]])
+    mask5 = repeated_later_jit(positions5)
+    assert jnp.array_equal(mask5, jnp.array([False]))
+
+    # Example 6: complex
+    positions6 = jnp.array(
+        [[1, 1], [2, 2], [3, 3], [4, 4], [1, 1], [3, 3], [2, 2], [5, 5], [6, 6], [1, 1], [3, 3]]
+    )
+    mask6 = repeated_later_jit(positions6)
+    assert jnp.array_equal(
+        mask6, jnp.array([True, True, True, False, True, True, False, False, False, False, False])
+    )
+
+
+def test_get_action_masks(state: State) -> None:
+    """Validates the action masking."""
+    action_masks1 = get_action_masks(state.agents, state.grid)
+    expected_mask = jnp.array(
+        [
+            [True, True, False, True, True],
+            [True, True, True, False, True],
+            [True, False, True, False, True],
+        ]
+    )
+
+    assert jnp.array_equal(action_masks1, expected_mask)

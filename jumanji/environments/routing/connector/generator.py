@@ -32,7 +32,7 @@ from jumanji.environments.routing.connector.constants import (
 )
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
-    get_action_mask,
+    get_action_masks,
     get_agent_grid,
     get_correction_mask,
     get_position,
@@ -124,7 +124,7 @@ class UniformRandomGenerator(Generator):
         )
 
         step_count = jnp.array(0, jnp.int32)
-        action_mask = jax.vmap(get_action_mask, (0, None))(agents, grid)
+        action_mask = get_action_masks(agents, grid)
 
         return State(
             key=key, grid=grid, step_count=step_count, agents=agents, action_mask=action_mask
@@ -159,7 +159,7 @@ class RandomWalkGenerator(Generator):
         key, board_key = jax.random.split(key)
         solved_grid, agents, grid = self.generate_board(board_key)
         step_count = jnp.array(0, jnp.int32)
-        action_mask = jax.vmap(get_action_mask, (0, None))(agents, grid)
+        action_mask = get_action_masks(agents, grid)
         return State(
             key=key, grid=grid, step_count=step_count, agents=agents, action_mask=action_mask
         )
