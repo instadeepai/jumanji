@@ -59,7 +59,8 @@ from jumanji.environments.routing.robot_warehouse.env import RobotWarehouse
 from jumanji.environments.routing.snake.env import Snake
 from jumanji.environments.routing.sokoban.env import Sokoban
 from jumanji.environments.routing.tsp.env import TSP
-from jumanji.environments.swarms.search_and_rescue.env import SearchAndRescue
+
+# from jumanji.environments.swarms.search_and_rescue.env import SearchAndRescue
 
 
 def is_colab() -> bool:
