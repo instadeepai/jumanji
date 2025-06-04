@@ -178,7 +178,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
         # Update the current node index
         next_node_index = (state.current_node_index + 1) % self.num_nodes
 
-        next_action_mask = self._get_valid_actions(next_node_index, state.adj_matrix, state.colors)
+        next_action_mask = self._get_valid_actions(next_node_index, state.adj_matrix, colors)
 
         next_state = State(
             adj_matrix=state.adj_matrix,
