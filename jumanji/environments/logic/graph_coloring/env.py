@@ -81,6 +81,10 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
+
+    Version History:
+    * v1: Fixed a bug in v0 where legal actions were computed incorrectly.
+    * v0: Initial versions release.
     """
 
     def __init__(
