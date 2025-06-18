@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import replace
 from typing import Tuple
 
 import chex
@@ -169,3 +170,45 @@ def get_correction_mask(
     # Grid of all zeros, except at the position of `agent_id`s POSITION on the `old_grid`
     correction_mask = (old_grid == position) * correction_value
     return correction_mask * has_collision, has_collision
+
+
+def move_target(grid: chex.Array, agent: Agent, key: chex.PRNGKey) -> Tuple[chex.Array, Agent]:
+    """Moves an agent's target to a random valid adjacent cell, introducing more stochasticity
+    into the environment."""
+
+    # Do not move connected or non-existent targets
+    def no_op_move() -> Tuple[chex.Array, Agent]:
+        return grid, agent
+
+    def move_op() -> Tuple[chex.Array, Agent]:
+        candidate_actions = jnp.arange(1, 5)  # UP, RIGHT, DOWN, LEFT
+        candidate_positions = jax.vmap(move_position, (None, 0))(agent.target, candidate_actions)
+
+        # Check which positions are in bounds and empty
+        def is_valid_target_move(pos: chex.Array) -> chex.Array:
+            r, c = pos
+            grid_size = grid.shape[0]
+            in_bounds = (0 <= r) & (r < grid_size) & (0 <= c) & (c < grid_size)
+            is_empty = jax.lax.cond(in_bounds, lambda: grid[r, c] == EMPTY, lambda: False)
+            return is_empty
+
+        valid_mask = jax.vmap(is_valid_target_move)(candidate_positions)
+
+        # If no valid moves, do nothing.
+        def has_valid_moves() -> Tuple[chex.Array, Agent]:
+            # Uniformly select from valid moves
+            new_target_pos = jax.random.choice(key, candidate_positions, p=valid_mask)
+
+            # Update grid: remove old target, place new target
+            new_grid = grid.at[tuple(agent.target)].set(EMPTY)
+            new_grid = new_grid.at[tuple(new_target_pos)].set(get_target(agent.id))
+
+            # Update the agent's target position
+            new_agent = replace(agent, target=new_target_pos)
+
+            return new_grid, new_agent
+
+        return jax.lax.cond(jnp.any(valid_mask), has_valid_moves, no_op_move)
+
+    # Only move if agent is not yet connected
+    return jax.lax.cond(agent.connected, no_op_move, move_op)

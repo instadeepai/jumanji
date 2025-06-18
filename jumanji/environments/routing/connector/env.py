@@ -41,6 +41,7 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
+    move_target,
 )
 from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition
@@ -102,6 +103,8 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         reward_fn: Optional[RewardFn] = None,
         time_limit: int = 50,
         viewer: Optional[Viewer[State]] = None,
+        slip_prob: float = 0.0,
+        target_move_prob: float = 0.0,
     ) -> None:
         """Create the `Connector` environment.
 
@@ -114,6 +117,10 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             time_limit: the number of steps allowed before an episode terminates. Defaults to 50.
             viewer: `Viewer` used for rendering. Defaults to `ConnectorViewer` with "human" render
                 mode.
+            slip_prob: float in [0, 1] corresponding to the probability of an agent's action
+                being replaced by a random action. Defaults to 0.0.
+            target_move_prob: float in [0, 1] corresponding to the probability of an agent's
+                target moving to a random adjacent cell at each step. Defaults to 0.0.
         """
         self._generator = generator or RandomWalkGenerator(grid_size=10, num_agents=10)
         self._reward_fn = reward_fn or DenseRewardFn()
@@ -123,6 +130,8 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         super().__init__()
         self._agent_ids = jnp.arange(self.num_agents)
         self._viewer = viewer or ConnectorViewer("Connector", self.num_agents, render_mode="human")
+        self.slip_prob = slip_prob
+        self.target_move_prob = target_move_prob
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         """Resets the environment.
@@ -148,6 +157,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
 
     def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
+        Supports agent action slips and wandering targets (stochasticity).
 
         Args:
             state: State object containing the dynamics of the environment.
@@ -162,17 +172,86 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
             state: `State` object corresponding to the next state of the environment.
             timestep: `TimeStep` object corresponding the timestep returned by the environment.
         """
-        agents, grid = self._step_agents(state, action)
-        new_state = State(grid=grid, step_count=state.step_count + 1, agents=agents, key=state.key)
+
+        key, agent_slip_key, target_move_key = jax.random.split(state.key, 3)
+        # key = state.key
+
+        # Handle agent action slips
+        def maybe_slip(agent_action: chex.Array, key: chex.PRNGKey) -> chex.Array:
+            """With a certain probability, replace action with a random one."""
+
+            def slip() -> chex.Array:
+                # Choose a random action
+                return jax.random.randint(key, shape=(), minval=1, maxval=5)
+
+            def no_slip() -> chex.Array:
+                return agent_action
+
+            # Cannot slip if action is NOOP
+            slip_chance = jax.lax.cond(agent_action == NOOP, lambda: 0.0, lambda: self.slip_prob)
+            return jax.lax.cond(jax.random.bernoulli(key, p=slip_chance), slip, no_slip)
+
+        slipped_action = jax.vmap(maybe_slip)(
+            action, jax.random.split(agent_slip_key, self.num_agents)
+        )
+
+        # Step agents based on (potentially slipped) actions
+        agents, grid = self._step_agents(state, slipped_action)
+
+        # Handle wandering targets
+        def maybe_move_target(
+            current_grid: chex.Array, agent: Agent, key: chex.PRNGKey
+        ) -> Tuple[chex.Array, Agent]:
+            """With a certain probability, move the target to a valid adjacent cell."""
+
+            def move() -> Tuple[chex.Array, Agent]:
+                return move_target(current_grid, agent, key)
+
+            def no_move() -> Tuple[chex.Array, Agent]:
+                return current_grid, agent
+
+            return jax.lax.cond(
+                jax.random.bernoulli(key, p=self.target_move_prob),
+                move,
+                no_move,
+            )
+
+        # Sequentially attempt to move each target to avoid race conditions.
+        def move_target_body(
+            carry: Tuple[chex.Array, Agent], idx: int
+        ) -> Tuple[Tuple[chex.Array, Agent], Agent]:
+            grid_carry, agents_carry = carry
+            key_i = jax.random.split(target_move_key, self.num_agents)[idx]
+
+            # Select the agent for this iteration
+            agent_i = jax.tree_util.tree_map(lambda x: x[idx], agents_carry)
+
+            # Attempt to move its target
+            new_grid_i, new_agent_i = maybe_move_target(grid_carry, agent_i, key_i)
+
+            # Update the agents pytree with the potentially new agent state
+            updated_agents = jax.tree_util.tree_map(
+                lambda x, y: x.at[idx].set(y), agents_carry, new_agent_i
+            )
+            return (new_grid_i, updated_agents), new_agent_i
+
+        (final_grid, final_agents), _ = jax.lax.scan(
+            move_target_body, (grid, agents), jnp.arange(self.num_agents)
+        )
+
+        # Construct the next state and timestep
+        new_state = State(
+            grid=final_grid, step_count=state.step_count + 1, agents=final_agents, key=key
+        )
 
         # Construct timestep: get reward, legal actions and done
         reward = self._reward_fn(state, action, new_state)
-        action_mask = jax.vmap(self._get_action_mask, (0, None))(agents, grid)
+        action_mask = jax.vmap(self._get_action_mask, (0, None))(final_agents, final_grid)
         observation = Observation(
-            grid=grid, action_mask=action_mask, step_count=new_state.step_count
+            grid=final_grid, action_mask=action_mask, step_count=new_state.step_count
         )
 
-        done = jax.vmap(connected_or_blocked)(agents, action_mask)
+        done = jax.vmap(connected_or_blocked)(final_agents, action_mask)
         discount = (1 - done).astype(float)
         extras = self._get_extras(new_state)
         timestep = jax.lax.cond(
