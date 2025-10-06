@@ -38,6 +38,8 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
+    get_surrounded_mask,
+    get_adjacency_mask,
 )
 from jumanji.tree_utils import tree_slice
 
@@ -211,3 +213,36 @@ def test_get_action_masks(state: State) -> None:
     )
 
     assert jnp.array_equal(action_masks1, expected_mask)
+
+def test_get_surrounded_mask() -> None:
+    """Tests that the get_surrounded_mask function returns the correct mask."""
+    grid = jnp.array([
+        [0, 1, 2, 0, 0],
+        [10, 0, 4, 0, 0],
+        [11, 7, 5, 0, 0],
+        [0, 8, 0, 0, 0],
+    ])
+
+    expected = jnp.array([
+        [True, False, False, False, False],
+        [False, True, False, False, False],
+        [False, False, False, False, False],
+        [True, False, False, False, False],
+    ])
+
+    assert jnp.array_equal(get_surrounded_mask(grid), expected)
+
+def test_get_adjacency_mask() -> None:
+    """Tests that the get_adjacency_mask function returns the correct mask."""
+    grid_shape = (4, 4)
+    coordinate = jnp.array([2, 3])
+    expected = jnp.array([
+        [0, 0, 0, 0],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ])
+
+    actual = get_adjacency_mask(grid_shape, coordinate)
+
+    assert jnp.array_equal(actual, expected)
