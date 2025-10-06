@@ -235,7 +235,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         noop = jnp.all(new_positions == state.agents.position, axis=-1)
 
         agent_ids = jnp.arange(self.num_agents)
-        # Change old position from a PATH to a POSITION if not connected
+        # Change old position from a POSITION to a PATH if not a NOOP
         old_position_values = (PATH - POSITION) * ~noop
         # Add the value of the position if not connecting (because it must be a zero)
         # Add POSITION - TARGET if connecting this step (changes the target on the grid to POSITION)
