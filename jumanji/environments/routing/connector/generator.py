@@ -20,26 +20,19 @@ import jax
 from jax import numpy as jnp
 
 from jumanji.environments.routing.connector.constants import (
-    DOWN,
-    EMPTY,
-    LEFT,
-    NOOP,
     PATH,
     POSITION,
-    RIGHT,
-    TARGET,
-    UP,
 )
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
     get_action_masks,
-    get_position,
-    get_target,
-    get_path,
-    move_position,
-    is_repeated_later,
-    get_surrounded_mask,
     get_adjacency_mask,
+    get_path,
+    get_position,
+    get_surrounded_mask,
+    get_target,
+    is_repeated_later,
+    move_position,
 )
 
 
@@ -158,7 +151,7 @@ class RandomWalkGenerator(Generator):
             A `Connector` state.
         """
         key, board_key = jax.random.split(key)
-        solved_grid, agents, grid = self.generate_board(board_key)
+        _, agents, grid = self.generate_board(board_key)
         step_count = jnp.array(0, jnp.int32)
         action_mask = get_action_masks(agents, grid)
         return State(
@@ -251,7 +244,7 @@ class RandomWalkGenerator(Generator):
             .add(new_position_values)  # not necessarily unique inds (if collided)
         )
 
-        new_agents = agents.replace(position=new_positions)
+        new_agents = agents.replace(position=new_positions)  # type: ignore
         # Create the new grid by fixing old one with correction mask and adding the obstacles
         return new_agents, grid
 
@@ -299,7 +292,9 @@ class RandomWalkGenerator(Generator):
         not_occupied_mask = grid == 0
         not_surrounded_mask = ~get_surrounded_mask(grid)
 
-        def get_random_valid_coordinate(key, mask: chex.Array):
+        def get_random_valid_coordinate(
+            key: chex.PRNGKey, mask: chex.Array
+        ) -> Tuple[chex.Array, chex.Array]:
             """
             Randomly selects a single valid (True) coordinate from a boolean mask.
             """
@@ -307,23 +302,26 @@ class RandomWalkGenerator(Generator):
 
             # Randomly choose one of those flat indices
             random_choice_flat = jax.random.choice(key, len(flat_mask), p=flat_mask)
-            
+
             # Convert the chosen flat index back to 2D grid coordinates
             random_coordinate = jnp.unravel_index(random_choice_flat, mask.shape)
-            
+
             return random_coordinate
 
         start_key, first_move_key, next_key = jax.random.split(key, 3)
-        start_coordinate = get_random_valid_coordinate(start_key, not_surrounded_mask&not_occupied_mask)
+        start_coordinate = get_random_valid_coordinate(
+            start_key, not_surrounded_mask & not_occupied_mask
+        )
         grid = grid.at[start_coordinate].set(get_path(agent_id))
 
         adjacency_mask = get_adjacency_mask(grid.shape, start_coordinate)
         not_occupied_mask = grid == 0
-        first_move_coordinate = get_random_valid_coordinate(first_move_key, adjacency_mask&not_occupied_mask)
+        first_move_coordinate = get_random_valid_coordinate(
+            first_move_key, adjacency_mask & not_occupied_mask
+        )
         grid = grid.at[first_move_coordinate].set(get_position(agent_id))
 
         return (next_key, grid), (start_coordinate, first_move_coordinate)
-
 
     def _continue_stepping(
         self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]
@@ -331,7 +329,7 @@ class RandomWalkGenerator(Generator):
         """Determines if agents can continue taking steps."""
         _, _, _, action_mask = stepping_tuple
 
-        return action_mask[:,1:].any()
+        return action_mask[:, 1:].any()
 
     def _select_action(self, key: chex.PRNGKey, action_mask: chex.Array) -> chex.Array:
         """Selects action for agent to take given its current position.
@@ -344,10 +342,10 @@ class RandomWalkGenerator(Generator):
             Integer corresponding to the action the agent will take in its next step.
             Action indices match those in connector.constants.
         """
-        action = jax.random.choice(key=key, a=jnp.arange(1,5), p=action_mask[1:])
-        can_move = action_mask[1:].any()   
+        action = jax.random.choice(key=key, a=jnp.arange(1, 5), p=action_mask[1:])
+        can_move = action_mask[1:].any()
         action = action * can_move
-        
+
         return action
 
     def update_solved_board_with_head_target_encodings(

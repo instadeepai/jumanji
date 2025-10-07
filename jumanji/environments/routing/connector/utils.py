@@ -17,7 +17,6 @@ from typing import Tuple
 
 import chex
 import jax
-from jax.lax import conv
 import jax.numpy as jnp
 from jax.scipy.signal import convolve2d
 
@@ -247,29 +246,31 @@ def is_repeated_later(positions: chex.Array) -> chex.Array:
     # check if any such preceding identical pair j exists.
     return jnp.any(is_equal_pair & is_next, axis=1)
 
+
 def get_surrounded_mask(grid: chex.Array) -> chex.Array:
     """
     Args:
         grid: 2D JAX array where 0 = open cell, positive integers = occupied
-        
+
     Returns:
         Boolean mask where True indicates a cell is surrounded by occupied cells
     """
-    
+
     # Create binary occupancy map
     occupied = (grid > 0).astype(jnp.float32)
-    
+
     # Kernel to check all 4 neighbors
     kernel = jnp.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
-    
+
     # Count occupied neighbors
-    neighbor_count = convolve2d(occupied, kernel, mode='same')
-    
+    neighbor_count = convolve2d(occupied, kernel, mode="same")
+
     # Cell is surrounded if all possible neighbors are occupied
-    possible_max_neighbors = convolve2d(jnp.ones_like(occupied), kernel, mode='same')
+    possible_max_neighbors = convolve2d(jnp.ones_like(occupied), kernel, mode="same")
     surrounded = neighbor_count == possible_max_neighbors
-    
+
     return surrounded
+
 
 @functools.partial(jax.jit, static_argnums=(0,))
 def get_adjacency_mask(grid_shape: tuple, coordinate: jax.Array) -> jax.Array:
@@ -289,15 +290,21 @@ def get_adjacency_mask(grid_shape: tuple, coordinate: jax.Array) -> jax.Array:
     row, col = coordinate
 
     # 2. Define the four potential neighbor coordinates (N, S, E, W)
-    neighbors = jnp.array([
-        [row - 1, col],  # North
-        [row + 1, col],  # South
-        [row, col + 1],  # East
-        [row, col - 1]   # West
-    ])
+    neighbors = jnp.array(
+        [
+            [row - 1, col],  # North
+            [row + 1, col],  # South
+            [row, col + 1],  # East
+            [row, col - 1],  # West
+        ]
+    )
     rows, cols = grid_shape
-    valid = (neighbors[:, 0] >= 0) & (neighbors[:, 0] < rows) & \
-            (neighbors[:, 1] >= 0) & (neighbors[:, 1] < cols)
+    valid = (
+        (neighbors[:, 0] >= 0)
+        & (neighbors[:, 0] < rows)
+        & (neighbors[:, 1] >= 0)
+        & (neighbors[:, 1] < cols)
+    )
 
     # 3. Set the valid locations to 1, drop the invalid locations
     final_mask = mask.at[neighbors[:, 0], neighbors[:, 1]].set(valid)
