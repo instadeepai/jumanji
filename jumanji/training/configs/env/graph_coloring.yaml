@@ -1,5 +1,5 @@
 name: graph_coloring
-registered_version: GraphColoring-v0
+registered_version: GraphColoring-v1
 
 network:
     num_transformer_layers: 2
