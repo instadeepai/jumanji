@@ -23,7 +23,7 @@ from jumanji.environments.routing.connector.generator import (
     UniformRandomGenerator,
 )
 from jumanji.environments.routing.connector.types import Agent
-from jumanji.environments.routing.connector.utils import get_position, get_target, get_action_masks
+from jumanji.environments.routing.connector.utils import get_action_masks, get_position, get_target
 
 
 @pytest.fixture
@@ -209,16 +209,20 @@ generate_board_agents = Agent(
 )
 
 # Action masks for testing
-action_mask_all_valid = jnp.array([
-    [True, True, True, True, True], 
-    [True, True, True, True, True], 
-    [True, True, True, True, True], 
-])
-action_mask_none_valid = jnp.array([
-    [True, False, False, False, False], 
-    [True, False, False, False, False], 
-    [True, False, False, False, False]
-])
+action_mask_all_valid = jnp.array(
+    [
+        [True, True, True, True, True],
+        [True, True, True, True, True],
+        [True, True, True, True, True],
+    ]
+)
+action_mask_none_valid = jnp.array(
+    [
+        [True, False, False, False, False],
+        [True, False, False, False, False],
+        [True, False, False, False, False],
+    ]
+)
 
 key = jax.random.PRNGKey(0)
 ### keys for testing
@@ -318,13 +322,17 @@ class TestRandomWalkGenerator:
     )
     def test_step(
         random_walk_generator: RandomWalkGenerator,
-        function_input: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array],
-        expected_value: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array],
+        function_input: Tuple[chex.PRNGKey, chex.Array, Agent],
+        expected_value: Tuple[chex.Array, Agent],
     ) -> None:
-        agents_action_mask_after_1_step = get_action_masks(agents_starting_move_after_1_step, valid_starting_grid_after_1_step)
+        agents_action_mask_after_1_step = get_action_masks(
+            agents_starting_move_after_1_step, valid_starting_grid_after_1_step
+        )
         expected_end_grid, expected_end_agents = expected_value
         expected_end_action_mask = get_action_masks(expected_end_agents, expected_end_grid)
-        _, new_grid, new_agents, new_action_mask = random_walk_generator._step((*function_input, agents_action_mask_after_1_step))
+        _, new_grid, new_agents, new_action_mask = random_walk_generator._step(
+            (*function_input, agents_action_mask_after_1_step)
+        )
         assert new_agents == expected_end_agents
         assert (new_grid == expected_end_grid).all()
         assert (new_action_mask == expected_end_action_mask).all()
@@ -348,5 +356,7 @@ class TestRandomWalkGenerator:
         function_input: chex.Array,
         expected_value: bool,
     ) -> None:
-        continue_stepping = random_walk_generator._continue_stepping((None, None, None, function_input))
+        continue_stepping = random_walk_generator._continue_stepping(
+            (None, None, None, function_input)  # type: ignore
+        )
         assert continue_stepping == expected_value
