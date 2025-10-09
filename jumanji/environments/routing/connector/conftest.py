@@ -22,6 +22,7 @@ from jumanji.environments.routing.connector.env import Connector
 from jumanji.environments.routing.connector.generator import UniformRandomGenerator
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import (
+    get_action_masks,
     get_path,
     get_position,
     get_target,
@@ -123,7 +124,14 @@ def state(key: chex.PRNGKey, grid: chex.Array) -> State:
         position=jnp.array([(1, 2), (3, 2), (2, 4)]),
     )
 
-    state = State(key=key, grid=grid, step_count=jnp.array(0, jnp.int32), agents=agents)
+    action_mask = get_action_masks(agents, grid)
+    state = State(
+        key=key,
+        grid=grid,
+        step_count=jnp.array(0, jnp.int32),
+        agents=agents,
+        action_mask=action_mask,
+    )
 
     return state
 
@@ -159,8 +167,15 @@ def state1(
         target=jnp.array([(0, 2), (3, 0), (2, 3)]),
         position=jnp.array([(0, 2), (3, 1), (2, 3)]),
     )
+    action_mask = get_action_masks(agents, grid)
 
-    return State(grid=grid, step_count=jnp.array(1, jnp.int32), agents=agents, key=key)
+    return State(
+        grid=grid,
+        step_count=jnp.array(1, jnp.int32),
+        agents=agents,
+        key=key,
+        action_mask=action_mask,
+    )
 
 
 @pytest.fixture
@@ -194,8 +209,15 @@ def state2(
         target=jnp.array([(0, 2), (3, 0), (2, 3)]),
         position=jnp.array([(0, 2), (3, 0), (2, 3)]),
     )
+    action_mask = get_action_masks(agents, grid)
 
-    return State(grid=grid, step_count=jnp.array(2, jnp.int32), agents=agents, key=key)
+    return State(
+        grid=grid,
+        step_count=jnp.array(2, jnp.int32),
+        agents=agents,
+        key=key,
+        action_mask=action_mask,
+    )
 
 
 @pytest.fixture

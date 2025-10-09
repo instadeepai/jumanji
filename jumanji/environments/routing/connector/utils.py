@@ -44,17 +44,17 @@ def get_target(agent_id: jnp.int32) -> jnp.int32:
 
 def is_target(value: int) -> bool:
     """Returns: True if the value on the grid is used to represent a target, false otherwise."""
-    return (value > 0) and ((value - TARGET) % 3 == 0)
+    return (value > 0) & ((value - TARGET) % 3 == 0)
 
 
 def is_position(value: int) -> bool:
     """Returns: True if the value on the grid is used to represent a position, false otherwise."""
-    return (value > 0) and ((value - POSITION) % 3 == 0)
+    return (value > 0) & ((value - POSITION) % 3 == 0)
 
 
 def is_path(value: int) -> bool:
     """Returns: True if the value on the grid is used to represent a path, false otherwise."""
-    return (value > 0) and ((value - PATH) % 3 == 0)
+    return (value > 0) & ((value - PATH) % 3 == 0)
 
 
 def get_agent_id(value: int) -> int:
@@ -100,7 +100,9 @@ def move_agent(agent: Agent, grid: chex.Array, new_pos: chex.Array) -> Tuple[Age
     return new_agent, grid
 
 
-def is_valid_position(grid: chex.Array, agent: Agent, position: chex.Array) -> chex.Array:
+def is_valid_position(
+    value_on_grid: int, agent: Agent, position: chex.Array, grid_size: int
+) -> chex.Array:
     """Checks to see if the specified agent can move to `position`.
 
     Args:
@@ -112,12 +114,11 @@ def is_valid_position(grid: chex.Array, agent: Agent, position: chex.Array) -> c
         bool: True if the agent moving to position is valid.
     """
     row, col = position
-    grid_size = grid.shape[0]
 
     # Within the bounds of the grid
     in_bounds = (0 <= row) & (row < grid_size) & (0 <= col) & (col < grid_size)
     # Cell is not occupied
-    open_cell = (grid[row, col] == EMPTY) | (grid[row, col] == get_target(agent.id))
+    open_cell = (value_on_grid == EMPTY) | (value_on_grid == get_target(agent.id))
     # Agent is not connected
     not_connected = ~agent.connected
 
@@ -142,6 +143,7 @@ def get_agent_grid(agent_id: jnp.int32, grid: chex.Array) -> chex.Array:
     return agent_head + agent_target + agent_path
 
 
+# TODO: remove once random walk generator is re-done
 def get_correction_mask(
     old_grid: chex.Array, joined_grid: chex.Array, agent_id: chex.Numeric
 ) -> Tuple[chex.Array, chex.Array]:
@@ -169,3 +171,105 @@ def get_correction_mask(
     # Grid of all zeros, except at the position of `agent_id`s POSITION on the `old_grid`
     correction_mask = (old_grid == position) * correction_value
     return correction_mask * has_collision, has_collision
+
+
+def get_action_masks(agents: Agent, grid: chex.Array) -> chex.Array:
+    """Gets the action mask for all agents"""
+    num_agents = len(agents.id)  # N in shape comments
+    # Don't check action 0 because no-op is always valid
+    actions_to_check = jnp.arange(1, 5)
+    num_total_actions = 5  # Or derive from your action space definition
+
+    new_positions = jax.vmap(
+        jax.vmap(move_position, (None, 0)),
+        (0, None),
+    )(agents.position, actions_to_check)
+    # 2. Fetch grid values at all calculated `new_positions`.
+    #    `grid` has shape (grid_dim1, grid_dim2, ...).
+    #    `new_positions` has shape (N, A, pos_dims).
+    #    We need to gather values from `grid` at each of the (N*A) locations.
+    #    `jnp.moveaxis(...)` changes shape from (N, 4, pos_dims) to (pos_dims, N, 4)
+    #    `grid_val_at_new_positions` will have shape (N, A).
+    grid_val_at_new_positions = grid[tuple(jnp.moveaxis(new_positions, -1, 0))]
+
+    # 3. Initialize action masks.
+    #    Assuming 5 total actions (0: no-op, 1-4: checked actions).
+    #    The no-op (action 0) is always valid.
+    all_masks = jnp.ones((num_agents, num_total_actions), dtype=bool)
+
+    # 4. Determine validity for the 'actions_to_check'.
+    #    This uses a "double vmap" strategy:
+    #    - The inner vmap (`vmapped_is_valid_over_actions`) maps over the A actions for one agent
+    #    - The outer vmap iterates this inner function over all N agents.
+
+    #    `is_valid_position` signature: (grid_val, agent_slice, new_pos_slice, grid_size_scalar)
+    #    Inner vmap function (`vmapped_is_valid_over_actions`):
+    #      - Takes inputs corresponding to ONE agent:
+    #        1. grid_vals_for_agent (A,): Grid values for A potential new positions.
+    #        2. single_agent_data (Agent Pytree slice): Data for that one agent.
+    #        3. new_positions_for_agent (A, pos_dims): A potential new positions.
+    #        4. grid_shape_val (scalar): Relevant grid dimension (broadcasted over A actions).
+    #      - Returns: (A,) boolean array for that agent.
+    vmapped_is_valid_over_actions = jax.vmap(
+        is_valid_position,
+        in_axes=(0, None, 0, None),
+    )
+
+    # Outer vmap:
+    #  - Applies `vmapped_is_valid_over_actions` to each agent.
+    #  - Inputs:
+    #    1. `grid_val_at_new_positions` (N, A): Each (A,) slice goes to `grid_vals_for_agent`.
+    #    2. `agents` (Agent Pytree with N leading dim): Each slice goes to `single_agent_data`.
+    #    3. `new_positions` (N, A, pos_dims): Each slice goes to `new_positions_for_agent`.
+    #    4. `grid.shape[0]` (scalar): Broadcasted to `grid_shape_val`.
+    #  - Returns: (N, A) boolean array: `validity_for_checked_actions`.
+    validity_for_checked_actions = jax.vmap(
+        vmapped_is_valid_over_actions,
+        in_axes=(0, 0, 0, None),
+    )(grid_val_at_new_positions, agents, new_positions, grid.shape[0])
+
+    # 5. Update the initialized masks with the calculated validities.
+    #    `all_masks` is (N, num_total_actions).
+    #    `actions_to_check` (e.g., [1,2,3,4]) specifies which columns to update.
+    #    `validity_for_checked_actions` is (N, A).
+    all_masks = all_masks.at[:, actions_to_check].set(validity_for_checked_actions)
+
+    return all_masks
+
+
+# TODO: tests
+def is_repeated_later(positions: chex.Array) -> chex.Array:
+    """Creates a boolean mask for a 2D array of (x,y) positions in which True at an index means the
+    (x,y) pair at that index apears later in the array
+
+    Args:
+      arr: A 2D array of shape (N, 2), where N is the number of (x,y) pairs.
+
+    Returns:
+      A 1D array of booleans with shape (N,).
+    """
+    n_agents = positions.shape[0]  # Number of (x,y) pairs
+
+    # Validate shape
+    if positions.ndim != 2 or positions.shape[1] != 2:
+        raise ValueError(
+            f"Input array must be 2-dimensional with shape (N, 2) for N > 0, "
+            f"but got shape {positions.shape}."
+        )
+
+    # Step 1: Create a matrix where (i, j) is True if arr[i] (pair) == arr[j] (pair)
+    # arr[:, None, :] reshapes arr from (N, 2) to (N, 1, 2)
+    # arr[None, :, :] reshapes arr from (N, 2) to (1, N, 2)
+    # Broadcasting these leads to element-wise comparison, resulting in shape (N, N, 2)
+    # where the last dimension holds the comparison result for x and y separately.
+    # The jnp.all(..., axis=-1) reduces along the last dimension to check if the pairs are equal.
+    is_equal_pair = jnp.all(positions[:, None, :] == positions[None, :, :], axis=-1)
+
+    # TODO: might be best to pre-compute and store this
+    # Step 2: Create a mask where (i, j) is True if j > i (j is an index after i)
+    indices = jnp.arange(n_agents)
+    is_next = indices[None, :] > indices[:, None]  # Shape (N, N)
+
+    # Step 3: Combine masks: True if arr[i] == arr[j] (as pairs) AND j > i then
+    # check if any such preceding identical pair j exists.
+    return jnp.any(is_equal_pair & is_next, axis=1)
