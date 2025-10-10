@@ -360,3 +360,21 @@ class TestRandomWalkGenerator:
             (None, None, None, function_input)  # type: ignore
         )
         assert continue_stepping == expected_value
+
+    @staticmethod
+    def test_calculate_action_probs() -> None:
+        action_mask = jnp.array([1, 1, 1, 1], dtype=jnp.bool_)
+        actual = RandomWalkGenerator._calculate_action_probs(
+            jnp.array([1, 1]), jnp.array([0, 0]), action_mask, 1.0
+        )
+        expected = jnp.array([0.06, 0.44, 0.44, 0.06])
+        assert jnp.allclose(actual, expected, atol=1e-2)
+
+    @staticmethod
+    def test_calculate_action_probs_with_temperature() -> None:
+        action_mask = jnp.array([1, 1, 1, 0], dtype=jnp.bool_)
+        actual = RandomWalkGenerator._calculate_action_probs(
+            jnp.array([1, 1]), jnp.array([0, 0]), action_mask, 2.0
+        )
+        expected = jnp.array([0.16, 0.42, 0.42, 0.0])
+        assert jnp.allclose(actual, expected, atol=1e-2)

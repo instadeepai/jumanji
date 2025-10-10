@@ -17,6 +17,7 @@ from typing import Any, Tuple
 
 import chex
 import jax
+import jax.nn
 from jax import numpy as jnp
 
 from jumanji.environments.routing.connector.constants import (
@@ -132,7 +133,7 @@ class RandomWalkGenerator(Generator):
     Targets are placed at their terminuses.
     """
 
-    def __init__(self, grid_size: int, num_agents: int) -> None:
+    def __init__(self, grid_size: int, num_agents: int, temperature: float = 1.0) -> None:
         """Instantiates a `RandomWalkGenerator.
 
         Args:
@@ -140,6 +141,7 @@ class RandomWalkGenerator(Generator):
             num_agents: number of agents/paths on the grid.
         """
         super().__init__(grid_size, num_agents)
+        self.temperature = temperature
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
@@ -172,10 +174,6 @@ class RandomWalkGenerator(Generator):
         action_mask = get_action_masks(agents, grid)
 
         stepping_tuple = (step_key, grid, agents, action_mask)
-
-        # while self._continue_stepping(stepping_tuple):
-        #     stepping_tuple = self._step(stepping_tuple)
-        # _, grid, agents, _ = stepping_tuple
 
         _, grid, agents, _ = jax.lax.while_loop(self._continue_stepping, self._step, stepping_tuple)
 
@@ -223,7 +221,7 @@ class RandomWalkGenerator(Generator):
         keys = jax.random.split(key, num=self.num_agents)
 
         # Randomly select action for each agent
-        actions = jax.vmap(self._select_action)(keys, action_mask)
+        actions = jax.vmap(self._select_action)(keys, action_mask, agents.start, agents.position)
         new_positions = jax.vmap(move_position)(agents.position, actions)
         collided = is_repeated_later(new_positions)
         new_positions = jnp.where(collided[:, jnp.newaxis], agents.position, new_positions)
@@ -331,7 +329,13 @@ class RandomWalkGenerator(Generator):
 
         return action_mask[:, 1:].any()
 
-    def _select_action(self, key: chex.PRNGKey, action_mask: chex.Array) -> chex.Array:
+    def _select_action(
+        self,
+        key: chex.PRNGKey,
+        action_mask: chex.Array,
+        start_position: chex.Array,
+        current_position: chex.Array,
+    ) -> chex.Array:
         """Selects action for agent to take given its current position.
 
         Args:
@@ -342,11 +346,30 @@ class RandomWalkGenerator(Generator):
             Integer corresponding to the action the agent will take in its next step.
             Action indices match those in connector.constants.
         """
-        action = jax.random.choice(key=key, a=jnp.arange(1, 5), p=action_mask[1:])
+        action_probs = self._calculate_action_probs(
+            current_position, start_position, action_mask[1:], self.temperature
+        )
+
+        action = jax.random.choice(key=key, a=jnp.arange(1, 5), p=action_probs)
         can_move = action_mask[1:].any()
         action = action * can_move
 
         return action
+
+    @staticmethod
+    def _calculate_action_probs(
+        current_position: chex.Array,
+        start_position: chex.Array,
+        action_mask: chex.Array,
+        temperature: float,
+    ) -> chex.Array:
+        displacement = current_position - start_position
+        action_dot_products = jnp.array(
+            [-displacement[0], displacement[1], displacement[0], -displacement[1]]
+        )
+        action_probs = jax.nn.softmax(action_dot_products / temperature) * action_mask
+        action_probs = action_probs / action_probs.sum()
+        return action_probs
 
     def update_solved_board_with_head_target_encodings(
         self,
