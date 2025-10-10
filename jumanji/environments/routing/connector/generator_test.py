@@ -331,8 +331,8 @@ class TestRandomWalkGenerator:
         last_two_actions = jnp.array([[0, 0], [0, 0], [0, 0]])
         expected_end_grid, expected_end_agents = expected_value
         expected_end_action_mask = get_action_masks(expected_end_agents, expected_end_grid)
-        _, new_grid, new_agents, new_action_mask, _ = random_walk_generator._step(
-            (*function_input, agents_action_mask_after_1_step, last_two_actions)
+        _, new_grid, new_agents, new_action_mask, _, _ = random_walk_generator._step(
+            (*function_input, agents_action_mask_after_1_step, last_two_actions, 1)
         )
         assert new_agents == expected_end_agents
         assert (new_grid == expected_end_grid).all()
@@ -340,7 +340,7 @@ class TestRandomWalkGenerator:
 
     @staticmethod
     def test_initialize_agents(random_walk_generator: RandomWalkGenerator) -> None:
-        grid, agents, action_mask, last_two_actions = random_walk_generator._initialize(key, 5)
+        grid, agents, _, _ = random_walk_generator._initialize(key, 5)
         assert agents == agents_starting_initialise_agents
         assert (grid == valid_starting_grid_initialize_agents).all()
 
