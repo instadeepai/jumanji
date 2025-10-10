@@ -133,7 +133,9 @@ class RandomWalkGenerator(Generator):
     Targets are placed at their terminuses.
     """
 
-    def __init__(self, grid_size: int, num_agents: int, temperature: float = 1.0) -> None:
+    def __init__(
+        self, grid_size: int, num_agents: int, temperature: float = 1.0, no_u_turn: bool = False
+    ) -> None:
         """Instantiates a `RandomWalkGenerator.
 
         Args:
@@ -142,6 +144,7 @@ class RandomWalkGenerator(Generator):
         """
         super().__init__(grid_size, num_agents)
         self.temperature = temperature
+        self.no_u_turn = no_u_turn
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
@@ -170,12 +173,13 @@ class RandomWalkGenerator(Generator):
             Tuple containing solved board, the agents and an empty training board.
         """
         key, step_key = jax.random.split(key)
-        grid, agents = self._initialize_agents(key, self.grid_size)
-        action_mask = get_action_masks(agents, grid)
+        grid, agents, action_mask, last_two_actions = self._initialize(key, self.grid_size)
 
-        stepping_tuple = (step_key, grid, agents, action_mask)
+        stepping_tuple = (step_key, grid, agents, action_mask, last_two_actions)
 
-        _, grid, agents, _ = jax.lax.while_loop(self._continue_stepping, self._step, stepping_tuple)
+        _, grid, agents, _, _ = jax.lax.while_loop(
+            self._continue_stepping, self._step, stepping_tuple
+        )
 
         # Convert heads and targets to format accepted by generator
         heads = agents.start.T
@@ -196,19 +200,29 @@ class RandomWalkGenerator(Generator):
         grid = grid.at[tuple(agents.target.T)].set(agent_target_values)
         return solved_grid, agents, grid
 
-    def _step(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]
-    ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]:
-        """Takes one step for all agents."""
-        key, grid, agents, action_mask = stepping_tuple
-        key, next_key = jax.random.split(key)
-        agents, grid = self._step_agents(key, grid, agents, action_mask)
-        new_action_mask = get_action_masks(agents, grid)
-        return next_key, grid, agents, new_action_mask
+    @staticmethod
+    def _get_action_mask_no_u_turn(
+        agents: Agent, grid: chex.Array, last_two_actions: chex.Array
+    ) -> chex.Array:
+        """Gets the action mask for all agents without allowing U-turns."""
+        action_mask = get_action_masks(agents, grid)
 
-    def _step_agents(
-        self, key: chex.PRNGKey, grid: chex.Array, agents: Agent, action_mask: chex.Array
-    ) -> Tuple[Agent, chex.Array]:
+        illegal_actions = jnp.array([0, 3, 4, 1, 2])
+        illegal_actions_idx = illegal_actions[last_two_actions[:, 0]]
+        illegal_actions = (
+            jnp.zeros_like(action_mask)
+            .at[jnp.arange(action_mask.shape[0]), illegal_actions_idx]
+            .set(True)
+            .at[:, 0]
+            .set(False)
+        )
+        action_mask = action_mask & ~illegal_actions
+        # jax.debug.breakpoint()
+        return action_mask
+
+    def _step(
+        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, chex.Array]
+    ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, chex.Array]:
         """Steps all agents at the same time correcting for possible collisions.
 
         If a collision occurs we place the agent with the lower `agent_id` in its previous position.
@@ -217,11 +231,22 @@ class RandomWalkGenerator(Generator):
         Returns:
             Tuple of agents and grid after having applied each agents' action
         """
+        key, grid, agents, action_mask, last_two_actions = stepping_tuple
+        key, next_key = jax.random.split(key)
+
         agent_ids = jnp.arange(self.num_agents)
         keys = jax.random.split(key, num=self.num_agents)
 
         # Randomly select action for each agent
         actions = jax.vmap(self._select_action)(keys, action_mask, agents.start, agents.position)
+
+        is_movement = actions != 0  # 0 is NOOP
+        # Shift previous action to column 0, but only if current action is a movement
+        new_col_0 = jnp.where(is_movement, last_two_actions[:, 1], last_two_actions[:, 0])
+        # Set column 1 to current action only if it's a movement, otherwise keep old value
+        new_col_1 = jnp.where(is_movement, actions, last_two_actions[:, 1])
+        last_two_actions = jnp.stack([new_col_0, new_col_1], axis=1)
+
         new_positions = jax.vmap(move_position)(agents.position, actions)
         collided = is_repeated_later(new_positions)
         new_positions = jnp.where(collided[:, jnp.newaxis], agents.position, new_positions)
@@ -243,10 +268,16 @@ class RandomWalkGenerator(Generator):
         )
 
         new_agents = agents.replace(position=new_positions)  # type: ignore
-        # Create the new grid by fixing old one with correction mask and adding the obstacles
-        return new_agents, grid
+        if self.no_u_turn:
+            new_action_mask = self._get_action_mask_no_u_turn(new_agents, grid, last_two_actions)
+        else:
+            new_action_mask = get_action_masks(new_agents, grid)
 
-    def _initialize_agents(self, key: chex.PRNGKey, grid_size: int) -> Tuple[chex.Array, Agent]:
+        return next_key, grid, new_agents, new_action_mask, last_two_actions
+
+    def _initialize(
+        self, key: chex.PRNGKey, grid_size: int
+    ) -> Tuple[chex.Array, Agent, chex.Array, chex.Array]:
         """Initializes agents using random starting point and places heads on the grid.
 
         Args:
@@ -278,7 +309,9 @@ class RandomWalkGenerator(Generator):
             target=jnp.stack(targets, axis=1),
             position=jnp.stack(first_move, axis=1),
         )
-        return grid, agents
+        action_mask = get_action_masks(agents, grid)
+        last_two_actions = jnp.zeros((self.num_agents, 2), dtype=jnp.int32)
+        return grid, agents, action_mask, last_two_actions
 
     def _initialize_starts_and_first_move(
         self,
@@ -322,10 +355,10 @@ class RandomWalkGenerator(Generator):
         return (next_key, grid), (start_coordinate, first_move_coordinate)
 
     def _continue_stepping(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]
+        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, chex.Array]
     ) -> chex.Array:
         """Determines if agents can continue taking steps."""
-        _, _, _, action_mask = stepping_tuple
+        _, _, _, action_mask, _ = stepping_tuple
 
         return action_mask[:, 1:].any()
 
