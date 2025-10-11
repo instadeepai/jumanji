@@ -40,12 +40,20 @@ jobs:
         run: pre-commit run --all-files --verbose
 
       - name: Run tests 🧪
-        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
+        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --cov-report=xml --junit-xml=test-results.xml -vv jumanji
 
       - name: Run coverage
         run: |
           coverage html --directory=coverage_html_report
           coverage report --fail-under=0.97
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
       - name: Test build docs 📖
         run: mkdocs build --verbose --site-dir docs_public
