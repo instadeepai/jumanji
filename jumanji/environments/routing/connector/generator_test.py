@@ -106,22 +106,22 @@ valid_solved_grid_1 = jnp.array(
 
 valid_training_grid = jnp.array(
     [
-        [0, 0, 0, 0, 0],
+        [3, 0, 0, 9, 6],
         [0, 8, 0, 0, 0],
-        [0, 0, 6, 0, 9],
+        [0, 0, 0, 0, 0],
         [0, 0, 2, 0, 0],
-        [3, 0, 0, 5, 0],
+        [0, 0, 0, 5, 0],
     ],
     dtype=jnp.int32,
 )
 
 valid_solved_grid_2 = jnp.array(
     [
-        [0, 7, 7, 7, 7],
-        [0, 8, 7, 7, 7],
-        [1, 1, 6, 4, 9],
-        [1, 1, 2, 4, 4],
-        [3, 1, 1, 5, 4],
+        [3, 7, 7, 9, 6],
+        [1, 8, 7, 7, 4],
+        [1, 0, 0, 0, 4],
+        [1, 0, 2, 0, 4],
+        [1, 1, 1, 5, 4],
     ],
     dtype=jnp.int32,
 )
@@ -204,7 +204,7 @@ agents_starting_move_1_step_up = Agent(
 generate_board_agents = Agent(
     id=jnp.array([0, 1, 2]),
     start=jnp.array([[3, 2], [4, 3], [1, 1]]),
-    target=jnp.array([[4, 0], [2, 2], [2, 4]]),
+    target=jnp.array([[0, 0], [0, 4], [0, 3]]),
     position=jnp.array([[3, 2], [4, 3], [1, 1]]),
 )
 
@@ -330,12 +330,13 @@ class TestRandomWalkGenerator:
         )
         expected_end_grid, expected_end_agents = expected_value
         expected_end_action_mask = get_action_masks(expected_end_agents, expected_end_grid)
-        _, new_grid, new_agents, new_action_mask = random_walk_generator._step(
-            (*function_input, agents_action_mask_after_1_step)
+        _, new_grid, new_agents, new_action_mask, new_step_count = random_walk_generator._step(
+            (*function_input, agents_action_mask_after_1_step, 1)
         )
         assert new_agents == expected_end_agents
         assert (new_grid == expected_end_grid).all()
         assert (new_action_mask == expected_end_action_mask).all()
+        assert new_step_count == 2
 
     @staticmethod
     def test_initialize_agents(random_walk_generator: RandomWalkGenerator) -> None:
@@ -357,7 +358,7 @@ class TestRandomWalkGenerator:
         expected_value: bool,
     ) -> None:
         continue_stepping = random_walk_generator._continue_stepping(
-            (None, None, None, function_input)  # type: ignore
+            (None, None, None, function_input, 1)  # type: ignore
         )
         assert continue_stepping == expected_value
 

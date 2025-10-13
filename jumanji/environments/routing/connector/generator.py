@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import abc
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 import chex
 import jax
@@ -133,15 +133,27 @@ class RandomWalkGenerator(Generator):
     Targets are placed at their terminuses.
     """
 
-    def __init__(self, grid_size: int, num_agents: int, temperature: float = 1.0) -> None:
+    def __init__(
+        self,
+        grid_size: int,
+        num_agents: int,
+        temperature: float = 1.0,
+        max_steps: Optional[int] = None,
+    ) -> None:
         """Instantiates a `RandomWalkGenerator.
 
         Args:
             grid_size: size of the square grid to generate.
             num_agents: number of agents/paths on the grid.
+            temperature: temperature for the action probabilities.
+            max_steps: maximum number of steps to take.
         """
         super().__init__(grid_size, num_agents)
         self.temperature = temperature
+        if max_steps is None:
+            # Heuristic to set the max steps
+            max_steps = int(grid_size * 1.5)
+        self.max_steps = max_steps
 
     def __call__(self, key: chex.PRNGKey) -> State:
         """Generates a `Connector` state that contains the grid and the agents' layout.
@@ -173,9 +185,11 @@ class RandomWalkGenerator(Generator):
         grid, agents = self._initialize_agents(key, self.grid_size)
         action_mask = get_action_masks(agents, grid)
 
-        stepping_tuple = (step_key, grid, agents, action_mask)
+        stepping_tuple = (step_key, grid, agents, action_mask, 1)
 
-        _, grid, agents, _ = jax.lax.while_loop(self._continue_stepping, self._step, stepping_tuple)
+        _, grid, agents, _, _ = jax.lax.while_loop(
+            self._continue_stepping, self._step, stepping_tuple
+        )
 
         # Convert heads and targets to format accepted by generator
         heads = agents.start.T
@@ -197,14 +211,14 @@ class RandomWalkGenerator(Generator):
         return solved_grid, agents, grid
 
     def _step(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]
-    ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]:
+        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
+    ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]:
         """Takes one step for all agents."""
-        key, grid, agents, action_mask = stepping_tuple
+        key, grid, agents, action_mask, step_count = stepping_tuple
         key, next_key = jax.random.split(key)
         agents, grid = self._step_agents(key, grid, agents, action_mask)
         new_action_mask = get_action_masks(agents, grid)
-        return next_key, grid, agents, new_action_mask
+        return next_key, grid, agents, new_action_mask, step_count + 1
 
     def _step_agents(
         self, key: chex.PRNGKey, grid: chex.Array, agents: Agent, action_mask: chex.Array
@@ -322,12 +336,12 @@ class RandomWalkGenerator(Generator):
         return (next_key, grid), (start_coordinate, first_move_coordinate)
 
     def _continue_stepping(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array]
+        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
     ) -> chex.Array:
         """Determines if agents can continue taking steps."""
-        _, _, _, action_mask = stepping_tuple
+        _, _, _, action_mask, step_count = stepping_tuple
 
-        return action_mask[:, 1:].any()
+        return action_mask[:, 1:].any() & (step_count < self.max_steps)
 
     def _select_action(
         self,
