@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import replace
 from functools import partial
 
 import chex
@@ -22,6 +23,7 @@ import jumanji.testing.pytrees
 from jumanji.environments.routing.connector import constants
 from jumanji.environments.routing.connector.constants import EMPTY
 from jumanji.environments.routing.connector.env import Connector
+from jumanji.environments.routing.connector.generator import UniformRandomGenerator
 from jumanji.environments.routing.connector.types import Agent, State
 from jumanji.environments.routing.connector.utils import get_position, get_target
 from jumanji.testing.env_not_smoke import (
@@ -88,10 +90,13 @@ def test_connector__step_connected(
     real_state1, timestep = step_fn(state, action1)
     reward = connector._reward_fn(state, action1, real_state1)
     assert jnp.array_equal(timestep.reward, reward)
-    chex.assert_trees_all_equal(real_state1, state1)
+    # Compare states ingoring the key
+    chex.assert_trees_all_equal(replace(real_state1, key=None), replace(state1, key=None))
+    # chex.assert_trees_all_equal(real_state1, state1)
 
     real_state2, timestep = step_fn(real_state1, action2)
-    chex.assert_trees_all_equal(real_state2, state2)
+    # chex.assert_trees_all_equal(real_state2, state2)
+    chex.assert_trees_all_equal(replace(real_state2, key=None), replace(state2, key=None))
 
     assert timestep.step_type == StepType.LAST
     assert jnp.array_equal(timestep.discount, jnp.zeros(connector.num_agents))
@@ -260,3 +265,88 @@ def test_connector__get_extras(state: State, connector: Connector) -> None:
     no_op_action = jnp.full(connector.num_agents, 0, jnp.int32)
     _, timestep = connector.step(state, no_op_action)
     assert timestep.extras == extras
+
+
+def test_connector__stochasticity_is_key_dependent(state: State) -> None:
+    """Tests that the stochastic step is deterministic with respect to the key."""
+    stochastic_connector = Connector(
+        generator=UniformRandomGenerator(grid_size=6, num_agents=3),
+        slip_prob=0.5,
+        target_move_prob=0.5,
+    )
+
+    action = jnp.array([constants.UP, constants.LEFT, constants.LEFT])
+
+    # First step with the initial key in `state`
+    state1_a, timestep1_a = stochastic_connector.step(state, action)
+
+    # Second step again with the exact same state (and thus same key)
+    state1_b, timestep1_b = stochastic_connector.step(state, action)
+
+    # The outcomes should be identical because the key was the same
+    chex.assert_trees_all_equal(state1_a, state1_b)
+    chex.assert_trees_all_equal(timestep1_a, timestep1_b)
+
+    # Third step with a different key
+    key, _ = jax.random.split(state.key)
+    state_new_key = replace(state, key=key)
+    state1_c, _ = stochastic_connector.step(state_new_key, action)
+
+    # The grid state should almost certainly be different due to the high probabilities
+    assert not jnp.all(state1_a.grid == state1_c.grid)
+
+
+def test_connector__slip_prob(state: State) -> None:
+    """Tests that with slip_prob=1.0, actions are randomized."""
+    slippery_connector = Connector(
+        generator=UniformRandomGenerator(grid_size=6, num_agents=3),
+        slip_prob=1.0,
+        target_move_prob=0.0,  # Turn off target movement for isolation
+    )
+
+    # Action where no agent is doing NOOP, so all are eligible to slip
+    action = jnp.array([constants.UP, constants.LEFT, constants.RIGHT])
+    next_state_slipped, _ = slippery_connector.step(state, action)
+
+    # Get the result of a deterministic step for comparison
+    deterministic_connector = Connector(
+        generator=UniformRandomGenerator(grid_size=6, num_agents=3),
+        slip_prob=0.0,
+        target_move_prob=0.0,
+    )
+    # Re-use the same state, the key will be handled correctly by the deterministic env
+    next_state_deterministic, _ = deterministic_connector.step(state, action)
+
+    # The grid resulting from a guaranteed slip should be different from the deterministic one.
+    assert not jnp.array_equal(next_state_slipped.grid, next_state_deterministic.grid)
+
+    # Test that NOOP actions do not slip
+    noop_action = jnp.array([constants.NOOP, constants.NOOP, constants.NOOP])
+    next_state_noop, _ = slippery_connector.step(state, noop_action)
+    # The grid should be unchanged from the original state because agents did not move.
+    assert jnp.array_equal(state.grid, next_state_noop.grid)
+
+
+def test_connector__target_movement(state: State) -> None:
+    """Tests that with target_move_prob=1.0, targets move if possible."""
+    wandering_connector = Connector(
+        generator=UniformRandomGenerator(grid_size=6, num_agents=3),
+        slip_prob=0.0,  # Turn off slipping for isolation
+        target_move_prob=1.0,
+    )
+
+    # The default `state` fixture has targets with empty cells around them, so they can move.
+    # Take a no-op step so only targets are expected to move.
+    action = jnp.zeros(3, dtype=jnp.int32)
+    next_state, _ = wandering_connector.step(state, action)
+
+    # With probability 1.0, at least one target must have moved.
+    assert not jnp.array_equal(state.agents.target, next_state.agents.target)
+
+    # Check that old target positions are now empty on the new grid.
+    for agent_id in range(wandering_connector.num_agents):
+        old_target_pos = tuple(state.agents.target[agent_id])
+        # If the target for this agent moved...
+        if not jnp.array_equal(state.agents.target[agent_id], next_state.agents.target[agent_id]):
+            # ...its old spot on the grid should now be empty.
+            assert next_state.grid[old_target_pos] == EMPTY

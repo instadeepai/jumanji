@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import replace
+
 import chex
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -34,6 +37,7 @@ from jumanji.environments.routing.connector.utils import (
     is_valid_position,
     move_agent,
     move_position,
+    move_target,
 )
 from jumanji.tree_utils import tree_slice
 
@@ -146,3 +150,72 @@ def test_get_agent_grid(grid: chex.Array) -> None:
         | (agent_2_grid == get_target(2))
         | (agent_2_grid == get_position(2))
     )
+
+
+def test_move_target__moves_when_possible(state: State) -> None:
+    """Tests that move_target correctly moves a target to an empty adjacent cell."""
+    key = jax.random.PRNGKey(0)
+    agent0 = tree_slice(state.agents, 0)  # Target at (0, 2), surrounded by EMPTY
+
+    # Sanity check: agent is not connected
+    assert not agent0.connected
+
+    new_grid, new_agent = move_target(state.grid, agent0, key)
+
+    # The target should have moved.
+    assert not jnp.array_equal(agent0.target, new_agent.target)
+
+    # The old target location on the new grid should be empty.
+    assert new_grid[tuple(agent0.target)] == EMPTY
+
+    # The new target location on the new grid should have the correct target value.
+    assert new_grid[tuple(new_agent.target)] == get_target(agent0.id)
+
+
+def test_move_target__does_not_move_when_blocked(state: State) -> None:
+    """Tests that move_target does nothing if the target is blocked."""
+    key = jax.random.PRNGKey(0)
+
+    # Create a grid where agent 1's target at (3,0) is completely blocked.
+    blocked_grid = state.grid.at[2, 0].set(get_path(0))
+    blocked_grid = blocked_grid.at[3, 1].set(get_path(0))
+    blocked_grid = blocked_grid.at[4, 0].set(get_path(0))
+
+    agent1 = tree_slice(state.agents, 1)
+    new_grid, new_agent = move_target(blocked_grid, agent1, key)
+
+    # Neither the grid nor the agent's target should have changed.
+    assert jnp.array_equal(blocked_grid, new_grid)
+    chex.assert_trees_all_equal(agent1, new_agent)
+
+
+def test_move_target__does_not_move_when_connected(state: State) -> None:
+    """Tests that move_target does nothing if the agent is already connected."""
+    key = jax.random.PRNGKey(0)
+    agent0 = tree_slice(state.agents, 0)
+
+    # Manually create a connected agent state.
+    connected_agent = replace(agent0, position=agent0.target)
+    assert connected_agent.connected
+
+    new_grid, new_agent = move_target(state.grid, connected_agent, key)
+
+    # The target should not move for a connected agent.
+    assert jnp.array_equal(state.grid, new_grid)
+    chex.assert_trees_all_equal(connected_agent, new_agent)
+
+
+def test_move_target__is_key_dependent(state: State) -> None:
+    """Tests that target movement is deterministic with respect to the key."""
+    key = jax.random.PRNGKey(42)
+    agent0 = tree_slice(state.agents, 0)
+
+    grid_a, agent_a = move_target(state.grid, agent0, key)
+    grid_b, agent_b = move_target(state.grid, agent0, key)
+    chex.assert_trees_all_equal(grid_a, grid_b)
+    chex.assert_trees_all_equal(agent_a, agent_b)
+
+    # A different key should produce a different move.
+    key2 = jax.random.PRNGKey(43)
+    grid_c, _ = move_target(state.grid, agent0, key2)
+    assert not jnp.array_equal(grid_a, grid_c)
