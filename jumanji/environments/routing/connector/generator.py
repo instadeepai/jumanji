@@ -185,10 +185,10 @@ class RandomWalkGenerator(Generator):
         grid, agents = self._initialize_agents(key, self.grid_size)
         action_mask = get_action_masks(agents, grid)
 
-        stepping_tuple = (step_key, grid, agents, action_mask, 1)
+        stepping_state = (step_key, grid, agents, action_mask, 1)
 
         _, grid, agents, _, _ = jax.lax.while_loop(
-            self._continue_stepping, self._step, stepping_tuple
+            self._continue_stepping, self._step, stepping_state
         )
 
         # Convert heads and targets to format accepted by generator
@@ -211,10 +211,10 @@ class RandomWalkGenerator(Generator):
         return solved_grid, agents, grid
 
     def _step(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
+        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
     ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]:
         """Takes one step for all agents."""
-        key, grid, agents, action_mask, step_count = stepping_tuple
+        key, grid, agents, action_mask, step_count = stepping_state
         key, next_key = jax.random.split(key)
         agents, grid = self._step_agents(key, grid, agents, action_mask)
         new_action_mask = get_action_masks(agents, grid)
@@ -285,7 +285,7 @@ class RandomWalkGenerator(Generator):
         # Fill target with default value as targets will be assigned after random walk
         targets = jnp.full((2, self.num_agents), -1)
 
-        # # Initialize agents
+        # Initialize agents
         agents = jax.vmap(Agent)(
             id=jnp.arange(self.num_agents),
             start=jnp.stack(starts, axis=1),
@@ -336,10 +336,10 @@ class RandomWalkGenerator(Generator):
         return (next_key, grid), (start_coordinate, first_move_coordinate)
 
     def _continue_stepping(
-        self, stepping_tuple: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
+        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
     ) -> chex.Array:
         """Determines if agents can continue taking steps."""
-        _, _, _, action_mask, step_count = stepping_tuple
+        _, _, _, action_mask, step_count = stepping_state
 
         return action_mask[:, 1:].any() & (step_count < self.max_steps)
 
@@ -377,6 +377,19 @@ class RandomWalkGenerator(Generator):
         action_mask: chex.Array,
         temperature: float,
     ) -> chex.Array:
+        """Calculates the action probabilities for the agent. Probabilities are
+        calculated based on the dot product of the displacement vector and the
+        potential action directions.
+
+        Args:
+            current_position: the current position of the agent.
+            start_position: the start position of the agent.
+            action_mask: the action mask for the agent.
+            temperature: the temperature for the action probabilities.
+
+        Returns:
+            The action probabilities for the agent.
+        """
         displacement = current_position - start_position
         action_dot_products = jnp.array(
             [-displacement[0], displacement[1], displacement[0], -displacement[1]]

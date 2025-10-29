@@ -248,7 +248,8 @@ def test_get_adjacency_mask() -> None:
             [0, 0, 0, 1],
             [0, 0, 1, 0],
             [0, 0, 0, 1],
-        ]
+        ],
+        dtype=jnp.bool_,
     )
 
     actual = get_adjacency_mask(grid_shape, coordinate)

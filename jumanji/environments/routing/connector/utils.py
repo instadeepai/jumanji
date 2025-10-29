@@ -286,7 +286,7 @@ def get_adjacency_mask(grid_shape: tuple, coordinate: jax.Array) -> jax.Array:
         and 0s elsewhere.
     """
     # 1. Start with a grid of zeros
-    mask = jnp.zeros(grid_shape, dtype=jnp.int32)
+    mask = jnp.zeros(grid_shape, dtype=jnp.bool_)
     row, col = coordinate
 
     # 2. Define the four potential neighbor coordinates (N, S, E, W)
