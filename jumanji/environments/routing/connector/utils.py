@@ -310,3 +310,32 @@ def get_adjacency_mask(grid_shape: tuple, coordinate: jax.Array) -> jax.Array:
     final_mask = mask.at[neighbors[:, 0], neighbors[:, 1]].set(valid)
 
     return final_mask
+
+
+def get_correction_mask(
+    old_grid: chex.Array, joined_grid: chex.Array, agent_id: chex.Numeric
+) -> Tuple[chex.Array, chex.Array]:
+    """Creates a correction grid for collided agents.
+
+    This is used when vmapping each agents movements, in order to correct for collisions.
+    Checks if the agent's position is on the new grid, if not, it has been overwritten when
+    merging the grids and must be placed back in its old position. Thus we return a grid that
+    can be used to add back the position of `agent_id`, by adding it to the merged grid.
+
+    Args:
+        old_grid: the grid from the pervious step.
+        joined_grid: the new grid as a result of a maxing over agent specific grids.
+        agent_id: id of the agent to check for collisions.
+
+    Returns:
+        The correction mask for the given agent and a bool indicating if there was a collision.
+    """
+    position = get_position(agent_id)
+    # The value used for corrections. The agents old POSITION will now be a PATH and
+    # we want to convert it back to POSITION by adding the grids.
+    correction_value = POSITION - PATH
+    # There is a collision if the `agent_id`'s POSITION isn't on the `joined_grid`
+    has_collision = jnp.logical_not(jnp.any(joined_grid == position))
+    # Grid of all zeros, except at the position of `agent_id`s POSITION on the `old_grid`
+    correction_mask = (old_grid == position) * correction_value
+    return correction_mask * has_collision, has_collision
