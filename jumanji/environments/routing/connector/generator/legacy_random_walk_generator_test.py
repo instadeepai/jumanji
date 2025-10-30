@@ -11,54 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from typing import Tuple
 
 import chex
 import jax
+import jax.numpy as jnp
 import pytest
-from jax import numpy as jnp
 
-from jumanji.environments.routing.connector.generator import (
-    RandomWalkGenerator,
-    UniformRandomGenerator,
+from jumanji.environments.routing.connector.generator.legacy_random_walk_generator import (
+    LegacyRandomWalkGenerator,
 )
 from jumanji.environments.routing.connector.types import Agent
 from jumanji.environments.routing.connector.utils import get_position, get_target
-
-
-@pytest.fixture
-def uniform_random_generator() -> UniformRandomGenerator:
-    """Creates a generator with grid size of 5 and 3 agents."""
-    return UniformRandomGenerator(grid_size=5, num_agents=3)
-
-
-def test_uniform_random_generator__call(
-    uniform_random_generator: UniformRandomGenerator, key: chex.PRNGKey
-) -> None:
-    """Test that generator generates valid boards."""
-    state = uniform_random_generator(key)
-
-    assert state.grid.shape == (5, 5)
-    assert state.agents.position.shape == state.agents.target.shape == (3, 2)
-
-    # Check grid has head and target for each agent
-    # and the starts and ends point to the correct heads and targets, respectively
-    agents_on_grid = state.grid[jax.vmap(tuple)(state.agents.position)]
-    targets_on_grid = state.grid[jax.vmap(tuple)(state.agents.target)]
-    assert (agents_on_grid == jnp.array([get_position(i) for i in range(3)])).all()
-    assert (targets_on_grid == jnp.array([get_target(i) for i in range(3)])).all()
-
-
-def test_uniform_random_generator__no_retrace(
-    uniform_random_generator: UniformRandomGenerator, key: chex.PRNGKey
-) -> None:
-    """Checks that generator only traces the function once and works when jitted."""
-    keys = jax.random.split(key, 2)
-    jitted_generator = jax.jit(chex.assert_max_traces((uniform_random_generator.__call__), n=1))
-
-    for key in keys:
-        jitted_generator(key)
-
 
 ### grids for testing
 empty_grid = jnp.zeros((5, 5))
@@ -213,15 +178,15 @@ key = jax.random.PRNGKey(0)
 key_1, key_2 = jax.random.split(key)
 
 
-class TestRandomWalkGenerator:
+class TestLegacyLegacyRandomWalkGenerator:
     @pytest.fixture
-    def random_walk_generator(self) -> RandomWalkGenerator:
+    def random_walk_generator(self) -> LegacyRandomWalkGenerator:
         """Creates a generator with grid size of 5 and 3 agents."""
-        return RandomWalkGenerator(grid_size=5, num_agents=3)
+        return LegacyRandomWalkGenerator(grid_size=5, num_agents=3)
 
     def test_random_walk_generator__call(
         self,
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         key: chex.PRNGKey,
     ) -> None:
         """Tests that generator generates valid boards."""
@@ -239,7 +204,7 @@ class TestRandomWalkGenerator:
 
     def test_random_walk_generator__no_retrace(
         self,
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         key: chex.PRNGKey,
     ) -> None:
         """Checks that generator only traces the function once and works when jitted."""
@@ -253,7 +218,7 @@ class TestRandomWalkGenerator:
     @pytest.mark.skip(
         (
             "JAX 0.5 upgrade uses different random keys therefore need to redo expected boards."
-            "Ideally we should redo this entire RandomWalkGenerator as it is a mess."
+            "Ideally we should redo this entire LegacyRandomWalkGenerator as it is a mess."
             "https://github.com/instadeepai/jumanji/issues/146"
         )
     )
@@ -273,7 +238,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_generate_board(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: chex.PRNGKey,
         expected_value: Tuple[chex.Array, chex.Array, chex.Array],
     ) -> None:
@@ -285,7 +250,7 @@ class TestRandomWalkGenerator:
 
     def test_generate_board_for_various_keys(
         self,
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
     ) -> None:
         boards_generated = []
         number_of_keys_to_test = 10
@@ -302,7 +267,7 @@ class TestRandomWalkGenerator:
     @pytest.mark.skip(
         (
             "JAX 0.5 upgrade uses different random keys therefore need to redo expected boards."
-            "Ideally we should redo this entire RandomWalkGenerator as it is a mess."
+            "Ideally we should redo this entire LegacyRandomWalkGenerator as it is a mess."
             "https://github.com/instadeepai/jumanji/issues/146"
         )
     )
@@ -320,7 +285,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_step(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.PRNGKey, chex.Array, Agent],
         expected_value: Tuple[chex.PRNGKey, chex.Array, Agent],
     ) -> None:
@@ -333,18 +298,18 @@ class TestRandomWalkGenerator:
     @pytest.mark.skip(
         (
             "JAX 0.5 upgrade uses different random keys therefore need to redo expected boards."
-            "Ideally we should redo this entire RandomWalkGenerator as it is a mess."
+            "Ideally we should redo this entire LegacyRandomWalkGenerator as it is a mess."
             "https://github.com/instadeepai/jumanji/issues/146"
         )
     )
-    def test_initialize_agents(self, random_walk_generator: RandomWalkGenerator) -> None:
+    def test_initialize_agents(self, random_walk_generator: LegacyRandomWalkGenerator) -> None:
         grid, agents = random_walk_generator._initialize_agents(key, empty_grid)
         assert agents == agents_starting_initialise_agents
         assert (grid == valid_starting_grid_initialize_agents).all()
 
     def test_place_agent_heads_on_grid(
         self,
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
     ) -> None:
         expected_output = jnp.array(
             [
@@ -386,7 +351,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_continue_stepping(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.PRNGKey, chex.Array, Agent],
         expected_value: bool,
     ) -> None:
@@ -402,7 +367,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_no_available_cells(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.Array, Agent],
         expected_value: chex.Array,
     ) -> None:
@@ -420,7 +385,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_convert_flat_position_to_tuple(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: chex.Array,
         expected_value: chex.Array,
     ) -> None:
@@ -437,7 +402,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_convert_tuple_to_flat_position(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: chex.Array,
         expected_value: chex.Array,
     ) -> None:
@@ -455,7 +420,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_action_from_position(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.Array, chex.Array],
         expected_value: chex.Array,
     ) -> None:
@@ -475,7 +440,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_action_from_tuple(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: chex.Array,
         expected_value: chex.Array,
     ) -> None:
@@ -494,7 +459,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_adjacent_cells(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: int,
         expected_value: chex.Array,
     ) -> None:
@@ -511,7 +476,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_available_cells(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.Array, chex.Array],
         expected_value: chex.Array,
     ) -> None:
@@ -529,7 +494,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_is_cell_free(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.Array, chex.Array],
         expected_value: bool,
     ) -> None:
@@ -548,7 +513,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_step_agent(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[Agent, chex.Array, int],
         expected_value: Tuple[chex.Array, Agent],
     ) -> None:
@@ -573,7 +538,7 @@ class TestRandomWalkGenerator:
         ],
     )
     def test_is_valid_position_rw(
-        random_walk_generator: RandomWalkGenerator,
+        random_walk_generator: LegacyRandomWalkGenerator,
         function_input: Tuple[chex.Array, Agent, chex.Array],
         expected_value: chex.Array,
     ) -> None:

@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 from typing import Tuple
 
 import chex
 import jax
 import jax.numpy as jnp
+from jax.scipy.signal import convolve2d
 
 from jumanji.environments.routing.connector.constants import (
     EMPTY,
@@ -143,36 +145,6 @@ def get_agent_grid(agent_id: jnp.int32, grid: chex.Array) -> chex.Array:
     return agent_head + agent_target + agent_path
 
 
-# TODO: remove once random walk generator is re-done
-def get_correction_mask(
-    old_grid: chex.Array, joined_grid: chex.Array, agent_id: chex.Numeric
-) -> Tuple[chex.Array, chex.Array]:
-    """Creates a correction grid for collided agents.
-
-    This is used when vmapping each agents movements, in order to correct for collisions.
-    Checks if the agent's position is on the new grid, if not, it has been overwritten when
-    merging the grids and must be placed back in its old position. Thus we return a grid that
-    can be used to add back the position of `agent_id`, by adding it to the merged grid.
-
-    Args:
-        old_grid: the grid from the pervious step.
-        joined_grid: the new grid as a result of a maxing over agent specific grids.
-        agent_id: id of the agent to check for collisions.
-
-    Returns:
-        The correction mask for the given agent and a bool indicating if there was a collision.
-    """
-    position = get_position(agent_id)
-    # The value used for corrections. The agents old POSITION will now be a PATH and
-    # we want to convert it back to POSITION by adding the grids.
-    correction_value = POSITION - PATH
-    # There is a collision if the `agent_id`'s POSITION isn't on the `joined_grid`
-    has_collision = jnp.logical_not(jnp.any(joined_grid == position))
-    # Grid of all zeros, except at the position of `agent_id`s POSITION on the `old_grid`
-    correction_mask = (old_grid == position) * correction_value
-    return correction_mask * has_collision, has_collision
-
-
 def get_action_masks(agents: Agent, grid: chex.Array) -> chex.Array:
     """Gets the action mask for all agents"""
     num_agents = len(agents.id)  # N in shape comments
@@ -273,3 +245,97 @@ def is_repeated_later(positions: chex.Array) -> chex.Array:
     # Step 3: Combine masks: True if arr[i] == arr[j] (as pairs) AND j > i then
     # check if any such preceding identical pair j exists.
     return jnp.any(is_equal_pair & is_next, axis=1)
+
+
+def get_surrounded_mask(grid: chex.Array) -> chex.Array:
+    """
+    Args:
+        grid: 2D JAX array where 0 = open cell, positive integers = occupied
+
+    Returns:
+        Boolean mask where True indicates a cell is surrounded by occupied cells
+    """
+
+    # Create binary occupancy map
+    occupied = (grid > 0).astype(jnp.float32)
+
+    # Kernel to check all 4 neighbors
+    kernel = jnp.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+
+    # Count occupied neighbors
+    neighbor_count = convolve2d(occupied, kernel, mode="same")
+
+    # Cell is surrounded if all possible neighbors are occupied
+    possible_max_neighbors = convolve2d(jnp.ones_like(occupied), kernel, mode="same")
+    surrounded = neighbor_count == possible_max_neighbors
+
+    return surrounded
+
+
+@functools.partial(jax.jit, static_argnums=(0,))
+def get_adjacency_mask(grid_shape: tuple, coordinate: jax.Array) -> jax.Array:
+    """
+    Creates a mask with 1s on cells adjacent to a coordinate.
+
+    Args:
+        grid_shape: A tuple (rows, cols) defining the grid dimensions.
+        coordinate: A JAX array or tuple (row, col) for the center point.
+
+    Returns:
+        A JAX array of shape `grid_shape` with 1s for adjacent cells
+        and 0s elsewhere.
+    """
+    # 1. Start with a grid of zeros
+    mask = jnp.zeros(grid_shape, dtype=jnp.bool_)
+    row, col = coordinate
+
+    # 2. Define the four potential neighbor coordinates (N, S, E, W)
+    neighbors = jnp.array(
+        [
+            [row - 1, col],  # North
+            [row + 1, col],  # South
+            [row, col + 1],  # East
+            [row, col - 1],  # West
+        ]
+    )
+    rows, cols = grid_shape
+    valid = (
+        (neighbors[:, 0] >= 0)
+        & (neighbors[:, 0] < rows)
+        & (neighbors[:, 1] >= 0)
+        & (neighbors[:, 1] < cols)
+    )
+
+    # 3. Set the valid locations to 1, drop the invalid locations
+    final_mask = mask.at[neighbors[:, 0], neighbors[:, 1]].set(valid)
+
+    return final_mask
+
+
+def get_correction_mask(
+    old_grid: chex.Array, joined_grid: chex.Array, agent_id: chex.Numeric
+) -> Tuple[chex.Array, chex.Array]:
+    """Creates a correction grid for collided agents.
+
+    This is used when vmapping each agents movements, in order to correct for collisions.
+    Checks if the agent's position is on the new grid, if not, it has been overwritten when
+    merging the grids and must be placed back in its old position. Thus we return a grid that
+    can be used to add back the position of `agent_id`, by adding it to the merged grid.
+
+    Args:
+        old_grid: the grid from the pervious step.
+        joined_grid: the new grid as a result of a maxing over agent specific grids.
+        agent_id: id of the agent to check for collisions.
+
+    Returns:
+        The correction mask for the given agent and a bool indicating if there was a collision.
+    """
+    position = get_position(agent_id)
+    # The value used for corrections. The agents old POSITION will now be a PATH and
+    # we want to convert it back to POSITION by adding the grids.
+    correction_value = POSITION - PATH
+    # There is a collision if the `agent_id`'s POSITION isn't on the `joined_grid`
+    has_collision = jnp.logical_not(jnp.any(joined_grid == position))
+    # Grid of all zeros, except at the position of `agent_id`s POSITION on the `old_grid`
+    correction_mask = (old_grid == position) * correction_value
+    return correction_mask * has_collision, has_collision
