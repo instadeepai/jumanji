@@ -89,6 +89,7 @@ module = [
     "pkg_resources.*",
     "PIL.*",
     "distrax.*",
+    "chex.*",
 ]
 ignore_missing_imports = true
 
