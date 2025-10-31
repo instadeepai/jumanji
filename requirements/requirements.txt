@@ -7,4 +7,5 @@ jax>=0.2.26
 matplotlib>=3.8.0
 numpy>=1.19.5
 Pillow>=9.0.0
+requests>=2.32
 typing-extensions>=4.0.0
