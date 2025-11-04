@@ -1,5 +1,5 @@
 name: connector
-registered_version: Connector-v2
+registered_version: Connector-v3
 
 network:
     transformer_num_blocks: 4
