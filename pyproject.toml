@@ -90,7 +90,6 @@ module = [
     "PIL.*",
     "distrax.*",
     "chex.*",
-    "py.*",
 ]
 ignore_missing_imports = true
 
