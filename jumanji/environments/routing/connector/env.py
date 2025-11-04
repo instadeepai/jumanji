@@ -50,11 +50,6 @@ from jumanji.environments.routing.connector.viewer import ConnectorViewer
 from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
-# TODO:
-#  * fix all tests
-#  * speed test
-#  * check viewer works with changes to is_target etc (`&` instead of `and`)
-
 
 class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     """The `Connector` environment is a gridworld problem where multiple pairs of points (sets)
@@ -190,11 +185,6 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         # Construct timestep: get reward, legal actions and done
         reward = self._rewarder(state, action, new_state)
-        # TODO: make an observer
-        # - fully observable single agent
-        # - fully observable multi-agent
-        # - partially observable multi-agent 2D
-        # - partially observable multi-agent 1D
         observation = Observation(
             grid=grid, action_mask=action_mask, step_count=new_state.step_count
         )
@@ -231,7 +221,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         Returns:
             Tuple: (agents, grid) after having applied each agents' action
         """
-        legal_action_taken = state.action_mask[jnp.arange(self.num_agents), action, jnp.newaxis]
+        legal_action_taken = state.action_mask[self._agent_ids, action, jnp.newaxis]
         new_positions = jnp.where(
             legal_action_taken,
             jax.vmap(move_position)(state.agents.position, action),
@@ -242,14 +232,13 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         connecting = jax.vmap(is_target)(state.grid[tuple(new_positions.T)])  # connecting this step
         noop = jnp.all(new_positions == state.agents.position, axis=-1)
 
-        agent_ids = jnp.arange(self.num_agents)
         # Change old position from a POSITION to a PATH if not a NOOP
         old_position_values = (PATH - POSITION) * ~noop
         # Add the value of the position if not connecting (because it must be a zero)
         # Add POSITION - TARGET if connecting this step (changes the target on the grid to POSITION)
         # Add 0 (no change) if already connected/doing a noop
         new_position_values = (
-            jax.vmap(get_position)(agent_ids) * ~connecting + (POSITION - TARGET) * connecting
+            jax.vmap(get_position)(self._agent_ids) * ~connecting + (POSITION - TARGET) * connecting
         ) * ~noop
 
         grid = (

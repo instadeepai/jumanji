@@ -209,7 +209,6 @@ def get_action_masks(agents: Agent, grid: chex.Array) -> chex.Array:
     return all_masks
 
 
-# TODO: tests
 def is_repeated_later(positions: chex.Array) -> chex.Array:
     """Creates a boolean mask for a 2D array of (x,y) positions in which True at an index means the
     (x,y) pair at that index apears later in the array
@@ -237,7 +236,6 @@ def is_repeated_later(positions: chex.Array) -> chex.Array:
     # The jnp.all(..., axis=-1) reduces along the last dimension to check if the pairs are equal.
     is_equal_pair = jnp.all(positions[:, None, :] == positions[None, :, :], axis=-1)
 
-    # TODO: might be best to pre-compute and store this
     # Step 2: Create a mask where (i, j) is True if j > i (j is an index after i)
     indices = jnp.arange(n_agents)
     is_next = indices[None, :] > indices[:, None]  # Shape (N, N)
