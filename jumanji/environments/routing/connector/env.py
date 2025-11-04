@@ -103,6 +103,14 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
     state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
+    ## Version History
+    * v3: Add a different, faster random walk generator, correctly return truncation and improve
+      memory usage (PR: #288 and #284)
+    * v2: Add random walk generator and increase the default number of agents from 5 to 10
+      (PR: #156)
+    * v1: Change connector to be a single agent environment - only a single global observation,
+      reward and discount are returned (PR: #119)
+    * v0: Initial implementation (PR: #73)
     """
 
     def __init__(
@@ -235,7 +243,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         noop = jnp.all(new_positions == state.agents.position, axis=-1)
 
         agent_ids = jnp.arange(self.num_agents)
-        # Change old position from a PATH to a POSITION if not connected
+        # Change old position from a POSITION to a PATH if not a NOOP
         old_position_values = (PATH - POSITION) * ~noop
         # Add the value of the position if not connecting (because it must be a zero)
         # Add POSITION - TARGET if connecting this step (changes the target on the grid to POSITION)

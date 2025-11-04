@@ -155,3 +155,5 @@ jumanji_env/
 **/outputs/
 *.xml
 .sokoban_cache/
+*.lock
+.cursor

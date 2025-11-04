@@ -60,6 +60,7 @@ class State:
     step_count: the index of the current step.
     agents: a stacked pytree of type Agent.
     key: random key used for auto-reset.
+    action_mask: action mask for the agents.
     """
 
     grid: chex.Array  # (grid_size, grid_size)
