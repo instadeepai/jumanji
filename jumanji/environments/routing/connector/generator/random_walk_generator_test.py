@@ -295,8 +295,8 @@ class TestRandomWalkGenerator:
         )
         expected_end_grid, expected_end_agents = expected_value
         expected_end_action_mask = get_action_masks(expected_end_agents, expected_end_grid)
-        _, new_grid, new_agents, new_action_mask, new_step_count = random_walk_generator._step(
-            (*function_input, agents_action_mask_after_1_step, 1)
+        _, new_grid, new_agents, new_action_mask, new_step_count, _ = random_walk_generator._step(
+            (*function_input, agents_action_mask_after_1_step, 1, 10)
         )
         assert new_agents == expected_end_agents
         assert (new_grid == expected_end_grid).all()
@@ -323,7 +323,7 @@ class TestRandomWalkGenerator:
         expected_value: bool,
     ) -> None:
         continue_stepping = random_walk_generator._continue_stepping(
-            (None, None, None, function_input, 1)  # type: ignore
+            (None, None, None, function_input, 1, 10)  # type: ignore
         )
         assert continue_stepping == expected_value
 
