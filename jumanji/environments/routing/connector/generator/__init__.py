@@ -18,6 +18,7 @@ from jumanji.environments.routing.connector.generator.legacy_random_walk_generat
 )
 from jumanji.environments.routing.connector.generator.random_walk_generator import (
     RandomWalkGenerator,
+    StochasticRandomWalkGenerator,
 )
 from jumanji.environments.routing.connector.generator.uniform_generator import (
     UniformRandomGenerator,
@@ -26,6 +27,7 @@ from jumanji.environments.routing.connector.generator.uniform_generator import (
 __all__ = [
     "LegacyRandomWalkGenerator",
     "RandomWalkGenerator",
+    "StochasticRandomWalkGenerator",
     "UniformRandomGenerator",
     "Generator",
 ]

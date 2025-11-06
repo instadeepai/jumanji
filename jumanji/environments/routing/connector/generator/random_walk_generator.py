@@ -332,6 +332,19 @@ class StochasticRandomWalkGenerator(RandomWalkGenerator):
     """A stochastic random walk generator that samples solvable boards from a distribution."""
 
     def __call__(self, key: chex.PRNGKey) -> State:
-        """Generates a `Connector` state that contains the grid and the agents' layout."""
-        max_steps = jax.random.randint(key, (1,), 0, self.max_steps)
-        return super().__call__(key, max_steps)
+        """Generates a `Connector` state that contains the grid and the agents' layout.
+
+        Args:
+            key: used to randomly generate the connector grid.
+
+        Returns:
+            A `Connector` state.
+        """
+        key, board_key = jax.random.split(key)
+        max_steps = jax.random.randint(board_key, (), 0, self.max_steps)
+        _, agents, grid = self.generate_board(board_key, max_steps)
+        step_count = jnp.array(0, jnp.int32)
+        action_mask = get_action_masks(agents, grid)
+        return State(
+            key=key, grid=grid, step_count=step_count, agents=agents, action_mask=action_mask
+        )
