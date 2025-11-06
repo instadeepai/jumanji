@@ -75,19 +75,21 @@ class RandomWalkGenerator(Generator):
             A `Connector` state.
         """
         key, board_key = jax.random.split(key)
-        _, agents, grid = self.generate_board(board_key)
+        _, agents, grid = self.generate_board(board_key, self.max_steps)
         step_count = jnp.array(0, jnp.int32)
         action_mask = get_action_masks(agents, grid)
         return State(
             key=key, grid=grid, step_count=step_count, agents=agents, action_mask=action_mask
         )
 
-    def generate_board(self, key: chex.PRNGKey) -> Tuple[chex.Array, Agent, chex.Array]:
+    def generate_board(
+        self, key: chex.PRNGKey, max_steps: int
+    ) -> Tuple[chex.Array, Agent, chex.Array]:
         """Generates solvable board using random walk.
 
         Args:
             key: random key.
-
+            max_steps: maximum number of steps to take.
         Returns:
             Tuple containing solved board, the agents and an empty training board.
         """
@@ -95,7 +97,7 @@ class RandomWalkGenerator(Generator):
         grid, agents = self._initialize_agents(key, self.grid_size)
         action_mask = get_action_masks(agents, grid)
 
-        stepping_state = (step_key, grid, agents, action_mask, 1)
+        stepping_state = (step_key, grid, agents, action_mask, 0, max_steps)
 
         _, grid, agents, _, _ = jax.lax.while_loop(
             self._continue_stepping, self._step, stepping_state
@@ -121,10 +123,10 @@ class RandomWalkGenerator(Generator):
         return solved_grid, agents, grid
 
     def _step(
-        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
+        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int, int]
     ) -> Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]:
         """Takes one step for all agents."""
-        key, grid, agents, action_mask, step_count = stepping_state
+        key, grid, agents, action_mask, step_count, _ = stepping_state
         key, next_key = jax.random.split(key)
         agents, grid = self._step_agents(key, grid, agents, action_mask)
         new_action_mask = get_action_masks(agents, grid)
@@ -246,12 +248,12 @@ class RandomWalkGenerator(Generator):
         return (next_key, grid), (start_coordinate, first_move_coordinate)
 
     def _continue_stepping(
-        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int]
+        self, stepping_state: Tuple[chex.PRNGKey, chex.Array, Agent, chex.Array, int, int]
     ) -> chex.Array:
         """Determines if agents can continue taking steps."""
-        _, _, _, action_mask, step_count = stepping_state
+        _, _, _, action_mask, step_count, max_steps = stepping_state
 
-        return action_mask[:, 1:].any() & (step_count < self.max_steps)
+        return action_mask[:, 1:].any() & (step_count < max_steps)
 
     def _select_action(
         self,
@@ -322,3 +324,12 @@ class RandomWalkGenerator(Generator):
         solved_grid = solved_grid.at[heads].set(agent_position_values)
         solved_grid = solved_grid.at[targets].set(agent_target_values)
         return solved_grid
+
+
+class StochasticRandomWalkGenerator(RandomWalkGenerator):
+    """A stochastic random walk generator that samples solvable boards from a distribution."""
+
+    def __call__(self, key: chex.PRNGKey) -> State:
+        """Generates a `Connector` state that contains the grid and the agents' layout."""
+        max_steps = jax.random.randint(key, (1,), 0, self.max_steps)
+        return super().__call__(key, max_steps)
