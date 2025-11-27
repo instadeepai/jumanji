@@ -53,14 +53,18 @@ def raycast(
     # non-zero value that is also within the grid boundaries.
     # If no non-zero value exists, argmax returns 0.
     first_hit_index = jnp.argmax(sampled_vals != 0)
-    return sampled_vals[first_hit_index], first_hit_index + 1
+    hit_value = sampled_vals[first_hit_index]
+    # If no hit then return 0 distance.
+    # If hit then increase distance by 1 otherwise neighbours would be 0 distance
+    distance = first_hit_index + (hit_value != 0)
+    return hit_value, distance
 
 
 def speed_test():
-    n_envs = 128
-    n_agents = 50
-    grid_size = 1000
-    env = jumanji.make("Connector-v2", generator=UniformRandomGenerator(grid_size, n_agents))
+    n_envs = 64
+    n_agents = 15
+    grid_size = 23
+    env = jumanji.make("Connector-v3", generator=UniformRandomGenerator(grid_size, n_agents))
 
     # Create a batch of grids.
     key = jax.random.key(0)
@@ -165,8 +169,13 @@ def occlusion_grid():
 def test_cardinal_directions(center_target_grid, direction, expected_val):
     """Test standard up/down/left/right hits from center."""
     start_pos = (2, 2)  # Center
-    result, _ = raycast(center_target_grid, start_pos, direction, grid_size=5)
+    # Start (2,2) -> Edge is 2 steps away (e.g., 2,2 -> 1,2 -> 0,2)
+    expected_dist = 2
+
+    result, dist = raycast(center_target_grid, start_pos, direction, grid_size=5)
+
     assert result == expected_val
+    assert dist == expected_dist
 
 
 @pytest.mark.parametrize(
@@ -181,8 +190,13 @@ def test_cardinal_directions(center_target_grid, direction, expected_val):
 def test_diagonal_directions(center_target_grid, direction, expected_val):
     """Test all 4 diagonal hits from center."""
     start_pos = (2, 2)  # Center
-    result, _ = raycast(center_target_grid, start_pos, direction, grid_size=5)
+    # Start (2,2) -> Corner is 2 steps away (e.g., 2,2 -> 1,1 -> 0,0)
+    expected_dist = 2
+
+    result, dist = raycast(center_target_grid, start_pos, direction, grid_size=5)
+
     assert result == expected_val
+    assert dist == expected_dist
 
 
 def test_no_hit_returns_zero(center_target_grid):
@@ -199,13 +213,13 @@ def test_occlusion(occlusion_grid):
     Test that the ray picks the CLOSEST object and ignores objects behind it.
     Grid Row 2: [0, 10, 20, 30, 0]
     """
-    # Cast Right from (2, 0) -> Should hit 10
+    # Cast Right from (2, 0) -> Should hit 10 at dist 1
     assert raycast(occlusion_grid, (2, 0), (0, 1), 5) == (10, 1)
 
-    # Cast Right from (2, 1) -> Should hit 20
+    # Cast Right from (2, 1) -> Should hit 20 at dist 1
     assert raycast(occlusion_grid, (2, 1), (0, 1), 5) == (20, 1)
 
-    # Cast Left from (2, 4) -> Should hit 30
+    # Cast Left from (2, 4) -> Should hit 30 at dist 1
     assert raycast(occlusion_grid, (2, 4), (0, -1), 5) == (30, 1)
 
 
@@ -214,8 +228,9 @@ def test_immediate_neighbor():
     grid = jnp.zeros((3, 3), dtype=int)
     grid = grid.at[0, 1].set(99)
     # Start at [0,0], cast Right (0,1) -> Should hit [0,1]
-    result, _ = raycast(grid, (0, 0), (0, 1), 3)
+    result, dist = raycast(grid, (0, 0), (0, 1), 3)
     assert result == 99
+    assert dist == 1
 
 
 # --- Boundary & Wrap-Around Tests ---
@@ -239,8 +254,9 @@ def test_negative_index_wrap_prevention():
     start_pos = (2, 0)
     direction = (0, -1)
 
-    result, _ = raycast(grid, start_pos, direction, grid_size=5)
+    result, dist = raycast(grid, start_pos, direction, grid_size=5)
     assert result == 0, "Ray wrapped around negative index (Left Edge)!"
+    assert dist == 0
 
 
 def test_negative_row_wrap_prevention():
@@ -252,8 +268,9 @@ def test_negative_row_wrap_prevention():
     start_pos = (0, 2)
     direction = (-1, 0)
 
-    result, _ = raycast(grid, start_pos, direction, grid_size=5)
+    result, dist = raycast(grid, start_pos, direction, grid_size=5)
     assert result == 0, "Ray wrapped around negative index (Top Edge)!"
+    assert dist == 0
 
 
 def test_positive_boundary_overflow():
@@ -263,8 +280,35 @@ def test_positive_boundary_overflow():
 
     # Start Far Right [2, 4], cast Right (0, 1) -> Indices [2, 5], [2, 6]...
     # Should not crash, should return 0
-    result, _ = raycast(grid, (2, 4), (0, 1), 5)
+    result, dist = raycast(grid, (2, 4), (0, 1), 5)
     assert result == 0
+    assert dist == 0
+
+
+def test_diagonal_boundary_overflow(center_target_grid):
+    """
+    Test that diagonal rays going off the grid do not wrap around.
+    Using center_target_grid which has values in all corners.
+    """
+    grid_size = 5
+
+    # 1. Start Top-Left (0,0), value 5. Go Up-Left (-1, -1).
+    # If wrapped, it would hit Bottom-Right (4,4) which is 8.
+    result, dist = raycast(center_target_grid, (0, 0), (-1, -1), grid_size)
+    assert result == 0, "Diagonal Up-Left wrap detected!"
+    assert dist == 0
+
+    # 2. Start Bottom-Right (4,4), value 8. Go Down-Right (1, 1).
+    # If wrapped, it would hit Top-Left (0,0) which is 5.
+    result, dist = raycast(center_target_grid, (4, 4), (1, 1), grid_size)
+    assert result == 0, "Diagonal Down-Right overflow detected!"
+    assert dist == 0
+
+    # 3. Start Top-Right (0,4), value 6. Go Up-Right (-1, 1).
+    # If wrapped, it would hit Bottom-Left (4,0) which is 7.
+    result, dist = raycast(center_target_grid, (0, 4), (-1, 1), grid_size)
+    assert result == 0, "Diagonal Up-Right wrap detected!"
+    assert dist == 0
 
 
 if __name__ == "__main__":
