@@ -39,14 +39,15 @@ def raycast(
 
     # Sample all values along the generated path using advanced JAX indexing.
     # The key optimization here is using 'mode="fill"' and 'fill_value=0'.
-    # Any index that is out of bounds (OOB) is automatically set to 0.
     sampled_vals = grid.at[path_r, path_c].get(
-        wrap_negative_indices=False,  # negative inds are OOB
         indices_are_sorted=True,  # Faster indexing
         unique_indices=True,  # faster indexing
         mode="fill",  # fills if OOB with `fill_value`
         fill_value=0,  # if OOB treat as empty cell
     )
+
+    # Set any negative indexes to 0 (they wrap around above)
+    sampled_vals = jnp.where((path_r < 0) | (path_c < 0), 0, sampled_vals)
 
     # Find the index of the first non-zero value in the sampled path.
     # Since OOB locations were filled with 0, this automatically finds the first
@@ -105,7 +106,6 @@ def speed_test():
     print("Running large nested vmap for speed test...")
 
     # JIT compile and run the vmapped function
-    print(f"{type(grids)=} | {type(positions)=} | {type(directions)=} | {type(grid_size)=}")
     vals, dists = vmapped_raycast(grids, positions, directions, grid_size)  # compile
     vals.block_until_ready()
     start = time.perf_counter()
