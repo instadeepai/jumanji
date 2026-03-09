@@ -294,6 +294,24 @@ class MultiToSingleWrapper(
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
+    @cached_property
+    def reward_spec(self) -> specs.Array:
+        """Scalar reward spec matching the aggregated output."""
+        return specs.Array(
+            shape=(), dtype=self._env.reward_spec.dtype, name=self._env.reward_spec.name
+        )
+
+    @cached_property
+    def discount_spec(self) -> specs.BoundedArray:
+        """Scalar discount spec matching the aggregated output."""
+        return specs.BoundedArray(
+            shape=(),
+            dtype=self._env.discount_spec.dtype,
+            minimum=self._env.discount_spec.minimum.min(),
+            maximum=self._env.discount_spec.maximum.max(),
+            name=self._env.discount_spec.name,
+        )
+
 
 class VmapWrapper(Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]):
     """Vectorized Jax env.
