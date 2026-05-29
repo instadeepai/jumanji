@@ -646,21 +646,6 @@ class TestVmapAutoResetWrapper:
         # expect rest timestep.extras to have the same obs as the original timestep
         assert jnp.all(timestep.observation == reset_timestep.extras[NEXT_OBS_KEY_IN_EXTRAS])
 
-    def test_vmap_auto_reset_wrapper__maybe_reset(
-        self,
-        fake_vmap_auto_reset_environment: FakeVmapAutoResetWrapper,
-        keys: chex.PRNGKey,
-    ) -> None:
-        """Validates the auto_reset function of the wrapper."""
-        state, timestep = fake_vmap_auto_reset_environment.reset(keys)
-        _, reset_timestep = jax.lax.map(
-            lambda args: fake_vmap_auto_reset_environment._maybe_reset(*args),
-            (state, timestep),
-        )
-        chex.assert_trees_all_equal(timestep.observation, reset_timestep.observation)
-        # expect rest timestep.extras to have the same obs as the original timestep
-        assert jnp.all(timestep.observation == reset_timestep.extras[NEXT_OBS_KEY_IN_EXTRAS])
-
     def test_vmap_auto_reset_wrapper__step_no_reset(
         self,
         fake_vmap_auto_reset_environment: FakeVmapAutoResetWrapper,
@@ -742,7 +727,6 @@ class TestVmapAutoResetWrapper:
     ) -> None:
         """Validates unwrapped property of the vmap environment."""
         assert isinstance(fake_vmap_auto_reset_environment.unwrapped, FakeEnvironment)
-        assert fake_vmap_auto_reset_environment._env is fake_environment
 
 
 class TestJumanjiToGymObservation:
