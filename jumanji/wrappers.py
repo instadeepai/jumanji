@@ -400,9 +400,6 @@ class AutoResetWrapper(
     terminal TimeStep is reset to the reset observation and StepType.LAST, respectively.
     The reward, discount, and extras retrieved from the transition to the terminal state.
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
-    WARNING: do not `jax.vmap` the wrapped environment (e.g. do not use with the `VmapWrapper`),
-    which would lead to inefficient computation due to both the `step` and `reset` functions
-    being processed each time `step` is called. Please use the `VmapAutoResetWrapper` instead.
     """
 
     def __init__(
@@ -471,16 +468,12 @@ class AutoResetWrapper(
 
 
 class VmapAutoResetWrapper(
-    Wrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
+    VmapWrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
 ):
-    """Efficient combination of VmapWrapper and AutoResetWrapper, to be used as a replacement of
-    the combination of both wrappers.
-    `env = VmapAutoResetWrapper(env)` is equivalent to `env = VmapWrapper(AutoResetWrapper(env))`
-    but is more efficient as it parallelizes homogeneous computation and does not run branches
-    of the computational graph that are not needed (heterogeneous computation).
-    - Homogeneous computation: call step function on all environments in the batch.
-    - Heterogeneous computation: conditional auto-reset (call reset function for some environments
-        within the batch because they have terminated).
+    """Combination of VmapWrapper and AutoResetWrapper.
+    `env = VmapAutoResetWrapper(env)` is completely equivalent to `env = VmapWrapper(AutoResetWrapper(env))`.
+    This class only exists for backwards compatibility. New users should use `env = VmapWrapper(AutoResetWrapper(env))`.
+
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
 
@@ -496,107 +489,7 @@ class VmapAutoResetWrapper(
             next_obs_in_extras: whether to store the next observation in the extras of the
                 terminal timestep. This is useful for e.g. truncation.
         """
-        super().__init__(env)
-        self.next_obs_in_extras = next_obs_in_extras
-        if next_obs_in_extras:
-            self._maybe_add_obs_to_extras = add_obs_to_extras
-        else:
-            self._maybe_add_obs_to_extras = lambda timestep: timestep  # no-op
-
-    def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
-        """Resets a batch of environments to initial states.
-
-        The first dimension of the key will dictate the number of concurrent environments.
-
-        To obtain a key with the right first dimension, you may call `jax.random.split` on key
-        with the parameter `num` representing the number of concurrent environments.
-
-        Args:
-            key: random keys used to reset the environments where the first dimension is the number
-                of desired environments.
-
-        Returns:
-            state: `State` object corresponding to the new state of the environments,
-            timestep: `TimeStep` object corresponding the first timesteps returned by the
-                environments,
-        """
-        state, timestep = jax.vmap(self._env.reset)(key)
-        timestep = self._maybe_add_obs_to_extras(timestep)
-        return state, timestep
-
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
-        """Run one timestep of all environments' dynamics. It automatically resets environment(s)
-        in which episodes have terminated.
-
-        The first dimension of the state will dictate the number of concurrent environments.
-
-        See `VmapAutoResetWrapper.reset` for more details on how to get a state of concurrent
-        environments.
-
-        Args:
-            state: `State` object containing the dynamics of the environments.
-            action: `Array` containing the actions to take.
-
-        Returns:
-            state: `State` object corresponding to the next states of the environments.
-            timestep: `TimeStep` object corresponding the timesteps returned by the environments.
-        """
-        # Vmap homogeneous computation (parallelizable).
-        state, timestep = jax.vmap(self._env.step)(state, action)
-        # Map heterogeneous computation (non-parallelizable).
-        state, timestep = jax.lax.map(lambda args: self._maybe_reset(*args), (state, timestep))
-        return state, timestep
-
-    def _auto_reset(
-        self, state: State, timestep: TimeStep[Observation]
-    ) -> Tuple[State, TimeStep[Observation]]:
-        """Reset the state and overwrite `timestep.observation` with the reset observation
-        if the episode has terminated.
-        """
-        if not hasattr(state, "key"):
-            raise AttributeError(
-                "This wrapper assumes that the state has attribute key which is used"
-                " as the source of randomness for automatic reset"
-            )
-
-        # Make sure that the random key in the environment changes at each call to reset.
-        # State is a type variable hence it does not have key type hinted, so we type ignore.
-        key, _ = jax.random.split(state.key)
-        state, reset_timestep = self._env.reset(key)
-
-        # Place original observation in extras.
-        timestep = self._maybe_add_obs_to_extras(timestep)
-
-        # Replace observation with reset observation.
-        timestep = timestep.replace(  # type: ignore
-            observation=reset_timestep.observation
-        )
-
-        return state, timestep
-
-    def _maybe_reset(
-        self, state: State, timestep: TimeStep[Observation]
-    ) -> Tuple[State, TimeStep[Observation]]:
-        """Overwrite the state and timestep appropriately if the episode terminates."""
-        state, timestep = jax.lax.cond(
-            timestep.last(),
-            self._auto_reset,
-            lambda s, t: (s, self._maybe_add_obs_to_extras(t)),
-            state,
-            timestep,
-        )
-
-        return state, timestep
-
-    def render(self, state: State) -> Any:
-        """Render the first environment state of the given batch.
-        The remaining elements of the batched state are ignored.
-
-        Args:
-            state: State object containing the current dynamics of the environment.
-        """
-        state_0 = tree_utils.tree_slice(state, 0)
-        return super().render(state_0)
+        super().__init__(AutoResetWrapper(env, next_obs_in_extras=next_obs_in_extras))
 
 
 class JumanjiToGymWrapper(gym.Env, Generic[State, ActionSpec, Observation]):
