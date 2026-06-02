@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0  # fetch base branch so pre-commit can diff the PR range
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.1.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"  # invalidate cache when the lockfile changes
