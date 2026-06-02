@@ -86,7 +86,7 @@ def simulate_agent_movement(
     new_agent_position = jnp.where(out_of_bounds | entity_at_position, agent.position, new_position)
 
     # Return the agent with the updated position
-    return agent.replace(position=new_agent_position)  # type: ignore
+    return agent.replace(position=new_agent_position)
 
 
 def update_agent_positions(
@@ -186,7 +186,7 @@ def eat_food(agents: Agent, food: Food) -> Tuple[Food, chex.Array, chex.Array]:
     food_eaten_this_step = jnp.sum(adj_loading_agents_levels) >= food.level
 
     # Set food to eaten if it was eaten.
-    new_food = food.replace(eaten=food_eaten_this_step | food.eaten)  # type: ignore
+    new_food = food.replace(eaten=food_eaten_this_step | food.eaten)
 
     return new_food, food_eaten_this_step, adj_loading_agents_levels
 

@@ -40,7 +40,7 @@ def test_snake__reset(snake: Snake) -> None:
     """Validates the jitted reset of the environment."""
     reset_fn = jax.jit(chex.assert_max_traces(snake.reset, n=1))
     state1, timestep1 = reset_fn(jax.random.PRNGKey(1))
-    state2, timestep2 = reset_fn(jax.random.PRNGKey(2))
+    state2, _timestep2 = reset_fn(jax.random.PRNGKey(2))
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
     assert state1.step_count == 0
@@ -67,7 +67,7 @@ def test_snake__step(snake: Snake) -> None:
         shape=(2,),
         replace=False,
     )
-    state1, timestep1 = step_fn(state, action1)
+    state1, _timestep1 = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(state1)
@@ -75,7 +75,7 @@ def test_snake__step(snake: Snake) -> None:
     assert state1.step_count != state.step_count
     assert state1.head_position != state.head_position
     # Check that two different actions lead to two different states
-    state2, timestep2 = step_fn(state, action2)
+    state2, _timestep2 = step_fn(state, action2)
     assert state1.head_position != state2.head_position
     # Check that the state update and timestep creation work as expected
     row, col = tuple(state.head_position)
@@ -147,9 +147,9 @@ def test_snake__render(monkeypatch: pytest.MonkeyPatch, snake: Snake) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     step_fn = jax.jit(snake.step)
-    state, timestep = snake.reset(jax.random.PRNGKey(0))
+    state, _timestep = snake.reset(jax.random.PRNGKey(0))
     action = snake.action_spec.generate_value()
-    state, timestep = step_fn(state, action)
+    state, _timestep = step_fn(state, action)
     snake.render(state)
     snake.close()
 

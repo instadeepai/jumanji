@@ -16,6 +16,7 @@ from typing import Optional, Sequence, Tuple
 
 import matplotlib.animation
 import matplotlib.cm
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.artist import Artist
@@ -130,8 +131,8 @@ class JobShopViewer(MatplotlibViewer[State]):
         xlim = self._num_jobs * self._max_num_ops * self._max_op_duration // self._num_machines
         ax.set_xlim(0, xlim)
         ax.set_ylim(-0.9, self._num_machines)
-        ax.xaxis.get_major_locator().set_params(integer=True)
-        ax.yaxis.get_major_locator().set_params(integer=True)
+        ax.xaxis.get_major_locator().set_params(integer=True)  # ty: ignore[unknown-argument]
+        ax.yaxis.get_major_locator().set_params(integer=True)  # ty: ignore[unknown-argument]
         major_ticks = np.arange(0, xlim, 10)
         minor_ticks = np.arange(0, xlim, 1)
         ax.set_xticks(major_ticks)

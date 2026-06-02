@@ -74,4 +74,4 @@ class RandomWalk(TargetDynamics):
             norm[:, jnp.newaxis] > self.vel_max, self.vel_max * vel / norm[:, jnp.newaxis], vel
         )
         pos = (targets.pos + vel) % env_size
-        return targets.replace(pos=pos, vel=vel)  # type: ignore
+        return targets.replace(pos=pos, vel=vel)

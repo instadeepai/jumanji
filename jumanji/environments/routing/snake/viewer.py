@@ -15,6 +15,7 @@
 from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.animation
+import matplotlib.patches
 import matplotlib.pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.patches import Circle, Patch, Rectangle

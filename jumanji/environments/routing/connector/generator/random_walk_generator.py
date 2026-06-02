@@ -166,7 +166,7 @@ class RandomWalkGenerator(Generator):
             .add(new_position_values)  # not necessarily unique inds (if collided)
         )
 
-        new_agents = agents.replace(position=new_positions)  # type: ignore
+        new_agents = agents.replace(position=new_positions)
         # Create the new grid by fixing old one with correction mask and adding the obstacles
         return new_agents, grid
 

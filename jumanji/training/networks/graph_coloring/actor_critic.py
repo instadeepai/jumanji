@@ -105,7 +105,7 @@ class GraphColoringTorso(hk.Module):
             new_embedding: the transformed observation.
         """
 
-        batch_size, num_nodes = observation.colors.shape
+        _batch_size, num_nodes = observation.colors.shape
         colors_used = jnp.isin(observation.colors, jnp.arange(num_nodes))
         color_embeddings = hk.Linear(self.model_size)(
             colors_used[..., None].astype(float)

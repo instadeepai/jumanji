@@ -6,11 +6,11 @@ jobs:
   tests-and-linters:
     name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
     runs-on: "${{ matrix.os }}"
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest]
 
     steps:
@@ -19,33 +19,33 @@ jobs:
 
       - name: Checkout jumanji 🐍
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # fetch base branch so pre-commit can diff the PR range
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v8
         with:
-          version: "0.4.26"
           enable-cache: true
-          cache-dependency-glob: "requirements/requirements**.txt"  # invalidate cache when requirements file changes
+          cache-dependency-glob: "uv.lock"  # invalidate cache when the lockfile changes
+          python-version: "${{ matrix.python-version }}"
 
-      - uses: actions/setup-python@v5
-        with:
-            python-version: "${{ matrix.python-version }}"
-
-      - name: Install python dependencies 🔧
-        run: uv pip install .[dev,train]
-        env:
-          UV_SYSTEM_PYTHON: 1
+      - name: Install dependencies 🔧
+        run: uv sync --locked --all-extras
 
       - name: Run linters 🖌️
-        run: pre-commit run --all-files --verbose
+        # Only lint files changed in the PR (ty still checks the whole project via pass_filenames: false)
+        run: >-
+          uv run pre-commit run --verbose
+          --from-ref ${{ github.event.pull_request.base.sha }}
+          --to-ref ${{ github.event.pull_request.head.sha }}
 
       - name: Run tests 🧪
-        run: pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
+        run: uv run pytest -n 2 --cov=jumanji --cov-report=term-missing --junit-xml=test-results.xml -vv jumanji
 
       - name: Run coverage
         run: |
-          coverage html --directory=coverage_html_report
-          coverage report --fail-under=0.97
+          uv run coverage html --directory=coverage_html_report
+          uv run coverage report --fail-under=0.97
 
       - name: Test build docs 📖
-        run: mkdocs build --verbose --site-dir docs_public
+        run: uv run mkdocs build --verbose --site-dir docs_public

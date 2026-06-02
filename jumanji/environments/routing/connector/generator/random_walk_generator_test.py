@@ -323,7 +323,7 @@ class TestRandomWalkGenerator:
         expected_value: bool,
     ) -> None:
         continue_stepping = random_walk_generator._continue_stepping(
-            (None, None, None, function_input, 1)  # type: ignore
+            (None, None, None, function_input, 1)
         )
         assert continue_stepping == expected_value
 

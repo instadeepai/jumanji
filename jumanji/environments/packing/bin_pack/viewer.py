@@ -194,8 +194,8 @@ class BinPackViewer(MatplotlibViewer[State]):
         ax.set_ylabel("y", font=self.FONT_STYLE)
         ax.set_zlabel("z", font=self.FONT_STYLE)
 
-        n_items = sum(state.items_mask)
-        placed_items = sum(state.items_placed)
+        n_items = sum(state.items_mask)  # ty: ignore[no-matching-overload]
+        placed_items = sum(state.items_placed)  # ty: ignore[no-matching-overload]
         container_volume = float(container.x_len) * float(container.y_len) * float(container.z_len)
         used_volume = self._get_used_volume(state)
         metrics = [

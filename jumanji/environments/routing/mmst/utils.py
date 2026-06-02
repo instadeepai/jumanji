@@ -355,13 +355,13 @@ def add_random_edges(graph: Graph, total_edges: jnp.int32, base_key: chex.PRNGKe
     """Add random edges until the number of desired edges is reached."""
 
     def desired_num_edges_not_reach(arg: Any) -> Any:
-        graph, total_edges, base_key = arg
+        graph, total_edges, _base_key = arg
         return graph.edge_index < total_edges
 
     def add_new_edge(arg: Any) -> Any:
         graph, total_edges, base_key = arg
         current_key, base_key = jax.random.split(base_key)
-        graph, success = add_edge(graph, make_random_edge(graph, current_key))
+        graph, _success = add_edge(graph, make_random_edge(graph, current_key))
 
         return (graph, total_edges, base_key)
 

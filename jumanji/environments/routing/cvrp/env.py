@@ -19,6 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment

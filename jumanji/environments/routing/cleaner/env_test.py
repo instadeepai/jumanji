@@ -95,7 +95,7 @@ class TestCleaner:
     def test_cleaner__step_jit(self, cleaner: Cleaner) -> None:
         """Confirm that the step is only compiled once when jitted."""
         key = jax.random.PRNGKey(0)
-        state, timestep = cleaner.reset(key)
+        state, _timestep = cleaner.reset(key)
         action = jnp.array([1, 2, 3], jnp.int32)
 
         chex.clear_trace_counter()

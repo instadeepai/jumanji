@@ -53,7 +53,7 @@ def test_rubiks_cube__step(rubiks_cube: RubiksCube) -> None:
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(rubiks_cube.step, n=1))
     key = jax.random.PRNGKey(0)
-    state, timestep = rubiks_cube.reset(key)
+    state, _timestep = rubiks_cube.reset(key)
     action = rubiks_cube.action_spec.generate_value()
     next_state, next_timestep = step_fn(state, action)
 
@@ -100,11 +100,11 @@ def test_rubiks_cube__specs_does_not_smoke(cube_size: int) -> None:
 def test_rubiks_cube__render(monkeypatch: pytest.MonkeyPatch, rubiks_cube: RubiksCube) -> None:
     """Test that the render method builds the figure (but does not display it)."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
-    state, timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
+    state, _timestep = rubiks_cube.reset(jax.random.PRNGKey(0))
     rubiks_cube.render(state)
     rubiks_cube.close()
     action = rubiks_cube.action_spec.generate_value()
-    state, timestep = rubiks_cube.step(state, action)
+    state, _timestep = rubiks_cube.step(state, action)
     rubiks_cube.render(state)
     rubiks_cube.close()
 

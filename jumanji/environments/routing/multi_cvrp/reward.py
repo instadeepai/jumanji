@@ -55,13 +55,14 @@ class SparseReward(RewardFn):
         is_done: bool,
     ) -> chex.Numeric:
         def compute_episode_reward(new_state: State) -> float:
-            return jax.lax.cond(  # type: ignore
+            return jax.lax.cond(
                 jnp.any(new_state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.
                 lambda new_state: worst_case_remaining_reward(new_state),
-                lambda new_state: -new_state.vehicles.distances.sum()
-                - new_state.vehicles.time_penalties.sum(),
+                lambda new_state: (
+                    -new_state.vehicles.distances.sum() - new_state.vehicles.time_penalties.sum()
+                ),
                 new_state,
             )
 
@@ -97,7 +98,7 @@ class DenseReward(RewardFn):
                 state.vehicles.time_penalties.sum() - new_state.vehicles.time_penalties.sum()
             )
 
-            return jax.lax.cond(  # type: ignore
+            return jax.lax.cond(
                 jnp.any(new_state.step_count > self._num_customers * 2),
                 # Penalise for running into step limit. This is not including max time
                 # penalties as the distance penalties are already enough.

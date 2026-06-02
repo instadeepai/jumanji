@@ -22,7 +22,7 @@ from jumanji.environments.packing.knapsack.reward import DenseReward, SparseRewa
 def test_dense_reward(knapsack_dense_reward: Knapsack, dense_reward: DenseReward) -> None:
     dense_reward = jax.jit(dense_reward)
     step_fn = jax.jit(knapsack_dense_reward.step)
-    state, timestep = knapsack_dense_reward.reset(jax.random.PRNGKey(0))
+    state, _timestep = knapsack_dense_reward.reset(jax.random.PRNGKey(0))
 
     # Check that the reward is correct for any item.
     for action in range(knapsack_dense_reward.num_items):

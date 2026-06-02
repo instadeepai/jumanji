@@ -20,6 +20,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 
 from jumanji import Environment, specs
 from jumanji.environments.logic.sudoku.constants import BOARD_WIDTH

@@ -163,11 +163,11 @@ def test_minesweeper__specs_does_not_smoke(minesweeper_env: Minesweeper) -> None
 def test_minesweeper__render(monkeypatch: pytest.MonkeyPatch, minesweeper_env: Minesweeper) -> None:
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
-    state, timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
+    state, _timestep = jax.jit(minesweeper_env.reset)(jax.random.PRNGKey(0))
     minesweeper_env.render(state)
     minesweeper_env.close()
     action = minesweeper_env.action_spec.generate_value()
-    state, timestep = jax.jit(minesweeper_env.step)(state, action)
+    state, _timestep = jax.jit(minesweeper_env.step)(state, action)
     minesweeper_env.render(state)
     minesweeper_env.close()
 

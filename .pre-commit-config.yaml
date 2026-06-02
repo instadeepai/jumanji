@@ -2,29 +2,38 @@ default_stages: [ "pre-commit", "commit-msg", "pre-push" ]
 default_language_version:
   python: python3
 
-
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.7.2
+  - repo: local
     hooks:
-      # Run the linter.
-      - id: ruff
-        types_or: [ python ]
-        args: [ --fix ]
-      # Run the formatter.
+      # Ruff linter and formatter, run through uv so the version is pinned by uv.lock
+      # (single source of truth shared with CI), avoiding drift with a separate hook env.
+      - id: ruff-check
+        name: "Ruff linter"
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types_or: [ python, pyi ]
+        require_serial: true
       - id: ruff-format
+        name: "Ruff formatter"
+        entry: uv run ruff format --force-exclude
+        language: system
         types_or: [ python, pyi, jupyter ]
+        require_serial: true
+      # ty static type checker (Astral), pinned by uv.lock.
+      - id: ty
+        name: "Static type checker"
+        entry: uv run ty check
+        language: system
+        types: [ python ]
+        pass_filenames: false
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         name: "End of file fixer"
       - id: debug-statements
         name: "Debug imports and breakpoints checker"
-      - id: requirements-txt-fixer
-        name: "Requirements txt fixer"
       - id: mixed-line-ending
         name: "Mixed line ending fixer"
       - id: check-yaml
@@ -33,17 +42,8 @@ repos:
       - id: trailing-whitespace
         name: "Trailing whitespace fixer"
 
-  - repo: local
-    hooks:
-      - id: mypy
-        name: "Static type checker"
-        entry: python -m mypy jumanji/
-        language: system
-        types: [ python ]
-        pass_filenames: false
-
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.18.0
+    rev: v9.25.0
     hooks:
       - id: commitlint
         name: "Commit linter"
@@ -51,7 +51,7 @@ repos:
         additional_dependencies: [ '@commitlint/config-conventional' ]
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
+    rev: v1.5.6
     hooks:
       - id: insert-license
         name: "License inserter"

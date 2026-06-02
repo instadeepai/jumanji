@@ -30,7 +30,7 @@ def tree_transpose(list_of_trees: Sequence[T]) -> T:
     Returns:
         tree of arrays.
     """
-    return jax.tree_util.tree_map(lambda *xs: jnp.stack(xs, axis=0), *list_of_trees)  # type: ignore
+    return jax.tree_util.tree_map(lambda *xs: jnp.stack(xs, axis=0), *list_of_trees)
 
 
 def tree_slice(tree: T, i: chex.Numeric) -> T:
@@ -43,7 +43,7 @@ def tree_slice(tree: T, i: chex.Numeric) -> T:
     Returns:
         tree whose leaves have been reduced to their i-th item
     """
-    return jax.tree_util.tree_map(lambda x: x[i], tree)  # type: ignore
+    return jax.tree_util.tree_map(lambda x: x[i], tree)
 
 
 def tree_add_element(tree: T, i: chex.Numeric, element: T) -> T:

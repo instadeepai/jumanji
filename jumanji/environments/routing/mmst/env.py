@@ -19,6 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 
 from jumanji import specs
 from jumanji.env import Environment
@@ -475,7 +476,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         agent_permutation = jax.random.permutation(step_key, jnp.arange(self.num_agents))
 
         def not_all_agents_actions_examined(arg: Any) -> Any:
-            added_nodes, new_actions, action, nodes, agent_permutation, index = arg
+            _added_nodes, _new_actions, _action, _nodes, _agent_permutation, index = arg
             return index < self.num_agents
 
         def modify_action_if_agent_target_node_is_selected(arg: Any) -> Any:
@@ -517,7 +518,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             action,
             nodes,
             agent_permutation,
-            index,
+            _index,
         ) = jax.lax.while_loop(
             not_all_agents_actions_examined,
             modify_action_if_agent_target_node_is_selected,
@@ -525,7 +526,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         def mask_visited_nodes(node_visited: jnp.int32, old_action: jnp.int32) -> jnp.int32:
-            new_action = jax.lax.cond(  # type:ignore
+            new_action = jax.lax.cond(
                 node_visited != EMPTY_NODE,
                 lambda *_: INVALID_ALREADY_TRAVERSED,
                 lambda *_: old_action,

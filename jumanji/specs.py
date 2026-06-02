@@ -99,7 +99,7 @@ class Spec(abc.ABC, Generic[T]):
             ValueError: if value doesn't conform to this spec.
         """
         if isinstance(value, tuple) and hasattr(value, "_asdict"):
-            val = value._asdict()
+            val = value._asdict()  # ty: ignore[call-non-callable]
         elif hasattr(value, "__dict__"):
             val = value.__dict__
         else:
@@ -127,7 +127,7 @@ class Spec(abc.ABC, Generic[T]):
         dict_copy.update(kwargs)
         return Spec(self._constructor, self.name, **dict_copy)
 
-    def __eq__(self, other: "Spec") -> bool:  # type: ignore[override]
+    def __eq__(self, other: "Spec") -> bool:
         if not isinstance(other, Spec):
             return NotImplemented
         return is_equal_pytree(self._specs, other._specs)
@@ -227,7 +227,7 @@ class Array(Spec[chex.Array]):
         all_kwargs.update(kwargs)
         return type(self)(**all_kwargs)
 
-    def __eq__(self, other: "Array") -> bool:  # type: ignore[override]
+    def __eq__(self, other: "Array") -> bool:
         if not isinstance(other, Array):
             return NotImplemented
         return (
@@ -348,7 +348,7 @@ class BoundedArray(Array):
             )
         return value
 
-    def __eq__(self, other: "BoundedArray") -> bool:  # type: ignore[override]
+    def __eq__(self, other: "BoundedArray") -> bool:
         if not isinstance(other, BoundedArray):
             return NotImplemented
         return (
@@ -410,7 +410,7 @@ class DiscreteArray(BoundedArray):
         """Returns the number of items."""
         return self._num_values
 
-    def __eq__(self, other: "DiscreteArray") -> bool:  # type: ignore[override]
+    def __eq__(self, other: "DiscreteArray") -> bool:
         if not isinstance(other, DiscreteArray):
             return NotImplemented
         return (
@@ -477,7 +477,7 @@ class MultiDiscreteArray(BoundedArray):
         """Returns the number of possible values for each element of the action vector."""
         return self._num_values
 
-    def __eq__(self, other: "MultiDiscreteArray") -> bool:  # type: ignore[override]
+    def __eq__(self, other: "MultiDiscreteArray") -> bool:
         if not isinstance(other, MultiDiscreteArray):
             return NotImplemented
         return (
@@ -558,8 +558,8 @@ def jumanji_specs_to_gym_spaces(
     elif isinstance(spec, BoundedArray):
         # When using NumPy: 1.21.5:
         # MyPy error: "Call to untyped function "broadcast_to" in typed context"
-        low = np.broadcast_to(spec.minimum, shape=spec.shape)  # type: ignore
-        high = np.broadcast_to(spec.maximum, shape=spec.shape)  # type: ignore
+        low = np.broadcast_to(spec.minimum, shape=spec.shape)
+        high = np.broadcast_to(spec.maximum, shape=spec.shape)
         return gym.spaces.Box(
             low=low,
             high=high,

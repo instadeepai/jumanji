@@ -11,17 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
         with:
-          python-version: "3.x"
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip hatch twine
-      - name: Build and publish
+          python-version: "3.12"
+
+      - name: Build 📦
+        run: uv build
+
+      - name: Publish to PyPI 🚀
+        run: uv publish
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          hatch build
-          twine upload dist/* --verbose
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}

@@ -15,6 +15,7 @@
 from typing import List, Optional, Sequence
 
 import matplotlib
+import matplotlib.lines
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.text import Text

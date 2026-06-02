@@ -518,8 +518,8 @@ class TestLegacyLegacyRandomWalkGenerator:
         expected_value: Tuple[chex.Array, Agent],
     ) -> None:
         agent, grid, action = function_input
-        expected_grids, expected_agents = expected_value
-        new_agents, new_grids = jax.vmap(random_walk_generator._step_agent, in_axes=(0, None, 0))(
+        expected_grids, _expected_agents = expected_value
+        _new_agents, new_grids = jax.vmap(random_walk_generator._step_agent, in_axes=(0, None, 0))(
             agent, grid, action
         )
         # assert new_agents == expected_agents

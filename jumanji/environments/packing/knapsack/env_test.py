@@ -51,12 +51,12 @@ class TestSparseKnapsack:
         step_fn = jax.jit(chex.assert_max_traces(knapsack_sparse_reward.step, n=1))
 
         key = jax.random.PRNGKey(0)
-        state, timestep = knapsack_sparse_reward.reset(key)
+        state, _timestep = knapsack_sparse_reward.reset(key)
 
         action = jax.random.randint(
             key, shape=(), minval=0, maxval=knapsack_sparse_reward.num_items
         )
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has changed.
         assert not jnp.array_equal(new_state.packed_items, state.packed_items)
@@ -68,7 +68,7 @@ class TestSparseKnapsack:
 
         # Check that the state does not change when taking the same action again (invalid).
         state = new_state
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
         assert jnp.array_equal(new_state.packed_items, state.packed_items)
         assert jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 
@@ -157,10 +157,10 @@ class TestDenseKnapsack:
         step_fn = jax.jit(chex.assert_max_traces(knapsack_dense_reward.step, n=1))
 
         key = jax.random.PRNGKey(0)
-        state, timestep = knapsack_dense_reward.reset(key)
+        state, _timestep = knapsack_dense_reward.reset(key)
 
         action = jax.random.randint(key, shape=(), minval=0, maxval=knapsack_dense_reward.num_items)
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has changed.
         assert not jnp.array_equal(new_state.packed_items, state.packed_items)
@@ -172,7 +172,7 @@ class TestDenseKnapsack:
 
         # Check that the state does not change when taking the same action again (invalid).
         state = new_state
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
         assert jnp.array_equal(new_state.packed_items, state.packed_items)
         assert jnp.array_equal(new_state.remaining_budget, state.remaining_budget)
 

@@ -24,8 +24,8 @@ from jumanji.environments.routing.connector.generator.uniform_generator import (
 )
 
 __all__ = [
+    "Generator",
     "LegacyRandomWalkGenerator",
     "RandomWalkGenerator",
     "UniformRandomGenerator",
-    "Generator",
 ]

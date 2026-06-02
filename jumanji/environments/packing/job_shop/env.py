@@ -19,6 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 from numpy.typing import NDArray
 
 from jumanji import specs
@@ -185,7 +186,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
             timestep: the updated timestep.
         """
         # Check the action is legal
-        invalid = ~jnp.all(state.action_mask[jnp.arange(self.num_machines), action])  # type: ignore
+        invalid = ~jnp.all(state.action_mask[jnp.arange(self.num_machines), action])
 
         # Obtain the id for every job's next operation
         op_ids = jnp.argmax(state.ops_mask, axis=-1)

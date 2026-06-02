@@ -62,11 +62,11 @@ class TestSparseCVRP:
         step_fn = jax.jit(step_fn)
 
         key = jax.random.PRNGKey(0)
-        state, timestep = cvrp_sparse_reward.reset(key)
+        state, _timestep = cvrp_sparse_reward.reset(key)
 
         # Starting position is depot, first action to visit first node.
         new_action = 1
-        new_state, next_timestep = step_fn(state, new_action)
+        new_state, _next_timestep = step_fn(state, new_action)
 
         # Check that the state has changed.
         assert not jnp.array_equal(new_state.position, state.position)
@@ -86,7 +86,7 @@ class TestSparseCVRP:
         # New step with same action should be invalid.
         state = new_state
 
-        new_state, next_timestep = step_fn(state, new_action)
+        new_state, _next_timestep = step_fn(state, new_action)
 
         # Check that the state has not changed.
         assert jnp.array_equal(new_state.position, state.position)
@@ -235,11 +235,11 @@ class TestDenseCVRP:
         step_fn = jax.jit(step_fn)
 
         key = jax.random.PRNGKey(0)
-        state, timestep = cvrp_dense_reward.reset(key)
+        state, _timestep = cvrp_dense_reward.reset(key)
 
         # Starting position is depot, new action to visit first node.
         new_action = 1
-        new_state, next_timestep = step_fn(state, new_action)
+        new_state, _next_timestep = step_fn(state, new_action)
 
         # Check that the state has changed.
         assert not jnp.array_equal(new_state.position, state.position)
@@ -259,7 +259,7 @@ class TestDenseCVRP:
         # New step with same action should be invalid.
         state = new_state
 
-        new_state, next_timestep = step_fn(state, new_action)
+        new_state, _next_timestep = step_fn(state, new_action)
 
         # Check that the state has not changed.
         assert jnp.array_equal(new_state.position, state.position)

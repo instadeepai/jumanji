@@ -114,7 +114,6 @@ class PacManViewer(MazeViewer):
         return ax.imshow(img)
 
 
-# flake8: noqa: C901
 def create_grid_image(observation: Union[Observation, State]) -> chex.Array:
     """
     Generate the observation of the current state.
