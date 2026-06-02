@@ -107,6 +107,19 @@ def test_env_pac_man_specs_does_not_smoke(pac_man: PacMan) -> None:
     check_env_specs_does_not_smoke(pac_man)
 
 
+def test_pac_man_observation_spec_position_bounds(pac_man: PacMan) -> None:
+    """Test that player position bounds match the maze dimensions."""
+    key = jax.random.PRNGKey(0)
+    _, timestep = pac_man.reset(key)
+    observation = timestep.observation._replace(
+        player_locations=Position(
+            x=jnp.asarray(pac_man.x_size - 1, jnp.int32),
+            y=jnp.asarray(pac_man.y_size - 1, jnp.int32),
+        )
+    )
+    pac_man.observation_spec.validate(observation)
+
+
 def test_power_pellet(pac_man: PacMan) -> None:
     key = jax.random.PRNGKey(0)
     state, timestep = pac_man.reset(key)

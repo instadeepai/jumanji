@@ -153,8 +153,8 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         player_locations = specs.Spec(
             Position,
             "PositionSpec",
-            y=specs.BoundedArray((), jnp.int32, 0, self.x_size - 1, "y_coordinate"),
-            x=specs.BoundedArray((), jnp.int32, 0, self.y_size - 1, "x_coordinate"),
+            x=specs.BoundedArray((), jnp.int32, 0, self.x_size - 1, "x_coordinate"),
+            y=specs.BoundedArray((), jnp.int32, 0, self.y_size - 1, "y_coordinate"),
         )
         grid = specs.BoundedArray(
             shape=(self.x_size, self.y_size),
