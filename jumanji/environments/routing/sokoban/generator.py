@@ -98,7 +98,7 @@ class DeepMindGenerator(Generator):
 
         if self.difficulty in ["unfiltered", "medium"]:
             if self.difficulty == "medium" and split == "test":
-                raise Exception("not a valid Deepmind Boxoban difficulty splitcombination")
+                raise Exception("not a valid Deepmind Boxoban difficulty split combination")
             self.train_data_dir = os.path.join(
                 self.train_data_dir,
                 split,

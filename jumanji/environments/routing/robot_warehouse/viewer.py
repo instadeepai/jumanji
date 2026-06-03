@@ -16,8 +16,6 @@
 the rendering code is copied from the original Rware environment and should be ignored from the
 copyright."""
 
-# flake8: noqa: CCR001
-
 from typing import Optional, Sequence, Tuple
 
 import chex

@@ -45,7 +45,7 @@ jobs:
       - name: Run coverage
         run: |
           uv run coverage html --directory=coverage_html_report
-          uv run coverage report --fail-under=0.97
+          uv run coverage report --fail-under=80
 
       - name: Test build docs 📖
         run: uv run mkdocs build --verbose --site-dir docs_public

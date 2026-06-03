@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# flake8: noqa: CCR001
-
 from importlib import resources
 from typing import Optional, Sequence, Tuple
 
