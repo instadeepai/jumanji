@@ -114,7 +114,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         self,
         generator: Optional[Generator] = None,
         viewer: Optional[Viewer[State]] = None,
-        time_limit: Optional[int] = None,
+        time_limit: int = 1000,
     ) -> None:
         """Instantiates a `PacMan` environment.
 
@@ -132,7 +132,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         self.pellet_spaces = self.generator.pellet_spaces
         super().__init__()
         self._viewer = viewer or PacManViewer("Pacman", render_mode="human")
-        self.time_limit = 1000 or time_limit
+        self.time_limit = time_limit
 
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
