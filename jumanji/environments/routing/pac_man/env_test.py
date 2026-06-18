@@ -107,6 +107,21 @@ def test_env_pac_man_specs_does_not_smoke(pac_man: PacMan) -> None:
     check_env_specs_does_not_smoke(pac_man)
 
 
+def test_pac_man_time_limit() -> None:
+    """Check that Pac-Man terminates once the time limit is reached."""
+    pac_man = PacMan(time_limit=2)
+    assert pac_man.time_limit == 2
+
+    key = jax.random.PRNGKey(0)
+    state, _ = pac_man.reset(key)
+
+    state, timestep = pac_man.step(state, 4)
+    assert not timestep.last()
+
+    state, timestep = pac_man.step(state, 4)
+    assert timestep.last()
+
+
 def test_pac_man_observation_spec_position_bounds(pac_man: PacMan) -> None:
     """Test that player position bounds match the maze dimensions."""
     key = jax.random.PRNGKey(0)
