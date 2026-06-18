@@ -35,7 +35,7 @@ def test_robot_warehouse__specs(robot_warehouse_env: RobotWarehouse) -> None:
     action_spec = robot_warehouse_env.action_spec
     observation_spec = robot_warehouse_env.observation_spec
 
-    assert observation_spec.agents_view.shape == (2, 66)  # type: ignore
+    assert observation_spec.agents_view.shape == (2, 66)
     assert action_spec.num_values.shape[0] == robot_warehouse_env.num_agents
     assert action_spec.num_values[0] == 5
 
@@ -47,7 +47,7 @@ def test_robot_warehouse__reset(robot_warehouse_env: RobotWarehouse) -> None:
 
     key1, key2 = random.PRNGKey(0), random.PRNGKey(1)
     state1, timestep1 = reset_fn(key1)
-    state2, timestep2 = reset_fn(key2)
+    state2, _timestep2 = reset_fn(key2)
 
     assert isinstance(timestep1, TimeStep)
     assert isinstance(state1, State)
@@ -92,7 +92,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     step_fn = chex.assert_max_traces(robot_warehouse_env.step, n=1)
     step_fn = jax.jit(step_fn)
 
-    state_key, action_key1, action_key2 = random.split(random.PRNGKey(10), 3)
+    state_key, action_key1, _action_key2 = random.split(random.PRNGKey(10), 3)
     state, timestep = robot_warehouse_env.reset(state_key)
 
     # Sample two different actions
@@ -121,7 +121,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     assert new_state1.step_count != state.step_count
     assert not jnp.all(new_state1.grid != state.grid)
     # Check that two different actions lead to two different states
-    new_state2, timestep2 = step_fn(state, action2)
+    new_state2, _timestep2 = step_fn(state, action2)
     assert not jnp.all(new_state1.grid != new_state2.grid)
 
     # Check that the state update and timestep creation work as expected

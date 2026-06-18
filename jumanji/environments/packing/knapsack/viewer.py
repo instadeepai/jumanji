@@ -21,7 +21,6 @@ import numpy as np
 from matplotlib.artist import Artist
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.packing.knapsack.types import State
 from jumanji.viewer import MatplotlibViewer
 
@@ -114,6 +113,6 @@ class KnapsackViewer(MatplotlibViewer[State]):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        img_path = resources.files(jumanji.environments.packing.knapsack) / "img/knapsack.png"
+        img_path = resources.files("jumanji.environments.packing.knapsack") / "img/knapsack.png"
         sack_img = plt.imread(img_path)
         ax.imshow(sack_img, extent=(0, 1, 0, 1))

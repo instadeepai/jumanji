@@ -114,5 +114,5 @@ class MazeViewer(MatplotlibViewer):
         for tile_value, color in self.COLORS.items():
             img[np.where(maze == tile_value)] = color
         # Draw black frame around maze by padding axis 0 and 1
-        img = np.pad(img, ((1, 1), (1, 1), (0, 0)))  # type: ignore
+        img = np.pad(img, ((1, 1), (1, 1), (0, 0)))
         return img

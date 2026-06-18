@@ -51,12 +51,12 @@ class TestDenseTSP:
 
         key = jax.random.PRNGKey(0)
         reset_key, step_key = jax.random.split(key)
-        state, timestep = tsp_dense_reward.reset(reset_key)
+        state, _timestep = tsp_dense_reward.reset(reset_key)
 
         action = jax.random.randint(
             step_key, shape=(), minval=0, maxval=tsp_dense_reward.num_cities
         )
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has changed
         assert not jnp.array_equal(new_state.position, state.position)
@@ -75,7 +75,7 @@ class TestDenseTSP:
         # New step with same action should be invalid
         state = new_state
 
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has not changed
         assert jnp.array_equal(new_state.position, state.position)
@@ -163,12 +163,12 @@ class TestSparseTSP:
 
         key = jax.random.PRNGKey(0)
         reset_key, step_key = jax.random.split(key)
-        state, timestep = tsp_sparse_reward.reset(reset_key)
+        state, _timestep = tsp_sparse_reward.reset(reset_key)
 
         action = jax.random.randint(
             step_key, shape=(), minval=0, maxval=tsp_sparse_reward.num_cities
         )
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has changed
         assert not jnp.array_equal(new_state.position, state.position)
@@ -187,7 +187,7 @@ class TestSparseTSP:
         # New step with same action should be invalid
         state = new_state
 
-        new_state, next_timestep = step_fn(state, action)
+        new_state, _next_timestep = step_fn(state, action)
 
         # Check that the state has not changed
         assert jnp.array_equal(new_state.position, state.position)

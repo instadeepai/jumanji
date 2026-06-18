@@ -133,7 +133,7 @@ class CleanerViewer(MazeViewer):
 
     def _draw_black_frame_around(self, img: NDArray) -> NDArray:
         # Draw black frame around maze by padding axis 0 and 1
-        img = np.pad(img, ((1, 1), (1, 1), (0, 0)))  # type: ignore
+        img = np.pad(img, ((1, 1), (1, 1), (0, 0)))
         # Ensure the black frame is not transparent
         img[0, :, 3] = 1
         img[-1, :, 3] = 1

@@ -424,9 +424,9 @@ class TestMultiToSingleEnvironment:
         """Validates observation_spec property of the multi agent to single
         agent wrapped environment.
         """
-        obs_spec: specs.Array = fake_multi_to_single_env.observation_spec  # type: ignore
+        obs_spec: specs.Array = fake_multi_to_single_env.observation_spec
         assert isinstance(obs_spec, specs.Array)
-        multi_obs_spec: specs.Array = fake_multi_environment.observation_spec  # type: ignore
+        multi_obs_spec: specs.Array = fake_multi_environment.observation_spec
         assert obs_spec.shape == multi_obs_spec.shape
 
     def test_multi_env__action_spec(
@@ -571,7 +571,7 @@ class TestAutoResetWrapper:
         """Validates that the auto-reset is done correctly by the step function
         of the AutoResetWrapper when the terminal timestep is reached.
         """
-        state, first_timestep = fake_auto_reset_environment.reset(key)  # type: ignore
+        state, first_timestep = fake_auto_reset_environment.reset(key)
 
         fake_environment.time_limit = 5
 
@@ -678,7 +678,7 @@ class TestVmapAutoResetWrapper:
         of the wrapper when the terminal timestep is reached.
         """
         state, first_timestep = fake_vmap_auto_reset_environment.reset(keys)
-        fake_vmap_auto_reset_environment.unwrapped.time_limit = 5  # type: ignore
+        fake_vmap_auto_reset_environment.unwrapped.time_limit = 5
 
         # Loop across time_limit so auto-reset occurs
         for _ in range(fake_vmap_auto_reset_environment.time_limit - 1):
@@ -743,7 +743,7 @@ class TestJumanjiToGymObservation:
         """
         NestedObservation = namedtuple("NestedObservation", ["jax_array", "chex_dataclass"])
         array = jnp.zeros((2, 2))
-        data_class = self.DummyChexDataclass(x=array, y=array)  # type: ignore
+        data_class = self.DummyChexDataclass(x=array, y=array)
         nested_obs = NestedObservation(array, data_class)
 
         converted_obs = jumanji_to_gym_obs(nested_obs)
@@ -767,7 +767,7 @@ class TestJumanjiToGymObservation:
         array = jnp.zeros((10, 10))
 
         # Pass in the wrong datatype
-        data_class = self.DummyChexDataclass(x=array, y="array")  # type: ignore
+        data_class = self.DummyChexDataclass(x=array, y="array")
         nested_obs = NestedObservation(array, data_class)
 
         # Check that the function raises a NotImplementedError

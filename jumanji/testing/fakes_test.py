@@ -30,9 +30,9 @@ def test_fake_environment__reset(fake_environment: fakes.FakeEnvironment) -> Non
 @pytest.mark.parametrize("fake_environment", [()], indirect=True)
 def test_fake_environment__step(fake_environment: fakes.FakeEnvironment) -> None:
     """Validates the step function of the fake environment."""
-    state, timestep = fake_environment.reset(random.PRNGKey(0))
+    state, _timestep = fake_environment.reset(random.PRNGKey(0))
     action = fake_environment.action_spec.generate_value()
-    next_state, timestep = fake_environment.step(state, action)
+    next_state, _timestep = fake_environment.step(state, action)
     # Check that the step value is now different
     assert state.step != next_state.step
 

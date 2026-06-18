@@ -56,13 +56,13 @@ def test_pac_man__reset_jit(pac_man: PacMan) -> None:
 def test_pac_man__step_jit(pac_man: PacMan) -> None:
     """Confirm that the step is only compiled once when jitted."""
     key = jax.random.PRNGKey(0)
-    state, timestep = pac_man.reset(key)
+    state, _timestep = pac_man.reset(key)
     action = 3
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(pac_man.step, n=1))
 
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
     # Check that the playerposition has changed
     assert jnp.array_equal(new_state.player_locations.x, state.player_locations.x)
     assert not jnp.array_equal(new_state.player_locations.y, state.player_locations.y)
@@ -76,7 +76,7 @@ def test_pac_man__step_jit(pac_man: PacMan) -> None:
     # New step
     state = new_state
     action = 3
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert new_state.player_locations.x == state.player_locations.x
@@ -88,11 +88,11 @@ def test_pac_man__step_jit(pac_man: PacMan) -> None:
 
 def test_pac_man_step_invalid(pac_man: PacMan) -> None:
     key = jax.random.PRNGKey(0)
-    state, timestep = pac_man.reset(key)
+    state, _timestep = pac_man.reset(key)
     action = 2
 
     step_fn = jax.jit(pac_man.step)
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     assert new_state.player_locations.y == state.player_locations.y
     assert new_state.player_locations.y == state.player_locations.y
@@ -122,7 +122,7 @@ def test_pac_man_observation_spec_position_bounds(pac_man: PacMan) -> None:
 
 def test_power_pellet(pac_man: PacMan) -> None:
     key = jax.random.PRNGKey(0)
-    state, timestep = pac_man.reset(key)
+    state, _timestep = pac_man.reset(key)
 
     # move player and ghost to pellet
     state.player_locations = Position(x=2, y=6)
@@ -131,7 +131,7 @@ def test_power_pellet(pac_man: PacMan) -> None:
 
     step_fn = jax.jit(pac_man.step)
     action = 2
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     assert not jnp.array_equal(new_state.power_up_locations, state.power_up_locations)
     assert new_state.frightened_state_time != state.frightened_state_time

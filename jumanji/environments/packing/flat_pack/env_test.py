@@ -151,7 +151,7 @@ def test_flat_pack__reset_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
 
 def test_flat_pack__step_jit(flat_pack: FlatPack, key: chex.PRNGKey) -> None:
     """Test that the step function is only compiled once."""
-    state_0, timestep_0 = flat_pack.reset(key)
+    state_0, _timestep_0 = flat_pack.reset(key)
     action_0 = jnp.array([0, 0, 0, 0])
 
     chex.clear_trace_counter()

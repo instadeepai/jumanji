@@ -26,7 +26,6 @@ from matplotlib.collections import PathCollection
 from matplotlib.quiver import Quiver
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.viewer import MatplotlibViewer
 
@@ -158,7 +157,7 @@ class MultiCVRPViewer(MatplotlibViewer[State]):
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 
-        img_path = resources.files(jumanji.environments.routing.multi_cvrp) / "img/city_map.jpeg"
+        img_path = resources.files("jumanji.environments.routing.multi_cvrp") / "img/city_map.jpeg"
         map_img = plt.imread(img_path)
         ax.imshow(map_img, extent=(0, 1, 0, 1))
 
@@ -175,7 +174,9 @@ class MultiCVRPViewer(MatplotlibViewer[State]):
         depot = tour[0]
         check_depot_fn = lambda x: (x != depot).all()
         tour_grouped = [
-            np.array([depot, *list(g), depot]) for k, g in groupby(tour, key=check_depot_fn) if k
+            np.array([depot, *list(g), depot])
+            for k, g in groupby(tour, key=check_depot_fn)  # ty: ignore[no-matching-overload]
+            if k
         ]
         if (tour[-1] != tour[0]).all():
             tour_grouped[-1] = tour_grouped[-1][:-1]

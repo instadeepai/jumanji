@@ -58,7 +58,7 @@ def test_vector_full_obs(state: State) -> None:
         level=state.food_items.level,
         eaten=eaten,
     )
-    state = state.replace(food_items=food_items)  # type: ignore
+    state = state.replace(food_items=food_items)
 
     obs2 = observer.state_to_observation(state)
     expected_agent_1_view = jnp.array([-1, -1, 0, 2, 3, 4, 4, 2, 3, 1, 1, 2, 0, 0, 1, 2, 2, 4])
@@ -91,7 +91,7 @@ def test_vector_partial_obs(state: State) -> None:
         level=state.food_items.level,
         eaten=eaten,
     )
-    state = state.replace(food_items=food_items)  # type: ignore
+    state = state.replace(food_items=food_items)
 
     obs2 = observer.state_to_observation(state)
     expected_agent_1_view = jnp.array([-1, -1, 0, 2, 3, 4, -1, -1, 0, 1, 1, 2, 0, 0, 1, 2, 2, 4])

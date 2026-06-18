@@ -19,6 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 from numpy.typing import NDArray
 
 from jumanji import specs
@@ -185,7 +186,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
         new_tetromino, tetromino_index = utils.sample_tetromino_list(
             sample_key, self.TETROMINOES_LIST
         )
-        grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
+        grid_padded_cliped = jnp.clip(grid_padded, max=1)
         action_mask = self._calculate_action_mask(grid_padded_cliped, tetromino_index)
         # The maximum should be bigger than 0.
         # In case the grid is empty the color should be set 0.

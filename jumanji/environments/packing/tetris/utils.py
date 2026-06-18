@@ -81,7 +81,7 @@ def tetromino_action_mask(grid_padded: chex.Array, tetromino: chex.Array) -> che
     """
     tetromino_mask = tetromino.at[1, :].set(tetromino[1, :] + tetromino[2, :])
     tetromino_mask = tetromino_mask.at[0, :].set(tetromino_mask[0, :] + tetromino_mask[1, :])
-    tetromino_mask = jnp.clip(tetromino_mask, a_max=1)
+    tetromino_mask = jnp.clip(tetromino_mask, max=1)
     num_cols = grid_padded.shape[1] - 3
     # Check if tetromino can be placed at the top of the grid, if so it means
     # that the tetromino is placeble in this `x_position`.
@@ -126,7 +126,7 @@ def place_tetromino(
     # A tetromino's possible position is a position where the tetromino is not on top
     # of a filled cell.
     num_rows = grid_padded.shape[0] - 3
-    grid_padded_cliped = jnp.clip(grid_padded, a_max=1)
+    grid_padded_cliped = jnp.clip(grid_padded, max=1)
     # Check all possible y postions relative to the selected `x_position`
     # possible positions is a `chex.array` of shape (num_rows), contains True if a tetromino
     # can be placed in `y_position` without overlaping any filled cell.

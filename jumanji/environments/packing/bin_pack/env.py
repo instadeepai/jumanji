@@ -20,6 +20,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 from numpy.typing import NDArray
 
 from jumanji import specs
@@ -307,7 +308,7 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
                 - invalid_ems_from_env (optional): True if the environment produced an EMS that was
                     invalid. Only available in debug mode.
         """
-        action_is_valid = state.action_mask[tuple(action)]  # type: ignore
+        action_is_valid = state.action_mask[tuple(action)]
 
         obs_ems_id, item_id = action
         ems_id = state.sorted_ems_indexes[obs_ems_id]
@@ -570,9 +571,11 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         # A new EMS is added if the intersection is not empty and if it is not fully included in
         # the EMS that do not intersect with the item.
         intersections_mask_dict: Dict[str, chex.Array] = jax.tree_util.tree_map(
-            lambda intersections_ems: state.ems_mask
-            & ~intersections_ems.is_empty()
-            & ~(intersections_ems.is_included(state.ems) & ems_mask_after_intersect),
+            lambda intersections_ems: (
+                state.ems_mask
+                & ~intersections_ems.is_empty()
+                & ~(intersections_ems.is_included(state.ems) & ems_mask_after_intersect)
+            ),
             intersections_ems_dict,
             is_leaf=lambda x: isinstance(x, Space),
         )

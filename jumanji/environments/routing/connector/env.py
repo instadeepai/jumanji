@@ -19,6 +19,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 from numpy.typing import NDArray
 
 from jumanji import specs
@@ -251,7 +252,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         new_positions = jnp.where(collided[:, jnp.newaxis], state.agents.position, new_positions)
-        new_agents = state.agents.replace(position=new_positions)  # type: ignore
+        new_agents = state.agents.replace(position=new_positions)
 
         return new_agents, grid
 

@@ -75,7 +75,7 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(tetris_env.step, n=1))
     key = jax.random.PRNGKey(0)
-    state, timestep = tetris_env.reset(key)
+    state, _timestep = tetris_env.reset(key)
     action = (0, 4)
     step_fn(state, action)
     step_fn(state, action)

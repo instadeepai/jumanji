@@ -29,7 +29,7 @@ def test_render(multicvrp_env: MultiCVRP) -> None:
     key = jax.random.PRNGKey(0)
     reset_fn = jax.jit(multicvrp_env.reset)
     step_fn = jax.jit(multicvrp_env.step)
-    state, timestep = reset_fn(key)
+    state, _timestep = reset_fn(key)
 
     viewer = MultiCVRPViewer(
         name="MultiCVRP",
@@ -41,7 +41,7 @@ def test_render(multicvrp_env: MultiCVRP) -> None:
 
     # Starting position is depot, new action to visit first node
     new_actions = jnp.array(jnp.arange(1, multicvrp_env._num_vehicles + 1), dtype=np.int16)
-    new_state, next_timestep = step_fn(state, new_actions)
+    new_state, _next_timestep = step_fn(state, new_actions)
     viewer.render(new_state)
 
 

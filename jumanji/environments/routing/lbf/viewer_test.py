@@ -15,6 +15,7 @@
 import chex
 import jax
 import matplotlib
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import pytest
 

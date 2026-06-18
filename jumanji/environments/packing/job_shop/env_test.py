@@ -30,7 +30,7 @@ class TestJobShop:
     def test_job_shop__reset(self, job_shop_env: JobShop) -> None:
         """Test that the environment is reset correctly."""
         key = jax.random.PRNGKey(0)
-        state, timestep = job_shop_env.reset(key)
+        state, _timestep = job_shop_env.reset(key)
 
         assert jnp.all(
             state.ops_machine_ids
@@ -96,11 +96,11 @@ class TestJobShop:
         """Test the 12 steps of the dummy instance."""
 
         key = jax.random.PRNGKey(0)
-        state, timestep = job_shop_env.reset(key)
+        state, _timestep = job_shop_env.reset(key)
 
         # STEP T=0 -> T=1
         action = jnp.array([1, 2, 3])
-        next_state, next_timestep = job_shop_env.step(state, action)
+        next_state, _next_timestep = job_shop_env.step(state, action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -152,7 +152,7 @@ class TestJobShop:
 
         # STEP T=1 -> T=2
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
         assert jnp.all(
             next_state.ops_machine_ids
             == jnp.array(
@@ -203,7 +203,7 @@ class TestJobShop:
 
         # STEP T=2 -> T=3
         next_action = jnp.array([0, 3, 1])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -255,7 +255,7 @@ class TestJobShop:
 
         # STEP T=3 -> T=4
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -307,7 +307,7 @@ class TestJobShop:
 
         # STEP T=4 -> T=5
         next_action = jnp.array([3, 1, 2])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -359,7 +359,7 @@ class TestJobShop:
 
         # STEP T=5 -> T=6
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -411,7 +411,7 @@ class TestJobShop:
 
         # STEP T=6 -> T=7
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -463,7 +463,7 @@ class TestJobShop:
 
         # STEP T=7 -> T=8
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -515,7 +515,7 @@ class TestJobShop:
 
         # STEP T=8 -> T=9
         next_action = jnp.array([3, 0, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -567,7 +567,7 @@ class TestJobShop:
 
         # # STEP T=9 -> T=10
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -619,7 +619,7 @@ class TestJobShop:
 
         # # STEP T=10 -> T=11
         next_action = jnp.array([3, 3, 0])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -671,7 +671,7 @@ class TestJobShop:
 
         # STEP T=10 -> T=11
         next_action = jnp.array([3, 3, 3])
-        next_state, next_timestep = job_shop_env.step(state=next_state, action=next_action)
+        next_state, _next_timestep = job_shop_env.step(state=next_state, action=next_action)
 
         assert jnp.all(
             next_state.ops_machine_ids
@@ -724,7 +724,7 @@ class TestJobShop:
     def test_job_shop__step_jit(self, job_shop_env: JobShop) -> None:
         """Confirm that the step is only compiled once when jitted."""
         key = jax.random.PRNGKey(0)
-        state, timestep = job_shop_env.reset(key)
+        state, _timestep = job_shop_env.reset(key)
         action = jnp.array([1, 2, 3], jnp.int32)
 
         chex.clear_trace_counter()

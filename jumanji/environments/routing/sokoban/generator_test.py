@@ -81,10 +81,10 @@ def test_sokoban__hugging_generator_different_problems() -> None:
     )
 
     key1 = jax.random.PRNGKey(0)
-    state1, timestep1 = env.reset(key1)
+    state1, _timestep1 = env.reset(key1)
 
     key2 = jax.random.PRNGKey(1)
-    state2, timestep2 = env.reset(key2)
+    state2, _timestep2 = env.reset(key2)
 
     # Check that different resets lead to different problems
     assert not jnp.array_equal(state2.fixed_grid, state1.fixed_grid)
@@ -104,10 +104,10 @@ def test_sokoban__hugging_generator_same_problems() -> None:
     )
 
     key1 = jax.random.PRNGKey(0)
-    state1, timestep1 = env.reset(key1)
+    state1, _timestep1 = env.reset(key1)
 
     key2 = jax.random.PRNGKey(0)
-    state2, timestep2 = env.reset(key2)
+    state2, _timestep2 = env.reset(key2)
 
     assert jnp.array_equal(state2.fixed_grid, state1.fixed_grid)
     assert jnp.array_equal(state2.variable_grid, state1.variable_grid)

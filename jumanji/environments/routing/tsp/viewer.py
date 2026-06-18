@@ -24,7 +24,6 @@ from matplotlib.collections import PathCollection
 from matplotlib.quiver import Quiver
 from numpy.typing import NDArray
 
-import jumanji.environments
 from jumanji.environments.routing.tsp.types import State
 from jumanji.viewer import MatplotlibViewer
 
@@ -131,7 +130,7 @@ class TSPViewer(MatplotlibViewer[State]):
         ax.set_ylim(0, 1)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        img_path = resources.files(jumanji.environments.routing.tsp) / "img/city_map.jpeg"
+        img_path = resources.files("jumanji.environments.routing.tsp") / "img/city_map.jpeg"
         map_img = plt.imread(img_path)
         ax.imshow(map_img, extent=(0, 1, 0, 1))
 

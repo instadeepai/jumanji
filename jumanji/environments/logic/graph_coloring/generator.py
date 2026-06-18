@@ -63,9 +63,9 @@ class RandomGenerator(Generator):
 
         self._num_nodes = num_nodes
         self.edge_probability = edge_probability
-        assert (
-            0 < self.edge_probability < 1
-        ), f"edge_probability={self.edge_probability} must be between 0 and 1."
+        assert 0 < self.edge_probability < 1, (
+            f"edge_probability={self.edge_probability} must be between 0 and 1."
+        )
 
     @property
     def num_nodes(self) -> int:

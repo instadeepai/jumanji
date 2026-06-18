@@ -1,114 +1,139 @@
 [build-system]
-requires=["setuptools>=62.6"]
-build-backend="setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name="jumanji"
-authors=[{name="InstaDeep Ltd", email="clement.bonnet16@gmail.com"}]
-dynamic=["version", "dependencies", "optional-dependencies"]
-license={file="LICENSE"}
-description="A diverse suite of scalable reinforcement learning environments in JAX"
-readme ="README.md"
-requires-python=">=3.10"
-keywords=["reinforcement-learning", "python", "jax"]
-classifiers=[
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Developers",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: Apache Software License",
+name = "jumanji"
+authors = [{ name = "InstaDeep Ltd", email = "clement.bonnet16@gmail.com" }]
+dynamic = ["version"]
+license = { file = "LICENSE" }
+description = "A diverse suite of scalable reinforcement learning environments in JAX"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["reinforcement-learning", "python", "jax"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+  "chex>=0.1.3",
+  "dm-env>=1.5",
+  "esquilax>=2.0.0",
+  "gymnasium>=1.0",
+  "huggingface-hub",
+  "jax>=0.4.27", # jnp.clip(x, min=, max=) signature (Array API); a_min/a_max removed in 0.8.0
+  "matplotlib>=3.8.0",
+  "numpy>=1.19.5",
+  "Pillow>=9.0.0",
+  "requests>=2.32",
+  "typing-extensions>=4.0.0",
 ]
 
-[tool.setuptools.packages.find]
-include=["jumanji*"]
-
-[tool.setuptools.package-data]
-"jumanji" = ["py.typed"]
-
-[tool.setuptools.dynamic]
-version={attr="jumanji.version.__version__"}
-dependencies={file="requirements/requirements.txt"}
-optional-dependencies.dev={file=["requirements/requirements-dev.txt"]}
-optional-dependencies.train={file=["requirements/requirements-train.txt"]}
-
+[project.optional-dependencies]
+train = [
+  "distrax>=0.1.5",
+  "dm-haiku",
+  "hydra-core==1.3",
+  "neptune-client==0.16.15",
+  "optax>=0.1.4",
+  "rlax>=0.1.4",
+  "tensorboardX==2.5.1",
+  "tqdm>=4.64.1",
+]
 
 [project.urls]
-"Homepage"="https://github.com/instadeep/jumanji"
-"Bug Tracker"="https://github.com/instadeep/jumanji/issues"
-"Documentation"="https://instadeepai.github.io/jumanji"
+"Homepage" = "https://github.com/instadeepai/jumanji"
+"Bug Tracker" = "https://github.com/instadeepai/jumanji/issues"
+"Documentation" = "https://instadeepai.github.io/jumanji"
 
-[tool.mypy]
-python_version = "3.10"
-namespace_packages = true
-incremental = false
-cache_dir = ""
-warn_redundant_casts = true
-warn_return_any = true
-warn_unused_configs = true
-warn_unused_ignores = false
-allow_redefinition = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = false
-strict_optional = true
-strict_equality = true
-explicit_package_bases = true
-follow_imports = "skip"
-
-[[tool.mypy.overrides]]
-module = [
-    "matplotlib.*",
-    "mpl_toolkits.*",
-    "gym.*",
-    "pytest_mock.*",
-    "numpy.*",
-    "dm_env.*",
-    "tree.*",
-    "pytest.*",
-    "IPython.*",
-    "optax.*",
-    "tqdm.*",
-    "rlax.*",
-    "neptune.*",
-    "tensorboardX.*",
-    "scipy.*",
-    "haiku.*",
-    "hydra.*",
-    "omegaconf.*",
-    "huggingface_hub.*",
-    "requests.*",
-    "pkg_resources.*",
-    "PIL.*",
-    "distrax.*",
-    "chex.*",
+[dependency-groups]
+dev = [
+  "coverage",
+  "ipython",
+  "livereload",
+  "mkdocs==1.6.1",
+  "mkdocs-autorefs==1.2.0",
+  "mkdocs-git-revision-date-plugin==0.3.2",
+  "mkdocs-include-markdown-plugin==7.1.8",
+  "mkdocs-material==9.5.45",
+  "mkdocs-mermaid2-plugin==1.1.0",
+  "mkdocstrings[python]==0.27.0",
+  "mknotebooks==0.8.0",
+  "pre-commit",
+  "promise",
+  "pymdown-extensions",
+  "pytest>=8",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-xdist",
+  "ruff",
+  "scipy>=1.7.3",
+  "testfixtures",
+  "ty",
 ]
-ignore_missing_imports = true
+
+[tool.hatch.version]
+path = "jumanji/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["jumanji"]
+exclude = ["**/*_test.py", "**/conftest.py"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["**/*_test.py", "**/conftest.py"]
 
 [tool.ruff]
 line-length = 100
+target-version = "py310"
 
 [tool.ruff.lint]
-select = ["A", "B", "E", "F",  "I", "N", "W", "RUF", "ANN"]
+select = ["A", "B", "E", "F", "I", "N", "W", "RUF", "ANN"]
 ignore = [
-    "E731",    # Allow lambdas to be assigned to variables.
-    "ANN101",  # no need to type self
-    "ANN102",  # no need to type cls
-    "ANN204",  # no need for return type for special methods
-    "ANN401",  # can use Any type
-    "A002",    # Argument shadowing a Python builtin.
-    "A003",    # Class attribute shadowing a Python builtin.
-    "A005",    # Module shadowing a Python builtin.
-    "B017",    # assertRaises(Exception): or pytest.raises(Exception) should be considered evil.
+  "E731", # Allow lambdas to be assigned to variables.
+  "ANN204", # no need for return type for special methods
+  "ANN401", # can use Any type
+  "A002", # Argument shadowing a Python builtin.
+  "A003", # Class attribute shadowing a Python builtin.
+  "A005", # Module shadowing a Python builtin.
+  "B017", # assertRaises(Exception): or pytest.raises(Exception) should be considered evil.
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Ignore `F401` (import violations) in all `__init__.py` files.
+"__init__.py" = ["F401"] # Ignore `F401` (import violations) in all `__init__.py` files.
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.src]
+include = ["jumanji"]
+
+[tool.ty.rules]
+# Disabled because of JAX/NumPy array typing through chex aliases (`chex.Array`, `chex.Numeric`,
+# ...), which resolve to broad unions like `Array | ndarray | numpy.bool | number`. The scalar
+# members of those unions are not subscriptable, lack JAX's `.at` accessor and do not support
+# array operators, so a static checker reports ~1800 false positives on otherwise-correct array
+# code. These are the only rules disabled for the array-typing limitation; re-enable them per-rule
+# as the codebase is incrementally annotated with stricter array types.
+not-subscriptable = "ignore"
+unsupported-operator = "ignore"
+not-iterable = "ignore"
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"
+invalid-assignment = "ignore"
+invalid-return-type = "ignore"
+# Not array-related: jumanji deliberately refines abstract method signatures in subclasses
+# (`RewardFn`/`Generator`/`Agent`/`Viewer`/`ParametricDistribution` `__call__`/`step`/`render`/...)
+# and narrows `__eq__`/`__add__` on specs and namedtuples. ty flags all 44 intentional overrides
+# as incompatible; disabled project-wide rather than suppressed at each of the 44 call sites.
+invalid-method-override = "ignore"

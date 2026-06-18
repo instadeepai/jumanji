@@ -22,4 +22,4 @@ T = TypeVar("T")
 
 def first_from_device(tree: T) -> T:
     squeeze_fn = lambda x: x[0] if isinstance(x, jnp.ndarray) else x
-    return jax.tree_util.tree_map(squeeze_fn, tree)  # type: ignore
+    return jax.tree_util.tree_map(squeeze_fn, tree)

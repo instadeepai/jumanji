@@ -72,10 +72,10 @@ def is_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> bool:
 
 def assert_tree_with_leaves_of_type(input_tree: Any, *leaf_type: Type) -> None:
     """Asserts that all leaves in the `input_tree` are of the specified `leaf_type`."""
-    assert is_tree_with_leaves_of_type(
-        input_tree, *leaf_type
-    ), "The tree has at least one leaf that is not of type {}.".format(
-        " or ".join([str(type_) for type_ in leaf_type])
+    assert is_tree_with_leaves_of_type(input_tree, *leaf_type), (
+        "The tree has at least one leaf that is not of type {}.".format(
+            " or ".join([str(type_) for type_ in leaf_type])
+        )
     )
 
 

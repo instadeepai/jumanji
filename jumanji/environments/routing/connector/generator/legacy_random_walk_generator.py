@@ -67,7 +67,7 @@ class LegacyRandomWalkGenerator(Generator):
             A `Connector` state.
         """
         key, board_key = jax.random.split(key)
-        solved_grid, agents, grid = self.generate_board(board_key)
+        _solved_grid, agents, grid = self.generate_board(board_key)
         step_count = jnp.array(0, jnp.int32)
         action_mask = get_action_masks(agents, grid)
 
@@ -214,7 +214,7 @@ class LegacyRandomWalkGenerator(Generator):
             Tuple of indices of the starting position and the first move (in flat coordinates).
         """
         key, flat_grid = carry
-        key, next_key = jax.random.split(key)
+        key, _next_key = jax.random.split(key)
         grid_mask = flat_grid == 0
         start_coordinate_flat = jax.random.choice(
             key=key,

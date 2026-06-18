@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist

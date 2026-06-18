@@ -389,7 +389,7 @@ def add_obs_to_extras(timestep: TimeStep[Observation]) -> TimeStep[Observation]:
     """
     extras = timestep.extras
     extras[NEXT_OBS_KEY_IN_EXTRAS] = timestep.observation
-    return timestep.replace(extras=extras)  # type: ignore
+    return timestep.replace(extras=extras)
 
 
 class AutoResetWrapper(
@@ -435,14 +435,14 @@ class AutoResetWrapper(
 
         # Make sure that the random key in the environment changes at each call to reset.
         # State is a type variable hence it does not have key type hinted, so we type ignore.
-        key, _ = jax.random.split(state.key)  # type: ignore
+        key, _ = jax.random.split(state.key)
         state, reset_timestep = self._env.reset(key)
 
         # Place original observation in extras.
         timestep = self._maybe_add_obs_to_extras(timestep)
 
         # Replace observation with reset observation.
-        timestep = timestep.replace(observation=reset_timestep.observation)  # type: ignore
+        timestep = timestep.replace(observation=reset_timestep.observation)
 
         return state, timestep
 
@@ -471,8 +471,10 @@ class VmapAutoResetWrapper(
     VmapWrapper[State, ActionSpec, Observation], Generic[State, ActionSpec, Observation]
 ):
     """Combination of VmapWrapper and AutoResetWrapper.
-    `env = VmapAutoResetWrapper(env)` is completely equivalent to `env = VmapWrapper(AutoResetWrapper(env))`.
-    This class only exists for backwards compatibility. New users should use `env = VmapWrapper(AutoResetWrapper(env))`.
+
+    `env = VmapAutoResetWrapper(env)` is completely equivalent to
+    `env = VmapWrapper(AutoResetWrapper(env))`. This class only exists for backwards
+    compatibility. New users should use `env = VmapWrapper(AutoResetWrapper(env))`.
 
     NOTE: The observation from the terminal TimeStep is stored in timestep.extras["next_obs"].
     """
@@ -629,10 +631,7 @@ def jumanji_to_gym_obs(observation: Observation) -> GymObservation:
         return {key: jumanji_to_gym_obs(value) for key, value in vars(observation).items()}
     elif hasattr(observation, "_asdict"):
         # Applies to `NamedTuple` container.
-        return {
-            key: jumanji_to_gym_obs(value)
-            for key, value in observation._asdict().items()  # type: ignore
-        }
+        return {key: jumanji_to_gym_obs(value) for key, value in observation._asdict().items()}
     else:
         raise NotImplementedError(
             "Conversion only implemented for JAX pytrees with (possibly nested) containers "
