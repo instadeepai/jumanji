@@ -57,17 +57,17 @@ def bin_pack_random_select_action(bin_pack: BinPack) -> SelectActionFn:
         action = jnp.array([ems_id, item_id], jnp.int32)
         return action
 
-    return jax.jit(select_action)  # type: ignore
+    return jax.jit(select_action)
 
 
 @pytest.fixture(scope="function")
-def normalize_dimensions(request: pytest.mark.FixtureRequest) -> bool:
-    return request.param  # type: ignore
+def normalize_dimensions(request: pytest.FixtureRequest) -> bool:
+    return request.param
 
 
 @pytest.fixture(scope="function")
 def bin_pack_optimal_policy_select_action(
-    request: pytest.mark.FixtureRequest,
+    request: pytest.FixtureRequest,
 ) -> Callable[[Observation, State], chex.Array]:
     """Optimal policy for the BinPack environment.
     WARNING: Requires `normalize_dimensions` from the BinPack environment.
@@ -148,12 +148,12 @@ def test_bin_pack_step__jit(bin_pack: BinPack) -> None:
     step_fn = jax.jit(chex.assert_max_traces(bin_pack.step, n=1))
 
     key = jax.random.PRNGKey(0)
-    state, timestep = bin_pack.reset(key)
+    state, _timestep = bin_pack.reset(key)
 
     action = bin_pack.action_spec.generate_value()
     _ = step_fn(state, action)
     # Call again to check it does not compile twice.
-    state, timestep = step_fn(state, action)
+    state, _timestep = step_fn(state, action)
     assert_type_bin_pack_state(state)
 
 

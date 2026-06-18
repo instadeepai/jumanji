@@ -55,10 +55,10 @@ def test_sparse_reward__compute_tour_length() -> None:
 def test_dense_reward(cvrp_dense_reward: CVRP, dense_reward: DenseReward) -> None:
     dense_reward = jax.jit(dense_reward)
     step_fn = jax.jit(cvrp_dense_reward.step)
-    state, timestep = cvrp_dense_reward.reset(jax.random.PRNGKey(0))
+    state, _timestep = cvrp_dense_reward.reset(jax.random.PRNGKey(0))
 
     # Check that the reward is correct for the next node.
-    state, timestep = step_fn(state, 0)
+    state, _timestep = step_fn(state, 0)
     for action in range(1, cvrp_dense_reward.num_nodes + 1):
         next_state, _ = step_fn(state, action)
         depot = state.coordinates[0]

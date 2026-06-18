@@ -63,13 +63,13 @@ def test_game_2048__reset_jit(game_2048: Game2048) -> None:
 def test_game_2048__step_jit(game_2048: Game2048) -> None:
     """Confirm that the step is only compiled once when jitted."""
     key = jax.random.PRNGKey(0)
-    state, timestep = game_2048.reset(key)
+    state, _timestep = game_2048.reset(key)
     action = jnp.argmax(state.action_mask)
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(game_2048.step, n=1))
 
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
     # Check that the state has changed.
     assert not jnp.array_equal(new_state.board, state.board)
 
@@ -79,7 +79,7 @@ def test_game_2048__step_jit(game_2048: Game2048) -> None:
     # New step
     state = new_state
     action = jnp.argmax(state.action_mask)
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.board, state.board)
@@ -96,7 +96,7 @@ def test_game_2048__step_invalid(game_2048: Game2048) -> None:
     )
     action = jnp.array(0)
     step_fn = jax.jit(game_2048.step)
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
     assert jnp.array_equal(state.board, new_state.board)
     assert jnp.array_equal(state.step_count + 1, new_state.step_count)
     assert jnp.array_equal(state.action_mask, new_state.action_mask)
@@ -114,7 +114,7 @@ def test_game_2048__step_action_mask(game_2048: Game2048) -> None:
     )
     action = jnp.array(3)
     step_fn = jax.jit(game_2048.step)
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
     expected_action_mask = jnp.array([False, False, False, False])
     assert jnp.array_equal(new_state.action_mask, expected_action_mask)
 

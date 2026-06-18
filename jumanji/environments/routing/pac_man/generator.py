@@ -20,7 +20,6 @@ import jax.numpy as jnp
 from jumanji.environments.routing.pac_man.types import Position, State
 
 
-# flake8: noqa: C901
 def generate_maze_from_ascii(maze: List) -> Any:
     """Generates a numpy maze from ascii"""
     ascii_maze = maze

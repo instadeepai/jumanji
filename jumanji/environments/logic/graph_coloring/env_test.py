@@ -50,13 +50,13 @@ def test_graph_coloring_reset_jit(graph_coloring: GraphColoring) -> None:
 def test_graph_coloring_step_jit(graph_coloring: GraphColoring) -> None:
     """Confirm that the step is only compiled once when jitted."""
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(graph_coloring.reset)(key)
+    state, _timestep = jax.jit(graph_coloring.reset)(key)
     action = jnp.array(0)
 
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(graph_coloring.step, n=1))
 
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     # Check that the state has changed.
     assert not jnp.array_equal(new_state.colors, state.colors)
@@ -66,7 +66,7 @@ def test_graph_coloring_step_jit(graph_coloring: GraphColoring) -> None:
 
     # New step
     state = new_state
-    new_state, next_timestep = step_fn(state, action)
+    new_state, _next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.colors, state.colors)

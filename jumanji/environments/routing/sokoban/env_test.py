@@ -60,7 +60,7 @@ def test_sokoban__reset(sokoban: Sokoban) -> None:
     assert state.step_count == 0
     assert timestep.observation.step_count == 0
     key2 = jax.random.PRNGKey(1)
-    state2, timestep2 = reset_fn(key2)
+    state2, _timestep2 = reset_fn(key2)
     assert not jnp.array_equal(state2.fixed_grid, state.fixed_grid)
     assert not jnp.array_equal(state2.variable_grid, state.variable_grid)
 
@@ -74,7 +74,7 @@ def test_sokoban__multi_step(sokoban: Sokoban) -> None:
     for j in range(5):
         step_count = 0
         key = jax.random.PRNGKey(j)
-        reset_key, step_key = jax.random.split(key)
+        reset_key, _step_key = jax.random.split(key)
         state, timestep = sokoban.reset(reset_key)
 
         # Repeating random step 120 times
@@ -135,7 +135,7 @@ def test_sokoban__termination_timelimit(sokoban: Sokoban) -> None:
     step_fn = jax.jit(chex.assert_max_traces(sokoban.step, n=1))
 
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
+    reset_key, _step_key = jax.random.split(key)
     state, timestep = sokoban.reset(reset_key)
 
     for _ in range(119):
@@ -162,7 +162,7 @@ def test_sokoban__termination_solved(sokoban_simple: Sokoban) -> None:
 
     # Check that environment does terminate with right series of actions
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
+    reset_key, _step_key = jax.random.split(key)
     state, timestep = sokoban_simple.reset(reset_key)
 
     for action in correct_actions:
@@ -175,7 +175,7 @@ def test_sokoban__termination_solved(sokoban_simple: Sokoban) -> None:
 
     # Check that environment does not terminate with wrong series of actions
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
+    reset_key, _step_key = jax.random.split(key)
     state, timestep = sokoban_simple.reset(reset_key)
 
     for action in wrong_actions:
@@ -199,7 +199,7 @@ def test_sokoban__reward_function_solved(sokoban_simple: Sokoban) -> None:
     step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
 
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
+    reset_key, _step_key = jax.random.split(key)
     state, timestep = sokoban_simple.reset(reset_key)
 
     for i, action in enumerate(correct_actions):

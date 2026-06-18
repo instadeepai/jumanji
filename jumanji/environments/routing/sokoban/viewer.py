@@ -23,7 +23,6 @@ from matplotlib.artist import Artist
 from numpy.typing import NDArray
 from PIL import Image
 
-import jumanji.environments
 from jumanji.viewer import MatplotlibViewer
 
 
@@ -56,7 +55,7 @@ class BoxViewer(MatplotlibViewer):
 
         def get_image(image_name: str) -> Image.Image:
             img_path = (
-                resources.files(jumanji.environments.routing.sokoban) / f"imgs/{image_name}.png"
+                resources.files("jumanji.environments.routing.sokoban") / f"imgs/{image_name}.png"
             )
             return Image.open(str(img_path))
 

@@ -55,7 +55,7 @@ def test_sokoban__reward_function_random(sokoban_simple: Sokoban) -> None:
         step_fn = jax.jit(chex.assert_max_traces(sokoban_simple.step, n=1))
 
         key = jax.random.PRNGKey(i)
-        reset_key, step_key = jax.random.split(key)
+        reset_key, _step_key = jax.random.split(key)
         state, timestep = sokoban_simple.reset(reset_key)
 
         num_boxes_on_targets = sokoban_simple.reward_fn.count_targets(state)

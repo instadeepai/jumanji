@@ -389,7 +389,7 @@ def check_ghost_collisions(
         return path, ghost_init_steps, done, col_reward, ghost_eaten
 
     old_ghost_positions = state.old_ghost_locations
-    ghost_positions, ghost_init, dones, col_rewards, ghost_eaten = jax.vmap(
+    ghost_positions, _ghost_init, dones, col_rewards, ghost_eaten = jax.vmap(
         check_collisions, in_axes=(0, None, 0, None, 0, 0)
     )(
         ghost_pos,

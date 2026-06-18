@@ -16,7 +16,10 @@ from typing import List, Tuple
 
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.axes
+import matplotlib.figure
 import matplotlib.pyplot as plt
+import matplotlib.quiver
 import pytest
 
 from jumanji.environments.swarms.common import types, updates, viewer

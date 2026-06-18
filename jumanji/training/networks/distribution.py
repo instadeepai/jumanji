@@ -78,7 +78,7 @@ class CategoricalDistribution(Distribution):
         probs = jax.nn.softmax(self.logits)
         return -jnp.sum(jnp.where(probs == 0, 0.0, probs * log_probs), axis=-1)
 
-    def kl_divergence(  # type: ignore[override]
+    def kl_divergence(
         self,
         other: CategoricalDistribution,
     ) -> chex.Array:

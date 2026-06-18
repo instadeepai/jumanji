@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# flake8: noqa: CCR001
-
 from importlib import resources
 from typing import Optional, Sequence, Tuple
 
@@ -25,7 +23,6 @@ from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from numpy.typing import NDArray
 
-import jumanji
 import jumanji.environments.routing.lbf.constants as constants
 from jumanji.environments.routing.lbf.types import Agent, Entity, Food, State
 from jumanji.tree_utils import tree_slice
@@ -163,7 +160,7 @@ class LevelBasedForagingViewer(MatplotlibViewer[State]):
             cell_center = self._entity_position(agent)
 
             # Read the image file
-            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/agent.png"
+            img_path = resources.files("jumanji.environments.routing.lbf") / "imgs/agent.png"
             img = plt.imread(img_path)
 
             # Create an OffsetImage and add it to the axis
@@ -184,7 +181,7 @@ class LevelBasedForagingViewer(MatplotlibViewer[State]):
                 continue
 
             # Read the image file
-            img_path = resources.files(jumanji.environments.routing.lbf) / "imgs/apple.png"
+            img_path = resources.files("jumanji.environments.routing.lbf") / "imgs/apple.png"
             img = plt.imread(img_path)
             cell_center = self._entity_position(food)
             self.draw_badge(food.level, cell_center, ax)

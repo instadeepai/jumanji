@@ -166,7 +166,7 @@ class TestNestedSpec:
 class TestArray:
     def test_shape_type_error(self) -> None:
         with pytest.raises(TypeError):
-            specs.Array(32, int)  # type: ignore
+            specs.Array(32, int)
 
     def test_shape_element_type_error(self) -> None:
         with pytest.raises(TypeError):
@@ -174,13 +174,13 @@ class TestArray:
 
     def test_dtype_type_error(self) -> None:
         with pytest.raises(TypeError):
-            specs.Array((1, 2, 3), "32")  # type: ignore
+            specs.Array((1, 2, 3), "32")
 
     def test_scalar_shape(self) -> None:
         specs.Array((), jnp.int32)
 
     def test_string_dtype_error(self) -> None:
-        specs.Array((1, 2, 3), "int32")  # type: ignore
+        specs.Array((1, 2, 3), "int32")
 
     def test_dtype(self) -> None:
         specs.Array((1, 2, 3), int)

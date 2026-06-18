@@ -17,6 +17,7 @@ import chex
 import jax
 import jax.numpy as jnp
 import matplotlib
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import py
 import pytest
@@ -86,7 +87,7 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
         return (k, new_state), (state, timestep)
 
     init_state, _ = env.reset(key)
-    (_, final_state), (state_history, timesteps) = jax.lax.scan(
+    (_, _final_state), (state_history, timesteps) = jax.lax.scan(
         step, (key, init_state), length=n_steps
     )
 
@@ -254,9 +255,9 @@ def test_search_and_rescue_render(monkeypatch: pytest.MonkeyPatch, env: SearchAn
     """Check that the render method builds the figure but does not display it."""
     monkeypatch.setattr(plt, "show", lambda fig: None)
     step_fn = jax.jit(env.step)
-    state, timestep = env.reset(jax.random.PRNGKey(0))
+    state, _timestep = env.reset(jax.random.PRNGKey(0))
     action = env.action_spec.generate_value()
-    state, timestep = step_fn(state, action)
+    state, _timestep = step_fn(state, action)
     env.render(state)
     env.close()
 

@@ -45,18 +45,31 @@ Before sending your pull request for review, make sure your changes are consiste
 9. Update the `mkdocs.yml` file to include the newly added markdown files.
 
 
+### Development setup
+We use [uv](https://docs.astral.sh/uv/) to manage the environment and dependencies. Once uv is
+[installed](https://docs.astral.sh/uv/getting-started/installation/), set up the project with:
+
+```bash
+uv sync                # package + the `dev` dependency group (linters, tests and docs tooling)
+uv sync --all-extras   # additionally install the optional `train` extra (training code and tests)
+```
+
+The development tools live in the `dev` [dependency group](https://peps.python.org/pep-0735/), which
+`uv sync` installs by default — no extra flags required. Run project tools inside this environment
+with `uv run`, e.g. `uv run pytest` or `uv run pre-commit run --all-files`.
+
 ### Coding Style
 In general, we follow the [Google Style Guide](https://google.github.io/styleguide/pyguide.html).
 We use [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages.
 In addition, to guarantee the quality and uniformity of the code, we use two tools:
 
 - [Ruff](https://docs.astral.sh/ruff/) is an extremely fast Python linter and code formatter.
-- [MyPy](https://mypy.readthedocs.io/en/stable/#) is a static type checker that can help you detect inconsistent typing of variables.
+- [ty](https://docs.astral.sh/ty/) is an extremely fast static type checker that can help you detect inconsistent typing of variables.
 
 
 #### Pre-Commit
-To help in automating the quality of the code, we use [pre-commit](https://pre-commit.com/), a framework that manages the installation and execution of git hooks that will be run before every commit. These hooks help to automatically point out issues in code such as formatting mistakes, unused variables, trailing whitespace, debug statements, etc. By pointing these issues out before code review, it allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Each commit should be preceded by a call to pre-commit to ensure code quality and formatting. The configuration is in .pre-commit-config.yaml and includes Ruff, MyPy and checks for the yaml formatting, trimming trailing whitespace, etc.
-Try running: `pre-commit run --all-files`. All linters must pass before committing your change.
+To help in automating the quality of the code, we use [pre-commit](https://pre-commit.com/), a framework that manages the installation and execution of git hooks that will be run before every commit. These hooks help to automatically point out issues in code such as formatting mistakes, unused variables, trailing whitespace, debug statements, etc. By pointing these issues out before code review, it allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Each commit should be preceded by a call to pre-commit to ensure code quality and formatting. The configuration is in .pre-commit-config.yaml and includes Ruff, ty and checks for the yaml formatting, trimming trailing whitespace, etc.
+Try running: `uv run pre-commit run --all-files`. All linters must pass before committing your change.
 
 ### Code of Conduct
 We ask you to help us develop a positive working environment. Behaviours that contribute to it include:
@@ -68,7 +81,7 @@ We ask you to help us develop a positive working environment. Behaviours that co
 * Showing empathy towards other community members
 
 ### Testing
-Please make sure that your PR passes all tests by running [pytest](https://docs.pytest.org/en/latest/) on your local machine.
+Please make sure that your PR passes all tests by running [pytest](https://docs.pytest.org/en/latest/) (`uv run pytest`) on your local machine.
 Also, you can run only tests that are affected by your code changes, but you will need to select them manually.
 
 ### Contributor License Agreement

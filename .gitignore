@@ -156,4 +156,9 @@ jumanji_env/
 *.xml
 .sokoban_cache/
 *.lock
+# uv's lockfile must be committed for reproducible installs / `uv sync --locked`
+!uv.lock
 .cursor
+
+# Test artifact written to CWD by mmst/viewer_test.py
+render_test_gif.gif

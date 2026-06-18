@@ -92,7 +92,7 @@ def update_state(
     headings, speeds = update_velocity(params, (actions, state))
     positions = jax.vmap(move, in_axes=(0, 0, 0, None))(state.pos, headings, speeds, env_size)
 
-    return state.replace(pos=positions, speed=speeds, heading=headings)  # type: ignore
+    return state.replace(pos=positions, speed=speeds, heading=headings)
 
 
 def view_reduction_fn(view_a: chex.Array, view_b: chex.Array) -> chex.Array:

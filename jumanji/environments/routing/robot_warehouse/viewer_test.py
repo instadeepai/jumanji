@@ -15,6 +15,7 @@
 import jax
 import jax.random as random
 import matplotlib
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as jnp
 import py

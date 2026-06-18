@@ -150,12 +150,12 @@ def test_assert_is_jax_array_tree(
     pytree_test_utils.assert_is_jax_array_tree(jax_tree)
     with pytest.raises(
         AssertionError,
-        match=f"The tree has at least one " f"leaf that is not of type {jnp.ndarray}.",
+        match=f"The tree has at least one leaf that is not of type {jnp.ndarray}.",
     ):
         pytree_test_utils.assert_is_jax_array_tree(np_tree)
     with pytest.raises(
         AssertionError,
-        match=f"The tree has at least one " f"leaf that is not of type {jnp.ndarray}.",
+        match=f"The tree has at least one leaf that is not of type {jnp.ndarray}.",
     ):
         pytree_test_utils.assert_is_jax_array_tree(jax_and_numpy_tree)
 

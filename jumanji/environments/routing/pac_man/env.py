@@ -266,7 +266,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         updated_state, collision_rewards = self._update_state(state, action)
 
         # Create next_state from updated state
-        next_state = updated_state.replace(step_count=state.step_count + 1)  # type: ignore
+        next_state = updated_state.replace(step_count=state.step_count + 1)
 
         # Check if episode terminates
         num_pellets = next_state.pellets
@@ -311,7 +311,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             state=state, action=action, x_size=self.x_size, y_size=self.y_size, steps=1
         )
         next_player_pos = self.check_wall_collisions(state, next_player_pos)
-        state = state.replace(last_direction=jnp.array(action, jnp.int32))  # type: ignore
+        state = state.replace(last_direction=jnp.array(action, jnp.int32))
 
         # Move ghosts
         old_ghost_locations = state.ghost_locations
@@ -320,7 +320,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         # Check for collisions with ghosts
         state, done, ghost_col_rewards = check_ghost_collisions(ghost_paths, next_player_pos, state)
 
-        state = state.replace(player_locations=next_player_pos)  # type: ignore
+        state = state.replace(player_locations=next_player_pos)
         state = state.replace(dead=done)
 
         power_up_locations, eat, power_up_rewards = self.check_power_up(state)

@@ -69,9 +69,11 @@ class DenseRewardFn(RewardFn):
             return jax.lax.cond(
                 is_connection,
                 lambda: self._reward_connected - same_coeff * self._reward_connected,
-                lambda: self._reward_time_step
-                + noop_coeff * self._reward_noop
-                - same_coeff * self._reward_time_step,
+                lambda: (
+                    self._reward_time_step
+                    + noop_coeff * self._reward_noop
+                    - same_coeff * self._reward_time_step
+                ),
             )
 
         self.reward_fun = reward_fun
