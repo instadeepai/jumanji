@@ -2585,7 +2585,7 @@ Implemented options are [<code>AsciiGenerator</code>].</p>
                 <code>time_limit</code>
             </td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[int]</code>
+                  <code>int</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2594,7 +2594,7 @@ before the episode terminates. By default, set to 1000.</p>
               </div>
             </td>
             <td>
-                  <code>None</code>
+                  <code>1000</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -2649,7 +2649,7 @@ before the episode terminates. By default, set to 1000.</p>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">viewer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Viewer</span><span class="p">[</span><span class="n">State</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time_limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Instantiates a `PacMan` environment.</span>
 
@@ -2667,7 +2667,7 @@ before the episode terminates. By default, set to 1000.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">pellet_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">pellet_spaces</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_viewer</span> <span class="o">=</span> <span class="n">viewer</span> <span class="ow">or</span> <span class="n">PacManViewer</span><span class="p">(</span><span class="s2">&quot;Pacman&quot;</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="mi">1000</span> <span class="ow">or</span> <span class="n">time_limit</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="n">time_limit</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
