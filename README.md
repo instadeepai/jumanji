@@ -231,7 +231,7 @@ For more information on how to use the example agents, see the
 Contributions are welcome! See our issue tracker for
 [good first issues](https://github.com/instadeepai/jumanji/labels/good%20first%20issue). Please read
 our [contributing guidelines](https://github.com/instadeepai/jumanji/blob/main/CONTRIBUTING.md) for
-details on how to submit pull requests, our Contributor License Agreement, and community guidelines.
+details on how to submit pull requests and our community guidelines.
 
 <h2 name="citing" id="citing">Citing Jumanji ✏️</h2>
 
