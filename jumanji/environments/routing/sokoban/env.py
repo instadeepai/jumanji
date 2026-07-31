@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -243,16 +243,10 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         timestep = jax.lax.cond(
             done,
-            lambda: termination(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-            ),
-            lambda: transition(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-            ),
+            partial(termination, extras=extras),
+            partial(transition, extras=extras),
+            reward,
+            observation,
         )
 
         return next_state, timestep

@@ -12,7 +12,6 @@ and then open a PR from the fork to the jumanji repository.
 Before sending your pull requests, make sure you do the following:
 - Read the [contributing guidelines](#Contributing-Code).
 - Read the [Code of Conduct](#Code-of-Conduct).
-- Ensure you have signed the [Contributor License Agreement](#Contributor-License-Agreement) (CLA).
 - Check if your changes are consistent with the [guidelines](#General-guidelines-and-philosophy-for-contribution) and the [Coding Style](#Coding-Style).
 - Run the [unit tests](#Testing).
 - Run the [pre-commits](#Pre-Commit).
@@ -83,12 +82,3 @@ We ask you to help us develop a positive working environment. Behaviours that co
 ### Testing
 Please make sure that your PR passes all tests by running [pytest](https://docs.pytest.org/en/latest/) (`uv run pytest`) on your local machine.
 Also, you can run only tests that are affected by your code changes, but you will need to select them manually.
-
-### Contributor License Agreement
-Contributions to this project must be accompanied by a Contributor License Agreement.
-You (or your employer) retain the copyright to your contribution, this simply gives us permission to use and
-redistribute your contributions as part of the project. Head over to https://cla.developers.google.com/ to
-see your current agreements on file or to sign a new one.
-
-You generally only need to submit a CLA once, so if you've already submitted one
-(even if it was for a different project), you probably don't need to do it again.

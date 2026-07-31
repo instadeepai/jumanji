@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Optional, Sequence, Tuple
 
 import chex
@@ -217,16 +217,10 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         extras = {"highest_tile": highest_tile}
         timestep = jax.lax.cond(
             done,
-            lambda: termination(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-            ),
-            lambda: transition(
-                reward=reward,
-                observation=observation,
-                extras=extras,
-            ),
+            partial(termination, extras=extras),
+            partial(transition, extras=extras),
+            reward,
+            observation,
         )
 
         return state, timestep

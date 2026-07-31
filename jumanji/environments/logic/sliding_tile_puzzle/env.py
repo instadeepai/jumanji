@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Dict, Optional, Sequence, Tuple
 
 import chex
@@ -144,16 +144,10 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
 
         timestep = jax.lax.cond(
             done | (next_state.step_count >= self.time_limit),
-            lambda: termination(
-                reward=reward,
-                observation=obs,
-                extras=extras,
-            ),
-            lambda: transition(
-                reward=reward,
-                observation=obs,
-                extras=extras,
-            ),
+            partial(termination, extras=extras),
+            partial(transition, extras=extras),
+            reward,
+            obs,
         )
 
         return next_state, timestep
