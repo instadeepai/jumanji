@@ -3016,10 +3016,10 @@ terminal timestep. This is useful for e.g. truncation.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">env</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">key</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">:</span> <span class="n">Any</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span> <span class="n">State</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_jitted_reset</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">]]</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span>
     <span class="p">)</span>
@@ -3166,8 +3166,8 @@ terminal timestep. This is useful for e.g. truncation.</p>
 <span class="sd">                are also valid in place of a scalar array. Must conform to the</span>
 <span class="sd">                specification returned by `observation_spec`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">reset_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jitted_reset</span><span class="p">(</span><span class="n">reset_key</span><span class="p">)</span>
+    <span class="n">reset_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jitted_reset</span><span class="p">(</span><span class="n">reset_key</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="n">timestep</span><span class="o">.</span><span class="n">observation</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3326,7 +3326,7 @@ corresponding to <code>action_spec</code>.</p>
 <span class="sd">                are also valid in place of a scalar array. Must conform to the</span>
 <span class="sd">                specification returned by `observation_spec`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jitted_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jitted_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dm_env</span><span class="o">.</span><span class="n">TimeStep</span><span class="p">(</span>
         <span class="n">step_type</span><span class="o">=</span><span class="n">timestep</span><span class="o">.</span><span class="n">step_type</span><span class="p">,</span>
         <span class="n">reward</span><span class="o">=</span><span class="n">timestep</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span>
