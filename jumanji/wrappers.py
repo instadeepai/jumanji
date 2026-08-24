@@ -137,10 +137,10 @@ class JumanjiToDMEnvWrapper(dm_env.Environment, Generic[State, ActionSpec, Obser
         """
         self._env = env
         if key is None:
-            self._key = jax.random.PRNGKey(0)
+            self.key = jax.random.PRNGKey(0)
         else:
-            self._key = key
-        self._state: Any
+            self.key = key
+        self.state: State
         self._jitted_reset: Callable[[chex.PRNGKey], Tuple[State, TimeStep]] = jax.jit(
             self._env.reset
         )
@@ -164,8 +164,8 @@ class JumanjiToDMEnvWrapper(dm_env.Environment, Generic[State, ActionSpec, Obser
                     are also valid in place of a scalar array. Must conform to the
                     specification returned by `observation_spec`.
         """
-        reset_key, self._key = jax.random.split(self._key)
-        self._state, timestep = self._jitted_reset(reset_key)
+        reset_key, self.key = jax.random.split(self.key)
+        self.state, timestep = self._jitted_reset(reset_key)
         return dm_env.restart(observation=timestep.observation)
 
     def step(self, action: chex.ArrayNumpy) -> dm_env.TimeStep:
@@ -197,7 +197,7 @@ class JumanjiToDMEnvWrapper(dm_env.Environment, Generic[State, ActionSpec, Obser
                     are also valid in place of a scalar array. Must conform to the
                     specification returned by `observation_spec`.
         """
-        self._state, timestep = self._jitted_step(self._state, action)
+        self.state, timestep = self._jitted_step(self.state, action)
         return dm_env.TimeStep(
             step_type=timestep.step_type,
             reward=timestep.reward,

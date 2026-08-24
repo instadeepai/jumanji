@@ -207,6 +207,23 @@ class TestJumanjiEnvironmentToDeepMindEnv:
         )
         assert isinstance(dm_environment_with_key, dm_env.Environment)
 
+    def test_jumanji_environment_to_deep_mind_env__state_and_key_attributes(
+        self,
+        fake_environment: FakeEnvironment,
+        key: chex.PRNGKey,
+    ) -> None:
+        """Validates getting and setting the wrapper's state and key attributes."""
+        dm_environment = JumanjiToDMEnvWrapper(fake_environment, key=key)
+        assert dm_environment.key is key
+
+        new_key = jax.random.PRNGKey(1)
+        dm_environment.key = new_key
+        assert dm_environment.key is new_key
+
+        state = FakeState(key=key, step=jnp.array(0, jnp.int32))
+        dm_environment.state = state
+        assert dm_environment.state is state
+
     def test_dm_env__reset(self, fake_dm_env: FakeJumanjiToDMEnvWrapper) -> None:
         """Validates reset function and timestep type of the wrapped environment."""
         timestep = fake_dm_env.reset()
