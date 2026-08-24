@@ -162,7 +162,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
             step_count=jnp.array(0, jnp.int32),
             action_mask=self._get_action_mask(head_position, body_state),
         )
-        timestep = restart(observation=self._state_to_observation(state))
+        timestep = restart(observation=self.observe(state))
         return state, timestep
 
     def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
@@ -223,7 +223,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         done = ~is_valid | snake_completed | (step_count >= self.time_limit)
 
         reward = jnp.asarray(fruit_eaten, float)
-        observation = self._state_to_observation(next_state)
+        observation = self.observe(next_state)
 
         timestep = jax.lax.cond(
             done,
@@ -276,7 +276,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Maps an environment state to an observation.
 
         Args:

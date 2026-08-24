@@ -3,6 +3,7 @@
       members:
         - reset
         - step
+        - observe
         - observation_spec
         - action_spec
         - reward_spec

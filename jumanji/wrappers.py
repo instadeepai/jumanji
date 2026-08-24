@@ -78,6 +78,10 @@ class Wrapper(Environment[State, ActionSpec, Observation], Generic[State, Action
         """
         return self._env.step(state, action)
 
+    def observe(self, state: State) -> Observation:
+        """Create an observation from an environment state."""
+        return self._env.observe(state)
+
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec."""
@@ -361,6 +365,10 @@ class VmapWrapper(Wrapper[State, ActionSpec, Observation], Generic[State, Action
         """
         state, timestep = jax.vmap(self._env.step)(state, action)
         return state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create observations from a batch of environment states."""
+        return jax.vmap(self._env.observe)(state)
 
     def render(self, state: State) -> Any:
         """Render the first environment state of the given batch.

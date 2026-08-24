@@ -109,6 +109,20 @@ class TestBaseWrapper:
 
         mock_reset.assert_called_once_with(mock_key)
 
+    def test_wrapper__observe(
+        self,
+        mocker: pytest_mock.MockerFixture,
+        wrapped_fake_environment: FakeWrapper,
+        fake_environment: FakeEnvironment,
+    ) -> None:
+        """Checks `Wrapper.observe` calls the observe method of the underlying env."""
+        mock_observe = mocker.patch.object(fake_environment, "observe", autospec=True)
+        mock_state = mocker.MagicMock()
+
+        wrapped_fake_environment.observe(mock_state)
+
+        mock_observe.assert_called_once_with(mock_state)
+
     def test_wrapper__observation_spec(
         self,
         mocker: pytest_mock.MockerFixture,
@@ -493,6 +507,15 @@ class TestVmapWrapper:
         assert next_timestep.reward.shape == (keys.shape[0],)
         assert next_timestep.discount.shape == (keys.shape[0],)
         assert next_timestep.observation.shape[0] == keys.shape[0]
+
+    def test_vmap_env__observe(self, keys: chex.PRNGKey) -> None:
+        """Validates observation creation from a batch of environment states."""
+        env = VmapWrapper(FakeEnvironment(observation_shape=(2,)))
+        state, timestep = env.reset(keys)
+
+        observation = jax.jit(env.observe)(state)
+
+        chex.assert_trees_all_equal(observation, timestep.observation)
 
     def test_vmap_env__render(
         self, fake_vmap_environment: FakeVmapWrapper, keys: chex.PRNGKey

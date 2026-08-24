@@ -186,7 +186,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
         # Create the action mask and update the state
         state.action_mask = self._compute_action_mask(state.grid, agents_locations)
 
-        observation = self._observation_from_state(state)
+        observation = self.observe(state)
 
         extras = self._compute_extras(state)
         timestep = restart(observation, extras)
@@ -228,7 +228,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         reward = self._compute_reward(prev_state, state)
 
-        observation = self._observation_from_state(state)
+        observation = self.observe(state)
 
         done = self._should_terminate(state, is_action_valid)
 
@@ -319,7 +319,7 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return action_mask
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Create an observation from the state of the environment."""
         return Observation(
             grid=state.grid,

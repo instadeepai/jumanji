@@ -79,6 +79,17 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
 
+    def observe(self, state: State) -> Observation:
+        """Create an observation from an environment state.
+
+        Args:
+            state: State object containing the dynamics of the environment.
+
+        Returns:
+            observation: Observation object derived from the environment state.
+        """
+        raise NotImplementedError("Observe method not implemented for this environment.")
+
     @abc.abstractmethod
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
