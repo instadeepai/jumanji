@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import ClassVar, Dict, Optional, Sequence, Tuple
+from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import jax.numpy as jnp
 import matplotlib.animation
 import matplotlib.pyplot as plt
 from matplotlib.artist import Artist
+from matplotlib.patches import Rectangle
+from matplotlib.text import Text
 from numpy.typing import NDArray
 
 from jumanji.environments.logic.game_2048.types import State
@@ -106,13 +108,30 @@ class Game2048Viewer(MatplotlibViewer[State]):
         # Set up the figure and axes for the game board.
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
-        ax.set_title("2048    Score: 0", size=20)
+        tiles, texts = self.draw_board(ax, states[0])
+        score_text = ax.set_title(f"2048    Score: {int(states[0].score)}", size=20)
 
         # Define a function to animate a single game state.
-        def make_frame(state: State) -> Tuple[Artist]:
-            self.draw_board(ax, state)
-            ax.set_title(f"2048    Score: {int(state.score)}", size=20)
-            return (ax,)
+        def make_frame(state: State) -> Sequence[Artist]:
+            board = jnp.power(2, state.board)
+            updated_artists: List[Artist] = []
+            for row in range(self._board_size):
+                for col in range(self._board_size):
+                    index = row * self._board_size + col
+                    tile_value = int(board[row, col])
+                    background_color, text_color, text_size = self._get_tile_style(tile_value)
+
+                    tile = tiles[index]
+                    tile.set_color(background_color)
+                    text = texts[index]
+                    text.set_text("" if tile_value == 1 else str(tile_value))
+                    text.set_color(text_color)
+                    text.set_fontsize(text_size)
+                    updated_artists.extend((tile, text))
+
+            score_text.set_text(f"2048    Score: {int(state.score)}")
+            updated_artists.append(score_text)
+            return updated_artists
 
         # Create the animation object.
         self._animation = matplotlib.animation.FuncAnimation(
@@ -120,6 +139,7 @@ class Game2048Viewer(MatplotlibViewer[State]):
             make_frame,
             frames=states,
             interval=interval,
+            blit=True,
         )
 
         # Save the animation as a gif.
@@ -128,7 +148,9 @@ class Game2048Viewer(MatplotlibViewer[State]):
 
         return self._animation
 
-    def render_tile(self, tile_value: int, ax: plt.Axes, row: int, col: int) -> None:
+    def render_tile(
+        self, tile_value: int, ax: plt.Axes, row: int, col: int
+    ) -> Tuple[Rectangle, Text]:
         """Renders a single tile on the game board.
 
         Args:
@@ -137,39 +159,38 @@ class Game2048Viewer(MatplotlibViewer[State]):
             row: the row index of the tile on the board.
             col: the col index of the tile on the board.
         """
-        # Set the background color of the tile based on its value.
-        if tile_value <= 16384:
-            rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=self.COLORS[int(tile_value)])
-        else:
-            rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=self.COLORS["other"])
+        background_color, text_color, text_size = self._get_tile_style(tile_value)
+        rect = plt.Rectangle((col - 0.5, row - 0.5), 1, 1, color=background_color)
         ax.add_patch(rect)
+        text = ax.text(
+            col,
+            row,
+            "" if tile_value == 1 else str(tile_value),
+            color=text_color,
+            ha="center",
+            va="center",
+            size=text_size,
+            weight="bold",
+        )
+        return rect, text
 
+    def _get_tile_style(self, tile_value: int) -> Tuple[str, str, int]:
+        background_color = self.COLORS[tile_value] if tile_value <= 16384 else self.COLORS["other"]
         if tile_value in [2, 4]:
-            color = self.COLORS["dark_text"]
-            size = 30
+            text_color = self.COLORS["dark_text"]
+            text_size = 30
         elif tile_value < 1024:
-            color = self.COLORS["light_text"]
-            size = 30
-        elif 1024 <= tile_value < 16384:
-            color = self.COLORS["light_text"]
-            size = 25
-        else:  # tile_value >= 16384:
-            color = self.COLORS["light_text"]
-            size = 20
-        # Empty tiles (each corresponding to the number 1) are not rendered.
-        if tile_value != 1:
-            ax.text(
-                col,
-                row,
-                str(tile_value),
-                color=color,
-                ha="center",
-                va="center",
-                size=size,
-                weight="bold",
-            )
+            text_color = self.COLORS["light_text"]
+            text_size = 30
+        elif tile_value < 16384:
+            text_color = self.COLORS["light_text"]
+            text_size = 25
+        else:
+            text_color = self.COLORS["light_text"]
+            text_size = 20
+        return background_color, text_color, text_size
 
-    def draw_board(self, ax: plt.Axes, state: State) -> None:
+    def draw_board(self, ax: plt.Axes, state: State) -> Tuple[List[Rectangle], List[Text]]:
         """Draw the game board with the current state.
 
         Args:
@@ -191,14 +212,21 @@ class Game2048Viewer(MatplotlibViewer[State]):
         )
         # Get the tile values from the exponents.
         board = jnp.power(2, state.board)
+        tiles = []
+        texts = []
 
         # Iterate through each cell and render tiles.
         for row in range(0, self._board_size):
             for col in range(0, self._board_size):
-                self.render_tile(tile_value=board[row, col], ax=ax, row=row, col=col)
+                tile, text = self.render_tile(
+                    tile_value=int(board[row, col]), ax=ax, row=row, col=col
+                )
+                tiles.append(tile)
+                texts.append(text)
 
         # Show the image of the board.
         ax.imshow(board)
 
         # Draw the grid lines.
         ax.grid(color=self.COLORS["edge"], linestyle="-", linewidth=7)
+        return tiles, texts
