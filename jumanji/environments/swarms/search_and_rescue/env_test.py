@@ -81,9 +81,9 @@ def test_env_step(env: SearchAndRescue, key: chex.PRNGKey, env_size: float) -> N
         carry: Tuple[chex.PRNGKey, State], _: None
     ) -> Tuple[Tuple[chex.PRNGKey, State], Tuple[State, TimeStep[Observation]]]:
         k, state = carry
-        k, k_search = jax.random.split(k)
+        k, k_search, k_step = jax.random.split(k, 3)
         actions = jax.random.uniform(k_search, (env.num_agents, 2), minval=-1.0, maxval=1.0)
-        new_state, timestep = env.step(state, actions)
+        new_state, timestep = env.step(state, actions, k_step)
         return (k, new_state), (state, timestep)
 
     init_state, _ = env.reset(key)
@@ -146,7 +146,7 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
         ),
         key=key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert not state.targets.found[0]
     assert timestep.reward[0] == 0
 
@@ -158,12 +158,12 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
         targets=state.targets,
         key=state.key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert timestep.reward[0] == 1
 
     # Searcher should only get rewards once
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert timestep.reward[0] == 0
 
@@ -177,7 +177,7 @@ def test_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None:
         targets=state.targets,
         key=state.key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert timestep.reward[0] == 0
 
@@ -206,7 +206,7 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
         ),
         key=key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert not state.targets.found[0]
     assert not state.targets.found[1]
     assert timestep.reward[0] == 0
@@ -219,7 +219,7 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
         targets=state.targets,
         key=state.key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert not state.targets.found[1]
     assert timestep.reward[0] == 1
@@ -232,7 +232,7 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
         targets=state.targets,
         key=state.key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert not state.targets.found[1]
     assert timestep.reward[0] == 0
@@ -245,7 +245,7 @@ def test_multi_target_detection(env: SearchAndRescue, key: chex.PRNGKey) -> None
         targets=state.targets,
         key=state.key,
     )
-    state, timestep = env.step(state, jnp.zeros((1, 2)))
+    state, timestep = env.step(state, jnp.zeros((1, 2)), state.key)
     assert state.targets.found[0]
     assert state.targets.found[1]
     assert timestep.reward[0] == 1
@@ -257,7 +257,7 @@ def test_search_and_rescue_render(monkeypatch: pytest.MonkeyPatch, env: SearchAn
     step_fn = jax.jit(env.step)
     state, _timestep = env.reset(jax.random.PRNGKey(0))
     action = env.action_spec.generate_value()
-    state, _timestep = step_fn(state, action)
+    state, _timestep = step_fn(state, action, state.key)
     env.render(state)
     env.close()
 
@@ -268,7 +268,7 @@ def test_search_and_rescue__animation(env: SearchAndRescue, tmpdir: py.path.loca
     state, _ = env.reset(jax.random.PRNGKey(0))
     states = [state]
     action = env.action_spec.generate_value()
-    state, _ = step_fn(state, action)
+    state, _ = step_fn(state, action, state.key)
     states.append(state)
     animation = env.animate(states, interval=200, save_path=None)
     assert isinstance(animation, matplotlib.animation.Animation)

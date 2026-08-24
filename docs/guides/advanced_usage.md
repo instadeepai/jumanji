@@ -22,8 +22,9 @@ random_key = jax.random.PRNGKey(0)
 key1, key2 = jax.random.split(random_key)
 
 def step_fn(state, key):
-  action = jax.random.randint(key=key, minval=0, maxval=num_actions, shape=())
-  new_state, timestep = env.step(state, action)
+  action_key, step_key = jax.random.split(key)
+  action = jax.random.randint(key=action_key, minval=0, maxval=num_actions, shape=())
+  new_state, timestep = env.step(state, action, step_key)
   return new_state, timestep
 
 def run_n_steps(state, key, n):

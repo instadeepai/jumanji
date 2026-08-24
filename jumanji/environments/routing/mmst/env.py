@@ -124,10 +124,11 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
     from jumanji.environments import MMST
     env = MMST()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -190,12 +191,15 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state), extras=extras)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the index of the next node to visit.
+            key: random key used to resolve simultaneous actions.
 
         Returns:
             state, timestep: Tuple[State, TimeStep] containing the next state of the
@@ -231,7 +235,9 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
 
             return connected_nodes, conn_index, new_node, indices
 
-        key, step_key = jax.random.split(state.key)
+        if key is None:
+            raise ValueError("A PRNG key is required to step MMST.")
+        key, step_key = jax.random.split(key)
         action, next_nodes = self._trim_duplicated_invalid_actions(state, action, step_key)
 
         connected_nodes = jnp.zeros_like(state.connected_nodes)

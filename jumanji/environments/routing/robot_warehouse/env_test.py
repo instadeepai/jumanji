@@ -67,7 +67,7 @@ def test_robot_warehouse__agent_observation(
 ) -> None:
     """Validate the agent observation function."""
     env, state, timestep = deterministic_robot_warehouse_env
-    state, timestep = env.step(state, jnp.array([0, 0]))
+    state, timestep = env.step(state, jnp.array([0, 0]), state.key)
 
     # agent 1 obs
     agent1_own_view = jnp.array([3, 4, 0, 0, 0, 1, 0, 1])
@@ -106,7 +106,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     action1 = jnp.zeros((robot_warehouse_env.num_agents,), int).at[0].set(action1)
     action2 = jnp.zeros((robot_warehouse_env.num_agents,), int).at[0].set(action2)
 
-    new_state1, timestep1 = step_fn(state, action1)
+    new_state1, timestep1 = step_fn(state, action1, state.key)
 
     # Check that rewards have the correct number of dimensions
     assert jnp.ndim(timestep1.reward) == 0
@@ -121,7 +121,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     assert new_state1.step_count != state.step_count
     assert not jnp.all(new_state1.grid != state.grid)
     # Check that two different actions lead to two different states
-    new_state2, _timestep2 = step_fn(state, action2)
+    new_state2, _timestep2 = step_fn(state, action2, state.key)
     assert not jnp.all(new_state1.grid != new_state2.grid)
 
     # Check that the state update and timestep creation work as expected
@@ -144,7 +144,7 @@ def test_robot_warehouse__step(robot_warehouse_env: RobotWarehouse) -> None:
     ]
 
     for action, new_loc in zip(actions, new_locs, strict=False):
-        state, timestep = step_fn(state, jnp.array([action, action]))
+        state, timestep = step_fn(state, jnp.array([action, action]), state.key)
         agent1_info = tree_slice(state.agents, 1)
         agent1_loc = (
             agent1_info.position.x,
@@ -174,10 +174,10 @@ def test_robot_warehouse__time_limit(robot_warehouse_env: RobotWarehouse) -> Non
     assert timestep.first()
 
     for _ in range(robot_warehouse_env.time_limit - 1):
-        state, timestep = step_fn(state, jnp.array([0, 0]))
+        state, timestep = step_fn(state, jnp.array([0, 0]), state.key)
 
     assert timestep.mid()
-    state, timestep = step_fn(state, jnp.array([0, 0]))
+    state, timestep = step_fn(state, jnp.array([0, 0]), state.key)
     assert timestep.last()
 
 
@@ -190,7 +190,7 @@ def test_robot_warehouse__truncation(
 
     # truncation
     for _ in range(robot_warehouse_env.time_limit):
-        state, timestep = step_fn(state, jnp.array([0, 0]))
+        state, timestep = step_fn(state, jnp.array([0, 0]), state.key)
 
     assert timestep.last()
     # note the line below should be used to test for truncation
@@ -211,7 +211,7 @@ def test_robot_warehouse__truncate_upon_collision(
 
     # take actions until collision
     for action in actions:
-        state, timestep = step_fn(state, jnp.array([action, 0]))
+        state, timestep = step_fn(state, jnp.array([action, 0]), state.key)
 
     assert timestep.last()
     # TODO: uncomment once we have changed termination
@@ -231,9 +231,9 @@ def test_robot_warehouse__reward_in_goal(
 
     # check no reward is given when not at goal state
     for action in actions:
-        state, timestep = step_fn(state, jnp.array([0, action]))
+        state, timestep = step_fn(state, jnp.array([0, action]), state.key)
         assert timestep.reward == 0
 
     # final step to delivery shelf
-    state, timestep = step_fn(state, jnp.array([0, 1]))
+    state, timestep = step_fn(state, jnp.array([0, 1]), state.key)
     assert timestep.reward == 1

@@ -75,8 +75,10 @@ class RandomAgent(Agent):
         def run_one_step(
             acting_state: ActingState, key: chex.PRNGKey
         ) -> Tuple[ActingState, Optional[Dict]]:
-            action = random_policy(acting_state.timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
+            action_key, step_key = jax.random.split(key)
+            action = random_policy(acting_state.timestep.observation, action_key)
+            step_keys = jax.random.split(step_key, self.batch_size_per_device)
+            next_env_state, next_timestep = self.env.step(acting_state.state, action, step_keys)
             acting_state = ActingState(
                 state=next_env_state,
                 timestep=next_timestep,

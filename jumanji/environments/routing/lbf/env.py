@@ -184,7 +184,9 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
 
         return state, timestep
 
-    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep]:
+    def step(
+        self, state: State, actions: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep]:
         """Simulate one step of the environment.
 
         Args:

@@ -285,7 +285,9 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics. If the action is invalid, the state
         is not updated, i.e. the action is not taken, and the episode terminates.
 

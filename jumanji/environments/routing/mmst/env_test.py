@@ -111,7 +111,7 @@ def test__mmst_step(mmst_split_gn_env: MMST) -> None:
 
     action_key = jax.random.PRNGKey(1)
     action = jax.random.categorical(action_key, logits)
-    new_state, next_timestep = step_fn(state, action)
+    new_state, next_timestep = step_fn(state, action, state.key)
 
     # Check that the state has changed.
     assert not jnp.array_equal(new_state.connected_nodes, state.connected_nodes)
@@ -146,16 +146,16 @@ def test__mmst_termination(
     step_fn = jax.jit(env.step)
 
     action = jnp.array([0, 4])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     action = jnp.array([3, 5])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     action = jnp.array([7, 4])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     action = jnp.array([6, 8])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     assert state.finished_agents[1]
 
@@ -164,10 +164,10 @@ def test__mmst_termination(
     new_action, _ = env._trim_duplicated_invalid_actions(state, action, step_key)
     assert new_action[1] == INVALID_CHOICE
 
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     action = jnp.array([9, 4])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     assert jnp.all(state.finished_agents)
 
@@ -182,7 +182,7 @@ def test__mmst_truncation(deterministic_mmst_env: Tuple[MMST, State, TimeStep]) 
 
     # Truncation.
     for _ in range(env.time_limit + 1):
-        state, timestep = step_fn(state, jnp.array([3, 3]))
+        state, timestep = step_fn(state, jnp.array([3, 3]), state.key)
 
     assert timestep.last()
 
@@ -196,7 +196,7 @@ def test__mmst_action_masking(
     assert state.action_mask[1, 4]
 
     action = jnp.array([4, 3])
-    new_state, _ = step_fn(state, action)
+    new_state, _ = step_fn(state, action, state.key)
 
     # Agent 1 shouldn't be able to acess node 4 any more.
     assert jnp.array_equal(state.positions[1], new_state.positions[1])

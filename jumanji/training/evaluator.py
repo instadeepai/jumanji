@@ -80,12 +80,14 @@ class Evaluator:
             carry: Tuple[ActingState, float],
         ) -> Tuple[ActingState, float]:
             acting_state, return_ = carry
-            key, action_key = jax.random.split(acting_state.key)
+            key, action_key, step_key = jax.random.split(acting_state.key, 3)
             observation = jax.tree_util.tree_map(
                 lambda x: x[None], acting_state.timestep.observation
             )
             action = acting_policy(observation, action_key)
-            state, timestep = self.eval_env.step(acting_state.state, jnp.squeeze(action, axis=0))
+            state, timestep = self.eval_env.step(
+                acting_state.state, jnp.squeeze(action, axis=0), step_key
+            )
             return_ += timestep.reward
             acting_state = ActingState(
                 state=state,

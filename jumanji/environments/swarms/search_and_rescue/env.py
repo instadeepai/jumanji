@@ -104,10 +104,11 @@ class SearchAndRescue(Environment):
 
     env = SearchAndRescue()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -214,7 +215,9 @@ class SearchAndRescue(Environment):
         timestep = restart(observation=self._state_to_observation(state), shape=(self.num_agents,))
         return state, timestep
 
-    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, actions: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Environment update.
 
         Update searcher velocities and consequently their positions,
@@ -223,12 +226,15 @@ class SearchAndRescue(Environment):
         Args:
             state: Environment state.
             actions: 2d array of searcher steering actions.
+            key: random key used to update target dynamics.
 
         Returns:
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        key, target_key = jax.random.split(state.key, num=2)
+        if key is None:
+            raise ValueError("A PRNG key is required to step SearchAndRescue.")
+        key, target_key = jax.random.split(key, num=2)
         searchers = update_state(
             self.generator.env_size, self.searcher_params, state.searchers, actions
         )

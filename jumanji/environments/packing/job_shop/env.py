@@ -169,7 +169,9 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the status of all machines, the status of the operations, and increments the
         time step. It updates the environment state and the timestep (which contains the new
         observation). It calculates the reward based on the three terminal conditions:

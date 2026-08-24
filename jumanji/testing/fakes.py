@@ -102,7 +102,12 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: FakeState, action: chex.Array) -> Tuple[FakeState, TimeStep]:
+    def step(
+        self,
+        state: FakeState,
+        action: chex.Array,
+        key: chex.PRNGKey | None = None,
+    ) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -114,9 +119,9 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
         chex.assert_equal_shape((action, self._example_action))
-        key, _ = jax.random.split(state.key)
+        del key
         next_step = state.step + 1
-        next_state = FakeState(key=key, step=next_step)
+        next_state = FakeState(key=state.key, step=next_step)
         observation = self._state_to_obs(next_state)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
@@ -238,7 +243,12 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 
-    def step(self, state: FakeState, action: chex.Array) -> Tuple[FakeState, TimeStep]:
+    def step(
+        self,
+        state: FakeState,
+        action: chex.Array,
+        key: chex.PRNGKey | None = None,
+    ) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
         Args:
@@ -249,9 +259,9 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        key = jax.random.split(state.key, 1).squeeze(0)
+        del key
         next_step = state.step + 1
-        next_state = FakeState(key=key, step=next_step)
+        next_state = FakeState(key=state.key, step=next_step)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
             lambda _: termination(

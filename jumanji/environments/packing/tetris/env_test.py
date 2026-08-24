@@ -77,11 +77,11 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
     key = jax.random.PRNGKey(0)
     state, _timestep = tetris_env.reset(key)
     action = (0, 4)
-    step_fn(state, action)
-    step_fn(state, action)
-    step_fn(state, action)
+    step_fn(state, action, state.key)
+    step_fn(state, action, state.key)
+    step_fn(state, action, state.key)
     action = (0, 0)
-    next_state, next_timestep = step_fn(state, action)
+    next_state, next_timestep = step_fn(state, action, state.key)
     # Check that the state has changed
     assert not jnp.array_equal(next_state.grid_padded, state.grid_padded)
     assert next_state.grid_padded.sum() == state.grid_padded.sum() + 4

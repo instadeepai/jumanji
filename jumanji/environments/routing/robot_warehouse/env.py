@@ -127,10 +127,11 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
     from jumanji.environments import RobotWarehouse
     env = RobotWarehouse()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -223,6 +224,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         self,
         state: State,
         action: chex.Array,
+        key: chex.PRNGKey | None = None,
     ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
@@ -234,14 +236,17 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
                 - 2 turn left
                 - 3 turn right
                 - 4 toggle load
+            key: random key used to sample new shelf requests.
 
         Returns:
             state: State object corresponding to the next state of the environment.
             timestep: TimeStep object corresponding the timestep returned by the environment.
         """
 
+        if key is None:
+            raise ValueError("A PRNG key is required to step RobotWarehouse.")
+
         # unpack state
-        key = state.key
         grid = state.grid
         agents = state.agents
         shelves = state.shelves

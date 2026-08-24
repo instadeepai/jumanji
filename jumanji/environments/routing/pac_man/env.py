@@ -102,10 +102,11 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import pac_man
     env = PacMan()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -245,7 +246,9 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         If an action is invalid, the agent does not move, i.e. the episode does not
@@ -256,14 +259,18 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             action: (int32) specifying which action to take: [0,1,2,3,4] correspond to
                 [Up, Right, Down, Left, No-op]. If an invalid action is taken, i.e. there is a wall
                 blocking the action, then no action (no-op) is taken.
+            key: random key used to sample ghost actions.
 
         Returns:
             state: the new state of the environment.
             the next timestep to be observed.
         """
 
+        if key is None:
+            raise ValueError("A PRNG key is required to step PacMan.")
+
         # Collect updated state based on environment dynamics
-        updated_state, collision_rewards = self._update_state(state, action)
+        updated_state, collision_rewards = self._update_state(state, action, key)
 
         # Create next_state from updated state
         next_state = updated_state.replace(step_count=state.step_count + 1)
@@ -291,20 +298,20 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return next_state, timestep
 
-    def _update_state(self, state: State, action: chex.Array) -> Tuple[State, int]:
+    def _update_state(
+        self, state: State, action: chex.Array, key: chex.PRNGKey
+    ) -> Tuple[State, int]:
         """Updates the state of the environment.
 
         Args:
             state: 'State` object corresponding to the new state of the environment.
             action: An integer representing the player action.
+            key: random key used to sample ghost actions.
 
         Returns:
             state: 'State` object corresponding to the new state of the environment.
             collision_rewards: Rewards from objects the player has collided with
         """
-
-        key = state.key
-        key, _ = jax.random.split(key)
 
         # Move player
         next_player_pos = player_step(
@@ -315,7 +322,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         # Move ghosts
         old_ghost_locations = state.ghost_locations
-        ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size)
+        ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size, key)
 
         # Check for collisions with ghosts
         state, done, ghost_col_rewards = check_ghost_collisions(ghost_paths, next_player_pos, state)

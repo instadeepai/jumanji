@@ -210,8 +210,10 @@ class A2CAgent(Agent):
             acting_state: ActingState, key: chex.PRNGKey
         ) -> Tuple[ActingState, Transition]:
             timestep = acting_state.timestep
-            action, (log_prob, logits) = policy(timestep.observation, key)
-            next_env_state, next_timestep = self.env.step(acting_state.state, action)
+            action_key, step_key = jax.random.split(key)
+            action, (log_prob, logits) = policy(timestep.observation, action_key)
+            step_keys = jax.random.split(step_key, self.batch_size_per_device)
+            next_env_state, next_timestep = self.env.step(acting_state.state, action, step_keys)
 
             acting_state = ActingState(
                 state=next_env_state,

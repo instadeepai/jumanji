@@ -115,7 +115,9 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action."""
         (updated_puzzle, updated_empty_tile_position) = self._move_empty_tile(
             state.puzzle, state.empty_tile_position, action

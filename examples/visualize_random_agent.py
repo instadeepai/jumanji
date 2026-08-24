@@ -89,10 +89,10 @@ def create_animation(env_name: str, agent: str = "random", num_episodes: int = 2
         states.append(state)
 
         while not timestep.last():
-            key, action_key = jax.random.split(key)
+            key, action_key, step_key = jax.random.split(key, 3)
             observation = jax.tree_util.tree_map(lambda x: x[None], timestep.observation)
             action = policy(observation, action_key)
-            state, timestep = step_fn(state, action.squeeze(axis=0))
+            state, timestep = step_fn(state, action.squeeze(axis=0), step_key)
             states.append(state)
 
     env.animate(states, 100, f"animations/{env_name}_animation.gif")

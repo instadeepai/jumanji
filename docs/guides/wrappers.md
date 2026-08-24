@@ -53,7 +53,8 @@ state, timestep = env.reset(key)
 print("New episode")
 for i in range(100):
     action = env.action_spec.generate_value()  # Returns jnp.array(0) when using Snake.
-    state, timestep = env.step(state, action)
+    key, step_key = jax.random.split(key)
+    state, timestep = env.step(state, action, step_key)
     if timestep.first():
         print("New episode")
 ```

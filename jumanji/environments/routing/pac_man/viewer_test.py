@@ -46,9 +46,9 @@ def test_robot_warehouse_viewer__animate(pac_man: PacMan) -> None:
     num_steps = 5
     states = [state]
     for _ in range(num_steps - 1):
-        key, subkey = jax.random.split(key)
-        action = jax.random.choice(subkey, jnp.arange(4), shape=(1,))[0]
-        state, _ = jax.jit(pac_man.step)(state, action)
+        key, action_key, step_key = jax.random.split(key, 3)
+        action = jax.random.choice(action_key, jnp.arange(4), shape=(1,))[0]
+        state, _ = jax.jit(pac_man.step)(state, action, step_key)
         states.append(state)
 
     viewer = PacManViewer("PacMan", render_mode="human")
@@ -63,9 +63,9 @@ def test_robot_warehouse_viewer__save_animation(pac_man: PacMan, tmpdir: py.path
     num_steps = 5
     states = [state]
     for _ in range(num_steps - 1):
-        key, subkey = jax.random.split(key)
-        action = jax.random.choice(subkey, jnp.arange(4), shape=(1,))[0]
-        state, _ = jax.jit(pac_man.step)(state, action)
+        key, action_key, step_key = jax.random.split(key, 3)
+        action = jax.random.choice(action_key, jnp.arange(4), shape=(1,))[0]
+        state, _ = jax.jit(pac_man.step)(state, action, step_key)
         states.append(state)
 
     viewer = PacManViewer("PacMan", render_mode="human")

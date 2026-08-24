@@ -99,7 +99,9 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=obs)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         # check if action is valid
         invalid = ~state.action_mask[tuple(action)]
         updated_board = apply_action(action=action, board=state.board)

@@ -42,20 +42,20 @@ def test__mmst_dense_rewards(deterministic_mmst_env: Tuple[MMST, State, TimeStep
     assert new_action[1] == INVALID_CHOICE
     assert next_nodes[1] == INVALID_NODE
 
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
     expected = jnp.sum(jnp.array([-1.0, -2.0]))
 
     assert jnp.array_equal(timestep.reward, expected)
 
     action = jnp.array([1, 7])
     new_action, next_nodes = env._trim_duplicated_invalid_actions(state, action, state.key)
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
 
     assert new_action[0] == INVALID_ALREADY_TRAVERSED
     expected = jnp.sum(jnp.array([-1.0, -1.0]))
     assert jnp.array_equal(timestep.reward, expected)
 
     action = jnp.array([0, 8])
-    state, timestep = step_fn(state, action)
+    state, timestep = step_fn(state, action, state.key)
     expected = jnp.sum(jnp.array([10.0, 10.0]))
     assert jnp.array_equal(timestep.reward, expected)

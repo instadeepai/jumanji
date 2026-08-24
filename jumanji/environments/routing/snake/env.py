@@ -83,10 +83,11 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import Snake
     env = Snake()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -165,7 +166,9 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=self._state_to_observation(state))
         return state, timestep
 
-    def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Numeric, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -175,12 +178,15 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
                 - 1: move to the right.
                 - 2: move down.
                 - 3: move to the left.
+            key: random key used to sample the next fruit position.
 
         Returns:
             state, timestep: next state of the environment and timestep to be observed.
         """
+        if key is None:
+            raise ValueError("A PRNG key is required to step Snake.")
         is_valid = state.action_mask[action]
-        key, fruit_key = jax.random.split(state.key)
+        key, fruit_key = jax.random.split(key)
 
         head_position = self._update_head_position(state.head_position, action)
 

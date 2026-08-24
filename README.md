@@ -169,19 +169,20 @@ env = jumanji.make('Snake-v1')
 
 # Reset your (jit-able) environment
 key = jax.random.PRNGKey(0)
-state, timestep = jax.jit(env.reset)(key)
+reset_key, step_key = jax.random.split(key)
+state, timestep = jax.jit(env.reset)(reset_key)
 
 # (Optional) Render the env state
 env.render(state)
 
 # Interact with the (jit-able) environment
 action = env.action_spec.generate_value()          # Action selection (dummy value here)
-state, timestep = jax.jit(env.step)(state, action)   # Take a step and observe the next state and time step
+state, timestep = jax.jit(env.step)(state, action, step_key)   # Take a step and observe the next state and time step
 ```
 
-- `state` represents the internal state of the environment: it contains all the information required
-to take a step when executing an action. This should **not** be confused with the `observation`
-contained in the `timestep`, which is the information perceived by the agent.
+- `state` represents the internal state of the environment, while transition randomness is supplied
+separately to `step`. This should **not** be confused with the `observation` contained in the
+`timestep`, which is the information perceived by the agent.
 - `timestep` is a dataclass containing `step_type`, `reward`, `discount`, `observation` and
 `extras`. This structure is similar to
 [`dm_env.TimeStep`](https://github.com/deepmind/dm_env/blob/master/docs/index.md) except for the

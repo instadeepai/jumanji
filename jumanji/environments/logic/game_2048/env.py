@@ -68,10 +68,11 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import Game2048
     env = Game2048()
     key = jax.random.PRNGKey(0)
-    state, timestep = jax.jit(env.reset)(key)
+    reset_key, step_key = jax.random.split(key)
+    state, timestep = jax.jit(env.reset)(reset_key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action)
+    state, timestep = jax.jit(env.step)(state, action, step_key)
     env.render(state)
     ```
     """
@@ -164,12 +165,15 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
         Args:
             state: the current state of the environment.
             action: the action taken by the agent.
+            key: random key used to sample the next tile.
 
         Returns:
             state: the new state of the environment.
@@ -178,8 +182,9 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         # Take the action in the environment: Up, Right, Down, Left.
         updated_board, reward = move(state.board, action)
 
-        # Generate new key.
-        random_cell_key, new_state_key = jax.random.split(state.key)
+        if key is None:
+            raise ValueError("A PRNG key is required to step Game2048.")
+        random_cell_key, new_state_key = jax.random.split(key)
 
         # Update the state of the board by adding a new random cell.
         updated_board = jax.lax.cond(

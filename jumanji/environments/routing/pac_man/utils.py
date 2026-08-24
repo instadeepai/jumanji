@@ -23,20 +23,20 @@ from jumanji.environments.routing.pac_man.types import Position, State
 
 
 def ghost_move(
-    state: State, x_size: int, y_size: int
+    state: State, x_size: int, y_size: int, key: chex.PRNGKey
 ) -> Tuple[chex.Array, chex.Array, chex.PRNGKey]:
     """
     Generate a move for each ghost and update their positions accordingly.
 
     Args:
         state: 'State` object corresponding to the new state of the environment.
+        key: random key used to sample ghost actions.
 
     Returns:
         ghost_path: the new positions of each ghost after moving.
         key: new PRNG key.
     """
 
-    key = state.key
     key, ghost_key_0, ghost_key_1, ghost_key_2, ghost_key_3 = jax.random.split(key, 5)
     ghost_keys = jnp.array([ghost_key_0, ghost_key_1, ghost_key_2, ghost_key_3])
     ghost_pos = state.ghost_locations
