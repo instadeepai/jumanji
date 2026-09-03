@@ -2720,7 +2720,7 @@ the leftmost part of the tetromino.</p>
 - grid: BoundedArray (jnp.int32) of shape (num_rows, num_cols).
 - tetromino: BoundedArray (bool) of shape (4, 4).
 - action_mask: BoundedArray (bool) of shape (NUM_ROTATIONS, num_cols).
-- step_count: DiscreteArray (num_values = time_limit) of shape ().</p>
+- step_count: DiscreteArray (num_values = time_limit + 1) of shape ().</p>
               </div>
             </td>
           </tr>
@@ -3208,7 +3208,7 @@ environment.</p>
         <span class="n">grid</span><span class="o">=</span><span class="n">grid_padded_cliped</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_rows</span><span class="p">,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cols</span><span class="p">],</span>
         <span class="n">tetromino</span><span class="o">=</span><span class="n">new_tetromino</span><span class="p">,</span>
         <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">step_count</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+        <span class="n">step_count</span><span class="o">=</span><span class="n">step_count</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">tetris_completed</span> <span class="o">=</span> <span class="o">~</span><span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">action_mask</span><span class="p">)</span>
