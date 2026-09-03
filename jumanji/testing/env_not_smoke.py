@@ -84,15 +84,16 @@ def check_env_does_not_smoke(
             )
     key = jax.random.PRNGKey(0)
     key, reset_key = jax.random.split(key)
+    observe_fn = jax.jit(env.observe)
     state, timestep = env.reset(reset_key)
-    chex.assert_trees_all_equal(env.observe(state), timestep.observation)
+    chex.assert_trees_all_equal(observe_fn(state), timestep.observation)
     step_fn = jax.jit(env.step)
     while not timestep.last():
         key, action_key = jax.random.split(key)
         action = select_action(action_key, timestep.observation)
         env.action_spec.validate(action)
         state, timestep = step_fn(state, action)
-        chex.assert_trees_all_equal(env.observe(state), timestep.observation)
+        chex.assert_trees_all_equal(observe_fn(state), timestep.observation)
         env.observation_spec.validate(timestep.observation)
         if assert_finite_check:
             chex.assert_tree_all_finite((state, timestep))

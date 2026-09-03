@@ -226,7 +226,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
             grid=jnp.clip(state.grid_padded, max=1)[: self.num_rows, : self.num_cols],
             tetromino=state.new_tetromino,
             action_mask=state.action_mask,
-            step_count=jnp.array(0, jnp.int32),
+            step_count=state.step_count,
         )
 
     def render(self, state: State) -> Optional[NDArray]:
@@ -245,7 +245,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
              - grid: BoundedArray (jnp.int32) of shape (num_rows, num_cols).
              - tetromino: BoundedArray (bool) of shape (4, 4).
              - action_mask: BoundedArray (bool) of shape (NUM_ROTATIONS, num_cols).
-             - step_count: DiscreteArray (num_values = time_limit) of shape ().
+             - step_count: DiscreteArray (num_values = time_limit + 1) of shape ().
         """
         return specs.Spec(
             Observation,
@@ -271,7 +271,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
                 maximum=True,
                 name="action_mask",
             ),
-            step_count=specs.DiscreteArray(self.time_limit, dtype=jnp.int32, name="step_count"),
+            step_count=specs.DiscreteArray(self.time_limit + 1, dtype=jnp.int32, name="step_count"),
         )
 
     @cached_property
