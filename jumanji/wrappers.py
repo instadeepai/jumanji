@@ -65,18 +65,23 @@ class Wrapper(Environment[State, ActionSpec, Observation], Generic[State, Action
         """
         return self._env.reset(key)
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the action to take.
+            key: optional random key forwarded to the environment.
 
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        return self._env.step(state, action)
+        if key is None:
+            return self._env.step(state, action)
+        return self._env.step(state, action, key)
 
     def observe(self, state: State) -> Observation:
         """Create an observation from an environment state."""
@@ -279,7 +284,9 @@ class MultiToSingleWrapper(
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The rewards are aggregated into a single value based on the given reward aggregator.
@@ -289,12 +296,13 @@ class MultiToSingleWrapper(
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the action to take.
+            key: optional random key forwarded to the environment.
 
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        state, timestep = self._env.step(state, action)
+        state, timestep = super().step(state, action, key)
         timestep = self._aggregate_timestep(timestep)
         return state, timestep
 
@@ -347,7 +355,9 @@ class VmapWrapper(Wrapper[State, ActionSpec, Observation], Generic[State, Action
         state, timestep = jax.vmap(self._env.reset)(key)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         The first dimension of the state will dictate the number of concurrent environments.
@@ -358,12 +368,16 @@ class VmapWrapper(Wrapper[State, ActionSpec, Observation], Generic[State, Action
         Args:
             state: State object containing the dynamics of the environments.
             action: Array containing the actions to take.
+            key: optional random keys with a leading dimension for the environments.
 
         Returns:
             state: State object corresponding to the next states of the environments,
             timestep: TimeStep object corresponding the timesteps returned by the environments,
         """
-        state, timestep = jax.vmap(self._env.step)(state, action)
+        if key is None:
+            state, timestep = jax.vmap(self._env.step)(state, action)
+        else:
+            state, timestep = jax.vmap(self._env.step)(state, action, key)
         return state, timestep
 
     def observe(self, state: State) -> Observation:
@@ -459,9 +473,11 @@ class AutoResetWrapper(
         timestep = self._maybe_add_obs_to_extras(timestep)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
-        """Step the environment, with automatic resetting if the episode terminates."""
-        state, timestep = self._env.step(state, action)
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
+        """Step with an optional key, resetting from the returned state key on termination."""
+        state, timestep = super().step(state, action, key)
 
         # Overwrite the state and timestep appropriately if the episode terminates.
         state, timestep = jax.lax.cond(

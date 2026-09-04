@@ -163,12 +163,15 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Updates the environment state after the agent takes an action.
 
         Args:
             state: the current state of the environment.
             action: the action taken by the agent.
+            key: random key used to sample the next tile.
 
         Returns:
             state: the new state of the environment.
@@ -177,8 +180,8 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         # Take the action in the environment: Up, Right, Down, Left.
         updated_board, reward = move(state.board, action)
 
-        # Generate new key.
-        random_cell_key, new_state_key = jax.random.split(state.key)
+        key = state.key if key is None else key
+        random_cell_key, new_state_key = jax.random.split(key)
 
         # Update the state of the board by adding a new random cell.
         updated_board = jax.lax.cond(

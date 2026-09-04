@@ -218,6 +218,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         self,
         state: State,
         action: chex.Array,
+        key: chex.PRNGKey | None = None,
     ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
@@ -229,6 +230,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
                 - 2 turn left
                 - 3 turn right
                 - 4 toggle load
+            key: random key used to sample new shelf requests.
 
         Returns:
             state: State object corresponding to the next state of the environment.
@@ -236,7 +238,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
 
         # unpack state
-        key = state.key
+        key = state.key if key is None else key
         grid = state.grid
         agents = state.agents
         shelves = state.shelves

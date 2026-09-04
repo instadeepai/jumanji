@@ -67,12 +67,19 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
         """
 
     @abc.abstractmethod
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self,
+        state: State,
+        action: chex.Array,
+        key: chex.PRNGKey | None = None,
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the action to take.
+            key: optional random key used in place of state.key for stochastic steps,
+                including the returned state key. Deterministic environments may ignore it.
 
         Returns:
             state: State object corresponding to the next state of the environment,

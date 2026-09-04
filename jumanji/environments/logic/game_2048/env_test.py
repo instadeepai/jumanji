@@ -103,6 +103,27 @@ def test_game_2048__step_invalid(game_2048: Game2048) -> None:
     assert jnp.array_equal(state.score, new_state.score)
 
 
+def test_game_2048__step_uses_supplied_key(game_2048: Game2048, board: Board) -> None:
+    """The supplied key controls the stochastic successor state."""
+    state = State(
+        board=board,
+        step_count=jnp.array(0),
+        action_mask=game_2048._get_action_mask(board),
+        score=jnp.array(0),
+        key=jax.random.PRNGKey(42),
+    )
+    action = jnp.array(1)
+    step_key = jax.random.PRNGKey(0)
+
+    next_state, _ = game_2048.step(state, action, step_key)
+    state_with_different_key = state.replace(key=jax.random.PRNGKey(43))
+    independent_state, _ = game_2048.step(state_with_different_key, action, step_key)
+    resampled_state, _ = game_2048.step(state, action, jax.random.PRNGKey(1))
+
+    chex.assert_trees_all_equal(next_state, independent_state)
+    assert not jnp.array_equal(next_state.board, resampled_state.board)
+
+
 def test_game_2048__step_action_mask(game_2048: Game2048) -> None:
     """Verify that the action mask returned from `step` is correct."""
     state = State(

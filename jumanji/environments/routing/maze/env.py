@@ -192,7 +192,9 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """
         Run one timestep of the environment's dynamics.
 

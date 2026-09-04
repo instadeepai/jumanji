@@ -165,7 +165,9 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         timestep = restart(observation=self.observe(state))
         return state, timestep
 
-    def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Numeric, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
@@ -175,12 +177,14 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
                 - 1: move to the right.
                 - 2: move down.
                 - 3: move to the left.
+            key: random key used to sample the next fruit position.
 
         Returns:
             state, timestep: next state of the environment and timestep to be observed.
         """
+        key = state.key if key is None else key
         is_valid = state.action_mask[action]
-        key, fruit_key = jax.random.split(state.key)
+        key, fruit_key = jax.random.split(key)
 
         head_position = self._update_head_position(state.head_position, action)
 

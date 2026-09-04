@@ -190,12 +190,15 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=self.observe(state), extras=extras)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the index of the next node to visit.
+            key: random key used to resolve simultaneous actions.
 
         Returns:
             state, timestep: Tuple[State, TimeStep] containing the next state of the
@@ -231,7 +234,8 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
 
             return connected_nodes, conn_index, new_node, indices
 
-        key, step_key = jax.random.split(state.key)
+        key = state.key if key is None else key
+        key, step_key = jax.random.split(key)
         action, next_nodes = self._trim_duplicated_invalid_actions(state, action, step_key)
 
         connected_nodes = jnp.zeros_like(state.connected_nodes)

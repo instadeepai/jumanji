@@ -154,7 +154,9 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=observation, extras=extras, shape=(self.num_agents,))
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Perform an environment step.
 
         Args:

@@ -245,7 +245,9 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         If an action is invalid, the agent does not move, i.e. the episode does not
@@ -256,11 +258,15 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             action: (int32) specifying which action to take: [0,1,2,3,4] correspond to
                 [Up, Right, Down, Left, No-op]. If an invalid action is taken, i.e. there is a wall
                 blocking the action, then no action (no-op) is taken.
+            key: random key used to sample ghost actions. Defaults to state.key.
 
         Returns:
             state: the new state of the environment.
             the next timestep to be observed.
         """
+
+        if key is not None:
+            state = state.replace(key=key)
 
         # Collect updated state based on environment dynamics
         updated_state, collision_rewards = self._update_state(state, action)

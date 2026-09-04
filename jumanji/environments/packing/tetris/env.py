@@ -156,20 +156,24 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
         timestep = restart(observation=observation)
         return state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Run one timestep of the environment's dynamics.
 
         Args:
             state: `State` object containing the dynamics of the environment.
             action: `chex.Array` containing the rotation_index and x_position of the tetromino.
+            key: random key used to sample the next tetromino.
 
         Returns:
             next_state: `State` corresponding to the next state of the environment,
             next_timestep: `TimeStep` corresponding to the timestep returned by the environment.
         """
+        key = state.key if key is None else key
         rotation_index, x_position = action
         tetromino_index = state.tetromino_index
-        key, sample_key = jax.random.split(state.key)
+        key, sample_key = jax.random.split(key)
         tetromino = self._rotate(rotation_index, tetromino_index)
         # Place the tetromino in the selected place
         grid_padded, y_position = utils.place_tetromino(state.grid_padded, tetromino, x_position)

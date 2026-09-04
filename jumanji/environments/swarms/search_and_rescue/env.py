@@ -214,7 +214,9 @@ class SearchAndRescue(Environment):
         timestep = restart(observation=self.observe(state), shape=(self.num_agents,))
         return state, timestep
 
-    def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, actions: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Environment update.
 
         Update searcher velocities and consequently their positions,
@@ -223,12 +225,14 @@ class SearchAndRescue(Environment):
         Args:
             state: Environment state.
             actions: 2d array of searcher steering actions.
+            key: random key used to update target dynamics.
 
         Returns:
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        key, target_key = jax.random.split(state.key, num=2)
+        key = state.key if key is None else key
+        key, target_key = jax.random.split(key, num=2)
         searchers = update_state(
             self.generator.env_size, self.searcher_params, state.searchers, actions
         )

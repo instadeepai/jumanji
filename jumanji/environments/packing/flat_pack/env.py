@@ -157,7 +157,9 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return grid_state, timestep
 
-    def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
+    def step(
+        self, state: State, action: chex.Array, key: chex.PRNGKey | None = None
+    ) -> Tuple[State, TimeStep[Observation]]:
         """Steps the environment.
 
         Args:

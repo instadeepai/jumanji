@@ -42,3 +42,8 @@ rollout = jax.vmap(run_n_steps, in_axes=(0, 0, None))(state, keys, rollout_lengt
 # Shape and type of given rollout:
 # TimeStep(step_type=(7, 5), reward=(7, 5), discount=(7, 5), observation=(7, 5, 6, 6, 5), extras=None)
 ```
+
+For stochastic environments, `env.step(state, action, key)` uses the supplied key instead of
+`state.key`, with the same splitting and returned-state key behavior. Omitting `key` preserves
+the existing behavior. Deterministic environments accept and may ignore the key.
+`AutoResetWrapper` continues to derive reset randomness from the returned state key.
