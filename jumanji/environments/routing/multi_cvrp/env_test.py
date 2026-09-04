@@ -185,14 +185,12 @@ class TestEnvironmentSpec:
             state.vehicles.positions, jax.numpy.array([0, 0], dtype=jax.numpy.int16)
         )
 
-    def test_multicvrp__state_to_observation_timestep(self, multicvrp_env: MultiCVRP) -> None:
+    def test_multicvrp__observe_timestep(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted step of the environment."""
         chex.clear_trace_counter()
 
         update_state_fn = jax.jit(chex.assert_max_traces(multicvrp_env._update_state, n=1))
-        state_to_observation_fn = jax.jit(
-            chex.assert_max_traces(multicvrp_env._state_to_observation, n=1)
-        )
+        observe_fn = jax.jit(chex.assert_max_traces(multicvrp_env.observe, n=1))
         state_to_timestep_fn = jax.jit(
             chex.assert_max_traces(multicvrp_env._state_to_timestep, n=1)
         )
@@ -209,7 +207,7 @@ class TestEnvironmentSpec:
 
         new_state = update_state_fn(state, new_actions)
 
-        obs = state_to_observation_fn(new_state)
+        obs = observe_fn(new_state)
 
         # Check that the node coordinates are duplicated correctly
         assert np.array_equal(

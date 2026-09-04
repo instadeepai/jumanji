@@ -164,7 +164,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         # Get the observation and the timestep
-        obs = self._observation_from_state(state)
+        obs = self.observe(state)
         timestep = restart(observation=obs)
 
         return state, timestep
@@ -248,7 +248,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
             scheduled_times=updated_scheduled_times,
             key=state.key,
         )
-        next_obs = self._observation_from_state(next_state)
+        next_obs = self.observe(next_state)
 
         # Compute terminal condition
         done = invalid | all_machines_idle | schedule_finished
@@ -470,7 +470,7 @@ class JobShop(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         return self._viewer.animate(states, interval, save_path)
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Converts a job shop environment state to an observation.
 
         Args:

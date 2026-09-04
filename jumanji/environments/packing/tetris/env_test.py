@@ -77,11 +77,11 @@ def test_tetris_env_step(tetris_env: Tetris) -> None:
     key = jax.random.PRNGKey(0)
     state, _timestep = tetris_env.reset(key)
     action = (0, 4)
-    step_fn(state, action, state.key)
-    step_fn(state, action, state.key)
-    step_fn(state, action, state.key)
+    step_fn(state, action)
+    step_fn(state, action)
+    step_fn(state, action)
     action = (0, 0)
-    next_state, next_timestep = step_fn(state, action, state.key)
+    next_state, next_timestep = step_fn(state, action)
     # Check that the state has changed
     assert not jnp.array_equal(next_state.grid_padded, state.grid_padded)
     assert next_state.grid_padded.sum() == state.grid_padded.sum() + 4
@@ -129,3 +129,22 @@ def test_tetris__does_not_smoke(tetris_env: Tetris) -> None:
 def test_tetris__specs_does_not_smoke(tetris_env: Tetris) -> None:
     """Test that we can access specs without any errors."""
     check_env_specs_does_not_smoke(tetris_env)
+
+
+def test_tetris__observation_step_count() -> None:
+    """Validates that the observation's step_count tracks the state's step_count, and that the
+    terminal observation reached at the time limit is within the observation spec."""
+    time_limit = 3
+    tetris_env = Tetris(num_rows=6, num_cols=6, time_limit=time_limit)
+    step_fn = jax.jit(tetris_env.step)
+    state, timestep = tetris_env.reset(jax.random.PRNGKey(0))
+    assert timestep.observation.step_count == 0
+    while not timestep.last():
+        # Always take a valid action so that the episode only ends at the time limit.
+        action = jnp.stack(
+            jnp.unravel_index(jnp.argmax(state.action_mask), state.action_mask.shape)
+        )
+        state, timestep = step_fn(state, action)
+        assert timestep.observation.step_count == state.step_count
+        tetris_env.observation_spec.validate(timestep.observation)
+    assert timestep.observation.step_count == time_limit

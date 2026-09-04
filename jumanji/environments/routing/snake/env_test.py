@@ -67,7 +67,7 @@ def test_snake__step(snake: Snake) -> None:
         shape=(2,),
         replace=False,
     )
-    state1, _timestep1 = step_fn(state, action1, state.key)
+    state1, _timestep1 = step_fn(state, action1)
     # Check that the state is made of DeviceArrays, this is false for the non-jitted
     # step function since unpacking random.split returns numpy arrays and not device arrays.
     assert_is_jax_array_tree(state1)
@@ -75,7 +75,7 @@ def test_snake__step(snake: Snake) -> None:
     assert state1.step_count != state.step_count
     assert state1.head_position != state.head_position
     # Check that two different actions lead to two different states
-    state2, _timestep2 = step_fn(state, action2, state.key)
+    state2, _timestep2 = step_fn(state, action2)
     assert state1.head_position != state2.head_position
     # Check that the state update and timestep creation work as expected
     row, col = tuple(state.head_position)
@@ -87,7 +87,7 @@ def test_snake__step(snake: Snake) -> None:
         3: (Position(row, col - 1), body.at[(row, col - 1)].set(True)),  # Left
     }
     for action, (new_position, new_body) in moves.items():
-        new_state, timestep = step_fn(state, jnp.asarray(action, jnp.int32), state.key)
+        new_state, timestep = step_fn(state, jnp.asarray(action, jnp.int32))
         assert new_state.head_position == new_position
         assert jnp.all(timestep.observation.grid[..., 0] == new_body)
 
@@ -133,13 +133,13 @@ def test_snake__no_nan(snake: Snake) -> None:
     state, timestep = reset_fn(key)
     chex.assert_tree_all_finite((state, timestep))
     while not timestep.last():
-        state, timestep = step_fn(state, action=0, key=state.key)
+        state, timestep = step_fn(state, action=0)
         chex.assert_tree_all_finite((state, timestep))
     # Check exiting the board to the right
     state, timestep = reset_fn(key)
     chex.assert_tree_all_finite((state, timestep))
     while not timestep.last():
-        state, timestep = step_fn(state, action=1, key=state.key)
+        state, timestep = step_fn(state, action=1)
         chex.assert_tree_all_finite((state, timestep))
 
 
@@ -149,7 +149,7 @@ def test_snake__render(monkeypatch: pytest.MonkeyPatch, snake: Snake) -> None:
     step_fn = jax.jit(snake.step)
     state, _timestep = snake.reset(jax.random.PRNGKey(0))
     action = snake.action_spec.generate_value()
-    state, _timestep = step_fn(state, action, state.key)
+    state, _timestep = step_fn(state, action)
     snake.render(state)
     snake.close()
 
@@ -160,7 +160,7 @@ def test_snake__animation(snake: Snake, tmpdir: py.path.local) -> None:
     state, _ = snake.reset(jax.random.PRNGKey(0))
     states = [state]
     action = snake.action_spec.generate_value()
-    state, _ = step_fn(state, action, state.key)
+    state, _ = step_fn(state, action)
     states.append(state)
     animation = snake.animate(states)
     assert isinstance(animation, matplotlib.animation.Animation)

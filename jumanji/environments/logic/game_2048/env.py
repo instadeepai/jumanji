@@ -68,11 +68,10 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import Game2048
     env = Game2048()
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
-    state, timestep = jax.jit(env.reset)(reset_key)
+    state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action, step_key)
+    state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
     """
@@ -150,8 +149,6 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         board = self._generate_board(board_key)
         action_mask = self._get_action_mask(board)
 
-        obs = Observation(board=board, action_mask=action_mask)
-
         state = State(
             board=board,
             step_count=jnp.array(0, jnp.int32),
@@ -160,6 +157,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
             score=jnp.array(0, float),
         )
 
+        obs = self.observe(state)
         highest_tile = 2 ** jnp.max(board)
         timestep = restart(observation=obs, extras={"highest_tile": highest_tile})
 
@@ -182,8 +180,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         # Take the action in the environment: Up, Right, Down, Left.
         updated_board, reward = move(state.board, action)
 
-        if key is None:
-            raise ValueError("A PRNG key is required to step Game2048.")
+        key = state.key if key is None else key
         random_cell_key, new_state_key = jax.random.split(key)
 
         # Update the state of the board by adding a new random cell.
@@ -209,10 +206,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         # Generate the observation from the environment state.
-        observation = Observation(
-            board=updated_board,
-            action_mask=action_mask,
-        )
+        observation = self.observe(state)
 
         # Check if the episode terminates (i.e. there are no legal actions).
         done = ~jnp.any(action_mask)
@@ -229,6 +223,10 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         return state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(board=state.board, action_mask=state.action_mask)
 
     def _generate_board(self, key: chex.PRNGKey) -> Board:
         """Generates an initial board for the environment.

@@ -152,7 +152,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         grid_state = self.generator(key)
 
-        obs = self._observation_from_state(grid_state)
+        obs = self.observe(grid_state)
         timestep = restart(observation=obs)
 
         return grid_state, timestep
@@ -207,7 +207,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         done = self._is_done(next_state)
-        next_obs = self._observation_from_state(next_state)
+        next_obs = self.observe(next_state)
         reward = self.reward_fn(state, grid_block, next_state, action_is_legal, done)
 
         timestep = jax.lax.cond(
@@ -404,7 +404,7 @@ class FlatPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return grid_with_block
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Creates an observation from a state.
 
         Args:

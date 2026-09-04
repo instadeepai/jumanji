@@ -344,6 +344,23 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         return next_state, timestep
 
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        obs_ems_indexes = state.sorted_ems_indexes[: self.obs_num_ems]
+        obs_ems = jax.tree_util.tree_map(lambda x: x[obs_ems_indexes], state.ems)
+        obs_ems_mask = state.ems_mask[obs_ems_indexes]
+        items = state.items
+        if self.normalize_dimensions:
+            obs_ems, items = self._normalize_ems_and_items(state, obs_ems, items)
+        return Observation(
+            ems=obs_ems,
+            ems_mask=obs_ems_mask,
+            items=items,
+            items_mask=state.items_mask,
+            items_placed=state.items_placed,
+            action_mask=state.action_mask,
+        )
+
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment.
 
@@ -389,27 +406,16 @@ class BinPack(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
         state.sorted_ems_indexes = sorted_ems_indexes
 
-        items = state.items
         action_mask = self._get_action_mask(
             obs_ems,
             obs_ems_mask,
-            items,
+            state.items,
             state.items_mask,
             state.items_placed,
         )
         state.action_mask = action_mask
 
-        if self.normalize_dimensions:
-            obs_ems, items = self._normalize_ems_and_items(state, obs_ems, items)
-        observation = Observation(
-            ems=obs_ems,
-            ems_mask=obs_ems_mask,
-            items=items,
-            items_mask=state.items_mask,
-            items_placed=state.items_placed,
-            action_mask=action_mask,
-        )
-
+        observation = self.observe(state)
         extras = self._get_extras(state)
         return state, observation, extras
 

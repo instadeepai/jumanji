@@ -78,11 +78,23 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
         Args:
             state: State object containing the dynamics of the environment.
             action: Array containing the action to take.
-            key: random key used to step stochastic environments.
+            key: optional random key used in place of state.key for stochastic steps,
+                including the returned state key. Deterministic environments may ignore it.
 
         Returns:
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
+        """
+
+    @abc.abstractmethod
+    def observe(self, state: State) -> Observation:
+        """Create an observation from an environment state.
+
+        Args:
+            state: State object containing the dynamics of the environment.
+
+        Returns:
+            observation: Observation object derived from the environment state.
         """
 
     @abc.abstractmethod

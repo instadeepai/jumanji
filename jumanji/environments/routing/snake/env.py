@@ -83,11 +83,10 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import Snake
     env = Snake()
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
-    state, timestep = jax.jit(env.reset)(reset_key)
+    state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action, step_key)
+    state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
     """
@@ -163,7 +162,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
             step_count=jnp.array(0, jnp.int32),
             action_mask=self._get_action_mask(head_position, body_state),
         )
-        timestep = restart(observation=self._state_to_observation(state))
+        timestep = restart(observation=self.observe(state))
         return state, timestep
 
     def step(
@@ -183,8 +182,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             state, timestep: next state of the environment and timestep to be observed.
         """
-        if key is None:
-            raise ValueError("A PRNG key is required to step Snake.")
+        key = state.key if key is None else key
         is_valid = state.action_mask[action]
         key, fruit_key = jax.random.split(key)
 
@@ -229,7 +227,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         done = ~is_valid | snake_completed | (step_count >= self.time_limit)
 
         reward = jnp.asarray(fruit_eaten, float)
-        observation = self._state_to_observation(next_state)
+        observation = self.observe(next_state)
 
         timestep = jax.lax.cond(
             done,
@@ -282,7 +280,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         """
         return specs.DiscreteArray(4, name="action")
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Maps an environment state to an observation.
 
         Args:

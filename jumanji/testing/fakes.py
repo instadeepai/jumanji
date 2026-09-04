@@ -98,15 +98,12 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         """
 
         state = FakeState(key=key, step=jnp.array(0, jnp.int32))
-        observation = self._state_to_obs(state)
+        observation = self.observe(state)
         timestep = restart(observation=observation)
         return state, timestep
 
     def step(
-        self,
-        state: FakeState,
-        action: chex.Array,
-        key: chex.PRNGKey | None = None,
+        self, state: FakeState, action: chex.Array, key: chex.PRNGKey | None = None
     ) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
@@ -119,10 +116,10 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
         chex.assert_equal_shape((action, self._example_action))
-        del key
+        key, _ = jax.random.split(state.key if key is None else key)
         next_step = state.step + 1
-        next_state = FakeState(key=state.key, step=next_step)
-        observation = self._state_to_obs(next_state)
+        next_state = FakeState(key=key, step=next_step)
+        observation = self.observe(next_state)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
             termination,
@@ -144,7 +141,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         """
         return state.key.shape, state.step.shape
 
-    def _state_to_obs(self, state: FakeState) -> chex.Array:
+    def observe(self, state: FakeState) -> chex.Array:
         """The observation is an array full of `state.step` of shape `(self.observation_shape,)`."""
         return state.step * jnp.ones(self.observation_shape, float)
 
@@ -239,15 +236,12 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
         """
 
         state = FakeState(key=key, step=0)
-        observation = self.observation_spec.generate_value()
+        observation = self.observe(state)
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 
     def step(
-        self,
-        state: FakeState,
-        action: chex.Array,
-        key: chex.PRNGKey | None = None,
+        self, state: FakeState, action: chex.Array, key: chex.PRNGKey | None = None
     ) -> Tuple[FakeState, TimeStep]:
         """Steps into the environment by doing nothing but increasing the step number.
 
@@ -259,21 +253,27 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
             state: State object corresponding to the next state of the environment,
             timestep: TimeStep object corresponding the timestep returned by the environment,
         """
-        del key
+        key = jax.random.split(state.key if key is None else key, 1).squeeze(0)
         next_step = state.step + 1
-        next_state = FakeState(key=state.key, step=next_step)
+        next_state = FakeState(key=key, step=next_step)
+        observation = self.observe(next_state)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
             lambda _: termination(
                 reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
                 shape=(self.num_agents,),
             ),
             lambda _: transition(
                 reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
                 shape=(self.num_agents,),
             ),
             None,
         )
         return next_state, timestep
+
+    def observe(self, state: FakeState) -> chex.Array:
+        """Create an observation from an environment state."""
+        del state
+        return jnp.zeros(self.observation_shape, float)

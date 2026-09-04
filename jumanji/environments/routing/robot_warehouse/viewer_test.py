@@ -50,7 +50,7 @@ def test_robot_warehouse_viewer__animate(robot_warehouse_env: RobotWarehouse) ->
     for _ in range(num_steps - 1):
         key, subkey = jax.random.split(key)
         action = jax.random.choice(subkey, jnp.arange(5), shape=(2,))
-        state, _ = jax.jit(robot_warehouse_env.step)(state, action, state.key)
+        state, _ = jax.jit(robot_warehouse_env.step)(state, action)
         states.append(state)
 
     viewer = RobotWarehouseViewer(grid_size, goals)
@@ -71,7 +71,7 @@ def test_robot_warehouse_viewer__save_animation(
     for _ in range(num_steps - 1):
         key, subkey = jax.random.split(key)
         action = jax.random.choice(subkey, jnp.arange(5), shape=(2,))
-        state, _ = jax.jit(robot_warehouse_env.step)(state, action, state.key)
+        state, _ = jax.jit(robot_warehouse_env.step)(state, action)
         states.append(state)
 
     viewer = RobotWarehouseViewer(grid_size, goals)

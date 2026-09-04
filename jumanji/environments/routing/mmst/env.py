@@ -124,11 +124,10 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
     from jumanji.environments import MMST
     env = MMST()
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
-    state, timestep = jax.jit(env.reset)(reset_key)
+    state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action, step_key)
+    state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
     """
@@ -188,7 +187,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         key, problem_key = jax.random.split(key)
         state = self._generator(problem_key)
         extras = self._get_extras(state)
-        timestep = restart(observation=self._state_to_observation(state), extras=extras)
+        timestep = restart(observation=self.observe(state), extras=extras)
         return state, timestep
 
     def step(
@@ -235,8 +234,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
 
             return connected_nodes, conn_index, new_node, indices
 
-        if key is None:
-            raise ValueError("A PRNG key is required to step MMST.")
+        key = state.key if key is None else key
         key, step_key = jax.random.split(key)
         action, next_nodes = self._trim_duplicated_invalid_actions(state, action, step_key)
 
@@ -360,7 +358,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Converts a state into an observation.
 
         Args:
@@ -423,7 +421,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         state.finished_agents = self.get_finished_agents(state)
         state.step_count = state.step_count + 1
         extras = self._get_extras(state)
-        observation = self._state_to_observation(state)
+        observation = self.observe(state)
 
         def make_termination_timestep() -> TimeStep[Observation]:
             return termination(

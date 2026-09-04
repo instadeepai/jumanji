@@ -95,7 +95,7 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
 
     def reset(self, key: chex.PRNGKey) -> Tuple[State, TimeStep[Observation]]:
         state = self._generator(key)
-        obs = Observation(board=state.board, action_mask=state.action_mask)
+        obs = self.observe(state)
         timestep = restart(observation=obs)
         return state, timestep
 
@@ -116,7 +116,7 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
         done = invalid | no_actions_available
         reward = self._reward_fn(state=state, new_state=next_state, action=action, done=done)
 
-        observation = Observation(board=updated_board, action_mask=updated_action_mask)
+        observation = self.observe(next_state)
 
         timestep = jax.lax.cond(
             done,
@@ -127,6 +127,10 @@ class Sudoku(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         return next_state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(board=state.board, action_mask=state.action_mask)
 
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:

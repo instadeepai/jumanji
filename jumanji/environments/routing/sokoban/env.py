@@ -187,7 +187,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         state = self.generator(generator_key)
 
         timestep = restart(
-            self._state_to_observation(state),
+            self.observe(state),
             extras=self._get_extras(state),
         )
 
@@ -239,7 +239,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         reward = jnp.asarray(self.reward_fn(state, action, next_state), float)
 
-        observation = self._state_to_observation(next_state)
+        observation = self.observe(next_state)
 
         extras = self._get_extras(next_state)
 
@@ -288,7 +288,7 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         """
         return specs.DiscreteArray(4, name="action", dtype=jnp.int32)
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Maps an environment state to an observation.
 
         Args:

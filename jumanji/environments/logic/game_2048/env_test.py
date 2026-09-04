@@ -69,7 +69,7 @@ def test_game_2048__step_jit(game_2048: Game2048) -> None:
     chex.clear_trace_counter()
     step_fn = jax.jit(chex.assert_max_traces(game_2048.step, n=1))
 
-    new_state, _next_timestep = step_fn(state, action, state.key)
+    new_state, _next_timestep = step_fn(state, action)
     # Check that the state has changed.
     assert not jnp.array_equal(new_state.board, state.board)
 
@@ -79,7 +79,7 @@ def test_game_2048__step_jit(game_2048: Game2048) -> None:
     # New step
     state = new_state
     action = jnp.argmax(state.action_mask)
-    new_state, _next_timestep = step_fn(state, action, state.key)
+    new_state, _next_timestep = step_fn(state, action)
 
     # Check that the state has changed
     assert not jnp.array_equal(new_state.board, state.board)
@@ -96,7 +96,7 @@ def test_game_2048__step_invalid(game_2048: Game2048) -> None:
     )
     action = jnp.array(0)
     step_fn = jax.jit(game_2048.step)
-    new_state, _next_timestep = step_fn(state, action, state.key)
+    new_state, _next_timestep = step_fn(state, action)
     assert jnp.array_equal(state.board, new_state.board)
     assert jnp.array_equal(state.step_count + 1, new_state.step_count)
     assert jnp.array_equal(state.action_mask, new_state.action_mask)
@@ -116,12 +116,10 @@ def test_game_2048__step_uses_supplied_key(game_2048: Game2048, board: Board) ->
     step_key = jax.random.PRNGKey(0)
 
     next_state, _ = game_2048.step(state, action, step_key)
-    repeated_state, _ = game_2048.step(state, action, step_key)
     state_with_different_key = state.replace(key=jax.random.PRNGKey(43))
     independent_state, _ = game_2048.step(state_with_different_key, action, step_key)
     resampled_state, _ = game_2048.step(state, action, jax.random.PRNGKey(1))
 
-    chex.assert_trees_all_equal(next_state, repeated_state)
     chex.assert_trees_all_equal(next_state, independent_state)
     assert not jnp.array_equal(next_state.board, resampled_state.board)
 
@@ -137,7 +135,7 @@ def test_game_2048__step_action_mask(game_2048: Game2048) -> None:
     )
     action = jnp.array(3)
     step_fn = jax.jit(game_2048.step)
-    new_state, _next_timestep = step_fn(state, action, state.key)
+    new_state, _next_timestep = step_fn(state, action)
     expected_action_mask = jnp.array([False, False, False, False])
     assert jnp.array_equal(new_state.action_mask, expected_action_mask)
 

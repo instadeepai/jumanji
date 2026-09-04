@@ -149,11 +149,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         """
         state = self._generator(key)
 
-        observation = Observation(
-            grid=state.grid,
-            action_mask=state.action_mask,
-            step_count=state.step_count,
-        )
+        observation = self.observe(state)
         extras = self._get_extras(state)
         timestep = restart(observation=observation, extras=extras, shape=(self.num_agents,))
         return state, timestep
@@ -188,9 +184,7 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
 
         # Construct timestep: get reward, legal actions and done
         reward = self._rewarder(state, action, new_state)
-        observation = Observation(
-            grid=grid, action_mask=action_mask, step_count=new_state.step_count
-        )
+        observation = self.observe(new_state)
 
         agents_done = jax.vmap(connected_or_blocked)(agents, action_mask)
         done = jnp.all(agents_done)
@@ -215,6 +209,14 @@ class Connector(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
 
         return new_state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            grid=state.grid,
+            action_mask=state.action_mask,
+            step_count=state.step_count,
+        )
 
     def _step_agents(self, state: State, action: chex.Array) -> Tuple[Agent, chex.Array]:
         """Steps all agents at the same time correcting for possible collisions.

@@ -104,11 +104,10 @@ class SearchAndRescue(Environment):
 
     env = SearchAndRescue()
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
-    state, timestep = jax.jit(env.reset)(reset_key)
+    state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action, step_key)
+    state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
     """
@@ -212,7 +211,7 @@ class SearchAndRescue(Environment):
             timestep: TimeStep with individual search agent views.
         """
         state = self.generator(key, self.searcher_params)
-        timestep = restart(observation=self._state_to_observation(state), shape=(self.num_agents,))
+        timestep = restart(observation=self.observe(state), shape=(self.num_agents,))
         return state, timestep
 
     def step(
@@ -232,8 +231,7 @@ class SearchAndRescue(Environment):
             state: Updated searcher and target positions and velocities.
             timestep: Transition timestep with individual agent local observations.
         """
-        if key is None:
-            raise ValueError("A PRNG key is required to step SearchAndRescue.")
+        key = state.key if key is None else key
         key, target_key = jax.random.split(key, num=2)
         searchers = update_state(
             self.generator.env_size, self.searcher_params, state.searchers, actions
@@ -269,7 +267,7 @@ class SearchAndRescue(Environment):
             key=key,
             step=state.step + 1,
         )
-        observation = self._state_to_observation(state)
+        observation = self.observe(state)
         observation = jax.lax.stop_gradient(observation)
         timestep = jax.lax.cond(
             jnp.logical_or(state.step >= self.time_limit, jnp.all(targets_found)),
@@ -280,7 +278,7 @@ class SearchAndRescue(Environment):
         )
         return state, timestep
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         searcher_views = self._observation_fn(state)
         return Observation(
             searcher_views=searcher_views,

@@ -102,11 +102,10 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
     from jumanji.environments import pac_man
     env = PacMan()
     key = jax.random.PRNGKey(0)
-    reset_key, step_key = jax.random.split(key)
-    state, timestep = jax.jit(env.reset)(reset_key)
+    state, timestep = jax.jit(env.reset)(key)
     env.render(state)
     action = env.action_spec.generate_value()
-    state, timestep = jax.jit(env.step)(state, action, step_key)
+    state, timestep = jax.jit(env.step)(state, action)
     env.render(state)
     ```
     """
@@ -239,7 +238,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         state = self.generator(key)
 
         # Generate observation
-        obs = self._observation_from_state(state)
+        obs = self.observe(state)
 
         # Return a restart timestep of step type is FIRST.
         timestep = restart(observation=obs)
@@ -259,18 +258,18 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
             action: (int32) specifying which action to take: [0,1,2,3,4] correspond to
                 [Up, Right, Down, Left, No-op]. If an invalid action is taken, i.e. there is a wall
                 blocking the action, then no action (no-op) is taken.
-            key: random key used to sample ghost actions.
+            key: random key used to sample ghost actions. Defaults to state.key.
 
         Returns:
             state: the new state of the environment.
             the next timestep to be observed.
         """
 
-        if key is None:
-            raise ValueError("A PRNG key is required to step PacMan.")
+        if key is not None:
+            state = state.replace(key=key)
 
         # Collect updated state based on environment dynamics
-        updated_state, collision_rewards = self._update_state(state, action, key)
+        updated_state, collision_rewards = self._update_state(state, action)
 
         # Create next_state from updated state
         next_state = updated_state.replace(step_count=state.step_count + 1)
@@ -285,7 +284,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         reward = jnp.asarray(collision_rewards)
         # Generate observation from the state
-        observation = self._observation_from_state(next_state)
+        observation = self.observe(next_state)
 
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
@@ -298,20 +297,20 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return next_state, timestep
 
-    def _update_state(
-        self, state: State, action: chex.Array, key: chex.PRNGKey
-    ) -> Tuple[State, int]:
+    def _update_state(self, state: State, action: chex.Array) -> Tuple[State, int]:
         """Updates the state of the environment.
 
         Args:
             state: 'State` object corresponding to the new state of the environment.
             action: An integer representing the player action.
-            key: random key used to sample ghost actions.
 
         Returns:
             state: 'State` object corresponding to the new state of the environment.
             collision_rewards: Rewards from objects the player has collided with
         """
+
+        key = state.key
+        key, _ = jax.random.split(key)
 
         # Move player
         next_player_pos = player_step(
@@ -322,7 +321,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         # Move ghosts
         old_ghost_locations = state.ghost_locations
-        ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size, key)
+        ghost_paths, ghost_actions, key = ghost_move(state, self.x_size, self.y_size)
 
         # Check for collisions with ghosts
         state, done, ghost_col_rewards = check_ghost_collisions(ghost_paths, next_player_pos, state)
@@ -503,7 +502,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return action_mask
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Create an observation from the state of the environment."""
         action_mask = self._compute_action_mask(state).astype(bool)
         return Observation(
