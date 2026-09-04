@@ -178,7 +178,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
             of the environment and `TimeStep` object corresponding to the initial timestep.
         """
         state = self._generator(key)
-        observation = self._observer.state_to_observation(state)
+        observation = self.observe(state)
         timestep = restart(observation, shape=self.num_agents)
         timestep.extras = self._get_extra_info(state, timestep)
 
@@ -213,7 +213,7 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
             step_count=state.step_count + 1,
             key=state.key,
         )
-        observation = self._observer.state_to_observation(state)
+        observation = self.observe(state)
 
         # First condition is truncation, second is termination.
         terminate = jnp.all(state.food_items.eaten)
@@ -237,6 +237,10 @@ class LevelBasedForaging(Environment[State, specs.MultiDiscreteArray, Observatio
         timestep.extras = self._get_extra_info(state, timestep)
 
         return state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return self._observer.state_to_observation(state)
 
     def _get_extra_info(self, state: State, timestep: TimeStep) -> Dict:
         """Computes extras metrics to be returned within the timestep."""

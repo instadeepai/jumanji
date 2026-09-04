@@ -130,12 +130,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
             action_mask=action_mask,
             key=key,
         )
-        obs = Observation(
-            adj_matrix=adj_matrix,
-            colors=colors,
-            action_mask=action_mask,
-            current_node_index=current_node_index,
-        )
+        obs = self.observe(state)
         timestep = restart(observation=obs)
 
         return state, timestep
@@ -191,12 +186,7 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
             action_mask=next_action_mask,
             key=state.key,
         )
-        obs = Observation(
-            adj_matrix=state.adj_matrix,
-            colors=colors,
-            action_mask=next_state.action_mask,
-            current_node_index=next_node_index,
-        )
+        obs = self.observe(next_state)
         timestep = lax.cond(
             done,
             termination,
@@ -205,6 +195,15 @@ class GraphColoring(Environment[State, specs.DiscreteArray, Observation]):
             obs,
         )
         return next_state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            adj_matrix=state.adj_matrix,
+            colors=state.colors,
+            action_mask=state.action_mask,
+            current_node_index=state.current_node_index,
+        )
 
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:

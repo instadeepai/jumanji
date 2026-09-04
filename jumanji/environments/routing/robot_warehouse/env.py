@@ -210,12 +210,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         state = self._generator(key)
 
         # collect first observations and create timestep
-        agents_view = self._make_observations(state.grid, state.agents, state.shelves)
-        observation = Observation(
-            agents_view=agents_view,
-            action_mask=state.action_mask,
-            step_count=state.step_count,
-        )
+        observation = self.observe(state)
         timestep = restart(observation=observation)
         return state, timestep
 
@@ -299,21 +294,7 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
         done = collision | horizon_reached
 
         # compute next observation
-        agents_view = self._make_observations(grid, agents, shelves)
         action_mask = utils.compute_action_mask(grid, agents)
-        next_observation = Observation(
-            agents_view=agents_view,
-            action_mask=action_mask,
-            step_count=steps,
-        )
-
-        timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
-            reward,
-            next_observation,
-        )
         next_state = State(
             grid=grid,
             agents=agents,
@@ -323,7 +304,25 @@ class RobotWarehouse(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_mask=action_mask,
             key=key,
         )
+        next_observation = self.observe(next_state)
+
+        timestep = jax.lax.cond(
+            done,
+            termination,
+            transition,
+            reward,
+            next_observation,
+        )
         return next_state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        agents_view = self._make_observations(state.grid, state.agents, state.shelves)
+        return Observation(
+            agents_view=agents_view,
+            action_mask=state.action_mask,
+            step_count=state.step_count,
+        )
 
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:

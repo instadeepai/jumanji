@@ -143,7 +143,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
                 environment.
         """
         state = self.generator(key)
-        observation = self._state_to_observation(state=state)
+        observation = self.observe(state=state)
         timestep = restart(observation=observation)
         return state, timestep
 
@@ -168,7 +168,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
         reward = self.reward_function(state, action)
         done = self.done_function(state, next_state, action)
-        next_observation = self._state_to_observation(state=next_state)
+        next_observation = self.observe(state=next_state)
         next_timestep = jax.lax.cond(
             done,
             termination,
@@ -240,7 +240,7 @@ class Minesweeper(Environment[State, specs.MultiDiscreteArray, Observation]):
             dtype=jnp.int32,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         return Observation(
             board=state.board,
             action_mask=jnp.equal(state.board, UNEXPLORED_ID),

@@ -152,12 +152,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
             step_count=jnp.array(0, jnp.int32),
         )
 
-        observation = Observation(
-            grid=grid_padded[: self.num_rows, : self.num_cols],
-            tetromino=tetromino,
-            action_mask=action_mask,
-            step_count=jnp.array(0, jnp.int32),
-        )
+        observation = self.observe(state)
         timestep = restart(observation=observation)
         return state, timestep
 
@@ -211,12 +206,7 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
             is_reset=False,
             step_count=step_count,
         )
-        next_observation = Observation(
-            grid=grid_padded_cliped[: self.num_rows, : self.num_cols],
-            tetromino=new_tetromino,
-            action_mask=action_mask,
-            step_count=step_count,
-        )
+        next_observation = self.observe(next_state)
 
         tetris_completed = ~jnp.any(action_mask)
         done = tetris_completed | ~is_valid | (step_count >= self.time_limit)
@@ -229,6 +219,15 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
             next_observation,
         )
         return next_state, next_timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            grid=jnp.clip(state.grid_padded, max=1)[: self.num_rows, : self.num_cols],
+            tetromino=state.new_tetromino,
+            action_mask=state.action_mask,
+            step_count=state.step_count,
+        )
 
     def render(self, state: State) -> Optional[NDArray]:
         """Render the given state of the environment.

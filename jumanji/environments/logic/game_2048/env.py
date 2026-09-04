@@ -149,8 +149,6 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         board = self._generate_board(board_key)
         action_mask = self._get_action_mask(board)
 
-        obs = Observation(board=board, action_mask=action_mask)
-
         state = State(
             board=board,
             step_count=jnp.array(0, jnp.int32),
@@ -159,6 +157,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
             score=jnp.array(0, float),
         )
 
+        obs = self.observe(state)
         highest_tile = 2 ** jnp.max(board)
         timestep = restart(observation=obs, extras={"highest_tile": highest_tile})
 
@@ -204,10 +203,7 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         # Generate the observation from the environment state.
-        observation = Observation(
-            board=updated_board,
-            action_mask=action_mask,
-        )
+        observation = self.observe(state)
 
         # Check if the episode terminates (i.e. there are no legal actions).
         done = ~jnp.any(action_mask)
@@ -224,6 +220,10 @@ class Game2048(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         return state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(board=state.board, action_mask=state.action_mask)
 
     def _generate_board(self, key: chex.PRNGKey) -> Board:
         """Generates an initial board for the environment.

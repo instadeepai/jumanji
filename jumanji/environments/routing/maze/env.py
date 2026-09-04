@@ -185,7 +185,7 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
         state.action_mask = self._compute_action_mask(state.walls, state.agent_position)
 
         # Generate the observation from the environment state.
-        observation = self._observation_from_state(state)
+        observation = self.observe(state)
 
         # Return a restart timestep whose step type is FIRST.
         timestep = restart(observation)
@@ -240,7 +240,7 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
             step_count=state.step_count + 1,
         )
         # Generate the observation from the environment state.
-        observation = self._observation_from_state(state)
+        observation = self.observe(state)
 
         # Check if the episode terminates (i.e. done is True).
         no_actions_available = ~jnp.any(action_mask)
@@ -282,7 +282,7 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
 
         return action_mask
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Create an observation from the state of the environment."""
         return Observation(
             agent_position=state.agent_position,
