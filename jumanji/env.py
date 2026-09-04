@@ -80,6 +80,17 @@ class Environment(abc.ABC, Generic[State, ActionSpec, Observation]):
         """
 
     @abc.abstractmethod
+    def observe(self, state: State) -> Observation:
+        """Create an observation from an environment state.
+
+        Args:
+            state: State object containing the dynamics of the environment.
+
+        Returns:
+            observation: Observation object derived from the environment state.
+        """
+
+    @abc.abstractmethod
     @cached_property
     def observation_spec(self) -> specs.Spec[Observation]:
         """Returns the observation spec.

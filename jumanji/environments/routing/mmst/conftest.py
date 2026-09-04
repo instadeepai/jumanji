@@ -140,6 +140,6 @@ def deterministic_mmst_env() -> Tuple[MMST, State, TimeStep]:
         key=key,
     )
 
-    timestep = restart(observation=env._state_to_observation(state), shape=num_agents)
+    timestep = restart(observation=env.observe(state), shape=num_agents)
 
     return env, state, timestep

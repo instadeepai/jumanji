@@ -105,13 +105,7 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         """Resets the environment to an initial state."""
         key, subkey = jax.random.split(key)
         state = self.generator(subkey)
-        action_mask = self._get_valid_actions(state.empty_tile_position)
-        obs = Observation(
-            puzzle=state.puzzle,
-            empty_tile_position=state.empty_tile_position,
-            action_mask=action_mask,
-            step_count=state.step_count,
-        )
+        obs = self.observe(state)
         timestep = restart(observation=obs, extras=self._get_extras(state))
         return state, timestep
 
@@ -123,21 +117,13 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         # Check if the puzzle is solved
         done = jnp.array_equal(updated_puzzle, self.solved_puzzle)
 
-        # Update the action mask
-        action_mask = self._get_valid_actions(updated_empty_tile_position)
-
         next_state = State(
             puzzle=updated_puzzle,
             empty_tile_position=updated_empty_tile_position,
             key=state.key,
             step_count=state.step_count + 1,
         )
-        obs = Observation(
-            puzzle=updated_puzzle,
-            empty_tile_position=updated_empty_tile_position,
-            action_mask=action_mask,
-            step_count=next_state.step_count,
-        )
+        obs = self.observe(next_state)
 
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
         extras = self._get_extras(next_state)
@@ -151,6 +137,15 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         return next_state, timestep
+
+    def observe(self, state: State) -> Observation:
+        """Create an observation from the state of the environment."""
+        return Observation(
+            puzzle=state.puzzle,
+            empty_tile_position=state.empty_tile_position,
+            action_mask=self._get_valid_actions(state.empty_tile_position),
+            step_count=state.step_count,
+        )
 
     def _move_empty_tile(
         self,

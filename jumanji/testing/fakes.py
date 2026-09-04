@@ -98,7 +98,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         """
 
         state = FakeState(key=key, step=jnp.array(0, jnp.int32))
-        observation = self._state_to_obs(state)
+        observation = self.observe(state)
         timestep = restart(observation=observation)
         return state, timestep
 
@@ -117,7 +117,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         key, _ = jax.random.split(state.key)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
-        observation = self._state_to_obs(next_state)
+        observation = self.observe(next_state)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
             termination,
@@ -139,7 +139,7 @@ class FakeEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array]):
         """
         return state.key.shape, state.step.shape
 
-    def _state_to_obs(self, state: FakeState) -> chex.Array:
+    def observe(self, state: FakeState) -> chex.Array:
         """The observation is an array full of `state.step` of shape `(self.observation_shape,)`."""
         return state.step * jnp.ones(self.observation_shape, float)
 
@@ -234,7 +234,7 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
         """
 
         state = FakeState(key=key, step=0)
-        observation = self.observation_spec.generate_value()
+        observation = self.observe(state)
         timestep = restart(observation=observation, shape=(self.num_agents,))
         return state, timestep
 
@@ -252,18 +252,24 @@ class FakeMultiEnvironment(Environment[FakeState, specs.BoundedArray, chex.Array
         key = jax.random.split(state.key, 1).squeeze(0)
         next_step = state.step + 1
         next_state = FakeState(key=key, step=next_step)
+        observation = self.observe(next_state)
         timestep = jax.lax.cond(
             next_step >= self.time_limit,
             lambda _: termination(
                 reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
                 shape=(self.num_agents,),
             ),
             lambda _: transition(
                 reward=jnp.ones(self.num_agents, float) * self.reward_per_step,
-                observation=jnp.zeros(self.observation_shape, float),
+                observation=observation,
                 shape=(self.num_agents,),
             ),
             None,
         )
         return next_state, timestep
+
+    def observe(self, state: FakeState) -> chex.Array:
+        """Create an observation from an environment state."""
+        del state
+        return jnp.zeros(self.observation_shape, float)

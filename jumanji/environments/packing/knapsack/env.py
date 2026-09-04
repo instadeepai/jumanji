@@ -135,7 +135,7 @@ class Knapsack(Environment[State, specs.DiscreteArray, Observation]):
             timestep: the first timestep returned by the environment.
         """
         state = self.generator(key)
-        timestep = restart(observation=self._state_to_observation(state))
+        timestep = restart(observation=self.observe(state))
         return state, timestep
 
     def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
@@ -160,7 +160,7 @@ class Knapsack(Environment[State, specs.DiscreteArray, Observation]):
             action,
         )
 
-        observation = self._state_to_observation(next_state)
+        observation = self.observe(next_state)
 
         no_items_available = ~jnp.any(observation.action_mask)
         is_done = no_items_available | ~is_valid
@@ -288,7 +288,7 @@ class Knapsack(Environment[State, specs.DiscreteArray, Observation]):
             key=state.key,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Converts a state to an observation.
 
         Args:

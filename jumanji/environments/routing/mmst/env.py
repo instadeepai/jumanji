@@ -187,7 +187,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         key, problem_key = jax.random.split(key)
         state = self._generator(problem_key)
         extras = self._get_extras(state)
-        timestep = restart(observation=self._state_to_observation(state), extras=extras)
+        timestep = restart(observation=self.observe(state), extras=extras)
         return state, timestep
 
     def step(self, state: State, action: chex.Array) -> Tuple[State, TimeStep[Observation]]:
@@ -354,7 +354,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
             action_mask=action_mask,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Converts a state into an observation.
 
         Args:
@@ -417,7 +417,7 @@ class MMST(Environment[State, specs.MultiDiscreteArray, Observation]):
         state.finished_agents = self.get_finished_agents(state)
         state.step_count = state.step_count + 1
         extras = self._get_extras(state)
-        observation = self._state_to_observation(state)
+        observation = self.observe(state)
 
         def make_termination_timestep() -> TimeStep[Observation]:
             return termination(

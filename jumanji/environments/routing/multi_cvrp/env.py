@@ -159,7 +159,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
 
         state = self._generator(key)
 
-        timestep = restart(observation=self._state_to_observation(state))
+        timestep = restart(observation=self.observe(state))
 
         return state, timestep
 
@@ -448,7 +448,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
             key=state.key,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """
         Converts a state into an observation.
 
@@ -493,7 +493,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
             timestep: TimeStep object containing the timestep of the environment.
         """
 
-        observation = self._state_to_observation(state)
+        observation = self.observe(state)
 
         timestep: TimeStep = jax.lax.cond(
             is_done,

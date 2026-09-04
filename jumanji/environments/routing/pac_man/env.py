@@ -238,7 +238,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         state = self.generator(key)
 
         # Generate observation
-        obs = self._observation_from_state(state)
+        obs = self.observe(state)
 
         # Return a restart timestep of step type is FIRST.
         timestep = restart(observation=obs)
@@ -278,7 +278,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         reward = jnp.asarray(collision_rewards)
         # Generate observation from the state
-        observation = self._observation_from_state(next_state)
+        observation = self.observe(next_state)
 
         # Return either a MID or a LAST timestep depending on done.
         timestep = jax.lax.cond(
@@ -496,7 +496,7 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
 
         return action_mask
 
-    def _observation_from_state(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Create an observation from the state of the environment."""
         action_mask = self._compute_action_mask(state).astype(bool)
         return Observation(

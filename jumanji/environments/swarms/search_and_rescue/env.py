@@ -211,7 +211,7 @@ class SearchAndRescue(Environment):
             timestep: TimeStep with individual search agent views.
         """
         state = self.generator(key, self.searcher_params)
-        timestep = restart(observation=self._state_to_observation(state), shape=(self.num_agents,))
+        timestep = restart(observation=self.observe(state), shape=(self.num_agents,))
         return state, timestep
 
     def step(self, state: State, actions: chex.Array) -> Tuple[State, TimeStep[Observation]]:
@@ -263,7 +263,7 @@ class SearchAndRescue(Environment):
             key=key,
             step=state.step + 1,
         )
-        observation = self._state_to_observation(state)
+        observation = self.observe(state)
         observation = jax.lax.stop_gradient(observation)
         timestep = jax.lax.cond(
             jnp.logical_or(state.step >= self.time_limit, jnp.all(targets_found)),
@@ -274,7 +274,7 @@ class SearchAndRescue(Environment):
         )
         return state, timestep
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         searcher_views = self._observation_fn(state)
         return Observation(
             searcher_views=searcher_views,

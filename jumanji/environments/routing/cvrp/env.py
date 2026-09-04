@@ -156,7 +156,7 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
                 environment.
         """
         state = self.generator(key)
-        timestep = restart(observation=self._state_to_observation(state))
+        timestep = restart(observation=self.observe(state))
         return state, timestep
 
     def step(self, state: State, action: chex.Numeric) -> Tuple[State, TimeStep[Observation]]:
@@ -182,7 +182,7 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         reward = self.reward_fn(state, action, next_state, is_valid)
-        observation = self._state_to_observation(next_state)
+        observation = self.observe(next_state)
 
         # Terminate if all nodes have been visited or the action is invalid.
         is_done = next_state.visited_mask.all() | ~is_valid
@@ -339,7 +339,7 @@ class CVRP(Environment[State, specs.DiscreteArray, Observation]):
             key=state.key,
         )
 
-    def _state_to_observation(self, state: State) -> Observation:
+    def observe(self, state: State) -> Observation:
         """Converts a state into an observation.
 
         Args:
