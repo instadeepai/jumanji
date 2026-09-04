@@ -2222,6 +2222,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.tsp.env.TSP.observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#jumanji.environments.routing.tsp.env.TSP.render" class="md-nav__link">
     <span class="md-ellipsis">
       render
@@ -2963,6 +2972,110 @@ garbage collected or when the program exits.</p>
 <div class="doc doc-object doc-function">
 
 
+<h2 id="jumanji.environments.routing.tsp.env.TSP.observe" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.routing.tsp.env.TSP.observe" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a state into an observation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state</code>
+            </td>
+            <td>
+                  <code><span title="jumanji.environments.routing.tsp.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>State</code> object containing the dynamics of the environment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>observation</code></td>            <td>
+                  <code><span title="jumanji.environments.routing.tsp.types.Observation">Observation</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>Observation</code> object containing the observation of the environment.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/routing/tsp/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Observation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a state into an observation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: `State` object containing the dynamics of the environment.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        observation: `Observation` object containing the observation of the environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span>
+        <span class="n">coordinates</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+        <span class="n">position</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+        <span class="n">trajectory</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="o">=~</span><span class="n">state</span><span class="o">.</span><span class="n">visited_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="jumanji.environments.routing.tsp.env.TSP.render" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
 
@@ -3162,7 +3275,7 @@ by the environment.</p>
 <span class="sd">            by the environment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_to_observation</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3318,7 +3431,7 @@ by the environment.</p>
     <span class="p">)</span>
 
     <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">)</span>
-    <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_to_observation</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
 
     <span class="c1"># Terminate if all cities have been visited or the action is invalid</span>
     <span class="n">is_done</span> <span class="o">=</span> <span class="p">(</span><span class="n">next_state</span><span class="o">.</span><span class="n">num_visited</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cities</span><span class="p">)</span> <span class="o">|</span> <span class="o">~</span><span class="n">is_valid</span>
@@ -3363,7 +3476,7 @@ by the environment.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    2026-09-03
+    2026-09-04
   </span>
 
     

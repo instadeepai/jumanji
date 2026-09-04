@@ -2075,6 +2075,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jumanji.environments.routing.mmst.env.MMST.observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#jumanji.environments.routing.mmst.env.MMST.render" class="md-nav__link">
     <span class="md-ellipsis">
       render
@@ -3086,6 +3095,166 @@ Represents the valid actions in the current state.</li>
 <div class="doc doc-object doc-function">
 
 
+<h2 id="jumanji.environments.routing.mmst.env.MMST.observe" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.routing.mmst.env.MMST.observe" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a state into an observation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state</code>
+            </td>
+            <td>
+                  <code><span title="jumanji.environments.routing.mmst.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>State object containing the dynamics of the environment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>observation</code></td>            <td>
+                  <code><span title="jumanji.environments.routing.mmst.types.Observation">Observation</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observation object containing the observation of the environment.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/routing/mmst/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Observation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a state into an observation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: State object containing the dynamics of the environment.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        observation: Observation object containing the observation of the environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Each agent should see its note_types labelled with id 1</span>
+    <span class="c1"># and all its already connected nodes labeled with id 0.</span>
+
+    <span class="c1"># Preserve the negative ones.</span>
+    <span class="n">zero_mask</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">node_types</span> <span class="o">!=</span> <span class="n">UTILITY_NODE</span>
+    <span class="n">ones_inds</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">node_types</span> <span class="o">==</span> <span class="n">UTILITY_NODE</span>
+
+    <span class="c1"># Set the agent_id to 0 since the environment is single agent.</span>
+    <span class="n">agent_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">node_types</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">node_types</span> <span class="o">-</span> <span class="n">agent_id</span>
+    <span class="n">node_types</span> <span class="o">%=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span>
+    <span class="n">node_types</span> <span class="o">*=</span> <span class="mi">2</span>
+    <span class="n">node_types</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># Add one so that current agent nodes are labelled 1.</span>
+
+    <span class="n">node_types</span> <span class="o">*=</span> <span class="n">zero_mask</span>  <span class="c1"># Mask the position with negative ones.</span>
+    <span class="n">node_types</span> <span class="o">-=</span> <span class="n">ones_inds</span>  <span class="c1"># Add the negative ones back.</span>
+
+    <span class="c1"># Set already connected nodes by agent to 0.</span>
+    <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span><span class="p">):</span>
+        <span class="n">connected_mask</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_nodes_index</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">==</span> <span class="n">UTILITY_NODE</span>
+        <span class="n">connected_ones</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_nodes_index</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">!=</span> <span class="n">UTILITY_NODE</span>
+        <span class="n">node_types</span> <span class="o">*=</span> <span class="n">connected_mask</span>
+        <span class="n">agent_skip</span> <span class="o">=</span> <span class="p">(</span><span class="n">agent</span> <span class="o">-</span> <span class="n">agent_id</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span>
+        <span class="n">node_types</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">agent_skip</span><span class="p">)</span> <span class="o">*</span> <span class="n">connected_ones</span>
+
+    <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span>
+        <span class="n">node_types</span><span class="o">=</span><span class="n">node_types</span><span class="p">,</span>
+        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span>
+        <span class="n">positions</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
+        <span class="n">step_count</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">step_count</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="jumanji.environments.routing.mmst.env.MMST.render" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
 
@@ -3251,7 +3420,7 @@ environment.</p>
     <span class="n">key</span><span class="p">,</span> <span class="n">problem_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
     <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="p">(</span><span class="n">problem_key</span><span class="p">)</span>
     <span class="n">extras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extras</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_to_observation</span><span class="p">(</span><span class="n">state</span><span class="p">),</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">),</span> <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3559,7 +3728,7 @@ environment, as well as the timestep to be observed.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    2026-09-03
+    2026-09-04
   </span>
 
     

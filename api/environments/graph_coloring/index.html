@@ -1647,6 +1647,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.render" class="md-nav__link">
     <span class="md-ellipsis">
       render
@@ -2850,7 +2859,8 @@ will not be stored.</p>
 
             <details class="quote">
               <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">289</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
+<span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
 <span class="normal">292</span>
@@ -2866,8 +2876,7 @@ will not be stored.</p>
 <span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">State</span><span class="p">],</span>
     <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
@@ -2908,19 +2917,55 @@ garbage collected or when the program exits.</p>
 
             <details class="quote">
               <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">307</span>
+<span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">313</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform any necessary cleanup.</span>
 
 <span class="sd">    Environments will automatically :meth:`close()` themselves when</span>
 <span class="sd">    garbage collected or when the program exits.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_env_viewer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="jumanji.environments.logic.graph_coloring.env.GraphColoring.observe" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.logic.graph_coloring.env.GraphColoring.observe" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create an observation from the state of the environment.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Observation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an observation from the state of the environment.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span>
+        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span>
+        <span class="n">colors</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">colors</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+        <span class="n">current_node_index</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">current_node_index</span><span class="p">,</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2973,13 +3018,13 @@ garbage collected or when the program exits.</p>
 
             <details class="quote">
               <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
+<span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders the current state of the `GraphColoring` environment.</span>
 
 <span class="sd">    Args:</span>
@@ -3052,12 +3097,7 @@ garbage collected or when the program exits.</p>
 <span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resets the environment to an initial state.</span>
 
 <span class="sd">    Returns:</span>
@@ -3076,12 +3116,7 @@ garbage collected or when the program exits.</p>
         <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
         <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="n">Observation</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">current_node_index</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
     <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="n">obs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
@@ -3192,7 +3227,12 @@ the validity of the action and the completion of the coloring task.</p>
 
             <details class="quote">
               <summary>Source code in <code>jumanji/environments/logic/graph_coloring/env.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
@@ -3246,17 +3286,7 @@ the validity of the action and the completion of the coloring task.</p>
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
+<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">State</span><span class="p">,</span> <span class="n">TimeStep</span><span class="p">[</span><span class="n">Observation</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the environment state after the agent takes an action.</span>
 
 <span class="sd">    Specifically, this function allows the agent to choose</span>
@@ -3307,12 +3337,7 @@ the validity of the action and the completion of the coloring task.</p>
         <span class="n">action_mask</span><span class="o">=</span><span class="n">next_action_mask</span><span class="p">,</span>
         <span class="n">key</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="n">Observation</span><span class="p">(</span>
-        <span class="n">adj_matrix</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">adj_matrix</span><span class="p">,</span>
-        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-        <span class="n">action_mask</span><span class="o">=</span><span class="n">next_state</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
-        <span class="n">current_node_index</span><span class="o">=</span><span class="n">next_node_index</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
     <span class="n">timestep</span> <span class="o">=</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
         <span class="n">done</span><span class="p">,</span>
         <span class="n">termination</span><span class="p">,</span>
@@ -3354,7 +3379,7 @@ the validity of the action and the completion of the coloring task.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    2026-09-03
+    2026-09-04
   </span>
 
     

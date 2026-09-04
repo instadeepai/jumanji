@@ -1854,6 +1854,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jumanji.environments.packing.job_shop.env.JobShop.observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#jumanji.environments.packing.job_shop.env.JobShop.render" class="md-nav__link">
     <span class="md-ellipsis">
       render
@@ -2993,6 +3002,116 @@ garbage collected or when the program exits.</p>
 <div class="doc doc-object doc-function">
 
 
+<h2 id="jumanji.environments.packing.job_shop.env.JobShop.observe" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
+
+<a href="#jumanji.environments.packing.job_shop.env.JobShop.observe" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a job shop environment state to an observation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state</code>
+            </td>
+            <td>
+                  <code><span title="jumanji.environments.packing.job_shop.types.State">State</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>State</code> object containing the dynamics of the environment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>observation</code></td>            <td>
+                  <code><span title="jumanji.environments.packing.job_shop.types.Observation">Observation</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>Observation</code> object containing the observation of the environment.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>jumanji/environments/packing/job_shop/env.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Observation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a job shop environment state to an observation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: `State` object containing the dynamics of the environment.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        observation: `Observation` object containing the observation of the environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">Observation</span><span class="p">(</span>
+        <span class="n">ops_machine_ids</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ops_machine_ids</span><span class="p">,</span>
+        <span class="n">ops_durations</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ops_durations</span><span class="p">,</span>
+        <span class="n">ops_mask</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ops_mask</span><span class="p">,</span>
+        <span class="n">machines_job_ids</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">machines_job_ids</span><span class="p">,</span>
+        <span class="n">machines_remaining_times</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">machines_remaining_times</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="jumanji.environments.packing.job_shop.env.JobShop.render" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">render</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></code>
 
@@ -3187,7 +3306,7 @@ and timestep.</p>
     <span class="p">)</span>
 
     <span class="c1"># Get the observation and the timestep</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_from_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
     <span class="n">timestep</span> <span class="o">=</span> <span class="n">restart</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="n">obs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">timestep</span>
@@ -3471,7 +3590,7 @@ observation). It calculates the reward based on the three terminal conditions:
         <span class="n">scheduled_times</span><span class="o">=</span><span class="n">updated_scheduled_times</span><span class="p">,</span>
         <span class="n">key</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">next_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_from_state</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
+    <span class="n">next_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
 
     <span class="c1"># Compute terminal condition</span>
     <span class="n">done</span> <span class="o">=</span> <span class="n">invalid</span> <span class="o">|</span> <span class="n">all_machines_idle</span> <span class="o">|</span> <span class="n">schedule_finished</span>
@@ -3525,7 +3644,7 @@ observation). It calculates the reward based on the three terminal conditions:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    2026-09-03
+    2026-09-04
   </span>
 
     
