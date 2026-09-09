@@ -151,7 +151,18 @@ def load(name: str) -> Type[Environment]:
 
 
 def make(id: str, *args: Any, **kwargs: Any) -> Environment:
-    env_name, version = parse_env_id(id)
+    """Create an environment, defaulting to its latest registered version."""
+    env_id = id
+    match = ENV_NAME_RE.fullmatch(id)
+    if match and match.group("version") is None:
+        latest_version = max(
+            (spec.version for spec in _REGISTRY.values() if spec.name == id),
+            default=None,
+        )
+        if latest_version is not None:
+            env_id = get_env_id(id, latest_version)
+
+    env_name, version = parse_env_id(env_id)
     env_id = get_env_id(env_name, version)
 
     if env_id not in _REGISTRY:

@@ -91,6 +91,41 @@ def test_register__override_kwargs(mocker: pytest_mock.MockerFixture) -> None:
     assert obs_spec.shape == obs_shape
 
 
+@pytest.mark.parametrize("name", ("Fake", "Fake-variant"))
+def test_make__latest_version(name: str, mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
+    for version in (10, 2, 0):
+        registration.register(
+            f"{name}-v{version}",
+            entry_point="jumanji.testing.fakes:FakeEnvironment",
+            kwargs={"observation_shape": (version,)},
+        )
+    registration.register(f"{name}-other-v99", entry_point="")
+
+    assert registration.make(name).observation_spec.shape == (10,)
+    assert registration.make(f"{name}-v2").observation_spec.shape == (2,)
+    assert registration.make(name, observation_shape=(3, 4)).observation_spec.shape == (3, 4)
+    with pytest.raises(ValueError, match="Unregistered environment"):
+        registration.make(f"{name}-v3")
+
+    registration.register(f"{name}-v3-v99", entry_point="")
+    with pytest.raises(ValueError, match="Unregistered environment"):
+        registration.make(f"{name}-v3")
+
+
+def test_make__latest_version_zero(mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
+    registration.register("Fake-v0", entry_point="jumanji.testing.fakes:FakeEnvironment")
+    assert isinstance(registration.make("Fake"), FakeEnvironment)
+
+
+@pytest.mark.parametrize("env_id", ("Unknown", "Unknown-v0", "Invalid Name-v0"))
+def test_make__unknown_or_malformed(env_id: str, mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
+    with pytest.raises(ValueError):
+        registration.make(env_id)
+
+
 def test_registration__make() -> None:
     """Check that all the environments in the registry can be initiated correctly
     using `jumanji.make`.
