@@ -19,7 +19,7 @@ import pytest
 
 from jumanji.environments.routing.cleaner.constants import CLEAN, DIRTY, WALL
 from jumanji.environments.routing.cleaner.env import Cleaner
-from jumanji.environments.routing.cleaner.generator import Generator
+from jumanji.environments.routing.cleaner.generator import Generator, RandomGenerator
 from jumanji.environments.routing.cleaner.types import Observation, State
 from jumanji.testing.env_not_smoke import (
     check_env_does_not_smoke,
@@ -174,6 +174,21 @@ class TestCleaner:
         assert jnp.all(action_mask[0] == jnp.array([True, False, True, False]))
         assert jnp.all(action_mask[1] == jnp.array([False, True, False, True]))
         assert jnp.all(action_mask[2] == jnp.array([False, False, False, True]))
+
+    @pytest.mark.parametrize("num_rows,num_cols", [(5, 8), (8, 5)])
+    def test_cleaner__action_mask_rectangular_grid(self, num_rows: int, num_cols: int) -> None:
+        cleaner = Cleaner(generator=RandomGenerator(num_rows, num_cols, num_agents=4))
+        grid = jnp.full((num_rows, num_cols), DIRTY, jnp.int8)
+
+        corners = jnp.array(
+            [[0, 0], [0, num_cols - 1], [num_rows - 1, 0], [num_rows - 1, num_cols - 1]], jnp.int32
+        )
+        action_mask = cleaner._compute_action_mask(grid, corners)
+
+        assert jnp.all(action_mask[0] == jnp.array([False, True, True, False]))
+        assert jnp.all(action_mask[1] == jnp.array([False, False, True, True]))
+        assert jnp.all(action_mask[2] == jnp.array([True, True, False, False]))
+        assert jnp.all(action_mask[3] == jnp.array([True, False, False, True]))
 
     def test_cleaner__does_not_smoke(self, cleaner: Cleaner) -> None:
         def select_actions(key: chex.PRNGKey, observation: Observation) -> chex.Array:

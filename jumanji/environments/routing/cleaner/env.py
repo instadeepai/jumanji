@@ -306,9 +306,9 @@ class Cleaner(Environment[State, specs.MultiDiscreteArray, Observation]):
             y, x = agent_location + move
             return (
                 (x >= 0)
-                & (x < self.num_rows)
+                & (x < self.num_cols)
                 & (y >= 0)
-                & (y < self.num_cols)
+                & (y < self.num_rows)
                 & (grid[y, x] != WALL)
             )
 
