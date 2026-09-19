@@ -12,13 +12,22 @@ It can be used as follows:
 import jax
 import jumanji
 
-env = jumanji.make('BinPack-v1')
+env = jumanji.make('BinPack-v2')
 key = jax.random.PRNGKey(0)
 state, timestep = env.reset(key)
 ```
 
 The environment ID is composed of two parts, the environment name and its version.
 To get the full list of registered environments, you can use the `registered_environments` util.
+
+You can omit the version when calling `make` to select the highest registered version number:
+
+```python
+env = jumanji.make('BinPack')
+```
+
+Use an explicit version, such as `BinPack-v2`, to keep the environment version fixed when newer
+versions are registered. Registering an environment still requires a versioned ID.
 
 ⚠️ Warning
 
