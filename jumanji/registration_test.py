@@ -119,6 +119,13 @@ def test_make__latest_version_zero(mocker: pytest_mock.MockerFixture) -> None:
     assert isinstance(registration.make("Fake"), FakeEnvironment)
 
 
+def test_make__no_registered_version(mocker: pytest_mock.MockerFixture) -> None:
+    mocker.patch("jumanji.registration._REGISTRY", {})
+    registration.register("Fake-other-v0", entry_point="")
+    with pytest.raises(ValueError, match="Unregistered environment Fake: no version"):
+        registration.make("Fake")
+
+
 @pytest.mark.parametrize("env_id", ("Unknown", "Unknown-v0", "Invalid Name-v0"))
 def test_make__unknown_or_malformed(env_id: str, mocker: pytest_mock.MockerFixture) -> None:
     mocker.patch("jumanji.registration._REGISTRY", {})
