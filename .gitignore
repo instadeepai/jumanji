@@ -79,6 +79,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+temp_auto_push.bat
 
 # IPython
 profile_default/
@@ -142,7 +143,6 @@ cython_debug/
 .idea/
 
 # VSCode stuff
-.vscode
 
 # Docker stuff
 .devcontainer
@@ -162,3 +162,5 @@ jumanji_env/
 
 # Test artifact written to CWD by mmst/viewer_test.py
 render_test_gif.gif
+.gitignore
+branch_structure.json

@@ -215,7 +215,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
             tail=tail,
             fruit_position=fruit_position,
             length=length,
-            step_count=state.step_count + 1,
+            step_count=step_count,
             action_mask=self._get_action_mask(head_position, body_state),
         )
 
@@ -241,7 +241,7 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             Spec for the `Observation` whose fields are:
             - grid: BoundedArray (float) of shape (num_rows, num_cols, 5).
-            - step_count: DiscreteArray (num_values = time_limit) of shape ().
+            - step_count: DiscreteArray (num_values = time_limit + 1) of shape ().
             - action_mask: BoundedArray (bool) of shape (4,).
         """
         grid = specs.BoundedArray(
@@ -251,7 +251,9 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
             dtype=float,
             name="grid",
         )
-        step_count = specs.DiscreteArray(self.time_limit, dtype=jnp.int32, name="step_count")
+        # The episode terminates once step_count reaches time_limit, so the terminal observation
+        # carries step_count == time_limit, which is in the spec only with time_limit + 1 values.
+        step_count = specs.DiscreteArray(self.time_limit + 1, dtype=jnp.int32, name="step_count")
         action_mask = specs.BoundedArray(
             shape=(4,),
             dtype=bool,

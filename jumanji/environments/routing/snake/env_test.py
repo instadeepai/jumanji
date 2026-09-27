@@ -167,3 +167,20 @@ def test_snake__animation(snake: Snake, tmpdir: py.path.local) -> None:
 
     path = str(tmpdir.join("/anim.gif"))
     animation.save(path, writer=matplotlib.animation.PillowWriter(fps=10), dpi=60)
+
+
+def test_snake__observation_step_count() -> None:
+    """Validates that the observation's step_count tracks the state's step_count, and that the
+    terminal observation reached at the time limit is within the observation spec."""
+    time_limit = 3
+    snake = Snake(num_rows=6, num_cols=6, time_limit=time_limit)
+    step_fn = jax.jit(snake.step)
+    state, timestep = snake.reset(jax.random.PRNGKey(0))
+    assert timestep.observation.step_count == 0
+    while not timestep.last():
+        # Always take a valid action so that the episode only ends at the time limit.
+        action = jnp.argmax(state.action_mask)
+        state, timestep = step_fn(state, action)
+        assert timestep.observation.step_count == state.step_count
+        snake.observation_spec.validate(timestep.observation)
+    assert timestep.observation.step_count == time_limit
