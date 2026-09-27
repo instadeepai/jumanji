@@ -282,3 +282,14 @@ def test_tsp__equivalence_dense_sparse_reward(
     # Check that both returns are the same and not the invalid action penalty
     assert jnp.isclose(return_sparse, return_dense)
     assert return_dense > -tsp_dense_reward.num_cities * jnp.sqrt(2)
+
+
+def test_tsp__reset_observation_within_spec(tsp_dense_reward: TSP) -> None:
+    """Validates that the reset observation, whose position is -1 before any city is visited,
+    is within the observation spec, and that the observation stays within it after a step."""
+    state, timestep = tsp_dense_reward.reset(jax.random.PRNGKey(0))
+    assert timestep.observation.position == -1
+    tsp_dense_reward.observation_spec.validate(timestep.observation)
+    state, timestep = tsp_dense_reward.step(state, jnp.array(0, jnp.int32))
+    assert timestep.observation.position == 0
+    tsp_dense_reward.observation_spec.validate(timestep.observation)

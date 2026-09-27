@@ -177,7 +177,7 @@ class TSP(Environment[State, specs.DiscreteArray, Observation]):
         Returns:
             Spec for the `Observation` whose fields are:
             - coordinates: BoundedArray (float) of shape (num_cities,).
-            - position: DiscreteArray (num_values = num_cities) of shape ().
+            - position: BoundedArray (int32) of shape (), -1 before the first city is visited.
             - trajectory: BoundedArray (int32) of shape (num_cities,).
             - action_mask: BoundedArray (bool) of shape (num_cities,).
         """
@@ -188,7 +188,15 @@ class TSP(Environment[State, specs.DiscreteArray, Observation]):
             dtype=float,
             name="coordinates",
         )
-        position = specs.DiscreteArray(self.num_cities, dtype=jnp.int32, name="position")
+        # The position is -1 until the first city is visited, so the spec must include it,
+        # like the trajectory spec below.
+        position = specs.BoundedArray(
+            shape=(),
+            dtype=jnp.int32,
+            minimum=-1,
+            maximum=self.num_cities - 1,
+            name="position",
+        )
         trajectory = specs.BoundedArray(
             shape=(self.num_cities,),
             dtype=jnp.int32,
