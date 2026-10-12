@@ -31,7 +31,6 @@ dependencies = [
   "dm-env>=1.5",
   "esquilax>=2.0.0",
   "gymnasium>=1.0",
-  "huggingface-hub",
   "jax>=0.4.27", # jnp.clip(x, min=, max=) signature (Array API); a_min/a_max removed in 0.8.0
   "matplotlib>=3.8.0",
   "numpy>=1.19.5",

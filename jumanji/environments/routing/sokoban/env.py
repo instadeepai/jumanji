@@ -36,8 +36,8 @@ from jumanji.environments.routing.sokoban.constants import (
     WALL,
 )
 from jumanji.environments.routing.sokoban.generator import (
+    DeepMindGenerator,
     Generator,
-    HuggingFaceDeepMindGenerator,
 )
 from jumanji.environments.routing.sokoban.reward import DenseReward, RewardFn
 from jumanji.environments.routing.sokoban.types import Observation, State
@@ -82,18 +82,20 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
     ```python
     from jumanji.environments import Sokoban
     from jumanji.environments.routing.sokoban.generator import
-    HuggingFaceDeepMindGenerator,
+    DeepMindGenerator,
 
     env_train = Sokoban(
-        generator=HuggingFaceDeepMindGenerator(
-            dataset_name="unfiltered-train",
+        generator=DeepMindGenerator(
+            difficulty="unfiltered",
+            split="train",
             proportion_of_files=1,
         )
     )
 
     env_test = Sokoban(
-        generator=HuggingFaceDeepMindGenerator(
-            dataset_name="unfiltered-test",
+        generator=DeepMindGenerator(
+            difficulty="unfiltered",
+            split="test",
             proportion_of_files=1,
         )
     )
@@ -124,9 +126,9 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         Args:
             generator: `Generator` whose `__call__` instantiates an environment
              instance (an initial state). Implemented options are [`ToyGenerator`,
-             `DeepMindGenerator`, and `HuggingFaceDeepMindGenerator`].
-             Defaults to `HuggingFaceDeepMindGenerator` with
-             `dataset_name="unfiltered-train", proportion_of_files=1`.
+             `SimpleSolveGenerator` and `DeepMindGenerator`].
+             Defaults to `DeepMindGenerator` with
+             `difficulty="unfiltered", split="train", proportion_of_files=1`.
             time_limit: int, max steps for the environment, defaults to 120.
             viewer: 'Viewer' object, used to render the environment.
             If not provided, defaults to`BoxViewer`.
@@ -139,8 +141,9 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         super().__init__()
 
-        self.generator = generator or HuggingFaceDeepMindGenerator(
-            "unfiltered-train",
+        self.generator = generator or DeepMindGenerator(
+            difficulty="unfiltered",
+            split="train",
             proportion_of_files=1,
         )
 

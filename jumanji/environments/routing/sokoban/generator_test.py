@@ -21,31 +21,29 @@ import jax.numpy as jnp
 import pytest
 
 from jumanji.environments.routing.sokoban.env import Sokoban
-from jumanji.environments.routing.sokoban.generator import (
-    DeepMindGenerator,
-    HuggingFaceDeepMindGenerator,
-)
+from jumanji.environments.routing.sokoban.generator import DeepMindGenerator
 
 
-def test_sokoban__hugging_generator_creation() -> None:
+def test_sokoban__deepmind_generator_all_datasets_step() -> None:
     """checks we can create datasets for all valid boxoban datasets and
     perform a jitted step"""
 
     datasets = [
-        "unfiltered-train",
-        "unfiltered-test",
-        "unfiltered-valid",
-        "medium-train",
-        "medium-valid",
-        "hard",
+        ("unfiltered", "train"),
+        ("unfiltered", "test"),
+        ("unfiltered", "valid"),
+        ("medium", "train"),
+        ("medium", "valid"),
+        ("hard", None),
     ]
 
-    for dataset in datasets:
+    for difficulty, split in datasets:
         chex.clear_trace_counter()
 
         env = Sokoban(
-            generator=HuggingFaceDeepMindGenerator(
-                dataset_name=dataset,
+            generator=DeepMindGenerator(
+                difficulty=difficulty,
+                split=split,
                 proportion_of_files=1,
             )
         )
@@ -68,14 +66,15 @@ def test_sokoban__hugging_generator_creation() -> None:
             assert timestep.observation.step_count == step_count
 
 
-def test_sokoban__hugging_generator_different_problems() -> None:
+def test_sokoban__deepmind_generator_different_problems() -> None:
     """checks that resetting with different keys leads to different problems"""
 
     chex.clear_trace_counter()
 
     env = Sokoban(
-        generator=HuggingFaceDeepMindGenerator(
-            dataset_name="unfiltered-train",
+        generator=DeepMindGenerator(
+            difficulty="unfiltered",
+            split="train",
             proportion_of_files=1,
         )
     )
@@ -91,14 +90,15 @@ def test_sokoban__hugging_generator_different_problems() -> None:
     assert not jnp.array_equal(state2.variable_grid, state1.variable_grid)
 
 
-def test_sokoban__hugging_generator_same_problems() -> None:
+def test_sokoban__deepmind_generator_same_problems() -> None:
     """checks that resettting with the same key leads to the same problems"""
 
     chex.clear_trace_counter()
 
     env = Sokoban(
-        generator=HuggingFaceDeepMindGenerator(
-            dataset_name="unfiltered-train",
+        generator=DeepMindGenerator(
+            difficulty="unfiltered",
+            split="train",
             proportion_of_files=1,
         )
     )
@@ -113,15 +113,16 @@ def test_sokoban__hugging_generator_same_problems() -> None:
     assert jnp.array_equal(state2.variable_grid, state1.variable_grid)
 
 
-def test_sokoban__hugging_generator_proportion_of_problems() -> None:
+def test_sokoban__deepmind_generator_proportion_of_problems() -> None:
     """checks that generator initialises correct number of problems"""
 
     chex.clear_trace_counter()
 
     unfiltered_dataset_size = 900000
 
-    generator_full = HuggingFaceDeepMindGenerator(
-        dataset_name="unfiltered-train",
+    generator_full = DeepMindGenerator(
+        difficulty="unfiltered",
+        split="train",
         proportion_of_files=1,
     )
 
@@ -130,8 +131,9 @@ def test_sokoban__hugging_generator_proportion_of_problems() -> None:
         (unfiltered_dataset_size, 10, 10),
     )
 
-    generator_half_full = HuggingFaceDeepMindGenerator(
-        dataset_name="unfiltered-train",
+    generator_half_full = DeepMindGenerator(
+        difficulty="unfiltered",
+        split="train",
         proportion_of_files=0.5,
     )
 
