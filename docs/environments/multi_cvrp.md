@@ -44,4 +44,6 @@ next node to visit, and an action value of 0 corresponds to visiting the depot.
 the negative of the length of the path chosen by all the agents combined. Time penalities are added if the agents arrived early or late to specific customers. If the max step limit is reached, the episode ends with a large negative reward which is equal to the maximum negative distance reward that can be incurred.
 
 ## Registered Versions 📖
-- `MultiCVRP-v0`: MultiCVRP problem with 20 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 with two vehicles.
+- `MultiCVRP-v1`: MultiCVRP problem with 20 customers (randomly generated), maximum capacity of 20, and maximum demand of 10 with two vehicles. The action bounds include only existing nodes (the depot and the 20 customers).
+
+Version 1 corrects the inclusive maximum action bound, which previously allowed a nonexistent customer. Transitions and rewards for actions referring to existing nodes are unchanged.
