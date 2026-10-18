@@ -66,12 +66,13 @@ class Generator(abc.ABC):
         self._num_customers = num_customers
         self._num_vehicles = num_vehicles
 
+        # Note: The time window detail could not be found in the paper for
+        # the 20, 50 and 150 customer scenarios. We use the 150 customer scenario's
+        # time window of 20 for them.
+        self._time_window_length = 20
+
         if not manual_settings:
             # Scenario are taken from the paper
-            # Note: The time window detail could not be found in the paper for
-            # the 20, 50 and 150 customer scenarios. We use the 150 customer scenario's
-            # time window of 20 for them.
-            self._time_window_length = 20
             (
                 self._map_max,
                 self._max_capacity,

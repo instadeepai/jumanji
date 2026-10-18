@@ -17,7 +17,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from jumanji.environments.routing.multi_cvrp.generator import UniformRandomGenerator
+from jumanji.environments.routing.multi_cvrp.generator import Generator, UniformRandomGenerator
 from jumanji.environments.routing.multi_cvrp.utils import DEPOT_IDX
 
 
@@ -67,3 +67,29 @@ def test_uniform_random_generator__no_retrace(
 
     for key in keys:
         jitted_generator(key)
+
+
+def test_generator__manual_settings(key: chex.PRNGKey) -> None:
+    """Custom generators can use manual settings without a preset customer count."""
+
+    class CustomGenerator(UniformRandomGenerator):
+        def __init__(self) -> None:
+            Generator.__init__(
+                self,
+                num_customers=8,
+                num_vehicles=4,
+                manual_settings=True,
+                map_max=5,
+                max_capacity=30,
+                max_start_window=7.0,
+                customer_demand_max=6,
+            )
+
+    generator = CustomGenerator()
+    state = jax.jit(generator)(key)
+    assert state.nodes.coordinates.shape == (9, 2)
+    assert ((0 <= state.nodes.coordinates) & (state.nodes.coordinates < 5)).all()
+    assert ((0 <= state.windows.start) & (state.windows.start < 7)).all()
+    assert jnp.allclose(state.windows.end - state.windows.start, 20)
+    assert generator._max_end_window == 27
+    assert (state.vehicles.capacities == 30).all()
