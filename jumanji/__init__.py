@@ -115,7 +115,7 @@ register(id="CVRP-v1", entry_point="jumanji.environments:CVRP")
 
 # MultiCVRP with 20 randomly generated nodes, a maximum capacity of 60, 2 vehicles,
 # a maximum demand for each node of 10, and a dense reward function.
-register(id="MultiCVRP-v0", entry_point="jumanji.environments:MultiCVRP")
+register(id="MultiCVRP-v1", entry_point="jumanji.environments:MultiCVRP")
 
 # Maze with 10 rows and 10 columns, a time limit of 100 and a random maze generator.
 register(id="Maze-v0", entry_point="jumanji.environments:Maze")

@@ -46,7 +46,7 @@ def make_actor_critic_networks_multicvrp(
     # Add depot to the number of customers
     num_customers += 1
 
-    num_actions = MultiCVRP.action_spec.maximum
+    num_actions = MultiCVRP.action_spec.maximum + 1
     parametric_action_distribution = MultiCategoricalParametricDistribution(
         num_values=np.asarray(num_actions).reshape(1)
     )

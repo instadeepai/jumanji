@@ -15,9 +15,11 @@
 import chex
 import jax
 import numpy as np
+import pytest
 
 from jumanji.environments.routing.multi_cvrp.constants import DEPOT_IDX
 from jumanji.environments.routing.multi_cvrp.env import MultiCVRP, Observation
+from jumanji.environments.routing.multi_cvrp.generator import UniformRandomGenerator
 from jumanji.environments.routing.multi_cvrp.types import State
 from jumanji.testing.env_not_smoke import (
     check_env_does_not_smoke,
@@ -25,9 +27,29 @@ from jumanji.testing.env_not_smoke import (
 )
 from jumanji.testing.pytrees import assert_is_jax_array_tree
 from jumanji.types import TimeStep
+from jumanji.wrappers import JumanjiToGymWrapper
 
 
 class TestEnvironmentSpec:
+    @pytest.mark.parametrize(
+        ("num_customers", "num_vehicles"), [(6, 2), (20, 3), (50, 4), (100, 5), (150, 5)]
+    )
+    def test_multicvrp__action_bounds(self, num_customers: int, num_vehicles: int) -> None:
+        """Action specs and Gym spaces must only contain existing node indices."""
+        env = MultiCVRP(generator=UniformRandomGenerator(num_customers, num_vehicles))
+        state, timestep = jax.jit(env.reset)(jax.random.PRNGKey(0))
+        num_nodes = state.nodes.coordinates.shape[0]
+        assert timestep.observation.action_mask.shape[-1] == num_nodes
+
+        action_spec = env.action_spec
+        action_spec.validate(jax.numpy.zeros(num_vehicles, dtype=action_spec.dtype))
+        action_spec.validate(jax.numpy.full(num_vehicles, num_nodes - 1, dtype=action_spec.dtype))
+        with pytest.raises(ValueError, match="within bounds"):
+            action_spec.validate(jax.numpy.full(num_vehicles, num_nodes, dtype=action_spec.dtype))
+
+        action_space = JumanjiToGymWrapper(env).action_space
+        np.testing.assert_array_equal(action_space.high, np.full(num_vehicles, num_nodes - 1))
+
     def test_multicvrp__reset(self, multicvrp_env: MultiCVRP) -> None:
         """Validates the jitted reset of the environment."""
         chex.clear_trace_counter()

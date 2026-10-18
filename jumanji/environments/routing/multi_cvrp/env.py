@@ -330,7 +330,7 @@ class MultiCVRP(Environment[State, specs.BoundedArray, Observation]):
             (self._num_vehicles,),
             jnp.int16,
             0,
-            self._num_customers + 1,
+            self._num_customers,
             "actions",
         )
 
