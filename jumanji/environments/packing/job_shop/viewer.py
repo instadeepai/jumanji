@@ -63,6 +63,8 @@ class JobShopViewer(MatplotlibViewer[State]):
     def render(self, state: State, save_path: Optional[str] = None) -> Optional[NDArray]:
         """Render the given state of the `JobShop` environment.
 
+        The time range expands to include the current time and all scheduled operations.
+
         Args:
             state: the environment state to render.
             save_path: Optional path to save the rendered environment image to.
@@ -75,7 +77,7 @@ class JobShopViewer(MatplotlibViewer[State]):
         ax.clear()
         ax.set_title(f"Scheduled Jobs at Time={state.step_count}")
         ax.axvline(state.step_count, ls="--", color="red", lw=0.5)
-        self._prepare_figure(ax)
+        self._prepare_figure(ax, self._get_time_limit([state]))
         self._add_scheduled_ops(ax, state)
 
         if save_path:
@@ -91,6 +93,8 @@ class JobShopViewer(MatplotlibViewer[State]):
     ) -> matplotlib.animation.FuncAnimation:
         """Create an animation from a sequence of states.
 
+        All frames share a time range covering every state's scheduled operations and current time.
+
         Args:
             states: sequence of environment states corresponding to consecutive timesteps.
             interval: delay between frames in milliseconds, default to 200.
@@ -102,11 +106,13 @@ class JobShopViewer(MatplotlibViewer[State]):
         """
         fig, ax = self._get_fig_ax(name_suffix="_animation", show=False)
         plt.close(fig=fig)
-        self._prepare_figure(ax)
+        # Keep a fixed viewport across frames, including operations scheduled late in the rollout.
+        time_limit = self._get_time_limit(states)
+        self._prepare_figure(ax, time_limit)
 
         def make_frame(state: State) -> Tuple[Artist]:
             ax.clear()
-            self._prepare_figure(ax)
+            self._prepare_figure(ax, time_limit)
             ax.set_title(rf"Scheduled Jobs at Time={state.step_count}")
             self._add_scheduled_ops(ax, state)
             return (ax,)
@@ -125,16 +131,26 @@ class JobShopViewer(MatplotlibViewer[State]):
 
         return self._animation
 
-    def _prepare_figure(self, ax: plt.Axes) -> None:
+    def _get_time_limit(self, states: Sequence[State]) -> int:
+        """Keep the default range unless the displayed states need more time."""
+        time_limit = max(
+            1, self._num_jobs * self._max_num_ops * self._max_op_duration // self._num_machines
+        )
+        for state in states:
+            starts = np.asarray(state.scheduled_times)
+            ends = np.where(starts >= 0, starts + np.asarray(state.ops_durations), 0)
+            time_limit = max(time_limit, int(np.max(ends)), int(state.step_count))
+        return time_limit
+
+    def _prepare_figure(self, ax: plt.Axes, time_limit: int) -> None:
         ax.set_xlabel("Time")
         ax.set_ylabel("Machine ID")
-        xlim = self._num_jobs * self._max_num_ops * self._max_op_duration // self._num_machines
-        ax.set_xlim(0, xlim)
+        ax.set_xlim(0, time_limit)
         ax.set_ylim(-0.9, self._num_machines)
         ax.xaxis.get_major_locator().set_params(integer=True)  # ty: ignore[unknown-argument]
         ax.yaxis.get_major_locator().set_params(integer=True)  # ty: ignore[unknown-argument]
-        major_ticks = np.arange(0, xlim, 10)
-        minor_ticks = np.arange(0, xlim, 1)
+        major_ticks = np.arange(0, time_limit, 10)
+        minor_ticks = np.arange(0, time_limit, 1)
         ax.set_xticks(major_ticks)
         ax.set_xticks(minor_ticks, minor=True)
         ax.grid(axis="x", linewidth=0.25)
