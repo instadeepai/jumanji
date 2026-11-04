@@ -26,7 +26,13 @@ from jumanji import specs
 from jumanji.env import Environment
 from jumanji.environments.routing.snake.types import Observation, Position, State
 from jumanji.environments.routing.snake.viewer import SnakeViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import (
+    TimeStep,
+    restart,
+    termination,
+    transition,
+    truncation,
+)
 from jumanji.viewer import Viewer
 
 
@@ -56,8 +62,10 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
 
     - episode termination:
         - if no action can be performed, i.e. the snake is surrounded.
-        - if the time limit is reached.
         - if an invalid action is taken, the snake exits the grid or bumps into itself.
+
+    - episode truncation:
+        - if the time limit is reached.
 
     - state: `State`
         - body: jax array (bool) of shape (num_rows, num_cols)
@@ -220,15 +228,19 @@ class Snake(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         snake_completed = jnp.all(body)
-        done = ~is_valid | snake_completed | (step_count >= self.time_limit)
+        done = ~is_valid | snake_completed
+        timeout = step_count >= self.time_limit
 
         reward = jnp.asarray(fruit_eaten, float)
         observation = self.observe(next_state)
 
-        timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
+        # 0 = still going
+        # 1 = done (invalid action, surrounded or board completed)
+        # 2 = timeout
+        # 3 = done and timeout - done wins
+        timestep = jax.lax.switch(
+            done + 2 * timeout,
+            [transition, termination, truncation, termination],
             reward,
             observation,
         )
