@@ -27,7 +27,7 @@ from jumanji.testing.env_not_smoke import (
     check_env_specs_does_not_smoke,
 )
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import TimeStep
+from jumanji.types import StepType, TimeStep
 
 
 @pytest.fixture(scope="module")
@@ -90,6 +90,30 @@ def test_snake__step(snake: Snake) -> None:
         new_state, timestep = step_fn(state, jnp.asarray(action, jnp.int32))
         assert new_state.head_position == new_position
         assert jnp.all(timestep.observation.grid[..., 0] == new_body)
+
+
+def test_snake__time_limit_truncates() -> None:
+    """Reaching the time limit truncates the episode (discount 1.0)."""
+    env = Snake(num_rows=6, num_cols=6, time_limit=2)
+    state, timestep = env.reset(jax.random.PRNGKey(0))
+    for _ in range(2):
+        # Always take a valid action so the snake cannot die before the limit.
+        action = jnp.argmax(timestep.observation.action_mask).astype(jnp.int32)
+        state, timestep = env.step(state, action)
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 1.0
+
+
+def test_snake__invalid_action_terminates() -> None:
+    """An invalid action terminates with discount 0.0, even on the timeout step."""
+    env = Snake(num_rows=6, num_cols=6, time_limit=1)
+    state, _timestep = env.reset(jax.random.PRNGKey(0))
+    # Force the left move to be invalid, as if the snake faced a wall.
+    state = state.replace(action_mask=jnp.array([True, True, True, False]))
+    _state, timestep = env.step(state, jnp.array(3, jnp.int32))
+    # The step hits both the invalid action and the time limit: termination wins.
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 0.0
 
 
 def test_snake__does_not_smoke(snake: Snake) -> None:
