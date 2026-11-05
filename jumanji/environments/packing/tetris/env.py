@@ -32,7 +32,7 @@ from jumanji.environments.packing.tetris.constants import (
 )
 from jumanji.environments.packing.tetris.types import Observation, State
 from jumanji.environments.packing.tetris.viewer import TetrisViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -64,6 +64,9 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
 
     - episode termination:
         if the tetromino cannot be placed anymore (i.e., it hits the top of the grid).
+
+    - episode truncation:
+        if the time limit is reached.
 
     ```python
     from jumanji.environments import Tetris
@@ -209,12 +212,13 @@ class Tetris(Environment[State, specs.MultiDiscreteArray, Observation]):
         next_observation = self.observe(next_state)
 
         tetris_completed = ~jnp.any(action_mask)
-        done = tetris_completed | ~is_valid | (step_count >= self.time_limit)
+        done = tetris_completed | ~is_valid
 
-        next_timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
+        # Return a MID or LAST timestep, truncating (rather than terminating) when the
+        # time limit is reached. Termination takes precedence over truncation.
+        next_timestep = jax.lax.switch(
+            done + 2 * (step_count >= self.time_limit),
+            [transition, termination, truncation, termination],
             reward,
             next_observation,
         )
