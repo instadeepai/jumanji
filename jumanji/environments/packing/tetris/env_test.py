@@ -24,7 +24,7 @@ from jumanji.testing.env_not_smoke import (
     check_env_specs_does_not_smoke,
 )
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import TimeStep
+from jumanji.types import StepType, TimeStep
 
 
 @pytest.fixture
@@ -119,6 +119,23 @@ def test_calculate_action_mask(tetris_env: Tetris, grid: chex.Array) -> None:
         ]
     )
     assert (action_mask == expected_action_mask).all()
+
+
+def test_tetris__time_limit_truncates() -> None:
+    """Reaching the time limit truncates the episode (LAST with discount 1.0)."""
+    env = Tetris(num_rows=6, num_cols=6, time_limit=1)
+    key = jax.random.PRNGKey(0)
+    state, timestep = env.reset(key)
+    assert timestep.step_type == StepType.FIRST
+
+    # Take the first valid action from the mask, so the episode ends only because
+    # the time limit of 1 is reached.
+    action_mask = timestep.observation.action_mask
+    rotation, x_position = jnp.unravel_index(jnp.argmax(action_mask), action_mask.shape)
+    state, timestep = env.step(state, (rotation, x_position))
+
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 1.0
 
 
 def test_tetris__does_not_smoke(tetris_env: Tetris) -> None:
