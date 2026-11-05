@@ -147,7 +147,6 @@ class TestMazeEnvironment:
         assert timestep.step_type == StepType.MID
         assert state.agent_position == Position(row=2, col=2)
 
-
     def test_maze__time_limit_truncates(self) -> None:
         """Reaching the time limit truncates the episode (LAST with discount 1.0)."""
         env = Maze(generator=ToyGenerator(), time_limit=2)
@@ -177,6 +176,7 @@ class TestMazeEnvironment:
         assert timestep.step_type == StepType.LAST
         assert timestep.discount == 0.0
         assert timestep.reward == 1.0
+
     def test_maze__action_mask(self, maze: Maze) -> None:
         walls = jnp.array(
             [
