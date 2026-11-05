@@ -147,6 +147,36 @@ class TestMazeEnvironment:
         assert timestep.step_type == StepType.MID
         assert state.agent_position == Position(row=2, col=2)
 
+    def test_maze__time_limit_truncates(self) -> None:
+        """Reaching the time limit truncates the episode (LAST with discount 1.0)."""
+        env = Maze(generator=ToyGenerator(), time_limit=2)
+        key = jax.random.PRNGKey(0)
+        state, timestep = env.reset(key)
+        assert timestep.step_type == StepType.FIRST
+
+        # The target is 12 moves away from the toy start, so two steps reach the
+        # time limit without reaching the target.
+        for _ in range(2):
+            action = jnp.argmax(timestep.observation.action_mask)
+            state, timestep = env.step(state, action)
+
+        assert timestep.step_type == StepType.LAST
+        assert timestep.discount == 1.0
+
+    def test_maze__reaching_target_terminates(self) -> None:
+        """Reaching the target still terminates the episode (LAST with discount 0.0)."""
+        env = Maze(generator=ToyGenerator())
+        key = jax.random.PRNGKey(0)
+        state, timestep = env.reset(key)
+
+        # Shortest path from (0, 0) to (0, 4) in the toy maze: DDDD RR UUUU RR.
+        for action in [2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 1, 1]:
+            state, timestep = env.step(state, jnp.array(action, jnp.int32))
+
+        assert timestep.step_type == StepType.LAST
+        assert timestep.discount == 0.0
+        assert timestep.reward == 1.0
+
     def test_maze__action_mask(self, maze: Maze) -> None:
         walls = jnp.array(
             [
