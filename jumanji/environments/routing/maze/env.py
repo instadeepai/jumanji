@@ -27,7 +27,7 @@ from jumanji.environments.routing.maze.constants import MOVES
 from jumanji.environments.routing.maze.generator import Generator, RandomGenerator
 from jumanji.environments.routing.maze.types import Observation, Position, State
 from jumanji.environments.routing.maze.viewer import MazeEnvViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -53,6 +53,9 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
 
     - episode termination (if any):
         - agent reaches the target position.
+        - no actions are available to the agent.
+
+    - episode truncation (if any):
         - the time_limit is reached.
 
     - state: State:
@@ -247,16 +250,16 @@ class Maze(Environment[State, specs.DiscreteArray, Observation]):
         target_reached = state.agent_position == state.target_position
         time_limit_exceeded = state.step_count >= self.time_limit
 
-        done = no_actions_available | target_reached | time_limit_exceeded
+        done = no_actions_available | target_reached
 
         # Compute the reward.
         reward = jnp.array(state.agent_position == state.target_position, float)
 
-        # Return either a MID or a LAST timestep depending on done.
-        timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
+        # Return a MID or LAST timestep, truncating (rather than terminating) when the
+        # time limit is reached. Termination takes precedence over truncation.
+        timestep = jax.lax.switch(
+            done + 2 * time_limit_exceeded,
+            [transition, termination, truncation, termination],
             reward,
             observation,
         )
