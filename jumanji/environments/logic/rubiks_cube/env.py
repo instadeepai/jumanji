@@ -39,7 +39,7 @@ from jumanji.environments.logic.rubiks_cube.utils import (
     rotate_cube,
 )
 from jumanji.environments.logic.rubiks_cube.viewer import RubiksCubeViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -60,7 +60,10 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
         by default, 1.0 if cube is solved, otherwise 0.0.
 
     - episode termination:
-        if either the cube is solved or a time limit is reached.
+        if the cube is solved.
+
+    - episode truncation:
+        if the time limit is reached.
 
     - state: `State`
         - cube: jax array (int8) of shape (6, cube_size, cube_size):
@@ -162,12 +165,13 @@ class RubiksCube(Environment[State, specs.MultiDiscreteArray, Observation]):
         )
         reward = self.reward_function(state=next_state)
         solved = is_solved(cube)
-        done = (step_count >= self.time_limit) | solved
         next_observation = self.observe(state=next_state)
-        next_timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
+
+        # Return a MID or LAST timestep, truncating (rather than terminating) when the
+        # time limit is reached. Termination takes precedence over truncation.
+        next_timestep = jax.lax.switch(
+            solved + 2 * (step_count >= self.time_limit),
+            [transition, termination, truncation, termination],
             reward,
             next_observation,
         )
