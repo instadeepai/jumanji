@@ -30,7 +30,7 @@ from jumanji.testing.env_not_smoke import (
     check_env_does_not_smoke,
     check_env_specs_does_not_smoke,
 )
-from jumanji.types import TimeStep
+from jumanji.types import StepType, TimeStep
 
 
 @pytest.fixture(scope="session")
@@ -148,6 +148,22 @@ def test_sokoban__termination_timelimit(sokoban: Sokoban) -> None:
     state, timestep = step_fn(state, action)
 
     assert timestep.last()
+
+
+def test_sokoban__time_limit_truncates() -> None:
+    """Reaching the time limit truncates the episode (LAST with discount 1.0)."""
+    env = Sokoban(generator=SimpleSolveGenerator(), time_limit=1)
+    key = jax.random.PRNGKey(0)
+    state, timestep = env.reset(key)
+    assert timestep.step_type == StepType.FIRST
+
+    # A single action cannot solve the level, so the episode ends only because
+    # the time limit of 1 is reached.
+    action = env.action_spec.generate_value()
+    state, timestep = env.step(state, action)
+
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 1.0
 
 
 def test_sokoban__termination_solved(sokoban_simple: Sokoban) -> None:
