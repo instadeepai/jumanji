@@ -42,7 +42,7 @@ from jumanji.environments.routing.sokoban.generator import (
 from jumanji.environments.routing.sokoban.reward import DenseReward, RewardFn
 from jumanji.environments.routing.sokoban.types import Observation, State
 from jumanji.environments.routing.sokoban.viewer import BoxViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -65,8 +65,10 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         10 is awarded when all boxes are on targets.
 
     - episode termination:
-        - if the time limit is reached.
         - if all boxes are on targets.
+
+    - episode truncation:
+        - if the time limit is reached.
 
     - state: `State`
         - key: jax array (uint32) of shape (2,) used for auto-reset
@@ -231,9 +233,6 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
         )
 
         target_reached = self.level_complete(next_state)
-        time_limit_exceeded = next_state.step_count >= self.time_limit
-
-        done = jnp.logical_or(target_reached, time_limit_exceeded)
 
         reward = jnp.asarray(self.reward_fn(state, action, next_state), float)
 
@@ -241,10 +240,16 @@ class Sokoban(Environment[State, specs.DiscreteArray, Observation]):
 
         extras = self._get_extras(next_state)
 
-        timestep = jax.lax.cond(
-            done,
-            partial(termination, extras=extras),
-            partial(transition, extras=extras),
+        # Return a MID or LAST timestep, truncating (rather than terminating) when the
+        # time limit is reached. Termination takes precedence over truncation.
+        timestep = jax.lax.switch(
+            target_reached + 2 * (next_state.step_count >= self.time_limit),
+            [
+                partial(transition, extras=extras),
+                partial(termination, extras=extras),
+                partial(truncation, extras=extras),
+                partial(termination, extras=extras),
+            ],
             reward,
             observation,
         )
