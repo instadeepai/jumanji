@@ -23,7 +23,7 @@ from jumanji.testing.env_not_smoke import (
     check_env_specs_does_not_smoke,
 )
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import TimeStep
+from jumanji.types import StepType, TimeStep
 
 
 def test_sliding_tile_puzzle_reset_jit(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
@@ -94,6 +94,22 @@ def test_sliding_tile_puzzle_specs_does_not_smoke(
 ) -> None:
     """Test that we access specs without any errors."""
     check_env_specs_does_not_smoke(sliding_tile_puzzle)
+
+
+def test_sliding_tile_puzzle__time_limit_truncates() -> None:
+    """Reaching the time limit truncates the episode (LAST with discount 1.0)."""
+    env = SlidingTilePuzzle(time_limit=1)
+    key = jax.random.PRNGKey(0)
+    state, timestep = env.reset(key)
+    assert timestep.step_type == StepType.FIRST
+
+    # A single move cannot solve a puzzle scrambled by 200 random moves, so the
+    # episode ends only because the time limit of 1 is reached.
+    action = env.action_spec.generate_value()
+    state, timestep = env.step(state, action)
+
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 1.0
 
 
 def test_env_one_move_to_solve(sliding_tile_puzzle: SlidingTilePuzzle) -> None:
