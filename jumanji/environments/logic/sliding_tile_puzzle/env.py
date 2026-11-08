@@ -37,7 +37,7 @@ from jumanji.environments.logic.sliding_tile_puzzle.types import Observation, St
 from jumanji.environments.logic.sliding_tile_puzzle.viewer import (
     SlidingTilePuzzleViewer,
 )
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -63,6 +63,8 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         Each incorrectly placed tile contributes -1 to the reward.
 
     - episode termination: if the puzzle is solved.
+
+    - episode truncation: if the time limit is reached.
 
     - state: `State`
         - puzzle: jax array (int32) of shape (N, N), representing the current state of the puzzle.
@@ -128,10 +130,16 @@ class SlidingTilePuzzle(Environment[State, specs.DiscreteArray, Observation]):
         reward = self.reward_fn(state, action, next_state, self.solved_puzzle)
         extras = self._get_extras(next_state)
 
-        timestep = jax.lax.cond(
-            done | (next_state.step_count >= self.time_limit),
-            partial(termination, extras=extras),
-            partial(transition, extras=extras),
+        # Return a MID or LAST timestep, truncating (rather than terminating) when the
+        # time limit is reached. Termination takes precedence over truncation.
+        timestep = jax.lax.switch(
+            done + 2 * (next_state.step_count >= self.time_limit),
+            [
+                partial(transition, extras=extras),
+                partial(termination, extras=extras),
+                partial(truncation, extras=extras),
+                partial(termination, extras=extras),
+            ],
             reward,
             obs,
         )
