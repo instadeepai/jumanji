@@ -32,7 +32,7 @@ from jumanji.environments.routing.pac_man.utils import (
     player_step,
 )
 from jumanji.environments.routing.pac_man.viewer import PacManViewer
-from jumanji.types import TimeStep, restart, termination, transition
+from jumanji.types import TimeStep, restart, termination, transition, truncation
 from jumanji.viewer import Viewer
 
 
@@ -63,6 +63,8 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
     - episode termination (if any):
         - agent has collected all pellets.
         - agent killed by ghost.
+
+    - episode truncation:
         - timer has elapsed.
 
     - state: State:
@@ -274,17 +276,16 @@ class PacMan(Environment[State, specs.DiscreteArray, Observation]):
         time_limit_exceeded = next_state.step_count >= self.time_limit
         all_pellets_found = num_pellets == 0
         dead = next_state.dead == 1
-        done = time_limit_exceeded | dead | all_pellets_found
+        done = dead | all_pellets_found
 
         reward = jnp.asarray(collision_rewards)
         # Generate observation from the state
         observation = self.observe(next_state)
 
-        # Return either a MID or a LAST timestep depending on done.
-        timestep = jax.lax.cond(
-            done,
-            termination,
-            transition,
+        # Termination takes precedence when the time limit and a terminal condition coincide.
+        timestep = jax.lax.switch(
+            done + 2 * time_limit_exceeded,
+            [transition, termination, truncation, termination],
             reward,
             observation,
         )

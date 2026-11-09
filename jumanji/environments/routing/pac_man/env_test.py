@@ -24,7 +24,7 @@ from jumanji.testing.env_not_smoke import (
     check_env_specs_does_not_smoke,
 )
 from jumanji.testing.pytrees import assert_is_jax_array_tree
-from jumanji.types import TimeStep
+from jumanji.types import StepType, TimeStep
 
 
 @pytest.fixture
@@ -84,6 +84,33 @@ def test_pac_man__step_jit(pac_man: PacMan) -> None:
     # Ghosts should not move on turn 1
     assert jnp.array_equal(new_state.ghost_locations, state.ghost_locations)
     assert new_state.pellets != state.pellets
+
+
+def test_pac_man__time_limit_truncates() -> None:
+    """An unfinished game at the time limit keeps its bootstrap discount."""
+    env = PacMan(time_limit=1)
+    state, _ = env.reset(jax.random.PRNGKey(0))
+    next_state, timestep = jax.jit(env.step)(state, 3)
+
+    assert not next_state.dead
+    assert next_state.pellets > 0
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 1.0
+
+
+@pytest.mark.parametrize("dead,pellets", [(1, 1), (0, 0)])
+def test_pac_man__termination_at_time_limit(
+    monkeypatch: pytest.MonkeyPatch, dead: int, pellets: int
+) -> None:
+    """Death or collecting every pellet still terminates at the horizon."""
+    env = PacMan(time_limit=1)
+    state, _ = env.reset(jax.random.PRNGKey(0))
+    terminal_state = state.replace(dead=jnp.asarray(dead), pellets=jnp.asarray(pellets))
+    monkeypatch.setattr(env, "_update_state", lambda state, action: (terminal_state, 0))
+    _, timestep = jax.jit(env.step)(state, 3)
+
+    assert timestep.step_type == StepType.LAST
+    assert timestep.discount == 0.0
 
 
 def test_pac_man_step_invalid(pac_man: PacMan) -> None:
